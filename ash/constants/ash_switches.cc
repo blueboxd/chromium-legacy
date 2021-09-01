@@ -453,9 +453,6 @@ const char kEnterpriseEnableForcedReEnrollment[] =
 const char kEnterpriseEnableInitialEnrollment[] =
     "enterprise-enable-initial-enrollment";
 
-// Whether to enable PSM (private set membership) queries.
-const char kEnterpriseEnablePsm[] = "enterprise-enable-psm";
-
 // Whether to use fake PSM RLWE client for testing purposes.
 const char kEnterpriseUseFakePsmRlweClient[] =
     "enterprise-use-fake-psm-rlwe-client";
@@ -579,6 +576,10 @@ const char kHasChromeOSKeyboard[] = "has-chromeos-keyboard";
 
 // Whether this device has an internal stylus.
 const char kHasInternalStylus[] = "has-internal-stylus";
+
+// If set, the system is a Chromebook with a number pad as part of its internal
+// keyboard.
+const char kHasNumberPad[] = "has-number-pad";
 
 // Defines user homedir. This defaults to primary user homedir.
 const char kHomedir[] = "homedir";

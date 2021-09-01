@@ -3478,6 +3478,8 @@ static_library("browser") {
       "accuracy_tips/accuracy_service_delegate.h",
       "accuracy_tips/accuracy_service_factory.cc",
       "accuracy_tips/accuracy_service_factory.h",
+      "apps/app_discovery_service/app_discovery_features.cc",
+      "apps/app_discovery_service/app_discovery_features.h",
       "apps/app_discovery_service/app_discovery_service.cc",
       "apps/app_discovery_service/app_discovery_service.h",
       "apps/app_discovery_service/app_discovery_service_factory.cc",
@@ -3487,6 +3489,8 @@ static_library("browser") {
       "apps/app_discovery_service/app_fetcher_manager.h",
       "apps/app_discovery_service/recommended_arc_app_fetcher.cc",
       "apps/app_discovery_service/recommended_arc_app_fetcher.h",
+      "apps/app_discovery_service/remote_url_search/remote_url_fetcher.cc",
+      "apps/app_discovery_service/remote_url_search/remote_url_fetcher.h",
       "apps/app_service/app_icon_factory.cc",
       "apps/app_service/app_icon_factory.h",
       "apps/app_service/app_icon_source.cc",
@@ -5487,12 +5491,13 @@ static_library("browser") {
     ]
     if (use_aura) {
       deps += [ "//third_party/fontconfig" ]
-      if (use_dbus) {
-        deps += [ "//dbus" ]
-      }
     }
     if (use_x11) {
       deps += [ "//ui/gfx/x" ]
+    }
+    if (use_dbus) {
+      deps += [ "//dbus" ]
+      defines += [ "USE_DBUS" ]
     }
 
     # device_info_fetcher uses a "defined(USE_GIO)" macro, so if it's refactored
@@ -5500,6 +5505,15 @@ static_library("browser") {
     if (use_gio) {
       configs += [ "//build/linux:gio_config" ]
     }
+  }
+
+  if (is_linux && use_dbus) {
+    sources += [
+      "dbus_memory_pressure_evaluator_linux.cc",
+      "dbus_memory_pressure_evaluator_linux.h",
+    ]
+
+    deps += [ "//chrome/common:chrome_features" ]
   }
 
   if (is_linux || is_chromeos_lacros) {

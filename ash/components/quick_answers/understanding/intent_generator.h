@@ -10,12 +10,13 @@
 
 #include "ash/components/quick_answers/utils/language_detector.h"
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/text_classifier.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 
 struct QuickAnswersRequest;
@@ -53,7 +54,8 @@ class IntentGenerator {
       chromeos::machine_learning::mojom::LoadModelResult result);
   void AnnotationCallback(
       const QuickAnswersRequest& request,
-      std::vector<machine_learning::mojom::TextAnnotationPtr> annotations);
+      std::vector<chromeos::machine_learning::mojom::TextAnnotationPtr>
+          annotations);
 
   void MaybeGenerateTranslationIntent(const QuickAnswersRequest& request);
   void LanguageDetectorCallback(const QuickAnswersRequest& request,
@@ -70,6 +72,6 @@ class IntentGenerator {
 };
 
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_COMPONENTS_QUICK_ANSWERS_UNDERSTANDING_INTENT_GENERATOR_H_

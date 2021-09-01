@@ -30,6 +30,7 @@
 
 #include "base/callback_forward.h"
 #include "base/dcheck_is_on.h"
+#include "base/gtest_prod_util.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink-forward.h"
@@ -74,6 +75,7 @@ namespace blink {
 class AXObjectCache;
 class ChromeClient;
 class CompositorAnimationTimeline;
+class DarkModeFilter;
 class DocumentLifecycle;
 class FloatSize;
 class FragmentAnchor;
@@ -347,7 +349,7 @@ class CORE_EXPORT LocalFrameView final
 
   void AddPartToUpdate(LayoutEmbeddedObject&);
 
-  Color DocumentBackgroundColor() const;
+  Color DocumentBackgroundColor();
 
   // Called when this view is going to be removed from its owning
   // LocalFrame.
@@ -1008,6 +1010,8 @@ class CORE_EXPORT LocalFrameView final
 
   bool AnyFrameIsPrintingOrPaintingPreview();
 
+  DarkModeFilter& EnsureDarkModeFilter();
+
   LayoutSize size_;
 
   typedef HeapHashSet<Member<LayoutEmbeddedObject>> EmbeddedObjectSet;
@@ -1168,6 +1172,9 @@ class CORE_EXPORT LocalFrameView final
 
   // These tasks will be run at the beginning of the next lifecycle.
   WTF::Vector<base::OnceClosure> start_of_lifecycle_tasks_;
+
+  // Filter used for inverting the document background for forced darkening.
+  std::unique_ptr<DarkModeFilter> dark_mode_filter_;
 
 #if DCHECK_IS_ON()
   bool is_updating_descendant_dependent_flags_;

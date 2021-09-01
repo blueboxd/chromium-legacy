@@ -365,14 +365,17 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
     FlushMojoCallsForAppService();
   }
 
-  // Launch and activate the app, and flush mojo calls to allow async callbacks
-  // to run.
-  void ActivateAppAndFlushMojoCallsForAppService(const std::string& app_id,
-                                                 ash::ShelfLaunchSource source,
-                                                 int event_flags,
-                                                 int64_t display_id) {
-    controller_->ActivateApp(app_id, ash::LAUNCH_FROM_UNKNOWN, 0,
-                             display::kInvalidDisplayId);
+  // Select the app, and flush mojo calls to allow async callbacks to run.
+  void SelectAppAndFlushMojoCallsForAppService(const std::string& app_id,
+                                               ash::ShelfLaunchSource source) {
+    ash::ShelfID shelf_id(app_id);
+    ash::ShelfModel* model = controller_->shelf_model();
+    ash::ShelfItemDelegate* delegate = model->GetShelfItemDelegate(shelf_id);
+    ASSERT_TRUE(delegate);
+    delegate->ItemSelected(/*event=*/nullptr, display::kInvalidDisplayId,
+                           ash::LAUNCH_FROM_UNKNOWN,
+                           /*callback=*/base::DoNothing(),
+                           /*filter_predicate=*/base::NullCallback());
     FlushMojoCallsForAppService();
   }
 
@@ -811,9 +814,7 @@ IN_PROC_BROWSER_TEST_F(ShelfPlatformAppBrowserTest, MultipleBrowsers) {
   EXPECT_TRUE(app_window->IsActive());
   EXPECT_FALSE(browser2->window()->IsActive());
 
-  controller_->ActivateApp(extension_misc::kChromeAppId,
-                           ash::LAUNCH_FROM_APP_LIST, 0,
-                           display::kInvalidDisplayId);
+  SelectItem(ash::ShelfID(extension_misc::kChromeAppId));
 
   EXPECT_FALSE(app_window->IsActive());
   EXPECT_TRUE(browser2->window()->IsActive());
@@ -1315,20 +1316,6 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchMaximized) {
   EXPECT_TRUE(browser2->window()->IsActive());
 }
 
-// Activating the same app multiple times should launch only a single copy.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateApp) {
-  TabStripModel* tab_strip = browser()->tab_strip_model();
-  int tab_count = tab_strip->count();
-  const Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("app1"));
-  ActivateAppAndFlushMojoCallsForAppService(
-      extension->id(), ash::LAUNCH_FROM_UNKNOWN, 0, display::kInvalidDisplayId);
-  EXPECT_EQ(++tab_count, tab_strip->count());
-  ActivateAppAndFlushMojoCallsForAppService(
-      extension->id(), ash::LAUNCH_FROM_UNKNOWN, 0, display::kInvalidDisplayId);
-  EXPECT_EQ(tab_count, tab_strip->count());
-}
-
 // Launching the same app multiple times should launch a copy for each call.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchApp) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
@@ -1510,8 +1497,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, RefocusFilterLaunch) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
   ash::ShelfID shortcut_id = CreateShortcut("app1");
-  controller_->SetRefocusURLPatternForTest(
-      shortcut_id, GURL("http://www.example.com/path1/*"));
+  SetRefocusURL(shortcut_id, GURL("http://www.example.com/path1/*"));
 
   // Create new tab.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -1540,8 +1526,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AsyncActivationStateCheck) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
 
   ash::ShelfID shortcut_id = CreateShortcut("app1");
-  controller_->SetRefocusURLPatternForTest(
-      shortcut_id, GURL("http://www.example.com/path1/*"));
+  SetRefocusURL(shortcut_id, GURL("http://www.example.com/path1/*"));
 
   EXPECT_EQ(ash::STATUS_CLOSED, shelf_model()->ItemByID(shortcut_id)->status);
 
@@ -1690,8 +1675,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AltNumberTabsTabbing) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
 
   ash::ShelfID shortcut_id = CreateShortcut("app");
-  controller_->SetRefocusURLPatternForTest(
-      shortcut_id, GURL("http://www.example.com/path/*"));
+  SetRefocusURL(shortcut_id, GURL("http://www.example.com/path/*"));
   std::string url = "http://www.example.com/path/bla";
 
   // Create an application handled browser tab.
@@ -2054,8 +2038,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateAfterSessionRestore) {
   Browser::CreateParams params = Browser::CreateParams(profile(), true);
   params.initial_show_state = ui::SHOW_STATE_INACTIVE;
   Browser* browser2 = Browser::Create(params);
-  controller_->SetRefocusURLPatternForTest(
-      shortcut_id, GURL("http://www.example.com/path/*"));
+  SetRefocusURL(shortcut_id, GURL("http://www.example.com/path/*"));
   std::string url = "http://www.example.com/path/bla";
   ui_test_utils::NavigateToURLWithDisposition(
       browser2, GURL(url), WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -2339,10 +2322,10 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, TabbedHostedAndWebApps) {
             shelf_model()->ItemByID(web_app_shelf_id)->status);
 
   // Now use the shelf controller to activate the apps.
-  controller_->ActivateApp(hosted_app->id(), ash::LAUNCH_FROM_APP_LIST, 0,
-                           display::kInvalidDisplayId);
-  controller_->ActivateApp(web_app_id, ash::LAUNCH_FROM_APP_LIST, 0,
-                           display::kInvalidDisplayId);
+  SelectAppAndFlushMojoCallsForAppService(hosted_app->id(),
+                                          ash::LAUNCH_FROM_APP_LIST);
+  SelectAppAndFlushMojoCallsForAppService(web_app_id,
+                                          ash::LAUNCH_FROM_APP_LIST);
 
   // There should be no new browsers or tabs as both apps were already open.
   EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
@@ -2391,11 +2374,10 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WindowedHostedAndWebApps) {
             shelf_model()->ItemByID(web_app_shelf_id)->status);
 
   // Now use the shelf controller to activate the apps.
-  ActivateAppAndFlushMojoCallsForAppService(hosted_app->id(),
-                                            ash::LAUNCH_FROM_APP_LIST, 0,
-                                            display::kInvalidDisplayId);
-  ActivateAppAndFlushMojoCallsForAppService(
-      web_app_id, ash::LAUNCH_FROM_APP_LIST, 0, display::kInvalidDisplayId);
+  SelectAppAndFlushMojoCallsForAppService(hosted_app->id(),
+                                          ash::LAUNCH_FROM_APP_LIST);
+  SelectAppAndFlushMojoCallsForAppService(web_app_id,
+                                          ash::LAUNCH_FROM_APP_LIST);
 
   // There should be two new browsers.
   EXPECT_EQ(3u, chrome::GetBrowserCount(browser()->profile()));

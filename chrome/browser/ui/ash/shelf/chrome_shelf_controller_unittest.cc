@@ -76,6 +76,7 @@
 #include "chrome/browser/ui/ash/shelf/app_window_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/arc_app_window.h"
 #include "chrome/browser/ui/ash/shelf/browser_status_monitor.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_test_util.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_item_factory.h"
 #include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
@@ -2162,7 +2163,7 @@ TEST_F(ChromeShelfControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
   EXPECT_FALSE(shelf_controller_->GetShelfSpinnerController()->HasApp(app_id));
 
   // Closing the app should leave a pinned but closed shelf item shortcut.
-  shelf_controller_->CloseItem(shelf_id);
+  shelf_controller_->ReplaceWithAppShortcutOrRemove(shelf_id);
   item = shelf_controller_->GetItem(shelf_id);
   ASSERT_NE(nullptr, item);
   EXPECT_EQ(ash::STATUS_CLOSED, item->status);
@@ -3337,7 +3338,7 @@ TEST_F(ChromeShelfControllerTest, V1AppMenuGeneration) {
   const ash::ShelfID gmail_id(web_app::kGmailAppId);
   AddWebApp(web_app::kGmailAppId);
   EXPECT_TRUE(shelf_controller_->IsAppPinned(web_app::kGmailAppId));
-  shelf_controller_->SetRefocusURLPatternForTest(gmail_id, GURL(kGmailUrl));
+  SetRefocusURL(gmail_id, GURL(kGmailUrl));
 
   // Check the menu content.
   ash::ShelfItem item_browser;
@@ -3394,7 +3395,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeShelfControllerTest,
   const ash::ShelfID gmail_id(web_app::kGmailAppId);
   AddWebApp(web_app::kGmailAppId);
   EXPECT_TRUE(shelf_controller_->IsAppPinned(web_app::kGmailAppId));
-  shelf_controller_->SetRefocusURLPatternForTest(gmail_id, GURL(kGmailUrl));
+  SetRefocusURL(gmail_id, GURL(kGmailUrl));
 
   // Check the menu content.
   ash::ShelfItem item_browser;
@@ -3830,7 +3831,7 @@ TEST_F(ChromeShelfControllerTest, V1AppMenuExecution) {
   GURL gmail = GURL("https://mail.google.com/mail/u");
   const ash::ShelfID gmail_id(web_app::kGmailAppId);
   AddWebApp(web_app::kGmailAppId);
-  shelf_controller_->SetRefocusURLPatternForTest(gmail_id, GURL(kGmailUrl));
+  SetRefocusURL(gmail_id, GURL(kGmailUrl));
   std::u16string title1 = u"Test1";
   NavigateAndCommitActiveTabWithTitle(browser(), GURL(kGmailUrl), title1);
   chrome::NewTab(browser());
@@ -3879,7 +3880,7 @@ TEST_F(ChromeShelfControllerTest, V1AppMenuDeletionExecution) {
   // Add Gmail to the shelf and add two items.
   const ash::ShelfID gmail_id(web_app::kGmailAppId);
   AddWebApp(web_app::kGmailAppId);
-  shelf_controller_->SetRefocusURLPatternForTest(gmail_id, GURL(kGmailUrl));
+  SetRefocusURL(gmail_id, GURL(kGmailUrl));
   std::u16string title1 = u"Test1";
   NavigateAndCommitActiveTabWithTitle(browser(), GURL(kGmailUrl), title1);
   chrome::NewTab(browser());
@@ -4077,19 +4078,19 @@ TEST_F(ChromeShelfControllerTest, MultipleAppIconLoaders) {
   EXPECT_EQ(1, app_icon_loader2->fetch_count());
   EXPECT_EQ(0, app_icon_loader2->clear_count());
 
-  shelf_controller_->CloseItem(shelf_id1);
+  shelf_controller_->ReplaceWithAppShortcutOrRemove(shelf_id1);
   EXPECT_EQ(1, app_icon_loader1->fetch_count());
   EXPECT_EQ(1, app_icon_loader1->clear_count());
   EXPECT_EQ(1, app_icon_loader2->fetch_count());
   EXPECT_EQ(0, app_icon_loader2->clear_count());
 
-  shelf_controller_->CloseItem(shelf_id2);
+  shelf_controller_->ReplaceWithAppShortcutOrRemove(shelf_id2);
   EXPECT_EQ(1, app_icon_loader1->fetch_count());
   EXPECT_EQ(1, app_icon_loader1->clear_count());
   EXPECT_EQ(1, app_icon_loader2->fetch_count());
   EXPECT_EQ(1, app_icon_loader2->clear_count());
 
-  shelf_controller_->CloseItem(shelf_id3);
+  shelf_controller_->ReplaceWithAppShortcutOrRemove(shelf_id3);
   EXPECT_EQ(1, app_icon_loader1->fetch_count());
   EXPECT_EQ(1, app_icon_loader1->clear_count());
   EXPECT_EQ(1, app_icon_loader2->fetch_count());

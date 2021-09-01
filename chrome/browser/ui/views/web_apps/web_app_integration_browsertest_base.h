@@ -6,12 +6,14 @@
 #define CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_INTEGRATION_BROWSERTEST_BASE_H_
 
 #include "base/containers/flat_set.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -90,35 +92,39 @@ struct StateSnapshot {
   base::flat_map<Profile*, ProfileState> profiles;
 };
 
-class WebAppIntegrationBrowserTestBase : public AppRegistrarObserver {
+class WebAppIntegrationBrowserTestBase : AppRegistrarObserver {
  public:
   struct TestDelegate {
+    // Exposing normal functionality of testing::InProcBrowserTest:
     virtual Browser* CreateBrowser(Profile* profile) = 0;
     virtual void AddBlankTabAndShow(Browser* browser) = 0;
     virtual net::EmbeddedTestServer* EmbeddedTestServer() = 0;
     virtual std::vector<Profile*> GetAllProfiles() = 0;
+
+    // Functionality specific to web app integration test type (e.g. sync or
+    // non-sync tests).
     virtual bool IsSyncTest() = 0;
     virtual void SyncTurnOff() = 0;
     virtual void SyncTurnOn() = 0;
+    virtual void AwaitWebAppQuiescence() = 0;
   };
 
   explicit WebAppIntegrationBrowserTestBase(TestDelegate* delegate);
   ~WebAppIntegrationBrowserTestBase() override;
 
-  // AppRegistrarObserver
   void OnWebAppManifestUpdated(const AppId& app_id,
                                base::StringPiece old_name) override;
 
   // State snapshot helpers
-  // Supported scopes:
-  //  * site_a
-  //  * site_a/foo
-  //  * site_a/bar
-  //  * site_b
-  //  * site_c
-  absl::optional<AppState> GetAppByScope(StateSnapshot* state_snapshot,
-                                         Profile* profile,
-                                         const std::string& action_scope);
+  // Supported site modes:
+  //  * SiteA
+  //  * SiteAFoo
+  //  * SiteABar
+  //  * SiteB
+  //  * SiteC
+  absl::optional<AppState> GetAppBySiteMode(StateSnapshot* state_snapshot,
+                                            Profile* profile,
+                                            const std::string& site_mode);
 
   static absl::optional<TabState> GetStateForActiveTab(
       BrowserState browser_state);
@@ -161,41 +167,38 @@ class WebAppIntegrationBrowserTestBase : public AppRegistrarObserver {
   //
   // State change actions are declared (and implemented) above state check
   // actions.
-  void InstallPolicyAppInternal(const std::string& action_scope,
+  void InstallPolicyAppInternal(const std::string& site_mode,
                                 base::Value default_launch_container,
                                 const bool create_shortcut);
   void ClosePwa();
-  void InstallCreateShortcutTabbed(const std::string& action_scope = "SiteA");
-  void InstallCreateShortcutWindowed(const std::string& action_scope = "SiteA");
-  void InstallMenuOption(const std::string& action_scope = "SiteA");
-  void InstallLocally(const std::string& action_mode = "SiteA");
-  void InstallOmniboxIcon(const std::string& action_scope = "SiteA");
-  void InstallPolicyAppTabbedNoShortcut(
-      const std::string& action_scope = "SiteA");
-  void InstallPolicyAppTabbedShortcut(
-      const std::string& action_scope = "SiteA");
+  void InstallCreateShortcutTabbed(const std::string& site_mode = "SiteA");
+  void InstallCreateShortcutWindowed(const std::string& site_mode = "SiteA");
+  void InstallMenuOption(const std::string& site_mode = "SiteA");
+  void InstallLocally(const std::string& site_mode = "SiteA");
+  void InstallOmniboxIcon(const std::string& site_mode = "SiteA");
+  void InstallPolicyAppTabbedNoShortcut(const std::string& site_mode = "SiteA");
+  void InstallPolicyAppTabbedShortcut(const std::string& site_mode = "SiteA");
   void InstallPolicyAppWindowedNoShortcut(
-      const std::string& action_scope = "SiteA");
-  void InstallPolicyAppWindowedShortcut(
-      const std::string& action_scope = "SiteA");
-  void LaunchInternal(const std::string& action_scope = "SiteA");
+      const std::string& site_mode = "SiteA");
+  void InstallPolicyAppWindowedShortcut(const std::string& site_mode = "SiteA");
+  void LaunchInternal(const std::string& site_mode = "SiteA");
   void ListAppsInternal();
   void NavigateTabbedBrowserToSite(const GURL& url);
-  void NavigateBrowser(const std::string& action_scope = "SiteA");
-  void ManifestUpdateDisplayMinimal(const std::string& action_scope = "SiteA");
-  void SetOpenInTab(const std::string& action_scope = "SiteA");
-  void SetOpenInWindow(const std::string& action_scope = "SiteA");
+  void NavigateBrowser(const std::string& site_mode = "SiteA");
+  void ManifestUpdateDisplayMinimal(const std::string& site_mode = "SiteA");
+  void SetOpenInTab(const std::string& site_mode = "SiteA");
+  void SetOpenInWindow(const std::string& site_mode = "SiteA");
   void SwitchProfileClients();
   void SyncTurnOff();
   void SyncTurnOn();
-  void UninstallFromMenu(const std::string& action_mode = "SiteA");
-  void UninstallPolicyApp(const std::string& action_scope = "SiteA");
+  void UninstallFromMenu(const std::string& site_mode = "SiteA");
+  void UninstallPolicyApp(const std::string& site_mode = "SiteA");
 
   // State Check Actions
   void CheckAppLocallyInstalledInternal();
   void CheckAppInListNotLocallyInstalled(
-      const std::string& action_mode = "SiteA");
-  void CheckAppNotInList(const std::string& action_scope = "SiteA");
+      const std::string& site_mode = "SiteA");
+  void CheckAppNotInList(const std::string& site_mode = "SiteA");
   void CheckInstallable();
   void CheckInstallIconShown();
   void CheckInstallIconNotShown();
@@ -220,19 +223,10 @@ class WebAppIntegrationBrowserTestBase : public AppRegistrarObserver {
   //  * site_a/bar
   //  * site_b
   //  * site_c
-  GURL GetInstallableAppURL(const std::string& scope);
+  GURL GetInstallableAppURL(const std::string& site_mode);
   WebAppProvider* GetProviderForProfile(Profile* profile);
 
-  // Allow test-driving classes to reset the ScopedObservation of the
-  // WebAppRegistrar at the end of each test, but before the tear down sequence
-  // begins.
-  void ResetRegistrarObserver();
-
  private:
-  base::ScopedObservation<web_app::WebAppRegistrar,
-                          web_app::AppRegistrarObserver>
-      observation_{this};
-
   StateSnapshot ConstructStateSnapshot();
 
   // Supported params:
@@ -241,26 +235,28 @@ class WebAppIntegrationBrowserTestBase : public AppRegistrarObserver {
   //  * site_a/bar
   //  * site_b
   //  * site_c
-  GURL GetAppURLForManifest(const std::string& scope, DisplayMode display_mode);
+  GURL GetAppURLForManifest(const std::string& site_mode,
+                            DisplayMode display_mode);
   content::WebContents* GetCurrentTab(Browser* browser);
-  GURL GetInScopeURL(const std::string& action_scope);
+  GURL GetInScopeURL(const std::string& site_mode);
   GURL GetNonInstallableAppURL();
-  GURL GetOutOfScopeURL(const std::string& action_scope);
+  GURL GetOutOfScopeURL(const std::string& site_mode);
   WebAppProvider* GetProvider() {
     return WebAppProvider::GetForTest(profile());
   }
-  GURL GetURLForScope(const std::string& scope);
+  GURL GetURLForSiteMode(const std::string& site_mode);
   void InstallCreateShortcut(bool open_in_window);
 
   // This action only works if no navigations to the given app_url occur
   // between app installation and calls to this action.
   bool AreNoAppWindowsOpen(Profile* profile, const AppId& app_id);
-  void ForceUpdateManifestContents(const std::string& app_scope,
+  void ForceUpdateManifestContents(const std::string& site_mode,
                                    GURL app_url_with_manifest_param);
-  void MaybeWaitForManifestUpdates(Profile* profile);
-  void MaybeNavigateTabbedBrowserInScope(const std::string& scope);
-  void SetOpenInTabInternal(const std::string& action_scope);
-  void SetOpenInWindowInternal(const std::string& action_scope);
+  void MaybeWaitForManifestUpdates();
+
+  void MaybeNavigateTabbedBrowserInScope(const std::string& site_mode);
+  void SetOpenInTabInternal(const std::string& site_mode);
+  void SetOpenInWindowInternal(const std::string& site_mode);
 
   Browser* browser();
   const net::EmbeddedTestServer* embedded_test_server();
@@ -272,6 +268,8 @@ class WebAppIntegrationBrowserTestBase : public AppRegistrarObserver {
   }
   Browser* app_browser() { return app_browser_; }
   PageActionIconView* pwa_install_view();
+
+  ScopedOsHooksSuppress os_hooks_suppress_;
 
   // Variables used to facilitate waiting for manifest updates, as there isn't
   // a formal 'action' that a user can take to wait for this, as it happens
@@ -295,7 +293,10 @@ class WebAppIntegrationBrowserTestBase : public AppRegistrarObserver {
   std::vector<AppId> app_ids_;
   std::vector<std::string> testing_actions_;
   AppId active_app_id_;
-  ScopedOsHooksSuppress os_hooks_suppress_;
+
+  base::ScopedObservation<web_app::WebAppRegistrar,
+                          web_app::AppRegistrarObserver>
+      observation_{this};
 };
 
 }  // namespace web_app

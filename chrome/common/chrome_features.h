@@ -392,6 +392,15 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLinkDoctorDeprecationAndroid;
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kLinuxLowMemoryMonitor;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<int> kLinuxLowMemoryMonitorModerateLevel;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<int> kLinuxLowMemoryMonitorCriticalLevel;
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLiteVideo;
 
@@ -541,6 +550,11 @@ extern const base::Feature kRequestDesktopSiteForTablets;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSchedulerConfiguration;
 #endif
+
+#if defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kScrollCapture;
+#endif  // defined(OS_ANDROID)
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSCTAuditing;

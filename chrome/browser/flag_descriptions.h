@@ -460,6 +460,9 @@ extern const char kDesktopPWAsFlashAppNameInsteadOfOriginDescription[];
 extern const char kDesktopPWAsNotificationIconAndTitleName[];
 extern const char kDesktopPWAsNotificationIconAndTitleDescription[];
 
+extern const char kDesktopPWAsLaunchHandlerName[];
+extern const char kDesktopPWAsLaunchHandlerDescription[];
+
 extern const char kDesktopPWAsLinkCapturingName[];
 extern const char kDesktopPWAsLinkCapturingDescription[];
 
@@ -1089,9 +1092,6 @@ extern const char kOptimizationGuideModelPushNotificationDescription[];
 
 extern const char kOsSettingsAppNotificationsPageName[];
 extern const char kOsSettingsAppNotificationsPageDescription[];
-
-extern const char kOsSettingsDeepLinkingName[];
-extern const char kOsSettingsDeepLinkingDescription[];
 
 extern const char kOverviewButtonName[];
 extern const char kOverviewButtonDescription[];
@@ -1764,11 +1764,20 @@ extern const char kEnableAndroidSpellcheckerDescription[];
 extern const char kEnableCommandLineOnNonRootedName[];
 extern const char kEnableCommandLineOnNoRootedDescription[];
 
+extern const char kEnableDangerousDownloadDialogName[];
+extern const char kEnableDangerousDownloadDialogDescription[];
+
+extern const char kEnableDuplicateDownloadDialogName[];
+extern const char kEnableDuplicateDownloadDialogDescription[];
+
 extern const char kEnableUseAaudioDriverName[];
 extern const char kEnableUseAaudioDriverDescription[];
 
 extern const char kExploreSitesName[];
 extern const char kExploreSitesDescription[];
+
+extern const char kFeedBackToTopName[];
+extern const char kFeedBackToTopDescription[];
 
 extern const char kFeedInteractiveRefreshName[];
 extern const char kFeedInteractiveRefreshDescription[];
@@ -1956,6 +1965,9 @@ extern const char kEnhancedProtectionPromoAndroidDescription[];
 
 extern const char kSafeBrowsingUseLocalBlacklistsV2Name[];
 extern const char kSafeBrowsingUseLocalBlacklistsV2Description[];
+
+extern const char kScrollCaptureName[];
+extern const char kScrollCaptureDescription[];
 
 extern const char kSecurePaymentConfirmationAndroidName[];
 extern const char kSecurePaymentConfirmationAndroidDescription[];
@@ -2233,6 +2245,9 @@ extern const char kAllowScrollSettingsDescription[];
 
 extern const char kAppDiscoveryForOobeName[];
 extern const char kAppDiscoveryForOobeDescription[];
+
+extern const char kAppDiscoveryRemoteUrlSearchName[];
+extern const char kAppDiscoveryRemoteUrlSearchDescription[];
 
 extern const char kAppListBubbleName[];
 extern const char kAppListBubbleDescription[];
@@ -2859,6 +2874,9 @@ extern const char kSpectreVariant2MitigationDescription[];
 
 extern const char kSplitSettingsSyncName[];
 extern const char kSplitSettingsSyncDescription[];
+
+extern const char kSystemChinesePhysicalTypingName[];
+extern const char kSystemChinesePhysicalTypingDescription[];
 
 extern const char kSystemKoreanPhysicalTypingName[];
 extern const char kSystemKoreanPhysicalTypingDescription[];

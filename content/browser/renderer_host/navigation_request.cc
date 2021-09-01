@@ -192,6 +192,20 @@ enum class NavigationURLScheme {
   kMaxValue = HTTPS
 };
 
+// Denotes the type of user agent string value sent in the User-Agent request
+// header.
+//
+// Corresponds to the "UserAgentStringType" histogram enumeration type in
+// tools/metrics/histograms/enums.xml.
+//
+// PLEASE DO NOT REORDER, REMOVE, OR CHANGE THE MEANING OF THESE VALUES.
+enum class UserAgentStringType {
+  kFullVersion,
+  kReducedVersion,
+  kOverriden,
+  kMaxValue = kOverriden
+};
+
 NavigationURLScheme GetScheme(const GURL& url) {
   static const base::NoDestructor<std::map<std::string, NavigationURLScheme>>
       kSchemeMap({
@@ -295,6 +309,8 @@ bool NeedsHTTPOrigin(net::HttpRequestHeaders* headers,
 std::string ComputeUserAgentValue(const net::HttpRequestHeaders& headers,
                                   const std::string& user_agent_override) {
   if (!user_agent_override.empty()) {
+    base::UmaHistogramEnumeration("Navigation.UserAgentStringType",
+                                  UserAgentStringType::kOverriden);
     return user_agent_override;
   }
 
@@ -304,9 +320,12 @@ std::string ComputeUserAgentValue(const net::HttpRequestHeaders& headers,
   std::string header = blink::kClientHintsHeaderMapping[static_cast<int>(
       network::mojom::WebClientHintsType::kUAReduced)];
   std::string value;
-  return headers.GetHeader(header, &value) && value == "?1"
-             ? GetContentClient()->browser()->GetReducedUserAgent()
-             : GetContentClient()->browser()->GetUserAgent();
+  const bool reduced = headers.GetHeader(header, &value) && value == "?1";
+  base::UmaHistogramEnumeration("Navigation.UserAgentStringType",
+                                reduced ? UserAgentStringType::kReducedVersion
+                                        : UserAgentStringType::kFullVersion);
+  return reduced ? GetContentClient()->browser()->GetReducedUserAgent()
+                 : GetContentClient()->browser()->GetUserAgent();
 }
 
 // TODO(clamy): This should match what's happening in
@@ -711,7 +730,14 @@ url::Origin GetOriginForURLLoaderFactoryUnchecked(
     // for all renderer-initiated navigations (e.g. see
     // VerifyBeginNavigationCommonParams), but as a defense-in-depth this is
     // also asserted below.
-    CHECK(navigation_request->browser_initiated());
+    // History navigations are exempt from this rule because, although they can
+    // be renderer-initaited via the js history API, the renderer does not
+    // choose the url being navigated to. A renderer-initiated history
+    // navigation may therefore navigate back to a previous browser-initiated
+    // loadDataWithBaseUrl.
+    CHECK(navigation_request->browser_initiated() ||
+          NavigationTypeUtils::IsHistory(
+              navigation_request->common_params().navigation_type));
 
     // loadDataWithBaseUrl submits a data: |common_params.url| (which has a
     // opaque origin), but commits that URL as if it came from
@@ -1315,7 +1341,6 @@ NavigationRequest::NavigationRequest(
                                              is_synchronous_renderer_commit)),
       previous_page_ukm_source_id_(
           frame_tree_node_->current_frame_host()->GetPageUkmSourceId()) {
-  DCHECK(browser_initiated || common_params_->initiator_origin.has_value());
   DCHECK(!blink::IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
   DCHECK_EQ(common_params_->url, commit_params_->original_url);

@@ -1909,6 +1909,21 @@
             ]
         }
     ],
+    "ChromeOSLanguageSettingsUpdate2": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LanguageSettingsUpdate2"
+                    ]
+                }
+            ]
+        }
+    ],
     "ChromeOSNeuralPalm": [
         {
             "platforms": [
@@ -2544,21 +2559,6 @@
                     },
                     "enable_features": [
                         "CrOSSystemAECDeactivatedGroups"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CredentialEditAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EditPasswordsInSettings"
                     ]
                 }
             ]

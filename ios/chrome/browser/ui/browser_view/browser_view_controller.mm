@@ -83,6 +83,7 @@
 #import "ios/chrome/browser/ui/bubble/bubble_presenter_delegate.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/help_commands.h"
+#import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
@@ -2005,7 +2006,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self updateBroadcastState];
   if (_voiceSearchController)
     _voiceSearchController->SetDispatcher(
-        static_cast<id<LoadQueryCommands>>(self.commandDispatcher));
+        HandlerForProtocol(self.commandDispatcher, LoadQueryCommands));
 
   if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
     if (base::FeatureList::IsEnabled(kModernTabStrip)) {
@@ -3767,14 +3768,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                            scenario:menuScenario];
 
   if (isLink) {
-    if (link.SchemeIs(url::kJavaScriptScheme)) {
-      // Open.
-      UIAction* open = [actionFactory actionToOpenJavascriptWithBlock:^{
-        [weakSelf openJavascript:base::SysUTF8ToNSString(link.GetContent())];
-      }];
-      [menuElements addObject:open];
-    }
-
     if (web::UrlHasWebScheme(link)) {
       // Open in New Tab.
       UrlLoadParams loadParams = UrlLoadParams::InNewTab(link);
@@ -3823,11 +3816,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           [menuElements addObject:addToReadingList];
         }
       }
-
-      // Copy Link.
-      UIAction* copyLink = [actionFactory actionToCopyURL:link];
-      [menuElements addObject:copyLink];
     }
+
+    // Copy Link.
+    UIAction* copyLink = [actionFactory actionToCopyURL:link];
+    [menuElements addObject:copyLink];
   }
 
   if (isImage) {

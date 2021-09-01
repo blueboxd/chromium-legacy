@@ -230,6 +230,13 @@
     }
   },
   {
+    "pattern": [{ "pathname": "/foo/([^\\/]+?)" }],
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": { "0": "bar" } }
+    }
+  },
+  {
     "pattern": [{ "pathname": "/foo/:bar" }],
     "inputs": [{ "pathname": "/foo/index.html" }],
     "expected_match": {
@@ -1208,6 +1215,54 @@
     }
   },
   {
+    "pattern": [{ "pathname": "", "baseURL": "https://example.com" }],
+    "inputs": [{ "pathname": "/", "baseURL": "https://example.com" }],
+    "exactly_empty_components": [ "username", "password", "port", "search",
+                                  "hash" ],
+    "expected_obj": {
+      "pathname": "/"
+    },
+    "expected_match": {
+      "protocol": { "input": "https", "groups": {}},
+      "hostname": { "input": "example.com", "groups": {}},
+      "pathname": { "input": "/", "groups": {}}
+    }
+  },
+  {
+    "pattern": [{ "pathname": "{/bar}", "baseURL": "https://example.com/foo/" }],
+    "inputs": [{ "pathname": "./bar", "baseURL": "https://example.com/foo/" }],
+    "exactly_empty_components": [ "username", "password", "port", "search",
+                                  "hash" ],
+    "expected_obj": {
+      "pathname": "/bar"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": [{ "pathname": "\\/bar", "baseURL": "https://example.com/foo/" }],
+    "inputs": [{ "pathname": "./bar", "baseURL": "https://example.com/foo/" }],
+    "exactly_empty_components": [ "username", "password", "port", "search",
+                                  "hash" ],
+    "expected_obj": {
+      "pathname": "/bar"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": [{ "pathname": "b", "baseURL": "https://example.com/foo/" }],
+    "inputs": [{ "pathname": "./b", "baseURL": "https://example.com/foo/" }],
+    "exactly_empty_components": [ "username", "password", "port", "search",
+                                  "hash" ],
+    "expected_obj": {
+      "pathname": "/foo/b"
+    },
+    "expected_match": {
+      "protocol": { "input": "https", "groups": {}},
+      "hostname": { "input": "example.com", "groups": {}},
+      "pathname": { "input": "/foo/b", "groups": {}}
+    }
+  },
+  {
     "pattern": [{ "pathname": "foo/bar" }],
     "inputs": [ "https://example.com/foo/bar" ],
     "expected_match": null
@@ -1953,6 +2008,16 @@
     }
   },
   {
+    "pattern": [{ "pathname": "*" }],
+    "inputs": [ "foo", "data:data-urls-cannot-be-base-urls" ],
+    "expected_match": null
+  },
+  {
+    "pattern": [{ "pathname": "*" }],
+    "inputs": [ "foo", "not|a|valid|url" ],
+    "expected_match": null
+  },
+  {
     "pattern": [ "https://foo\\:bar@example.com" ],
     "inputs": [ "https://foo:bar@example.com" ],
     "exactly_empty_components": [ "port", "search", "hash" ],
@@ -2120,6 +2185,51 @@
   {
     "pattern": [ "/foo", "" ],
     "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "pathname": "/foo" }, "https://example.com" ],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "pathname": ":name*" }],
+    "inputs": [{ "pathname": "foobar" }],
+    "expected_match": {
+      "pathname": { "input": "foobar", "groups": { "name": "foobar" }}
+    }
+  },
+  {
+    "pattern": [{ "pathname": ":name+" }],
+    "inputs": [{ "pathname": "foobar" }],
+    "expected_match": {
+      "pathname": { "input": "foobar", "groups": { "name": "foobar" }}
+    }
+  },
+  {
+    "pattern": [{ "pathname": ":name" }],
+    "inputs": [{ "pathname": "foobar" }],
+    "expected_match": {
+      "pathname": { "input": "foobar", "groups": { "name": "foobar" }}
+    }
+  },
+  {
+    "pattern": [{ "protocol": ":name*" }],
+    "inputs": [{ "protocol": "foobar" }],
+    "expected_match": {
+      "protocol": { "input": "foobar", "groups": { "name": "foobar" }}
+    }
+  },
+  {
+    "pattern": [{ "protocol": ":name+" }],
+    "inputs": [{ "protocol": "foobar" }],
+    "expected_match": {
+      "protocol": { "input": "foobar", "groups": { "name": "foobar" }}
+    }
+  },
+  {
+    "pattern": [{ "protocol": ":name" }],
+    "inputs": [{ "protocol": "foobar" }],
+    "expected_match": {
+      "protocol": { "input": "foobar", "groups": { "name": "foobar" }}
+    }
   }
-
 ]

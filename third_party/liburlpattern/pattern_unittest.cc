@@ -52,6 +52,14 @@ TEST(PatternRegexTest, NameWithOptionalModifier) {
   RunRegexTest(":foo?", R"(^([^\/#\?]+?)?[\/#\?]?$)", {"foo"});
 }
 
+TEST(PatternRegexTest, NameWithZeroOrMoreModifier) {
+  RunRegexTest(":foo*", R"(^((?:[^\/#\?]+?)*)[\/#\?]?$)", {"foo"});
+}
+
+TEST(PatternRegexTest, NameWithOneOrMoreModifier) {
+  RunRegexTest(":foo+", R"(^((?:[^\/#\?]+?)+)[\/#\?]?$)", {"foo"});
+}
+
 TEST(PatternRegexTest, NameWithPrefix) {
   RunRegexTest("/foo/:bar", R"(^\/foo(?:\/([^\/#\?]+?))[\/#\?]?$)", {"bar"});
 }
@@ -254,6 +262,10 @@ TEST(PatternStringTest, NamedGroup) {
   RunPatternStringTest("/foo/:bar", "/foo/:bar");
 }
 
+TEST(PatternStringTest, SegmentWildcardWithoutName) {
+  RunPatternStringTest("/foo/([^\\/#\\?]+?)", "/foo/([^\\/#\\?]+?)");
+}
+
 TEST(PatternStringTest, NamedGroupWithRegexp) {
   RunPatternStringTest("/foo/:bar(baz)", "/foo/:bar(baz)");
 }
@@ -448,12 +460,36 @@ TEST(PatternDirectMatch, EmptyPatternSupported) {
                          });
 }
 
-TEST(PatternDirectMatch, FixedTextUnsupported) {
-  RunDirectMatchUnsupportedTest("foo");
+TEST(PatternDirectMatch, FixedTextSupported) {
+  RunDirectMatchTest("foo", {
+                                {.input = "foo", .expected_groups = {}},
+                                {.input = "fo", .expected_match = false},
+                                {.input = "foobar", .expected_match = false},
+                            });
 }
 
-TEST(PatternDirectMatch, FixedTextInGroupUnsupported) {
+TEST(PatternDirectMatch, FixedTextInGroupSupported) {
+  RunDirectMatchTest("{foo}", {
+                                  {.input = "foo", .expected_groups = {}},
+                                  {.input = "fo", .expected_match = false},
+                                  {.input = "foobar", .expected_match = false},
+                              });
+}
+
+TEST(PatternDirectMatch, FixedTextInGroupWithOptionalModifierUnsupported) {
   RunDirectMatchUnsupportedTest("{foo}?");
+}
+
+TEST(PatternDirectMatch, FixedTextInGroupWithZeroOrMoreModifierUnsupported) {
+  RunDirectMatchUnsupportedTest("{foo}*");
+}
+
+TEST(PatternDirectMatch, FixedTextInGroupWithOneOrMoreModifierUnsupported) {
+  RunDirectMatchUnsupportedTest("{foo}+");
+}
+
+TEST(PatternDirectMatch, FixedTextAndFullWildcardUnsupported) {
+  RunDirectMatchUnsupportedTest("/foo*");
 }
 
 TEST(PatternDirectMatch, NamedGroupUnsupported) {

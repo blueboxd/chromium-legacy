@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Instructions for adding new entries to this file:
+// https://chromium.googlesource.com/chromium/src/+/main/docs/how_to_add_your_feature_flag.md#step-2_adding-the-feature-flag-to-the-chrome_flags-ui
+
 #include "chrome/browser/about_flags.h"
 
 #include <iterator>
@@ -31,6 +34,7 @@
 #include "build/build_config.h"
 #include "cc/base/features.h"
 #include "cc/base/switches.h"
+#include "chrome/browser/apps/app_discovery_service/app_discovery_features.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_switches.h"
 #include "chrome/browser/commerce/commerce_feature_list.h"
@@ -1459,16 +1463,15 @@ const FeatureEntry::FeatureParam
         {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
         {features::kTabHoverCardAdditionalMaxWidthDelay, "200"}};
 const FeatureEntry::FeatureParam
-    kTabHoverCardImagesLargeAdditionalFullWidthDelay[] = {
+    kTabHoverCardImagesNoAdditionalFullWidthDelay[] = {
         {features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
         {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
         {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
-        {features::kTabHoverCardAdditionalMaxWidthDelay, "500"}};
+        {features::kTabHoverCardAdditionalMaxWidthDelay, "0"}};
 const FeatureEntry::FeatureParam kTabHoverCardImagesAlternateFormat[] = {
     {features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
     {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
     {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
-    {features::kTabHoverCardImagesCrossfadePreviewAtParameterName, "0.25"},
     {features::kTabHoverCardAlternateFormat, "1"}};
 
 const FeatureEntry::FeatureVariation kTabHoverCardImagesVariations[] = {
@@ -1488,12 +1491,11 @@ const FeatureEntry::FeatureVariation kTabHoverCardImagesVariations[] = {
     {" placeholder crossfade on land",
      kTabHoverCardImagesLatePlaceholderCrossfade,
      base::size(kTabHoverCardImagesImmediatePlaceholderCrossfade), nullptr},
-    {" small full width show delay",
+    {" smaller full width show delay",
      kTabHoverCardImagesSmallAdditionalFullWidthDelay,
      base::size(kTabHoverCardImagesSmallAdditionalFullWidthDelay), nullptr},
-    {" large full width show delay",
-     kTabHoverCardImagesLargeAdditionalFullWidthDelay,
-     base::size(kTabHoverCardImagesLargeAdditionalFullWidthDelay), nullptr},
+    {" no full width show delay", kTabHoverCardImagesNoAdditionalFullWidthDelay,
+     base::size(kTabHoverCardImagesNoAdditionalFullWidthDelay), nullptr},
     {" alternate hover card format", kTabHoverCardImagesAlternateFormat,
      base::size(kTabHoverCardImagesAlternateFormat), nullptr}};
 
@@ -3689,6 +3691,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsTabStripSettingsName,
      flag_descriptions::kDesktopPWAsTabStripSettingsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsTabStripSettings)},
+    {"enable-desktop-pwas-launch-handler",
+     flag_descriptions::kDesktopPWAsLaunchHandlerName,
+     flag_descriptions::kDesktopPWAsLaunchHandlerDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(blink::features::kWebAppEnableLaunchHandler)},
     {"enable-desktop-pwas-link-capturing",
      flag_descriptions::kDesktopPWAsLinkCapturingName,
      flag_descriptions::kDesktopPWAsLinkCapturingDescription, kOsDesktop,
@@ -3966,6 +3972,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"interest-feed-v2", flag_descriptions::kInterestFeedV2Name,
      flag_descriptions::kInterestFeedV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2)},
+    {"feed-back-to-top", flag_descriptions::kFeedBackToTopName,
+     flag_descriptions::kFeedBackToTopDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(feed::kFeedBackToTop)},
     {"feed-interactive-refresh", flag_descriptions::kFeedInteractiveRefreshName,
      flag_descriptions::kFeedInteractiveRefreshDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kFeedInteractiveRefresh)},
@@ -4095,6 +4104,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrosOnDeviceGrammarCheckName,
      flag_descriptions::kCrosOnDeviceGrammarCheckDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kOnDeviceGrammarCheck)},
+    {"enable-cros-system-chinese-physical-typing",
+     flag_descriptions::kSystemChinesePhysicalTypingName,
+     flag_descriptions::kSystemChinesePhysicalTypingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kSystemChinesePhysicalTyping)},
     {"enable-cros-system-korean-physical-typing",
      flag_descriptions::kSystemKoreanPhysicalTypingName,
      flag_descriptions::kSystemKoreanPhysicalTypingDescription, kOsCrOS,
@@ -4924,6 +4937,17 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDownloadLaterDebugOnWifiName,
      flag_descriptions::kDownloadLaterDebugOnWifiNameDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(download::switches::kDownloadLaterDebugOnWifi)},
+
+    {"enable-dangerous-download-dialog",
+     flag_descriptions::kEnableDangerousDownloadDialogName,
+     flag_descriptions::kEnableDangerousDownloadDialogDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kEnableDangerousDownloadDialog)},
+
+    {"enable-duplicate-download-dialog",
+     flag_descriptions::kEnableDuplicateDownloadDialogName,
+     flag_descriptions::kEnableDuplicateDownloadDialogDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kEnableDuplicateDownloadDialog)},
+
 #endif
 
     {"enable-new-download-backend",
@@ -6291,9 +6315,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOsSettingsAppNotificationsPageName,
      flag_descriptions::kOsSettingsAppNotificationsPageDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kOsSettingsAppNotificationsPage)},
-    {"os-settings-deep-linking", flag_descriptions::kOsSettingsDeepLinkingName,
-     flag_descriptions::kOsSettingsDeepLinkingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kOsSettingsDeepLinking)},
     {"help-app-background-page", flag_descriptions::kHelpAppBackgroundPageName,
      flag_descriptions::kHelpAppBackgroundPageDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kHelpAppBackgroundPage)},
@@ -6642,6 +6663,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(app_list_features::kCategoricalSearch,
                                     kCategoricalSearchVariations,
                                     "LauncherCategoricalSearch")},
+
+    {"app-discovery-remote-url-search",
+     flag_descriptions::kAppDiscoveryRemoteUrlSearchName,
+     flag_descriptions::kAppDiscoveryRemoteUrlSearchDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(apps::kAppDiscoveryRemoteUrlSearch)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"autofill-enable-offers-in-downstream",
@@ -7052,6 +7078,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalAccessibilityLabelsName,
      flag_descriptions::kExperimentalAccessibilityLabelsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityLabels)},
+
+    {"scroll-capture", flag_descriptions::kScrollCaptureName,
+     flag_descriptions::kScrollCaptureDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kScrollCapture)},
 #endif  // defined(OS_ANDROID)
 
     {"chrome-labs", flag_descriptions::kChromeLabsName,

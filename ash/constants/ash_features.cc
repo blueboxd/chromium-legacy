@@ -808,11 +808,6 @@ const base::Feature kOsFeedback{"OsFeedback",
 const base::Feature kOsSettingsAppNotificationsPage{
     "OsSettingsAppNotificationsPage", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables a unique URL for each path in CrOS settings.
-// This allows deep linking to individual settings, i.e. in settings search.
-const base::Feature kOsSettingsDeepLinking{"OsSettingsDeepLinking",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kOverviewButton{"OverviewButton",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1039,6 +1034,11 @@ const base::Feature kSyncConsentOptional{"SyncConsentOptional",
 // Enables battery indicator for styluses in the palette tray
 const base::Feature kStylusBatteryStatus{"StylusBatteryStatus",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables or disables using the system input engine for physical typing in
+// Chinese.
+const base::Feature kSystemChinesePhysicalTyping{
+    "SystemChinesePhysicalTyping", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables using the system input engine for physical typing in
 // Korean.
@@ -1298,10 +1298,6 @@ bool IsCompositingBasedThrottlingEnabled() {
 
 bool IsDarkLightModeEnabled() {
   return base::FeatureList::IsEnabled(kDarkLightMode);
-}
-
-bool IsDeepLinkingEnabled() {
-  return base::FeatureList::IsEnabled(kOsSettingsDeepLinking);
 }
 
 bool IsDemoModeSWAEnabled() {
@@ -1619,6 +1615,11 @@ bool IsSyncConsentOptionalEnabled() {
 
 bool IsStylusBatteryStatusEnabled() {
   return base::FeatureList::IsEnabled(kStylusBatteryStatus);
+}
+
+bool IsSystemChinesePhysicalTypingEnabled() {
+  return base::FeatureList::IsEnabled(kImeMojoDecoder) &&
+         base::FeatureList::IsEnabled(kSystemChinesePhysicalTyping);
 }
 
 bool IsSystemKoreanPhysicalTypingEnabled() {

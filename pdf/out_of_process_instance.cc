@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <iterator>
 #include <list>
 #include <memory>
 #include <utility>
@@ -79,9 +80,6 @@
 namespace chrome_pdf {
 
 namespace {
-
-constexpr base::TimeDelta kFindResultCooldown =
-    base::TimeDelta::FromMilliseconds(100);
 
 constexpr char kPPPPdfInterface[] = PPP_PDF_INTERFACE_1;
 
@@ -670,18 +668,15 @@ bool OutOfProcessInstance::IsPrintScalingDisabled() {
 
 bool OutOfProcessInstance::StartFind(const std::string& text,
                                      bool case_sensitive) {
-  engine()->StartFind(text, case_sensitive);
-  return true;
+  return PdfViewPluginBase::StartFind(text, case_sensitive);
 }
 
 void OutOfProcessInstance::SelectFindResult(bool forward) {
-  engine()->SelectFindResult(forward);
+  PdfViewPluginBase::SelectFindResult(forward);
 }
 
 void OutOfProcessInstance::StopFind() {
-  engine()->StopFind();
-  tickmarks_.clear();
-  SetTickmarks(tickmarks_);
+  PdfViewPluginBase::StopFind();
 }
 
 void OutOfProcessInstance::DidOpen(std::unique_ptr<UrlLoader> loader,
@@ -733,41 +728,6 @@ void OutOfProcessInstance::UpdateCursor(ui::mojom::CursorType new_cursor_type) {
   cursor_interface->SetCursor(pp_instance(),
                               PPCursorTypeFromCursorType(cursor_type()),
                               pp::ImageData().pp_resource(), nullptr);
-}
-
-void OutOfProcessInstance::UpdateTickMarks(
-    const std::vector<gfx::Rect>& tickmarks) {
-  float inverse_scale = 1.0f / device_scale();
-  tickmarks_.clear();
-  tickmarks_.reserve(tickmarks.size());
-  for (auto& tickmark : tickmarks) {
-    tickmarks_.emplace_back(
-        PPRectFromRect(gfx::ScaleToEnclosingRect(tickmark, inverse_scale)));
-  }
-}
-
-void OutOfProcessInstance::NotifyNumberOfFindResultsChanged(int total,
-                                                            bool final_result) {
-  // We don't want to spam the renderer with too many updates to the number of
-  // find results. Don't send an update if we sent one too recently. If it's the
-  // final update, we always send it though.
-  if (final_result) {
-    NumberOfFindResultsChanged(total, final_result);
-    SetTickmarks(tickmarks_);
-    return;
-  }
-
-  if (recently_sent_find_update_)
-    return;
-
-  NumberOfFindResultsChanged(total, final_result);
-  SetTickmarks(tickmarks_);
-  recently_sent_find_update_ = true;
-  ScheduleTaskOnMainThread(
-      FROM_HERE,
-      base::BindOnce(&OutOfProcessInstance::ResetRecentlySentFindUpdate,
-                     weak_factory_.GetWeakPtr()),
-      /*result=*/0, kFindResultCooldown);
 }
 
 void OutOfProcessInstance::NotifySelectedFindResultChanged(
@@ -851,10 +811,6 @@ void OutOfProcessInstance::SetLastPluginInstance() {
 #endif
 }
 
-void OutOfProcessInstance::ResetRecentlySentFindUpdate(int32_t /* unused */) {
-  recently_sent_find_update_ = false;
-}
-
 Image OutOfProcessInstance::GetPluginImageData() const {
   return Image(pepper_image_data_);
 }
@@ -900,6 +856,20 @@ void OutOfProcessInstance::SetAccessibilityViewportInfo(
        viewport_info.focus_info.focused_object_page_index,
        viewport_info.focus_info.focused_annotation_index_in_page}};
   pp::PDF::SetAccessibilityViewportInfo(this, &pp_viewport_info);
+}
+
+void OutOfProcessInstance::NotifyFindResultsChanged(int total,
+                                                    bool final_result) {
+  NumberOfFindResultsChanged(total, final_result);
+}
+
+void OutOfProcessInstance::NotifyFindTickmarks(
+    const std::vector<gfx::Rect>& tickmarks) {
+  std::vector<pp::Rect> pp_tickmarks;
+  pp_tickmarks.reserve(tickmarks.size());
+  std::transform(tickmarks.begin(), tickmarks.end(),
+                 std::back_inserter(pp_tickmarks), PPRectFromRect);
+  SetTickmarks(pp_tickmarks);
 }
 
 void OutOfProcessInstance::SetPluginCanSave(bool can_save) {

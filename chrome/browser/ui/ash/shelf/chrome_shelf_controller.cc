@@ -113,14 +113,6 @@ using extension_misc::kGmailAppId;
 
 namespace {
 
-// Calls ItemSelected with |source|, default arguments, and no callback.
-void SelectItemWithSource(ash::ShelfItemDelegate* delegate,
-                          ash::ShelfLaunchSource source,
-                          int64_t display_id) {
-  delegate->ItemSelected(nullptr, display_id, source, base::DoNothing(),
-                         base::NullCallback());
-}
-
 // Returns true if the given |item| has a pinned shelf item type.
 bool ItemTypeIsPinned(const ash::ShelfItem& item) {
   return ash::IsPinnedShelfItemType(item.type);
@@ -353,13 +345,14 @@ void ChromeShelfController::SetItemTitle(const ash::ShelfID& id,
   }
 }
 
-void ChromeShelfController::CloseItem(const ash::ShelfID& id) {
+void ChromeShelfController::ReplaceWithAppShortcutOrRemove(
+    const ash::ShelfID& id) {
   CHECK(!id.IsNull());
   if (IsPinned(id)) {
     // Create a new shortcut delegate.
     SetItemStatus(id, ash::STATUS_CLOSED);
     model_->ReplaceShelfItemDelegate(
-        id, AppShortcutShelfItemController::Create(id));
+        id, std::make_unique<AppShortcutShelfItemController>(id));
   } else {
     RemoveShelfItem(id);
   }
@@ -433,26 +426,6 @@ void ChromeShelfController::LaunchApp(const ash::ShelfID& id,
                                       int event_flags,
                                       int64_t display_id) {
   shelf_controller_helper_->LaunchApp(id, source, event_flags, display_id);
-}
-
-void ChromeShelfController::ActivateApp(const std::string& app_id,
-                                        ash::ShelfLaunchSource source,
-                                        int event_flags,
-                                        int64_t display_id) {
-  // If there is an existing delegate for this app, select it.
-  const ash::ShelfID shelf_id(app_id);
-  if (auto* delegate = model_->GetShelfItemDelegate(shelf_id)) {
-    SelectItemWithSource(delegate, source, display_id);
-    return;
-  }
-
-  std::unique_ptr<AppShortcutShelfItemController> item_delegate =
-      AppShortcutShelfItemController::Create(shelf_id);
-  if (item_delegate->HasRunningApplications()) {
-    SelectItemWithSource(item_delegate.get(), source, display_id);
-  } else {
-    LaunchApp(shelf_id, source, event_flags, display_id);
-  }
 }
 
 void ChromeShelfController::SetItemImage(const ash::ShelfID& shelf_id,
@@ -529,20 +502,6 @@ ash::ShelfID ChromeShelfController::GetShelfIDForAppId(
   const ash::ShelfItem* item =
       !app_id.empty() ? GetItem(ash::ShelfID(app_id)) : nullptr;
   return item ? item->id : ash::ShelfID(kChromeAppId);
-}
-
-void ChromeShelfController::SetRefocusURLPatternForTest(const ash::ShelfID& id,
-                                                        const GURL& url) {
-  const ash::ShelfItem* item = GetItem(id);
-  if (item && !IsPlatformApp(id) &&
-      (item->type == ash::TYPE_PINNED_APP || item->type == ash::TYPE_APP)) {
-    ash::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(id);
-    AppShortcutShelfItemController* item_controller =
-        static_cast<AppShortcutShelfItemController*>(delegate);
-    item_controller->set_refocus_url(url);
-  } else {
-    NOTREACHED() << "Invalid shelf item or type";
-  }
 }
 
 ash::ShelfAction ChromeShelfController::ActivateWindowOrMinimizeIfActive(

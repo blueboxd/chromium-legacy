@@ -14,6 +14,7 @@
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/auto_reset.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -32,7 +33,6 @@ class BrowserShortcutShelfItemController;
 class BrowserStatusMonitor;
 class ChromeShelfControllerUserSwitchObserver;
 class ChromeShelfItemFactory;
-class GURL;
 class Profile;
 class ShelfControllerHelper;
 class ShelfSpinnerController;
@@ -111,8 +111,10 @@ class ChromeShelfController
   // Updates the shelf item title (displayed in the tooltip).
   void SetItemTitle(const ash::ShelfID& id, const std::u16string& title);
 
-  // Closes or unpins the shelf item.
-  void CloseItem(const ash::ShelfID& id);
+  // If the shelf-item is pinned, its state is set to CLOSED and its delegate is
+  // replaced with an AppShortcutShelfItemController.
+  // If the shelf-item is unpinned, then it's removed from the shelf.
+  void ReplaceWithAppShortcutOrRemove(const ash::ShelfID& id);
 
   // Returns true if the item identified by |id| is pinned.
   bool IsPinned(const ash::ShelfID& id);
@@ -141,14 +143,6 @@ class ChromeShelfController
                  int event_flags,
                  int64_t display_id);
 
-  // If |app_id| is running, reactivates the app's most recently active window,
-  // otherwise launches and activates the app.
-  // Used by the app-list, and by pinned-app shelf items.
-  void ActivateApp(const std::string& app_id,
-                   ash::ShelfLaunchSource source,
-                   int event_flags,
-                   int64_t display_id);
-
   // Set the image for a specific shelf item (e.g. when set by the app).
   void SetItemImage(const ash::ShelfID& shelf_id, const gfx::ImageSkia& image);
 
@@ -172,9 +166,6 @@ class ChromeShelfController
   // Returns ShelfID for |app_id|. If |app_id| is empty, or the app is not
   // pinned, returns the id of browser shrotcut.
   ash::ShelfID GetShelfIDForAppId(const std::string& app_id);
-
-  // Limits application refocusing to urls that match |url| for |id|.
-  void SetRefocusURLPatternForTest(const ash::ShelfID& id, const GURL& url);
 
   // Activates a |window|. If |allow_minimize| is true and the system allows
   // it, the the window will get minimized instead.

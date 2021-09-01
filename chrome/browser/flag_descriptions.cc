@@ -775,6 +775,12 @@ const char kDesktopPWAsLinkCapturingDescription[] =
     "https://github.com/WICG/sw-launch/blob/master/"
     "declarative_link_capturing.md";
 
+const char kDesktopPWAsLaunchHandlerName[] = "Desktop PWA launch handler";
+const char kDesktopPWAsLaunchHandlerDescription[] =
+    "Enable web app manifests to declare app launch behavior. Prototype "
+    "implementation of: "
+    "https://github.com/WICG/sw-launch/blob/main/launch_handler.md";
+
 const char kDesktopPWAsManifestIdName[] = "Desktop PWA manifest id";
 const char kDesktopPWAsManifestIdDescription[] =
     "Enable web app manifests to declare id. Prototype "
@@ -1919,11 +1925,6 @@ const char kOsSettingsAppNotificationsPageName[] =
 const char kOsSettingsAppNotificationsPageDescription[] =
     "If enabled, a new App Notifications subpage will appear in the "
     "CrOS Settings Apps section.";
-
-const char kOsSettingsDeepLinkingName[] = "CrOS Settings Deep Linking";
-const char kOsSettingsDeepLinkingDescription[] =
-    "Enables a unique URL for each path in CrOS settings. "
-    "This allows deep linking to individual settings, i.e. in settings search.";
 
 const char kOverlayScrollbarsName[] = "Overlay Scrollbars";
 const char kOverlayScrollbarsDescription[] =
@@ -3081,6 +3082,16 @@ const char kEnableCommandLineOnNonRootedName[] =
 const char kEnableCommandLineOnNoRootedDescription[] =
     "Enable reading command line file on non-rooted devices (DANGEROUS).";
 
+const char kEnableDangerousDownloadDialogName[] =
+    "Enable dangerous download dialog";
+const char kEnableDangerousDownloadDialogDescription[] =
+    "Use dialog instead of infobar for user to confirm dangerous download";
+
+const char kEnableDuplicateDownloadDialogName[] =
+    "Enable duplicate download dialog";
+const char kEnableDuplicateDownloadDialogDescription[] =
+    "Use dialog instead of infobar for user to confirm duplicate download";
+
 const char kEnableUseAaudioDriverName[] = "Use AAudio Driver";
 const char kEnableUseAaudioDriverDescription[] =
     "Enable the use of AAudio, if supported by the current Android version.";
@@ -3088,6 +3099,11 @@ const char kEnableUseAaudioDriverDescription[] =
 const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =
     "Enables portal from new tab page to explore websites.";
+
+const char kFeedBackToTopName[] = "Back to top of the feeds";
+const char kFeedBackToTopDescription[] =
+    "Enables showing a callout to help users return to the top of the feeds "
+    "quickly.";
 
 const char kFeedInteractiveRefreshName[] = "Refresh feeds";
 const char kFeedInteractiveRefreshDescription[] =
@@ -3420,6 +3436,10 @@ const char kSafeBrowsingUseLocalBlacklistsV2Description[] =
     "If enabled, maintain a copy of Safe Browsing blacklists in the browser "
     "process to check the Safe Browsing reputation of URLs without calling "
     "into GmsCore for every URL.";
+
+const char kScrollCaptureName[] = "Scroll Capture";
+const char kScrollCaptureDescription[] =
+    "Enables scrolling screenshot capture for web contents.";
 
 const char kSecurePaymentConfirmationAndroidName[] =
     "Secure Payment Confirmation on Android";
@@ -3899,6 +3919,11 @@ extern const char kAppDiscoveryForOobeName[] =
     "OOBE app recommendations with App Discovery Service.";
 extern const char kAppDiscoveryForOobeDescription[] =
     "Use the App Discovery Service to request recommended apps for OOBE.";
+
+extern const char kAppDiscoveryRemoteUrlSearchName[] =
+    "Remote URL app discovery results";
+extern const char kAppDiscoveryRemoteUrlSearchDescription[] =
+    "Surface results from a URL in the app discovery service.";
 
 extern const char kAppListBubbleName[] =
     "Productivity experiment: App Launcher";
@@ -4954,6 +4979,12 @@ const char kSplitSettingsSyncDescription[] =
     "Allows OS sync to be configured separately from browser sync. Changes the "
     "OS settings UI to provide controls for OS data types. Requires "
     "#split-settings to be enabled.";
+
+const char kSystemChinesePhysicalTypingName[] =
+    "Use system IME for Chinese typing";
+const char kSystemChinesePhysicalTypingDescription[] =
+    "Use the system input engine instead of the Chrome extension for physical "
+    "typing in Chinese.";
 
 const char kSystemKoreanPhysicalTypingName[] =
     "Use system IME for Korean typing";

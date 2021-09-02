@@ -373,7 +373,6 @@ android_library("chrome_java") {
     "//chrome/browser/paint_preview/android:java",
     "//chrome/browser/password_check:public_java",
     "//chrome/browser/password_entry_edit:public_java",
-    "//chrome/browser/password_manager/android:backend_interface_java",
     "//chrome/browser/password_manager/android:java",
     "//chrome/browser/performance_hints/android:java",
     "//chrome/browser/policy/android:java",
@@ -629,6 +628,7 @@ android_library("chrome_java") {
     "//chrome/browser:survey_http_client_type_enum",
     "//chrome/browser/notifications/scheduler/public:jni_enums",
     "//chrome/browser/supervised_user/supervised_user_error_page:enums_srcjar",
+    "//chrome/browser/ui:duplicate_download_enums_java",
     "//components/autofill_assistant/browser:autofill_assistant_enums_java",
     "//components/autofill_assistant/browser:autofill_assistant_intent_strings_java",
     "//components/browsing_data/core:browsing_data_utils_java",
@@ -2983,8 +2983,6 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     ":chrome_test_java",
     "//chrome/android/features/autofill_assistant:test_java",
     "//chrome/android/features/keyboard_accessory:test_java",
-    "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
-    "//chrome/android/webapk/shell_apk:shell_apk_javatests",
     "//chrome/browser/banners/android:javatests",
     "//chrome/browser/download/android:download_java_tests",
     "//chrome/browser/engagement/android:javatests",
@@ -3010,9 +3008,7 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
   enforce_resource_overlays_in_tests = true
 
   additional_apks = [
-    "//chrome/android/webapk/libs/runtime_library/javatests/apk_with_webapk_service:apk_with_webapk_service",
     "//chrome/android/webapk/shell_apk:javatests_webapk",
-    "//chrome/android/webapk/shell_apk/javatests/dex_optimizer:dex_optimizer_apk",
     "//chrome/test/android/chrome_public_test_support:chrome_public_test_support_apk",
     "//components/media_router/test/android/media_router_test_support:media_router_test_support_apk",
   ]
@@ -3117,6 +3113,7 @@ android_test_apk("chrome_smoke_test_apk") {
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/androidx:androidx_test_runner_java",
+    "//third_party/hamcrest:hamcrest_library_java",
     "//third_party/junit",
     "//third_party/ub-uiautomator:ub_uiautomator_java",
   ]
@@ -3126,6 +3123,10 @@ instrumentation_test_runner("chrome_public_smoke_test") {
   apk_under_test = ":chrome_public_apk"
   android_test_apk = ":chrome_smoke_test_apk"
   android_test_apk_name = "ChromeSmokeTest"
+  extra_args = [
+    "--enable-breakpad-dump",
+    "--use-apk-under-test-flags-file",
+  ]
 }
 
 # Public webview targets don't work with non-public sdks.
@@ -3139,6 +3140,10 @@ instrumentation_test_runner("monochrome_public_smoke_test") {
   android_test_apk = ":chrome_smoke_test_apk"
   android_test_apk_name = "ChromeSmokeTest"
   never_incremental = true
+  extra_args = [
+    "--enable-breakpad-dump",
+    "--use-apk-under-test-flags-file",
+  ]
 }
 
 android_test_apk("chrome_bundle_smoke_test_apk") {

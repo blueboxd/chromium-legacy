@@ -955,6 +955,26 @@
             ]
         }
     ],
+    "AutofillAddressProfileSavePrompt": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillAddressProfileSavePrompt"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillAssistantInCCTTriggering": [
         {
             "platforms": [
@@ -5979,11 +5999,11 @@
                     ]
                 },
                 {
-                    "name": "AssistantIntegration_Default_20210625",
+                    "name": "AssistantIntegration_Default_20210819",
                     "params": {
                         "colorful_mic": "false",
                         "experiment_id": "47458844",
-                        "min_agsa_version": "12.24"
+                        "min_agsa_version": "12.27"
                     },
                     "enable_features": [
                         "AssistantIntentExperimentId",
@@ -6052,6 +6072,36 @@
                         "min_agsa_version": "12.26"
                     },
                     "enable_features": [
+                        "AssistantIntentExperimentId",
+                        "OmniboxAssistantVoiceSearch",
+                        "VoiceSearchAudioCapturePolicy"
+                    ]
+                },
+                {
+                    "name": "AssistantIntegration_ConsentLimitedReprompts_20210819",
+                    "params": {
+                        "colorful_mic": "false",
+                        "count": "2",
+                        "experiment_id": "47734278",
+                        "min_agsa_version": "12.27"
+                    },
+                    "enable_features": [
+                        "AssistantConsentV2",
+                        "AssistantIntentExperimentId",
+                        "OmniboxAssistantVoiceSearch",
+                        "VoiceSearchAudioCapturePolicy"
+                    ]
+                },
+                {
+                    "name": "AssistantIntegration_ConsentReprompts_20210819",
+                    "params": {
+                        "colorful_mic": "false",
+                        "count": "-1",
+                        "experiment_id": "47734279",
+                        "min_agsa_version": "12.27"
+                    },
+                    "enable_features": [
+                        "AssistantConsentV2",
                         "AssistantIntentExperimentId",
                         "OmniboxAssistantVoiceSearch",
                         "VoiceSearchAudioCapturePolicy"
@@ -8998,28 +9048,6 @@
                         "VerifyDidCommitParams"
                     ],
                     "disable_features": []
-                }
-            ]
-        }
-    ],
-    "VerifyHTMLFetchedFromAppCacheBeforeDelay": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "ios",
-                "android",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "VerifyHTMLFetchedFromAppCacheBeforeDelay"
-                    ]
                 }
             ]
         }

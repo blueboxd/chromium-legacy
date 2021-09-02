@@ -192,11 +192,16 @@ void FakeCrosHealthdClient::RequestNetworkHealthForTesting(
 
 void FakeCrosHealthdClient::RunLanConnectivityRoutineForTesting(
     chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines::
-        LanConnectivityCallback callback) {
+        RunLanConnectivityCallback callback) {
   // Flush the receiver, so the NetworkDiagnosticsRoutines interface is
   // registered before routines are called on it.
   receiver_.FlushForTesting();
   fake_service_.RunLanConnectivityRoutineForTesting(std::move(callback));
+}
+
+absl::optional<mojom::DiagnosticRoutineEnum>
+FakeCrosHealthdClient::GetLastRunRoutine() const {
+  return fake_service_.GetLastRunRoutine();
 }
 
 absl::optional<FakeCrosHealthdService::RoutineUpdateParams>

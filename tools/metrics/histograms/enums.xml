@@ -2473,6 +2473,7 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Refresh the crash list"/>
   <int value="4" label="About WebView DevTools"/>
   <int value="5" label="Components"/>
+  <int value="6" label="Update the components"/>
 </enum>
 
 <enum name="AndroidWebViewDevUiMetricsTransmission">
@@ -7705,6 +7706,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="247" label="MDDH_INVALID_PERMITTED_ORIGIN"/>
   <int value="248" label="MDDH_NOT_TOP_LEVEL"/>
   <int value="249" label="RFH_DID_CHANGE_IFRAME_ATTRIBUTE"/>
+  <int value="250" label="FARI_LOGOUT_BAD_ENDPOINT"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -22975,6 +22977,14 @@ Called by update_document_policy_enum.py.-->
   <int value="2" label="Both entities are non-tombstone"/>
 </enum>
 
+<enum name="DuplicateDownloadEvent">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Confirmed"/>
+  <int value="2" label="Canceled"/>
+  <int value="3" label="Link Clicked"/>
+  <int value="4" label="Dismissed"/>
+</enum>
+
 <enum name="DXGI_COLOR_SPACE_TYPE">
   <summary>
     DirectX color space type. Documented here:
@@ -29131,6 +29141,13 @@ Called by update_extension_histograms.py.-->
   <int value="1577" label="LOGIN_ENDSHAREDSESSION"/>
   <int value="1578" label="AUTOTESTPRIVATE_GETDEFAULTPINNEDAPPIDS"/>
   <int value="1579" label="LOGIN_SETDATAFORNEXTLOGINATTEMPT"/>
+  <int value="1580" label="OS_DIAGNOSTICS_GETAVAILABLEROUTINES"/>
+  <int value="1581" label="OS_DIAGNOSTICS_RUNBATTERYHEALTHROUTINE"/>
+  <int value="1582" label="OS_DIAGNOSTICS_RUNBATTERYDISCHARGEROUTINE"/>
+  <int value="1583" label="OS_DIAGNOSTICS_RUNBATTERYCHARGEROUTINE"/>
+  <int value="1584" label="OS_DIAGNOSTICS_RUNCPUSTRESSROUTINE"/>
+  <int value="1585" label="OS_DIAGNOSTICS_RUNCPUCACHEROUTINE"/>
+  <int value="1586" label="SCRIPTING_UPDATECONTENTSCRIPTS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -34389,6 +34406,12 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3999"
       label="NewLayoutOverflowDifferentBlockWithNonEmptyInflowBounds"/>
   <int value="4000" label="CanvasRenderingContext2DReset"/>
+  <int value="4001" label="CanvasRenderingContext2DLetterSpacing"/>
+  <int value="4002" label="CanvasRenderingContext2DWordSpacing"/>
+  <int value="4003" label="CanvasRenderingContext2DFontVariantCaps"/>
+  <int value="4004" label="CanvasRenderingContext2DFontKerning"/>
+  <int value="4005" label="CanvasRenderingContext2DFontStretch"/>
+  <int value="4006" label="CanvasRenderingContext2DTextRendering"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -50120,6 +50143,7 @@ from previous Chrome versions.
   <int value="357138275" label="enable-floating-virtual-keyboard:disabled"/>
   <int value="358399482" label="enable-high-dpi-fixed-position-compositing"/>
   <int value="358493847" label="BackgroundLoader:disabled"/>
+  <int value="358906344" label="NotificationsRefresh:disabled"/>
   <int value="359601954" label="CrostiniUsbSupport:enabled"/>
   <int value="359896413" label="SplitPartiallyOccludedQuads:disabled"/>
   <int value="359918746"
@@ -50702,6 +50726,7 @@ from previous Chrome versions.
   <int value="799680074" label="ContextualSearchTranslationModel:enabled"/>
   <int value="802463708" label="WebViewSurfaceControl:enabled"/>
   <int value="803282885" label="PreferHtmlOverPlugins:disabled"/>
+  <int value="803877391" label="NotificationsRefresh:enabled"/>
   <int value="803982925" label="CellularForbidAttachApn:disabled"/>
   <int value="804551127" label="ArcKeyboardShortcutHelperIntegration:disabled"/>
   <int value="804958673" label="LensCameraAssistedSearch:enabled"/>
@@ -59380,6 +59405,24 @@ Called by update_net_trust_anchors.py.-->
   <int value="24" label="TOO_MANY_STAS"/>
   <int value="25" label="DISCONNECT_FAILURE"/>
   <int value="26" label="SIM_LOCKED"/>
+</enum>
+
+<enum name="NetworkServiceSandboxGrantResult">
+  <int value="0" label="kSuccess">The operation was successful</int>
+  <int value="1" label="kFailedToCreateCacheDirectory">
+    Failed to create cache directory
+  </int>
+  <int value="2" label="kFailedToCreateDataDirectory">
+    Failed to create data directory
+  </int>
+  <int value="3" label="kFailedToCopyData">Failed to copy data</int>
+  <int value="4" label="kFailedToDeleteOldData">Failed to delete old data</int>
+  <int value="5" label="kFailedToGrantSandboxAccessToCache">
+    Failed to grant sandbox access to cache directory
+  </int>
+  <int value="6" label="kFailedToGrantSandboxAccessToData">
+    Failed to grant sandbox access to data directory
+  </int>
 </enum>
 
 <enum name="NetworkStatus">

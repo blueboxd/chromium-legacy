@@ -754,6 +754,10 @@
     "channel": "trunk",
     "min_manifest_version": 3
   },
+  "scripting.updateContentScripts": {
+    "channel": "trunk",
+    "min_manifest_version": 3
+  },
   "search": {
     "dependencies": ["permission:search"],
     "contexts": ["blessed_extension"]
@@ -904,10 +908,16 @@
     "dependencies": ["permission:virtualKeyboardPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "wallpaper": {
+  "wallpaper": [{
     "dependencies": ["permission:wallpaper"],
     "contexts": ["blessed_extension"]
-  },
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://file-manager/*"
+    ]
+  }],
   "wallpaperPrivate": {
     "dependencies": ["permission:wallpaperPrivate"],
     "contexts": ["blessed_extension"]

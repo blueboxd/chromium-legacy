@@ -56,7 +56,7 @@ void PrivacySandboxHandler::RegisterMessages() {
 void PrivacySandboxHandler::HandleGetFlocId(const base::ListValue* args) {
   AllowJavascript();
 
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
@@ -72,7 +72,7 @@ void PrivacySandboxHandler::HandleResetFlocId(const base::ListValue* args) {
       Profile::FromWebUI(web_ui()));
   DCHECK(privacy_sandbox_settings);
 
-  privacy_sandbox_settings->ResetFlocId();
+  privacy_sandbox_settings->ResetFlocId(/*user_initiated=*/true);
 
   // The identifier will have been immediately invalidated in response to
   // the clearing action, so synchronously retrieving the FLoC ID will retrieve

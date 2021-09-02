@@ -393,7 +393,7 @@ void ResolveLanguageListInThreadPool(
 
 void AdjustUILanguageList(const std::string& selected,
                           base::ListValue* languages_list) {
-  for (size_t i = 0; i < languages_list->GetSize(); ++i) {
+  for (size_t i = 0; i < languages_list->GetList().size(); ++i) {
     base::DictionaryValue* language_info = NULL;
     if (!languages_list->GetDictionary(i, &language_info))
       NOTREACHED();
@@ -465,7 +465,7 @@ std::unique_ptr<base::ListValue> GetUILanguageList(
   input_method::InputMethodDescriptors descriptors =
       manager->GetXkbIMEAsInputMethodDescriptor();
   std::unique_ptr<base::ListValue> languages_list(GetLanguageList(
-      descriptors, l10n_util::GetLocalesWithStrings(),
+      descriptors, l10n_util::GetUserFacingUILocaleList(),
       most_relevant_language_codes
           ? *most_relevant_language_codes
           : StartupCustomizationDocument::GetInstance()->configured_locales(),

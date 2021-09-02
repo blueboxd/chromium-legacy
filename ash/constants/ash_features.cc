@@ -589,18 +589,12 @@ const base::Feature kHideArcMediaNotifications{
 const base::Feature kHideShelfControlsInTabletMode{
     "HideShelfControlsInTabletMode", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables ARC integration with the productivity feature that aims to reduce
-// context switching by enabling users to collect content and transfer or access
-// it later.
-const base::Feature kHoldingSpaceArcIntegration{
-    "HoldingSpaceArcIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables in-progress downloads integration with the productivity feature that
 // aims to reduce context switching by enabling users to collect content and
 // transfer or access it later.
 const base::Feature kHoldingSpaceInProgressDownloadsIntegration{
     "HoldingSpaceInProgressDownloadsIntegration",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables incognito profile integration with the productivity feature that
 // aims to reduce context switching by enabling users to collect content and
@@ -1358,10 +1352,6 @@ bool IsHideArcMediaNotificationsEnabled() {
 
 bool IsHideShelfControlsInTabletModeEnabled() {
   return base::FeatureList::IsEnabled(kHideShelfControlsInTabletMode);
-}
-
-bool IsHoldingSpaceArcIntegrationEnabled() {
-  return base::FeatureList::IsEnabled(kHoldingSpaceArcIntegration);
 }
 
 bool IsHoldingSpaceInProgressDownloadsIntegrationEnabled() {

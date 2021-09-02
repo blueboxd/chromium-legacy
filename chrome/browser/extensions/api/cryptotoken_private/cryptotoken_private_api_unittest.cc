@@ -41,7 +41,7 @@ bool GetSingleBooleanResult(ExtensionFunction* function, bool* result) {
     return false;
   }
 
-  if (result_list->GetSize() != 1u) {
+  if (result_list->GetList().size() != 1u) {
     ADD_FAILURE() << "Invalid number of results.";
     return false;
   }
@@ -177,12 +177,12 @@ TEST_F(CryptoTokenPrivateApiTest, RecordRegisterRequest) {
   auto function = base::MakeRefCounted<
       api::CryptotokenPrivateRecordRegisterRequestFunction>();
   auto args = std::make_unique<base::ListValue>();
-  args->AppendInteger(tab_id);
-  args->AppendInteger(0 /* top-level frame */);
+  args->Append(tab_id);
+  args->Append(0 /* top-level frame */);
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       function.get(), base::ListValue::From(std::move(args)), browser(),
       api_test_utils::NONE));
-  ASSERT_EQ(function->GetResultList()->GetSize(), 0u);
+  ASSERT_EQ(function->GetResultList()->GetList().size(), 0u);
 
   web_feature_waiter.Wait();
 }
@@ -203,12 +203,12 @@ TEST_F(CryptoTokenPrivateApiTest, RecordSignRequest) {
   auto function =
       base::MakeRefCounted<api::CryptotokenPrivateRecordSignRequestFunction>();
   auto args = std::make_unique<base::ListValue>();
-  args->AppendInteger(tab_id);
-  args->AppendInteger(0 /* top-level frame */);
+  args->Append(tab_id);
+  args->Append(0 /* top-level frame */);
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       function.get(), base::ListValue::From(std::move(args)), browser(),
       api_test_utils::NONE));
-  ASSERT_EQ(function->GetResultList()->GetSize(), 0u);
+  ASSERT_EQ(function->GetResultList()->GetList().size(), 0u);
 
   web_feature_waiter.Wait();
 }

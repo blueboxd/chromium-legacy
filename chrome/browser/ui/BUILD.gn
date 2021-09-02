@@ -103,6 +103,7 @@ static_library("ui") {
     "interventions/intervention_infobar_delegate.cc",
     "interventions/intervention_infobar_delegate.h",
     "javascript_dialogs/chrome_javascript_app_modal_dialog_view_factory.h",
+    "lens/lens_side_panel_helper.h",
     "login/login_handler.cc",
     "login/login_handler.h",
     "login/login_navigation_throttle.cc",
@@ -4035,6 +4036,7 @@ static_library("ui") {
       "views/layout/interpolating_layout_manager.h",
       "views/lens/lens_side_panel_controller.cc",
       "views/lens/lens_side_panel_controller.h",
+      "views/lens/lens_side_panel_helper.cc",
       "views/location_bar/content_setting_image_view.cc",
       "views/location_bar/content_setting_image_view.h",
       "views/location_bar/cookie_controls_bubble_view.cc",
@@ -5279,5 +5281,8 @@ if (is_chromeos_ash) {
 if (is_android) {
   java_cpp_enum("tab_model_enums_java") {
     sources = [ "android/tab_model/tab_model.h" ]
+  }
+  java_cpp_enum("duplicate_download_enums_java") {
+    sources = [ "android/infobars/duplicate_download_infobar.h" ]
   }
 }

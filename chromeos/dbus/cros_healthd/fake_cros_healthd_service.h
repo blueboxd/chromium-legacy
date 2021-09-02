@@ -251,7 +251,10 @@ class FakeCrosHealthdService final
   // Calls the LanConnectivity routine on |network_diagnostics_routines_|.
   void RunLanConnectivityRoutineForTesting(
       chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines::
-          LanConnectivityCallback callback);
+          RunLanConnectivityCallback callback);
+
+  // Returns the last created routine by any Run*Routine method.
+  absl::optional<mojom::DiagnosticRoutineEnum> GetLastRunRoutine() const;
 
   // Returns the parameters passed for the most recent call to
   // `GetRoutineUpdate`.
@@ -260,6 +263,8 @@ class FakeCrosHealthdService final
  private:
   // Used as the response to any GetAvailableRoutines IPCs received.
   std::vector<mojom::DiagnosticRoutineEnum> available_routines_;
+  // Used to store last created routine by any Run*Routine method.
+  absl::optional<mojom::DiagnosticRoutineEnum> last_run_routine_;
   // Used as the response to any RunSomeRoutine IPCs received.
   mojom::RunRoutineResponsePtr run_routine_response_{
       mojom::RunRoutineResponse::New()};

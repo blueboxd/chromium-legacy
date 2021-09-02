@@ -1686,6 +1686,42 @@ TEST_F(HoldingSpaceKeyedServiceTest, RemoveOlderFilesFromPersistence) {
             persisted_holding_space_items_after_restoration);
 }
 
+TEST_F(HoldingSpaceKeyedServiceTest, AddArcDownloadItem) {
+  // Wait for the holding space model to attach.
+  TestingProfile* profile = GetProfile();
+  HoldingSpaceModelAttachedWaiter(profile).Wait();
+
+  // Verify the holding space `model` is empty.
+  HoldingSpaceModel* const model = HoldingSpaceController::Get()->model();
+  ASSERT_EQ(0u, model->items().size());
+
+  // Create a test downloads mount point.
+  std::unique_ptr<ScopedTestMountPoint> downloads_mount =
+      ScopedTestMountPoint::CreateAndMountDownloads(profile);
+  ASSERT_TRUE(downloads_mount->IsValid());
+
+  // Create a fake download file on the local file system.
+  const base::FilePath file_path = downloads_mount->CreateFile(
+      /*relative_path=*/base::FilePath("Download.png"), /*content=*/"foo");
+
+  // Simulate an event from ARC to indicate that the Android application with
+  // package `com.bar.foo` added a download at `file_path`.
+  auto* arc_intent_helper_bridge =
+      arc::ArcIntentHelperBridge::GetForBrowserContext(profile);
+  ASSERT_TRUE(arc_intent_helper_bridge);
+  arc_intent_helper_bridge->OnDownloadAdded(
+      /*relative_path=*/"Download/Download.png",
+      /*owner_package_name=*/"com.bar.foo");
+
+  // Verify that an item of type `kArcDownload` was added to holding space.
+  ASSERT_EQ(1u, model->items().size());
+  const HoldingSpaceItem* arc_download_item = model->items()[0].get();
+  EXPECT_EQ(arc_download_item->type(), HoldingSpaceItem::Type::kArcDownload);
+  EXPECT_EQ(arc_download_item->file_path(),
+            file_manager::util::GetDownloadsFolderForProfile(profile).Append(
+                base::FilePath("Download.png")));
+}
+
 TEST_F(HoldingSpaceKeyedServiceTest, AddDownloadItem) {
   // This test is only relevant if in-progress download integration is disabled.
   base::test::ScopedFeatureList scoped_feature_list;
@@ -2289,54 +2325,6 @@ TEST_P(HoldingSpaceKeyedServiceAddItemTest, AddItem) {
   EXPECT_EQ(model->items()[0].get(), item);
 }
 
-class HoldingSpaceKeyedServiceArcIntegrationTest
-    : public HoldingSpaceKeyedServiceTest {
- public:
-  HoldingSpaceKeyedServiceArcIntegrationTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kHoldingSpaceArcIntegration);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(HoldingSpaceKeyedServiceArcIntegrationTest, AddArcDownloadItem) {
-  // Wait for the holding space model to attach.
-  TestingProfile* profile = GetProfile();
-  HoldingSpaceModelAttachedWaiter(profile).Wait();
-
-  // Verify the holding space `model` is empty.
-  HoldingSpaceModel* const model = HoldingSpaceController::Get()->model();
-  ASSERT_EQ(0u, model->items().size());
-
-  // Create a test downloads mount point.
-  std::unique_ptr<ScopedTestMountPoint> downloads_mount =
-      ScopedTestMountPoint::CreateAndMountDownloads(profile);
-  ASSERT_TRUE(downloads_mount->IsValid());
-
-  // Create a fake download file on the local file system.
-  const base::FilePath file_path = downloads_mount->CreateFile(
-      /*relative_path=*/base::FilePath("Download.png"), /*content=*/"foo");
-
-  // Simulate an event from ARC to indicate that the Android application with
-  // package `com.bar.foo` added a download at `file_path`.
-  auto* arc_intent_helper_bridge =
-      arc::ArcIntentHelperBridge::GetForBrowserContext(profile);
-  ASSERT_TRUE(arc_intent_helper_bridge);
-  arc_intent_helper_bridge->OnDownloadAdded(
-      /*relative_path=*/"Download/Download.png",
-      /*owner_package_name=*/"com.bar.foo");
-
-  // Verify that an item of type `kArcDownload` was added to holding space.
-  ASSERT_EQ(1u, model->items().size());
-  const HoldingSpaceItem* arc_download_item = model->items()[0].get();
-  EXPECT_EQ(arc_download_item->type(), HoldingSpaceItem::Type::kArcDownload);
-  EXPECT_EQ(arc_download_item->file_path(),
-            file_manager::util::GetDownloadsFolderForProfile(profile).Append(
-                base::FilePath("Download.png")));
-}
-
 class HoldingSpaceKeyedServiceNearbySharingTest
     : public HoldingSpaceKeyedServiceTest {
  public:
@@ -2536,16 +2524,35 @@ TEST_P(HoldingSpaceKeyedServicePrintToPdfIntegrationTest, AddPrintedPdfItem) {
 }
 
 // Base class for tests of incognito profile integration. Parameterized by
-// whether the holding space incognito profile feature is enabled.
+// whether the holding space incognito profile feature is enabled and whether
+// the holding space in-progress downloads integration feature is enabled.
 class HoldingSpaceKeyedServiceIncognitoDownloadsTest
     : public HoldingSpaceKeyedServiceTest,
       public testing::WithParamInterface<
-          bool /* incognito_downloads_enabled */> {
+          std::tuple<bool /* incognito_downloads_enabled */,
+                     bool /* in_progress_downloads_enabled */>> {
  public:
   HoldingSpaceKeyedServiceIncognitoDownloadsTest() {
-    scoped_feature_list_.InitWithFeatureState(
-        features::kHoldingSpaceIncognitoProfileIntegration,
-        IncognitoDownloadsEnabled());
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+
+    if (IncognitoDownloadsEnabled()) {
+      enabled_features.push_back(
+          features::kHoldingSpaceIncognitoProfileIntegration);
+    } else {
+      disabled_features.push_back(
+          features::kHoldingSpaceIncognitoProfileIntegration);
+    }
+
+    if (InProgressDownloadsEnabled()) {
+      enabled_features.push_back(
+          features::kHoldingSpaceInProgressDownloadsIntegration);
+    } else {
+      disabled_features.push_back(
+          features::kHoldingSpaceInProgressDownloadsIntegration);
+    }
+
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
   // HoldingSpaceKeyedServiceTest:
@@ -2567,7 +2574,11 @@ class HoldingSpaceKeyedServiceIncognitoDownloadsTest
 
   // Returns true if the test should run with the incognito profile feature
   // enabled, false otherwise.
-  bool IncognitoDownloadsEnabled() const { return GetParam(); }
+  bool IncognitoDownloadsEnabled() const { return std::get<0>(GetParam()); }
+
+  // Returns true if the test should run with the in-progress downloads feature
+  // enabled, false otherwise.
+  bool InProgressDownloadsEnabled() const { return std::get<1>(GetParam()); }
 
   // Returns the incognito profile spawned from the test's main profile.
   TestingProfile* incognito_profile() { return incognito_profile_; }
@@ -2577,9 +2588,12 @@ class HoldingSpaceKeyedServiceIncognitoDownloadsTest
   TestingProfile* incognito_profile_ = nullptr;
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         HoldingSpaceKeyedServiceIncognitoDownloadsTest,
-                         /*incognito_downloads_enabled=*/::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    HoldingSpaceKeyedServiceIncognitoDownloadsTest,
+    ::testing::Combine(
+        /*incognito_downloads_enabled=*/::testing::Bool(),
+        /*in_progress_downloads_enabled=*/testing::Bool()));
 
 TEST_P(HoldingSpaceKeyedServiceIncognitoDownloadsTest, AddDownloadItem) {
   TestingProfile* profile = GetProfile();
@@ -2618,8 +2632,17 @@ TEST_P(HoldingSpaceKeyedServiceIncognitoDownloadsTest, AddDownloadItem) {
   current_path = downloads_mount->CreateFile(base::FilePath("tmp/temp_path"));
   UpdateFakeDownloadItem();
 
-  // Verify holding space is empty.
-  ASSERT_EQ(0u, model->items().size());
+  // Holding space should be empty if and only if either the incognito profile
+  // feature is disabled or the in-progress downloads feature is disabled.
+  if (!IncognitoDownloadsEnabled() || !InProgressDownloadsEnabled()) {
+    ASSERT_EQ(0u, model->items().size());
+  } else {
+    ASSERT_EQ(1u, model->items().size());
+    HoldingSpaceItem* download_item = model->items()[0].get();
+    EXPECT_EQ(download_item->type(), HoldingSpaceItem::Type::kDownload);
+    EXPECT_EQ(download_item->file_path(), current_path);
+    EXPECT_EQ(download_item->progress().GetValue(), 0.f);
+  }
 
   // Complete the download.
   current_state = download::DownloadItem::COMPLETE;

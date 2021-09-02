@@ -10,7 +10,7 @@
 // #import {FakeContactManager} from '../../nearby_share/shared/fake_nearby_contact_manager.m.js';
 // #import {FakeNearbyShareSettings} from '../../nearby_share/shared/fake_nearby_share_settings.m.js';
 // #import {FakeReceiveManager} from './fake_receive_manager.m.js'
-// #import {isVisible, waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {isVisible, waitAfterNextRender} from 'chrome://test/test_util.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 // clang-format on
 
@@ -71,6 +71,7 @@ suite('NearbyShare', function() {
     nearby_share.setNearbyShareSettingsForTesting(fakeSettings);
 
     PolymerTest.clearBody();
+
     subpage = document.createElement('settings-nearby-share-subpage');
     subpage.prefs = {
       'nearby_sharing': {
@@ -102,6 +103,12 @@ suite('NearbyShare', function() {
   function doesElementExist(selector) {
     const el = subpage.$$(selector);
     return (el !== null) && (el.style.display !== 'none');
+  }
+
+  function flushAsync() {
+    Polymer.dom.flush();
+    // Use setTimeout to wait for the next macrotask.
+    return new Promise(resolve => setTimeout(resolve));
   }
 
   test('feature toggle button controls preference', function() {
@@ -454,4 +461,28 @@ suite('NearbyShare', function() {
     assertFalse(doesElementExist('#help'));
   });
 
+  test('Fast init toggle doesn\'t exist', function() {
+    assertFalse(!!subpage.$$('#fastInitiationNotificationToggle'));
+  });
+
+  suite('Background Scanning Enabled', function() {
+    suiteSetup(function() {
+      loadTimeData.overrideValues({
+        isNearbyShareBackgroundScanningEnabled: true,
+      });
+    });
+
+    test('Fast initiation notification toggle', async () => {
+      const fastInitToggle = subpage.$$('#fastInitiationNotificationToggle');
+      assertTrue(!!fastInitToggle);
+      await flushAsync();
+      assertTrue(fastInitToggle.checked);
+      assertTrue(subpage.settings.fastInitiationNotificationEnabled);
+
+      fastInitToggle.click();
+      await flushAsync();
+      assertFalse(fastInitToggle.checked);
+      assertFalse(subpage.settings.fastInitiationNotificationEnabled);
+    });
+  });
 });

@@ -967,7 +967,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_2021-09-02",
                     "enable_features": [
                         "AutofillAddressProfileSavePrompt"
                     ]
@@ -7304,6 +7304,25 @@
                     ],
                     "disable_features": [
                         "SkipEarlyCommitPendingForCrashedFrame"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ReportAllJavaScriptFrameworks": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows",
+                "android",
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "enabled",
+                    "enable_features": [
+                        "ReportAllJavaScriptFrameworks"
                     ]
                 }
             ]

@@ -246,6 +246,8 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OFFICIAL_BUILD)
+#include "ash/webui/sample_system_web_app_ui/mojom/sample_system_web_app_ui.mojom.h"
+#include "ash/webui/sample_system_web_app_ui/sample_system_web_app_ui.h"
 #include "ash/webui/telemetry_extension_ui/mojom/diagnostics_service.mojom.h"  // nogncheck crbug.com/1125897
 #include "ash/webui/telemetry_extension_ui/mojom/probe_service.mojom.h"  // nogncheck crbug.com/1125897
 #include "ash/webui/telemetry_extension_ui/mojom/system_events_service.mojom.h"  // nogncheck crbug.com/1125897
@@ -844,14 +846,14 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       chromeos_camera::mojom::CameraAppHelper, chromeos::CameraAppUI>(map);
 
-  RegisterWebUIControllerInterfaceBinder<help_app_ui::mojom::PageHandlerFactory,
-                                         chromeos::HelpAppUI>(map);
+  RegisterWebUIControllerInterfaceBinder<
+      ash::help_app::mojom::PageHandlerFactory, ash::HelpAppUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::local_search_service::mojom::Index, chromeos::HelpAppUI>(map);
+      chromeos::local_search_service::mojom::Index, ash::HelpAppUI>(map);
 
-  RegisterWebUIControllerInterfaceBinder<
-      chromeos::help_app::mojom::SearchHandler, chromeos::HelpAppUI>(map);
+  RegisterWebUIControllerInterfaceBinder<ash::help_app::mojom::SearchHandler,
+                                         ash::HelpAppUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       chromeos::eche_app::mojom::SignalingMessageExchanger,
@@ -944,6 +946,10 @@ void PopulateChromeWebUIFrameBinders(
         chromeos::mojom::demo_mode::PageHandlerFactory,
         chromeos::DemoModeAppUI>(map);
   }
+
+  RegisterWebUIControllerInterfaceBinder<
+      ash::mojom::sample_swa::PageHandlerFactory, ash::SampleSystemWebAppUI>(
+      map);
 
   if (base::FeatureList::IsEnabled(chromeos::features::kTelemetryExtension)) {
     RegisterWebUIControllerInterfaceBinder<

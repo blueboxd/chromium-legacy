@@ -13,16 +13,22 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #import "ios/chrome/browser/main/browser_user_data.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_observer.h"
 
 class Browser;
 @protocol PolicyChangeCommands;
 class PolicyWatcherBrowserAgentObserver;
 class PrefChangeRegistrar;
 
+// NSUserDefault global key to track if the sync disable alert was shown.
+extern NSString* kSyncDisabledAlertShownKey;
+
 // Service that listens for policy-controlled prefs changes and sends commands
 // to update the UI accordingly.
 class PolicyWatcherBrowserAgent
-    : public BrowserUserData<PolicyWatcherBrowserAgent> {
+    : public AuthenticationServiceObserver,
+      public BrowserUserData<PolicyWatcherBrowserAgent> {
  public:
   ~PolicyWatcherBrowserAgent() override;
 
@@ -48,14 +54,27 @@ class PolicyWatcherBrowserAgent
   // UI.
   void ForceSignOutIfSigninDisabled();
 
+  // Handler for change to kSyncManaged. When the pref changes to |true|,
+  // sends a command to the handler to show an alert.
+  void ShowSyncDisabledAlertIfNeeded();
+
   // Callback called when the sign out is complete.
   void OnSignOutComplete();
+
+  // AuthenticationServiceObserver implementation.
+  void OnPrimaryAccountRestricted() override;
 
   // The owning Browser.
   Browser* browser_;
 
-  // Registrar for pref change notifications.
+  // The AuthenticationService.
+  AuthenticationService* auth_service_ = nullptr;
+
+  // Registrar for local state pref change notifications.
   std::unique_ptr<PrefChangeRegistrar> prefs_change_observer_;
+
+  // Registrar for browser state pref change notifications.
+  std::unique_ptr<PrefChangeRegistrar> browser_prefs_change_observer_;
 
   // List of observers notified of changes to the policy.
   base::ObserverList<PolicyWatcherBrowserAgentObserver, true> observers_;
@@ -65,6 +84,10 @@ class PolicyWatcherBrowserAgent
 
   // Handler to send commands.
   id<PolicyChangeCommands> handler_ = nil;
+
+  // AuthenticationService observer.
+  base::ScopedObservation<AuthenticationService, AuthenticationServiceObserver>
+      auth_service_observation_{this};
 
   // WeakPtrFactory should be last.
   base::WeakPtrFactory<PolicyWatcherBrowserAgent> weak_factory_{this};

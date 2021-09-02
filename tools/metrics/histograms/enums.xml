@@ -29148,6 +29148,8 @@ Called by update_extension_histograms.py.-->
   <int value="1584" label="OS_DIAGNOSTICS_RUNCPUSTRESSROUTINE"/>
   <int value="1585" label="OS_DIAGNOSTICS_RUNCPUCACHEROUTINE"/>
   <int value="1586" label="SCRIPTING_UPDATECONTENTSCRIPTS"/>
+  <int value="1587" label="FILEMANAGERPRIVATE_OPENWINDOW"/>
+  <int value="1588" label="OS_DIAGNOSTICS_RUNMEMORYROUTINE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -59407,24 +59409,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="26" label="SIM_LOCKED"/>
 </enum>
 
-<enum name="NetworkServiceSandboxGrantResult">
-  <int value="0" label="kSuccess">The operation was successful</int>
-  <int value="1" label="kFailedToCreateCacheDirectory">
-    Failed to create cache directory
-  </int>
-  <int value="2" label="kFailedToCreateDataDirectory">
-    Failed to create data directory
-  </int>
-  <int value="3" label="kFailedToCopyData">Failed to copy data</int>
-  <int value="4" label="kFailedToDeleteOldData">Failed to delete old data</int>
-  <int value="5" label="kFailedToGrantSandboxAccessToCache">
-    Failed to grant sandbox access to cache directory
-  </int>
-  <int value="6" label="kFailedToGrantSandboxAccessToData">
-    Failed to grant sandbox access to data directory
-  </int>
-</enum>
-
 <enum name="NetworkStatus">
   <int value="1" label="Offline"/>
   <int value="2" label="OnlineWifi"/>
@@ -66938,6 +66922,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="27" label="kUaChangeRequiresReload"/>
   <int value="28" label="kBlockedByClient"/>
   <int value="29" label="kAudioOutputDeviceRequested"/>
+  <int value="30" label="kMixedContent"/>
 </enum>
 
 <enum name="PrerenderHoverEvent">

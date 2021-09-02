@@ -196,7 +196,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:e08764bfcf2e87425a025e3a1d196c5740385da2',
+  'luci_go': 'git_revision:7f42370cb3b75398bdb9ae0aabe215a70d40cd31',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -228,11 +228,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '25b392329f4a4a4c8d3197a6850ca6287a130dde',
+  'skia_revision': '19c7ebf44069cf67d40470c85e9e492c7ae61316',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'f9c2f25f1f3c92b0c353e78ef58fdb833740bed5',
+  'v8_revision': '32a31349dd66c197a7eab6c84a25b2832f12da95',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -303,7 +303,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '1b16732882baa9d97191601b1ba79656e739be87',
+  'devtools_frontend_revision': 'aec565b5dd29dbc81d3bac1bc24dc648273e74bf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -343,7 +343,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '1f48c973537f76a34bd0715680b8c83f6680a770',
+  'dawn_revision': '749e14490ea642ce21393ac72cf9c769e893cc3a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -391,7 +391,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libunwind_revision':    '6474ba492194918fa7f6ee645825cc7beebef9a3',
+  'libunwind_revision':    '0517d86d521b69fb860a3d255442e3b76159a976',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -773,7 +773,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'tPVErGiEy1AW5eAC-6KHHSx53cDP1Ier0G0Fcv0Rni8C',
+          'version': 'ZdxRIiFx3aei0omc-gTvzy16PuFYcMZAXddPEAtH1pwC',
       },
     ],
     'condition': 'checkout_android',
@@ -1009,7 +1009,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'ae44ef1e4996e578482a4ef69a9ce9ce9a0725f9',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '789dfc223b9dfd2fb377a7c4bcb351e63167554d',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1473,7 +1473,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'LrM1UivUqag71JX4WdAnr5pc_zp92frKvtN6GhDs2zEC'
+              'version': 'CfdRaEiScS7NAt59tGSPUpPwcQBcypHIKHCCrL-PtcMC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1492,7 +1492,7 @@ deps = {
   },
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '8e08f47b11b413302749c0d8b17a1c94777495d5',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'df4dccfb1b31b44500748f7e8a49219e3bce426b',
 
   'src/third_party/r8': {
       'packages': [
@@ -1674,7 +1674,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@679130dd7a50eec9e9c535b153b86be48ef544a9',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ad42c081ceacc35c7ed7bb916b0316df60e39cba',
     'condition': 'checkout_src_internal',
   },
 
@@ -1715,7 +1715,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'CBCmLp_W5lgMdC9gVsGnfZe6rhG-3nWVELc2we9-xLQC',
+        'version': 'eNAp9TIyZXxBSXKSVdj496CrSufpHf7tfeubUea0IgcC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

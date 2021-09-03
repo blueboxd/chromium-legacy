@@ -2474,6 +2474,10 @@ const char kTabToGTSAnimationAndroidDescription[] =
     "Allows users to see an animation when entering or leaving the "
     "Grid Tab Switcher on phones.";
 
+const char kAppsShortcutDefaultOffName[] = "Apps Shortcut Default Off";
+const char kAppsShortcutDefaultOffDescription[] =
+    "Changes the apps shortcut on the bookmarks bar to default to off.";
+
 const char kTabGroupsAutoCreateName[] = "Tab Groups Auto Create";
 const char kTabGroupsAutoCreateDescription[] =
     "Automatically creates groups for users, if tab groups are enabled.";
@@ -3693,6 +3697,10 @@ const char kNtpModulesRedesignedName[] = "NTP Modules Redesigned";
 const char kNtpModulesRedesignedDescription[] =
     "Shows the redesigned modules on the New Tab Page.";
 
+const char kNtpRealboxPedalsName[] = "NTP Realbox Pedals";
+const char kNtpRealboxPedalsDescription[] =
+    "Shows pedals in the NTP Realbox when enabled.";
+
 const char kNtpRealboxSuggestionAnswersName[] =
     "NTP Realbox Suggestion Answers";
 const char kNtpRealboxSuggestionAnswersDescription[] =
@@ -3789,6 +3797,11 @@ const char kEnableMediaFoundationVideoCaptureName[] =
 const char kEnableMediaFoundationVideoCaptureDescription[] =
     "Enable/Disable the usage of MediaFoundation for video capture. Fall back "
     "to DirectShow if disabled.";
+
+const char kHardwareSecureDecryptionName[] = "Hardware Secure Decryption";
+const char kHardwareSecureDecryptionDescription[] =
+    "Enable/Disable the use of hardware secure Content Decryption Module (CDM) "
+    "for protected content playback.";
 
 const char kRawAudioCaptureName[] = "Raw audio capture";
 const char kRawAudioCaptureDescription[] =
@@ -4553,12 +4566,6 @@ const char kExperimentalAccessibilitySwitchAccessSetupGuideName[] =
 const char kExperimentalAccessibilitySwitchAccessSetupGuideDescription[] =
     "Enable a setup guide to walk through the steps of initially configuring "
     "Switch Access.";
-
-const char kMagnifierPanningImprovementsName[] =
-    "Enable panning improvements in magnifier";
-const char kMagnifierPanningImprovementsDescription[] =
-    "Enable feature which adds additional mouse and keyboard panning "
-    "functionality in Magnifier.";
 
 const char kMagnifierContinuousMouseFollowingModeSettingName[] =
     "Enable ability to choose continuous mouse following mode in Magnifier "

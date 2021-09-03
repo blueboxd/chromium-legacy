@@ -7187,7 +7187,7 @@ others/histograms.xml -->
              token, and an experimental config which requires it is active"/>
   <int value="50"
       label="Unload handler exists in the main frame, and the current
-             experimental config doesn't permit it to be BFCached. (removed)"/>
+             experimental config doesn't permit it to be BFCached."/>
   <int value="51"
       label="Unload handler exists in a sub frame, and the current
              experimental config doesn't permit it to be BFCached."/>
@@ -9722,6 +9722,11 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BooleanRecurrentError">
   <int value="0" label="Not a recurrent error"/>
   <int value="1" label="A recurrent error"/>
+</enum>
+
+<enum name="BooleanRedirected">
+  <int value="0" label="Not redirected"/>
+  <int value="1" label="Redirected"/>
 </enum>
 
 <enum name="BooleanRegistered">
@@ -34414,6 +34419,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4004" label="CanvasRenderingContext2DFontKerning"/>
   <int value="4005" label="CanvasRenderingContext2DFontStretch"/>
   <int value="4006" label="CanvasRenderingContext2DTextRendering"/>
+  <int value="4007" label="CSSCascadeLayers"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -45976,6 +45982,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="20" label="kOtherReason"/>
 </enum>
 
+<enum name="LightTheme">
+  <int value="0" label="undefined"/>
+  <int value="1" label="no"/>
+  <int value="2" label="yes"/>
+</enum>
+
 <enum name="LinkGenerationCopiedLinkType">
   <int value="0" label="Copied from new right-click menu generation"/>
   <int value="1" label="Copied from existing highlight right-click menu"/>
@@ -47628,6 +47640,7 @@ from previous Chrome versions.
   <int value="-1644308778" label="WASAPIRawAudioCapture:disabled"/>
   <int value="-1643933608" label="SyncAutofillWalletOfferData:enabled"/>
   <int value="-1641832607" label="DragToPinTabs:enabled"/>
+  <int value="-1640944841" label="HardwareSecureDecryption:disabled"/>
   <int value="-1639534120" label="VaapiVp9kSVCHWEncoding:enabled"/>
   <int value="-1639050182" label="NavigationPredictorRendererWarmup:enabled"/>
   <int value="-1638815914" label="enable-experimental-productivity-features"/>
@@ -49066,6 +49079,7 @@ from previous Chrome versions.
   <int value="-530799497" label="MacCoreLocationImplementation:enabled"/>
   <int value="-530480158" label="EnableSuggestedFiles:enabled"/>
   <int value="-528927088" label="AutofillCreditCardPopupLayout:disabled"/>
+  <int value="-528441522" label="AppsShortcutDefaultOff:disabled"/>
   <int value="-528149352" label="WebRtcUseEchoCanceller3:enabled"/>
   <int value="-527990339" label="ForceEnableFaceAe:enabled"/>
   <int value="-526236814" label="WebAssemblyTiering:enabled"/>
@@ -49505,6 +49519,7 @@ from previous Chrome versions.
   <int value="-161782023" label="AndroidMessagesProdEndpoint:enabled"/>
   <int value="-160571071" label="InterestFeedV2:enabled"/>
   <int value="-159877930" label="MaterialDesignUserManager:disabled"/>
+  <int value="-158938746" label="NtpRealboxPedals:enabled"/>
   <int value="-158549277" label="enable-embeddedsearch-api"/>
   <int value="-153299083" label="NewProfilePicker:disabled"/>
   <int value="-152677714" label="AsmJsToWebAssembly:enabled"/>
@@ -50973,6 +50988,7 @@ from previous Chrome versions.
   <int value="1019623058" label="ash-enable-shelf-model-synchronization"/>
   <int value="1019857902"
       label="disable-hide-inactive-stacked-tab-close-buttons"/>
+  <int value="1020127284" label="HardwareSecureDecryption:enabled"/>
   <int value="1021573543" label="QuickSettingsPWA:disabled"/>
   <int value="1021848000" label="SharedHighlightingUseBlocklist:disabled"/>
   <int value="1022424308" label="SignedExchangeSubresourcePrefetch:enabled"/>
@@ -51032,6 +51048,7 @@ from previous Chrome versions.
   <int value="1061947013" label="OmniboxDeferredKeyboardPopup:disabled"/>
   <int value="1062357243" label="remember-cert-error-decisions"/>
   <int value="1064288458" label="OfflineRecentPages:enabled"/>
+  <int value="1065451331" label="NtpRealboxPedals:disabled"/>
   <int value="1065547630" label="EnableInputNoiseCancellationUi:disabled"/>
   <int value="1065553214" label="ClosedTabCache:enabled"/>
   <int value="1067618884" label="enable-experimental-input-view-features"/>
@@ -51831,6 +51848,7 @@ from previous Chrome versions.
   <int value="1691568199" label="AndroidSpellCheckerNonLowEnd:disabled"/>
   <int value="1692847616" label="ArcEnableWebAppShare:enabled"/>
   <int value="1693094211" label="FilesNG:disabled"/>
+  <int value="1693658048" label="AppsShortcutDefaultOff:enabled"/>
   <int value="1694766748"
       label="AutofillRestrictUnownedFieldsToFormlessCheckout:enabled"/>
   <int value="1694798717" label="NewNetErrorPageUI:enabled"/>
@@ -59600,6 +59618,12 @@ Called by update_net_trust_anchors.py.-->
 <enum name="NewUserPriorityPrefsSyncResult">
   <int value="0" label="Succeeded"/>
   <int value="1" label="Timed out"/>
+</enum>
+
+<enum name="NightMode">
+  <int value="0" label="undefined"/>
+  <int value="1" label="no"/>
+  <int value="2" label="yes"/>
 </enum>
 
 <enum name="NormalizedScore">
@@ -67699,6 +67723,12 @@ Called by update_net_trust_anchors.py.-->
 <enum name="PriorityChangeStatus">
   <int value="0" label="NoPriorityChange"/>
   <int value="1" label="PriorityChanged"/>
+</enum>
+
+<enum name="PrivacySandboxAggregationServiceReportStatus">
+  <int value="0" label="Ok"/>
+  <int value="1" label="Network error"/>
+  <int value="2" label="Server error"/>
 </enum>
 
 <enum name="PrivacySandboxReferrer">
@@ -88717,10 +88747,46 @@ Called by update_scheduler_enums.py.-->
   <int value="8" label="OS yes, WebView on"/>
 </enum>
 
+<enum name="WebViewForceDarkMode2">
+  <int value="0" label="off"/>
+  <int value="1" label="auto"/>
+  <int value="2" label="on"/>
+</enum>
+
+<enum name="WebViewInDarkModeVsLightTheme">
+  <int value="0" label="WebView dark, light theme undefined"/>
+  <int value="1" label="WebView dark, light theme no"/>
+  <int value="2" label="WebView dark, light theme yes"/>
+  <int value="3" label="WebView light, light theme undefined"/>
+  <int value="4" label="WebView light, light theme no"/>
+  <int value="5" label="WebView light, light theme yes"/>
+</enum>
+
+<enum name="WebViewInDarkModeVsNightMode">
+  <int value="0" label="WebView dark, night mode undefined"/>
+  <int value="1" label="WebView dark, night mode off"/>
+  <int value="2" label="WebView dark, night mode on"/>
+  <int value="3" label="WebView light, night mode undefined"/>
+  <int value="4" label="WebView light, night mode off"/>
+  <int value="5" label="WebView light, night mode on"/>
+</enum>
+
 <enum name="WebViewMixedContentMode">
   <int value="0" label="Always allow"/>
   <int value="1" label="Never allow"/>
   <int value="2" label="Compatibility Mode"/>
+</enum>
+
+<enum name="WebViewNightModeVsLightTheme">
+  <int value="0" label="Night mode undefined, light theme undefined"/>
+  <int value="1" label="Night mode undefined, light theme no"/>
+  <int value="2" label="Night mode undefined, light theme yes"/>
+  <int value="3" label="Night mode off, light theme undefined"/>
+  <int value="4" label="Night mode off, light theme no"/>
+  <int value="5" label="Night mode off, light theme yes"/>
+  <int value="6" label="Night mode on, light theme undefined"/>
+  <int value="7" label="Night mode on, light theme no"/>
+  <int value="8" label="Night mode on, light theme yes"/>
 </enum>
 
 <enum name="WebViewOpenWebScreenPortion">
@@ -88741,6 +88807,24 @@ Called by update_scheduler_enums.py.-->
 <enum name="WebViewOpenWebVisibility">
   <int value="0" label="OpenWebContentVisible"/>
   <int value="1" label="OpenWebContentNotVisible"/>
+</enum>
+
+<enum name="WebViewPrimaryTextLuminanceVsLightTheme">
+  <int value="0" label="Text dark, light theme undefined"/>
+  <int value="1" label="Text dark, light theme no"/>
+  <int value="2" label="Text dark, light theme yes"/>
+  <int value="3" label="Text light, light theme undefined"/>
+  <int value="4" label="Text light, light theme no"/>
+  <int value="5" label="Text light, light theme yes"/>
+</enum>
+
+<enum name="WebViewPrimaryTextLuminanceVsNightMode">
+  <int value="0" label="Text dark, night mode undefined"/>
+  <int value="1" label="Text dark, night mode off"/>
+  <int value="2" label="Text dark, night mode on"/>
+  <int value="3" label="Text light, night mode undefined"/>
+  <int value="4" label="Text light, night mode off"/>
+  <int value="5" label="Text light, night mode on"/>
 </enum>
 
 <enum name="WebViewUrlScheme">

@@ -74,20 +74,10 @@ class OmniboxPedalClearBrowsingData : public OmniboxPedal {
     }
   }
 
-  // This method and the below overrides enable this Pedal to spoof its ID
-  // for metrics reporting, making it possible to distinguish incognito usage.
-  OmniboxPedalId GetMetricsId() const {
+  // This method override enables this Pedal to spoof its ID for metrics
+  // reporting, making it possible to distinguish incognito usage.
+  OmniboxPedalId GetMetricsId() const override {
     return incognito_ ? OmniboxPedalId::INCOGNITO_CLEAR_BROWSING_DATA : id();
-  }
-
-  void RecordActionShown(size_t /*position*/) const override {
-    base::UmaHistogramEnumeration("Omnibox.PedalShown", GetMetricsId(),
-                                  OmniboxPedalId::TOTAL_COUNT);
-  }
-
-  void RecordActionExecuted(size_t /*position*/) const override {
-    base::UmaHistogramEnumeration("Omnibox.SuggestionUsed.Pedal",
-                                  GetMetricsId(), OmniboxPedalId::TOTAL_COUNT);
   }
 
  protected:
@@ -1211,6 +1201,16 @@ class OmniboxPedalShareThisPage : public OmniboxPedal {
                          IDS_ACC_OMNIBOX_PEDAL_SHARE_THIS_PAGE_SUFFIX,
                          IDS_ACC_OMNIBOX_PEDAL_SHARE_THIS_PAGE),
             GURL()) {}
+
+  bool IsReadyToTrigger(
+      const AutocompleteInput& input,
+      const AutocompleteProviderClient& client) const override {
+    return client.IsSharingHubAvailable();
+  }
+
+  void Execute(ExecutionContext& context) const override {
+    context.client_.OpenSharingHub();
+  }
 
  protected:
   ~OmniboxPedalShareThisPage() override = default;

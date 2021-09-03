@@ -1421,6 +1421,9 @@ extern const char kTabGroupsUiImprovementsAndroidDescription[];
 extern const char kTabToGTSAnimationAndroidName[];
 extern const char kTabToGTSAnimationAndroidDescription[];
 
+extern const char kAppsShortcutDefaultOffName[];
+extern const char kAppsShortcutDefaultOffDescription[];
+
 extern const char kTabGroupsAutoCreateName[];
 extern const char kTabGroupsAutoCreateDescription[];
 
@@ -2113,6 +2116,9 @@ extern const char kNtpModulesDragAndDropDescription[];
 extern const char kNtpModulesRedesignedName[];
 extern const char kNtpModulesRedesignedDescription[];
 
+extern const char kNtpRealboxPedalsName[];
+extern const char kNtpRealboxPedalsDescription[];
+
 extern const char kNtpRealboxSuggestionAnswersName[];
 extern const char kNtpRealboxSuggestionAnswersDescription[];
 
@@ -2163,6 +2169,9 @@ extern const char kEnableIncognitoShortcutOnDesktopDescription[];
 
 extern const char kEnableMediaFoundationVideoCaptureName[];
 extern const char kEnableMediaFoundationVideoCaptureDescription[];
+
+extern const char kHardwareSecureDecryptionName[];
+extern const char kHardwareSecureDecryptionDescription[];
 
 extern const char kRawAudioCaptureName[];
 extern const char kRawAudioCaptureDescription[];
@@ -2611,9 +2620,6 @@ extern const char kSwitchAccessPointScanningDescription[];
 
 extern const char kExperimentalAccessibilitySwitchAccessSetupGuideName[];
 extern const char kExperimentalAccessibilitySwitchAccessSetupGuideDescription[];
-
-extern const char kMagnifierPanningImprovementsName[];
-extern const char kMagnifierPanningImprovementsDescription[];
 
 extern const char kMagnifierContinuousMouseFollowingModeSettingName[];
 extern const char kMagnifierContinuousMouseFollowingModeSettingDescription[];

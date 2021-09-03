@@ -29,6 +29,9 @@ per-file chromium.chromiumos.json=chrome-weblayer-builder@chops-service-accounts
 # For Lacros skylab tests cros image roller related reviews
 per-file variants.pyl=skylab-test-cros-roller@chops-service-accounts.iam.gserviceaccount.com
 per-file internal.chromeos.fyi.json=skylab-test-cros-roller@chops-service-accounts.iam.gserviceaccount.com
+per-file chromium.fyi.json=skylab-test-cros-roller@chops-service-accounts.iam.gserviceaccount.com
+# TODO(crbug.com/1245791): remove the following line after the roller is stable
+per-file internal.chromeos.fyi.json=svenzheng@chromium.org
 
 # For V8 and DevTools related reviews.
 machenbach@chromium.org
@@ -49,6 +52,7 @@ per-file chromium.mac.json=file://infra/config/groups/ios/OWNERS
 per-file *.pyl=file://infra/config/groups/ios/OWNERS
 
 # Fuchsia owners.
+per-file chromium.clang.json=chonggu@google.com
 per-file chromium.fyi.json=chonggu@google.com
 per-file chromium.linux.json=chonggu@google.com
 per-file chromium.perf.fyi.json=chonggu@google.com

@@ -126,12 +126,12 @@
   {
     "name": "android-detailed-language-settings",
     "owners": [ "perrier", "chrome-language@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 97
   },
   {
     "name": "android-force-app-language-prompt",
     "owners": [" perrier", "chrome-language@google.com"],
-    "expiry_milestone": 95
+    "expiry_milestone": 97
   },
   {
     "name": "android-multiple-display",
@@ -182,6 +182,11 @@
     "name": "app-service-external-protocol",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
     "expiry_milestone": 96
+  },
+   {
+    "name": "apps-shortcut-default-off",
+    "owners": [ "chrome-desktop-ui-sea@google.com", "cyan" ],
+    "expiry_milestone": 95
   },
   {
     "name": "arc-custom-tabs-experiment",
@@ -1019,13 +1024,13 @@
   },
   {
     "name": "desktop-detailed-language-settings",
-    "owners": [ "joshsantana@google.com", "chrome-language@google.com" ],
-    "expiry_milestone": 93
+    "owners": [ "chrome-language@google.com" ],
+    "expiry_milestone": 97
   },
   {
     "name": "desktop-restructured-language-settings",
-    "owners": [ "joshsantana@google.com", "chrome-language@google.com"],
-    "expiry_milestone": 93
+    "owners": [ "chrome-language@google.com" ],
+    "expiry_milestone": 97
   },
   {
     "name": "desktop-version-default",
@@ -1978,11 +1983,6 @@
     "expiry_milestone": 99
   },
   {
-    "name": "enable-ftp",
-    "owners": [ "asanka" ],
-    "expiry_milestone": 91
-  },
-  {
     "name": "enable-fullpage-screenshot",
     "owners": [ "seblalancette" ],
     "expiry_milestone": 94
@@ -2048,6 +2048,17 @@
     // whether to permanently remove hardware mirroring. See crbug.com/1161556
     // for more details.
     "expiry_milestone": 114
+  },
+  {
+    "name": "enable-hardware-secure-decryption",
+    "owners": [
+      "xhwang", "media-dev"
+    ],
+    // This flag does not expire because the feature depends on the OS, GPU
+    // driver and hardware, and the flag allows users to disable HW secure
+    // decryption for debugging purpose and/or temporarily working around OS
+    // or driver issues.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-heavy-ad-intervention",
@@ -2327,7 +2338,7 @@
   {
     "name": "enable-oop-print-drivers",
     "owners": [ "awscreen", "thestig" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 97
   },
   {
     "name": "enable-oop-rasterization",
@@ -2599,7 +2610,7 @@
     // Note: while password-triggered site isolation launched in M77, it only
     // affected devices above a predefined memory threshold.  This flag is kept
     // around because it allows users of low-memory devices to opt in.
-    "expiry_milestone": 94
+    "expiry_milestone": 100
   },
   {
     "name": "enable-site-per-process",
@@ -3126,12 +3137,12 @@
   {
     "name": "file-handling-api",
     "owners": [ "estade", "mgiuca", "cmp" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 98
   },
   {
     "name": "file-handling-icons",
     "owners": [ "estade", "mgiuca", "cmp" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 98
   },
   {
     "name": "files-archivemount",
@@ -3727,11 +3738,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "mac-v2-gpu-sandbox",
-    "owners": [ "kerrnel@google.com", "rsesek" ],
-    "expiry_milestone": 93
-  },
-  {
     "name": "managed-bookmarks-ios",
     "owners": [ "edchin", "rohitrao", "bling-flags@google.com" ],
     "expiry_milestone": 90
@@ -4080,6 +4086,11 @@
     "name": "ntp-photos-module",
     "owners": [ "jerem", "tiborg" ],
     "expiry_milestone": 96
+  },
+  {
+    "name": "ntp-realbox-pedals",
+    "owners": [ "mahmadi", "mfacey" ],
+    "expiry_milestone": 97
   },
   {
     "name": "ntp-realbox-suggestion-answers",
@@ -4539,7 +4550,7 @@
   {
     "name": "photo-picker-video-support",
     "owners": [ "finnur" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 105
   },
   {
     "name": "playback-speed-button",
@@ -5618,12 +5629,12 @@
   {
     "name": "use-xps-for-printing",
     "owners": [ "awscreen", "thestig" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 98
   },
   {
     "name": "use-xps-for-printing-from-pdf",
     "owners": [ "awscreen", "thestig" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 98
   },
   {
     "name": "username-first-flow",
@@ -5760,7 +5771,7 @@
   {
     "name": "webui-feedback",
     "owners": [ "xiangdongkong@google.com", "dpapad@chromium.org" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 106
   },
   {
     "name": "webui-tab-strip",

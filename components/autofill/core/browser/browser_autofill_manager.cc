@@ -422,7 +422,6 @@ BrowserAutofillManager::BrowserAutofillManager(
     : BrowserAutofillManager(driver,
                              client,
                              client->GetPersonalDataManager(),
-                             client->GetAutocompleteHistoryManager(),
                              app_locale,
                              enable_download_manager) {}
 
@@ -430,17 +429,15 @@ BrowserAutofillManager::BrowserAutofillManager(
     AutofillDriver* driver,
     AutofillClient* client,
     PersonalDataManager* personal_data,
-    AutocompleteHistoryManager* autocomplete_history_manager,
     const std::string app_locale,
-    AutofillDownloadManagerState enable_download_manager,
-    std::unique_ptr<CreditCardAccessManager> cc_access_manager)
+    AutofillDownloadManagerState enable_download_manager)
     : AutofillManager(driver, client, enable_download_manager),
       external_delegate_(
           std::make_unique<AutofillExternalDelegate>(this, driver)),
       app_locale_(app_locale),
       personal_data_(personal_data),
       field_filler_(app_locale, client->GetAddressNormalizer()),
-      autocomplete_history_manager_(autocomplete_history_manager->GetWeakPtr()),
+      single_field_form_fill_router_(client->GetSingleFieldFormFillRouter()),
       suggestion_generator_(
           std::make_unique<AutofillSuggestionGenerator>(client,
                                                         personal_data_)) {
@@ -450,11 +447,9 @@ BrowserAutofillManager::BrowserAutofillManager(
       driver->IsInMainFrame(), form_interactions_ukm_logger(), personal_data_,
       client);
 
-  credit_card_access_manager_ = cc_access_manager
-                                    ? std::move(cc_access_manager)
-                                    : std::make_unique<CreditCardAccessManager>(
-                                          driver, client, personal_data_,
-                                          credit_card_form_event_logger_.get());
+  credit_card_access_manager_ = std::make_unique<CreditCardAccessManager>(
+      driver, client, personal_data_, credit_card_form_event_logger_.get());
+
   CountryNames::SetLocaleString(app_locale_);
   offer_manager_ = client->GetAutofillOfferManager();
 }
@@ -468,9 +463,7 @@ BrowserAutofillManager::~BrowserAutofillManager() {
                               has_observed_one_time_code_field_);
   }
 
-  if (autocomplete_history_manager_) {
-    autocomplete_history_manager_->CancelPendingQueries(this);
-  }
+  single_field_form_fill_router_->CancelPendingQueries(this);
 }
 
 void BrowserAutofillManager::ShowAutofillSettings(
@@ -675,7 +668,7 @@ void BrowserAutofillManager::OnFormSubmittedImpl(const FormData& form,
   // We will always give Autocomplete a chance to save the data.
   std::unique_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
   if (!submitted_form) {
-    autocomplete_history_manager_->OnWillSubmitForm(
+    single_field_form_fill_router_->OnWillSubmitForm(
         form, client()->IsAutocompleteEnabled());
     return;
   }
@@ -706,7 +699,7 @@ void BrowserAutofillManager::OnFormSubmittedImpl(const FormData& form,
       form_for_autocomplete.fields[i].should_autocomplete = false;
     }
   }
-  autocomplete_history_manager_->OnWillSubmitForm(
+  single_field_form_fill_router_->OnWillSubmitForm(
       form_for_autocomplete, client()->IsAutocompleteEnabled());
 
   if (IsAutofillProfileEnabled()) {
@@ -952,7 +945,7 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
         break;
 
       case SuppressReason::kAblation:
-        autocomplete_history_manager_->CancelPendingQueries(this);
+        single_field_form_fill_router_->CancelPendingQueries(this);
         external_delegate_->OnSuggestionsReturned(query_id, suggestions,
                                                   autoselect_first_suggestion);
         LogSuppressReason(log_manager(), "Ablation experiment");
@@ -1000,9 +993,9 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
          context.focused_field->Type().GetStorableType() ==
              CREDIT_CARD_VERIFICATION_CODE)) &&
       context.suppress_reason != SuppressReason::kInsecureForm) {
-    // Suggestions come back asynchronously, so the Autocomplete manager will
-    // handle sending the results back to the renderer.
-    autocomplete_history_manager_->OnGetAutocompleteSuggestions(
+    // Suggestions come back asynchronously, so the SingleFieldFormFillRouter
+    // will handle sending the results back to the renderer.
+    single_field_form_fill_router_->OnGetSingleFieldSuggestions(
         query_id, client()->IsAutocompleteEnabled(),
         autoselect_first_suggestion, field.name, field.value,
         field.form_control_type, weak_ptr_factory_.GetWeakPtr());
@@ -1010,7 +1003,7 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
   }
 
   // Send Autofill suggestions (could be an empty list).
-  autocomplete_history_manager_->CancelPendingQueries(this);
+  single_field_form_fill_router_->CancelPendingQueries(this);
   external_delegate_->OnSuggestionsReturned(query_id, suggestions,
                                             autoselect_first_suggestion,
                                             context.should_display_gpay_logo);
@@ -1310,7 +1303,7 @@ void BrowserAutofillManager::OnHidePopup() {
   if (!IsAutofillEnabled())
     return;
 
-  autocomplete_history_manager_->CancelPendingQueries(this);
+  single_field_form_fill_router_->CancelPendingQueries(this);
   client()->HideAutofillPopup(PopupHidingReason::kRendererEvent);
 }
 
@@ -1383,15 +1376,16 @@ bool BrowserAutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
   return false;
 }
 
-void BrowserAutofillManager::RemoveAutocompleteEntry(
+void BrowserAutofillManager::RemoveCurrentSingleFieldSuggestion(
     const std::u16string& name,
     const std::u16string& value) {
-  autocomplete_history_manager_->OnRemoveAutocompleteEntry(name, value);
+  single_field_form_fill_router_->OnRemoveCurrentSingleFieldSuggestion(name,
+                                                                       value);
 }
 
-void BrowserAutofillManager::OnAutocompleteEntrySelected(
+void BrowserAutofillManager::OnSingleFieldSuggestionSelected(
     const std::u16string& value) {
-  autocomplete_history_manager_->OnAutocompleteEntrySelected(value);
+  single_field_form_fill_router_->OnSingleFieldSuggestionSelected(value);
 }
 
 void BrowserAutofillManager::OnUserHideSuggestions(const FormData& form,

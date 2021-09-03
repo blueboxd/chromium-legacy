@@ -52,11 +52,11 @@
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -560,7 +560,15 @@ IN_PROC_BROWSER_TEST_F(WebAppTabRestoreBrowserTest,
 
 // Tests that using window.open to create a popup window out of scope results in
 // a correctly sized window.
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, OffScopePWAPopupsHaveCorrectSize) {
+// TODO(crbug.com/1234260): Stabilize the test.
+#if defined(OS_LINUX)
+#define MAYBE_OffScopePWAPopupsHaveCorrectSize \
+  DISABLED_OffScopePWAPopupsHaveCorrectSize
+#else
+#define MAYBE_OffScopePWAPopupsHaveCorrectSize OffScopePWAPopupsHaveCorrectSize
+#endif
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
+                       MAYBE_OffScopePWAPopupsHaveCorrectSize) {
   // TODO(crbug.com/1240482): the test expectations fail if the window gets CSD
   // and becomes smaller because of that.  Investigate this and remove the line
   // below if possible.

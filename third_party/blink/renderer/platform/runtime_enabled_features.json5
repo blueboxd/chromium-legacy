@@ -527,7 +527,8 @@
     },
     {
       // https://drafts.csswg.org/css-cascade-5/#layering
-      name: "CSSCascadeLayers"
+      name: "CSSCascadeLayers",
+      status: "test",
     },
     {
       // Support case-sensitive attribute selector modifier
@@ -2103,6 +2104,7 @@
     },
     {
       name: "SVGTextNG",
+      status: "test"
     },
     {
       // Synchronously load web fonts inlined as data urls (crbug.com/1236283)

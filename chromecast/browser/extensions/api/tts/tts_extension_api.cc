@@ -220,7 +220,7 @@ ExtensionFunction::ResponseAction TtsSpeakFunction::Run() {
     base::ListValue* list;
     EXTENSION_FUNCTION_VALIDATE(
         options->GetList(constants::kRequiredEventTypesKey, &list));
-    for (size_t i = 0; i < list->GetSize(); ++i) {
+    for (size_t i = 0; i < list->GetList().size(); ++i) {
       std::string event_type;
       if (list->GetString(i, &event_type))
         required_event_types.insert(TtsEventTypeFromString(event_type.c_str()));
@@ -232,7 +232,7 @@ ExtensionFunction::ResponseAction TtsSpeakFunction::Run() {
     base::ListValue* list;
     EXTENSION_FUNCTION_VALIDATE(
         options->GetList(constants::kDesiredEventTypesKey, &list));
-    for (size_t i = 0; i < list->GetSize(); ++i) {
+    for (size_t i = 0; i < list->GetList().size(); ++i) {
       std::string event_type;
       if (list->GetString(i, &event_type))
         desired_event_types.insert(TtsEventTypeFromString(event_type.c_str()));
@@ -317,7 +317,7 @@ ExtensionFunction::ResponseAction TtsGetVoicesFunction::Run() {
     auto event_types = std::make_unique<base::ListValue>();
     for (auto iter = voice.events.begin(); iter != voice.events.end(); ++iter) {
       const char* event_name_constant = TtsEventTypeToString(*iter);
-      event_types->AppendString(event_name_constant);
+      event_types->Append(event_name_constant);
     }
     result_voice->Set(constants::kEventTypesKey, std::move(event_types));
 

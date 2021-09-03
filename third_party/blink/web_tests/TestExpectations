@@ -2743,7 +2743,6 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] external/wpt/pointerevents/pointerevent_contextmenu_is_a_pointerevent.html?touch [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/pointerevents/pointerevent_contextmenu_is_a_pointerevent.html?touch [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/pointerevents/pointerevent_contextmenu_is_a_pointerevent.html?touch [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/pointerevents/pointerevent_contextmenu_is_a_pointerevent.html?touch [ Timeout ]
@@ -4077,19 +4076,16 @@ crbug.com/764235 external/wpt/css/css-grid/alignment/grid-baseline-justify-001.h
 crbug.com/618969 external/wpt/css/css-grid/subgrid/* [ Skip ]
 
 ### Tests failing with SVGTextNG enabled:
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/visibility-collapse.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/paintorder/paintorder-text-decorations.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/bbox-with-glyph-overflow.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/bbox-with-glyph-overflow-on-path.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/bbox-with-glyph-overflow-zoomed.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-decorations-in-scaled-pattern.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-selection-deco-01-b.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-deco-01-b.svg [ Failure ]
-# Ignore older OSes during SVGTextNG development
-crbug.com/1179585 [ Mac10.12 ] virtual/layout_ng_svg_text/* [ Skip ]
-crbug.com/1179585 [ Mac10.13 ] virtual/layout_ng_svg_text/* [ Skip ]
-crbug.com/1179585 [ Mac10.14 ] virtual/layout_ng_svg_text/* [ Skip ]
-crbug.com/1179585 [ Win7 ] virtual/layout_ng_svg_text/* [ Skip ]
+crbug.com/1179585 external/wpt/css/css-pseudo/textpath-selection-011.html [ Failure ]
+crbug.com/1179585 images/color-profile-svg-fill-text.html [ Failure ]
+crbug.com/1179585 svg/custom/visibility-collapse.html [ Failure ]
+crbug.com/1179585 svg/paintorder/paintorder-text-decorations.svg [ Failure ]
+crbug.com/1179585 svg/text/bbox-with-glyph-overflow.html [ Failure ]
+crbug.com/1179585 svg/text/bbox-with-glyph-overflow-on-path.html [ Failure ]
+crbug.com/1179585 svg/text/bbox-with-glyph-overflow-zoomed.html [ Failure ]
+crbug.com/1179585 svg/text/text-decorations-in-scaled-pattern.svg [ Failure ]
+crbug.com/1179585 svg/text/text-selection-deco-01-b.svg [ Failure ]
+crbug.com/1179585 svg/W3C-SVG-1.1/text-deco-01-b.svg [ Failure ]
 
 crbug.com/1236992 svg/dom/SVGListPropertyTearOff-gccrash.html [ Failure Pass ]
 
@@ -6828,7 +6824,6 @@ crbug.com/1085647 external/wpt/pointerevents/compat/pointerevent_mouse-pointer-p
 crbug.com/1087232 http/tests/devtools/network/network-worker-fetch-blocked.js [ Failure Pass ]
 crbug.com/1229801 http/tests/devtools/elements/css-rule-hover-highlights-selectors.js [ Failure Pass ]
 crbug.com/1229802 fast/events/pointerevents/multi-touch-events.html [ Failure Pass ]
-crbug.com/835943 http/tests/appcache/non-html.xhtml [ Crash Failure Pass Timeout ]
 crbug.com/1181886 external/wpt/pointerevents/pointerevent_movementxy.html?* [ Failure Pass Timeout ]
 
 # Sheriff 2021-07-21
@@ -6877,11 +6872,11 @@ crbug.com/1234057 [ Mac ] external/wpt/css/css-paint-api/no-op-animation.https.h
 crbug.com/1234302 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-image.https.html [ Crash Failure Pass ]
 
 # Temporarily disabling progress based worklet animation tests.
-crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/inactive-timeline.https.html [ Timeout ]
-crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/scroll-timeline-writing-modes.https.html [ Failure ]
-crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Timeout ]
-crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure ]
-crbug.com/1238130 virtual/threaded-no-composited-antialiasing/animations/animationworklet/playback-rate-scroll-timeline-accelerated-property.html [ Timeout ]
+crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/inactive-timeline.https.html [ Timeout Pass ]
+crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/scroll-timeline-writing-modes.https.html [ Failure Pass ]
+crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Timeout Pass ]
+crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure Pass ]
+crbug.com/1238130 virtual/threaded-no-composited-antialiasing/animations/animationworklet/playback-rate-scroll-timeline-accelerated-property.html [ Timeout Pass ]
 
 # Sheriff 2021-07-29
 crbug.com/626703 http/tests/security/cross-frame-access-put.html [ Failure Pass ]
@@ -6949,7 +6944,6 @@ crbug.com/1242243 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-a
 crbug.com/1244896 [ Mac ] fast/mediacapturefromelement/CanvasCaptureMediaStream-set-size-too-large.html [ Pass Timeout ]
 
 # Sheriff 2021-08-25
-crbug.com/1243128 [ Win ] external/wpt/css/css-cascade/layer-basic.html [ Failure ]
 crbug.com/1243128 [ Win ] external/wpt/editing/run/insertparagraph.html?6001-last [ Failure ]
 crbug.com/1243128 [ Win ] external/wpt/editing/run/justifyright.html?4001-last [ Failure ]
 crbug.com/1243128 [ Win ] external/wpt/html/canvas/element/wide-gamut-canvas/2d.color.space.p3.fillText.html [ Failure ]

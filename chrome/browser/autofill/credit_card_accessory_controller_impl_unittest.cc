@@ -13,9 +13,9 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
+#include "components/autofill/core/browser/test_browser_autofill_manager.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/form_data.h"
@@ -35,36 +35,6 @@ const std::u16string kFirstTwelveDigits = u"411111111111";
 
 namespace autofill {
 namespace {
-
-class TestBrowserAutofillManager : public BrowserAutofillManager {
- public:
-  TestBrowserAutofillManager(
-      AutofillDriver* driver,
-      AutofillClient* client,
-      PersonalDataManager* personal_data,
-      AutocompleteHistoryManager* autocomplete_history_manager,
-      std::unique_ptr<CreditCardAccessManager> cc_access_manager = nullptr)
-      // Force to use the constructor designated for unit test.
-      : BrowserAutofillManager(
-            driver,
-            client,
-            personal_data,
-            autocomplete_history_manager,
-            "en-US",
-            AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
-            std::move(cc_access_manager)) {}
-
-  ~TestBrowserAutofillManager() override = default;
-
-  const FormData& last_query_form() const override { return last_form_; }
-
-  void SetLastForm(FormData form) { last_form_ = std::move(form); }
-
- private:
-  FormData last_form_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBrowserAutofillManager);
-};
 
 AccessorySheetData::Builder CreditCardAccessorySheetDataBuilder() {
   return AccessorySheetData::Builder(
@@ -113,13 +83,11 @@ class CreditCardAccessoryControllerTest
     : public ChromeRenderViewHostTestHarness {
  public:
   CreditCardAccessoryControllerTest()
-      : af_manager_(&mock_af_driver_,
-                    &client_,
-                    &data_manager_,
-                    &history_,
-                    std::make_unique<TestAccessManager>(&mock_af_driver_,
-                                                        &client_,
-                                                        &data_manager_)) {}
+      : af_manager_(&mock_af_driver_, &client_, &data_manager_) {
+    af_manager_.set_credit_card_access_manager_for_test(
+        std::make_unique<TestAccessManager>(&mock_af_driver_, &client_,
+                                            &data_manager_));
+  }
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
@@ -155,14 +123,12 @@ class CreditCardAccessoryControllerTest
     form.action = origin;
     form.main_frame_origin = url::Origin::Create(origin);
     client_.set_form_origin(origin);
-    af_manager_.SetLastForm(std::move(form));
   }
 
  protected:
   TestAutofillClient client_;
   testing::NiceMock<MockAutofillDriver> mock_af_driver_;
   autofill::TestPersonalDataManager data_manager_;
-  MockAutocompleteHistoryManager history_;
   testing::NiceMock<MockManualFillingController> mock_mf_controller_;
   TestBrowserAutofillManager af_manager_;
   base::MockCallback<AccessoryController::FillingSourceObserver>

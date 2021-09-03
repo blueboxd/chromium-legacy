@@ -937,6 +937,10 @@ static_library("browser") {
     "offline_items_collection/offline_content_aggregator_factory.h",
     "optimization_guide/chrome_hints_manager.cc",
     "optimization_guide/chrome_hints_manager.h",
+    "optimization_guide/model_validator_keyed_service.cc",
+    "optimization_guide/model_validator_keyed_service.h",
+    "optimization_guide/model_validator_keyed_service_factory.cc",
+    "optimization_guide/model_validator_keyed_service_factory.h",
     "optimization_guide/optimization_guide_keyed_service.cc",
     "optimization_guide/optimization_guide_keyed_service.h",
     "optimization_guide/optimization_guide_keyed_service_factory.cc",
@@ -6825,7 +6829,6 @@ static_library("browser") {
   }
 
   if (use_cups) {
-    configs += [ "//printing:cups" ]
     if (is_chromeos) {
       sources += [
         "chromeos/printing/cups_wrapper.cc",
@@ -7052,6 +7055,7 @@ grit("resources") {
       "//chrome/browser/resources/chromeos/account_manager:web_components",
       "//chrome/browser/resources/chromeos/account_manager/components:web_components",
       "//chrome/browser/resources/chromeos/add_supervision:web_components",
+      "//chrome/browser/resources/chromeos/crostini_installer:crostini_installer",
       "//chrome/browser/resources/chromeos/crostini_installer:web_components",
       "//chrome/browser/resources/chromeos/crostini_upgrader:web_components",
       "//chrome/browser/resources/chromeos/edu_coexistence:edu_coexistence_controller",

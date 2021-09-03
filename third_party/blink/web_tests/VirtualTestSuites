@@ -344,17 +344,6 @@
     "args": ["--disable-blink-features=LayoutNGGrid"]
   },
   {
-    "prefix": "layout_ng_svg_text",
-    "bases": ["animations/svg",
-              "animations/svg-attribute-composition",
-              "animations/svg-attribute-interpolation",
-              "external/wpt/svg",
-              "http/tests/svg",
-              "paint/invalidation/svg",
-              "svg"],
-    "args": ["--enable-blink-features=SVGTextNG"]
-  },
-  {
     "prefix": "dark-mode-default",
     "bases": ["dark-mode/colors",
               "dark-mode/images"],
@@ -504,7 +493,6 @@
               "external/wpt/content-security-policy/worker-src",
               "external/wpt/content-security-policy/gen",
               "external/wpt/fetch/",
-              "external/wpt/html/browsers/offline/appcache/workers/",
               "external/wpt/html/cross-origin-embedder-policy",
               "external/wpt/referrer-policy",
               "external/wpt/resource-timing",
@@ -701,12 +689,6 @@
               "external/wpt/web-animations",
               "animations"],
     "args": ["--enable-blink-features=CSSIsolatedAnimationUpdates"]
-  },
-  {
-    "prefix": "appcache-origin-trial",
-    "bases": ["http/tests/appcache"],
-    "args": ["--enable-features=AppCacheRequireOriginTrial",
-             "--disable-features=AppCacheAlwaysFallbackToNetwork"]
   },
   {
     "prefix": "force-eager",

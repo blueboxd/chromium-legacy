@@ -191,7 +191,7 @@ source_set("clipboard") {
   }
 }
 
-# A source set to be shared by the host binary and the remote_open_url binary.
+# A source set to be shared by the :common and remoting/host/win.
 source_set("remote_open_url_support") {
   sources = [
     "remote_open_url_constants.cc",
@@ -357,6 +357,7 @@ static_library("common") {
     "ipc_mouse_cursor_monitor.h",
     "ipc_screen_controls.cc",
     "ipc_screen_controls.h",
+    "ipc_server.h",
     "ipc_video_frame_capturer.cc",
     "ipc_video_frame_capturer.h",
     "it2me_desktop_environment.cc",
@@ -664,12 +665,16 @@ static_library("test_support") {
     "fake_desktop_environment.h",
     "fake_host_extension.cc",
     "fake_host_extension.h",
+    "fake_ipc_server.cc",
+    "fake_ipc_server.h",
     "fake_keyboard_layout_monitor.cc",
     "fake_keyboard_layout_monitor.h",
     "fake_mouse_cursor_monitor.cc",
     "fake_mouse_cursor_monitor.h",
     "host_mock_objects.cc",
     "host_mock_objects.h",
+    "mojo_ipc_test_util.cc",
+    "mojo_ipc_test_util.h",
   ]
 
   configs += [ "//remoting/build/config:version" ]
@@ -737,6 +742,8 @@ source_set("unit_tests") {
     "policy_watcher_unittest.cc",
     "process_stats_sender_unittest.cc",
     "remote_input_filter_unittest.cc",
+    "remote_open_url_client_unittest.cc",
+    "remote_open_url_message_handler_unittest.cc",
     "remoting_register_support_host_request_unittest.cc",
     "resizing_host_observer_unittest.cc",
     "resources_unittest.cc",

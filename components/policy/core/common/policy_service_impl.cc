@@ -97,8 +97,8 @@ void RemapRenamedPolicies(PolicyMap* policies) {
   for (const auto& policy_pair : renamed_policies) {
     PolicyMap::Entry* old_policy = policies->GetMutable(policy_pair.first);
     const PolicyMap::Entry* new_policy = policies->Get(policy_pair.second);
-    if (old_policy &&
-        (!new_policy || old_policy->has_higher_priority_than(*new_policy))) {
+    if (old_policy && (!new_policy || policies->EntryHasHigherPriority(
+                                          *old_policy, *new_policy))) {
       PolicyMap::Entry policy_entry = old_policy->DeepCopy();
       policy_entry.AddMessage(PolicyMap::MessageType::kWarning,
                               IDS_POLICY_MIGRATED_NEW_POLICY,
@@ -359,10 +359,8 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   bool atomic_policy_group_enabled =
       atomic_policy_group_enabled_policy_value &&
       atomic_policy_group_enabled_policy_value->value()->GetBool() &&
-      !((atomic_policy_group_enabled_policy_value->source ==
-             POLICY_SOURCE_CLOUD ||
-         atomic_policy_group_enabled_policy_value->source ==
-             POLICY_SOURCE_PRIORITY_CLOUD) &&
+      !(atomic_policy_group_enabled_policy_value->source ==
+            POLICY_SOURCE_CLOUD &&
         atomic_policy_group_enabled_policy_value->scope == POLICY_SCOPE_USER);
 
   PolicyListMerger policy_list_merger(std::move(policy_lists_to_merge));

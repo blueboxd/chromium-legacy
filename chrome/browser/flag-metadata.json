@@ -904,11 +904,6 @@
     "expiry_milestone": 110
   },
   {
-    "name": "crostini-enable-dlc",
-    "owners": [ "sidereal", "davidmunro@google.com", "nverne" ],
-    "expiry_milestone": 92
-  },
-  {
     "name": "crostini-gpu-support",
     "owners": [ "nverne", "benwells" ],
     "expiry_milestone": 110
@@ -921,7 +916,7 @@
   {
     "name": "crostini-use-dlc",
     "owners": [ "sidereal", "davidmunro@google.com", "nverne" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "cups-ipp-printing-backend",
@@ -2007,7 +2002,7 @@
   {
     "name": "enable-generic-sensor-extra-classes",
     "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 100
   },
   {
     "name": "enable-google-srp-isolated-prerender-nsp",
@@ -3936,11 +3931,6 @@
     "name": "mobile-identity-consistency-fre",
     "owners": [ "aliceywang", "msarda", "triploblastic" ],
     "expiry_milestone": 98
-  },
-  {
-    "name": "mobile-identity-consistency-var",
-    "owners": [ "bsazonov", "aliceywang", "msarda", "triploblastic" ],
-    "expiry_milestone": 92
   },
   {
     "name": "mobile-pwa-install-use-bottom-sheet",

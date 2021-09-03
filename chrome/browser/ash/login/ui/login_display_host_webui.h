@@ -79,6 +79,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void OnStartAppLaunch() override;
   void OnBrowserCreated() override;
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
+  void ShowOsInstallScreen() override;
   void HideOobeDialog() override;
   void SetShelfButtonsEnabled(bool enabled) override;
   void UpdateOobeDialogState(OobeDialogState state) override;
@@ -94,6 +95,8 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void StartBrowserDataMigration() override;
   void AddObserver(LoginDisplayHost::Observer* observer) override;
   void RemoveObserver(LoginDisplayHost::Observer* observer) override;
+  SigninUI* GetSigninUI() final;
+  bool IsWizardControllerCreated() const final;
   bool GetKeyboardRemappedPrefValue(const std::string& pref_name,
                                     int* value) const final;
 

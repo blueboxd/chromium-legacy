@@ -390,7 +390,9 @@ bool WizardController::is_branded_build_ = false;
 // static
 WizardController* WizardController::default_controller() {
   auto* host = LoginDisplayHost::default_host();
-  return host ? host->GetWizardController() : nullptr;
+  return (host && host->IsWizardControllerCreated())
+             ? host->GetWizardController()
+             : nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -738,7 +740,9 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
 
   if (switches::IsOsInstallAllowed()) {
     append(std::make_unique<OsInstallScreen>(
-        oobe_ui->GetView<OsInstallScreenHandler>()));
+        oobe_ui->GetView<OsInstallScreenHandler>(),
+        base::BindRepeating(&WizardController::OnOsInstallScreenExit,
+                            weak_factory_.GetWeakPtr())));
   }
 
   return result;
@@ -1069,6 +1073,21 @@ void WizardController::OnOfflineLoginScreenExit(
     case OfflineLoginScreen::Result::RELOAD_ONLINE_LOGIN:
       AdvanceToScreen(GaiaView::kScreenId);
       break;
+  }
+}
+
+void WizardController::OnOsInstallScreenExit() {
+  OnScreenExit(OsInstallScreenView::kScreenId, kDefaultExitReason);
+  // The screen exits when user goes back. There could be a previous_screen_ or
+  // we could get to OsInstallScreen directly from the login screen.
+  // (When installation is finished or error occurs - user can only shut down)
+  if (LoginDisplayHost::default_host()->HasUserPods()) {
+    LoginDisplayHost::default_host()->HideOobeDialog();
+    return;
+  }
+  if (previous_screen_) {
+    SetCurrentScreen(previous_screen_);
+    return;
   }
 }
 

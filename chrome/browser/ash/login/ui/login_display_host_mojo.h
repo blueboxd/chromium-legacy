@@ -85,6 +85,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void OnStartAppLaunch() override;
   void OnBrowserCreated() override;
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
+  void ShowOsInstallScreen() override;
   void HideOobeDialog() override;
   void SetShelfButtonsEnabled(bool enabled) override;
   void UpdateOobeDialogState(OobeDialogState state) override;
@@ -100,6 +101,8 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void StartBrowserDataMigration() override;
   void AddObserver(LoginDisplayHost::Observer* observer) override;
   void RemoveObserver(LoginDisplayHost::Observer* observer) override;
+  SigninUI* GetSigninUI() final;
+  bool IsWizardControllerCreated() const final;
   bool GetKeyboardRemappedPrefValue(const std::string& pref_name,
                                     int* value) const final;
 
@@ -141,10 +144,11 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   bool IsOobeUIDialogVisible() const override;
 
-  OobeUIDialogDelegate* dialog_for_test() { return dialog_; }
+  OobeUIDialogDelegate* EnsureDialogForTest();
 
  private:
-  void LoadOobeDialog();
+  // Ensure GetOobeUI() is not nullptr.
+  void EnsureOobeDialogLoaded();
 
   // Callback to be invoked when the `challenge_response_auth_keys_loader_`
   // completes building the currently available challenge-response keys. Used
@@ -224,9 +228,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   // Set if Gaia dialog is shown with prefilled email.
   absl::optional<AccountId> gaia_reauth_account_id_;
-
-  // Store which screen is currently displayed.
-  DisplayedScreen displayed_screen_ = DisplayedScreen::SIGN_IN_SCREEN;
 
   // Consumer kiosk owner fields.
   AccountId owner_account_id_;

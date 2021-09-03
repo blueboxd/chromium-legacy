@@ -203,11 +203,6 @@ class WizardController {
         screen_manager()->GetScreen(TScreen::TView::kScreenId));
   }
 
-  // Returns the current WizardContext instance.
-  WizardContext* get_wizard_context_for_testing() const {
-    return wizard_context_;
-  }
-
   // Volume percent at which spoken feedback is still audible.
   static const int kMinAudibleOutputVolumePercent;
 
@@ -352,6 +347,7 @@ class WizardController {
       EduCoexistenceLoginScreen::Result result);
   void OnParentalHandoffScreenExit(ParentalHandoffScreen::Result result);
   void OnOfflineLoginScreenExit(OfflineLoginScreen::Result result);
+  void OnOsInstallScreenExit();
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.

@@ -133,12 +133,12 @@
     "META": {"sizes": {"includes": [50]}},
     "includes": [1366],
   },
-  "chrome/browser/resources/chromeos/login/oobe_resources.grd": {
+  "chrome/browser/resources/chromeos/login/oobe_conditional_resources.grd": {
     "META": {"sizes": {"includes": [150], "structures": [300]}},
     "includes": [1367],
     "structures": [1368],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/login/oobe_modulized_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/login/oobe_unconditional_resources.grd": {
     "META": {"sizes": {"includes": [150]}},
     "includes": [1369],
   },
@@ -489,11 +489,11 @@
   # start with the same id because only one of them is built depending on if
   # src_internal is available.
   "chromeos/components/eche_app_ui/resources/prod/eche_bundle_resources.grd": {
-    "META": {"sizes": {"includes": [50],}},
+    "META": {"sizes": {"includes": [120],}},
     "includes": [2690],
   },
   "chromeos/components/eche_app_ui/resources/mock/eche_bundle_mock_resources.grd": {
-    "META": {"sizes": {"includes": [50],}},
+    "META": {"sizes": {"includes": [120],}},
     "includes": [2690],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chromeos/components/personalization_app/resources/chromeos_personalization_app_resources.grd": {
@@ -837,7 +837,8 @@
   },
 
   # This file is generated during the build.
-  "<(SHARED_INTERMEDIATE_DIR)/third_party/devtools-frontend/src/front_end/devtools_resources.grd": {
+  # .grd extension is required because it's checked before var interpolation.
+  "<(DEVTOOLS_GRD_PATH).grd": {
     # In debug build, devtools frontend sources are not bundled and therefore
     # includes a lot of individual resources
     "META": {"sizes": {"includes": [2000],}},

@@ -57,6 +57,12 @@ bool LayoutNGSVGText::CreatesNewFormattingContext() const {
   return true;
 }
 
+void LayoutNGSVGText::UpdateFromStyle() {
+  NOT_DESTROYED();
+  LayoutNGBlockFlowMixin<LayoutSVGBlock>::UpdateFromStyle();
+  SetHasNonVisibleOverflow(false);
+}
+
 bool LayoutNGSVGText::IsChildAllowed(LayoutObject* child,
                                      const ComputedStyle&) const {
   NOT_DESTROYED();
@@ -94,6 +100,23 @@ void LayoutNGSVGText::UpdateFont() {
        descendant = descendant->NextInPreOrder(this)) {
     if (auto* text = DynamicTo<LayoutSVGInlineText>(descendant))
       text->UpdateScaledFont();
+  }
+}
+
+void LayoutNGSVGText::UpdateTransformAffectsVectorEffect() {
+  if (StyleRef().VectorEffect() == EVectorEffect::kNonScalingStroke) {
+    SetTransformAffectsVectorEffect(true);
+    return;
+  }
+
+  SetTransformAffectsVectorEffect(false);
+  for (LayoutObject* descendant = FirstChild(); descendant;
+       descendant = descendant->NextInPreOrder(this)) {
+    if (descendant->IsSVGInline() && descendant->StyleRef().VectorEffect() ==
+                                         EVectorEffect::kNonScalingStroke) {
+      SetTransformAffectsVectorEffect(true);
+      break;
+    }
   }
 }
 
@@ -159,6 +182,8 @@ void LayoutNGSVGText::UpdateBlockLayout(bool relayout_children) {
   // If our bounds changed, notify the parents.
   if (UpdateTransformAfterLayout(bounds_changed) || bounds_changed)
     SetNeedsBoundariesUpdate();
+
+  UpdateTransformAffectsVectorEffect();
 }
 
 bool LayoutNGSVGText::IsObjectBoundingBoxValid() const {

@@ -116,6 +116,7 @@
 <translation id="2073572773299281212">曾於 <ph name="DAYS" /> 天前在線</translation>
 <translation id="2074131957428911366">您隨時可在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中選擇要同步的資料。</translation>
 <translation id="2079545284768500474">復原</translation>
+<translation id="2080769225927880590">使用有效帳戶登入</translation>
 <translation id="209018056901015185">切換為電腦版網站</translation>
 <translation id="2103075008456228677">開啟 history.google.com</translation>
 <translation id="2116625576999540962">已移動 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
@@ -467,6 +468,8 @@
 <translation id="5737974891429562743">帳戶登入資料已過時。請先更新，然後開始同步資料。</translation>
 <translation id="5738887413654608789">這樣您便可根據周圍環境探索相關網頁。</translation>
 <translation id="5758631781033351321">您可在此查看閱讀清單</translation>
+<translation id="575902488528307720">搜尋圖片</translation>
+<translation id="5781453543752460388">新增到相簿</translation>
 <translation id="5782227691023083829">正在翻譯...</translation>
 <translation id="5803566855766646066">確定要捨棄這張新的信用卡嗎？</translation>
 <translation id="5812974770859303494">新增至…</translation>
@@ -627,7 +630,6 @@
 <ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="7004499039102548441">最近開啟的分頁</translation>
 <translation id="7006788746334555276">內容設定</translation>
-<translation id="7015203776128479407">尚未完成初始同步處理設定。已關閉同步功能。</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7062545763355031412">接受並切換帳戶</translation>
@@ -650,7 +652,6 @@
 <translation id="7265758999917665941">一律不儲存此網站的密碼</translation>
 <translation id="7272437679830969316">無法驗證您的身分。未複製密碼。</translation>
 <translation id="7291368939935408496">正在準備密碼…</translation>
-<translation id="7293171162284876153">如要開始同步處理，請開啟「同步處理 Chrome 資料」。</translation>
 <translation id="7313347584264171202">您可在此查看無痕式分頁</translation>
 <translation id="7319242366286515846">繼續即表示您同意《<ph name="BEGIN_LINK" />服務條款<ph name="END_LINK" />》</translation>
 <translation id="7336264872878993241">已下載 <ph name="PERCENT" /> %</translation>
@@ -738,6 +739,7 @@
 <translation id="8205564605687841303">取消</translation>
 <translation id="8206354486702514201">這項設定由管理員執行。</translation>
 <translation id="8225985093977202398">快取圖片和檔案</translation>
+<translation id="8228176677386827255">你的裝置是受管理裝置，你只能使用貴機構的帳戶登入。</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8271720166617117963">接受並登入</translation>
 <translation id="8281781826761538115">預設 - <ph name="DEFAULT_LOCALE" /></translation>

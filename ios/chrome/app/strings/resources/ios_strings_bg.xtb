@@ -116,6 +116,7 @@
 <translation id="2073572773299281212">Активно преди <ph name="DAYS" /> дни</translation>
 <translation id="2074131957428911366">Винаги можете да изберете какво да се синхронизира от <ph name="BEGIN_LINK" />настройките<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Отмяна</translation>
+<translation id="2080769225927880590">Влезте с валиден профил</translation>
 <translation id="209018056901015185">Заявка за настолния сайт</translation>
 <translation id="2103075008456228677">Към history.google.com</translation>
 <translation id="2116625576999540962">Преместихте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> елемента</translation>
@@ -467,6 +468,8 @@
 <translation id="5737974891429562743">Данните за вход в профила не са актуални. Актуализирайте ги, за да започне синхронизирането.</translation>
 <translation id="5738887413654608789">Това ви позволява да откривате подходящи уеб страници въз основа на заобикалящата ви среда.</translation>
 <translation id="5758631781033351321">Тук ще се показва списъкът ви за четене</translation>
+<translation id="575902488528307720">Търсене на изображението</translation>
+<translation id="5781453543752460388">Добавяне към Photos</translation>
 <translation id="5782227691023083829">Превежда се...</translation>
 <translation id="5803566855766646066">Наистина ли искате да отхвърлите тази нова карта?</translation>
 <translation id="5812974770859303494">Добавяне към...</translation>
@@ -629,7 +632,6 @@
 <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="7004499039102548441">Скорошни раздели</translation>
 <translation id="7006788746334555276">Настройки за съдържанието</translation>
-<translation id="7015203776128479407">Първоначалното настройване на синхронизирането не бе завършено. Синхронизирането е изключено.</translation>
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="7053983685419859001">Блокиране</translation>
 <translation id="7062545763355031412">Приемане и превключване на профилите</translation>
@@ -652,7 +654,6 @@
 <translation id="7265758999917665941">Никога за този сайт</translation>
 <translation id="7272437679830969316">Паролата не бе копирана поради неуспешно удостоверяване.</translation>
 <translation id="7291368939935408496">Паролите се подготвят...</translation>
-<translation id="7293171162284876153">За да стартирате синхронизирането, включете „Синхронизиране на данните ви в Chrome“.</translation>
 <translation id="7313347584264171202">Тук ще се показват разделите ви в режим „инкогнито“</translation>
 <translation id="7319242366286515846">Продължавайки, приемате <ph name="BEGIN_LINK" />Общите условия<ph name="END_LINK" /></translation>
 <translation id="7336264872878993241">Изтеглено: <ph name="PERCENT" />%</translation>
@@ -740,6 +741,7 @@
 <translation id="8205564605687841303">Отказ</translation>
 <translation id="8206354486702514201">Тази настройка е наложена от администратора ви.</translation>
 <translation id="8225985093977202398">Кеширани изображения и файлове</translation>
+<translation id="8228176677386827255">Устройството ви се управлява. Можете да влезете само с профила на организацията си.</translation>
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8271720166617117963">Приемане и вход</translation>
 <translation id="8281781826761538115">Стандартно – <ph name="DEFAULT_LOCALE" /></translation>

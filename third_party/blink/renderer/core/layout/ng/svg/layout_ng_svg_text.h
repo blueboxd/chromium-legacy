@@ -48,12 +48,14 @@ class LayoutNGSVGText final : public LayoutNGBlockFlowMixin<LayoutSVGBlock> {
 
   // LayoutBox override:
   bool CreatesNewFormattingContext() const override;
+  void UpdateFromStyle() override;
 
   // LayoutBlock override:
   void Paint(const PaintInfo&) const override;
   void UpdateBlockLayout(bool relayout_children) override;
 
   void UpdateFont();
+  void UpdateTransformAffectsVectorEffect();
 
   // bounding_box_* are mutable for on-demand computation in a const method.
   mutable FloatRect bounding_box_;

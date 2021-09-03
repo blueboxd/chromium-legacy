@@ -4079,13 +4079,10 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/* [ Skip ]
 crbug.com/1179585 external/wpt/css/css-pseudo/textpath-selection-011.html [ Failure ]
 crbug.com/1179585 images/color-profile-svg-fill-text.html [ Failure ]
 crbug.com/1179585 svg/custom/visibility-collapse.html [ Failure ]
-crbug.com/1179585 svg/paintorder/paintorder-text-decorations.svg [ Failure ]
 crbug.com/1179585 svg/text/bbox-with-glyph-overflow.html [ Failure ]
 crbug.com/1179585 svg/text/bbox-with-glyph-overflow-on-path.html [ Failure ]
 crbug.com/1179585 svg/text/bbox-with-glyph-overflow-zoomed.html [ Failure ]
 crbug.com/1179585 svg/text/text-decorations-in-scaled-pattern.svg [ Failure ]
-crbug.com/1179585 svg/text/text-selection-deco-01-b.svg [ Failure ]
-crbug.com/1179585 svg/W3C-SVG-1.1/text-deco-01-b.svg [ Failure ]
 
 crbug.com/1236992 svg/dom/SVGListPropertyTearOff-gccrash.html [ Failure Pass ]
 
@@ -5544,7 +5541,6 @@ crbug.com/v8/10556 external/wpt/wasm/jsapi/instance/constructor-caching.any.work
 # Temporarily disabled to land the new wasm exception handling JS API
 crbug.com/v8/11992 external/wpt/wasm/jsapi/exception/* [ Skip ]
 crbug.com/v8/11992 external/wpt/wasm/jsapi/tag/* [ Skip ]
-crbug.com/v8/11992 http/tests/origin_trials/webexposed/wasm-exceptions-origin-trial-enabled.html [ Skip ]
 
 # Disabled for landing DevTools change
 crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-response-type-blob.js [ Failure Pass ]
@@ -6872,11 +6868,11 @@ crbug.com/1234057 [ Mac ] external/wpt/css/css-paint-api/no-op-animation.https.h
 crbug.com/1234302 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-image.https.html [ Crash Failure Pass ]
 
 # Temporarily disabling progress based worklet animation tests.
-crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/inactive-timeline.https.html [ Timeout Pass ]
-crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/scroll-timeline-writing-modes.https.html [ Failure Pass ]
-crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Timeout Pass ]
-crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure Pass ]
-crbug.com/1238130 virtual/threaded-no-composited-antialiasing/animations/animationworklet/playback-rate-scroll-timeline-accelerated-property.html [ Timeout Pass ]
+crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/inactive-timeline.https.html [ Timeout ]
+crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/scroll-timeline-writing-modes.https.html [ Failure ]
+crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Timeout ]
+crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure ]
+crbug.com/1238130 virtual/threaded-no-composited-antialiasing/animations/animationworklet/playback-rate-scroll-timeline-accelerated-property.html [ Timeout ]
 
 # Sheriff 2021-07-29
 crbug.com/626703 http/tests/security/cross-frame-access-put.html [ Failure Pass ]
@@ -6962,3 +6958,8 @@ crbug.com/996511 virtual/not-plz-service-worker/http/tests/inspector-protocol/se
 
 # Temporarily allow pass or failure while new WebRTC stats are added and rolled into Chromium.
 crbug.com/webrtc/12951 external/wpt/webrtc-stats/supported-stats.html [ Pass Failure ]
+
+# Sheriff 2021-09-03
+crbug.com/1246238 http/tests/devtools/security/mixed-content-sidebar.js [ Pass Failure ]
+crbug.com/1246238 http/tests/devtools/security/interstitial-sidebar.js [ Pass Failure ]
+crbug.com/1246351 http/tests/misc/scroll-cross-origin-iframes-scrollbar.html [ Pass Failure ]

@@ -720,9 +720,7 @@ void X11Window::Activate() {
     RaiseWindow(xwindow_);
     // Directly ask the X server to give focus to the window. Note that the call
     // would have raised an X error if the window is not mapped.
-    connection_
-        ->SetInputFocus({x11::InputFocus::Parent, xwindow_,
-                         static_cast<x11::Time>(timestamp)})
+    connection_->SetInputFocus({x11::InputFocus::Parent, xwindow_, timestamp})
         .IgnoreError();
     // At this point, we know we will receive focus, and some webdriver tests
     // depend on a window being IsActive() immediately after an Activate(), so
@@ -1390,7 +1388,7 @@ void X11Window::EndMoveLoop() {
 }
 
 bool X11Window::StartDrag(const OSExchangeData& data,
-                          int operation,
+                          int operations,
                           mojom::DragEventSource source,
                           gfx::NativeCursor cursor,
                           bool can_grab_pointer,
@@ -1399,7 +1397,7 @@ bool X11Window::StartDrag(const OSExchangeData& data,
   DCHECK(!drag_handler_delegate_);
 
   drag_handler_delegate_ = delegate;
-  drag_drop_client_->InitDrag(operation, &data);
+  drag_drop_client_->InitDrag(operations, &data);
   allowed_drag_operations_ = 0;
   notified_enter_ = false;
 

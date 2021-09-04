@@ -1329,11 +1329,6 @@ const char kGlobalMediaControlsName[] = "Global Media Controls";
 const char kGlobalMediaControlsDescription[] =
     "Enables the Global Media Controls UI in the toolbar.";
 
-const char kGlobalMediaControlsForCastName[] = "Global Media Controls for Cast";
-const char kGlobalMediaControlsForCastDescription[] =
-    "Shows Cast sessions in the Global Media Controls UI. Requires "
-    "#global-media-controls and #cast-media-route-provider to also be enabled.";
-
 const char kGlobalMediaControlsForChromeOSName[] =
     "Global Media Controls for ChromeOS";
 const char kGlobalMediaControlsForChromeOSDescription[] =
@@ -3116,6 +3111,9 @@ const char kFeedBackToTopDescription[] =
 const char kFeedInteractiveRefreshName[] = "Refresh feeds";
 const char kFeedInteractiveRefreshDescription[] =
     "Enables refreshing feeds triggered by the users.";
+
+const char kFeedStampName[] = "StAMP cards in the feed";
+const char kFeedStampDescription[] = "Enables StAMP cards in the feed.";
 
 const char kFillingPasswordsFromAnyOriginName[] =
     "Filling passwords from any origin";

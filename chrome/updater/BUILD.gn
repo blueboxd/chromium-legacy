@@ -517,6 +517,7 @@ if (is_win || is_mac) {
         "test/data/tagged_encode_utf8.exe",
         "test/data/tagged_magic_utf16.exe",
         "test/data/updater.runtime_deps",
+        "//chrome/test/data/updater/updater_qualification_app_exe.crx",
       ]
     }
 
@@ -558,6 +559,7 @@ if (is_win || is_mac) {
       sources = [
         "test/service/win/impersonate.py",
         "test/service/win/rpc_handler.py",
+        "test/service/win/uac.py",
         "test/service/win/ui.py",
         "test/service/win/updater_test_service.py",
         "test/service/win/updater_test_service_control.py",

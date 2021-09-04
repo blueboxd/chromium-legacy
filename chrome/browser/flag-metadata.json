@@ -116,7 +116,7 @@
   {
     "name": "allow-scroll-settings",
     "owners": [ "khorimoto", "zentaro" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 100
   },
   {
     "name": "allow-sync-xhr-in-page-dismissal",
@@ -354,8 +354,8 @@
   },
   {
     "name": "autofill-always-return-cloud-tokenized-card",
-    "owners": [ "aneeshali@google.com", "annelim@google.com", "jsaul@google.com" ],
-    "expiry_milestone": 94
+    "owners": [ "aneeshali@google.com", "jsaul@google.com", "siyua" ],
+    "expiry_milestone": 100
   },
   {
     "name": "autofill-auto-trigger-manual-fallback-for-cards",
@@ -404,8 +404,8 @@
   },
   {
     "name": "autofill-enable-virtual-card",
-    "owners": [ "siyua", "jsaul@google.com" ],
-    "expiry_milestone": 94
+    "owners": [ "siyua", "jsaul@google.com", "aneeshali@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "autofill-enable-virtual-cards-risk-based-authentication",
@@ -921,7 +921,7 @@
   {
     "name": "cups-ipp-printing-backend",
     "owners": [ "dhoss", "//printing/OWNERS" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 105
   },
   {
     "name": "d3d11-video-decoder",
@@ -1197,7 +1197,7 @@
   {
     "name": "display-alignment-assistance",
     "owners": [ "baileyberro", "cros-peripherals@google.com" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 100
   },
   {
     "name": "display-identification",
@@ -1808,7 +1808,7 @@
   {
     "name": "enable-desktop-pwas-prefix-app-name-in-window-title",
     "owners": [ "dmurph@chromium.org", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 101
   },
   {
     "name": "enable-desktop-pwas-protocol-handling",
@@ -1818,7 +1818,7 @@
   {
     "name": "enable-desktop-pwas-remove-status-bar",
     "owners": [ "dmurph@chromium.org", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 101
   },
   {
     "name": "enable-desktop-pwas-sub-apps",
@@ -3120,6 +3120,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "feed-stamp",
+    "owners": [ "//chrome/android/feed/OWNERS", "freedjm@chromium.org" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "feed-v2-autoplay",
     "owners": [ "//chrome/android/feed/OWNERS", "jianli@chromium.org" ],
     "expiry_milestone": 97
@@ -3335,11 +3340,6 @@
     "expiry_milestone": 99
   },
   {
-    "name": "global-media-controls-for-cast",
-    "owners": [ "takumif", "openscreen-eng@google.com" ],
-    "expiry_milestone": 93
-  },
-  {
     "name": "global-media-controls-for-chromeos",
     "owners": [ "jazzhsu", "steimel", "media-dev" ],
     "expiry_milestone": 96
@@ -3459,7 +3459,7 @@
     "name": "improved-keyboard-shortcuts",
     "owners": [ "zentaro@google.com", "jimmyxgong@google.com",
                 "cros-peripherals@google.com"],
-    "expiry_milestone": 94
+    "expiry_milestone": 100
   },
   {
     "name": "impulse-scroll-animations",
@@ -3740,7 +3740,7 @@
   {
     "name": "mbi-mode",
     "owners": [ "dom", "blink-isolation-dev@chromium.org" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 103
   },
   {
     "name": "media-app-handles-audio",
@@ -4009,8 +4009,8 @@
   },
   {
     "name": "new-shortcut-mapping",
-    "owners": [ "oshima", "afakhry" ],
-    "expiry_milestone": 93
+    "owners": [ "zentaro@google.com", "jimmyxgong@google.com", "cros-peripherals@google.com"],
+    "expiry_milestone": 98
   },
   {
     "name": "new-tabstrip-animation",

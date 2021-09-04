@@ -83,12 +83,6 @@ const char kBreakpadNoDelayInitialUploadDescription[] =
     "disabled, initial upload is delayed until deferred initialization. This "
     "does not affect recovery mode.";
 
-const char kCollectionsCardPresentationStyleName[] =
-    "Card style presentation for Collections.";
-const char kCollectionsCardPresentationStyleDescription[] =
-    "When enabled collections are presented using the new iOS13 card "
-    "style.";
-
 const char kContextMenuActionsRefreshName[] = "Context menu actions refresh";
 const char kContextMenuActionsRefreshDescription[] =
     "When enabled, context menu actions are updated";
@@ -477,10 +471,6 @@ const char kStartSurfaceName[] = "Start Surface";
 const char kStartSurfaceDescription[] =
     "Enable showing the Start Surface when launching Chrome via clicking the "
     "icon or the app switcher.";
-
-const char kTabGridContextMenuName[] = "Enable Tab Grid context menu";
-const char kTabGridContextMenuDescription[] =
-    "Enables the context menu for long press on tabs on the tab grid.";
 
 const char kTabsBulkActionsName[] = "Enable Tab Grid Bulk Actions";
 const char kTabsBulkActionsDescription[] =

@@ -767,9 +767,6 @@ extern const char kForceUiDirectionDescription[];
 extern const char kGlobalMediaControlsName[];
 extern const char kGlobalMediaControlsDescription[];
 
-extern const char kGlobalMediaControlsForCastName[];
-extern const char kGlobalMediaControlsForCastDescription[];
-
 extern const char kGlobalMediaControlsForChromeOSName[];
 extern const char kGlobalMediaControlsForChromeOSDescription[];
 
@@ -1787,6 +1784,9 @@ extern const char kFeedBackToTopDescription[];
 
 extern const char kFeedInteractiveRefreshName[];
 extern const char kFeedInteractiveRefreshDescription[];
+
+extern const char kFeedStampName[];
+extern const char kFeedStampDescription[];
 
 extern const char kFillingPasswordsFromAnyOriginName[];
 extern const char kFillingPasswordsFromAnyOriginDescription[];

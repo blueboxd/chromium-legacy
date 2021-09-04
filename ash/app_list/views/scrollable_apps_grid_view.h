@@ -32,7 +32,8 @@ class ASH_EXPORT ScrollableAppsGridView : public AppsGridView {
   ScrollableAppsGridView(AppListA11yAnnouncer* a11y_announcer,
                          AppListViewDelegate* view_delegate,
                          AppsGridViewFolderDelegate* folder_delegate,
-                         views::ScrollView* scroll_view);
+                         views::ScrollView* scroll_view,
+                         AppListFolderController* folder_controller);
   ScrollableAppsGridView(const ScrollableAppsGridView&) = delete;
   ScrollableAppsGridView& operator=(const ScrollableAppsGridView&) = delete;
   ~ScrollableAppsGridView() override;
@@ -55,10 +56,6 @@ class ASH_EXPORT ScrollableAppsGridView : public AppsGridView {
   void SetFocusAfterEndDrag() override;
   void RecordAppMovingTypeMetrics(AppListAppMovingType type) override;
   int TilesPerPage(int page) const override;
-
-  // AppListItemView::GridDelegate:
-  void OnAppListItemViewActivated(AppListItemView* pressed_item_view,
-                                  const ui::Event& event) override;
 
   views::ScrollView* scroll_view_for_test() { return scroll_view_; }
   base::OneShotTimer* auto_scroll_timer_for_test() {

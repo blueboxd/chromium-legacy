@@ -389,6 +389,7 @@ public abstract class ChromeFeatureList {
     public static final String INTEREST_FEED_V2_HEARTS = "InterestFeedV2Hearts";
     public static final String INTEREST_FEED_V2_AUTOPLAY = "InterestFeedV2Autoplay";
     public static final String KITKAT_SUPPORTED = "KitKatSupported";
+    public static final String LIGHTWEIGHT_REACTIONS = "LightweightReactions";
     public static final String LINK_DOCTOR_DEPRECATION_ANDROID = "LinkDoctorDeprecationAndroid";
     public static final String LOOKALIKE_NAVIGATION_URL_SUGGESTIONS_UI =
             "LookalikeUrlNavigationSuggestionsUI";
@@ -449,6 +450,8 @@ public abstract class ChromeFeatureList {
     public static final String PRIVACY_SANDBOX_SETTINGS = "PrivacySandboxSettings";
     public static final String PRIVACY_SANDBOX_SETTINGS_2 = "PrivacySandboxSettings2";
     public static final String PROBABILISTIC_CRYPTID_RENDERER = "ProbabilisticCryptidRenderer";
+    public static final String PUSH_MESSAGING_DISALLOW_SENDER_IDS =
+            "PushMessagingDisallowSenderIDs";
     public static final String PWA_INSTALL_USE_BOTTOMSHEET = "PwaInstallUseBottomSheet";
     public static final String PWA_UPDATE_DIALOG_FOR_NAME_AND_ICON =
             "PwaUpdateDialogForNameAndIcon";

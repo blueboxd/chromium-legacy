@@ -45,12 +45,15 @@ ScrollableAppsGridView::ScrollableAppsGridView(
     AppListA11yAnnouncer* a11y_announcer,
     AppListViewDelegate* view_delegate,
     AppsGridViewFolderDelegate* folder_delegate,
-    views::ScrollView* parent_scroll_view)
+    views::ScrollView* parent_scroll_view,
+    AppListFolderController* folder_controller)
     : AppsGridView(/*contents_view=*/nullptr,
                    a11y_announcer,
                    view_delegate,
-                   folder_delegate),
+                   folder_delegate,
+                   folder_controller),
       scroll_view_(parent_scroll_view) {
+  DCHECK(scroll_view_);
   view_structure_.Init(PagedViewStructure::Mode::kSinglePage);
 }
 
@@ -93,6 +96,9 @@ gfx::Size ScrollableAppsGridView::GetTileViewSize() const {
 }
 
 gfx::Insets ScrollableAppsGridView::GetTilePadding() const {
+  if (has_fixed_tile_padding_)
+    return gfx::Insets(-vertical_tile_padding_, -horizontal_tile_padding_);
+
   int content_width = GetContentsBounds().width();
   int tile_width = GetAppListConfig().grid_tile_width();
   int width_to_distribute = content_width - cols() * tile_width;
@@ -267,27 +273,6 @@ void ScrollableAppsGridView::RecordAppMovingTypeMetrics(
 
 int ScrollableAppsGridView::TilesPerPage(int page) const {
   return cols() * rows_per_page();
-}
-
-void ScrollableAppsGridView::OnAppListItemViewActivated(
-    AppListItemView* pressed_item_view,
-    const ui::Event& event) {
-  if (IsDragging())
-    return;
-
-  if (IsFolderItem(pressed_item_view->item())) {
-    // TODO(https://crbug.com/1214064): Implement showing folder contents.
-    return;
-  }
-  // TODO(https://crbug.com/1218435): Implement metrics for app launch.
-
-  // Avoid using |item->id()| as the parameter. In some rare situations,
-  // activating the item may destruct it. Using the reference to an object
-  // which may be destroyed during the procedure as the function parameter
-  // may bring the crash like https://crbug.com/990282.
-  const std::string id = pressed_item_view->item()->id();
-  app_list_view_delegate()->ActivateItem(
-      id, event.flags(), AppListLaunchedFrom::kLaunchedFromGrid);
 }
 
 BEGIN_METADATA(ScrollableAppsGridView, AppsGridView)

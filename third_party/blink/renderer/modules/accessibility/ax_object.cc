@@ -32,6 +32,7 @@
 #include <ostream>
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "skia/ext/skia_matrix_44.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
@@ -1460,7 +1461,7 @@ void AXObject::SerializeHTMLAttributes(ui::AXNodeData* node_data) {
 
 // TODO(nektar): Turn off kHTMLAccessibilityMode for automation and Mac
 // and remove ifdef.
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   if (node_data->role == ax::mojom::blink::Role::kMath &&
       element->innerHTML().length()) {
     TruncateAndAddStringAttribute(node_data,

@@ -236,7 +236,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '81af4bc6b3aed8abf391bfa32d8f408bb2e73477',
+  'angle_revision': '6370dec2b7b0c43fd225e029583690032a789fc2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -773,7 +773,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': '4LqCTxygqIqlKOMcVRiL507RvtMJ7MPFd5xFEHoq1j8C',
+          'version': 'jc5_fk3_nHR1VXRabx34WSz55qozkVcUmJZ9t-u57pIC',
       },
     ],
     'condition': 'checkout_android',
@@ -1674,7 +1674,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@bc734d28834aa5c5a1182dd3b7179de028b2a115',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2bc870207510d22e2835e7265bc97744758fabda',
     'condition': 'checkout_src_internal',
   },
 
@@ -1693,7 +1693,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'Wv4R6nEPMgd6EPafXfmAuMn_5QsBr1dIlR7VCHqJ7vwC',
+        'version': '4tRvIH3AfPmYmey4GajMJg5WUB3xRwgI3uWnUcqf8yoC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1704,7 +1704,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'uM2K-G3ksmXKZpLR9GupP8RBgFmhTim5IG82XjSAujwC',
+        'version': 's-EAYofXjH3C_UGvM4BJRrAZ-GxC3Vflku8ODIua0bUC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

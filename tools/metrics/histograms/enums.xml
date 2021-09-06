@@ -34436,6 +34436,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4008" label="CanvasRenderingContext2DConicGradient"/>
   <int value="4009" label="CanvasRenderingContext2DCanvasFilter"/>
   <int value="4010" label="HTMLParamElementURLParameter"/>
+  <int value="4011" label="V8HTMLScriptElement_Supports_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40542,6 +40543,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="HIDContinueScenarioType">
+  <obsolete>
+    Removed in M96.
+  </obsolete>
   <summary>Possible detected devices combination on leaving dialog</summary>
   <int value="0" label="Pointing device only detected."/>
   <int value="1" label="Keyboard device only detected."/>

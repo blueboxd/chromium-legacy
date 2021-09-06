@@ -50,11 +50,13 @@ const char kProgressBarExperiment[] = "4400697";
 
 }  // namespace
 
-Controller::Controller(content::WebContents* web_contents,
-                       Client* client,
-                       const base::TickClock* tick_clock,
-                       base::WeakPtr<RuntimeManagerImpl> runtime_manager,
-                       std::unique_ptr<Service> service)
+Controller::Controller(
+    content::WebContents* web_contents,
+    Client* client,
+    const base::TickClock* tick_clock,
+    base::WeakPtr<RuntimeManagerImpl> runtime_manager,
+    std::unique_ptr<Service> service,
+    std::unique_ptr<AutofillAssistantTtsController> tts_controller)
     : content::WebContentsObserver(web_contents),
       client_(client),
       tick_clock_(tick_clock),
@@ -63,8 +65,10 @@ Controller::Controller(content::WebContents* web_contents,
                        : ServiceImpl::Create(web_contents->GetBrowserContext(),
                                              client_)),
       user_data_(std::make_unique<UserData>()),
-      navigating_to_new_document_(web_contents->IsWaitingForResponse()) {
+      navigating_to_new_document_(web_contents->IsWaitingForResponse()),
+      tts_controller_(std::move(tts_controller)) {
   user_model_.AddObserver(this);
+  tts_controller_->SetTtsEventDelegate(this);
 }
 
 Controller::~Controller() {
@@ -161,6 +165,9 @@ void Controller::SetStatusMessage(const std::string& message) {
   for (ControllerObserver& observer : observers_) {
     observer.OnStatusMessageChanged(message);
   }
+
+  // Override tts_message every time status_message changes.
+  SetTtsMessage(message);
 }
 
 std::string Controller::GetStatusMessage() const {
@@ -176,6 +183,30 @@ void Controller::SetBubbleMessage(const std::string& message) {
 
 std::string Controller::GetBubbleMessage() const {
   return bubble_message_;
+}
+
+void Controller::SetTtsMessage(const std::string& message) {
+  tts_message_ = message;
+
+  // Stop any ongoing TTS and reset button state.
+  if (tts_button_state_ == TtsButtonState::PLAYING) {
+    // Will not cause any TTS event.
+    tts_controller_->Stop();
+    SetTtsButtonState(TtsButtonState::DEFAULT);
+  }
+}
+
+std::string Controller::GetTtsMessage() const {
+  return tts_message_;
+}
+
+void Controller::MaybePlayTtsMessage() {
+  if (!tts_enabled_) {
+    return;
+  }
+
+  // Will fire a TTS_START event.
+  tts_controller_->Speak(tts_message_, GetLocale());
 }
 
 void Controller::SetDetails(std::unique_ptr<Details> details,
@@ -351,6 +382,10 @@ bool Controller::GetProgressVisible() const {
 
 bool Controller::GetTtsButtonVisible() const {
   return tts_enabled_;
+}
+
+TtsButtonState Controller::GetTtsButtonState() const {
+  return tts_button_state_;
 }
 
 void Controller::SetStepProgressBarConfiguration(
@@ -1409,6 +1444,45 @@ void Controller::OnFormActionLinkClicked(int link) {
     form_result_->set_link(link);
     form_changed_callback_.Run(form_result_.get());
     std::move(form_cancel_callback_).Run(ClientStatus(ACTION_APPLIED));
+  }
+}
+
+void Controller::OnTtsButtonClicked() {
+  switch (tts_button_state_) {
+    case TtsButtonState::DEFAULT:
+      // Will fire a TTS_START event.
+      tts_controller_->Speak(tts_message_, GetLocale());
+      break;
+    case TtsButtonState::PLAYING:
+      // Will not cause any TTS event.
+      tts_controller_->Stop();
+      SetTtsButtonState(TtsButtonState::DISABLED);
+      break;
+    case TtsButtonState::DISABLED:
+      SetTtsButtonState(TtsButtonState::DEFAULT);
+      // Will fire a TTS_START event.
+      tts_controller_->Speak(tts_message_, GetLocale());
+      break;
+  }
+}
+
+void Controller::OnTtsEvent(
+    AutofillAssistantTtsController::TtsEventType event) {
+  switch (event) {
+    case AutofillAssistantTtsController::TTS_START:
+      SetTtsButtonState(TtsButtonState::PLAYING);
+      break;
+    case AutofillAssistantTtsController::TTS_END:
+    case AutofillAssistantTtsController::TTS_ERROR:
+      SetTtsButtonState(TtsButtonState::DEFAULT);
+      break;
+  }
+}
+
+void Controller::SetTtsButtonState(TtsButtonState state) {
+  tts_button_state_ = state;
+  for (ControllerObserver& observer : observers_) {
+    observer.OnTtsButtonStateChanged(tts_button_state_);
   }
 }
 

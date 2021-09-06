@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/state.h"
+#include "components/autofill_assistant/browser/tts_button_state.h"
 #include "components/autofill_assistant/browser/user_action.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/viewport_mode.h"
@@ -74,6 +75,9 @@ class UiDelegate {
 
   // Returns whether the TTS button is visible.
   virtual bool GetTtsButtonVisible() const = 0;
+
+  // Returns the current TTS button state.
+  virtual TtsButtonState GetTtsButtonState() const = 0;
 
   // Returns the current configuration of the step progress bar.
   virtual absl::optional<ShowProgressBarProto::StepProgressBarConfiguration>
@@ -143,6 +147,9 @@ class UiDelegate {
 
   // Called when the user clicks a link in the form action.
   virtual void OnFormActionLinkClicked(int link) = 0;
+
+  // Called when the user clicks the TTS button.
+  virtual void OnTtsButtonClicked() = 0;
 
   // Sets the start date of the date/time range.
   virtual void SetDateTimeRangeStartDate(

@@ -13,6 +13,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withTagValue;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
@@ -47,6 +48,7 @@ import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip.Icon;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
+import org.chromium.chrome.browser.autofill_assistant.header.AssistantTtsButtonState;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
@@ -269,13 +271,55 @@ public class AutofillAssistantHeaderUiTest {
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(AssistantHeaderModel.TTS_BUTTON_VISIBLE, true));
-
         onView(is(viewHolder.mTtsButton)).check(matches(isDisplayed()));
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(AssistantHeaderModel.TTS_BUTTON_VISIBLE, false));
-
         onView(is(viewHolder.mTtsButton)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    @MediumTest
+    public void testTtsButtonState() {
+        AssistantHeaderModel model = createModel();
+        AssistantHeaderCoordinator coordinator = createCoordinator(model);
+        ViewHolder viewHolder = new ViewHolder(coordinator.getView());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantHeaderModel.TTS_BUTTON_VISIBLE, true);
+            model.set(AssistantHeaderModel.TTS_BUTTON_STATE, AssistantTtsButtonState.DEFAULT);
+        });
+        onView(is(viewHolder.mTtsButton))
+                .check(matches(withTagValue(is(AssistantTagsForTesting.TTS_ENABLED_ICON_TAG))));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantHeaderModel.TTS_BUTTON_STATE, AssistantTtsButtonState.DISABLED);
+        });
+        onView(is(viewHolder.mTtsButton))
+                .check(matches(withTagValue(is(AssistantTagsForTesting.TTS_DISABLED_ICON_TAG))));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantHeaderModel.TTS_BUTTON_STATE, AssistantTtsButtonState.PLAYING);
+        });
+        onView(is(viewHolder.mTtsButton))
+                .check(matches(withTagValue(is(AssistantTagsForTesting.TTS_ENABLED_ICON_TAG))));
+    }
+
+    @Test
+    @MediumTest
+    public void testTtsButtonClick() {
+        AssistantHeaderModel model = createModel();
+        AssistantHeaderCoordinator coordinator = createCoordinator(model);
+        ViewHolder viewHolder = new ViewHolder(coordinator.getView());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantHeaderModel.TTS_BUTTON_VISIBLE, true);
+            model.set(AssistantHeaderModel.TTS_BUTTON_CALLBACK, mRunnableMock);
+        });
+
+        onView(is(viewHolder.mTtsButton)).perform(click());
+
+        verify(mRunnableMock).run();
     }
 
     private static Matcher<View> hasProgress(int expectedProgress) {

@@ -36,12 +36,15 @@
 namespace blink {
 
 class ExceptionState;
+class ScriptState;
 
 class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
                                             public ScriptElementBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static bool supports(ScriptState*, const AtomicString&);
+
   HTMLScriptElement(Document&, const CreateElementFlags);
 
   // Returns attributes that should be checked against Trusted Types

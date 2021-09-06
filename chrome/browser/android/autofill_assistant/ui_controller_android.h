@@ -130,6 +130,7 @@ class UiControllerAndroid : public ControllerObserver {
       const GenericUserInterfaceProto* generic_ui) override;
   void OnShouldShowOverlayChanged(bool should_show) override;
   void OnTtsButtonVisibilityChanged(bool visible) override;
+  void OnTtsButtonStateChanged(TtsButtonState state) override;
 
   // Called by AssistantOverlayDelegate:
   void OnUnexpectedTaps();
@@ -137,6 +138,7 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Called by AssistantHeaderDelegate:
   void OnHeaderFeedbackButtonClicked();
+  void OnTtsButtonClicked();
 
   // Called by AssistantGenericUiDelegate:
   void OnViewEvent(const EventHandler::EventKey& key);

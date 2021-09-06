@@ -1616,7 +1616,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '51abc167468b5c2d811d51eda62386b4640e0cf5',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '4d6a76d7815830f11a9ca9898f1aeaaa64591ebb',
+    Var('webrtc_git') + '/src.git' + '@' + '749f7095044c770e8d5ef901e94f51df4d81fbb1',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1674,7 +1674,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@36157002083c1cbf08e4039d8a31511dcfa64b18',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@606bc1c64594c0ba7dfa9a70779a9d1b707d34f0',
     'condition': 'checkout_src_internal',
   },
 
@@ -1704,7 +1704,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 's-EAYofXjH3C_UGvM4BJRrAZ-GxC3Vflku8ODIua0bUC',
+        'version': '0jvdL0KewAaEcWB5EkcZuu1UL8EU4N8a1Mk-axDXAgkC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

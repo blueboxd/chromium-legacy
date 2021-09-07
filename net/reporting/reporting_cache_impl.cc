@@ -70,7 +70,8 @@ void ReportingCacheImpl::GetReports(
     std::vector<const ReportingReport*>* reports_out) const {
   reports_out->clear();
   for (const auto& report : reports_) {
-    if (report->status != ReportingReport::Status::DOOMED)
+    if (report->status != ReportingReport::Status::DOOMED &&
+        report->status != ReportingReport::Status::SUCCESS)
       reports_out->push_back(report.get());
   }
 }
@@ -114,6 +115,9 @@ base::Value ReportingCacheImpl::GetReportsAsValue() const {
       case ReportingReport::Status::QUEUED:
         report_dict.SetKey("status", base::Value("queued"));
         break;
+      case ReportingReport::Status::SUCCESS:
+        report_dict.SetKey("status", base::Value("success"));
+        break;
     }
     report_list.push_back(std::move(report_dict));
   }
@@ -126,6 +130,7 @@ std::vector<const ReportingReport*> ReportingCacheImpl::GetReportsToDeliver() {
     if (report->IsUploadPending())
       continue;
     report->status = ReportingReport::Status::PENDING;
+    context_->NotifyReportUpdated(report.get());
     reports_out.push_back(report.get());
   }
   return reports_out;
@@ -141,6 +146,7 @@ ReportingCacheImpl::GetReportsToDeliverForSource(
       if (report->IsUploadPending())
         continue;
       report->status = ReportingReport::Status::PENDING;
+      context_->NotifyReportUpdated(report.get());
       reports_out.push_back(report.get());
     }
   }
@@ -154,11 +160,13 @@ void ReportingCacheImpl::ClearReportsPending(
   for (const ReportingReport* report : reports) {
     auto it = reports_.find(report);
     DCHECK(it != reports_.end());
-    if (it->get()->status == ReportingReport::Status::DOOMED) {
+    if (it->get()->status == ReportingReport::Status::DOOMED ||
+        it->get()->status == ReportingReport::Status::SUCCESS) {
       reports_.erase(it);
     } else {
       DCHECK_EQ(ReportingReport::Status::PENDING, it->get()->status);
       it->get()->status = ReportingReport::Status::QUEUED;
+      context_->NotifyReportUpdated(it->get());
     }
   }
 }
@@ -169,6 +177,7 @@ void ReportingCacheImpl::IncrementReportsAttempts(
     auto it = reports_.find(report);
     DCHECK(it != reports_.end());
     it->get()->attempts++;
+    context_->NotifyReportUpdated(it->get());
   }
 
   context_->NotifyCachedReportsUpdated();
@@ -207,14 +216,36 @@ ReportingCacheImpl::GetExpiredSources() const {
 
 void ReportingCacheImpl::RemoveReports(
     const std::vector<const ReportingReport*>& reports) {
+  RemoveReports(reports, false);
+}
+
+void ReportingCacheImpl::RemoveReports(
+    const std::vector<const ReportingReport*>& reports,
+    bool delivery_success) {
   for (const ReportingReport* report : reports) {
     auto it = reports_.find(report);
     DCHECK(it != reports_.end());
 
-    if (it->get()->IsUploadPending()) {
-      it->get()->status = ReportingReport::Status::DOOMED;
-    } else {
-      reports_.erase(it);
+    switch (it->get()->status) {
+      case ReportingReport::Status::DOOMED:
+        if (delivery_success) {
+          it->get()->status = ReportingReport::Status::SUCCESS;
+          context_->NotifyReportUpdated(it->get());
+        }
+        break;
+      case ReportingReport::Status::PENDING:
+        it->get()->status = delivery_success ? ReportingReport::Status::SUCCESS
+                                             : ReportingReport::Status::DOOMED;
+        context_->NotifyReportUpdated(it->get());
+        break;
+      case ReportingReport::Status::QUEUED:
+        it->get()->status = delivery_success ? ReportingReport::Status::SUCCESS
+                                             : ReportingReport::Status::DOOMED;
+        context_->NotifyReportUpdated(it->get());
+        reports_.erase(it);
+        break;
+      case ReportingReport::Status::SUCCESS:
+        break;
     }
   }
   context_->NotifyCachedReportsUpdated();
@@ -251,7 +282,8 @@ bool ReportingCacheImpl::IsReportDoomedForTesting(
     const ReportingReport* report) const {
   DCHECK(report);
   DCHECK(reports_.find(report) != reports_.end());
-  return report->status == ReportingReport::Status::DOOMED;
+  return report->status == ReportingReport::Status::DOOMED ||
+         report->status == ReportingReport::Status::SUCCESS;
 }
 
 void ReportingCacheImpl::OnParsedHeader(
@@ -328,7 +360,8 @@ void ReportingCacheImpl::RemoveSourceAndEndpoints(
   DCHECK(
       base::ranges::none_of(reports_, [reporting_source](const auto& report) {
         return report->reporting_source == reporting_source &&
-               report->status != ReportingReport::Status::DOOMED;
+               report->status != ReportingReport::Status::DOOMED &&
+               report->status != ReportingReport::Status::SUCCESS;
       }));
   document_endpoints_.erase(reporting_source);
   expired_sources_.erase(reporting_source);

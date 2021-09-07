@@ -982,14 +982,14 @@
             ],
             "experiments": [
                 {
-                    "name": "AutofillAddressProfileSavePromptEnabled",
+                    "name": "AutofillAddressProfileSavePromptEnabled_2021-09-10",
                     "enable_features": [
                         "AutofillAddressProfileSavePrompt",
                         "CreatePendingItemForPostFormSubmission"
                     ]
                 },
                 {
-                    "name": "CreatePendingItemForPostFormSubmissionEnabled",
+                    "name": "CreatePendingItemForPostFormSubmissionEnabled_2021-09-10",
                     "enable_features": [
                         "CreatePendingItemForPostFormSubmission"
                     ]
@@ -4128,6 +4128,21 @@
             ]
         }
     ],
+    "IOSCPEPasswordGeneration": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PasswordCreationEnabled"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSCrashReportBreadcrumbs": [
         {
             "platforms": [
@@ -6370,26 +6385,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PartitionAllocLargeThreadCacheSize"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PartitionAllocPCScanBrowserOnly": [
-        {
-            "platforms": [
-                "android",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PartitionAllocPCScanBrowserOnly"
-                    ],
-                    "disable_features": [
-                        "PartitionAllocPCScanEagerClearing",
-                        "PartitionAllocPCScanImmediateFreeing"
                     ]
                 }
             ]

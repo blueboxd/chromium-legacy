@@ -1899,7 +1899,6 @@ component("base") {
         "allocator/partition_allocator/partition_cookie.h",
         "allocator/partition_allocator/partition_direct_map_extent.h",
         "allocator/partition_allocator/partition_freelist_entry.h",
-        "allocator/partition_allocator/partition_lock.cc",
         "allocator/partition_allocator/partition_lock.h",
         "allocator/partition_allocator/partition_oom.cc",
         "allocator/partition_allocator/partition_oom.h",
@@ -2635,7 +2634,10 @@ test("base_perftests") {
   ]
   if (!is_ios) {
     # iOS doesn't use the partition allocator, therefore it can't run this test.
-    sources += [ "allocator/partition_allocator/partition_alloc_perftest.cc" ]
+    sources += [
+      "allocator/partition_allocator/partition_alloc_perftest.cc",
+      "allocator/partition_allocator/partition_lock_perftest.cc",
+    ]
   }
   deps = [
     ":base",

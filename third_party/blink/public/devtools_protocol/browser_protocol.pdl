@@ -3412,6 +3412,13 @@ domain Emulation
       # Whether to enable to disable focus emulation.
       boolean enabled
 
+  # Automatically render all web contents using a dark theme.
+  experimental command setAutoDarkModeOverride
+    parameters
+      # Whether to enable or disable automatic dark mode.
+      # If not specified, any existing override will be cleared.
+      optional boolean enabled
+
   # Enables CPU throttling to emulate slow CPUs.
   experimental command setCPUThrottlingRate
     parameters
@@ -6105,11 +6112,17 @@ domain Network
   # The status of a Reporting API report.
   experimental type ReportStatus extends string
     enum
-      # Report has been queued but no attempt has been made to deliver it yet,
+      # Report has been queued and no attempt has been made to deliver it yet,
       # or attempted previous upload failed (impermanently).
       Queued
       # There is an ongoing attempt to upload this report.
       Pending
+      # Deletion of this report was requested while it was pending, so it will
+      # be removed after possibly outstanding upload attempts complete (successful
+      # or not).
+      MarkedForRemoval
+      # Successfully uploaded and MarkedForRemoval.
+      Success
 
   experimental type ReportId extends string
 
@@ -6127,11 +6140,18 @@ domain Network
       Network.TimeSinceEpoch timestamp
       # How many uploads deep the related request was.
       integer depth
+      # The number of delivery attempts made so far, not including an active attempt.
+      integer completedAttempts
       object body
+      ReportStatus status
 
   # Is sent whenever a new report is added.
   # And after 'enableReportingApi' for all existing reports.
   experimental event reportingApiReportAdded
+    parameters
+      ReportingApiReport report
+
+  experimental event reportingApiReportUpdated
     parameters
       ReportingApiReport report
 

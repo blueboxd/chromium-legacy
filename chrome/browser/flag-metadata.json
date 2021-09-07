@@ -515,7 +515,7 @@
   {
     "name": "block-insecure-private-network-requests",
     "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 101
   },
   {
     "name": "bluetooth-advertisement-monitoring",
@@ -983,12 +983,12 @@
   {
     "name": "default-browser-promo-non-modal",
     "owners": [ "javierrobles", "rkgibson@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 97
   },
   {
     "name": "default-browser-promo-tailored",
     "owners": [ "javierrobles", "bling-flags@google.com" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 97
   },
   {
     "name": "default-wkwebview-context-menu",
@@ -3744,17 +3744,17 @@
   },
   {
     "name": "media-app-handles-audio",
-    "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
+    "owners": [ "//ash/webui/media_app_ui/OWNERS" ],
     "expiry_milestone": 99
   },
   {
     "name": "media-app-handles-pdf",
-    "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
+    "owners": [ "//ash/webui/media_app_ui/OWNERS" ],
     "expiry_milestone": 96
   },
   {
     "name": "media-app-multi-window",
-    "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
+    "owners": [ "//ash/webui/media_app_ui/OWNERS" ],
     "expiry_milestone": 98
   },
   {

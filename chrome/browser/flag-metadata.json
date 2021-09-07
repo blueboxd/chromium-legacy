@@ -1735,6 +1735,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-default-calculator-web-app",
+    "owners": [ "zafzal@google.com", "calculator-eng@google.com" ],
+    "expiry_milestone": 99
+  },
+  {
     "name": "enable-default-chat-web-app",
     "owners": [
       "alancutter@chromium.org",
@@ -1759,11 +1764,6 @@
     "name": "enable-defer-all-script-without-optimization-hints",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "enable-desktop-pwas-app-icon-shortcuts-menu",
-    "owners": [ "johnjan@microsoft.com", "cmp@google.com" ],
-    "expiry_milestone": 93
   },
   {
     "name": "enable-desktop-pwas-app-icon-shortcuts-menu-ui",
@@ -2138,7 +2138,7 @@
   {
     "name": "enable-jxl",
     "owners": [ "deymo", "firsching", "lode" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "enable-lacros-in-web-kiosk",
@@ -2295,8 +2295,8 @@
   },
   {
     "name": "enable-new-mac-notification-api",
-    "owners": [ "knollr", "peter", "adelm@google.com"],
-    "expiry_milestone": 94
+    "owners": [ "knollr", "peter" ],
+    "expiry_milestone": 98
   },
   {
     "name": "enable-noscript-previews",
@@ -4035,11 +4035,6 @@
   {
     "name": "notification-scheduler-debug-options",
     "owners": [ "//chrome/browser/notifications/scheduler/OWNERS" ],
-    "expiry_milestone": 94
-  },
-  {
-    "name": "notifications-via-helper-app",
-    "owners": [ "knollr", "peter" ],
     "expiry_milestone": 94
   },
   {

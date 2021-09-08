@@ -1878,6 +1878,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_ENTERPRISE_MANAGED_SETTING_MESSAGE" desc="Text displayed to inform the user that the setting is managed by an Enterprise policy. [iOS only]">
         This setting is enforced by your administrator.
       </message>
+      <message name="IDS_IOS_ENTERPRISE_MANAGED_SETTING_SYNC_EVERYTHING_MESSAGE" desc="Text displayed to inform the user that the setting 'sync everything' is managed by an Enterprise policy. [iOS only]">
+        Your organization doesn't allow for you to sync everything.
+      </message>
       <message name="IDS_IOS_ENTERPRISE_SIGNED_OUT" desc="Text displayed in an alert when the user is signed out due to browser sign-in becoming disabled by policy. [iOS only]">
         Your organization signed you out
       </message>
@@ -2208,6 +2211,9 @@ Try to use a unique password for every site.
       </message>
       <message name="IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ITEM_SUBTITLE_DAYS" desc="Text label for the Send Tab To Self modal dialog that shows the last active time of a user's devicet. [iOS only]">
         Active <ph name="Days">$1<ex>2</ex></ph> Days Ago
+      </message>
+      <message name="IDS_SEND_TAB_TO_SELF_MANAGE_DEVICES_LINK" desc="Text with a link to a page where the user can manage the devices they can share a tab to.">
+        <ph name="BEGIN_LINK">BEGIN_LINK</ph>Your devices<ph name="END_LINK">END_LINK</ph> · <ph name="EMAIL">$1<ex>foo@gmail.com</ex></ph>
       </message>
       <message name="IDS_IOS_SHARE_MESSAGES_COMPLETE" desc="Message shown when message share has been sent. [Length: Unknown. Keep it short.] [iOS only]">
         Message sent.

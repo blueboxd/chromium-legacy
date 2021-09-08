@@ -1278,6 +1278,9 @@ extern const char kSecurePaymentConfirmationDebugDescription[];
 extern const char kSendTabToSelfWhenSignedInName[];
 extern const char kSendTabToSelfWhenSignedInDescription[];
 
+extern const char kSendTabToSelfManageDevicesLinkName[];
+extern const char kSendTabToSelfManageDevicesLinkDescription[];
+
 extern const char kSendTabToSelfV2Name[];
 extern const char kSendTabToSelfV2Description[];
 
@@ -1849,6 +1852,9 @@ extern const char kMessagesForAndroidSafetyTipDescription[];
 
 extern const char kMessagesForAndroidSaveCardName[];
 extern const char kMessagesForAndroidSaveCardDescription[];
+
+extern const char kMessagesForAndroidSyncErrorName[];
+extern const char kMessagesForAndroidSyncErrorDescription[];
 
 extern const char kMessagesForAndroidUpdatePasswordName[];
 extern const char kMessagesForAndroidUpdatePasswordDescription[];
@@ -2614,6 +2620,9 @@ extern const char kExperimentalAccessibilityDictationExtensionDescription[];
 
 extern const char kExperimentalAccessibilityDictationOfflineName[];
 extern const char kExperimentalAccessibilityDictationOfflineDescription[];
+
+extern const char kExperimentalAccessibilityDictationCommandsName[];
+extern const char kExperimentalAccessibilityDictationCommandsDescription[];
 
 extern const char kExperimentalAccessibilitySwitchAccessTextName[];
 extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];

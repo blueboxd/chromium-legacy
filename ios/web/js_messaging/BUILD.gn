@@ -21,6 +21,7 @@ source_set("js_messaging") {
     "//ios/web/public/deprecated",
     "//ios/web/public/js_messaging",
     "//ios/web/web_state:web_state_impl_header",
+    "//ios/web/web_state/ui:web_controller_header",
     "//ios/web/web_view:util",
     "//url",
   ]
@@ -28,10 +29,10 @@ source_set("js_messaging") {
   sources = [
     "crw_js_window_id_manager.h",
     "crw_js_window_id_manager.mm",
-    "crw_wk_script_message_router.h",
-    "crw_wk_script_message_router.mm",
     "page_script_util.h",
     "page_script_util.mm",
+    "script_command_java_script_feature.h",
+    "script_command_java_script_feature.mm",
     "web_frame_impl.h",
     "web_frame_impl.mm",
     "web_frame_internal.h",
@@ -163,7 +164,6 @@ source_set("unittests") {
 
   sources = [
     "crw_js_window_id_manager_unittest.mm",
-    "crw_wk_script_message_router_unittest.mm",
     "java_script_content_world_unittest.mm",
     "java_script_feature_manager_unittest.mm",
     "java_script_feature_unittest.mm",

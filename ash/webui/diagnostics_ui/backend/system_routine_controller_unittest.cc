@@ -538,12 +538,13 @@ TEST_F(SystemRoutineControllerTest, AvailableRoutines) {
        healthd::DiagnosticRoutineEnum::kHttpsFirewall,
        healthd::DiagnosticRoutineEnum::kHttpsLatency,
        healthd::DiagnosticRoutineEnum::kLanConnectivity,
-       healthd::DiagnosticRoutineEnum::kSignalStrength});
+       healthd::DiagnosticRoutineEnum::kSignalStrength,
+       healthd::DiagnosticRoutineEnum::kArcHttp});
 
   base::RunLoop run_loop;
   system_routine_controller_->GetSupportedRoutines(base::BindLambdaForTesting(
       [&](const std::vector<mojom::RoutineType>& supported_routines) {
-        EXPECT_EQ(14u, supported_routines.size());
+        EXPECT_EQ(15u, supported_routines.size());
         EXPECT_FALSE(base::Contains(supported_routines,
                                     mojom::RoutineType::kBatteryCharge));
         EXPECT_FALSE(base::Contains(supported_routines,
@@ -580,6 +581,8 @@ TEST_F(SystemRoutineControllerTest, AvailableRoutines) {
             base::Contains(supported_routines, mojom::RoutineType::kMemory));
         EXPECT_TRUE(base::Contains(supported_routines,
                                    mojom::RoutineType::kSignalStrength));
+        EXPECT_TRUE(
+            base::Contains(supported_routines, mojom::RoutineType::kArcHttp));
         run_loop.Quit();
       }));
   run_loop.Run();
@@ -969,6 +972,26 @@ TEST_F(SystemRoutineControllerTest, CancelMemoryReleasesWakeLock) {
 
   // Confirm the wake lock is released.
   EXPECT_FALSE(IsActiveWakeLock());
+}
+
+TEST_F(SystemRoutineControllerTest, ResetReceiverOnDisconnect) {
+  ASSERT_FALSE(system_routine_controller_->ReceiverIsBound());
+  mojo::Remote<mojom::SystemRoutineController> remote;
+  system_routine_controller_->BindInterface(
+      remote.BindNewPipeAndPassReceiver());
+  ASSERT_TRUE(system_routine_controller_->ReceiverIsBound());
+
+  // Unbind remote to trigger disconnect and disconnect handler.
+  remote.reset();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(system_routine_controller_->ReceiverIsBound());
+
+  // Test intent is to ensure interface can be rebound when application is
+  // reloaded using |CTRL + R|.  A disconnect should be signaled in which we
+  // will reset the receiver to its unbound state.
+  system_routine_controller_->BindInterface(
+      remote.BindNewPipeAndPassReceiver());
+  ASSERT_TRUE(system_routine_controller_->ReceiverIsBound());
 }
 
 }  // namespace diagnostics

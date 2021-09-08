@@ -29167,6 +29167,7 @@ Called by update_extension_histograms.py.-->
   <int value="1586" label="SCRIPTING_UPDATECONTENTSCRIPTS"/>
   <int value="1587" label="FILEMANAGERPRIVATE_OPENWINDOW"/>
   <int value="1588" label="OS_DIAGNOSTICS_RUNMEMORYROUTINE"/>
+  <int value="1589" label="OS_DIAGNOSTICS_GETROUTINEUPDATE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -34437,6 +34438,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4009" label="CanvasRenderingContext2DCanvasFilter"/>
   <int value="4010" label="HTMLParamElementURLParameter"/>
   <int value="4011" label="V8HTMLScriptElement_Supports_Method"/>
+  <int value="4012" label="HandwritingRecognitionQueryRecognizer"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -43625,6 +43627,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Store Busy"/>
 </enum>
 
+<enum name="IOSCredentialProviderPasswordCreated">
+  <int value="0" label="Password Manually Added"/>
+  <int value="1" label="Password Suggested"/>
+  <int value="2" label="Password Suggested and Manually Changed"/>
+</enum>
+
 <enum name="IOSDefaultBrowserFullscreenPromoAction">
   <int value="0" label="Action Button"/>
   <int value="1" label="Cancel"/>
@@ -47057,6 +47065,7 @@ from previous Chrome versions.
       label="CrossOriginMediaPlaybackRequiresUserGesture:enabled"/>
   <int value="-2112601037" label="OmniboxRefinedFocusState:enabled"/>
   <int value="-2112547309" label="ClickToCallReceiver:enabled"/>
+  <int value="-2111273398" label="SendTabToSelfManageDevicesLink:enabled"/>
   <int value="-2111196530" label="EnableAssistantLauncherUI:disabled"/>
   <int value="-2108564200" label="AutofillUpstream:disabled"/>
   <int value="-2106960993" label="HarfBuzzPDFSubsetter:disabled"/>
@@ -47470,6 +47479,7 @@ from previous Chrome versions.
   <int value="-1812579951" label="ContentSuggestionsCategoryRanker:enabled"/>
   <int value="-1811949013" label="SameSiteByDefaultCookies:disabled"/>
   <int value="-1811394154" label="disable-webrtc-hw-vp8-encoding"/>
+  <int value="-1810891359" label="SendTabToSelfManageDevicesLink:disabled"/>
   <int value="-1810294310" label="AndroidPaymentApps:enabled"/>
   <int value="-1809969509" label="FilesSinglePartitionFormat:disabled"/>
   <int value="-1809891158" label="WebAuthenticationCable:enabled"/>
@@ -48808,6 +48818,8 @@ from previous Chrome versions.
   <int value="-771080109" label="GrantNotificationsToDSE:disabled"/>
   <int value="-770319039" label="enable-touch-editing"/>
   <int value="-769865314" label="AutofillCacheQueryResponses:disabled"/>
+  <int value="-767460914"
+      label="ExperimentalAccessibilityDictationCommands:disabled"/>
   <int value="-766805224" label="MirroringService:enabled"/>
   <int value="-764463072" label="WebViewMixedContentAutoupgrades:disabled"/>
   <int value="-763900417" label="CCTModuleUseIntentExtras:enabled"/>
@@ -50721,6 +50733,7 @@ from previous Chrome versions.
   <int value="747847237" label="PhysicalWeb:enabled"/>
   <int value="749312701" label="ChromeOSAccountManager:disabled"/>
   <int value="749516419" label="DragToSnapInClamshellMode:disabled"/>
+  <int value="749994865" label="MessagesForAndroidSyncError:enabled"/>
   <int value="752194066" label="enable-app-window-cycling"/>
   <int value="752416911" label="FastPair:disabled"/>
   <int value="752939691" label="disable-tab-for-desktop-share"/>
@@ -51581,6 +51594,7 @@ from previous Chrome versions.
       label="OmniboxRemoveSuggestionsFromClipboard:disabled"/>
   <int value="1442798825" label="enable-quic"/>
   <int value="1442830837" label="MemoryAblation:disabled"/>
+  <int value="1444066555" label="MessagesForAndroidSyncError:disabled"/>
   <int value="1446066818" label="WebRtcAnalogAgcClippingControl:enabled"/>
   <int value="1446349255" label="ArcEnableUsap:disabled"/>
   <int value="1446946673" label="DesktopRestructuredLanguageSettings:disabled"/>
@@ -51815,6 +51829,8 @@ from previous Chrome versions.
   <int value="1636721063"
       label="AutofillLocalCardMigrationShowFeedback:enabled"/>
   <int value="1636962093" label="disable-material-design-ntp"/>
+  <int value="1637611166"
+      label="ExperimentalAccessibilityDictationCommands:enabled"/>
   <int value="1637615389" label="PrintServerScaling:enabled"/>
   <int value="1638123293" label="DeprecateAltClick:disabled"/>
   <int value="1638582559" label="UpdatedCellularActivationUi:disabled"/>
@@ -55498,6 +55514,7 @@ Called by update_use_counter_css.py.-->
   <int value="14" label="PermissionUpdate"/>
   <int value="15" label="AdsBlocked"/>
   <int value="16" label="DownloadProgress"/>
+  <int value="17" label="SyncError"/>
 </enum>
 
 <enum name="MessageLoopProblems">
@@ -59457,6 +59474,28 @@ Called by update_net_trust_anchors.py.-->
   <int value="24" label="TOO_MANY_STAS"/>
   <int value="25" label="DISCONNECT_FAILURE"/>
   <int value="26" label="SIM_LOCKED"/>
+</enum>
+
+<enum name="NetworkServiceSandboxGrantResult">
+  <int value="0" label="kSuccess">The operation was successful</int>
+  <int value="1" label="kFailedToCreateCacheDirectory">
+    Failed to create cache directory
+  </int>
+  <int value="2" label="kFailedToCreateDataDirectory">
+    Failed to create data directory
+  </int>
+  <int value="3" label="kFailedToCopyData">Failed to copy data</int>
+  <int value="4" label="kFailedToDeleteOldData">Failed to delete old data</int>
+  <int value="5" label="kFailedToGrantSandboxAccessToCache">
+    Failed to grant sandbox access to cache directory
+  </int>
+  <int value="6" label="kFailedToGrantSandboxAccessToData">
+    Failed to grant sandbox access to data directory
+  </int>
+  <int value="7" label="kDidNotAttemptToGrantSandboxAccess">
+    The operation was not attempted because granting sandbox access was not
+    supported on the current platform configuration
+  </int>
 </enum>
 
 <enum name="NetworkStatus">
@@ -68534,14 +68573,6 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="Triggered reset"/>
 </enum>
 
-<enum name="ProfileSigninStatus">
-  <int value="0" label="All profiles signed in"/>
-  <int value="1" label="All profiles not signed in"/>
-  <int value="2" label="Mixed signin status"/>
-  <int value="3" label="Unknown signin status"/>
-  <int value="4" label="Error getting signin status"/>
-</enum>
-
 <enum name="ProfileSync">
   <int value="0" label="Signed in to sync"/>
   <int value="1" label="Signed in to sync from original profile"/>
@@ -68557,6 +68588,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Chose what to sync"/>
   <int value="2" label="Encrypted all data"/>
   <int value="3" label="Selected a passphrase"/>
+</enum>
+
+<enum name="ProfileSyncStatus">
+  <int value="0" label="All profiles syncing"/>
+  <int value="1" label="All profiles not syncing"/>
+  <int value="2" label="Mixed sync status"/>
+  <int value="3" label="Unknown sync status"/>
+  <int value="4" label="Error getting sync status"/>
 </enum>
 
 <enum name="ProfileType">
@@ -77585,6 +77624,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
     have WebContents without an associated renderer process - see
     https://crbug.com/840409).
   </int>
+  <int value="6" label="RefusedForPdfContent"/>
 </enum>
 
 <enum name="SpareWebContentsStatus">
@@ -83563,6 +83603,12 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Challenge-response security token"/>
 </enum>
 
+<enum name="UNNotificationPermissionRequestResult">
+  <int value="0" label="Permission request failed"/>
+  <int value="1" label="Permission denied"/>
+  <int value="2" label="Permission granted"/>
+</enum>
+
 <enum name="UNNotificationPermissionStatus">
   <int value="0" label="Permission not requested yet"/>
   <int value="1" label="Permission denied"/>
@@ -87980,7 +88026,7 @@ Called by update_scheduler_enums.py.-->
   <int value="51" label="KeyboardLock"/>
   <int value="52" label="WebOTPService"/>
   <int value="53" label="OutstandingNetworkRequestDirectSocket"/>
-  <int value="54" label="IsolatedWorldScript"/>
+  <int value="54" label="InjectedJavascript"/>
   <int value="55" label="InjectedStyleSheet"/>
   <int value="56" label="MediaSessionImplOnServiceCreated"/>
 </enum>

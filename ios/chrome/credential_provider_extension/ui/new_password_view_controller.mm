@@ -9,15 +9,29 @@
 #import "ios/chrome/common/credential_provider/archivable_credential.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/credential_provider_extension/metrics_util.h"
 #import "ios/chrome/credential_provider_extension/ui/new_password_footer_view.h"
 #import "ios/chrome/credential_provider_extension/ui/new_password_table_cell.h"
+#import "ios/chrome/credential_provider_extension/ui/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+// Desired space between the bottom of the nav bar and the top of the table
+// view.
+const CGFloat kTableViewTopSpace = 14;
+
+}  // namespace
+
 @interface NewPasswordViewController () <UITableViewDataSource,
                                          NewPasswordTableCellDelegate>
+
+// The current creation type of the entered password.
+@property(nonatomic, assign) CPEPasswordCreated passwordCreationType;
+
 @end
 
 @implementation NewPasswordViewController
@@ -25,6 +39,7 @@
 - (instancetype)init {
   UITableViewStyle style = UITableViewStyleInsetGrouped;
   self = [super initWithStyle:style];
+  _passwordCreationType = CPEPasswordCreated::kPasswordManuallyEntered;
   return self;
 }
 
@@ -47,6 +62,11 @@
                         @"Title for add new password screen");
   self.navigationItem.leftBarButtonItem = [self navigationCancelButton];
   self.navigationItem.rightBarButtonItem = [self navigationSaveButton];
+
+  // UITableViewStyleInsetGrouped adds space to the top of the table view by
+  // default. Remove that space and add in the desired amount.
+  self.tableView.contentInset = UIEdgeInsetsMake(
+      -kUITableViewInsetGroupedTopSpace + kTableViewTopSpace, 0, 0, 0);
 
   [self.tableView registerClass:[NewPasswordTableCell class]
          forCellReuseIdentifier:NewPasswordTableCell.reuseID];
@@ -120,6 +140,7 @@
   // There is no need to check which cell has been selected because all the
   // other cells are unselectable from |-tableView:willSelectRowAtIndexPath:|.
   [self.credentialHandler userDidRequestGeneratedPassword];
+  self.passwordCreationType = CPEPasswordCreated::kPasswordSuggested;
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
@@ -147,6 +168,16 @@
 
 - (void)textFieldDidChangeInCell:(NewPasswordTableCell*)cell {
   if (cell == [self passwordCell]) {
+    // Update the password creation type so the correct histogram value can be
+    // fired when the password is actually created.
+    if (self.passwordCreationType == CPEPasswordCreated::kPasswordSuggested) {
+      self.passwordCreationType =
+          CPEPasswordCreated::kPasswordSuggestedAndChanged;
+    } else if ([self passwordCell].textField.text.length == 0) {
+      // When the password field is empty, reset the creation type to manual as
+      // any traces of the suggested password are now gone.
+      self.passwordCreationType = CPEPasswordCreated::kPasswordManuallyEntered;
+    }
     [self updateSaveButtonState];
   }
 }
@@ -299,6 +330,11 @@
   // Save button should start disabled because no password has been entered.
   saveButton.enabled = NO;
   return saveButton;
+}
+
+- (void)passwordSaved {
+  UpdateHistogramCount(@"IOS.CredentialExtension.PasswordCreated",
+                       static_cast<int>(self.passwordCreationType));
 }
 
 @end

@@ -101,6 +101,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool GetIntersectsViewport() override;
   bool IsForGuestsOnly() override;
   bool IsJitDisabled() override;
+  bool IsPdf() override;
   void OnMediaStreamAdded() override;
   void OnMediaStreamRemoved() override;
   void OnForegroundServiceWorkerAdded() override;
@@ -155,10 +156,10 @@ class MockRenderProcessHost : public RenderProcessHost {
   size_t GetWorkerRefCount() const;
   void IncrementKeepAliveRefCount() override;
   void DecrementKeepAliveRefCount() override;
-  void DisableWorkerAndKeepAliveRefCount() override;
+  void DisableRefCounts() override;
   void IncrementWorkerRefCount() override;
   void DecrementWorkerRefCount() override;
-  bool IsWorkerAndKeepAliveRefCountDisabled() override;
+  bool AreRefCountsDisabled() override;
   mojom::Renderer* GetRendererInterface() override;
   void CreateURLLoaderFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
@@ -172,7 +173,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void SetProcessLock(const IsolationContext& isolation_context,
                       const ProcessLock& process_lock) override;
   bool IsProcessLockedToSiteForTesting() override;
-  void CancelAllProcessShutdownDelays() override {}
+  void StopTrackingProcessForShutdownDelay() override {}
   void BindCacheStorage(
       const network::CrossOriginEmbedderPolicy&,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>,

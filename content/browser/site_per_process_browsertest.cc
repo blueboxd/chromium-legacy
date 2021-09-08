@@ -11568,7 +11568,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // main frame should've been updated to the RFH from the back navigation.
   EXPECT_EQ(popup_contents->GetMainFrame()->render_view_host(), rvh);
   EXPECT_TRUE(rvh->is_active());
-  EXPECT_EQ(rvh->GetMainFrame(), popup_contents->GetMainFrame());
+  EXPECT_EQ(rvh->GetMainRenderFrameHost(), popup_contents->GetMainFrame());
 }
 
 // Check that when A opens a new window with B which embeds an A subframe, the
@@ -13696,8 +13696,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 // the hung renderer dialog used to undesirably show up for background tabs
 // (typically during session restore when many navigations would be happening in
 // backgrounded processes).
+// TODO(crbug.com/1246541): Flaky on LaCrOS, Mac, and Windows.
+#if defined(OS_MAC) || defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_NoCommitTimeoutForInvisibleWebContents \
+  DISABLED_NoCommitTimeoutForInvisibleWebContents
+#else
+#define MAYBE_NoCommitTimeoutForInvisibleWebContents \
+  NoCommitTimeoutForInvisibleWebContents
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
-                       NoCommitTimeoutForInvisibleWebContents) {
+                       MAYBE_NoCommitTimeoutForInvisibleWebContents) {
   // Navigate first tab to a.com.
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), a_url));

@@ -50,6 +50,10 @@ extern const base::Feature kMessagesForAndroidSafetyTip;
 // Infobars infrastructure.
 extern const base::Feature kMessagesForAndroidSaveCard;
 
+// Feature that controls whether "sync error" prompts use Messages or
+// Infobars infrastructure.
+extern const base::Feature kMessagesForAndroidSyncError;
+
 // Feature that controls whether "update password" prompt uses Messages or
 // Infobars infrastructure.
 extern const base::Feature kMessagesForAndroidUpdatePassword;
@@ -77,6 +81,10 @@ bool IsUpdatePasswordMessagesUiEnabled();
 int GetSavePasswordMessageDismissDurationMs();
 
 bool UseFollowupButtonTextForUpdatePasswordButton();
+
+bool UseFollowupButtonTextForSaveCardMessage();
+
+bool UseGPayIconForSaveCardMessage();
 
 }  // namespace messages
 

@@ -2233,10 +2233,16 @@ const char kSecurePaymentConfirmationDebugDescription[] =
     "secure payment confirmation in PaymentRequest API must use user verifying "
     "platform authenticators.";
 
-const char kSendTabToSelfWhenSignedInName[] = "Send tab to self when signed-in";
+const char kSendTabToSelfWhenSignedInName[] = "Send-tab-to-self when signed in";
 const char kSendTabToSelfWhenSignedInDescription[] =
     "Makes the tab sharing feature also available for users who have \"only\" "
     "signed-in to their Google Account (as opposed to having enabled Sync).";
+
+const char kSendTabToSelfManageDevicesLinkName[] =
+    "Send-tab-to-self manage devices link";
+const char kSendTabToSelfManageDevicesLinkDescription[] =
+    "Shows a link to manage the user's devices below the device list when "
+    "sharing";
 
 extern const char kSendTabToSelfV2Name[] = "Send tab to self 2.0";
 extern const char kSendTabToSelfV2Description[] =
@@ -3207,6 +3213,10 @@ const char kMessagesForAndroidSafetyTipDescription[] =
 extern const char kMessagesForAndroidSaveCardName[] = "Save Card Messages UI";
 extern const char kMessagesForAndroidSaveCardDescription[] =
     "When enabled, save card prompt will use the new Messages UI.";
+
+const char kMessagesForAndroidSyncErrorName[] = "Sync Error Messages UI";
+const char kMessagesForAndroidSyncErrorDescription[] =
+    "When enabled, sync error prompt will use the new Messages UI.";
 
 const char kMessagesForAndroidUpdatePasswordName[] =
     "Update password Messages UI";
@@ -4550,6 +4560,11 @@ const char kExperimentalAccessibilityDictationOfflineName[] =
 const char kExperimentalAccessibilityDictationOfflineDescription[] =
     "Enables offline speech recognition for the accessibility dictation "
     "feature.";
+
+const char kExperimentalAccessibilityDictationCommandsName[] =
+    "Experimental accessibility dictation commands";
+const char kExperimentalAccessibilityDictationCommandsDescription[] =
+    "Enables text editing commands for the accessibility dictation feature.";
 
 const char kExperimentalAccessibilitySwitchAccessTextName[] =
     "Enable enhanced Switch Access text input.";

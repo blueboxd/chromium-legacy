@@ -128,7 +128,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   RenderWidgetHostImpl* GetWidget() override;
   RenderProcessHost* GetProcess() override;
   int GetRoutingID() override;
-  RenderFrameHost* GetMainFrame() override;
   void EnablePreferredSizeMode() override;
   void ExecutePluginActionAtLocation(
       const gfx::Point& location,
@@ -177,6 +176,12 @@ class CONTENT_EXPORT RenderViewHostImpl
   // which point IsRenderViewLive() becomes true, and the mojo connections to
   // the renderer process for this view now exist.
   void RenderViewCreated(RenderFrameHostImpl* local_main_frame);
+
+  // Returns the main RenderFrameHostImpl associated with this RenderViewHost or
+  // null if it doesn't exist. It's null if the main frame is represented in
+  // this RenderViewHost by RenderFrameProxyHost (from Blink perspective,
+  // blink::Page's main blink::Frame is remote).
+  RenderFrameHostImpl* GetMainRenderFrameHost();
 
   // Returns the `AgentSchedulingGroupHost` this view is associated with (via
   // the widget).

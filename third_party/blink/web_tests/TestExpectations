@@ -156,6 +156,8 @@ crbug.com/949003 http/tests/printing/cross-site-frame.html [ Failure Pass ]
 crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.js [ Failure ]
 # ====== Browserside navigation until here ======
 
+crbug.com/1232792 http/tests/devtools/copy-network-request.js [ Failure Pass ]
+
 # ====== Paint team owned tests from here ======
 # The paint team tracks and triages its test failures, and keeping them colocated
 # makes tracking much easier.
@@ -1274,10 +1276,8 @@ crbug.com/1225630 virtual/layout_ng_block_frag/fast/multicol/insane-column-count
 crbug.com/1066626 virtual/layout_ng_block_frag/fast/multicol/layers-split-across-columns.html [ Failure ]
 crbug.com/1066626 virtual/layout_ng_block_frag/fast/multicol/mixed-opacity-fixed-test.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/mixed-opacity-test.html [ Crash Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-balanced-inner-column-count-1-with-forced-break.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-short-first-row-extra-tall-line.html [ Failure ]
 crbug.com/1225630 virtual/layout_ng_block_frag/fast/multicol/nested-very-tall-inside-short-crash.html [ Skip ]
-crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-with-forced-breaks-in-eariler-rows.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-with-padding.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/span/outer-column-break-after-inner-spanner-2.html [ Failure ]
 crbug.com/1242348 virtual/layout_ng_block_frag/fast/multicol/tall-line-in-short-block.html [ Failure ]
@@ -2756,9 +2756,7 @@ crbug.com/626703 [ Linux ] external/wpt/resize-observer/iframe-same-origin.html 
 crbug.com/626703 [ Mac10.15 ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
 crbug.com/626703 [ Win10.1909 ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
 crbug.com/626703 [ Win10.20h2 ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
-crbug.com/626703 [ Mac10.14 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-after-load.https.html [ Failure ]
 crbug.com/626703 external/wpt/geolocation-API/non-fully-active.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-after-load.https.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/cross-origin-opener-policy/coop-navigate-same-origin-csp-sandbox.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/html/cross-origin-opener-policy/coop-navigate-same-origin-csp-sandbox.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/selection/textcontrols/selectionchange-bubble.html [ Timeout ]
@@ -3264,7 +3262,6 @@ crbug.com/626703 [ Mac ] external/wpt/web-locks/query-ordering.tentative.https.h
 crbug.com/626703 external/wpt/fetch/connection-pool/network-partition-key.html [ Failure Skip Timeout ]
 crbug.com/626703 [ Win10.1909 ] virtual/plz-dedicated-worker/external/wpt/fetch/connection-pool/network-partition-key.html [ Failure Pass Skip Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Skip Timeout ]
-crbug.com/626703 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-before-load.https.html [ Failure Pass ]
 crbug.com/626703 [ Win7 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Skip Timeout ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Failure Skip Timeout ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-forwarddelete.tentative.html [ Failure Skip Timeout ]
@@ -6065,6 +6062,9 @@ crbug.com/1196989 external/wpt/webtransport/quic/* [ Skip ]
 # WebTransport tests should eventually run when the WebTransport WPT server is added.
 crbug.com/1201569 external/wpt/webtransport/* [ Skip ]
 crbug.com/1201569 external/wpt/webtransport/idlharness.any.html [ Pass ]
+crbug.com/1201569 external/wpt/webtransport/idlharness.any.serviceworker.html [ Pass ]
+crbug.com/1201569 external/wpt/webtransport/idlharness.any.sharedworker.html [ Pass ]
+crbug.com/1201569 external/wpt/webtransport/idlharness.any.worker.html [ Pass ]
 
 crbug.com/1194958 fast/events/mouse-event-buttons-attribute.html [ Failure Pass ]
 
@@ -6888,3 +6888,14 @@ crbug.com/1236558 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css
 crbug.com/1236558 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/no-op-animation.https.html [ Crash Pass Failure ]
 crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-before-start.https.html [ Crash Failure Pass ]
 crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-get-timing-on-worklet-thread.https.html [ Crash Failure Pass ]
+
+# Temporarily disable to update DevTools Application Panel
+crbug.com/1110752 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Pass Failure ]
+crbug.com/1110752 http/tests/devtools/application-panel/resources-panel-on-navigation.js [ Pass Failure ]
+crbug.com/1110752 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Pass Failure ]
+crbug.com/1110752 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
+crbug.com/1110752 http/tests/devtools/application-panel/resources-panel-websql.js [ Pass Failure ]
+
+# Sheriff 2021-09-08
+crbug.com/1233826 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-before-load.https.html [ Crash Pass Failure ]
+crbug.com/1233826 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-after-load.https.html [ Crash Pass Failure ]

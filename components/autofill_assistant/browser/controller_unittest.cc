@@ -52,6 +52,7 @@ using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Field;
+using ::testing::FieldsAre;
 using ::testing::Gt;
 using ::testing::InSequence;
 using ::testing::Invoke;
@@ -575,6 +576,77 @@ TEST_F(ControllerTest, ScriptStartMessage) {
   EXPECT_TRUE(controller_->PerformUserAction(0));
 }
 
+TEST_F(ControllerTest, UpdateClientSettings) {
+  SupportsScriptResponseProto script_response;
+  ClientSettingsProto* initial_client_settings_proto =
+      script_response.mutable_client_settings();
+  initial_client_settings_proto->set_periodic_script_check_interval_ms(1);
+  initial_client_settings_proto->set_display_strings_locale("en-US");
+  ClientSettingsProto::DisplayString* initial_display_string;
+  for (int i = 0; i < ClientSettingsProto::DisplayStringId_MAX; i++) {
+    initial_display_string =
+        initial_client_settings_proto->add_display_strings();
+    initial_display_string->set_id(
+        static_cast<ClientSettingsProto::DisplayStringId>(i));
+    initial_display_string->set_value("us_test");
+  }
+  ClientSettings initial_client_settings;
+  initial_client_settings.UpdateFromProto(*initial_client_settings_proto);
+
+  AddRunnableScript(&script_response, "script")
+      ->mutable_presentation()
+      ->set_autostart(true);
+  SetupScripts(script_response);
+
+  ActionsResponseProto actions_response;
+  ClientSettingsProto* changed_client_settings_proto =
+      actions_response.add_actions()
+          ->mutable_update_client_settings()
+          ->mutable_client_settings();
+  changed_client_settings_proto->set_display_strings_locale("fr-FR");
+  ClientSettingsProto::DisplayString* changed_display_string;
+  for (int i = 0; i < ClientSettingsProto::DisplayStringId_MAX; i++) {
+    changed_display_string =
+        changed_client_settings_proto->add_display_strings();
+    changed_display_string->set_id(
+        static_cast<ClientSettingsProto::DisplayStringId>(i));
+    changed_display_string->set_value("fr_test");
+  }
+  ClientSettings changed_client_settings;
+  changed_client_settings.UpdateFromProto(*changed_client_settings_proto);
+
+  SetupActionsForScript("script", actions_response);
+
+  EXPECT_CALL(mock_observer_,
+              OnStatusMessageChanged(l10n_util::GetStringFUTF8(
+                  IDS_AUTOFILL_ASSISTANT_LOADING, u"a.example.com")))
+      .Times(1);
+  testing::InSequence seq;
+  EXPECT_CALL(mock_observer_,
+              OnClientSettingsChanged(
+                  AllOf(Field(&ClientSettings::periodic_script_check_interval,
+                              base::TimeDelta::FromMilliseconds(1)),
+                        Field(&ClientSettings::display_strings_locale, "en-US"),
+                        Field(&ClientSettings::display_strings,
+                              initial_client_settings.display_strings))))
+      .Times(1);
+  EXPECT_CALL(mock_observer_,
+              OnClientSettingsChanged(
+                  AllOf(Field(&ClientSettings::periodic_script_check_interval,
+                              base::TimeDelta::FromMilliseconds(1)),
+                        Field(&ClientSettings::display_strings_locale, "fr-FR"),
+                        Field(&ClientSettings::display_strings,
+                              changed_client_settings.display_strings))))
+      .Times(1);
+  Start("http://a.example.com/path");
+  EXPECT_THAT(controller_->GetSettings(),
+              AllOf(Field(&ClientSettings::periodic_script_check_interval,
+                          base::TimeDelta::FromMilliseconds(1)),
+                    Field(&ClientSettings::display_strings_locale, "fr-FR"),
+                    Field(&ClientSettings::display_strings,
+                          changed_client_settings.display_strings)));
+}
+
 TEST_F(ControllerTest, Stop) {
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "stop");
@@ -619,6 +691,12 @@ TEST_F(ControllerTest, CloseCustomTab) {
 
 TEST_F(ControllerTest, StopWithFeedbackChip) {
   SupportsScriptResponseProto script_response;
+  script_response.mutable_client_settings()->set_display_strings_locale(
+      "en-US");
+  ClientSettingsProto::DisplayString* display_str =
+      script_response.mutable_client_settings()->add_display_strings();
+  display_str->set_id(ClientSettingsProto::SEND_FEEDBACK);
+  display_str->set_value("send_feedback");
   AddRunnableScript(&script_response, "stop");
   SetNextScriptResponse(script_response);
 
@@ -637,8 +715,11 @@ TEST_F(ControllerTest, StopWithFeedbackChip) {
   EXPECT_CALL(mock_client_,
               RecordDropOut(Metrics::DropOutReason::SCRIPT_SHUTDOWN));
   EXPECT_TRUE(controller_->PerformUserAction(0));
-  ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
-  EXPECT_EQ(FEEDBACK_ACTION, controller_->GetUserActions().at(0).chip().type);
+  EXPECT_THAT(
+      controller_->GetUserActions(),
+      ElementsAre(Property(&UserAction::chip,
+                           AllOf(Field(&Chip::type, FEEDBACK_ACTION),
+                                 Field(&Chip::text, "send_feedback")))));
 }
 
 TEST_F(ControllerTest, RefreshScriptWhenDomainChanges) {
@@ -2660,17 +2741,6 @@ TEST_F(ControllerTest, SetDateTimeRangeSameDateValidTime) {
   EXPECT_EQ(controller_->GetUserData()->date_time_range_end_date_->day(), 20);
   EXPECT_EQ(controller_->GetUserData()->date_time_range_start_timeslot_, 0);
   EXPECT_EQ(*controller_->GetUserData()->date_time_range_end_timeslot_, 1);
-}
-
-TEST_F(ControllerTest, ChangeClientSettings) {
-  SupportsScriptResponseProto response;
-  response.mutable_client_settings()->set_periodic_script_check_interval_ms(1);
-  SetupScripts(response);
-  EXPECT_CALL(mock_observer_,
-              OnClientSettingsChanged(
-                  Field(&ClientSettings::periodic_script_check_interval,
-                        base::TimeDelta::FromMilliseconds(1))));
-  Start();
 }
 
 TEST_F(ControllerTest, WriteUserData) {

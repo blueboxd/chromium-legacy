@@ -2181,7 +2181,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreate_WithOpener) {
 
   // Navigate a tab to an extension page.
   GURL extension_url = extension->GetResourceURL("file.html");
-  ui_test_utils::NavigateToURL(browser(), extension_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), extension_url));
   content::WebContents* old_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -2256,7 +2256,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreate_NoOpener) {
 
   // Navigate a tab to an extension page.
   GURL extension_url = extension->GetResourceURL("file.html");
-  ui_test_utils::NavigateToURL(browser(), extension_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), extension_url));
   content::WebContents* old_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -2299,7 +2299,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreate_OpenerAndOrigin) {
 
   // Navigate a tab to an extension page.
   GURL extension_url = extension->GetResourceURL("file.html");
-  ui_test_utils::NavigateToURL(browser(), extension_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), extension_url));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -2389,7 +2389,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsUpdate_WebToAboutBlank) {
   GURL about_blank_url = GURL(url::kAboutBlankURL);
 
   // Navigate a tab to an extension page.
-  ui_test_utils::NavigateToURL(browser(), extension_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), extension_url));
   content::WebContents* extension_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(extension_origin,
@@ -2454,7 +2454,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsUpdate_WebToAboutNewTab) {
   GURL chrome_newtab_url = GURL("chrome://new-tab-page/");
 
   // Navigate a tab to an extension page.
-  ui_test_utils::NavigateToURL(browser(), extension_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), extension_url));
   content::WebContents* extension_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(extension_origin,
@@ -2507,7 +2507,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsUpdate_WebToNonWAR) {
   GURL non_war_url = extension_url;
 
   // Navigate a tab to an extension page.
-  ui_test_utils::NavigateToURL(browser(), extension_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), extension_url));
   content::WebContents* extension_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(extension_origin,

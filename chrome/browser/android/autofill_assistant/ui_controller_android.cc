@@ -44,6 +44,7 @@
 #include "components/autofill_assistant/browser/bottom_sheet_state.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/controller.h"
+#include "components/autofill_assistant/browser/display_strings_util.h"
 #include "components/autofill_assistant/browser/event_handler.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/metrics.h"
@@ -60,7 +61,6 @@
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -102,13 +102,15 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaDate(
 // Creates the Java equivalent to |login_choices|.
 base::android::ScopedJavaLocalRef<jobject> CreateJavaLoginChoiceList(
     JNIEnv* env,
-    const std::vector<LoginChoice>& login_choices) {
+    const std::vector<LoginChoice>& login_choices,
+    const ClientSettings& client_settings) {
   auto jlist = Java_AssistantCollectUserDataModel_createLoginChoiceList(env);
   for (const auto& login_choice : login_choices) {
     base::android::ScopedJavaLocalRef<jobject> jinfo_popup = nullptr;
     if (login_choice.info_popup.has_value()) {
       jinfo_popup = ui_controller_android_utils::CreateJavaInfoPopup(
-          env, *login_choice.info_popup);
+          env, *login_choice.info_popup,
+          GetDisplayStringUTF8(ClientSettingsProto::CLOSE, client_settings));
     }
     base::android::ScopedJavaLocalRef<jstring> jsublabel_accessibility_hint =
         nullptr;
@@ -640,6 +642,7 @@ void UiControllerAndroid::RestoreUi() {
 
   OnStatusMessageChanged(ui_delegate_->GetStatusMessage());
   OnBubbleMessageChanged(ui_delegate_->GetBubbleMessage());
+  OnClientSettingsDisplayStringsChanged(ui_delegate_->GetClientSettings());
   auto step_progress_bar_configuration =
       ui_delegate_->GetStepProgressBarConfiguration();
   if (step_progress_bar_configuration.has_value()) {
@@ -969,7 +972,8 @@ void UiControllerAndroid::CloseOrCancel(
 
   // Cancel, with a snackbar to allow UNDO.
   ShowSnackbar(ui_delegate_->GetClientSettings().cancel_delay,
-               l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_STOPPED),
+               GetDisplayStringUTF8(ClientSettingsProto::STOPPED,
+                                    ui_delegate_->GetClientSettings()),
                base::BindOnce(&UiControllerAndroid::OnCancel,
                               weak_ptr_factory_.GetWeakPtr(), action_index,
                               std::move(trigger_context), dropout_reason));
@@ -1093,7 +1097,8 @@ void UiControllerAndroid::OnUnexpectedTaps() {
   }
 
   ShowSnackbar(ui_delegate_->GetClientSettings().tap_shutdown_delay,
-               l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP),
+               GetDisplayStringUTF8(ClientSettingsProto::MAYBE_GIVE_UP,
+                                    ui_delegate_->GetClientSettings()),
                base::BindOnce(&UiControllerAndroid::Shutdown,
                               weak_ptr_factory_.GetWeakPtr(),
                               Metrics::DropOutReason::OVERLAY_STOP));
@@ -1283,8 +1288,9 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
       base::android::ToJavaArrayOfStrings(
           env, collect_user_data_options->supported_basic_card_networks));
   if (collect_user_data_options->request_login_choice) {
-    auto jlist = CreateJavaLoginChoiceList(
-        env, collect_user_data_options->login_choices);
+    auto jlist =
+        CreateJavaLoginChoiceList(env, collect_user_data_options->login_choices,
+                                  ui_delegate_->GetClientSettings());
     Java_AssistantCollectUserDataModel_setLoginChoices(env, jmodel, jlist);
   }
   Java_AssistantCollectUserDataModel_setRequestDateRange(
@@ -1730,11 +1736,21 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form,
   if (form->has_info_popup()) {
     Java_AssistantFormModel_setInfoPopup(
         env, GetFormModel(),
-        ui_controller_android_utils::CreateJavaInfoPopup(env,
-                                                         form->info_popup()));
+        ui_controller_android_utils::CreateJavaInfoPopup(
+            env, form->info_popup(),
+            GetDisplayStringUTF8(ClientSettingsProto::CLOSE,
+                                 ui_delegate_->GetClientSettings())));
   } else {
     Java_AssistantFormModel_clearInfoPopup(env, GetFormModel());
   }
+}
+
+void UiControllerAndroid::OnClientSettingsDisplayStringsChanged(
+    const ClientSettings& settings) {
+  header_model_->SetProfileIconMenuSettingsMessage(
+      GetDisplayStringUTF8(ClientSettingsProto::SETTINGS, settings));
+  header_model_->SetProfileIconMenuSendFeedbackMessage(
+      GetDisplayStringUTF8(ClientSettingsProto::SEND_FEEDBACK, settings));
 }
 
 void UiControllerAndroid::OnClientSettingsChanged(
@@ -1779,6 +1795,7 @@ void UiControllerAndroid::OnClientSettingsChanged(
   }
   Java_AssistantModel_setTalkbackSheetSizeFraction(
       env, GetModel(), settings.talkback_sheet_size_fraction);
+  OnClientSettingsDisplayStringsChanged(settings);
 }
 
 void UiControllerAndroid::OnGenericUserInterfaceChanged(

@@ -177,6 +177,8 @@ static_library("test_support") {
     "base/testing_profile_manager.h",
     "base/tracing.cc",
     "base/tracing.h",
+    "base/web_feature_histogram_tester.cc",
+    "base/web_feature_histogram_tester.h",
   ]
 
   if (is_mac) {
@@ -266,6 +268,7 @@ static_library("test_support") {
     "//components/gcm_driver/instance_id:test_support",
     "//components/history/core/test",
     "//components/infobars/core",
+    "//components/metrics:content",
     "//components/metrics:test_support",
     "//components/network_session_configurator/common",
     "//components/network_time",
@@ -840,6 +843,54 @@ if (is_android) {
       "//chrome/test/data/policy/",
       "//chrome/test/data/ssl/",
       "//content/test/data/",
+    ]
+  }
+
+  test("hybrid_browsertest") {
+    configs += [ "//build/config:precompiled_headers" ]
+    defines = [
+      "HAS_OUT_OF_PROC_TEST_RUNNER",
+      "CHROME_VERSION_MAJOR=" + chrome_version_major,
+    ]
+    use_default_launcher = false
+    android_manifest =
+        "${target_gen_dir}/android_browsertests_manifest/AndroidManifest.xml"
+    android_manifest_dep = ":android_browsertests_manifest"
+
+    deps = [
+      ":android_browsertests_assets",
+      ":android_browsertests_java",
+      ":browser_tests_runner",
+      ":sync_integration_test_support",
+      ":sync_integration_test_support_java",
+      ":test_support",
+      ":test_support_java",
+      ":test_support_ui_android",
+      "//chrome:chrome_android_core",
+      "//chrome/android:delegate_public_impl_java",
+      "//chrome/browser/browsing_data:constants",
+      "//chrome/browser/flags:flags_android",
+      "//chrome/browser/metrics:test_support",
+      "//chrome/browser/payments:hybrid_browsertest",
+
+      # TODO(crbug.com/961849): This is needed for ShellManager which is what
+      # the ChromeBrowserTestsActivity is using to build the java UI. It's
+      # likely we want to replace it with something new that uses ChromeWindow
+      # and CompositorViewHolder instead.
+      "//content/shell:content_shell_lib",
+      "//content/test:android_test_message_pump_support",
+      "//testing/android/native_test:native_test_support",
+    ]
+
+    sources = [ "android/browsertests_apk/android_browsertests_jni_onload.cc" ]
+
+    data = [
+      "$root_gen_dir/chrome/android/chrome_apk_paks/chrome_100_percent.pak",
+      "$root_gen_dir/chrome/android/chrome_apk_paks/locales/en-US.pak",
+      "$root_gen_dir/chrome/android/chrome_apk_paks/resources.pak",
+      "$root_gen_dir/components/components_resources.pak",
+      "$root_gen_dir/components/dev_ui_components_resources.pak",
+      "//components/test/data/payments/",
     ]
   }
 
@@ -4968,6 +5019,7 @@ test("unit_tests") {
       "../browser/ui/web_applications/file_stream_data_pipe_getter_unittest.cc",
       "../browser/ui/webui/certificate_provisioning_ui_handler_unittest.cc",
       "../browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils_unittest.cc",
+      "../browser/ui/webui/chromeos/arc_graphics_tracing/arc_graphics_tracing_handler_unittest.cc",
       "../browser/ui/webui/chromeos/edu_account_login_handler_unittest.cc",
       "../renderer/chromeos_delayed_callback_group_unittest.cc",
     ]

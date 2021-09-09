@@ -17,9 +17,6 @@ namespace scheduler {
 // A list of features which influence scheduling behaviour (throttling /
 // freezing / back-forward cache) and which might be sent to the browser process
 // for metrics-related purposes.
-//
-// Please keep in sync with WebSchedulerTrackedFeature in
-// tools/metrics/histograms/enums.xml. These values should not be renumbered.
 enum class WebSchedulerTrackedFeature : uint32_t {
   kMinValue = 0,
   kWebSocket = 0,
@@ -109,9 +106,14 @@ enum class WebSchedulerTrackedFeature : uint32_t {
   // kMediaSessionImplOnServiceCreated = 56, Removed after implementing
   // MediaSessionImplOnServiceCreated support in back/forward cache.
   kWebTransport = 57,
+  // This should be used only for testing.
+  kDummy = 58,
+
+  // Please keep in sync with WebSchedulerTrackedFeature in
+  // tools/metrics/histograms/enums.xml. These values should not be renumbered.
 
   // NB: This enum is used in a bitmask, so kMaxValue must be less than 64.
-  kMaxValue = kWebTransport,
+  kMaxValue = kDummy,
 };
 
 using WebSchedulerTrackedFeatures =

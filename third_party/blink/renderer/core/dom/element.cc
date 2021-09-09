@@ -2859,12 +2859,9 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
   }
 
   if (ElementAnimations* element_animations = GetElementAnimations()) {
-    // With CSSIsolatedAnimationUpdates enabled, animation updates are not
-    // applied during an Element's style recalc, but during
-    // Document::UpdateStyle.
-    if (!RuntimeEnabledFeatures::CSSIsolatedAnimationUpdatesEnabled())
+    // See also CSSAnimationUpdateScope.
+    if (!RuntimeEnabledFeatures::CSSDelayedAnimationUpdatesEnabled())
       element_animations->CssAnimations().MaybeApplyPendingUpdate(this);
-    element_animations->UpdateAnimationFlags(*style);
   }
 
   style->UpdateIsStackingContextWithoutContainment(
@@ -3278,6 +3275,11 @@ StyleRecalcChange Element::RecalcOwnStyle(
         diff == ComputedStyle::Difference::kEqual
             ? LayoutObject::ApplyStyleChanges::kNo
             : LayoutObject::ApplyStyleChanges::kYes;
+    // TODO(crbug.com/1246826): Remove CompositablePaintAnimationChanged.
+    if (RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled()) {
+      if (layout_style->CompositablePaintAnimationChanged())
+        apply_changes = LayoutObject::ApplyStyleChanges::kYes;
+    }
     layout_object->SetStyle(layout_style.get(), apply_changes);
   }
   return child_change;
@@ -3507,6 +3509,8 @@ void Element::SetAnimationStyleChange(bool animation_style_change) {
 
 void Element::SetNeedsAnimationStyleRecalc() {
   if (GetDocument().InStyleRecalc())
+    return;
+  if (GetDocument().GetStyleEngine().InApplyAnimationUpdate())
     return;
   if (GetStyleChangeType() != kNoStyleChange)
     return;

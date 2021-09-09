@@ -13,9 +13,9 @@
 #include "base/scoped_observation.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/app_service/web_app_publisher_helper.h"
-#include "chrome/browser/web_applications/components/app_registrar_observer.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -130,6 +130,7 @@ class WebAppsPublisherHost : public crosapi::mojom::AppController,
   WebAppProvider* const provider_;
   WebAppPublisherHelper publisher_helper_;
   crosapi::mojom::AppPublisher* remote_publisher_ = nullptr;
+  int remote_publisher_version_ = 0;
 
   mojo::Receiver<crosapi::mojom::AppController> receiver_{this};
 

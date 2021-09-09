@@ -2411,6 +2411,8 @@ static_library("browser") {
       "//ash/webui/help_app_ui/search:mojo_bindings",
       "//ash/webui/media_app_ui",
       "//ash/webui/media_app_ui:mojo_bindings",
+      "//ash/webui/print_management",
+      "//ash/webui/print_management/mojom",
       "//ash/webui/scanning",
       "//ash/webui/scanning/mojom",
       "//ash/webui/shimless_rma",
@@ -2441,8 +2443,6 @@ static_library("browser") {
       "//chromeos/components/multidevice/debug_webui",
       "//chromeos/components/personalization_app",
       "//chromeos/components/personalization_app/mojom",
-      "//chromeos/components/print_management",
-      "//chromeos/components/print_management/mojom",
       "//chromeos/dbus/attestation",
       "//chromeos/dbus/attestation:attestation_proto",
       "//chromeos/dbus/cros_disks",
@@ -3494,10 +3494,16 @@ static_library("browser") {
       "apps/app_discovery_service/app_discovery_util.h",
       "apps/app_discovery_service/app_fetcher_manager.cc",
       "apps/app_discovery_service/app_fetcher_manager.h",
+      "apps/app_discovery_service/play_extras.cc",
+      "apps/app_discovery_service/play_extras.h",
       "apps/app_discovery_service/recommended_arc_app_fetcher.cc",
       "apps/app_discovery_service/recommended_arc_app_fetcher.h",
       "apps/app_discovery_service/remote_url_search/remote_url_fetcher.cc",
       "apps/app_discovery_service/remote_url_search/remote_url_fetcher.h",
+      "apps/app_discovery_service/result.cc",
+      "apps/app_discovery_service/result.h",
+      "apps/app_discovery_service/test_fetcher.cc",
+      "apps/app_discovery_service/test_fetcher.h",
       "apps/app_service/app_icon_factory.cc",
       "apps/app_service/app_icon_factory.h",
       "apps/app_service/app_icon_source.cc",
@@ -4935,6 +4941,8 @@ static_library("browser") {
       "lacros/drivefs_cache.h",
       "lacros/feedback_util.cc",
       "lacros/feedback_util.h",
+      "lacros/field_trial_observer.cc",
+      "lacros/field_trial_observer.h",
       "lacros/immersive_context_lacros.cc",
       "lacros/immersive_context_lacros.h",
       "lacros/lacros_extension_apps_controller.cc",
@@ -4953,8 +4961,6 @@ static_library("browser") {
       "lacros/lacros_url_handling.h",
       "lacros/metrics_reporting_observer.cc",
       "lacros/metrics_reporting_observer.h",
-      "lacros/move_to_desks_menu_delegate_lacros.cc",
-      "lacros/move_to_desks_menu_delegate_lacros.h",
       "lacros/prefs_ash_observer.cc",
       "lacros/prefs_ash_observer.h",
       "lacros/snap_controller_lacros.cc",
@@ -4985,8 +4991,8 @@ static_library("browser") {
       "//chromeos/crosapi/cpp",
       "//chromeos/crosapi/mojom",
       "//chromeos/lacros",
-      "//chromeos/strings:strings_grit",
       "//chromeos/ui/frame",
+      "//chromeos/ui/wm",
       "//ui/platform_window",
     ]
   }
@@ -6836,7 +6842,7 @@ static_library("browser") {
         "chromeos/printing/printer_error_codes.cc",
         "chromeos/printing/printer_error_codes.h",
       ]
-      deps += [ "//chromeos/components/print_management/mojom" ]
+      deps += [ "//ash/webui/print_management/mojom" ]
     }
     if (is_chromeos_ash) {
       deps += [
@@ -7271,7 +7277,14 @@ static_library("test_support") {
   ]
 
   if (!is_android) {
-    deps += [ "//components/policy/test_support" ]
+    sources += [
+      "signin/identity_browser_test_base.cc",
+      "signin/identity_browser_test_base.h",
+    ]
+    deps += [
+      "//chrome/test:test_support_ui",
+      "//components/policy/test_support",
+    ]
   }
 
   if (is_android) {

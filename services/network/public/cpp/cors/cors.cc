@@ -370,11 +370,11 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
       // https://wicg.github.io/responsive-image-client-hints/#sec-ch-viewport-height
       "sec-ch-viewport-height",
 
-      // The `Sec-CH-Lang` header field is a proposed replacement for
+      // The `Lang` header field is a proposed replacement for
       // `Accept-Language`, using the Client Hints infrastructure.
       //
       // https://tools.ietf.org/html/draft-west-lang-client-hint
-      "sec-ch-lang",
+      "lang",
 
       // The `Sec-CH-UA-*` header fields are proposed replacements for
       // `User-Agent`, using the Client Hints infrastructure.
@@ -476,41 +476,6 @@ std::vector<std::string> CorsUnsafeRequestHeaderNames(
       header_names.push_back(base::ToLowerASCII(header.key));
     } else {
       potentially_unsafe_names.push_back(base::ToLowerASCII(header.key));
-      safe_list_value_size += header.value.size();
-    }
-  }
-  if (safe_list_value_size > kSafeListValueSizeMax) {
-    header_names.insert(header_names.end(), potentially_unsafe_names.begin(),
-                        potentially_unsafe_names.end());
-  }
-  return header_names;
-}
-
-std::vector<std::string> CorsUnsafeNotForbiddenRequestHeaderNames(
-    const net::HttpRequestHeaders::HeaderVector& headers,
-    bool is_revalidating) {
-  std::vector<std::string> header_names;
-  std::vector<std::string> potentially_unsafe_names;
-
-  constexpr size_t kSafeListValueSizeMax = 1024;
-  size_t safe_list_value_size = 0;
-
-  for (const auto& header : headers) {
-    if (!net::HttpUtil::IsSafeHeader(header.key))
-      continue;
-
-    const std::string name = base::ToLowerASCII(header.key);
-
-    if (is_revalidating) {
-      if (name == "if-modified-since" || name == "if-none-match" ||
-          name == "cache-control") {
-        continue;
-      }
-    }
-    if (!IsCorsSafelistedHeader(name, header.value)) {
-      header_names.push_back(name);
-    } else {
-      potentially_unsafe_names.push_back(name);
       safe_list_value_size += header.value.size();
     }
   }

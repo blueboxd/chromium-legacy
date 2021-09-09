@@ -34,10 +34,10 @@
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
 #include "third_party/blink/renderer/core/animation/css/css_scroll_timeline.h"
-#include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -184,55 +184,10 @@ void DocumentAnimations::ValidateTimelines() {
   unvalidated_timelines_.clear();
 }
 
-DocumentAnimations::AllowAnimationUpdatesScope::AllowAnimationUpdatesScope(
-    DocumentAnimations& document_animations,
-    bool value)
-    : allow_(&document_animations.allow_animation_updates_,
-             document_animations.allow_animation_updates_.value_or(true) &&
-                 value) {}
-
-void DocumentAnimations::AddElementWithPendingAnimationUpdate(
-    Element& element) {
-  DCHECK(AnimationUpdatesAllowed());
-  elements_with_pending_updates_.insert(&element);
-}
-
-void DocumentAnimations::ApplyPendingElementUpdates() {
-  HeapHashSet<WeakMember<Element>> pending;
-  std::swap(pending, elements_with_pending_updates_);
-
-  for (auto& element : pending) {
-    ElementAnimations* element_animations = element->GetElementAnimations();
-    if (!element_animations)
-      continue;
-    element_animations->CssAnimations().MaybeApplyPendingUpdate(element.Get());
-  }
-
-  pending_old_styles_.clear();
-  DCHECK(elements_with_pending_updates_.IsEmpty())
-      << "MaybeApplyPendingUpdate must not mark any elements as having a "
-         "pending update";
-}
-
-void DocumentAnimations::AddPendingOldStyleForElement(Element& element) {
-  pending_old_styles_.insert(
-      &element, scoped_refptr<const ComputedStyle>(element.GetComputedStyle()));
-}
-
-absl::optional<const ComputedStyle*> DocumentAnimations::GetPendingOldStyle(
-    Element& element) const {
-  auto iter = pending_old_styles_.find(&element);
-  if (iter == pending_old_styles_.end())
-    return absl::nullopt;
-  return iter->value.get();
-}
-
 void DocumentAnimations::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(timelines_);
   visitor->Trace(unvalidated_timelines_);
-  visitor->Trace(elements_with_pending_updates_);
-  visitor->Trace(pending_old_styles_);
 }
 
 void DocumentAnimations::GetAnimationsTargetingTreeScope(

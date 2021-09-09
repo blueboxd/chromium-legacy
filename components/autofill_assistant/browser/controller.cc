@@ -49,6 +49,11 @@ static constexpr int kAutostartInitialProgress = 5;
 // Experiment for toggling the new progress bar.
 const char kProgressBarExperiment[] = "4400697";
 
+// Experiment for non-sticky TTSButtonState. The TTSButtonState is reset to
+// DEFAULT whenever tts/status message changes even when the button was
+// DISABLED by the user tap.
+const char kNonStickyTtsButtonStateExperiment[] = "4624822";
+
 }  // namespace
 
 Controller::Controller(
@@ -201,6 +206,14 @@ void Controller::SetTtsMessage(const std::string& message) {
   if (tts_button_state_ == TtsButtonState::PLAYING) {
     // Will not cause any TTS event.
     tts_controller_->Stop();
+    SetTtsButtonState(TtsButtonState::DEFAULT);
+  }
+
+  // Re-enable TTS button if "Non sticky Tts Button State" experiment is
+  // enabled.
+  if (tts_button_state_ == TtsButtonState::DISABLED &&
+      trigger_context_ != nullptr &&
+      trigger_context_->HasExperimentId(kNonStickyTtsButtonStateExperiment)) {
     SetTtsButtonState(TtsButtonState::DEFAULT);
   }
 }
@@ -1469,16 +1482,20 @@ void Controller::OnTtsButtonClicked() {
     case TtsButtonState::DEFAULT:
       // Will fire a TTS_START event.
       tts_controller_->Speak(tts_message_, GetDisplayStringsLocale());
+      Metrics::RecordTtsButtonAction(Metrics::TtsButtonAction::PLAY_TTS);
       break;
     case TtsButtonState::PLAYING:
       // Will not cause any TTS event.
       tts_controller_->Stop();
       SetTtsButtonState(TtsButtonState::DISABLED);
+      Metrics::RecordTtsButtonAction(Metrics::TtsButtonAction::DISABLE_BUTTON);
       break;
     case TtsButtonState::DISABLED:
       SetTtsButtonState(TtsButtonState::DEFAULT);
       // Will fire a TTS_START event.
       tts_controller_->Speak(tts_message_, GetDisplayStringsLocale());
+      Metrics::RecordTtsButtonAction(
+          Metrics::TtsButtonAction::ENABLE_BUTTON_AND_PLAY_TTS);
       break;
   }
 }

@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/strings/string_split.h"
+#include "base/trace_event/typed_macros.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -194,11 +195,11 @@ const GURL& SiteInstanceImpl::GetDefaultSiteURL() {
 
 // static
 SiteInfo SiteInfo::CreateForErrorPage(
-    const StoragePartitionConfig storage_partition_config,
-    const WebExposedIsolationInfo& web_exposed_isolation_info) {
+    const StoragePartitionConfig storage_partition_config) {
   return SiteInfo(GetErrorPageSiteAndLockURL(), GetErrorPageSiteAndLockURL(),
                   false /* is_origin_keyed */, storage_partition_config,
-                  web_exposed_isolation_info, false /* is_guest */,
+                  WebExposedIsolationInfo::CreateNonIsolated(),
+                  false /* is_guest */,
                   false /* does_site_request_dedicated_process_for_coop */,
                   false /* is_jit_disabled */, false /* is_pdf */);
 }
@@ -290,8 +291,9 @@ SiteInfo SiteInfo::CreateInternal(
   DCHECK(storage_partition_config.has_value());
 
   if (url_info.url.SchemeIs(kChromeErrorScheme)) {
-    return CreateForErrorPage(storage_partition_config.value(),
-                              url_info.web_exposed_isolation_info);
+    // Error pages should never be cross origin isolated.
+    DCHECK(!url_info.web_exposed_isolation_info.is_isolated());
+    return CreateForErrorPage(storage_partition_config.value());
   }
   // We should only set |is_origin_keyed| if we are actually creating separate
   // SiteInstances for OAC isolation. When we do same-process OAC, we don't do
@@ -1984,7 +1986,17 @@ void SiteInstanceImpl::WriteIntoTrace(perfetto::TracedValue context) {
   dict.Add("browsing_instance_id", GetBrowsingInstanceId().value());
   dict.Add("is_default", IsDefaultSiteInstance());
   dict.Add("site_info", site_info_);
-  dict.Add("active_frame_count", active_frame_count_);
+  dict.Add("active_rfh_count", active_frame_count_);
+}
+
+void SiteInstanceImpl::WriteIntoTrace(
+    perfetto::TracedProto<perfetto::protos::pbzero::SiteInstance> proto) {
+  proto->set_site_instance_id(GetId().value());
+  proto->set_browsing_instance_id(GetBrowsingInstanceId().value());
+  proto->set_is_default(IsDefaultSiteInstance());
+  proto->set_has_process(HasProcess());
+  proto->set_related_active_contents_count(GetRelatedActiveContentsCount());
+  proto->set_active_rfh_count(active_frame_count_);
 }
 
 }  // namespace content

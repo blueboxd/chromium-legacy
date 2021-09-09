@@ -94,6 +94,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <variant name=".SaveCard"/>
   <variant name=".SavePassword"/>
   <variant name=".SendTabToSelf"/>
+  <variant name=".SharedHighlighting"/>
   <variant name=".SyncError"/>
   <variant name=".UpdatePassword"/>
 </variants>
@@ -325,6 +326,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     completed (i.e., the continue button was tapped) or not, and whether the
     payment request was initially pre-filled completely or not. This is recorded
     every time the user sees the autofill assistant payment request.
+  </summary>
+</histogram>
+
+<histogram name="Android.AutofillAssistant.TextToSpeech.ButtonAction"
+    enum="AutofillAssistantTextToSpeechButtonAction" expires_after="2022-06-08">
+  <owner>jainshashank@google.com</owner>
+  <owner>arbesser@google.com</owner>
+  <summary>
+    Reports the resultant action that happens on clicking the autofill assistant
+    TTS button. This is recorded every time the TTS button is clicked.
   </summary>
 </histogram>
 

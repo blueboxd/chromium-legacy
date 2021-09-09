@@ -90,55 +90,19 @@ class CORE_EXPORT DocumentAnimations final
   // https://github.com/w3c/csswg-drafts/issues/5261
   void ValidateTimelines();
 
-  // By default, animation updates are *implicitly* disallowed. This object
-  // can be used to allow or disallow animation updates as follows:
-  //
-  // AllowAnimationUpdatesScope(..., true): Allow animation updates, unless
-  // updates are currently *explicitly* disallowed.
-  //
-  // AllowAnimationUpdatesScope(..., false): Explicitly disallow animation
-  // updates.
-  class CORE_EXPORT AllowAnimationUpdatesScope {
-    STACK_ALLOCATED();
-
-   public:
-    AllowAnimationUpdatesScope(DocumentAnimations&, bool);
-
-   private:
-    base::AutoReset<absl::optional<bool>> allow_;
-  };
-
   // Add an element to the set of elements with a pending animation update.
   // The elements in the set can be applied later using,
   // ApplyPendingElementUpdates.
   //
-  // It's invalid to call this function during if animation updates are not
-  // allowed (see AnimationUpdatesAllowed).
+  // It's invalid to call this function if there is no current
+  // CSSAnimationUpdateScope.
   void AddElementWithPendingAnimationUpdate(Element&);
 
   // Apply pending updates for any elements previously added during AddElement-
-  // WithPendingAnimationUpdate
+  // WithPendingAnimationUpdate.
   void ApplyPendingElementUpdates();
 
-  // When calculating transition updates, we need the old style of the element
-  // to set up the transition correctly. Container queries can cause the style
-  // to be calculated (and replaced on Element) multiple times before we have
-  // the final after-change ComputedStyle, hence we need to store the "original"
-  // old style for affected elements in order to avoid triggering transitions
-  // based on some abandoned and intermediate ComputedStyle.
-  //
-  // This function takes the current ComputedStyle of the element, and stores
-  // it as the old style. If an old style was already stored for this Element,
-  // this function does nothing.
-  //
-  // The old styles are cleared when ApplyPendingElementUpdates is called.
   void AddPendingOldStyleForElement(Element&);
-
-  absl::optional<const ComputedStyle*> GetPendingOldStyle(Element&) const;
-
-  bool AnimationUpdatesAllowed() const {
-    return allow_animation_updates_.value_or(false);
-  }
 
   const HeapHashSet<WeakMember<AnimationTimeline>>& GetTimelinesForTesting()
       const {
@@ -151,32 +115,18 @@ class CORE_EXPORT DocumentAnimations final
   uint64_t current_transition_generation_;
   void Trace(Visitor*) const;
 
-#if DCHECK_IS_ON()
-  void AssertNoPendingUpdates() {
-    DCHECK(elements_with_pending_updates_.IsEmpty());
-    DCHECK(pending_old_styles_.IsEmpty());
-  }
-#endif
-
  protected:
   using ReplaceableAnimationsMap =
       HeapHashMap<Member<Element>, Member<HeapVector<Member<Animation>>>>;
   void RemoveReplacedAnimations(ReplaceableAnimationsMap*);
 
  private:
-  friend class AllowAnimationUpdatesScope;
-  friend class AnimationUpdateScope;
-
   void MarkPendingIfCompositorPropertyAnimationChanges(
       const PaintArtifactCompositor*);
 
   Member<Document> document_;
   HeapHashSet<WeakMember<AnimationTimeline>> timelines_;
   HeapHashSet<WeakMember<AnimationTimeline>> unvalidated_timelines_;
-  HeapHashSet<WeakMember<Element>> elements_with_pending_updates_;
-  HeapHashMap<Member<Element>, scoped_refptr<const ComputedStyle>>
-      pending_old_styles_;
-  absl::optional<bool> allow_animation_updates_;
 };
 
 }  // namespace blink

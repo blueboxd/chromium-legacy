@@ -161,6 +161,8 @@
 #include "ash/webui/media_app_ui/url_constants.h"
 #include "ash/webui/os_feedback_ui/os_feedback_ui.h"
 #include "ash/webui/os_feedback_ui/url_constants.h"
+#include "ash/webui/print_management/print_management_ui.h"
+#include "ash/webui/print_management/url_constants.h"
 #include "ash/webui/scanning/scanning_ui.h"
 #include "ash/webui/scanning/url_constants.h"
 #include "ash/webui/shimless_rma/shimless_rma.h"
@@ -173,6 +175,8 @@
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
+#include "chrome/browser/ash/printing/print_management/printing_manager.h"
+#include "chrome/browser/ash/printing/print_management/printing_manager_factory.h"
 #include "chrome/browser/ash/scanning/chrome_scanning_app_delegate.h"
 #include "chrome/browser/ash/scanning/scan_service.h"
 #include "chrome/browser/ash/scanning/scan_service_factory.h"
@@ -185,8 +189,6 @@
 #include "chrome/browser/chromeos/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/chromeos/net/network_health/network_health_service.h"
-#include "chrome/browser/chromeos/printing/print_management/printing_manager.h"
-#include "chrome/browser/chromeos/printing/print_management/printing_manager_factory.h"
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/feedback/feedback_dialog_utils.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
@@ -242,8 +244,6 @@
 #include "chromeos/components/multidevice/debug_webui/url_constants.h"
 #include "chromeos/components/personalization_app/personalization_app_ui.h"
 #include "chromeos/components/personalization_app/personalization_app_url_constants.h"
-#include "chromeos/components/print_management/print_management_ui.h"
-#include "chromeos/components/print_management/url_constants.h"
 #include "chromeos/components/projector_app/projector_app_constants.h"
 #include "chromeos/components/projector_app/trusted_projector_ui.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
@@ -436,6 +436,15 @@ void BindEcheUidGenerator(
   }
 }
 
+void BindEcheNotificationGenerator(
+    chromeos::eche_app::EcheAppManager* manager,
+    mojo::PendingReceiver<chromeos::eche_app::mojom::NotificationGenerator>
+        receiver) {
+  if (manager) {
+    manager->BindNotificationGeneratorInterface(std::move(receiver));
+  }
+}
+
 template <>
 WebUIController* NewWebUI<chromeos::eche_app::EcheAppUI>(WebUI* web_ui,
                                                          const GURL& url) {
@@ -445,7 +454,8 @@ WebUIController* NewWebUI<chromeos::eche_app::EcheAppUI>(WebUI* web_ui,
   return new chromeos::eche_app::EcheAppUI(
       web_ui, base::BindRepeating(&BindEcheSignalingMessageExchanger, manager),
       base::BindRepeating(&BindSystemInfoProvider, manager),
-      base::BindRepeating(&BindEcheUidGenerator, manager));
+      base::BindRepeating(&BindEcheUidGenerator, manager),
+      base::BindRepeating(&BindEcheNotificationGenerator, manager));
 }
 
 void BindScanService(

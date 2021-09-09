@@ -2467,6 +2467,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/extensions/api/content_settings/content_settings_apitest.cc",
         "../browser/extensions/api/context_menus/context_menu_apitest.cc",
         "../browser/extensions/api/cookies/cookies_apitest.cc",
+        "../browser/extensions/api/cryptotoken_private/cryptotoken_private_browsertest.cc",
         "../browser/extensions/api/debugger/debugger_apitest.cc",
         "../browser/extensions/api/debugger/debugger_extension_apitest.cc",
         "../browser/extensions/api/declarative/declarative_apitest.cc",
@@ -3262,6 +3263,8 @@ if (!is_android && !is_fuchsia) {
         "../browser/ash/policy/networking/policy_certs_browsertest.cc",
         "../browser/ash/policy/status_collector/child_status_collector_browsertest.cc",
         "../browser/ash/policy/status_collector/device_status_collector_browsertest.cc",
+        "../browser/ash/printing/history/test_print_job_history_service_observer.cc",
+        "../browser/ash/printing/history/test_print_job_history_service_observer.h",
         "../browser/ash/profiles/profile_helper_browsertest.cc",
         "../browser/ash/remote_apps/remote_apps_impl_browsertest.cc",
         "../browser/ash/remote_apps/remote_apps_manager_browsertest.cc",
@@ -3318,8 +3321,6 @@ if (!is_android && !is_fuchsia) {
         "../browser/chromeos/platform_keys/platform_keys_service_test_util.cc",
         "../browser/chromeos/platform_keys/platform_keys_service_test_util.h",
         "../browser/chromeos/preferences_chromeos_browsertest.cc",
-        "../browser/chromeos/printing/history/test_print_job_history_service_observer.cc",
-        "../browser/chromeos/printing/history/test_print_job_history_service_observer.h",
         "../browser/chromeos/scoped_test_system_nss_key_slot_mixin.cc",
         "../browser/chromeos/scoped_test_system_nss_key_slot_mixin.h",
         "../browser/chromeos/shutdown_policy_browsertest.cc",
@@ -3559,6 +3560,7 @@ if (!is_android && !is_fuchsia) {
         "//ash/components/drivefs",
         "//ash/components/drivefs:test_support",
         "//ash/components/drivefs/mojom",
+        "//ash/components/smbfs",
         "//ash/keyboard/ui:test_support",
         "//ash/public/cpp/external_arc",
         "//ash/webui/diagnostics_ui",
@@ -3570,6 +3572,7 @@ if (!is_android && !is_fuchsia) {
         "//ash/webui/media_app_ui:browser_test_support",
         "//ash/webui/media_app_ui:buildflags",
         "//ash/webui/os_feedback_ui:os_feedback_ui",
+        "//ash/webui/print_management",
         "//ash/webui/scanning",
         "//ash/webui/shimless_rma",
         "//ash/webui/shortcut_customization_ui",
@@ -3597,9 +3600,7 @@ if (!is_android && !is_fuchsia) {
         "//chromeos/attestation",
         "//chromeos/attestation:test_support",
         "//chromeos/components/eche_app_ui",
-        "//chromeos/components/print_management",
         "//chromeos/components/projector_app",
-        "//chromeos/components/smbfs",
         "//chromeos/components/web_applications/test:test_support",
         "//chromeos/cryptohome",
         "//chromeos/dbus:test_support",
@@ -3641,6 +3642,7 @@ if (!is_android && !is_fuchsia) {
         "//chromeos/ui/base",
         "//chromeos/ui/frame",
         "//chromeos/ui/frame:test_support",
+        "//chromeos/ui/wm",
         "//components/arc:arc_test_support",
         "//components/arc/enterprise",
         "//components/crash/content/browser/error_reporting:mock_crash_endpoint",
@@ -3988,6 +3990,7 @@ if (is_chromeos_lacros) {
       "../browser/lacros/browser_test_util.h",
       "../browser/lacros/device_attributes_lacros_browsertest.cc",
       "../browser/lacros/download_controller_client_lacros_browsertest.cc",
+      "../browser/lacros/field_trial_service_lacros_browsertest.cc",
       "../browser/lacros/file_manager_lacros_browsertest.cc",
       "../browser/lacros/holding_space_service_lacros_browsertest.cc",
       "../browser/lacros/idle_service_lacros_browsertest.cc",
@@ -4555,6 +4558,7 @@ test("unit_tests") {
     "../browser/notifications/notification_display_queue_unittest.cc",
     "../browser/notifications/notification_display_service_impl_unittest.cc",
     "../browser/notifications/notification_permission_context_unittest.cc",
+    "../browser/notifications/notification_platform_bridge_unittest.cc",
     "../browser/notifications/notification_trigger_scheduler_unittest.cc",
     "../browser/notifications/persistent_notification_handler_unittest.cc",
     "../browser/notifications/platform_notification_service_unittest.cc",
@@ -6182,6 +6186,7 @@ test("unit_tests") {
 
   if (!is_android) {
     sources += [
+      "../browser/apps/app_discovery_service/app_discovery_service_unittest.cc",
       "../browser/apps/app_service/app_icon_factory_unittest.cc",
       "../browser/apps/app_service/app_service_proxy_unittest.cc",
       "../browser/apps/app_service/app_service_test.cc",
@@ -6482,6 +6487,7 @@ test("unit_tests") {
       "//chromeos/dbus/image_loader",
       "//chromeos/dbus/u2f",
       "//chromeos/services/nearby/public/cpp:test_support",
+      "//chromeos/ui/wm",
       "//components/arc:arc_test_support",
       "//components/full_restore:unit_tests",
     ]
@@ -6823,7 +6829,6 @@ test("unit_tests") {
       "../common/extensions/chrome_manifest_url_handlers_unittest.cc",
       "../common/extensions/command_unittest.cc",
       "../common/extensions/extension_unittest.cc",
-      "../common/extensions/manifest_handlers/app_display_mode_manifest_unittest.cc",
       "../common/extensions/manifest_handlers/app_theme_color_manifest_unittest.cc",
       "../common/extensions/manifest_handlers/automation_unittest.cc",
       "../common/extensions/manifest_handlers/content_scripts_manifest_unittest.cc",
@@ -9705,11 +9710,16 @@ if (is_chromeos_ash) {
   }
 }
 
-if (is_linux || is_win) {
+if (is_linux || is_mac || is_win) {
   script_test("variations_smoke_tests") {
     run_under_python2 = true
 
-    script = "//testing/xvfb.py"
+    if (is_linux) {
+      script = "//testing/xvfb.py"
+    } else {
+      script = "//testing/test_env.py"
+    }
+
     args = [ "@WrappedPath(" +
              rebase_path("//testing/scripts/run_variations_smoke_tests.py",
                          root_build_dir) + ")" ]

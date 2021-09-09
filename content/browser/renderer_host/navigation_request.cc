@@ -112,6 +112,7 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/redirect_info.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
@@ -317,7 +318,7 @@ std::string ComputeUserAgentValue(const net::HttpRequestHeaders& headers,
   // If Sec-CH-UA-Reduced is set on the headers, it means that the token for the
   // UserAgentReduction Origin Trial has been validated and we should send a
   // reduced UA string on the request.
-  std::string header = blink::kClientHintsHeaderMapping[static_cast<int>(
+  std::string header = network::kClientHintsNameMapping[static_cast<int>(
       network::mojom::WebClientHintsType::kUAReduced)];
   std::string value;
   const bool reduced = headers.GetHeader(header, &value) && value == "?1";
@@ -3869,8 +3870,8 @@ void NavigationRequest::OnRedirectChecksComplete(
   std::vector<std::string> removed_headers = TakeRemovedRequestHeaders();
   // Removes all Client Hints from the request, that were passed on from the
   // previous one.
-  for (size_t i = 0; i < blink::kClientHintsMappingsCount; ++i)
-    removed_headers.push_back(blink::kClientHintsHeaderMapping[i]);
+  for (size_t i = 0; i < network::kClientHintsNameMappingCount; ++i)
+    removed_headers.push_back(network::kClientHintsNameMapping[i]);
 
   // Add any required Client Hints to the current request.
   BrowserContext* browser_context =
@@ -4286,7 +4287,8 @@ void NavigationRequest::CommitNavigation() {
     commit_params_->enabled_client_hints = LookupAcceptCHForCommit(
         common_params_->url, client_hints_delegate, frame_tree_node_);
 
-    if (response() && !response()->parsed_headers->accept_ch &&
+    if (frame_tree_node_->IsMainFrame() && response() &&
+        !response()->parsed_headers->accept_ch &&
         base::Contains(commit_params_->enabled_client_hints,
                        network::mojom::WebClientHintsType::kUAReduced)) {
       // For Chrome to continue to send Sec-CH-UA-Reduced, the server must

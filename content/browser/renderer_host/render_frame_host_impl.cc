@@ -319,6 +319,8 @@ class RenderFrameHostOrProxy {
 
 namespace {
 
+using perfetto::protos::pbzero::ChromeTrackEvent;
+
 constexpr int kSubframeProcessShutdownLongDelayInMSec = 8 * 1000;
 static_assert(kSubframeProcessShutdownLongDelayInMSec +
                       RenderViewHostImpl::kUnloadTimeoutInMSec <
@@ -3467,6 +3469,11 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     SCOPED_CRASH_KEY_BOOL("NoRVH", "proxy_live",
                           proxy->is_render_frame_proxy_live());
     base::debug::DumpWithoutCrashing();
+
+    TRACE_EVENT_INSTANT("navigation", "RenderFrameHostImpl::OnCreateChildFrame",
+                        ChromeTrackEvent::kRenderFrameProxyHost, *proxy);
+    CaptureTraceForNavigationDebugScenario(
+        DebugScenario::kDebugSubframeProxyCreationWithNoRVH);
     return;
   }
 
@@ -5822,6 +5829,11 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
       ->controller()
       .GetBackForwardCache()
       .PostTaskToDestroyEvictedFrames();
+}
+
+void RenderFrameHostImpl::UseDummyStickySchedulerTrackedFeatureForTesting() {
+  OnSchedulerTrackedFeatureUsed(
+      blink::scheduler::WebSchedulerTrackedFeature::kDummy);
 }
 
 bool RenderFrameHostImpl::HasSeenRecentXrOverlaySetup() {
@@ -11659,7 +11671,7 @@ void RenderFrameHostImpl::
       renderer_url_info_
           .document_has_unreachable_url_from_load_data_with_base_url);
   SCOPED_CRASH_KEY_STRING32(
-      "VerifyDidCommit", "history_url_fdu_type",
+      "VerifyDidCommit", "base_url_fdu_type",
       GetURLTypeForCrashKey(request->common_params().base_url_for_data_url));
 #if defined(OS_ANDROID)
   SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "data_url_empty",

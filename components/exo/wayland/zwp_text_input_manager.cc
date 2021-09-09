@@ -10,6 +10,7 @@
 #include <xkbcommon/xkbcommon.h>
 
 #include "base/strings/string_piece.h"
+#include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/display.h"
 #include "components/exo/text_input.h"
@@ -19,7 +20,6 @@
 #include "ui/base/ime/utf_offset.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-
 
 namespace exo {
 namespace wayland {
@@ -61,43 +61,15 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
   }
 
   void SetCompositionText(const ui::CompositionText& composition) override {
-    for (const auto& span : composition.ime_text_spans) {
-      uint32_t style = ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_DEFAULT;
-      switch (span.type) {
-        case ui::ImeTextSpan::Type::kComposition:
-          if (span.thickness == ui::ImeTextSpan::Thickness::kThick) {
-            style = ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_HIGHLIGHT;
-          } else {
-            style = ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_UNDERLINE;
-          }
-          break;
-        case ui::ImeTextSpan::Type::kSuggestion:
-          style = ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_SELECTION;
-          break;
-        case ui::ImeTextSpan::Type::kMisspellingSuggestion:
-        case ui::ImeTextSpan::Type::kAutocorrect:
-        case ui::ImeTextSpan::Type::kGrammarSuggestion:
-          style = ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_INCORRECT;
-          break;
-      }
-      const auto start =
-          ui::Utf8OffsetFromUtf16Offset(composition.text, span.start_offset);
-      if (!start)
-        continue;
-      const auto end =
-          ui::Utf8OffsetFromUtf16Offset(composition.text, span.end_offset);
-      if (!end)
-        continue;
-      zwp_text_input_v1_send_preedit_styling(text_input_, *start, *end - *start,
-                                             style);
-    }
+    SendPreeditStyle(composition.text, composition.ime_text_spans);
 
-    const auto pos = ui::Utf8OffsetFromUtf16Offset(
-        composition.text, composition.selection.start());
-    if (pos)
-      zwp_text_input_v1_send_preedit_cursor(text_input_, *pos);
+    std::vector<size_t> offsets = {composition.selection.start()};
+    const std::string utf8 =
+        base::UTF16ToUTF8AndAdjustOffsets(composition.text, &offsets);
 
-    const std::string utf8 = base::UTF16ToUTF8(composition.text);
+    if (offsets[0] != std::string::npos)
+      zwp_text_input_v1_send_preedit_cursor(text_input_, offsets[0]);
+
     zwp_text_input_v1_send_preedit_string(
         text_input_,
         serial_tracker_->GetNextSerial(SerialTracker::EventType::OTHER_EVENT),
@@ -114,14 +86,26 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
     wl_client_flush(client());
   }
 
-  void SetCursor(const gfx::Range& selection) override {
-    zwp_text_input_v1_send_cursor_position(text_input_, selection.end(),
-                                           selection.start());
+  void SetCursor(base::StringPiece16 surrounding_text,
+                 const gfx::Range& selection) override {
+    std::vector<size_t> offsets{selection.start(), selection.end()};
+    base::UTF16ToUTF8AndAdjustOffsets(surrounding_text, &offsets);
+    zwp_text_input_v1_send_cursor_position(text_input_,
+                                           static_cast<uint32_t>(offsets[1]),
+                                           static_cast<uint32_t>(offsets[0]));
   }
 
-  void DeleteSurroundingText(const gfx::Range& range) override {
-    zwp_text_input_v1_send_delete_surrounding_text(text_input_, range.start(),
-                                                   range.length());
+  void DeleteSurroundingText(base::StringPiece16 surrounding_text,
+                             const gfx::Range& range) override {
+    std::vector<size_t> offsets{range.GetMin(), range.GetMax()};
+    base::UTF16ToUTF8AndAdjustOffsets(surrounding_text, &offsets);
+    // Currently, the arguments are conflicting with spec.
+    // However, the only client, Lacros, also interprets wrongly in the same
+    // way so just fixing here could cause visible regression.
+    // TODO(crbug.com/1227590): Fix the behavior with versioning.
+    zwp_text_input_v1_send_delete_surrounding_text(
+        text_input_, static_cast<uint32_t>(offsets[0]),
+        static_cast<uint32_t>(offsets[1] - offsets[0]));
   }
 
   void SendKey(const ui::KeyEvent& event) override {
@@ -164,6 +148,54 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
         text_input_,
         serial_tracker_->GetNextSerial(SerialTracker::EventType::OTHER_EVENT),
         wayland_direction);
+  }
+
+  void SendPreeditStyle(base::StringPiece16 text,
+                        const std::vector<ui::ImeTextSpan>& spans) {
+    if (spans.empty())
+      return;
+
+    // Convert all offsets from UTF16 to UTF8.
+    std::vector<size_t> offsets;
+    offsets.reserve(spans.size() * 2);
+    for (const auto& span : spans) {
+      auto minmax = std::minmax(span.start_offset, span.end_offset);
+      offsets.push_back(minmax.first);
+      offsets.push_back(minmax.second);
+    }
+    base::UTF16ToUTF8AndAdjustOffsets(text, &offsets);
+
+    for (size_t i = 0; i < spans.size(); ++i) {
+      if (offsets[i * 2] == std::string::npos ||
+          offsets[i * 2 + 1] == std::string::npos) {
+        // Invalid span is specified.
+        continue;
+      }
+      const auto& span = spans[i];
+      const uint32_t begin = offsets[i * 2];
+      const uint32_t end = offsets[i * 2 + 1];
+
+      uint32_t style = ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_DEFAULT;
+      switch (span.type) {
+        case ui::ImeTextSpan::Type::kComposition:
+          if (span.thickness == ui::ImeTextSpan::Thickness::kThick) {
+            style = ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_HIGHLIGHT;
+          } else {
+            style = ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_UNDERLINE;
+          }
+          break;
+        case ui::ImeTextSpan::Type::kSuggestion:
+          style = ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_SELECTION;
+          break;
+        case ui::ImeTextSpan::Type::kMisspellingSuggestion:
+        case ui::ImeTextSpan::Type::kAutocorrect:
+        case ui::ImeTextSpan::Type::kGrammarSuggestion:
+          style = ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_INCORRECT;
+          break;
+      }
+      zwp_text_input_v1_send_preedit_styling(text_input_, begin, end - begin,
+                                             style);
+    }
   }
 
   wl_resource* text_input_;
@@ -232,14 +264,14 @@ void text_input_set_surrounding_text(wl_client* client,
                                      uint32_t cursor,
                                      uint32_t anchor) {
   TextInput* text_input = GetUserDataAs<TextInput>(resource);
-  auto utf16_cursor = ui::Utf16OffsetFromUtf8Offset(text, cursor);
-  if (!utf16_cursor)
+  // TODO(crbug.com/1227590): Selection range should keep cursor/anchor
+  // relationship.
+  auto minmax = std::minmax(cursor, anchor);
+  std::vector<size_t> offsets{minmax.first, minmax.second};
+  std::u16string u16_text = base::UTF8ToUTF16AndAdjustOffsets(text, &offsets);
+  if (offsets[0] == std::u16string::npos || offsets[1] == std::u16string::npos)
     return;
-  auto utf16_anchor = ui::Utf16OffsetFromUtf8Offset(text, anchor);
-  if (!utf16_anchor)
-    return;
-  text_input->SetSurroundingText(base::UTF8ToUTF16(text), *utf16_cursor,
-                                 *utf16_anchor);
+  text_input->SetSurroundingText(u16_text, gfx::Range(offsets[0], offsets[1]));
 }
 
 void text_input_set_content_type(wl_client* client,

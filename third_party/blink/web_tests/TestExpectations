@@ -156,8 +156,6 @@ crbug.com/949003 http/tests/printing/cross-site-frame.html [ Failure Pass ]
 crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.js [ Failure ]
 # ====== Browserside navigation until here ======
 
-crbug.com/1232792 http/tests/devtools/copy-network-request.js [ Failure Pass ]
-
 # ====== Paint team owned tests from here ======
 # The paint team tracks and triages its test failures, and keeping them colocated
 # makes tracking much easier.
@@ -1106,6 +1104,18 @@ crbug.com/591099 [ Mac ] paint/invalidation/flexbox/remove-inline-block-descenda
 # A few other lines for this test are commented out above to avoid conflicting expectations.
 # If they are not also fixed, reinstate them when removing these lines.
 crbug.com/982211 fast/events/before-unload-return-value-from-listener.html [ Crash Pass Timeout ]
+
+# WPT css-writing-mode tests failing for various reasons beyond simple pixel diffs
+crbug.com/1212254 external/wpt/css/css-writing-modes/available-size-005.html [ Failure ]
+crbug.com/1212254 external/wpt/css/css-writing-modes/available-size-003.html [ Failure ]
+crbug.com/1212254 external/wpt/css/css-writing-modes/available-size-014.html [ Failure ]
+crbug.com/1212254 external/wpt/css/css-writing-modes/available-size-013.html [ Failure ]
+crbug.com/717862 [ Mac ] external/wpt/css/css-writing-modes/mongolian-orientation-002.html [ Failure ]
+crbug.com/717862 external/wpt/css/css-writing-modes/mongolian-orientation-001.html [ Failure ]
+crbug.com/750992 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-008.xht [ Failure ]
+crbug.com/750992 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-020.xht [ Failure ]
+crbug.com/750992 external/wpt/css/css-writing-modes/sizing-orthog-vrl-in-htb-008.xht [ Failure ]
+crbug.com/750992 external/wpt/css/css-writing-modes/sizing-orthog-vrl-in-htb-020.xht [ Failure ]
 
 ### With LayoutNGFragmentItem enabled
 crbug.com/982194 [ Win7 ] external/wpt/css/css-text/white-space/seg-break-transformation-018.tentative.html [ Failure ]
@@ -2166,11 +2176,6 @@ crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-naviga
 crbug.com/876485 fast/performance/performance-measure-null-exception.html [ Failure ]
 
 crbug.com/713587 external/wpt/css/css-ui/caret-color-006.html [ Skip ]
-
-crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-008.xht [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-020.xht [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vrl-in-htb-008.xht [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vrl-in-htb-020.xht [ Failure ]
 
 # Unprefixed image-set() not supported
 crbug.com/630597 external/wpt/css/css-images/image-set/image-set-rendering.html [ Failure ]
@@ -3357,58 +3362,14 @@ crbug.com/1004760 [ Mac ] external/wpt/html/semantics/embedded-content/media-ele
 crbug.com/626703 external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/preload/download-resources.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/preload/download-resources.html [ Failure Timeout ]
-crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-001-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-all-001-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-002-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-all-002-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-004-manual.html [ Skip ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/preload/onload-event.html [ Failure Skip Timeout ]
 crbug.com/626703 external/wpt/html/rendering/widgets/button-layout/anonymous-button-content-box.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/widgets/button-layout/inline-level.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/ch-unit-017.html [ Failure ]
 crbug.com/626703 external/wpt/xhr/abort-after-stop.any.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesisUtterance-volume-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-table-001-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-009-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-table-002-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-012-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-forms-006-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-009-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-015-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-010-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-003-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-table-001-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-forms-001-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-forms-005-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-014-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-002-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-007-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-015-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-003-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-forms-003-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-forms-004-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-001-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-006-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-008-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-forms-004-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-forms-003-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-014-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-forms-002-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-010-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-forms-002-manual.html [ Skip ]
 crbug.com/626703 crbug.com/606367 external/wpt/pointerevents/pointerevent_touch-action-pan-x-pan-y-pan-y_touch.html [ Failure Pass Timeout ]
 crbug.com/626703 crbug.com/606367 external/wpt/pointerevents/pointerevent_touch-action-none-css_touch.html [ Failure Pass Timeout ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-012-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-005-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-002-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-forms-001-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-forms-005-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-005-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-007-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vrl-forms-006-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-001-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-008-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-table-002-manual.html [ Skip ]
 crbug.com/626703 external/wpt/xhr/event-readystatechange-loaded.any.worker.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-multiple-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-lists/li-value-counter-reset-001.html [ Failure ]
@@ -3615,15 +3576,7 @@ crbug.com/626703 [ Win10.1909 ] external/wpt/fetch/api/redirect/redirect-count.a
 crbug.com/626703 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Crash Skip Timeout ]
 crbug.com/626703 external/wpt/html/browsers/history/joint-session-history/joint-session-history-remove-iframe.html [ Skip Timeout ]
 crbug.com/626703 external/wpt/css/mediaqueries/viewport-script-dynamic.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-014.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-013.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/astral-bidi/adlam-anti-ref.html [ Failure Pass ]
-crbug.com/626703 external/wpt/css/css-writing-modes/astral-bidi/cypriot-anti-ref.html [ Failure Pass ]
 crbug.com/626703 external/wpt/css/css-fill-stroke/paint-order-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-005.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-003.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-writing-modes/mongolian-orientation-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/mongolian-orientation-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-026.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/lh-unit-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/lh-unit-001.html [ Failure ]
@@ -5874,6 +5827,8 @@ crbug.com/1222114 http/tests/devtools/console/console-format-es6.js [ Failure Pa
 crbug.com/1222114 http/tests/devtools/console/console-functions.js [ Failure Pass ]
 crbug.com/1222114 http/tests/devtools/sources/debugger/properties-special.js [ Failure Pass ]
 
+crbug.com/1247844 external/wpt/css/css-contain/content-visibility/content-visibility-input-image.html [ Timeout ]
+
 # Expected to fail with SuppressDifferentOriginSubframeJSDialogs feature disabled, tested in VirtualTestSuite
 crbug.com/1065085 external/wpt/html/webappapis/user-prompts/cannot-show-simple-dialogs/confirm-different-origin-frame.sub.html [ Failure ]
 crbug.com/1065085 external/wpt/html/webappapis/user-prompts/cannot-show-simple-dialogs/prompt-different-origin-frame.sub.html [ Failure ]
@@ -6617,24 +6572,6 @@ crbug.com/1223601 [ Linux ] fast/scrolling/reset-scroll-in-onscroll.html [ Failu
 # Flaky on Mac11 Tests
 crbug.com/1197464 [ Mac ] virtual/scroll-unification/plugins/refcount-leaks.html [ Failure Pass ]
 
-# File System Access API tests that depend on mojo interfaces that are only exposed behind a flag.
-crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemFileHandle-create-sync-access-handle-dedicated-worker.https.tentative.window.html [ Skip ]
-crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemFileHandle-create-sync-access-handle-dedicated-worker.https.tentative.window.html [ Pass ]
-crbug.com/1218431 external/wpt/file-system-access/local_FileSystemFileHandle-create-sync-access-handle-dedicated-worker-manual.https.tentative.html [ Skip ]
-crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/local_FileSystemFileHandle-create-sync-access-handle-dedicated-worker-manual.https.tentative.html [ Pass ]
-crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemFileHandle-sync-access-handle-writable-lock.https.tentative.worker.html [ Skip ]
-crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemFileHandle-sync-access-handle-writable-lock.https.tentative.worker.html [ Pass ]
-crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-read-write.https.tentative.worker.html [ Skip ]
-crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-read-write.https.tentative.worker.html [ Pass ]
-crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-flush.https.tentative.worker.html [ Skip ]
-crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-flush.https.tentative.worker.html [ Pass ]
-crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Skip ]
-crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Pass ]
-crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-getSize.https.tentative.worker.html [ Skip ]
-crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-getSize.https.tentative.worker.html [ Pass ]
-crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Skip ]
-crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Pass ]
-
 # Sheriff 2021-06-30
 crbug.com/1216587 [ Win7 ] accessibility/scroll-window-sends-notification.html [ Failure Pass ]
 
@@ -6885,6 +6822,12 @@ crbug.com/1236558 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css
 crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-before-start.https.html [ Crash Failure Pass ]
 crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-get-timing-on-worklet-thread.https.html [ Crash Failure Pass ]
 
+# Temporarily disable to fix DevTools issue reporting
+crbug.com/1241860 http/tests/inspector-protocol/issues/content-security-policy-issue-trusted-types-exception.js [ Skip ]
+crbug.com/1241860 http/tests/inspector-protocol/issues/content-security-policy-issue-trusted-types-policy-exception.js [ Skip ]
+crbug.com/1241860 http/tests/inspector-protocol/issues/cors-issues.js [ Skip ]
+crbug.com/1241860 http/tests/inspector-protocol/issues/renderer-cors-issues.js [ Skip ]
+
 # Temporarily disable to update DevTools Application Panel
 crbug.com/1110752 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Pass Failure ]
 crbug.com/1110752 http/tests/devtools/application-panel/resources-panel-on-navigation.js [ Pass Failure ]
@@ -6897,3 +6840,7 @@ crbug.com/1233826 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css
 crbug.com/1233826 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-after-load.https.html [ Crash Pass Failure ]
 crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-shadow-part4.html [ Pass Crash ]
 crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-color-over-pattern.html [ Pass Crash ]
+
+# Sheriff 2021-09-09
+crbug.com/1247904 [ Mac10.12 ] virtual/compositor_threaded_scrollbar_scrolling/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Failure ]
+crbug.com/1247904 [ Mac10.13 ] virtual/compositor_threaded_scrollbar_scrolling/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Failure ]

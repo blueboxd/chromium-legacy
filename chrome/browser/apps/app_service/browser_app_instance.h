@@ -9,6 +9,7 @@
 
 #include "base/process/process_handle.h"
 #include "base/unguessable_token.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Browser;
 
@@ -43,8 +44,12 @@ struct BrowserAppInstance {
   Type type;
   std::string app_id;
   aura::Window* window;
-  bool visible;
-  bool active;
+  // Set for apps of type kAppTab or kAppWindow, nil for kChromeWindow.
+  absl::optional<std::string> title;
+  bool is_browser_visible;
+  bool is_browser_active;
+  // Set for apps of type kAppTab or kAppWindow, nil for kChromeWindow.
+  absl::optional<bool> is_web_contents_active;
 };
 
 }  // namespace apps

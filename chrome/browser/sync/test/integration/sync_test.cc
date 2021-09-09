@@ -96,6 +96,11 @@
 #include "components/arc/test/arc_util_test_support.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "components/account_manager_core/chromeos/account_manager.h"
+#include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 #if defined(OS_ANDROID)
 #include "chrome/browser/sync/test/integration/sync_test_utils_android.h"
 #else
@@ -128,6 +133,10 @@ void SetURLLoaderFactoryForTest(
   auto* account_manager =
       factory->GetAccountManager(profile->GetPath().value());
   account_manager->SetUrlLoaderFactoryForTests(url_loader_factory);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto* account_manager = MaybeGetAshAccountManagerForTests();
+  if (account_manager)
+    account_manager->SetUrlLoaderFactoryForTests(url_loader_factory);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
@@ -964,10 +973,8 @@ void SyncTest::TearDownOnMainThread() {
   // used profile by path will fail. To work around that, set the last used
   // profile back to the originally created default profile (which does live in
   // the user data dir, and which we don't use otherwise).
-  if (previous_profile_) {
-    profiles::SetLastUsedProfile(
-        previous_profile_->GetBaseName().MaybeAsASCII());
-  }
+  if (previous_profile_)
+    profiles::SetLastUsedProfile(previous_profile_->GetBaseName());
 
 #if !defined(OS_ANDROID)
   // Closing all browsers created by this test. The calls here block until

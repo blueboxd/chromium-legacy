@@ -1591,7 +1591,7 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R96-14184.0.0",
+        "cros_img": "atlas-release/R96-14200.0.0",
         "name": "lacros_all_tast_tests_ATLAS_TOT",
         "resultdb": {
           "enable": true,
@@ -1636,7 +1636,7 @@
       {
         "args": [],
         "cros_board": "eve",
-        "cros_img": "eve-release/R96-14184.0.0",
+        "cros_img": "eve-release/R96-14200.0.0",
         "name": "lacros_all_tast_tests_EVE_TOT",
         "resultdb": {
           "enable": true,
@@ -3684,6 +3684,31 @@
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
+      },
+      {
+        "experiment_percentage": 100,
+        "isolate_name": "variations_smoke_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "variations_smoke_tests",
+        "resultdb": {
+          "enable": true,
+          "result_format": "single"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-10.15",
+              "pool": "chrome.tests"
+            }
+          ],
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://chrome/test:variations_smoke_tests/"
       }
     ]
   },

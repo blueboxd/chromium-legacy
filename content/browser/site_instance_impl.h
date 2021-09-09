@@ -16,9 +16,18 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_proto.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+namespace perfetto {
+namespace protos {
+namespace pbzero {
+class SiteInstance;
+}
+}  // namespace protos
+}  // namespace perfetto
 
 namespace content {
 class AgentSchedulingGroupHost;
@@ -199,8 +208,7 @@ class CONTENT_EXPORT UrlInfoInit {
 class CONTENT_EXPORT SiteInfo {
  public:
   static SiteInfo CreateForErrorPage(
-      const StoragePartitionConfig storage_partition_config,
-      const WebExposedIsolationInfo& web_exposed_isolation_info);
+      const StoragePartitionConfig storage_partition_config);
   static SiteInfo CreateForDefaultSiteInstance(
       BrowserContext* browser_context,
       const StoragePartitionConfig storage_partition_config,
@@ -587,6 +595,10 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   bool IsGuest() override;
   SiteInstanceProcessAssignment GetLastProcessAssignmentOutcome() override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
+
+  // Write a representation of this object into a trace.
+  void WriteIntoTrace(
+      perfetto::TracedProto<perfetto::protos::pbzero::SiteInstance> proto);
 
   // This is called every time a renderer process is assigned to a SiteInstance
   // and is used by the content embedder for collecting metrics.

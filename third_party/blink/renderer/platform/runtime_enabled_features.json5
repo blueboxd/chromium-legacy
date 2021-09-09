@@ -589,6 +589,12 @@
       status: "experimental"
     },
     {
+      // CSS animation/transition updates occur outside style recalc.
+      //
+      // https://crbug.com/1180159
+      name: "CSSDelayedAnimationUpdates",
+    },
+    {
       name: "CSSDynamicRangeMediaQueries",
       status: "experimental"
     },
@@ -631,12 +637,6 @@
     {
       name: "CSSIndependentTransformProperties",
       status: "experimental",
-    },
-    {
-      // CSS animation/transition updates occur outside style recalc.
-      //
-      // https://crbug.com/1180159
-      name: "CSSIsolatedAnimationUpdates",
     },
     {
       name: "CSSLayoutAPI",
@@ -1043,9 +1043,8 @@
     },
     {
       name: "FileSystemAccessAccessHandle",
-      // No status because this blink runtime feature doesn't work by itself.
-      // It's controlled by the corresponding Chromium feature which needs to
-      // be enabled to make the whole feature work.
+      origin_trial_feature_name: "FileSystemAccessAccessHandle",
+      status: "experimental",
     },
     {
       // In-development features for the File System Access API.
@@ -2228,6 +2227,15 @@
       name: "TrustTokensAlwaysAllowIssuance",
       status: "test",
     },
+    // This is a reverse OT used for a phased deprecation of Cryptotoken, the
+    // component extension that implements the U2F security key API.
+    // https://crbug.com/1224886
+    {
+      name: "U2FSecurityKeyAPI",
+      origin_trial_feature_name: "U2FSecurityKeyAPI",
+      origin_trial_os: ["win", "mac", "linux", "chromeos"],
+      origin_trial_type: "deprecation",
+    },
     {
       name: "UnclosedFormControlIsInvalid",
       status: "experimental",
@@ -2264,7 +2272,6 @@
       origin_trial_allows_third_party: true,
       // iOS not included as it should not send a reduced User-Agent string.
       origin_trial_os: ["android", "chromeos", "fuchsia", "linux", "mac", "win"],
-      status: "experimental",
     },
     {
       name: "UUID",

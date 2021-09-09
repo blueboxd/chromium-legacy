@@ -68,6 +68,8 @@
 #include "weblayer/browser/java/jni/MojoInterfaceRegistrar_jni.h"
 #include "weblayer/browser/media/local_presentation_manager_factory.h"
 #include "weblayer/browser/media/media_router_factory.h"
+#include "weblayer/browser/safe_browsing/safe_browsing_metrics_collector_factory.h"
+#include "weblayer/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
 #include "weblayer/browser/webapps/weblayer_webapps_client.h"
 #include "weblayer/browser/weblayer_factory_impl_android.h"
 #include "weblayer/common/features.h"
@@ -129,6 +131,8 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   NoStatePrefetchManagerFactory::GetInstance();
   SubresourceFilterProfileContextFactory::GetInstance();
 #if defined(OS_ANDROID)
+  SafeBrowsingMetricsCollectorFactory::GetInstance();
+  SafeBrowsingNavigationObserverManagerFactory::GetInstance();
   if (MediaRouterFactory::IsFeatureEnabled()) {
     LocalPresentationManagerFactory::GetInstance();
     MediaRouterFactory::GetInstance();

@@ -157,6 +157,14 @@ std::string Controller::GetLocale() {
   return client_->GetLocale();
 }
 
+std::string Controller::GetDisplayStringsLocale() {
+  if (GetSettings().display_strings_locale.empty()) {
+    // Fallback locale
+    return GetLocale();
+  }
+  return GetSettings().display_strings_locale;
+}
+
 void Controller::SetTouchableElementArea(const ElementAreaProto& area) {
   touchable_element_area()->SetFromProto(area);
 }
@@ -207,7 +215,7 @@ void Controller::MaybePlayTtsMessage() {
   }
 
   // Will fire a TTS_START event.
-  tts_controller_->Speak(tts_message_, GetLocale());
+  tts_controller_->Speak(tts_message_, GetDisplayStringsLocale());
 }
 
 void Controller::SetDetails(std::unique_ptr<Details> details,
@@ -1283,7 +1291,8 @@ void Controller::InitFromParameters() {
 
   const absl::optional<bool> enable_tts =
       trigger_context_->GetScriptParameters().GetEnableTts();
-  if (enable_tts && enable_tts.value()) {
+  if (enable_tts && enable_tts.value() &&
+      !client_->IsSpokenFeedbackAccessibilityServiceEnabled()) {
     tts_enabled_ = true;
     for (ControllerObserver& observer : observers_) {
       observer.OnTtsButtonVisibilityChanged(/* visible= */ true);
@@ -1459,7 +1468,7 @@ void Controller::OnTtsButtonClicked() {
   switch (tts_button_state_) {
     case TtsButtonState::DEFAULT:
       // Will fire a TTS_START event.
-      tts_controller_->Speak(tts_message_, GetLocale());
+      tts_controller_->Speak(tts_message_, GetDisplayStringsLocale());
       break;
     case TtsButtonState::PLAYING:
       // Will not cause any TTS event.
@@ -1469,7 +1478,7 @@ void Controller::OnTtsButtonClicked() {
     case TtsButtonState::DISABLED:
       SetTtsButtonState(TtsButtonState::DEFAULT);
       // Will fire a TTS_START event.
-      tts_controller_->Speak(tts_message_, GetLocale());
+      tts_controller_->Speak(tts_message_, GetDisplayStringsLocale());
       break;
   }
 }
@@ -1491,6 +1500,28 @@ void Controller::SetTtsButtonState(TtsButtonState state) {
   tts_button_state_ = state;
   for (ControllerObserver& observer : observers_) {
     observer.OnTtsButtonStateChanged(tts_button_state_);
+  }
+}
+
+void Controller::OnSpokenFeedbackAccessibilityServiceChanged(bool enabled) {
+  if (!enabled) {
+    // Nothing to do when the a11y service is disabled.
+    return;
+  }
+
+  if (!tts_enabled_) {
+    return;
+  }
+  // Disable TTS and hide TTS button.
+  tts_enabled_ = false;
+  for (ControllerObserver& observer : observers_) {
+    observer.OnTtsButtonVisibilityChanged(/* visible= */ false);
+  }
+  // Stop any ongoing TTS and reset button state.
+  if (tts_button_state_ == TtsButtonState::PLAYING) {
+    // Will not cause any TTS event.
+    tts_controller_->Stop();
+    SetTtsButtonState(TtsButtonState::DEFAULT);
   }
 }
 

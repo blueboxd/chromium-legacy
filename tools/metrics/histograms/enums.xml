@@ -7078,7 +7078,6 @@ others/histograms.xml -->
   <int value="131080" label="kContent-kWebBluetooth"/>
   <int value="131081" label="kContent-kWebUSB"/>
   <int value="131082" label="kContent-kMediaSession"/>
-  <int value="131083" label="kContent-kMediaSessionService"/>
   <int value="196608" label="kEmbedder-kUnknown"/>
   <int value="196609" label="kEmbedder-kPopupBlockerTabHelper"/>
   <int value="196610" label="kEmbedder-kSafeBrowsingTriggeredPopupBlocker"/>
@@ -7868,6 +7867,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="2" label="Manual fallback sheet"/>
   <int value="3" label="List of all passwords"/>
   <int value="4" label="Account chooser dialog"/>
+  <int value="5" label="Password check - Automated password change"/>
 </enum>
 
 <enum name="BiometricAuthResult">
@@ -9411,6 +9411,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Top Level"/>
 </enum>
 
+<enum name="BooleanIsTransaction">
+  <int value="0" label="Not Transaction"/>
+  <int value="1" label="Is Transaction"/>
+</enum>
+
 <enum name="BooleanIsUseRelinker">
   <obsolete>
     Removed in 2019-07.
@@ -9818,6 +9823,9 @@ Called by update_bad_message_reasons.py.-->
 </enum>
 
 <enum name="BooleanSafeMode">
+  <obsolete>
+    Deprecated 9/2021. Replaced by VariationsSeedUsage.
+  </obsolete>
   <int value="0" label="Regular mode"/>
   <int value="1" label="Safe mode"/>
 </enum>
@@ -13520,6 +13528,7 @@ Called by update_net_error_codes.py.-->
   <int value="12" label="FAILURE_SESSION_RATE_IMPACT_UNKNOWN_FEATURE"/>
   <int value="13" label="FAILURE_TRACKING_ONLY_PARSE"/>
   <int value="14" label="SUCCESS_FROM_SOURCE"/>
+  <int value="15" label="FAILURE_SNOOZE_PARAMS_PARSE"/>
 </enum>
 
 <enum name="ConfusionMatrix">
@@ -43626,6 +43635,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Internal Error"/>
   <int value="2" label="Store Disabled"/>
   <int value="3" label="Store Busy"/>
+</enum>
+
+<enum name="IOSCredentialProviderNewCredentialUsername">
+  <int value="0" label="Credential With Username"/>
+  <int value="1" label="Credential Without Username"/>
 </enum>
 
 <enum name="IOSCredentialProviderPasswordCreated">
@@ -75489,6 +75503,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="DIRECT_SHARE"/>
 </enum>
 
+<enum name="ShareSourceDesktop">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="OMNIBOX_SHARING_HUB"/>
+</enum>
+
 <enum name="ShareTargetUpdateResult">
   <int value="1" label="SUCCESS"/>
   <int value="2" label="FAILED_EMPTY"/>
@@ -76041,6 +76060,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="Scheduled">
     The account reconcilor is scheduled for running soon.
   </int>
+</enum>
+
+<enum name="SigninAccountType">
+  <int value="0" label="Regular gmail account"/>
+  <int value="1" label="Managed account"/>
 </enum>
 
 <enum name="SigninChoice">
@@ -85048,6 +85072,22 @@ Full version information for the fingerprint enum values:
   <int value="15" label="Non-Gzip Full Count"/>
 </enum>
 
+<enum name="VariationsSeedUsage">
+  <int value="0" label="Regular seed used"/>
+  <int value="1" label="Expired regular seed">No seed used</int>
+  <int value="2" label="Corrupted regular seed">No seed used</int>
+  <int value="3" label="Safe seed used"/>
+  <int value="4" label="Expired safe seed">No seed used</int>
+  <int value="5" label="Corrupted safe seed">No seed used</int>
+  <int value="6" label="Regular seed used after loading empty safe seed"/>
+  <int value="7" label="Expired regular seed after loading empty safe seed">
+    No seed used
+  </int>
+  <int value="8" label="Corrupted regular seed after loading empty safe seed">
+    No seed used
+  </int>
+</enum>
+
 <enum name="VaryType">
   <int value="0" label="No Vary header present"/>
   <int value="1" label="Vary:User-Agent"/>
@@ -90900,7 +90940,12 @@ Called by update_scheduler_enums.py.-->
   <int value="999" label="SWAPERROR"/>
   <int value="1011" label="ERROR_CANTOPEN"/>
   <int value="1117" label="ERROR_IO_DEVICE"/>
+  <int value="1127" label="DISK_OPERATION_FAILED"/>
+  <int value="1175" label="UNABLE_TO_REMOVE_REPLACED"/>
+  <int value="1176" label="UNABLE_TO_MOVE_REPLACEMENT"/>
+  <int value="1177" label="UNABLE_TO_MOVE_REPLACEMENT_2"/>
   <int value="1223" label="ERROR_CANCELLED"/>
+  <int value="1296" label="CONTENT_BLOCKED"/>
   <int value="1346" label="ERROR_BAD_IMPERSONATION_LEVEL"/>
   <int value="1392" label="ERROR_FILE_CORRUPT"/>
   <int value="1393" label="ERROR_DISK_CORRUPT"/>
@@ -90914,6 +90959,7 @@ Called by update_scheduler_enums.py.-->
   <int value="1784" label="INVALID_USER_BUFFER"/>
   <int value="1816" label="NOT_ENOUGH_QUOTA"/>
   <int value="1818" label="RPC_S_CALL_CANCELLED"/>
+  <int value="1920" label="CANT_ACCESS_FILE"/>
   <int value="6000" label="ERROR_ENCRYPTION_FAILED"/>
   <int value="6001" label="ERROR_DECRYPTION_FAILED"/>
   <int value="7041" label="ERROR_CTX_CONSOLE_DISCONNECT"/>

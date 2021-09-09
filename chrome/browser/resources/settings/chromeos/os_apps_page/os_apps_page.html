@@ -17,7 +17,7 @@
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../guest_os/guest_os_shared_usb_devices.html">
 <link rel="import" href="../guest_os/guest_os_shared_paths.html">
-<link rel="import" href="../localized_link/localized_link.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/localized_link/localized_link.html">
 <link rel="import" href="android_apps_browser_proxy.html">
 <link rel="import" href="android_apps_subpage.html">
 <link rel="import" href="app_notifications_page/app_notifications_subpage.html">
@@ -31,7 +31,7 @@
 <dom-module id="os-settings-apps-page">
   <template>
   <style include="settings-shared">
-    #appManagement, 
+    #appManagement,
     #appNotifications {
         border-bottom: var(--cr-separator-line);
     }
@@ -60,9 +60,9 @@
             <div class="start settings-box-text">
               $i18n{androidAppsPageLabel}
               <div class="secondary" id="secondaryText">
-                <settings-localized-link
+                <localized-link
                     localized-string="[[i18nAdvanced('androidAppsSubtext')]]">
-                </settings-localized-link>
+                </localized-link>
               </div>
             </div>
             <cr-policy-pref-indicator pref="[[prefs.arc.enabled]]"

@@ -334,6 +334,7 @@
 #include "chrome/browser/ash/policy/status_collector/status_collector.h"
 #include "chrome/browser/ash/power/auto_screen_brightness/metrics_reporter.h"
 #include "chrome/browser/ash/power/power_metrics_reporter.h"
+#include "chrome/browser/ash/printing/enterprise_printers_provider.h"
 #include "chrome/browser/ash/release_notes/release_notes_storage.h"
 #include "chrome/browser/ash/scanning/chrome_scanning_app_delegate.h"
 #include "chrome/browser/ash/settings/device_settings_cache.h"
@@ -346,7 +347,6 @@
 #include "chrome/browser/chromeos/net/network_throttling_observer.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
-#include "chrome/browser/chromeos/printing/enterprise_printers_provider.h"
 #include "chrome/browser/device_identity/chromeos/device_oauth2_token_store_chromeos.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
@@ -662,6 +662,10 @@ const char kNtpSearchSuggestionsImpressions[] =
 const char kNtpSearchSuggestionsOptOut[] = "ntp.search_suggestions_opt_out";
 #endif
 
+// Deprecated 09/2021.
+const char kAutofillAcceptSaveCreditCardPromptState[] =
+    "autofill.accept_save_credit_card_prompt_state";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -858,6 +862,8 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterDictionaryPref(kNtpSearchSuggestionsImpressions);
   registry->RegisterBooleanPref(kNtpSearchSuggestionsOptOut, false);
 #endif
+
+  registry->RegisterIntegerPref(kAutofillAcceptSaveCreditCardPromptState, 0);
 }
 
 }  // namespace
@@ -1683,6 +1689,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kNtpSearchSuggestionsImpressions);
   profile_prefs->ClearPref(kNtpSearchSuggestionsOptOut);
 #endif
+
+  // Added 09/2021.
+  profile_prefs->ClearPref(kAutofillAcceptSaveCreditCardPromptState);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

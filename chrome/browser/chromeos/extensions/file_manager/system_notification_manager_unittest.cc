@@ -184,6 +184,114 @@ TEST_F(SystemNotificationManagerTest, ExternalStorageDisabled) {
   EXPECT_EQ(notification_strings.message, kExternalStorageDisabledMesssage);
 }
 
+constexpr char kDeviceLabel[] = "MyUSB";
+std::u16string kFormatTitle = u"Format MyUSB";
+
+TEST_F(SystemNotificationManagerTest, FormatStart) {
+  GetDeviceEventRouter()->OnFormatStarted(kDevicePath, kDeviceLabel,
+                                          /*success=*/true);
+  // Get the number of notifications from the NotificationDisplayService.
+  NotificationDisplayServiceFactory::GetForProfile(GetProfile())
+      ->GetDisplayed(base::BindOnce(
+          &SystemNotificationManagerTest::GetNotificationsCallback,
+          weak_ptr_factory_.GetWeakPtr()));
+  // Check: We have one notification.
+  ASSERT_EQ(1, notification_count);
+  // Get the strings for the displayed notification.
+  TestNotificationStrings notification_strings;
+  notification_strings =
+      notification_platform_bridge->GetNotificationStringsById("format_start");
+  // Check: the expected strings match.
+  std::u16string kFormatStartMesssage = u"Formatting MyUSB\x2026";
+  EXPECT_EQ(notification_strings.title, kFormatTitle);
+  EXPECT_EQ(notification_strings.message, kFormatStartMesssage);
+}
+
+TEST_F(SystemNotificationManagerTest, FormatSuccess) {
+  GetDeviceEventRouter()->OnFormatCompleted(kDevicePath, kDeviceLabel,
+                                            /*success=*/true);
+  // Get the number of notifications from the NotificationDisplayService.
+  NotificationDisplayServiceFactory::GetForProfile(GetProfile())
+      ->GetDisplayed(base::BindOnce(
+          &SystemNotificationManagerTest::GetNotificationsCallback,
+          weak_ptr_factory_.GetWeakPtr()));
+  // Check: We have one notification.
+  ASSERT_EQ(1, notification_count);
+  // Get the strings for the displayed notification.
+  TestNotificationStrings notification_strings;
+  notification_strings =
+      notification_platform_bridge->GetNotificationStringsById(
+          "format_success");
+  // Check: the expected strings match.
+  std::u16string kFormatSuccessMesssage = u"Formatted MyUSB";
+  EXPECT_EQ(notification_strings.title, kFormatTitle);
+  EXPECT_EQ(notification_strings.message, kFormatSuccessMesssage);
+}
+
+TEST_F(SystemNotificationManagerTest, FormatFail) {
+  GetDeviceEventRouter()->OnFormatCompleted(kDevicePath, kDeviceLabel,
+                                            /*success=*/false);
+  // Get the number of notifications from the NotificationDisplayService.
+  NotificationDisplayServiceFactory::GetForProfile(GetProfile())
+      ->GetDisplayed(base::BindOnce(
+          &SystemNotificationManagerTest::GetNotificationsCallback,
+          weak_ptr_factory_.GetWeakPtr()));
+  // Check: We have one notification.
+  ASSERT_EQ(1, notification_count);
+  // Get the strings for the displayed notification.
+  TestNotificationStrings notification_strings;
+  notification_strings =
+      notification_platform_bridge->GetNotificationStringsById("format_fail");
+  // Check: the expected strings match.
+  std::u16string kFormatFailedMesssage = u"Could not format MyUSB";
+  EXPECT_EQ(notification_strings.title, kFormatTitle);
+  EXPECT_EQ(notification_strings.message, kFormatFailedMesssage);
+}
+
+constexpr char kPartitionLabel[] = "OEM";
+std::u16string kPartitionTitle = u"Format OEM";
+
+TEST_F(SystemNotificationManagerTest, PartitionFail) {
+  GetDeviceEventRouter()->OnPartitionCompleted(kDevicePath, kPartitionLabel,
+                                               /*success=*/false);
+  // Get the number of notifications from the NotificationDisplayService.
+  NotificationDisplayServiceFactory::GetForProfile(GetProfile())
+      ->GetDisplayed(base::BindOnce(
+          &SystemNotificationManagerTest::GetNotificationsCallback,
+          weak_ptr_factory_.GetWeakPtr()));
+  // Check: We have one notification.
+  ASSERT_EQ(1, notification_count);
+  // Get the strings for the displayed notification.
+  TestNotificationStrings notification_strings;
+  notification_strings =
+      notification_platform_bridge->GetNotificationStringsById(
+          "partition_fail");
+  // Check: the expected strings match.
+  std::u16string kPartitionFailMesssage = u"Could not format OEM";
+  EXPECT_EQ(notification_strings.title, kPartitionTitle);
+  EXPECT_EQ(notification_strings.message, kPartitionFailMesssage);
+}
+
+TEST_F(SystemNotificationManagerTest, RenameFail) {
+  GetDeviceEventRouter()->OnRenameCompleted(kDevicePath, kPartitionLabel,
+                                            /*success=*/false);
+  // Get the number of notifications from the NotificationDisplayService.
+  NotificationDisplayServiceFactory::GetForProfile(GetProfile())
+      ->GetDisplayed(base::BindOnce(
+          &SystemNotificationManagerTest::GetNotificationsCallback,
+          weak_ptr_factory_.GetWeakPtr()));
+  // Check: We have one notification.
+  ASSERT_EQ(1, notification_count);
+  // Get the strings for the displayed notification.
+  TestNotificationStrings notification_strings;
+  notification_strings =
+      notification_platform_bridge->GetNotificationStringsById("rename_fail");
+  // Check: the expected strings match.
+  EXPECT_EQ(notification_strings.title, u"Renaming failed");
+  EXPECT_EQ(notification_strings.message,
+            u"Aw, Snap! There was an error during renaming.");
+}
+
 TEST_F(SystemNotificationManagerTest, TestCopyEvents) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(ash::features::kFilesSWA);

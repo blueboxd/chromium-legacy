@@ -1542,7 +1542,6 @@ crbug.com/853146 external/wpt/html/semantics/embedded-content/the-iframe-element
 crbug.com/853146 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation-3.html [ Timeout ]
 crbug.com/1132413 external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.html [ Timeout ]
 crbug.com/1232504 external/wpt/html/semantics/embedded-content/media-elements/src_object_blob.html [ Timeout ]
-crbug.com/1245034 external/wpt/html/semantics/document-metadata/the-link-element/stylesheet-not-removed-until-next-stylesheet-loads.html [ Timeout ]
 crbug.com/1232504 [ Win ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Timeout ]
 crbug.com/1234199 [ Linux ] external/wpt/html/semantics/embedded-content/the-object-element/object-events.html [ Skip ]
 crbug.com/1234199 [ Mac ] external/wpt/html/semantics/embedded-content/the-object-element/object-events.html [ Skip  ]
@@ -5769,7 +5768,7 @@ crbug.com/1149734 http/tests/devtools/sources/debugger-ui/inline-scope-variables
 
 #Sheriff 2020-11-24
 crbug.com/1087242 http/tests/inspector-protocol/service-worker/network-extrainfo-main-request.js [ Crash Failure Pass Timeout ]
-crbug.com/1149771 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Pass Skip Timeout ]
+crbug.com/1149771 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Failure Pass Skip Timeout ]
 crbug.com/1152532 http/tests/devtools/service-workers/user-agent-override.js [ Pass Skip Timeout ]
 crbug.com/1134459 accessibility/aom-click-action.html [ Pass Timeout ]
 
@@ -6789,9 +6788,6 @@ crbug.com/1236466 inspector-protocol/runtime/runtime-execution-contexts-events.j
 crbug.com/1230534 external/wpt/webrtc/simulcast/getStats.https.html [ Failure Pass Skip Timeout ]
 crbug.com/1237132 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Skip Timeout ]
 
-crbug.com/1236774 external/wpt/css/css-contain/content-visibility/slot-content-visibility-1-crash.html [ Crash ]
-crbug.com/1236774 external/wpt/css/css-contain/content-visibility/slot-content-visibility-4-crash.html [ Crash ]
-
 # Sheriff 2021-08-10
 crbug.com/1233840 external/wpt/html/cross-origin-opener-policy/historical/coep-navigate-popup-unsafe-inherit.https.html [ Pass Skip Timeout ]
 crbug.com/1230534 external/wpt/webrtc/simulcast/basic.https.html [ Pass Skip Timeout ]
@@ -6899,3 +6895,5 @@ crbug.com/1110752 http/tests/devtools/application-panel/resources-panel-websql.j
 # Sheriff 2021-09-08
 crbug.com/1233826 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-before-load.https.html [ Crash Pass Failure ]
 crbug.com/1233826 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-after-load.https.html [ Crash Pass Failure ]
+crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-shadow-part4.html [ Pass Crash ]
+crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-color-over-pattern.html [ Pass Crash ]

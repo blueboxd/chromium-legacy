@@ -18,7 +18,6 @@
 #include "components/messages/android/message_enums.h"
 #include "components/messages/android/message_wrapper.h"
 #include "components/messages/android/messages_feature.h"
-#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -48,8 +47,6 @@ void SaveCardMessageControllerAndroid::Show(
     DismissMessage();
   }
   web_contents_ = web_contents;
-  pref_service_ = Profile::FromBrowserContext(web_contents->GetBrowserContext())
-                      ->GetPrefs();
   options_ = options;
   inferred_name_ = inferred_name;
 
@@ -94,15 +91,18 @@ void SaveCardMessageControllerAndroid::Show(
   }
 
   // Client won't request both name and expiration date at the same time.
-  promo_continue_ = options.should_request_name_from_user ||
-                    options.should_request_expiration_date_from_user;
+  request_more_info_ = options.should_request_name_from_user ||
+                       options.should_request_expiration_date_from_user;
+
+  // Show "continue" when uploading no matter if more info is requested, because
+  // legal terms must be displayed in dialogs when uploading.
   message_->SetPrimaryButtonText(l10n_util::GetStringUTF16(
-      promo_continue_
+      request_more_info_ || is_upload_
           ? (messages::UseFollowupButtonTextForSaveCardMessage()
                  ? IDS_AUTOFILL_MOBILE_SAVE_CARD_TO_CLOUD_PROMPT_SAVE_FOLLOW_UP
                  : IDS_AUTOFILL_SAVE_CARD_PROMPT_CONTINUE)
           : IDS_AUTOFILL_SAVE_CARD_INFOBAR_ACCEPT));
-  if (is_upload_ && !promo_continue_) {
+  if (is_upload_ && !request_more_info_) {
     expiration_date_year_ = card.expiration_year();
     expiration_date_month_ = card.expiration_month();
   }
@@ -158,7 +158,7 @@ void SaveCardMessageControllerAndroid::DismissMessage() {
 
 void SaveCardMessageControllerAndroid::MaybeShowDialog() {
   reprompt_required_ = false;
-  if (is_upload_ && !promo_continue_) {
+  if (is_upload_ && !request_more_info_) {
     // If we already know all the info, confirm the date to show  other info
     // such as legal terms, and then run callback after user confirms.
     ConfirmDate(expiration_date_month_, expiration_date_year_);
@@ -197,7 +197,6 @@ void SaveCardMessageControllerAndroid::ConfirmName(
 
 void SaveCardMessageControllerAndroid::OnNameConfirmed(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& name) {
   OnPromptCompleted(AutofillClient::ACCEPTED,
                     {base::android::ConvertJavaStringToUTF16(name),
@@ -206,7 +205,6 @@ void SaveCardMessageControllerAndroid::OnNameConfirmed(
 
 void SaveCardMessageControllerAndroid::OnDateConfirmed(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& month,
     const base::android::JavaParamRef<jstring>& year) {
   OnPromptCompleted(
@@ -217,9 +215,7 @@ void SaveCardMessageControllerAndroid::OnDateConfirmed(
 
 // --- Dialog Dismissed ---
 
-void SaveCardMessageControllerAndroid::DialogDismissed(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+void SaveCardMessageControllerAndroid::DialogDismissed(JNIEnv* env) {
   if (reprompt_required_) {
     return;
   }
@@ -254,8 +250,6 @@ void SaveCardMessageControllerAndroid::OnPromptCompleted(
       break;
   }
   LogAutofillCreditCardMessageMetrics(message_state, is_upload_, options_);
-  UpdateAutofillAcceptSaveCreditCardPromptState(
-      pref_service_, message_state == MessageMetrics::kAccepted);
   if (is_upload_) {
     std::move(upload_save_card_prompt_callback_)
         .Run(user_decision, user_provided_details);
@@ -266,7 +260,6 @@ void SaveCardMessageControllerAndroid::OnPromptCompleted(
 
 void SaveCardMessageControllerAndroid::OnLegalMessageLinkClicked(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& url) {
   reprompt_required_ = true;
   // Temporarily dismiss the dialog and then re-prompt when user returns to

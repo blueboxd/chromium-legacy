@@ -76,7 +76,6 @@
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
-using ash::prefs::kWallpaperCollectionId;
 using color_utils::ColorProfile;
 using color_utils::LumaRange;
 using color_utils::SaturationRange;
@@ -475,13 +474,6 @@ user_manager::UserType GetUserType(const AccountId& id) {
   return user_manager::USER_TYPE_REGULAR;
 }
 
-PrefService* GetUserPrefServiceSyncable(const AccountId& account_id) {
-  return features::IsWallpaperWebUIEnabled()
-             ? Shell::Get()->session_controller()->GetUserPrefServiceForUser(
-                   account_id)
-             : nullptr;
-}
-
 bool GetWallpaperInfo(const AccountId& account_id,
                       const PrefService* const pref_service,
                       const std::string& pref_name,
@@ -569,18 +561,6 @@ void RemoveWallpaperInfo(const AccountId& account_id,
   prefs_wallpapers_info_update->RemoveKey(account_id.GetUserEmail());
 }
 
-bool GetSyncedWallpaperInfo(const AccountId& account_id, WallpaperInfo* info) {
-  return GetWallpaperInfo(account_id, GetUserPrefServiceSyncable(account_id),
-                          prefs::kSyncableWallpaperInfo, info);
-}
-
-bool SetSyncedWallpaperInfo(const AccountId& account_id,
-                            const WallpaperInfo& info) {
-  return SetWallpaperInfo(account_id, info,
-                          GetUserPrefServiceSyncable(account_id),
-                          prefs::kSyncableWallpaperInfo);
-}
-
 }  // namespace
 
 const char WallpaperControllerImpl::kSmallWallpaperSubDir[] = "small";
@@ -633,8 +613,6 @@ void WallpaperControllerImpl::RegisterProfilePrefs(
 
   registry->RegisterDictionaryPref(prefs::kSyncableWallpaperInfo,
                                    PrefRegistrySyncable::SYNCABLE_OS_PREF);
-  registry->RegisterStringPref(kWallpaperCollectionId, std::string(),
-                               PrefRegistrySyncable::SYNCABLE_OS_PREF);
 }
 
 // static
@@ -891,6 +869,9 @@ bool WallpaperControllerImpl::IsBlurAllowedForLockState() const {
 
 bool WallpaperControllerImpl::SetUserWallpaperInfo(const AccountId& account_id,
                                                    const WallpaperInfo& info) {
+  if (info.type != DAILY)
+    daily_refresh_timer_.Stop();
+
   if (IsEphemeralUser(account_id)) {
     ephemeral_users_wallpaper_info_[account_id] = info;
     return true;
@@ -1593,34 +1574,35 @@ void WallpaperControllerImpl::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
   if (!features::IsWallpaperWebUIEnabled())
     return;
-  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
-  pref_change_registrar_->Init(pref_service);
-  pref_change_registrar_->Add(
-      prefs::kSyncableWallpaperInfo,
-      base::BindRepeating(&WallpaperControllerImpl::SyncLocalAndRemotePrefs,
-                          weak_factory_.GetWeakPtr()));
-
   AccountId account_id = GetActiveAccountId();
-  WallpaperInfo local_info;
-  WallpaperInfo synced_info;
+  if (wallpaper_controller_client_->IsWallpaperSyncEnabled(account_id)) {
+    pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+    pref_change_registrar_->Init(pref_service);
+    pref_change_registrar_->Add(
+        prefs::kSyncableWallpaperInfo,
+        base::BindRepeating(&WallpaperControllerImpl::SyncLocalAndRemotePrefs,
+                            weak_factory_.GetWeakPtr(), account_id));
 
-  // Migrate wallpaper info to syncable prefs.
-  if (!GetSyncedWallpaperInfo(account_id, &synced_info) &&
-      GetLocalWallpaperInfo(account_id, &local_info) &&
-      IsWallpaperTypeSyncable(local_info.type)) {
-    if (local_info.type == CUSTOMIZED) {
-      base::FilePath source = GetCustomWallpaperDir(kOriginalWallpaperSubDir)
-                                  .Append(local_info.location);
-      SaveWallpaperToDriveFs(account_id, source);
-    } else {
-      SetSyncedWallpaperInfo(account_id, local_info);
+    WallpaperInfo local_info;
+    WallpaperInfo synced_info;
+
+    // Migrate wallpaper info to syncable prefs.
+    if (!GetSyncedWallpaperInfo(account_id, &synced_info) &&
+        GetLocalWallpaperInfo(account_id, &local_info) &&
+        IsWallpaperTypeSyncable(local_info.type)) {
+      if (local_info.type == CUSTOMIZED) {
+        base::FilePath source = GetCustomWallpaperDir(kOriginalWallpaperSubDir)
+                                    .Append(local_info.location);
+        SaveWallpaperToDriveFs(account_id, source);
+      } else {
+        SetSyncedWallpaperInfo(account_id, local_info);
+        wallpaper_controller_client_->MigrateCollectionIdFromChromeApp(
+            account_id);
+      }
     }
+
+    SyncLocalAndRemotePrefs(account_id);
   }
-
-  if (!pref_service->FindPreference(kWallpaperCollectionId)->HasUserSetting())
-    wallpaper_controller_client_->MigrateCollectionIdFromChromeApp();
-
-  SyncLocalAndRemotePrefs();
 
   if (IsDailyRefreshEnabled())
     StartDailyRefreshTimer();
@@ -1941,7 +1923,12 @@ void WallpaperControllerImpl::SetOnlineWallpaperImpl(
     const OnlineWallpaperParams& params,
     const gfx::ImageSkia& image,
     bool show_wallpaper) {
-  WallpaperInfo wallpaper_info(params);
+  WallpaperInfo wallpaper_info = {params.url.spec(),
+                                  params.asset_id,
+                                  params.collection_id,
+                                  params.layout,
+                                  params.daily_refresh_enabled ? DAILY : ONLINE,
+                                  base::Time::Now()};
   if (!SetUserWallpaperInfo(params.account_id, wallpaper_info)) {
     LOG(ERROR) << "Setting user wallpaper info fails. This should never happen "
                   "except in tests.";
@@ -1958,7 +1945,7 @@ void WallpaperControllerImpl::SetOnlineWallpaperImpl(
 void WallpaperControllerImpl::SetWallpaperFromInfo(const AccountId& account_id,
                                                    const WallpaperInfo& info,
                                                    bool show_wallpaper) {
-  if (info.type != ONLINE && info.type != DEFAULT) {
+  if (info.type != ONLINE && info.type != DAILY && info.type != DEFAULT) {
     // This method is meant to be used for ONLINE and DEFAULT types. In
     // unexpected cases, revert to default wallpaper to fail safely. See
     // crosbug.com/38429.
@@ -1978,7 +1965,7 @@ void WallpaperControllerImpl::SetWallpaperFromInfo(const AccountId& account_id,
   }
 
   base::FilePath wallpaper_path;
-  if (info.type == ONLINE) {
+  if (info.type == ONLINE || info.type == DAILY) {
     wallpaper_path =
         GetOnlineWallpaperPath(info.location, GetAppropriateResolution());
 
@@ -2387,12 +2374,22 @@ bool WallpaperControllerImpl::GetLocalWallpaperInfo(const AccountId& account_id,
                           info);
 }
 
-void WallpaperControllerImpl::SyncLocalAndRemotePrefs() {
-  AccountId account_id = GetActiveAccountId();
-  SyncLocalAndRemotePrefsForAccountId(account_id);
+bool WallpaperControllerImpl::GetSyncedWallpaperInfo(
+    const AccountId& account_id,
+    WallpaperInfo* info) const {
+  return GetWallpaperInfo(account_id, GetUserPrefServiceSyncable(account_id),
+                          prefs::kSyncableWallpaperInfo, info);
 }
 
-void WallpaperControllerImpl::SyncLocalAndRemotePrefsForAccountId(
+bool WallpaperControllerImpl::SetSyncedWallpaperInfo(
+    const AccountId& account_id,
+    const WallpaperInfo& info) {
+  return SetWallpaperInfo(account_id, info,
+                          GetUserPrefServiceSyncable(account_id),
+                          prefs::kSyncableWallpaperInfo);
+}
+
+void WallpaperControllerImpl::SyncLocalAndRemotePrefs(
     const AccountId& account_id) {
   // Check if the synced info was set by another device, and if we have already
   // handled it locally.
@@ -2431,12 +2428,15 @@ void WallpaperControllerImpl::HandleWallpaperInfoSyncedIn(
       SetDefaultWallpaper(account_id, /*show_wallpaper=*/true);
       break;
     case DAILY:
+      HandleDailyWallpaperInfoSyncedIn(account_id, info);
+      break;
     case ONLINE:
       SetOnlineWallpaper(
           OnlineWallpaperParams{account_id, info.asset_id, GURL(info.location),
                                 info.collection_id, info.layout,
                                 /*preview_mode=*/false,
-                                /*from_user=*/false},
+                                /*from_user=*/false,
+                                /*daily_refresh_enabled=*/false},
           base::DoNothing());
       break;
     case POLICY:
@@ -2483,30 +2483,46 @@ constexpr bool WallpaperControllerImpl::IsWallpaperTypeSyncable(
 }
 
 void WallpaperControllerImpl::SetDailyRefreshCollectionId(
+    const AccountId& account_id,
     const std::string& collection_id) {
-  PrefService* pref_service = GetUserPrefServiceSyncable(GetActiveAccountId());
-  if (!pref_service)
+  WallpaperInfo info;
+  if (!GetUserWallpaperInfo(account_id, &info))
     return;
-  pref_service->SetString(kWallpaperCollectionId, collection_id);
+
+  // If daily refresh is being enabled.
+  if (!collection_id.empty()) {
+    info.type = DAILY;
+    info.collection_id = collection_id;
+  }
+
+  // If Daily Refresh is disabled without selecting another wallpaper, we should
+  // keep the current wallpaper and change to type ONLINE, so daily refreshes
+  // stop.
+  if (collection_id.empty()) {
+    DCHECK(info.type == DAILY);
+    info.type = ONLINE;
+  }
+  SetUserWallpaperInfo(account_id, info);
 }
 
-std::string WallpaperControllerImpl::GetDailyRefreshCollectionId() const {
-  return GetCollectionId();
+std::string WallpaperControllerImpl::GetDailyRefreshCollectionId(
+    const AccountId& account_id) const {
+  WallpaperInfo info;
+  if (!GetUserWallpaperInfo(account_id, &info))
+    return std::string();
+  if (info.type != DAILY)
+    return std::string();
+  return info.collection_id;
 }
 
 void WallpaperControllerImpl::OnGoogleDriveMounted(
     const AccountId& account_id) {
-  SyncLocalAndRemotePrefsForAccountId(account_id);
+  SyncLocalAndRemotePrefs(account_id);
 }
 
 bool WallpaperControllerImpl::IsDailyRefreshEnabled() const {
-  return features::IsWallpaperWebUIEnabled() && !GetCollectionId().empty();
-}
-
-std::string WallpaperControllerImpl::GetCollectionId() const {
-  PrefService* pref_service = GetUserPrefServiceSyncable(GetActiveAccountId());
-  CHECK(pref_service);
-  return pref_service->GetString(kWallpaperCollectionId);
+  return features::IsWallpaperWebUIEnabled() &&
+         !GetDailyRefreshCollectionId(GetActiveAccountId()).empty();
 }
 
 void WallpaperControllerImpl::UpdateDailyRefreshWallpaper(
@@ -2522,11 +2538,12 @@ void WallpaperControllerImpl::UpdateDailyRefreshWallpaper(
   // |wallpaper_controller_cient_| has a slightly shorter lifecycle than
   // wallpaper controller.
   if (wallpaper_controller_client_) {
+    AccountId account_id = GetActiveAccountId();
     wallpaper_controller_client_->FetchDailyRefreshWallpaper(
-        GetCollectionId(),
+        GetDailyRefreshCollectionId(account_id),
         base::BindOnce(&WallpaperControllerImpl::SetDailyWallpaper,
-                       set_wallpaper_weak_factory_.GetWeakPtr(),
-                       GetActiveAccountId(), GetCollectionId(),
+                       set_wallpaper_weak_factory_.GetWeakPtr(), account_id,
+                       GetDailyRefreshCollectionId(account_id),
                        ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
                        /*preview_mode=*/false, std::move(callback)));
   } else {
@@ -2547,7 +2564,8 @@ void WallpaperControllerImpl::SetDailyWallpaper(
     SetOnlineWallpaper(
         OnlineWallpaperParams{account_id, asset_id, GURL(image_url),
                               collection_id, layout, preview_mode,
-                              /*from_user=*/false},
+                              /*from_user=*/false,
+                              /*daily_refresh_enabled=*/true},
         base::BindOnce(&WallpaperControllerImpl::OnSetDailyWallpaper,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   } else {
@@ -2613,6 +2631,8 @@ void WallpaperControllerImpl::SaveWallpaperToDriveFs(
     return;
   if (!wallpaper_controller_client_)
     return;
+  if (!wallpaper_controller_client_->IsWallpaperSyncEnabled(account_id))
+    return;
   if (!wallpaper_controller_client_->SaveWallpaperToDriveFs(account_id,
                                                             origin_path)) {
     return;
@@ -2653,7 +2673,31 @@ void WallpaperControllerImpl::HandleCustomWallpaperInfoSyncedIn(
 void WallpaperControllerImpl::DriveFsWallpaperChanged(
     const base::FilePath& path,
     bool error) {
-  SyncLocalAndRemotePrefs();
+  SyncLocalAndRemotePrefs(GetActiveAccountId());
+}
+
+PrefService* WallpaperControllerImpl::GetUserPrefServiceSyncable(
+    const AccountId& account_id) const {
+  if (!features::IsWallpaperWebUIEnabled())
+    return nullptr;
+  if (!wallpaper_controller_client_->IsWallpaperSyncEnabled(account_id))
+    return nullptr;
+  return Shell::Get()->session_controller()->GetUserPrefServiceForUser(
+      account_id);
+}
+
+void WallpaperControllerImpl::HandleDailyWallpaperInfoSyncedIn(
+    const AccountId& account_id,
+    const WallpaperInfo& info) {
+  std::string old_collection_id = GetDailyRefreshCollectionId(account_id);
+  if (info.collection_id == old_collection_id)
+    return;
+  wallpaper_controller_client_->FetchDailyRefreshWallpaper(
+      info.collection_id,
+      base::BindOnce(&WallpaperControllerImpl::SetDailyWallpaper,
+                     weak_factory_.GetWeakPtr(), account_id, info.collection_id,
+                     ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
+                     /*preview_mode=*/false, base::DoNothing::Once<bool>()));
 }
 
 }  // namespace ash

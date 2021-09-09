@@ -68,7 +68,6 @@ export function getNetworkType(type) {
  * @return {string}
  */
 export function getNetworkState(state) {
-  // TODO(michaelcheco): Add localized strings.
   switch (state) {
     case NetworkState.kOnline:
       return loadTimeData.getString('networkStateOnlineText');
@@ -80,6 +79,8 @@ export function getNetworkState(state) {
       return loadTimeData.getString('networkStateConnectingText');
     case NetworkState.kNotConnected:
       return loadTimeData.getString('networkStateNotConnectedText');
+    case NetworkState.kDisabled:
+      return loadTimeData.getString('networkStateDisabledText');
     default:
       assertNotReached();
       return '';
@@ -120,7 +121,8 @@ export function getRoutinesByNetworkType(type) {
     RoutineType.kHttpsFirewall,
     RoutineType.kHttpsLatency,
     RoutineType.kLanConnectivity,
-    RoutineType.kArcHttp
+    RoutineType.kArcHttp,
+    RoutineType.kArcPing
   ];
 
   // Add wifi-only routines to common networking routine array.

@@ -8,7 +8,7 @@
 <link rel="import" href="../os_route.html">
 <link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_shared_css.html">
-<link rel="import" href="../localized_link/localized_link.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/localized_link/localized_link.html">
 <link rel="import" href="../route_origin_behavior.html">
 <link rel="import" href="multidevice_constants.html">
 <link rel="import" href="multidevice_feature_behavior.html">
@@ -57,11 +57,11 @@
         <div id="item-text-container" class="middle" aria-hidden="true">
           <div id="featureName">[[getFeatureName(feature)]]</div>
           <slot name="feature-summary">
-            <settings-localized-link
+            <localized-link
                 class="secondary"
                 id="featureSecondary"
                 localized-string="[[getFeatureSummaryHtml(feature)]]">
-            </settings-localized-link>
+            </localized-link>
           </slot>
         </div>
         <template is="dom-if"

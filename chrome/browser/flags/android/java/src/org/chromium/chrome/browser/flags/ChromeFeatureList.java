@@ -49,24 +49,6 @@ public abstract class ChromeFeatureList {
     }
 
     /**
-     * @see FeatureList#setTestFeatures
-     * Sets the feature flags to use in JUnit tests, since native calls are not available there.
-     * Do not use directly, prefer using the {@link Features} annotation.
-     *
-     * @see Features
-     * @see Features.Processor
-     *
-     * @deprecated
-     * https://crbug.com/1058993
-     */
-    // TODO(crbug.com/1060097): Migrate callers to the FeatureList equivalent function.
-    @VisibleForTesting
-    @Deprecated
-    public static void setTestFeatures(Map<String, Boolean> features) {
-        FeatureList.setTestFeatures(features);
-    }
-
-    /**
      * @return Whether the native FeatureList has been initialized. If this method returns false,
      *         none of the methods in this class that require native access should be called (except
      *         in tests if test features have been set).
@@ -99,7 +81,7 @@ public abstract class ChromeFeatureList {
      *
      * Should be called only after native is loaded. If {@link #isInitialized()} return true, this
      * method is safe to call.  In tests, this will return any values set through
-     * {@link #setTestFeatures(Map)}, even before native is loaded.
+     * {@link FeatureList#setTestFeatures(Map)}, even before native is loaded.
      *
      * @param featureName The name of the feature to query.
      * @return Whether the feature is enabled or not.
@@ -236,8 +218,6 @@ public abstract class ChromeFeatureList {
             "AutofillEnableSupportForMoreStructureInNames";
     public static final String ANDROID_LAYOUT_CHANGE_TAB_REPARENT =
             "AndroidLayoutChangeTabReparenting";
-    public static final String ANDROID_PARTNER_CUSTOMIZATION_PHENOTYPE =
-            "AndroidPartnerCustomizationPhenotype";
     public static final String ANDROID_SEARCH_ENGINE_CHOICE_NOTIFICATION =
             "AndroidSearchEngineChoiceNotification";
     public static final String APP_LANGUAGE_PROMPT = "AppLanguagePrompt";
@@ -488,6 +468,7 @@ public abstract class ChromeFeatureList {
     public static final String SEND_TAB_TO_SELF_V2 = "SendTabToSelfV2";
     public static final String SEND_TAB_TO_SELF_MANAGE_DEVICES_LINK =
             "SendTabToSelfManageDevicesLink";
+    public static final String SEND_TAB_TO_SELF_WHEN_SIGNED_IN = "SendTabToSelfWhenSignedIn";
     public static final String SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH =
             "ServiceManagerForBackgroundPrefetch";
     public static final String SERVICE_MANAGER_FOR_DOWNLOAD = "ServiceManagerForDownload";

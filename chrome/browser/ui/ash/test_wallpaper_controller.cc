@@ -220,11 +220,13 @@ bool TestWallpaperController::ShouldShowWallpaperSetting() {
 }
 
 void TestWallpaperController::SetDailyRefreshCollectionId(
+    const AccountId& account_id,
     const std::string& collection_id) {
   collection_id_ = collection_id;
 }
 
-std::string TestWallpaperController::GetDailyRefreshCollectionId() const {
+std::string TestWallpaperController::GetDailyRefreshCollectionId(
+    const AccountId& account_id) const {
   return collection_id_;
 }
 

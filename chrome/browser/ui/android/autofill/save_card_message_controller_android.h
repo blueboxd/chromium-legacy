@@ -63,19 +63,14 @@ class SaveCardMessageControllerAndroid : public SaveCardMessageConfirmDelegate {
   // SaveCardMessageConfirmDelegate
   void OnNameConfirmed(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& name) override;
   void OnDateConfirmed(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& month,
       const base::android::JavaParamRef<jstring>& year) override;
-  void DialogDismissed(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj) override;
+  void DialogDismissed(JNIEnv* env) override;
   void OnLegalMessageLinkClicked(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& url) override;
 
   bool IsGooglePayBrandingEnabled() const;
@@ -109,9 +104,6 @@ class SaveCardMessageControllerAndroid : public SaveCardMessageConfirmDelegate {
   // local credit card offer-to-save prompt (if |upload_| is false).
   AutofillClient::LocalSaveCardPromptCallback local_save_card_prompt_callback_;
 
-  // Weak reference to read & write |kAutofillAcceptSaveCreditCardPromptState|.
-  PrefService* pref_service_;
-
   // If the cardholder name is missing, request the name from the user before
   // saving the card. If the expiration date is missing, request the missing
   // data from the user before saving the card.
@@ -128,8 +120,8 @@ class SaveCardMessageControllerAndroid : public SaveCardMessageConfirmDelegate {
   std::u16string inferred_name_;
   std::u16string card_label_;
 
-  // Whether we need to request users to fill in more info
-  bool promo_continue_;
+  // Whether we need to request users to fill in more info.
+  bool request_more_info_ = false;
   int expiration_date_year_;
   int expiration_date_month_;
 

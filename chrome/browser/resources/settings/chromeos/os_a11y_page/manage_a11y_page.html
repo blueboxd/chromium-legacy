@@ -14,7 +14,7 @@
 <link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../device_page/device_page_browser_proxy.html">
-<link rel="import" href="../localized_link/localized_link.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/localized_link/localized_link.html">
 <link rel="import" href="../route_origin_behavior.html">
 <link rel="import" href="manage_a11y_page_browser_proxy.html">
 
@@ -58,10 +58,10 @@
     </style>
     <template is="dom-if" if="[[!isKioskModeActive_]]">
       <div class="settings-box row first">
-        <settings-localized-link
+        <localized-link
             localized-string="$i18n{a11yExplanation}"
             link-url="$i18nRaw{a11yLearnMoreUrl}">
-        </settings-localized-link>
+        </localized-link>
       </div>
     </template>
     <h2>$i18n{textToSpeechHeading}</h2>

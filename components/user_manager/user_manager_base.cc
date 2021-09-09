@@ -149,6 +149,10 @@ const AccountId& UserManagerBase::GetOwnerAccountId() const {
   return owner_account_id_;
 }
 
+const AccountId& UserManagerBase::GetLastSessionActiveAccountId() const {
+  return last_session_active_account_id_;
+}
+
 void UserManagerBase::UserLoggedIn(const AccountId& account_id,
                                    const std::string& username_hash,
                                    bool browser_restart,
@@ -298,21 +302,24 @@ void UserManagerBase::OnSessionStarted() {
 }
 
 void UserManagerBase::RemoveUser(const AccountId& account_id,
+                                 UserRemovalReason reason,
                                  RemoveUserDelegate* delegate) {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
 
   if (!CanUserBeRemoved(FindUser(account_id)))
     return;
 
-  RemoveUserInternal(account_id, delegate);
+  RemoveUserInternal(account_id, reason, delegate);
 }
 
 void UserManagerBase::RemoveUserInternal(const AccountId& account_id,
+                                         UserRemovalReason reason,
                                          RemoveUserDelegate* delegate) {
-  RemoveNonOwnerUserInternal(account_id, delegate);
+  RemoveNonOwnerUserInternal(account_id, reason, delegate);
 }
 
 void UserManagerBase::RemoveNonOwnerUserInternal(const AccountId& account_id,
+                                                 UserRemovalReason reason,
                                                  RemoveUserDelegate* delegate) {
   // If account_id points to AccountId in User object, it will become deleted
   // after RemoveUserFromList(), which could lead to use-after-free in observer.
@@ -321,8 +328,10 @@ void UserManagerBase::RemoveNonOwnerUserInternal(const AccountId& account_id,
 
   if (delegate)
     delegate->OnBeforeUserRemoved(account_id);
+  NotifyUserToBeRemoved(account_id);
   AsyncRemoveCryptohome(account_id);
   RemoveUserFromList(account_id);
+  NotifyUserRemoved(account_id, reason);
 
   if (delegate)
     delegate->OnUserRemoved(account_id_copy);
@@ -721,6 +730,19 @@ void UserManagerBase::NotifyUsersSignInConstraintsChanged() {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
   for (auto& observer : observer_list_)
     observer.OnUsersSignInConstraintsChanged();
+}
+
+void UserManagerBase::NotifyUserToBeRemoved(const AccountId& account_id) {
+  DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
+  for (auto& observer : observer_list_)
+    observer.OnUserToBeRemoved(account_id);
+}
+
+void UserManagerBase::NotifyUserRemoved(const AccountId& account_id,
+                                        UserRemovalReason reason) {
+  DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
+  for (auto& observer : observer_list_)
+    observer.OnUserRemoved(account_id, reason);
 }
 
 bool UserManagerBase::CanUserBeRemoved(const User* user) const {
@@ -1134,7 +1156,8 @@ void UserManagerBase::RemoveLegacySupervisedUser(const AccountId& account_id) {
     // FindUser(account_id) returns nullptr and CanUserBeRemoved() returns
     // false. This is why we call RemoveUserInternal() directly instead of
     // RemoveUser().
-    RemoveUserInternal(account_id, /*delegate=*/nullptr);
+    RemoveUserInternal(account_id, UserRemovalReason::UNKNOWN,
+                       /*delegate=*/nullptr);
     base::UmaHistogramEnumeration(kLegacySupervisedUsersHistogramName,
                                   LegacySupervisedUserStatus::kLSUDeleted);
   } else {

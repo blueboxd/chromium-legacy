@@ -275,6 +275,7 @@ void FakeChromeUserManager::OnSessionStarted() {}
 
 void FakeChromeUserManager::RemoveUser(
     const AccountId& account_id,
+    user_manager::UserRemovalReason reason,
     user_manager::RemoveUserDelegate* delegate) {}
 
 void FakeChromeUserManager::RemoveUserFromList(const AccountId& account_id) {
@@ -421,6 +422,10 @@ const user_manager::UserList& FakeChromeUserManager::GetLRULoggedInUsers()
 
 user_manager::UserList FakeChromeUserManager::GetUnlockUsers() const {
   return logged_in_users_;
+}
+
+const AccountId& FakeChromeUserManager::GetLastSessionActiveAccountId() const {
+  return last_session_active_account_id_;
 }
 
 void FakeChromeUserManager::UserLoggedIn(const AccountId& account_id,

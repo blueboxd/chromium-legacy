@@ -735,14 +735,17 @@ const base::Feature kParentAccessCodeForOnlineLogin{
 const base::Feature kPermissionAuditing{"PermissionAuditing",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables using the prediction service for permission prompts.
+// Enables using the prediction service for permission prompts. We will keep
+// this feature in order to allow us to update the holdback chance via finch.
 const base::Feature kPermissionPredictions{"PermissionPredictions",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// The holdback chance is 30% but it can also be configured/updated
+// through finch if needed.
 const base::FeatureParam<double> kPermissionPredictionsHoldbackChance(
     &kPermissionPredictions,
     "holdback_chance",
-    0.0);
+    0.3);
 
 // Enables using the prediction service for geolocation permission prompts.
 const base::Feature kPermissionGeolocationPredictions{
@@ -865,9 +868,9 @@ const base::Feature kChromeOSSharingHub{"ChromeOSSharingHub",
 
 #if defined(OS_ANDROID)
 const base::Feature kShareUsageRanking{"ShareUsageRanking",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kShareUsageRankingFixedMore{
-    "ShareUsageRankingFixedMore", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ShareUsageRankingFixedMore", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_MAC)

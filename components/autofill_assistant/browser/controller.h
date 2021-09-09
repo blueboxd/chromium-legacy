@@ -102,6 +102,10 @@ class Controller : public ScriptExecutorDelegate,
   // Returns true if the controller is in a state where UI is necessary.
   bool NeedsUI() const { return needs_ui_; }
 
+  // Called when an accessibility service with "FEEDBACK_SPOKEN" feedback type
+  // is enabled or disabled.
+  void OnSpokenFeedbackAccessibilityServiceChanged(bool enabled);
+
   // Overrides ScriptExecutorDelegate:
   const ClientSettings& GetSettings() override;
   const GURL& GetCurrentURL() override;
@@ -421,6 +425,11 @@ class Controller : public ScriptExecutorDelegate,
   void MakeDetailsVisible(size_t details_index);
   void NotifyDetailsChanged();
 
+  // This represents the display strings locale to be used for the currently
+  // executing set of actions. This locale is used in two ways currently:
+  // 1. Locale of backend provided display strings, if available.
+  // 2. TTS Controller uses this locale for playing TTS messages.
+  std::string GetDisplayStringsLocale();
   void SetTtsButtonState(TtsButtonState state);
 
   ClientSettings settings_;

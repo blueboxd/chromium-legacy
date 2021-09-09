@@ -4,7 +4,7 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="../localized_link/localized_link.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/localized_link/localized_link.html">
 <link rel="import" href="../../shared/nearby_page_template.html">
 <link rel="import" href="../../shared/nearby_shared_icons.html">
 
@@ -89,10 +89,10 @@
           <template is="dom-if" if="[[!getErrorTitle_(errorState_)]]">
             <iron-icon id="infoIcon" icon="nearby20:info"></iron-icon>
             <div id="helpText">
-              <settings-localized-link
+              <localized-link
                   localized-string="$i18n{nearbyShareHighVisibilityHelpText}"
                   link-url="$i18n{nearbyShareLearnMoreLink}">
-              </settings-localized-link>
+              </localized-link>
             </div>
           </template>
           <template is="dom-if" if="[[getErrorTitle_(errorState_)]]">
@@ -105,10 +105,10 @@
                 [[getErrorTitle_(errorState_)]]
               </div>
               <div id="errorDescription" aria-hidden="true">
-                <settings-localized-link
+                <localized-link
                     localized-string="[[getErrorDescription_(errorState_)]]"
                     link-url="$i18n{nearbyShareLearnMoreLink}">
-                </settings-localized-link>
+                </localized-link>
               </div>
             </div>
           </template>

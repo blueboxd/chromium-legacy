@@ -33,6 +33,8 @@ import java.util.Date;
  */
 public class PageInfoHistoryController
         implements PageInfoSubpageController, HistoryContentManager.Observer {
+    public static final int HISTORY_ROW_ID = View.generateViewId();
+
     private static HistoryProvider sProviderForTests;
     /** Clock to use so we can mock time in tests. */
     public interface Clock {
@@ -174,7 +176,12 @@ public class PageInfoHistoryController
     public void onItemRemoved(HistoryItem item) {
         mMainController.recordAction(PageInfoAction.PAGE_INFO_HISTORY_ENTRY_REMOVED);
         mDataIsStale = true;
-        return;
+        if (mContentManager.getItemCount() == 0) {
+            // Do the update right away if there are no entries left.
+            mLastVisitedTimestamp = 0;
+            setupHistoryRow();
+            mMainController.exitSubpage();
+        }
     }
 
     // HistoryContentManager.Observer

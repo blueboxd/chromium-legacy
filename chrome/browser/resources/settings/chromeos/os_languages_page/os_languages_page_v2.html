@@ -16,7 +16,7 @@
 <link rel="import" href="change_device_language_dialog.html">
 <link rel="import" href="languages_metrics_proxy.html">
 <link rel="import" href="os_add_languages_dialog.html">
-<link rel="import" href="../localized_link/localized_link.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/localized_link/localized_link.html">
 <link rel="import" href="../../controls/settings_toggle_button.html">
 <link rel="import" href="../../prefs/prefs_behavior.html">
 <link rel="import" href="../deep_linking_behavior.html">
@@ -120,12 +120,12 @@
         <h2 aria-hidden="true">
           [[getLanguagePreferenceTitle_(languageSettingsV2Update2Enabled_)]]
         </h2>
-        <settings-localized-link id="webLanguagesDescription"
+        <localized-link id="webLanguagesDescription"
             class="cr-row first bottom-margin"
             localized-string="[[getLanguagePreferenceDescription_(
                 languageSettingsV2Update2Enabled_)]]"
             on-link-clicked="onLanguagePreferenceDescriptionLinkClick_">
-        </settings-localized-link>
+        </localized-link>
         <div class="list-frame vertical-list" id="languagesList">
           <template is="dom-repeat" items="[[languages.enabled]]">
             <div class$="list-item [[getTranslationTargetClass_(

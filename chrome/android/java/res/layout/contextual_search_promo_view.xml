@@ -12,17 +12,17 @@
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
     android:visibility="invisible">
- 
+
     <org.chromium.components.browser_ui.widget.MaterialCardViewNoShadow
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         style="@style/MaterialCardStyle">
- 
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
- 
+
             <org.chromium.ui.widget.TextViewWithClickableSpans
                 android:id="@+id/contextual_search_promo_text"
                 android:layout_alignParentTop="true"
@@ -35,7 +35,7 @@
                 android:layout_marginEnd="16dp"
                 android:bufferType="spannable"
                 android:textAppearance="@style/TextAppearance.TextLarge.Primary" />
- 
+
             <org.chromium.ui.widget.ButtonCompat
                 android:id="@+id/contextual_search_allow_button"
                 android:layout_below="@id/contextual_search_promo_text"
@@ -46,11 +46,9 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
                 android:layout_marginEnd="16dp"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
                 android:text="@string/contextual_search_allow_button"
-                style="@style/FilledButton" />
- 
+                style="@style/FilledButton.Flat" />
+
             <org.chromium.ui.widget.ButtonCompat
                 android:id="@+id/contextual_search_no_thanks_button"
                 android:layout_below="@id/contextual_search_promo_text"
@@ -61,8 +59,6 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
                 android:layout_marginEnd="16dp"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
                 android:text="@string/contextual_search_no_thanks_button"
                 style="@style/TextButton" />
         </RelativeLayout>

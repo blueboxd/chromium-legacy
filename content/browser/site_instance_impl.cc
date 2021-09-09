@@ -112,10 +112,19 @@ SiteInstanceId::Generator g_site_instance_id_generator;
 }  // namespace
 
 UrlInfo::UrlInfo(const UrlInfo& other) = default;
+
 UrlInfo::UrlInfo()
-    : origin_isolation_request(OriginIsolationRequest::kNone),
-      web_exposed_isolation_info(WebExposedIsolationInfo::CreateNonIsolated()) {
+    : web_exposed_isolation_info(WebExposedIsolationInfo::CreateNonIsolated()) {
 }
+
+UrlInfo::UrlInfo(const UrlInfoInit& init)
+    : url(init.url_),
+      origin_isolation_request(init.origin_isolation_request_),
+      origin(init.origin_),
+      storage_partition_config(init.storage_partition_config_),
+      web_exposed_isolation_info(init.web_exposed_isolation_info_),
+      is_pdf(init.is_pdf_) {}
+
 UrlInfo::~UrlInfo() = default;
 
 // static
@@ -133,14 +142,6 @@ UrlInfo UrlInfo::CreateCopyWithStoragePartitionConfig(
   copy.storage_partition_config = storage_partition_config_in;
   return copy;
 }
-
-UrlInfo::UrlInfo(const UrlInfoInit& init)
-    : url(init.url_),
-      origin_isolation_request(init.origin_isolation_request_),
-      origin(init.origin_),
-      storage_partition_config(init.storage_partition_config_),
-      web_exposed_isolation_info(init.web_exposed_isolation_info_),
-      is_pdf(init.is_pdf_) {}
 
 UrlInfoInit::UrlInfoInit(UrlInfoInit&) = default;
 
@@ -262,8 +263,10 @@ SiteInfo SiteInfo::CreateInternal(
   GURL lock_url = DetermineProcessLockURL(isolation_context, url_info);
   GURL site_url = lock_url;
 
-  // TODO(crbug.com/1231763): PDF content should live in JIT-less processes.
-  bool is_jitless = false;
+  // PDF content should live in JIT-less processes because it is inherently less
+  // trusted.
+  bool is_jitless = url_info.is_pdf;
+
   absl::optional<StoragePartitionConfig> storage_partition_config =
       url_info.storage_partition_config;
 
@@ -274,8 +277,9 @@ SiteInfo SiteInfo::CreateInternal(
 
     BrowserContext* browser_context =
         isolation_context.browser_or_resource_context().ToBrowserContext();
-    is_jitless = GetContentClient()->browser()->IsJitDisabledForSite(
-        browser_context, lock_url);
+    is_jitless =
+        is_jitless || GetContentClient()->browser()->IsJitDisabledForSite(
+                          browser_context, lock_url);
 
     if (!storage_partition_config.has_value()) {
       storage_partition_config =

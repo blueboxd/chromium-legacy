@@ -510,7 +510,7 @@
   {
     "name": "biometric-reauth-password-filling",
     "owners": [ "ioanap" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 96
   },
   {
     "name": "block-external-form-redirects-no-gesture",
@@ -2763,7 +2763,7 @@
   {
     "name": "enable-throttle-display-none-and-visibility-hidden-cross-origin-iframes",
     "owners": [ "wjmaclean@chromium.org", "alexmos@chromium.org", "creis@chromium.org" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 100
   },
   {
     "name": "enable-tls13-early-data",
@@ -2803,13 +2803,6 @@
     "name": "enable-unsafe-webgpu",
     "owners": [ "//third_party/blink/renderer/modules/webgpu/OWNERS" ],
     "expiry_milestone": 98
-  },
-  {
-    "name": "enable-use-aaudio-driver",
-    "owners": [ "tguilbert" ],
-    // This feature has launched and is on by default. We are still debugging a
-    // few occasional issues, for which it's useful to turns this flag off.
-    "expiry_milestone": 92
   },
   {
     "name": "enable-use-zoom-for-dsf",

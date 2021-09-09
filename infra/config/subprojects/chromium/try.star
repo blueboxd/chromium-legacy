@@ -845,6 +845,7 @@ try_.chromium_chromiumos_builder(
     name = "linux-chromeos-rel",
     branch_selector = branches.CROS_LTS_MILESTONE,
     builderless = not settings.is_main,
+    cores = None,
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -1577,7 +1578,7 @@ try_.chromium_mac_builder(
 )
 
 try_.chromium_mac_builder(
-    name = "mac-arm64-rel",
+    name = "mac11-arm64-rel",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     goma_jobs = goma.jobs.J150,
     os = os.MAC_10_15,

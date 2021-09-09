@@ -347,9 +347,9 @@ void SerialConnection::OnReadPipeClosed() {
 
   if (read_error_) {
     // Dispatch OnReceiveError if there is a pending error.
-    receive_event_cb_.Run(std::vector<uint8_t>(),
-                          ConvertReceiveErrorFromMojo(read_error_.value()));
+    auto error = ConvertReceiveErrorFromMojo(read_error_.value());
     read_error_.reset();
+    receive_event_cb_.Run(std::vector<uint8_t>(), error);
   }
 }
 
@@ -384,12 +384,13 @@ void SerialConnection::OnReadPipeReadableOrClosed(
   result = receive_pipe_->EndReadData(read_bytes);
   DCHECK_EQ(MOJO_RESULT_OK, result);
 
-  receive_event_cb_.Run(std::move(data), api::serial::RECEIVE_ERROR_NONE);
+  // Reset the timeout timer and arm the watcher in preparation for the next
+  // read. This will be undone if |receive_event_cb_| calls SetPaused(true).
   receive_timeout_task_.Cancel();
-  // If there is no error nor paused, go on with the polling process and set
-  // timeout callback.
-  receive_pipe_watcher_.ArmOrNotify();
   SetTimeoutCallback();
+  receive_pipe_watcher_.ArmOrNotify();
+
+  receive_event_cb_.Run(std::move(data), api::serial::RECEIVE_ERROR_NONE);
 }
 
 void SerialConnection::StartPolling(const ReceiveEventCallback& callback) {
@@ -400,10 +401,14 @@ void SerialConnection::StartPolling(const ReceiveEventCallback& callback) {
   SetPaused(false);
 }
 
-bool SerialConnection::Send(const std::vector<uint8_t>& data,
+void SerialConnection::Send(const std::vector<uint8_t>& data,
                             SendCompleteCallback callback) {
-  if (send_complete_)
-    return false;
+  if (send_complete_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), 0,
+                                  api::serial::SEND_ERROR_PENDING));
+    return;
+  }
 
   DCHECK(serial_port_);
   bytes_written_ = 0;
@@ -424,7 +429,6 @@ bool SerialConnection::Send(const std::vector<uint8_t>& data,
         FROM_HERE, send_timeout_task_.callback(),
         base::TimeDelta::FromMilliseconds(send_timeout_));
   }
-  return true;
 }
 
 void SerialConnection::Configure(const api::serial::ConnectionOptions& options,

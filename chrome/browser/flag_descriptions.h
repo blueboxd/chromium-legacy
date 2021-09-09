@@ -1657,9 +1657,6 @@ extern const char kAndroidForceAppLanguagePromptDescription[];
 extern const char kAndroidLayoutChangeTabReparentingName[];
 extern const char kAndroidLayoutChangeTabReparentingDescription[];
 
-extern const char kAndroidPartnerCustomizationPhenotypeName[];
-extern const char kAndroidPartnerCustomizationPhenotypeDescription[];
-
 extern const char kAndroidSurfaceControlName[];
 extern const char kAndroidSurfaceControlDescription[];
 
@@ -1775,9 +1772,6 @@ extern const char kEnableDangerousDownloadDialogDescription[];
 
 extern const char kEnableDuplicateDownloadDialogName[];
 extern const char kEnableDuplicateDownloadDialogDescription[];
-
-extern const char kEnableUseAaudioDriverName[];
-extern const char kEnableUseAaudioDriverDescription[];
 
 extern const char kExploreSitesName[];
 extern const char kExploreSitesDescription[];

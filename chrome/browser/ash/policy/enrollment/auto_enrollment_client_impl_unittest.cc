@@ -479,7 +479,7 @@ class AutoEnrollmentClientImplTest
     absl::optional<bool> actual_is_license_packaged_with_device;
     actual_is_license_packaged_with_device =
         state_dict->FindBoolPath(kDeviceStatePackagedLicense);
-    if (actual_is_license_packaged_with_device) {
+    if (actual_is_license_packaged_with_device.has_value()) {
       EXPECT_EQ(expected_is_license_packaged_with_device,
                 actual_is_license_packaged_with_device.value());
     } else {
@@ -1537,10 +1537,9 @@ TEST_P(AutoEnrollmentClientImplFREToInitialEnrollmentTest,
   initial_state_response.set_license_packaging_sku(
       em::DeviceInitialEnrollmentStateResponse::CHROME_ENTERPRISE);
   ServerWillSendStateForFRE(
-      std::string(), em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
-      std::string(),
-      absl::optional<em::DeviceInitialEnrollmentStateResponse>(
-          initial_state_response));
+      /*management_domain=*/std::string(),
+      em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
+      /*device_disabled_message=*/std::string(), initial_state_response);
   client()->Start();
   base::RunLoop().RunUntilIdle();
   ExpectHashDanceRequestStatusHistogram(DM_STATUS_SUCCESS,
@@ -1574,10 +1573,9 @@ TEST_P(AutoEnrollmentClientImplFREToInitialEnrollmentTest,
   initial_state_response.set_license_packaging_sku(
       em::DeviceInitialEnrollmentStateResponse::CHROME_ENTERPRISE);
   ServerWillSendStateForFRE(
-      std::string(), em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
-      std::string(),
-      absl::optional<em::DeviceInitialEnrollmentStateResponse>(
-          initial_state_response));
+      /*management_domain=*/std::string(),
+      em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
+      /*device_disabled_message=*/std::string(), initial_state_response);
   client()->Start();
   base::RunLoop().RunUntilIdle();
   ExpectHashDanceRequestStatusHistogram(DM_STATUS_SUCCESS,
@@ -1611,10 +1609,9 @@ TEST_P(AutoEnrollmentClientImplFREToInitialEnrollmentTest,
   initial_state_response.set_license_packaging_sku(
       em::DeviceInitialEnrollmentStateResponse::CHROME_ENTERPRISE);
   ServerWillSendStateForFRE(
-      std::string(), em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
-      std::string(),
-      absl::optional<em::DeviceInitialEnrollmentStateResponse>(
-          initial_state_response));
+      /*management_domain=*/std::string(),
+      em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
+      /*device_disabled_message=*/std::string(), initial_state_response);
   client()->Start();
   base::RunLoop().RunUntilIdle();
   ExpectHashDanceRequestStatusHistogram(DM_STATUS_SUCCESS,
@@ -2196,6 +2193,39 @@ TEST_P(PsmHelperTest, RetryLogicAfterNetworkFailureForRlweQueryResponse) {
   EXPECT_EQ(state_, AUTO_ENROLLMENT_STATE_SERVER_ERROR);
 }
 
+TEST_P(PsmHelperTest, CancelAndDeleteSoonWithPendingRequest) {
+  DeviceManagementService::JobForTesting psm_rlwe_oprf_job;
+
+  // Expect one request to be captured when available in |psm_rlwe_oprf_job|.
+  ServerWillReplyAsyncForPsm(&psm_rlwe_oprf_job);
+
+  // Verify that the PSM RLWE OPRF request has not been captured yet.
+  EXPECT_FALSE(psm_rlwe_oprf_job.IsActive());
+
+  client()->Start();
+  base::RunLoop().RunUntilIdle();
+
+  // Verify the PSM RLWE OPRF request has been captured.
+  ASSERT_TRUE(psm_rlwe_oprf_job.IsActive());
+  VerifyPsmRlweOprfRequest();
+  VerifyPsmLastRequestJobType();
+  EXPECT_EQ(state_, AUTO_ENROLLMENT_STATE_PENDING);
+
+  // Cancel any running jobs and delete the client by `CancelAndDeleteSoon()`
+  // while PSM RLWE OPRF request is in flight.
+  EXPECT_TRUE(base::CurrentThread::Get()->IsIdleForTesting());
+  release_client()->CancelAndDeleteSoon();
+
+  // Verify the client has been deleted immediately and inexistence of any
+  // pending jobs.
+  EXPECT_TRUE(base::CurrentThread::Get()->IsIdleForTesting());
+  EXPECT_FALSE(psm_rlwe_oprf_job.IsActive());
+  EXPECT_EQ(state_, AUTO_ENROLLMENT_STATE_PENDING);
+}
+
+// PSM is enabled to test initial enrollment case extensively only.
+// Note that: PSM is running only for initial enrollment, and Hash dance for FRE
+// use case.
 INSTANTIATE_TEST_SUITE_P(
     Psm,
     PsmHelperTest,

@@ -85,6 +85,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <variant name=".DownloadProgress"/>
   <variant name=".GeneratedPasswordSaved"/>
   <variant name=".MerchantTrust"/>
+  <variant name=".NearOomReduction"/>
   <variant name=".NotificationBlocked"/>
   <variant name=".PermissionUpdate"/>
   <variant name=".PopupBlocked"/>
@@ -336,6 +337,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Reports the resultant action that happens on clicking the autofill assistant
     TTS button. This is recorded every time the TTS button is clicked.
+  </summary>
+</histogram>
+
+<histogram name="Android.AutofillAssistant.TextToSpeech.EngineEvent"
+    enum="AutofillAssistantTextToSpeechEngineEvent" expires_after="2022-06-08">
+  <owner>jainshashank@google.com</owner>
+  <owner>arbesser@google.com</owner>
+  <summary>
+    Reports the various TTS engine events received by the autofill assistant TTS
+    controller. This is recorded every time the autofill assistant TTS
+    controller receives a TTS event.
   </summary>
 </histogram>
 
@@ -3676,6 +3688,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Android.WebView.LoadDataWithBaseUrl.HistoryUrl.{Timing}"
     enum="URLValueForLoadDataWithBaseURL" expires_after="M95">
+  <obsolete>
+    Removed Sep 2021. See result in crbug.com/1244746.
+  </obsolete>
   <owner>rakina@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -3692,6 +3707,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Android.WebView.LoadDataWithBaseUrl.IsInMainFrame"
     enum="BooleanMainFrame" expires_after="M95">
+  <obsolete>
+    Removed Sep 2021. See result in crbug.com/1244746.
+  </obsolete>
   <owner>rakina@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -3704,6 +3722,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Android.WebView.LoadDataWithBaseUrl.LoadingUrl"
     enum="URLValueForLoadDataWithBaseURL" expires_after="M95">
+  <obsolete>
+    Removed Sep 2021. See result in crbug.com/1244746.
+  </obsolete>
   <owner>rakina@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -3717,6 +3738,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="Android.WebView.LoadDataWithBaseUrl.NextNavigationIsSameDocument"
     enum="Boolean" expires_after="M95">
+  <obsolete>
+    Removed Sep 2021. See result in crbug.com/1244746.
+  </obsolete>
   <owner>rakina@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -3728,6 +3752,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Android.WebView.LoadDataWithBaseUrl.SameUrlReplacement"
     enum="Boolean" expires_after="M95">
+  <obsolete>
+    Removed Sep 2021. See result in crbug.com/1244746.
+  </obsolete>
   <owner>rakina@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>

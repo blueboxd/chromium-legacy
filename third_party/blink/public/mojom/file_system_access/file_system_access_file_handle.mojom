@@ -17,7 +17,8 @@ import "third_party/blink/public/mojom/file_system_access/file_system_access_tra
 import "third_party/blink/public/mojom/permissions/permission_status.mojom";
 
 // Representation of a regular file for an AccessHandle.
-// `file` is an OS-level file which provides direct read/write access.
+// `os_file` is an OS-level file which provides direct read/write access.
+// `file_size` is the file size of `os_file` (in bytes).
 // `capacity_allocation_host` is a mojo pipe to manage capacity allocations for
 // this file.
 //
@@ -37,6 +38,7 @@ import "third_party/blink/public/mojom/permissions/permission_status.mojom";
 // that deviate from this requirement will be terminated.
 struct FileSystemAccessRegularFile {
   mojo_base.mojom.File os_file;
+  int64 file_size;
   pending_remote<FileSystemAccessCapacityAllocationHost> capacity_allocation_host;
 };
 
@@ -65,6 +67,19 @@ interface FileSystemAccessFileHandle {
   // Returns a FileWriter object. The FileWriter provides write operations on a file.
   CreateFileWriter(bool keep_existing_data, bool auto_close) => (
       FileSystemAccessError result, pending_remote<FileSystemAccessFileWriter>? writer);
+
+  // Renames the file represented by this handle to `new_entry_name`, which
+  // cannot be empty. This is guaranteed to be atomic.
+  // Returns an error if the file does not exist.
+  Rename(string new_entry_name) => (FileSystemAccessError result);
+
+  // Same as above, but `destination_directory` is resolved into a directory to
+  // be used as the destination directory for the move operation. This is only
+  // guaranteed to be atomic if the file is moved within the same file system.
+  // Moving across file systems may result in partially written data if the move
+  // fails. Returns an error if the file does not exist or the operation fails.
+  Move(pending_remote<FileSystemAccessTransferToken> destination_directory,
+       string new_entry_name) => (FileSystemAccessError result);
 
   // Deletes the file represented by this handle.
   // Returns an error if the file does not exist.

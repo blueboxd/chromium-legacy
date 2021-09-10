@@ -12485,7 +12485,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PeriodicBackgroundSync.Event.Time" units="ms"
-    expires_after="2021-10-04">
+    expires_after="2022-09-04">
   <owner>nator@chromium.org</owner>
   <owner>rayankans@chromium.org</owner>
   <summary>
@@ -13785,6 +13785,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>Number of read entries in reading list.</summary>
+</histogram>
+
+<histogram name="ReadingList.SyncStateMatchesBookmarks" enum="BooleanMatched"
+    expires_after="2022-02-20">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    Records whether the reading list and bookmarks sync states match on startup
+    when not in Incognito or guest mode (Desktop only).
+  </summary>
 </histogram>
 
 <histogram name="ReadingList.Unread.AgeOnDeletion" units="hours"

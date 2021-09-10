@@ -232,7 +232,8 @@ SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> web_source_buffer,
     video_tracks_ = attachment->CreateVideoTrackList(tracer);
     DCHECK(video_tracks_);
   } else {
-    DCHECK(RuntimeEnabledFeatures::MediaSourceInWorkersEnabled() &&
+    DCHECK(RuntimeEnabledFeatures::MediaSourceInWorkersEnabled(
+               GetExecutionContext()) &&
            GetExecutionContext()->IsDedicatedWorkerGlobalScope());
     DCHECK(!IsMainThread());
 
@@ -630,6 +631,9 @@ ScriptPromise SourceBuffer::appendEncodedChunks(
     ExceptionState& exception_state) {
   DVLOG(2) << __func__ << " this=" << this;
 
+  UseCounter::Count(ExecutionContext::From(script_state),
+                    WebFeature::kMediaSourceExtensionsForWebCodecs);
+
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
       "media", "SourceBuffer::appendEncodedChunks", TRACE_ID_LOCAL(this));
 
@@ -989,9 +993,13 @@ void SourceBuffer::changeType(const String& type,
   }
 }
 
-void SourceBuffer::ChangeTypeUsingConfig(const SourceBufferConfig* config,
+void SourceBuffer::ChangeTypeUsingConfig(ExecutionContext* execution_context,
+                                         const SourceBufferConfig* config,
                                          ExceptionState& exception_state) {
   DVLOG(2) << __func__ << " this=" << this;
+
+  UseCounter::Count(execution_context,
+                    WebFeature::kMediaSourceExtensionsForWebCodecs);
 
   // If this object has been removed from the sourceBuffers attribute of the
   //    parent media source, then throw an InvalidStateError exception and abort
@@ -1416,7 +1424,6 @@ void SourceBuffer::AddPlaceholderCrossThreadTracks(
   // to tell the media element to populate appropriately identified tracks so
   // that the BackgroundVideoOptimization feature functions for MSE-in-Workers
   // playbacks.
-  DCHECK(RuntimeEnabledFeatures::MediaSourceInWorkersEnabled());
   DCHECK(!IsMainThread());
   DCHECK(!first_initialization_segment_received_);
   DCHECK(source_);
@@ -1483,7 +1490,6 @@ void SourceBuffer::RemovePlaceholderCrossThreadTracks(
     MediaSourceTracer* tracer) {
   // TODO(https://crbug.com/878133): Remove this special-casing once worker
   // thread track creation and tracklist modifications are supported.
-  DCHECK(RuntimeEnabledFeatures::MediaSourceInWorkersEnabled());
   DCHECK(!IsMainThread());
   DCHECK(!tracer);  // Cross-thread attachments don't use a tracer.
 

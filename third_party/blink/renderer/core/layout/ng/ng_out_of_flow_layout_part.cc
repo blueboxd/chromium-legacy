@@ -81,6 +81,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
     NGBoxFragmentBuilder* container_builder)
     : NGOutOfFlowLayoutPart(container_node.IsAbsoluteContainer(),
                             container_node.IsFixedContainer(),
+                            container_node.IsGrid(),
                             container_node.Style(),
                             container_space,
                             container_builder) {}
@@ -88,6 +89,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
 NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
     bool is_absolute_container,
     bool is_fixed_container,
+    bool is_grid_container,
     const ComputedStyle& container_style,
     const NGConstraintSpace& container_space,
     NGBoxFragmentBuilder* container_builder,
@@ -106,13 +108,16 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
            ->HasPositionedObjects())
     return;
 
+  // Disable first tier cache for grid layouts, as grid allows for out-of-flow
+  // items to be placed in grid areas, which is complex to maintain a cache for.
+  const NGBoxStrut border_scrollbar =
+      container_builder->Borders() + container_builder->Scrollbar();
+  allow_first_tier_oof_cache_ =
+      border_scrollbar.IsEmpty() && !is_grid_container;
   default_containing_block_info_for_absolute_.writing_direction =
       default_writing_direction_;
   default_containing_block_info_for_fixed_.writing_direction =
       default_writing_direction_;
-  const NGBoxStrut border_scrollbar =
-      container_builder->Borders() + container_builder->Scrollbar();
-  allow_first_tier_oof_cache_ = border_scrollbar.IsEmpty();
   if (container_builder_->HasBlockSize()) {
     default_containing_block_info_for_absolute_.rect.size =
         ShrinkLogicalSize(container_builder_->Size(), border_scrollbar);
@@ -1745,12 +1750,19 @@ NGConstraintSpace NGOutOfFlowLayoutPart::GetFragmentainerConstraintSpace(
       LogicalSize(column_size.inline_size,
                   container_builder_->ChildAvailableSize().block_size);
 
+  // In the current implementation it doesn't make sense to restrict imperfect
+  // breaks inside OOFs, since we never break and resume OOFs in a subsequent
+  // outer fragmentainer anyway (we'll always stay in the current outer
+  // fragmentainer and just create overflowing columns in the current row,
+  // rather than moving to the next one).
+  NGBreakAppeal min_break_appeal = kBreakAppealLastResort;
+
   // TODO(bebeaudr): Need to handle different fragmentation types. It won't
   // always be multi-column.
   return CreateConstraintSpaceForColumns(
       *container_builder_->ConstraintSpace(), column_size,
       percentage_resolution_size, allow_discard_start_margin,
-      /* balance_columns */ false);
+      /* balance_columns */ false, min_break_appeal);
 }
 
 // Compute in which fragmentainer the OOF element will start its layout and

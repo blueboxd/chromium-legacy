@@ -3406,6 +3406,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     // is invalid.
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::RFH_CHILD_FRAME_NEEDS_OWNER_ELEMENT_TYPE);
+    return;
   }
 
   DCHECK(devtools_frame_token);
@@ -5121,7 +5122,7 @@ RenderFrameHostImpl::GetBackForwardCanStoreNowDebugStringForTesting() {
   return frame_tree()
       ->controller()
       .GetBackForwardCache()
-      .CanStorePageNow(GetMainFrame())
+      .CanRestorePageNowForTesting(GetMainFrame())  // IN-TEST
       .ToString();
 }
 
@@ -5752,7 +5753,9 @@ void RenderFrameHostImpl::EvictFromBackForwardCache(
 
 void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
     BackForwardCacheMetrics::NotRestoredReason reason) {
-  BackForwardCacheCanStoreDocumentResult can_store;
+  auto can_store =
+      frame_tree()->controller().GetBackForwardCache().CanStorePageNow(
+          GetMainFrame());
   can_store.No(reason);
   EvictFromBackForwardCacheWithReasons(can_store);
 }
@@ -8937,13 +8940,10 @@ RenderFrameHost* RenderFrameHost::FromPlaceholderToken(
 }
 
 ui::AXTreeID RenderFrameHostImpl::GetParentAXTreeID() {
-  if (browser_plugin_embedder_ax_tree_id_ != ui::AXTreeIDUnknown())
-    return browser_plugin_embedder_ax_tree_id_;
-
-  if (!frame_tree_node_->IsMainFrame())
-    return GetParent()->GetAXTreeID();
-
-  return ui::AXTreeIDUnknown();
+  auto* parent = ParentOrOuterDelegateFrame();
+  if (!parent)
+    return ui::AXTreeIDUnknown();
+  return parent->GetAXTreeID();
 }
 
 ui::AXTreeID RenderFrameHostImpl::GetFocusedAXTreeID() {
@@ -10192,16 +10192,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   if (!ValidateDidCommitParams(navigation_request.get(), params.get(),
                                is_same_document_navigation)) {
     return false;
-  }
-
-  if (frame_tree_node_->current_frame_host()
-          ->renderer_url_info_.is_loaded_from_load_data_with_base_url) {
-    // Whether a navigation that happens on/away from a document loaded
-    // through a loadDataWithBaseURL navigation is a same-document or a
-    // cross-document navigation.
-    base::UmaHistogramBoolean(
-        "Android.WebView.LoadDataWithBaseUrl.NextNavigationIsSameDocument",
-        is_same_document_navigation);
   }
 
   // TODO(clamy): We should stop having a special case for same-document
@@ -11940,17 +11930,16 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
   RenderFrameHostImpl* top_document = this;
   while (RenderFrameHostImpl* parent = top_document->GetParent())
     top_document = parent;
-
-  auto can_store =
+  BackForwardCacheCanStoreDocumentResult can_store =
       frame_tree()->controller().GetBackForwardCache().CanStorePageNow(
           top_document);
+
   TRACE_EVENT("navigation",
               "RenderFrameHostImpl::MaybeEvictFromBackForwardCache",
               "render_frame_host", this, "can_store", can_store.ToString());
 
   if (can_store)
     return;
-
   EvictFromBackForwardCacheWithReasons(can_store);
 }
 

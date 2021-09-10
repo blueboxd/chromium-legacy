@@ -25,6 +25,9 @@ const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText2{
 const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText3{
     &kLensRegionSearch, "use-menu-item-alt-text-3", false};
 
+const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText4{
+    &kLensRegionSearch, "use-menu-item-alt-text-4", true};
+
 const base::FeatureParam<bool> kEnableUKMLoggingForRegionSearch{
     &kLensRegionSearch, "enable-ukm-logging", false};
 
@@ -32,7 +35,7 @@ const base::FeatureParam<bool> kEnableUKMLoggingForImageSearch{
     &kLensStandalone, "enable-ukm-logging", false};
 
 const base::FeatureParam<bool> kEnableSidePanelForLensRegionSearch{
-    &kLensRegionSearch, "enable-side-panel", false};
+    &kLensRegionSearch, "enable-side-panel", true};
 
 const base::FeatureParam<bool> kEnableSidePanelForLensImageSearch{
     &kLensStandalone, "enable-side-panel", false};

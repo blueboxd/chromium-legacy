@@ -5444,6 +5444,13 @@ others/histograms.xml -->
   <int value="2" label="Enable button and play TTS"/>
 </enum>
 
+<enum name="AutofillAssistantTextToSpeechEngineEvent">
+  <int value="0" label="TTS_EVENT_START"/>
+  <int value="1" label="TTS_EVENT_END"/>
+  <int value="2" label="TTS_EVENT_ERROR"/>
+  <int value="3" label="TTS_EVENT_OTHER"/>
+</enum>
+
 <enum name="AutofillAssistantTriggerUIType">
   <int value="0" label="UNSPECIFIED_TRIGGER_UI_TYPE"/>
   <int value="1" label="(External) Shopping cart, first time user"/>
@@ -16708,6 +16715,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="13" label="AlreadyUploaded"/>
   <int value="14" label="TooManyRequests"/>
   <int value="15" label="RetryUploading"/>
+  <int value="16" label="LaCrosVersionTooOld"/>
 </enum>
 
 <enum name="CrosDiagnosticsRoutineResult">
@@ -20810,6 +20818,15 @@ Called by update_debug_scenarios.py.-->
   <int value="2" label="Updated stale entry"/>
 </enum>
 
+<enum name="DNS.HttpUpgradeResult">
+  <int value="0" label="HTTPS record received; upgrade triggered"/>
+  <int value="1" label="No HTTPS record received"/>
+  <int value="2" label="HTTPS record received; no upgrade (already https/wss)"/>
+  <int value="3" label="HTTPS record received; no upgrade (not http(s)/ws(s))"/>
+  <int value="4"
+      label="HTTPS record received; http/ws; no upgrade (Finch-disabled)"/>
+</enum>
+
 <enum name="DNS.StaleHostResolverRequestOutcome">
   <int value="0"
       label="Returned synchronously (cache, hosts, IP literal etc.)"/>
@@ -20823,6 +20840,15 @@ Called by update_debug_scenarios.py.-->
   <int value="6"
       label="Returned stale cached result; network got NAME_NOT_RESOLVED."/>
   <int value="7" label="Returned stale result synchronously."/>
+</enum>
+
+<enum name="DNS.SvcbHttpsTransactionError">
+  <int value="0" label="No transaction error"/>
+  <int value="1" label="Insecure DNS transaction error (never task-fatal)"/>
+  <int value="2" label="Non-task-fatal Secure DNS transaction error"/>
+  <int value="3"
+      label="Would be task-fatal transaction error but finch param disabled"/>
+  <int value="4" label="Task-fatal transaction error"/>
 </enum>
 
 <enum name="DNS.UdpIdMismatchStatus">
@@ -21905,14 +21931,14 @@ Called by update_document_policy_enum.py.-->
   <int value="22" label="Completed with content length mismatch"/>
   <int value="23" label="More bytes received after content length mismatch"/>
   <int value="24" label="No bytes received after content length mismatch"/>
-  <int value="25" label="Target determination requeted"/>
+  <int value="25" label="Target determination requested"/>
   <int value="26" label="Target determination completed"/>
   <int value="27"
       label="Cross origin download without content disposition headers"/>
-  <int value="28" label="Download attemps before sending the request"/>
-  <int value="29" label="Download attempts for manual download resumption."/>
-  <int value="30" label="Download attempts for auto download resumption."/>
-  <int value="31" label="Dropped download attempts."/>
+  <int value="28" label="Download attempts before sending the request"/>
+  <int value="29" label="Download attempts for manual download resumption"/>
+  <int value="30" label="Download attempts for auto download resumption"/>
+  <int value="31" label="Dropped download attempts"/>
 </enum>
 
 <enum name="DownloadDatabaseRecordDroppedType">
@@ -26254,6 +26280,7 @@ Called by update_document_policy_enum.py.-->
   <int value="892" label="ChromeAppsEnabled"/>
   <int value="893" label="BrowserLegacyExtensionPointsBlocked"/>
   <int value="894" label="DeviceRestrictedManagedGuestSessionEnabled"/>
+  <int value="895" label="PrintPostScriptMode"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -34464,6 +34491,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4017" label="V8FileSystemSyncAccessHandle_Flush_Method"/>
   <int value="4018" label="V8FileSystemSyncAccessHandle_GetSize_Method"/>
   <int value="4019" label="V8FileSystemSyncAccessHandle_Truncate_Method"/>
+  <int value="4020"
+      label="V8SharedArrayBufferConstructedInExtensionWithoutIsolation"/>
+  <int value="4021" label="MediaSourceExtensionsForWebCodecs"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40770,6 +40800,29 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2147480259" label="Sqlite.Vfs_Fetch"/>
 </enum>
 
+<enum name="HistoryClustersFinalState">
+  <summary>
+    The final state, or outcome, of an interaction on the HistoryClusters, or
+    Journeys, UI.
+  </summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="kLinkClick">Link Clicked from UI</int>
+  <int value="2" label="kCloseTab">
+    The UI interaction ended without opening anything on the page.
+  </int>
+</enum>
+
+<enum name="HistoryClustersInitialState">
+  <summary>
+    The intial state that describes how an interaction with the HistoryClusters,
+    or Journeys, UI was started.
+  </summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="kDirectNavigation">
+    The UI was reached via direct navigation, not through any dedicated surface.
+  </int>
+</enum>
+
 <enum name="HistoryFaviconsRecoveryEnum">
   <obsolete>
     History.FaviconsRecovery no longer tracked as of March 2017.
@@ -41041,6 +41094,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="kDiagnosticsLog"/>
   <int value="8" label="kLacrosDownload"/>
   <int value="9" label="kScan"/>
+  <int value="10" label="kPhoneHubCameraRoll"/>
 </enum>
 
 <enum name="HoldingSpacePodAction">
@@ -47718,6 +47772,7 @@ from previous Chrome versions.
       label="AutofillCreditCardLocalCardMigration:disabled"/>
   <int value="-1634154256" label="ZeroSuggestRedirectToChrome:enabled"/>
   <int value="-1633586675" label="TabModalJsDialog:enabled"/>
+  <int value="-1633416642" label="WallpaperFullScreenPreview:disabled"/>
   <int value="-1632828661" label="PrivacyReorderedAndroid:disabled"/>
   <int value="-1631329950" label="ssl-version-max"/>
   <int value="-1630419335" label="enable-download-notification"/>
@@ -48207,6 +48262,7 @@ from previous Chrome versions.
   <int value="-1275552094" label="SpectreVariant2Mitigation:disabled"/>
   <int value="-1274502866" label="AllowDisableMouseAcceleration:enabled"/>
   <int value="-1272593346" label="NewTabLoadingAnimation:disabled"/>
+  <int value="-1271921284" label="WebViewThreadSafeMedia:enabled"/>
   <int value="-1271563519" label="enable-appcontainer"/>
   <int value="-1271441871" label="AmbientColor:enabled"/>
   <int value="-1270634957" label="PhoneHubUseBle:enabled"/>
@@ -48533,6 +48589,7 @@ from previous Chrome versions.
   <int value="-1027124889" label="NtlmV2Enabled:enabled"/>
   <int value="-1026192558" label="OopRasterizationDDL:enabled"/>
   <int value="-1025125875" label="AssistantTimersV2:disabled"/>
+  <int value="-1024731815" label="MessagesForAndroidNearOomReduction:enabled"/>
   <int value="-1024065253" label="EnableWireGuard:disabled"/>
   <int value="-1022971520" label="enable-search-button-in-omnibox-for-str"/>
   <int value="-1022281869" label="ArcRtVcpuDualCore:enabled"/>
@@ -48540,6 +48597,7 @@ from previous Chrome versions.
   <int value="-1021097344" label="PolicyAtomicGroup:disabled"/>
   <int value="-1020450980" label="gesture-deletion"/>
   <int value="-1019967332" label="VrBrowsing:enabled"/>
+  <int value="-1019760093" label="PrintWithPostScriptType42Fonts:enabled"/>
   <int value="-1019492310"
       label="OmniboxUIExperimentJogTextfieldOnPopup:enabled"/>
   <int value="-1018454657" label="SharingPeerConnectionReceiver:enabled"/>
@@ -49162,6 +49220,7 @@ from previous Chrome versions.
   <int value="-519960638" label="enable-site-engagement-service"/>
   <int value="-519844731" label="SignInProfileCreationFlow:enabled"/>
   <int value="-519345823" label="CrOSEnforceSystemAecNsAgc:enabled"/>
+  <int value="-519342886" label="PrintWithPostScriptType42Fonts:disabled"/>
   <int value="-518104091" label="NewAudioRenderingMixingStrategy:enabled"/>
   <int value="-516845951" label="enable-embedded-extension-options"/>
   <int value="-515913489" label="EphemeralTabUsingBottomSheet:disabled"/>
@@ -49401,6 +49460,7 @@ from previous Chrome versions.
   <int value="-322827131" label="tab-management-experiment-type-basil"/>
   <int value="-320820051" label="enable-zero-copy"/>
   <int value="-319002650" label="ArcUsbStorageUI:enabled"/>
+  <int value="-317758331" label="WebViewThreadSafeMedia:disabled"/>
   <int value="-317195508" label="TabGroupsContinuationAndroid:disabled"/>
   <int value="-315741215"
       label="IntentBlockExternalFormRedirectsNoGesture:enabled"/>
@@ -49530,6 +49590,7 @@ from previous Chrome versions.
   <int value="-208435024" label="EnableUsernameCorrection:enabled"/>
   <int value="-206393363" label="enable-scroll-prediction"/>
   <int value="-205975637" label="WebUIDarkMode:enabled"/>
+  <int value="-204978485" label="WallpaperFullScreenPreview:enabled"/>
   <int value="-204355195" label="secondary-ui-md"/>
   <int value="-203968600" label="SyncSupportSecondaryAccount:disabled"/>
   <int value="-203058505" label="QueryTilesSegmentation:disabled"/>
@@ -51541,6 +51602,7 @@ from previous Chrome versions.
   <int value="1376437124" label="show-cert-link"/>
   <int value="1377056573" label="browser-side-navigation:enabled"/>
   <int value="1378310092" label="disable-suggestions-service"/>
+  <int value="1379182781" label="MessagesForAndroidNearOomReduction:disabled"/>
   <int value="1379571437" label="ExoPointerLock:disabled"/>
   <int value="1379944457" label="EnableMessagesWebPush:disabled"/>
   <int value="1381746642" label="enable-automatic-password-saving"/>
@@ -55546,6 +55608,7 @@ Called by update_use_counter_css.py.-->
   <int value="16" label="DownloadProgress"/>
   <int value="17" label="SyncError"/>
   <int value="18" label="SharedHighlighting"/>
+  <int value="19" label="NearOomReduction"/>
 </enum>
 
 <enum name="MessageLoopProblems">
@@ -67846,6 +67909,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="ToastButton"/>
 </enum>
 
+<enum name="PrivateNetworkAccessCheckResult">
+  <int value="0" label="kAllowedMissingClientSecurityState"/>
+  <int value="1" label="kAllowedNoLessPublic"/>
+  <int value="2" label="kAllowedByPolicyAllow"/>
+  <int value="3" label="kAllowedByPolicyWarn"/>
+  <int value="4" label="kBlockedByLoadOption"/>
+  <int value="5" label="kBlockedByPolicyBlock"/>
+</enum>
+
 <enum name="PrivateSetMembershipHashDanceComparison">
   <int value="0" label="Equal Results"/>
   <int value="1" label="Different Results"/>
@@ -71391,7 +71463,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="64" label="InternalFreezableIPC"/>
   <int value="65" label="InternalContinueScriptLoading"/>
   <int value="66" label="kWebLocks"/>
-  <int value="67" label="ExperimentalWebScheduling"/>
+  <int value="67" label="WebSchedulingPostedTask"/>
   <int value="68" label="InternalFrameLifecycleControl"/>
   <int value="69" label="MainThreadTaskQueueNonWaking"/>
   <int value="70" label="InternalFindInPage"/>

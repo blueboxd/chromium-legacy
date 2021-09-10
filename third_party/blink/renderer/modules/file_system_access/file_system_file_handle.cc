@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -130,8 +131,7 @@ ScriptPromise FileSystemFileHandle::createSyncAccessHandle(
           mojom::blink::FileSystemAccessRegularFilePtr regular_file =
               std::move(file->get_regular_file());
           file_delegate = FileSystemAccessFileDelegate::Create(
-              context, std::move(regular_file->os_file),
-              std::move(regular_file->capacity_allocation_host));
+              context, std::move(regular_file));
         } else if (file->is_incognito_file_delegate()) {
           file_delegate = FileSystemAccessFileDelegate::CreateForIncognito(
               context, std::move(file->get_incognito_file_delegate()));
@@ -191,6 +191,33 @@ void FileSystemFileHandle::RequestPermissionImpl(
   }
 
   mojo_ptr_->RequestPermission(writable, std::move(callback));
+}
+
+void FileSystemFileHandle::RenameImpl(
+    const String& new_entry_name,
+    base::OnceCallback<void(mojom::blink::FileSystemAccessErrorPtr)> callback) {
+  if (!mojo_ptr_.is_bound()) {
+    std::move(callback).Run(mojom::blink::FileSystemAccessError::New(
+        mojom::blink::FileSystemAccessStatus::kInvalidState,
+        base::File::Error::FILE_ERROR_FAILED, "Context Destroyed"));
+    return;
+  }
+
+  mojo_ptr_->Rename(new_entry_name, std::move(callback));
+}
+
+void FileSystemFileHandle::MoveImpl(
+    mojo::PendingRemote<mojom::blink::FileSystemAccessTransferToken> dest,
+    const String& new_entry_name,
+    base::OnceCallback<void(mojom::blink::FileSystemAccessErrorPtr)> callback) {
+  if (!mojo_ptr_.is_bound()) {
+    std::move(callback).Run(mojom::blink::FileSystemAccessError::New(
+        mojom::blink::FileSystemAccessStatus::kInvalidState,
+        base::File::Error::FILE_ERROR_FAILED, "Context Destroyed"));
+    return;
+  }
+
+  mojo_ptr_->Move(std::move(dest), new_entry_name, std::move(callback));
 }
 
 void FileSystemFileHandle::RemoveImpl(

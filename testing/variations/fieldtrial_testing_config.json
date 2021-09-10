@@ -576,21 +576,6 @@
             ]
         }
     ],
-    "AndroidMessagesSafetyTip": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MessagesForAndroidSafetyTip"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidMessagesSavePassword": [
         {
             "platforms": [
@@ -2056,6 +2041,7 @@
                         "omnibox_focused_on_new_tab": "true",
                         "start_surface_variation": "single",
                         "support_accessibility": "false",
+                        "tab_count_button_on_start_surface": "true",
                         "tab_switcher_on_return_time_ms": "3600000"
                     },
                     "enable_features": [
@@ -2073,6 +2059,7 @@
                         "show_last_active_tab_only": "true",
                         "start_surface_variation": "single",
                         "support_accessibility": "false",
+                        "tab_count_button_on_start_surface": "true",
                         "tab_switcher_on_return_time_ms": "3600000"
                     },
                     "enable_features": [
@@ -7838,6 +7825,7 @@
     "SendTabToSelfV2": [
         {
             "platforms": [
+                "android",
                 "chromeos",
                 "linux",
                 "mac",
@@ -9712,6 +9700,26 @@
             "experiments": [
                 {
                     "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "WebRTC-ZeroPlayoutDelay": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "ios",
+                "android",
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "min_pacing:8ms,max_decode_queue_size:8,_V2"
                 }
             ]
         }

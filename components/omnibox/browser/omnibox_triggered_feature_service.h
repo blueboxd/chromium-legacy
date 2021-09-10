@@ -17,9 +17,9 @@ class OmniboxTriggeredFeatureService {
   // corresponding entry should be added in the UMA histograms.
   enum class Feature {
     kRichAutocompletion = 0,
-    kBookmarkPaths = 1,
-    kShortBookmarkSuggestionsByTotalInputLength = 2,
-    kMaxValue = kShortBookmarkSuggestionsByTotalInputLength,
+    kBookmarkPathsDeprecated = 1,
+    kShortBookmarkSuggestionsByTotalInputLengthDeprecated = 2,
+    kMaxValue = kShortBookmarkSuggestionsByTotalInputLengthDeprecated,
   };
   using Features = std::set<Feature>;
 

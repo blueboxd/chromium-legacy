@@ -448,6 +448,10 @@ const base::Feature kEnableOAuthIpp{"EnableOAuthIpp",
 const base::Feature kEnableOobeChromeVoxHint{"EnableOobeChromeVoxHint",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables Polymer3 for OOBE
+const base::Feature kEnableOobePolymer3{"EnableOobePolymer3",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables toggling Pciguard settings through Settings UI.
 const base::Feature kEnablePciguardUi{"EnablePciguardUi",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1156,6 +1160,11 @@ const base::Feature kWakeOnWifiAllowed{"WakeOnWifiAllowed",
 const base::Feature kWallpaperWebUI{"WallpaperWebUI",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable full screen wallpaper preview in new wallpaper experience. Requires
+// |kWallpaperWebUI| to also be enabled.
+const base::Feature kWallpaperFullScreenPreview{
+    "WallpaperFullScreenPreview", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Generates WebAPKs representing installed PWAs and installs them inside ARC.
 const base::Feature kWebApkGenerator{"WebApkGenerator",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1494,6 +1503,10 @@ bool IsOobeChromeVoxHintEnabled() {
   return base::FeatureList::IsEnabled(kEnableOobeChromeVoxHint);
 }
 
+bool IsOobePolymer3Enabled() {
+  return base::FeatureList::IsEnabled(kEnableOobePolymer3);
+}
+
 bool IsPciguardUiEnabled() {
   return base::FeatureList::IsEnabled(kEnablePciguardUi);
 }
@@ -1664,6 +1677,11 @@ bool IsVerticalSnapStateEnabled() {
 
 bool IsWallpaperWebUIEnabled() {
   return base::FeatureList::IsEnabled(kWallpaperWebUI);
+}
+
+bool IsWallpaperFullScreenPreviewEnabled() {
+  return IsWallpaperWebUIEnabled() &&
+         base::FeatureList::IsEnabled(kWallpaperFullScreenPreview);
 }
 
 bool IsWebUITabStripTabDragIntegrationEnabled() {

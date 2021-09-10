@@ -2161,9 +2161,8 @@ void RenderProcessHostImpl::ForceCrash() {
   child_process_->CrashHungProcess();
 }
 
-// TODO(https://crbug.com/1242911): replace origin with StorageKey param.
 void RenderProcessHostImpl::BindFileSystemManager(
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
     mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Note, the base::Unretained() is safe because the target object has an IO
@@ -3219,6 +3218,10 @@ void RenderProcessHostImpl::DiscardSpareRenderProcessHostForTesting() {
 
 // static
 bool RenderProcessHostImpl::IsSpareProcessKeptAtAllTimes() {
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kSpareRenderer))
+    return true;
+#endif
   if (!SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
     return false;
 
@@ -3597,6 +3600,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kLacrosEnablePlatformEncryptedHevc,
     switches::kLacrosEnablePlatformHevc,
     switches::kLacrosUseChromeosProtectedMedia,
+    switches::kLacrosUseChromeosProtectedAv1,
 #endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
@@ -3945,9 +3949,14 @@ void RenderProcessHostImpl::Cleanup() {
         });
     return;
   } else if (worker_ref_count_ != 0) {
-    TRACE_EVENT2(
+    TRACE_EVENT(
         "shutdown", "RenderProcessHostImpl::Cleanup : Have worker_ref.",
-        "render_process_host", this, "worker_ref_count_", worker_ref_count_);
+        ChromeTrackEvent::kRenderProcessHost, *this,
+        [&](perfetto::EventContext ctx) {
+          auto* proto =
+              ctx.event<ChromeTrackEvent>()->set_render_process_host_cleanup();
+          proto->set_worker_ref_count(worker_ref_count_);
+        });
     return;
   }
 

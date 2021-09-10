@@ -88,6 +88,30 @@ LayoutUnit BlockAxisLayoutOverflow(const NGLayoutResult& result,
   return block_size;
 }
 
+// Return true if the container is being resumed after a fragmentainer break,
+// and the child is at the first fragment of a node, and we are allowed to break
+// before it. Normally, this isn't allowed, as that would take us nowhere,
+// progress-wise, but for multicol in nested fragmentation, we'll allow it in
+// some cases. If we set the appeal of breaking before the first child high
+// enough, we'll automatically discard any subsequent less perfect
+// breakpoints. This will make us push everything that would break with an
+// appeal lower than the minimum appeal (stored in the constraint space) ahead
+// of us, until we reach the next column row (in the next outer fragmentainer).
+// That row may be taller, which might help us avoid breaking violations.
+bool IsBreakableAtStartOfResumedContainer(
+    const NGConstraintSpace& space,
+    const NGLayoutResult& child_layout_result,
+    const NGBoxFragmentBuilder& builder) {
+  if (space.MinBreakAppeal() != kBreakAppealLastResort &&
+      IsResumingLayout(builder.PreviousBreakToken())) {
+    if (const auto* box_fragment = DynamicTo<NGPhysicalBoxFragment>(
+            child_layout_result.PhysicalFragment()))
+      return box_fragment->IsFirstForNode();
+    return true;
+  }
+  return false;
+}
+
 }  // anonymous namespace
 
 EBreakBetween JoinFragmentainerBreakValues(EBreakBetween first_value,
@@ -151,43 +175,58 @@ NGBreakAppeal CalculateBreakAppealBefore(const NGConstraintSpace& space,
                                          const NGLayoutResult& layout_result,
                                          const NGBoxFragmentBuilder& builder,
                                          bool has_container_separation) {
+  NGBreakAppeal break_appeal = kBreakAppealPerfect;
   if (!has_container_separation) {
-    // This is not a valid break point. If there's no container separation, it
-    // means that we're breaking before the first piece of in-flow content
-    // inside this block, even if it's not a valid class C break point [1]. We
-    // really don't want to break here, if we can find something better.
-    //
-    // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
-    return kBreakAppealLastResort;
+    if (!IsBreakableAtStartOfResumedContainer(space, layout_result, builder)) {
+      // This is not a valid break point. If there's no container separation, it
+      // means that we're breaking before the first piece of in-flow content
+      // inside this block, even if it's not a valid class C break point [1]. We
+      // really don't want to break here, if we can find something better.
+      //
+      // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
+      return kBreakAppealLastResort;
+    }
+
+    // This is the first child after a break. We are normally not allowed to
+    // break before those, but in this case we will allow it, to prevent
+    // suboptimal breaks that might otherwise occur further ahead in the
+    // fragmentainer. If necessary, we'll push this child (and all subsequent
+    // content) past all the columns in the current row all the way to the the
+    // next row in the next outer fragmentainer, where there may be more space,
+    // in order to avoid suboptimal breaks.
+    break_appeal = space.MinBreakAppeal();
   }
 
   EBreakBetween break_between =
       CalculateBreakBetweenValue(child, layout_result, builder);
-  // If there's a break-{after,before}:avoid* involved at this breakpoint,
-  // its appeal will decrease.
-  if (IsAvoidBreakValue(space, break_between))
-    return kBreakAppealViolatingBreakAvoid;
-
-  return kBreakAppealPerfect;
+  if (IsAvoidBreakValue(space, break_between)) {
+    // If there's a break-{after,before}:avoid* involved at this breakpoint, its
+    // appeal will decrease.
+    break_appeal = std::min(break_appeal, kBreakAppealViolatingBreakAvoid);
+  }
+  return break_appeal;
 }
 
-NGBreakAppeal CalculateBreakAppealInside(const NGConstraintSpace& space,
-                                         const NGLayoutResult& layout_result) {
+NGBreakAppeal CalculateBreakAppealInside(
+    const NGConstraintSpace& space,
+    const NGLayoutResult& layout_result,
+    absl::optional<NGBreakAppeal> hypothetical_appeal) {
   if (layout_result.HasForcedBreak())
     return kBreakAppealPerfect;
   const auto& physical_fragment = layout_result.PhysicalFragment();
-  NGBreakAppeal appeal = kBreakAppealLastResort;
-  // If we actually broke, get the appeal from the break token. Otherwise, get
-  // the early break appeal.
-  if (const auto* block_break_token =
-          DynamicTo<NGBlockBreakToken>(physical_fragment.BreakToken())) {
-    appeal = block_break_token->BreakAppeal();
-  } else if (const NGEarlyBreak* early_break = layout_result.GetEarlyBreak()) {
-    appeal = early_break->BreakAppeal();
+  const auto* break_token =
+      DynamicTo<NGBlockBreakToken>(physical_fragment.BreakToken());
+  NGBreakAppeal appeal;
+  bool consider_break_inside_avoidance;
+  if (hypothetical_appeal) {
+    // The hypothetical appeal of breaking inside should only be considered if
+    // we haven't actually broken.
+    DCHECK(!break_token);
+    appeal = *hypothetical_appeal;
+    consider_break_inside_avoidance = true;
   } else {
-    // If we have neither a break token nor an early-break object, we shouldn't
-    // really be here.
-    NOTREACHED();
+    appeal = layout_result.BreakAppeal();
+    consider_break_inside_avoidance = break_token;
   }
 
   // We don't let break-inside:avoid affect the child's stored break appeal, but
@@ -197,7 +236,8 @@ NGBreakAppeal CalculateBreakAppealInside(const NGConstraintSpace& space,
   // rule on the child itself. This prevents us from violating more rules than
   // necessary: if we need to break inside the child (even if it should be
   // avoided), we'll at least break at the most appealing location inside.
-  if (appeal > kBreakAppealViolatingBreakAvoid &&
+  if (consider_break_inside_avoidance &&
+      appeal > kBreakAppealViolatingBreakAvoid &&
       IsAvoidBreakValue(space, physical_fragment.Style().BreakInside()))
     appeal = kBreakAppealViolatingBreakAvoid;
   return appeal;
@@ -227,6 +267,7 @@ void SetupSpaceBuilderForFragmentation(const NGConstraintSpace& parent_space,
 
   if (parent_space.IsInColumnBfc() && !is_new_fc)
     builder->SetIsInColumnBfc();
+  builder->SetMinBreakAppeal(parent_space.MinBreakAppeal());
 }
 
 void SetupFragmentBuilderForFragmentation(
@@ -718,8 +759,12 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
 
   // If we haven't used any space at all in the fragmentainer yet, we cannot
   // break before this child, or there'd be no progress. We'd risk creating an
-  // infinite number of fragmentainers without putting any content into them.
-  bool refuse_break_before = space_left >= FragmentainerCapacity(space);
+  // infinite number of fragmentainers without putting any content into them. If
+  // we have set a minimum break appeal (better than kBreakAppealLastResort),
+  // though, we might have to allow breaking here.
+  bool refuse_break_before = space_left >= FragmentainerCapacity(space) &&
+                             (!builder || !IsBreakableAtStartOfResumedContainer(
+                                              space, layout_result, *builder));
 
   // If the child starts past the end of the fragmentainer (probably due to a
   // block-start margin), we must break before it.
@@ -740,14 +785,14 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
     return false;
   }
 
-  if (break_token) {
-    // The block child broke inside. We now need to decide whether to keep that
-    // break, or if it would be better to break before it.
-    NGBreakAppeal appeal_inside =
-        CalculateBreakAppealInside(space, layout_result);
-    // Allow breaking inside if it has the same appeal or higher than breaking
-    // before or breaking earlier. Also, if breaking before is impossible, break
-    // inside regardless of appeal.
+  NGBreakAppeal appeal_inside =
+      CalculateBreakAppealInside(space, layout_result);
+  if (break_token || appeal_inside < kBreakAppealPerfect) {
+    // The block child broke inside, either in this fragmentation context, or in
+    // an inner one. We now need to decide whether to keep that break, or if it
+    // would be better to break before it. Allow breaking inside if it has the
+    // same appeal or higher than breaking before or breaking earlier. Also, if
+    // breaking before is impossible, break inside regardless of appeal.
     if (refuse_break_before)
       return true;
     if (appeal_inside >= appeal_before &&
@@ -787,7 +832,8 @@ void UpdateEarlyBreakAtBlockChild(const NGConstraintSpace& space,
   // See if there's a good breakpoint inside the child.
   NGBreakAppeal appeal_inside = kBreakAppealLastResort;
   if (const NGEarlyBreak* breakpoint = layout_result.GetEarlyBreak()) {
-    appeal_inside = CalculateBreakAppealInside(space, layout_result);
+    appeal_inside = CalculateBreakAppealInside(space, layout_result,
+                                               breakpoint->BreakAppeal());
     if (!builder->HasEarlyBreak() ||
         builder->EarlyBreak().BreakAppeal() <= breakpoint->BreakAppeal()) {
       // Found a good breakpoint inside the child. Add the child to the early
@@ -862,7 +908,8 @@ NGConstraintSpace CreateConstraintSpaceForColumns(
     LogicalSize column_size,
     LogicalSize percentage_resolution_size,
     bool allow_discard_start_margin,
-    bool balance_columns) {
+    bool balance_columns,
+    NGBreakAppeal min_break_appeal) {
   NGConstraintSpaceBuilder space_builder(
       parent_space, parent_space.GetWritingDirection(), /* is_new_fc */ true);
   space_builder.SetAvailableSize(column_size);
@@ -874,6 +921,7 @@ NGConstraintSpace CreateConstraintSpaceForColumns(
   space_builder.SetIsInColumnBfc();
   if (balance_columns)
     space_builder.SetIsInsideBalancedColumns();
+  space_builder.SetMinBreakAppeal(min_break_appeal);
   if (allow_discard_start_margin) {
     // Unless it's the first column in the multicol container, or the first
     // column after a spanner, margins at fragmentainer boundaries should be
@@ -987,7 +1035,13 @@ wtf_size_t PreviousInnerFragmentainerIndex(
         // Not a fragmentainer (probably a spanner)
         continue;
       }
-      idx = To<NGBlockBreakToken>(child_token.Get())->SequenceNumber() + 1;
+      const auto& block_child_token = To<NGBlockBreakToken>(*child_token);
+      // There may be a break before the first column, if we had to break
+      // between the block-start border/padding of the multicol container and
+      // its contents due to space shortage.
+      if (block_child_token.IsBreakBefore())
+        continue;
+      idx = block_child_token.SequenceNumber() + 1;
       break;
     }
   }

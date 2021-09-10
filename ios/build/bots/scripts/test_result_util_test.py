@@ -1,3 +1,4 @@
+#!/usr/bin/env vpython
 # Copyright 2021 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -18,7 +19,10 @@ FAILED_RESULT = TestResult(
 FAILED_RESULT_DUPLICATE = TestResult(
     'failed/test', TestStatus.FAIL, test_log='line3\nline4')
 DISABLED_RESULT = TestResult(
-    'disabled/test', TestStatus.SKIP, expected_status=TestStatus.SKIP)
+    'disabled/test',
+    TestStatus.SKIP,
+    expected_status=TestStatus.SKIP,
+    attachments={'name': '/path/to/name'})
 UNEXPECTED_SKIPPED_RESULT = TestResult('unexpected/skipped_test',
                                        TestStatus.SKIP)
 CRASHED_RESULT = TestResult('crashed/test', TestStatus.CRASH)
@@ -100,7 +104,8 @@ class TestResultTest(test_runner_test.TestCase):
         'SKIP',
         True,
         test_log='',
-        tags=[('test_name', 'disabled/test'), ('disabled_test', 'true')])
+        tags=[('test_name', 'disabled/test'), ('disabled_test', 'true')],
+        file_artifacts={'name': '/path/to/name'})
     # Duplicate calls will only report once.
     disabled_test_result.report_to_result_sink(client)
     self.assertEqual(client.post.call_count, 1)

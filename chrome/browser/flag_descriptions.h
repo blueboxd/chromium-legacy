@@ -984,9 +984,6 @@ extern const char kOmniboxAdaptiveSuggestionsCountDescription[];
 extern const char kOmniboxAssistantVoiceSearchName[];
 extern const char kOmniboxAssistantVoiceSearchDescription[];
 
-extern const char kOmniboxBookmarkPathsName[];
-extern const char kOmniboxBookmarkPathsDescription[];
-
 extern const char kOmniboxClobberTriggersContextualWebZeroSuggestName[];
 extern const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[];
 
@@ -1035,9 +1032,6 @@ extern const char kOmniboxOnFocusSuggestionsContextualWebAllowSRPDescription[];
 
 extern const char kOmniboxOnFocusSuggestionsContextualWebName[];
 extern const char kOmniboxOnFocusSuggestionsContextualWebDescription[];
-
-extern const char kOmniboxShortBookmarkSuggestionsName[];
-extern const char kOmniboxShortBookmarkSuggestionsDescription[];
 
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
@@ -1531,6 +1525,9 @@ extern const char kWalletServiceUseSandboxDescription[];
 extern const char kWallpaperWebUIName[];
 extern const char kWallpaperWebUIDescription[];
 
+extern const char kWallpaperFullScreenPreviewName[];
+extern const char kWallpaperFullScreenPreviewDescription[];
+
 extern const char kWebBluetoothNewPermissionsBackendName[];
 extern const char kWebBluetoothNewPermissionsBackendDescription[];
 
@@ -1822,6 +1819,9 @@ extern const char kMessagesForAndroidChromeSurveyDescription[];
 
 extern const char kMessagesForAndroidInfrastructureName[];
 extern const char kMessagesForAndroidInfrastructureDescription[];
+
+extern const char kMessagesForAndroidNearOomReductionName[];
+extern const char kMessagesForAndroidNearOomReductionDescription[];
 
 extern const char kMessagesForAndroidNotificationBlockedName[];
 extern const char kMessagesForAndroidNotificationBlockedDescription[];
@@ -2194,6 +2194,9 @@ extern const char kUseWinrtMidiApiDescription[];
 #if BUILDFLAG(ENABLE_PRINTING)
 extern const char kGdiTextPrinting[];
 extern const char kGdiTextPrintingDescription[];
+
+extern const char kPrintWithPostScriptType42FontsName[];
+extern const char kPrintWithPostScriptType42FontsDescription[];
 
 extern const char kPrintWithReducedRasterizationName[];
 extern const char kPrintWithReducedRasterizationDescription[];
@@ -2975,12 +2978,6 @@ extern const char
 
 extern const char kDefaultCalculatorWebAppName[];
 extern const char kDefaultCalculatorWebAppDescription[];
-
-extern const char kDefaultChatWebAppName[];
-extern const char kDefaultChatWebAppDescription[];
-
-extern const char kDefaultMeetWebAppName[];
-extern const char kDefaultMeetWebAppDescription[];
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if defined(OS_CHROMEOS)

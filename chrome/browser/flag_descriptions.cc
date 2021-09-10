@@ -1701,12 +1701,6 @@ const char kOmniboxAssistantVoiceSearchDescription[] =
     "When enabled, use Assistant for omnibox voice query recognition instead of"
     " Android's built-in voice recognition service. Only works on Android.";
 
-const char kOmniboxBookmarkPathsName[] = "Omnibox Bookmark Paths";
-const char kOmniboxBookmarkPathsDescription[] =
-    "Allows inputs to match with bookmark paths. E.g. 'planets jupiter' can "
-    "suggest a bookmark titled 'Jupiter' with URL "
-    "'en.wikipedia.org/wiki/Jupiter' located in a path containing 'planet.'";
-
 const char kOmniboxClobberTriggersContextualWebZeroSuggestName[] =
     "Omnibox Clobber Triggers Contextual Web ZeroSuggest";
 const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[] =
@@ -2688,6 +2682,12 @@ const char kWallpaperWebUIDescription[] =
     "Enables the wallpaper picker "
     "in ChromeOS Settings";
 
+const char kWallpaperFullScreenPreviewName[] =
+    "Enable wallpaper full screen preview UI";
+const char kWallpaperFullScreenPreviewDescription[] =
+    "Allows users to minimize all active windows to preview their current "
+    "wallpaper";
+
 const char kWebBluetoothNewPermissionsBackendName[] =
     "Use the new permissions backend for Web Bluetooth";
 const char kWebBluetoothNewPermissionsBackendDescription[] =
@@ -3173,6 +3173,11 @@ const char kMessagesForAndroidChromeSurveyDescription[] =
 const char kMessagesForAndroidInfrastructureName[] = "Messages infrastructure";
 const char kMessagesForAndroidInfrastructureDescription[] =
     "When enabled, will initialize Messages UI infrastructure";
+
+const char kMessagesForAndroidNearOomReductionName[] =
+    "Near OOM Reduction Messages UI";
+const char kMessagesForAndroidNearOomReductionDescription[] =
+    "When enabled, near OOM reduction message will use the new Messages UI.";
 
 const char kMessagesForAndroidNotificationBlockedName[] =
     "Notification Blocked Messages UI";
@@ -3750,12 +3755,6 @@ const char kOmniboxKeywordSearchButtonDescription[] =
     "Enable the omnibox keyword search button which offers a way to search "
     "on specific sites from the omnibox.";
 
-const char kOmniboxShortBookmarkSuggestionsName[] =
-    "Omnibox short bookmark suggestions";
-const char kOmniboxShortBookmarkSuggestionsDescription[] =
-    "Match very short input words to beginning of words in bookmark "
-    "suggestions.";
-
 const char kReadLaterFlagId[] = "read-later";
 const char kReadLaterName[] = "Reading List";
 const char kReadLaterDescription[] =
@@ -3834,6 +3833,12 @@ const char kUseWinrtMidiApiDescription[] =
 const char kGdiTextPrinting[] = "GDI Text Printing";
 const char kGdiTextPrintingDescription[] =
     "Use GDI to print text as simply text";
+
+const char kPrintWithPostScriptType42FontsName[] =
+    "Print with PostScript Type 42 fonts";
+const char kPrintWithPostScriptType42FontsDescription[] =
+    "When using PostScript level 3 printing, render text with Type 42 fonts if "
+    "possible.";
 
 const char kPrintWithReducedRasterizationName[] =
     "Print with reduced rasterization";
@@ -5139,14 +5144,6 @@ const char kDefaultCalculatorWebAppName[] = "Default install Calculator PWA";
 const char kDefaultCalculatorWebAppDescription[] =
     "Enable default installing of the calculator PWA instead of the deprecated "
     "chrome app.";
-
-const char kDefaultChatWebAppName[] = "Default Chat web app";
-const char kDefaultChatWebAppDescription[] =
-    "Enables the Chat web app to be installed by default.";
-
-const char kDefaultMeetWebAppName[] = "Default Meet web app";
-const char kDefaultMeetWebAppDescription[] =
-    "Enables the Meet web app to be installed by default.";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if defined(OS_CHROMEOS)

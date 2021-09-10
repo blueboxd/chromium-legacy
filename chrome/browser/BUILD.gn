@@ -571,6 +571,8 @@ static_library("browser") {
     "history/top_sites_factory.h",
     "history/web_history_service_factory.cc",
     "history/web_history_service_factory.h",
+    "history_clusters/history_clusters_metrics_logger.cc",
+    "history_clusters/history_clusters_metrics_logger.h",
     "history_clusters/history_clusters_service_factory.cc",
     "history_clusters/history_clusters_service_factory.h",
     "history_clusters/history_clusters_tab_helper.cc",
@@ -603,8 +605,6 @@ static_library("browser") {
     "invalidation/profile_invalidation_provider_factory.h",
     "language/language_model_manager_factory.cc",
     "language/language_model_manager_factory.h",
-    "language/translate_frame_binder.cc",
-    "language/translate_frame_binder.h",
     "language/url_language_histogram_factory.cc",
     "language/url_language_histogram_factory.h",
     "lifetime/application_lifetime.cc",
@@ -1784,6 +1784,8 @@ static_library("browser") {
     "translate/chrome_translate_client.h",
     "translate/translate_accept_languages_factory.cc",
     "translate/translate_accept_languages_factory.h",
+    "translate/translate_frame_binder.cc",
+    "translate/translate_frame_binder.h",
     "translate/translate_model_service_factory.cc",
     "translate/translate_model_service_factory.h",
     "translate/translate_ranker_factory.cc",
@@ -2188,6 +2190,7 @@ static_library("browser") {
     "//components/safe_browsing/core/browser/sync",
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common:safe_browsing_policy_handler",
+    "//components/safe_browsing/core/common/proto:csd_proto",
     "//components/safe_search_api",
     "//components/safe_search_api:safe_search_client",
     "//components/schema_org/common:improved_mojom",
@@ -2886,8 +2889,6 @@ static_library("browser") {
       "android/send_tab_to_self/send_tab_to_self_android_bridge.cc",
       "android/send_tab_to_self/send_tab_to_self_entry_bridge.cc",
       "android/send_tab_to_self/send_tab_to_self_entry_bridge.h",
-      "android/send_tab_to_self/send_tab_to_self_infobar.cc",
-      "android/send_tab_to_self/send_tab_to_self_infobar.h",
       "android/send_tab_to_self/send_tab_to_self_model_observer_bridge.cc",
       "android/send_tab_to_self/send_tab_to_self_model_observer_bridge.h",
       "android/service_tab_launcher.cc",
@@ -3458,7 +3459,10 @@ static_library("browser") {
         "supervised_user/child_accounts/child_account_service_android.cc",
         "supervised_user/child_accounts/child_account_service_android.h",
       ]
-      deps += [ "//chrome/browser/supervised_user/supervised_user_error_page" ]
+      deps += [
+        "//chrome/browser/supervised_user/supervised_user_error_page",
+        "//chrome/browser/supervised_user/supervised_user_features",
+      ]
     }
 
     if (dfmify_dev_ui) {
@@ -5643,7 +5647,7 @@ static_library("browser") {
     ]
   }
 
-  if (is_win || is_linux || is_chromeos) {
+  if ((is_win || is_linux || is_chromeos) && is_chrome_branded) {
     # TODO(crbug/1229334): Add Mac support for Lens Region Search feature.
     deps += [ "//chrome/browser/lens/region_search" ]
   }
@@ -6521,6 +6525,7 @@ static_library("browser") {
     deps += [
       "//components/pdf/browser:interceptors",
       "//components/pdf/common",
+      "//extensions/common/api",
       "//pdf:buildflags",
       "//pdf:features",
     ]
@@ -6738,8 +6743,6 @@ static_library("browser") {
       "supervised_user/supervised_user_constants.h",
       "supervised_user/supervised_user_denylist.cc",
       "supervised_user/supervised_user_denylist.h",
-      "supervised_user/supervised_user_features.cc",
-      "supervised_user/supervised_user_features.h",
       "supervised_user/supervised_user_google_auth_navigation_throttle.cc",
       "supervised_user/supervised_user_google_auth_navigation_throttle.h",
       "supervised_user/supervised_user_interstitial.cc",
@@ -6768,6 +6771,7 @@ static_library("browser") {
     deps += [
       "//chrome/browser/supervised_user/kids_chrome_management:proto",
       "//chrome/browser/supervised_user/supervised_user_error_page",
+      "//chrome/browser/supervised_user/supervised_user_features",
       "//chrome/common:supervised_user_commands_mojom",
       "//components/pref_registry",
     ]
@@ -7456,6 +7460,7 @@ static_library("test_support") {
       "//components/safe_browsing/core/browser/db:v4_test_util",
       "//components/services/unzip:in_process",
       "//components/storage_monitor:test_support",
+      "//components/value_store:test_support",
       "//extensions:test_support",
       "//extensions/browser",
       "//extensions/browser:test_support",

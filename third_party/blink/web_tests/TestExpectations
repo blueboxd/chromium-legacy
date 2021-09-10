@@ -1217,6 +1217,7 @@ virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-fill-balance
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-fill-balance-011.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-fill-balance-012.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-fill-balance-013.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-fill-balance-014.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-list-item-004.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-list-item-005.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-list-item-006.html [ Pass ]
@@ -1226,6 +1227,13 @@ virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-009.h
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-010.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-011.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-012.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-013.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-015.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-016.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-017.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-018.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-022.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-023.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-nested-balancing-004.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-scroll-content.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-006.html [ Pass ]
@@ -1277,8 +1285,6 @@ virtual/layout_ng_block_frag/fast/multicol/vertical-rl/nested-columns.html [ Pas
 
 ### Tests failing with LayoutNGBlockFragmentation enabled:
 crbug.com/1225630 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/large-actual-column-count.html [ Skip ]
-crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-margin-at-row-boundary.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/forced-break-too-short-column.html [ Failure ]
 crbug.com/1066629 virtual/layout_ng_block_frag/fast/multicol/hit-test-translate-z.html [ Failure ]
 crbug.com/1225630 virtual/layout_ng_block_frag/fast/multicol/infinite-height-causing-fractional-row-height-crash.html [ Skip ]
 crbug.com/1225630 virtual/layout_ng_block_frag/fast/multicol/infinitely-tall-content-in-outer-crash.html [ Skip ]
@@ -1286,10 +1292,7 @@ crbug.com/1225630 virtual/layout_ng_block_frag/fast/multicol/insane-column-count
 crbug.com/1066626 virtual/layout_ng_block_frag/fast/multicol/layers-split-across-columns.html [ Failure ]
 crbug.com/1066626 virtual/layout_ng_block_frag/fast/multicol/mixed-opacity-fixed-test.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/mixed-opacity-test.html [ Crash Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-short-first-row-extra-tall-line.html [ Failure ]
 crbug.com/1225630 virtual/layout_ng_block_frag/fast/multicol/nested-very-tall-inside-short-crash.html [ Skip ]
-crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-with-padding.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/span/outer-column-break-after-inner-spanner-2.html [ Failure ]
 crbug.com/1242348 virtual/layout_ng_block_frag/fast/multicol/tall-line-in-short-block.html [ Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/vertical-rl/composited-relpos-overlapping-will-change.html [ Failure ]
 
@@ -3753,6 +3756,7 @@ crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-010.html [ 
 crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-011.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-012.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-013.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-014.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-list-item-004.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-list-item-005.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-list-item-006.html [ Failure ]
@@ -3762,6 +3766,13 @@ crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-009.html [ Failur
 crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-010.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-011.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-012.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-013.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-015.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-016.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-017.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-018.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-022.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-023.html [ Failure ]
 crbug.com/792435 external/wpt/css/css-multicol/multicol-rule-004.xht [ Failure ]
 crbug.com/792437 external/wpt/css/css-multicol/multicol-rule-inset-000.xht [ Failure ]
 crbug.com/990240 external/wpt/css/css-multicol/multicol-rule-nested-balancing-001.html [ Failure ]
@@ -6725,6 +6736,9 @@ crbug.com/1236466 inspector-protocol/runtime/runtime-execution-contexts-events.j
 crbug.com/1230534 external/wpt/webrtc/simulcast/getStats.https.html [ Failure Pass Skip Timeout ]
 crbug.com/1237132 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Skip Timeout ]
 
+crbug.com/1236774 external/wpt/css/css-contain/content-visibility/slot-content-visibility-1-crash.html [ Crash ]
+crbug.com/1236774 external/wpt/css/css-contain/content-visibility/slot-content-visibility-4-crash.html [ Crash ]
+
 # Sheriff 2021-08-10
 crbug.com/1233840 external/wpt/html/cross-origin-opener-policy/historical/coep-navigate-popup-unsafe-inherit.https.html [ Pass Skip Timeout ]
 crbug.com/1230534 external/wpt/webrtc/simulcast/basic.https.html [ Pass Skip Timeout ]
@@ -6841,6 +6855,3 @@ crbug.com/1233826 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css
 crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-shadow-part4.html [ Pass Crash ]
 crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-color-over-pattern.html [ Pass Crash ]
 
-# Sheriff 2021-09-09
-crbug.com/1247904 [ Mac10.12 ] virtual/compositor_threaded_scrollbar_scrolling/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Failure ]
-crbug.com/1247904 [ Mac10.13 ] virtual/compositor_threaded_scrollbar_scrolling/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Failure ]

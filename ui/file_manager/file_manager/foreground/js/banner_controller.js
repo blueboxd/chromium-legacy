@@ -12,7 +12,6 @@ import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 
 import {DirectoryModel} from './directory_model.js';
-import {TAG_NAME as DriveOfflinePinningBannerTagName} from './ui/banners/drive_offline_pinning_banner.js';
 import {TAG_NAME as DriveWelcomeBannerTagName} from './ui/banners/drive_welcome_banner.js';
 import {TAG_NAME as HoldingSpaceWelcomeBannerTagName} from './ui/banners/holding_space_welcome_banner.js';
 import {TAG_NAME as LocalDiskLowSpaceBannerTagName} from './ui/banners/local_disk_low_space_banner.js';
@@ -175,6 +174,14 @@ export class BannerController extends EventTarget {
     this.timeLimitIntervalLastInvokedMs_ = null;
 
     /**
+     * An object keyed by a banners tagName (in upper case) that lists custom
+     * filters for the specified banner. Used to house banner specific logic
+     * that can decide whether to display a banner or not.
+     * @private {!Object<string, !Array<function(): boolean>>}
+     */
+    this.customBannerFilters_ = {};
+
+    /**
      * Bind the onDirectorySizeChanged_ method to this instance once.
      * @private {!function(!chrome.fileManagerPrivate.FileWatchEvent)}
      */
@@ -200,7 +207,6 @@ export class BannerController extends EventTarget {
       this.setEducationalBannersInOrder([
         DriveWelcomeBannerTagName,
         HoldingSpaceWelcomeBannerTagName,
-        DriveOfflinePinningBannerTagName,
         PhotosWelcomeBannerTagName,
       ]);
       this.setStateBannersInOrder([TrashBannerTagName]);
@@ -354,6 +360,16 @@ export class BannerController extends EventTarget {
         this.localStorageCache_[`${banner.tagName}_${MS_DISPLAYED_SUFFIX}`];
     if (timeLimitMs && timeLimitMs < totalTimeShownMs) {
       return false;
+    }
+
+    // See if the banner has any custom filters assigned. Custom filters allow
+    // individual banners to check extra conditions that are unique.
+    if (this.customBannerFilters_[banner.tagName]) {
+      for (const bannerFilter of this.customBannerFilters_[banner.tagName]) {
+        if (bannerFilter()) {
+          return false;
+        }
+      }
     }
 
     return true;
@@ -555,6 +571,23 @@ export class BannerController extends EventTarget {
     } catch (e) {
       console.warn(e.message);
     }
+  }
+
+  /**
+   * Registers a custom filter against the specified banner tagName.
+   * @param {string} bannerTagName
+   * @param {!function(): boolean} filter
+   * @private
+   */
+  registerCustomBannerFilter_(bannerTagName, filter) {
+    // Canonical tagNames are retrieved from the DOM element which transforms
+    // them into uppercase (they are supplied in lowercase, as required by the
+    // customElement registry).
+    const tagName = bannerTagName.toUpperCase();
+    if (!this.customBannerFilters_[tagName]) {
+      this.customBannerFilters_[tagName] = [];
+    }
+    this.customBannerFilters_[tagName].push(filter);
   }
 
   /**

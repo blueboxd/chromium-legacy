@@ -156,6 +156,8 @@ crbug.com/949003 http/tests/printing/cross-site-frame.html [ Failure Pass ]
 crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.js [ Failure ]
 # ====== Browserside navigation until here ======
 
+crbug.com/1214030 http/tests/devtools/network/request-parameters-decoding.js [ Failure Pass ]
+
 # ====== Paint team owned tests from here ======
 # The paint team tracks and triages its test failures, and keeping them colocated
 # makes tracking much easier.
@@ -1234,6 +1236,7 @@ virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-017.h
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-018.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-022.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-023.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-oof-inline-cb-001.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-nested-balancing-004.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-scroll-content.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-006.html [ Pass ]
@@ -1285,6 +1288,7 @@ virtual/layout_ng_block_frag/fast/multicol/vertical-rl/nested-columns.html [ Pas
 
 ### Tests failing with LayoutNGBlockFragmentation enabled:
 crbug.com/1225630 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/large-actual-column-count.html [ Skip ]
+crbug.com/1246602 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-oof-inline-cb-002.html [ Crash ]
 crbug.com/1066629 virtual/layout_ng_block_frag/fast/multicol/hit-test-translate-z.html [ Failure ]
 crbug.com/1225630 virtual/layout_ng_block_frag/fast/multicol/infinite-height-causing-fractional-row-height-crash.html [ Skip ]
 crbug.com/1225630 virtual/layout_ng_block_frag/fast/multicol/infinitely-tall-content-in-outer-crash.html [ Skip ]
@@ -2748,6 +2752,7 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 
 # unblock roll wpt
 crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception.https.html [ Failure ]
+crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/worker-interception.https.html [ Pass ]
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Mac10.14 ] external/wpt/pointerevents/pointerevent_contextmenu_is_a_pointerevent.html?touch [ Timeout ]
@@ -2849,13 +2854,7 @@ crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCPeerConnection-mandatory-get
 crbug.com/626703 [ Mac11.0 ] virtual/no-auto-wpt-origin-isolation/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/2-iframes/parent-yes-child1-yes-subdomain-child2-yes-subdomainport.sub.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/no-auto-wpt-origin-isolation/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/popups/opener-no-openee-yes-same.sub.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/no-auto-wpt-origin-isolation/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/2-iframes/parent-yes-child1-yes-subdomain-child2-no-port.sub.https.html [ Failure Timeout ]
-crbug.com/626703 external/wpt/fetch/api/request/request-bad-port.any.worker.html [ Timeout ]
-crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/api/request/request-bad-port.any.worker.html [ Timeout ]
-crbug.com/626703 external/wpt/fetch/api/request/request-bad-port.any.sharedworker.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/websockets/Create-blocked-port.any.worker.html?wpt_flags=h2 [ Failure Timeout ]
-crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/api/request/request-bad-port.any.sharedworker.html [ Timeout ]
-crbug.com/626703 external/wpt/fetch/api/request/request-bad-port.any.html [ Timeout ]
-crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/api/request/request-bad-port.any.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/createcredential-getpublickey.https.html [ Crash Skip Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/credblob-not-supported.https.html [ Crash Skip Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/createcredential-badargs-authnrselection.https.html [ Crash Skip Timeout ]
@@ -3773,6 +3772,8 @@ crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-017.html [ Failur
 crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-018.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-022.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-023.html [ Failure ]
+crbug.com/1246602 external/wpt/css/css-multicol/multicol-oof-inline-cb-001.html [ Failure ]
+crbug.com/1246602 external/wpt/css/css-multicol/multicol-oof-inline-cb-002.html [ Failure ]
 crbug.com/792435 external/wpt/css/css-multicol/multicol-rule-004.xht [ Failure ]
 crbug.com/792437 external/wpt/css/css-multicol/multicol-rule-inset-000.xht [ Failure ]
 crbug.com/990240 external/wpt/css/css-multicol/multicol-rule-nested-balancing-001.html [ Failure ]

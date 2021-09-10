@@ -19,7 +19,7 @@
 #include "components/safe_browsing/core/common/features.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #include "chrome/browser/safe_browsing/download_protection/document_analysis_service.h"
 #endif
 
@@ -100,7 +100,7 @@ void FileAnalyzer::Start(const base::FilePath& target_path,
   } else if (inspection_type == DownloadFileType::DMG) {
     StartExtractDmgFeatures();
 #endif
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
   } else if (base::FeatureList::IsEnabled(
                  safe_browsing::kClientSideDetectionDocumentScanning) &&
              inspection_type == DownloadFileType::OFFICE_DOCUMENT) {
@@ -292,7 +292,7 @@ void FileAnalyzer::OnDmgAnalysisFinished(
 }
 #endif  // defined(OS_MAC)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 void FileAnalyzer::StartExtractDocumentFeatures() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -311,7 +311,7 @@ void FileAnalyzer::OnDocumentAnalysisFinished(
     const DocumentAnalyzerResults& document_results) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Log metrics for Document Analysis
+  // Log metrics for Document Analysis.
   UMA_HISTOGRAM_BOOLEAN("SBClientDownload.DocumentAnalysisSuccess",
                         document_results.success);
   UMA_HISTOGRAM_MEDIUM_TIMES(

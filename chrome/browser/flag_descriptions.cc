@@ -262,6 +262,12 @@ const char kAutofillAutoTriggerManualFallbackForCardsDescription[] =
     "When enabled, manual fallback will be auto-triggered on form interaction "
     "in the case where autofill failed to fill a credit card form accurately.";
 
+const char kAutofillCenterAligngedSuggestionsName[] =
+    "Center-aligned Autofill suggestions.";
+const char kAutofillCenterAligngedSuggestionsDescription[] =
+    "When enabled, the Autofill suggestion popup will be aligned to the center "
+    "of the initiating field and not to its border.";
+
 const char kAutofillEnableGoogleIssuedCardName[] =
     "Enable Autofill Google-issued card";
 const char kAutofillEnableGoogleIssuedCardDescription[] =
@@ -381,10 +387,6 @@ const char kAutoScreenBrightnessDescription[] =
     "brightness based on ambient light. If disabled, screen brightness "
     "will be controlled by the heuristic model provided by powerd (and only "
     "on devices that have ambient light sensors).";
-
-const char kAvatarToolbarButtonName[] = "Avatar Toolbar Button";
-const char kAvatarToolbarButtonDescription[] =
-    "Enables the avatar toolbar button and the associated menu";
 
 const char kBackForwardCacheName[] = "Back-forward cache";
 const char kBackForwardCacheDescription[] =
@@ -3594,6 +3596,11 @@ const char kWebFeedName[] = "Web Feed";
 const char kWebFeedDescription[] =
     "Allows users to keep up with and consume web content.";
 
+const char kWebFeedSortName[] = "Web Feed Sort";
+const char kWebFeedSortDescription[] =
+    "Allows users to sort their web content in the web feed. "
+    "Only works if Web Feed is also enabled.";
+
 const char kWebNotesStylizeName[] = "WebNotes Stylize";
 const char kWebNotesStylizeDescription[] =
     "Allows users to create and share stylized webnotes.";
@@ -3932,6 +3939,12 @@ const char kAllowScrollSettingsName[] =
 const char kAllowScrollSettingsDescription[] =
     "Shows settings to enable/disable scroll acceleration and to adjust the "
     "sensitivity for scrolling.";
+
+extern const char kAmbientModeNewUrlName[] =
+    "Use new backend URL format for ChromeOS Screensaver";
+extern const char kAmbientModeNewUrlDescription[] =
+    "Use new backend URL format for ChromeOS Screensaver.  This helps with "
+    "testing new backend migration.";
 
 extern const char kAppDiscoveryForOobeName[] =
     "OOBE app recommendations with App Discovery Service.";

@@ -260,6 +260,36 @@ struct Component {
   ComponentRepairStatus state;
 };
 
+// Enumeration of all instructions needed for calibration that require manual
+// setup.
+enum CalibrationSetupInstruction {
+  kCalibrationInstructionUnknown = 0,
+  kCalibrationInstructionPlaceBaseOnFlatSurface = 1,
+  kCalibrationInstructionPlaceLidOnFlatSurface = 2,
+};
+
+// Overall status for Calibration.
+enum CalibrationOverallStatus {
+  kCalibrationOverallComplete = 1,
+  kCalibrationOverallCurrentRoundComplete = 2,
+  kCalibrationOverallCurrentRoundFailed = 3,
+  kCalibrationOverallInitializationFailed = 4,
+};
+
+enum CalibrationStatus {
+  kCalibrationWaiting = 1,
+  kCalibrationInProgress = 2,
+  kCalibrationComplete = 3,
+  kCalibrationFailed = 4,
+  kCalibrationSkip = 5,
+};
+
+struct CalibrationComponentStatus {
+  ComponentType component;
+  CalibrationStatus status;
+  double progress;
+};
+
 // This must remain in sync with ProvisionDeviceState::ProvisioningStep in
 // //third_party/cros_system_api/dbus/rmad/rmad.proto.
 // See shimless_rma_mojom_traits.cc\h.
@@ -286,12 +316,12 @@ interface OsUpdateObserver {
 };
 
 // Implemented by clients to track the progress of component calibration.
-// The observer receives the current component being calibrated and the
-// progress of all calibration in a 0 - 1 range.
 interface CalibrationObserver {
   // OnCalibrationUpdated is called whenever there is an update in the progress
   // of component calibration.
-  OnCalibrationUpdated(ComponentType component, float progress);
+  OnCalibrationUpdated(CalibrationComponentStatus componentStatus);
+  // OnCalibrationStepComplete is called whenever a step completes.
+  OnCalibrationStepComplete(CalibrationOverallStatus status);
 };
 
 // Implemented by clients to track the progress of device provisioning.
@@ -400,6 +430,9 @@ interface ShimlessRmaService {
   // Get the RSU challenge code.
   // Returns the challenge as a string.
   GetRsuDisableWriteProtectChallenge() => (string challenge);
+  // Get the device hardware ID (HWID) to display during RSU.
+  // Returns the HWID as a string.
+  GetRsuDisableWriteProtectHwid() => (string hwid);
   // Returns a QR Code image representing the URL to generate the RSU unlock
   // code. A null value is returned if the QR Code could not be generated.
   GetRsuDisableWriteProtectChallengeQrCode() => (QrCode? qr_code);
@@ -467,6 +500,38 @@ interface ShimlessRmaService {
   SetDeviceInformation(
       string serial_number, uint8 region_index, uint8 sku_index)
           => (RmaState state, RmadErrorCode error);
+
+  ///////////////////////////////////////
+  // Methods for kCheckCalibration state.
+  // Calibration is a little more complicated than other states because it can
+  // loop to handle setup for calibrating different components.
+  // It goes:
+  //   kCheckCalibration ←                  ←
+  //           ↓                             ↑
+  //   kSetupCalibration ←            ←
+  //           ↓                       ↑
+  //    kRunCalibration  → [success]  →
+  //           ↓                             ↑
+  //        [failure]    →                  →
+  //
+  // Get the list of components being calibrated.
+  GetCalibrationComponentList()
+      => (array<CalibrationComponentStatus> components);
+  // Get the enum of the instructions to display.
+  GetCalibrationSetupInstructions()
+      => (CalibrationSetupInstruction instructions);
+  // Request transition to the begin calibration.
+  // Next state will be kSetupCalibration if setup is required, or
+  // kRunCalibration if not.
+  StartCalibration() => (RmaState state, RmadErrorCode error);
+  // Request transition from kSetupCalibration to run this calibration step.
+  RunCalibrationStep() => (RmaState state, RmadErrorCode error);
+  // Request transition from kRunCalibration to the next setup state.
+  ContinueCalibration() => (RmaState state, RmadErrorCode error);
+  // Request transition from kRunCalibratoin to the next RMA state.
+  // This can only be called after kCalibrationOverallComplete has been
+  // observed.
+  CalibrationComplete() => (RmaState state, RmadErrorCode error);
 
   ///////////////////////////////////////
   // Methods for kRepairComplete state.

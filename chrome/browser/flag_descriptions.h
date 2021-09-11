@@ -163,6 +163,9 @@ extern const char kAutofillAlwaysReturnCloudTokenizedCardDescription[];
 extern const char kAutofillAutoTriggerManualFallbackForCardsName[];
 extern const char kAutofillAutoTriggerManualFallbackForCardsDescription[];
 
+extern const char kAutofillCenterAligngedSuggestionsName[];
+extern const char kAutofillCenterAligngedSuggestionsDescription[];
+
 extern const char kAutofillEnableGoogleIssuedCardName[];
 extern const char kAutofillEnableGoogleIssuedCardDescription[];
 
@@ -223,9 +226,6 @@ extern const char kAutofillUseImprovedLabelDisambiguationDescription[];
 
 extern const char kAutoScreenBrightnessName[];
 extern const char kAutoScreenBrightnessDescription[];
-
-extern const char kAvatarToolbarButtonName[];
-extern const char kAvatarToolbarButtonDescription[];
 
 extern const char kBackForwardCacheName[];
 extern const char kBackForwardCacheDescription[];
@@ -2049,6 +2049,9 @@ extern const char kWalletRequiresFirstSyncSetupCompleteDescription[];
 extern const char kWebFeedName[];
 extern const char kWebFeedDescription[];
 
+extern const char kWebFeedSortName[];
+extern const char kWebFeedSortDescription[];
+
 extern const char kWebNotesStylizeName[];
 extern const char kWebNotesStylizeDescription[];
 
@@ -2257,6 +2260,9 @@ extern const char kAllowRepeatedUpdatesDescription[];
 
 extern const char kAllowScrollSettingsName[];
 extern const char kAllowScrollSettingsDescription[];
+
+extern const char kAmbientModeNewUrlName[];
+extern const char kAmbientModeNewUrlDescription[];
 
 extern const char kAppDiscoveryForOobeName[];
 extern const char kAppDiscoveryForOobeDescription[];

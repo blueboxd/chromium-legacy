@@ -7,7 +7,7 @@ import {FakeObservables} from 'chrome://resources/ash/common/fake_observables.js
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 
-import {CalibrationObserverRemote, Component, ComponentRepairStatus, ComponentType, ErrorObserverRemote, HardwareWriteProtectionStateObserverRemote, OsUpdateObserverRemote, OsUpdateOperation, PowerCableStateObserverRemote, ProvisioningObserverRemote, ProvisioningStep, QrCode, RmadErrorCode, RmaState, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
+import {CalibrationComponentStatus, CalibrationObserverRemote, CalibrationOverallStatus, CalibrationSetupInstruction, CalibrationStatus, Component, ComponentRepairStatus, ComponentType, ErrorObserverRemote, HardwareWriteProtectionStateObserverRemote, OsUpdateObserverRemote, OsUpdateOperation, PowerCableStateObserverRemote, ProvisioningObserverRemote, ProvisioningStep, QrCode, RmadErrorCode, RmaState, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
 
 /** @implements {ShimlessRmaServiceInterface} */
 export class FakeShimlessRmaService {
@@ -302,6 +302,21 @@ export class FakeShimlessRmaService {
   }
 
   /**
+   * @return {!Promise<!{hwid: string}>}
+   */
+   getRsuDisableWriteProtectHwid() {
+    return this.methods_.resolveMethod('getRsuDisableWriteProtectHwid');
+  }
+
+  /**
+   * @param {string} hwid
+   */
+  setGetRsuDisableWriteProtectHwidResult(hwid) {
+    this.methods_.setResult(
+        'getRsuDisableWriteProtectHwid', {hwid: hwid});
+  }
+
+  /**
    * @return {!Promise<!{qrCode: QrCode}>}
    */
   getRsuDisableWriteProtectChallengeQrCode() {
@@ -496,6 +511,68 @@ export class FakeShimlessRmaService {
   }
 
   /**
+   * @return {!Promise<!{components: !Array<!CalibrationComponentStatus>}>}
+   */
+  getCalibrationComponentList() {
+    return this.methods_.resolveMethod('getCalibrationComponentList');
+  }
+
+  /**
+   * @param {!Array<!CalibrationComponentStatus>} components
+   */
+  setGetCalibrationComponentListResult(components) {
+    this.methods_.setResult(
+        'getCalibrationComponentList', {components: components});
+  }
+
+  /**
+   * @return {!Promise<!{instructions: CalibrationSetupInstruction}>}
+   */
+  getCalibrationSetupInstructions() {
+    return this.methods_.resolveMethod('getCalibrationSetupInstructions');
+  }
+
+  /**
+   * @param {CalibrationSetupInstruction} instructions
+   */
+  setGetCalibrationSetupInstructionsResult(instructions) {
+    this.methods_.setResult(
+        'getCalibrationSetupInstructions', {instructions: instructions});
+  }
+
+  /**
+   * @return {!Promise<!StateResult>}
+   */
+  startCalibration() {
+    return this.getNextStateForMethod_(
+        'startCalibration', RmaState.kCheckCalibration);
+  }
+
+  /**
+   * @return {!Promise<!StateResult>}
+   */
+  runCalibrationStep() {
+    return this.getNextStateForMethod_(
+        'runCalibrationStep', RmaState.kSetupCalibration);
+  }
+
+  /**
+   * @return {!Promise<!StateResult>}
+   */
+  continueCalibration() {
+    return this.getNextStateForMethod_(
+        'continueCalibration', RmaState.kRunCalibration);
+  }
+
+  /**
+   * @return {!Promise<!StateResult>}
+   */
+  calibrationComplete() {
+    return this.getNextStateForMethod_(
+        'calibrationComplete', RmaState.kRunCalibration);
+  }
+
+  /**
    * @return {!Promise<!StateResult>}
    */
   finalizeAndReboot() {
@@ -549,14 +626,25 @@ export class FakeShimlessRmaService {
    */
   observeCalibrationProgress(remote) {
     this.observables_.observe(
-        'CalibrationObserver_onCalibrationUpdated', (component, progress) => {
+        'CalibrationObserver_onCalibrationUpdated', (componentStatus) => {
           remote.onCalibrationUpdated(
-              /** @type {!ComponentType} */ (component),
-              /** @type {number} */ (progress));
+              /** @type {!CalibrationComponentStatus} */ (componentStatus));
+        });
+    this.observables_.observe(
+        'CalibrationObserver_onCalibrationStepComplete', (status) => {
+          remote.onCalibrationStepComplete(
+              /** @type {!CalibrationOverallStatus} */ (status));
         });
     if (this.automaticallyTriggerCalibrationObservation_) {
       this.triggerCalibrationObserver(
-          ComponentType.kBaseAccelerometer, 1.0, 1500);
+          {
+            component: ComponentType.kBaseAccelerometer,
+            status: CalibrationStatus.kCalibrationComplete,
+            progress: 1.0
+          },
+          1500);
+      this.triggerCalibrationOverallObserver(
+          CalibrationOverallStatus.kCalibrationOverallComplete, 3000);
     }
   }
 
@@ -661,14 +749,22 @@ export class FakeShimlessRmaService {
 
   /**
    * Causes the calibration observer to fire after a delay.
-   * @param {!ComponentType} component
-   * @param {number} progress
+   * @param {!CalibrationComponentStatus} componentStatus
    * @param {number} delayMs
    */
-  triggerCalibrationObserver(component, progress, delayMs) {
+  triggerCalibrationObserver(componentStatus, delayMs) {
     return this.triggerObserverAfterMs(
-        'CalibrationObserver_onCalibrationUpdated', [component, progress],
-        delayMs);
+        'CalibrationObserver_onCalibrationUpdated', componentStatus, delayMs);
+  }
+
+  /**
+   * Causes the calibration overall observer to fire after a delay.
+   * @param {!CalibrationOverallStatus} status
+   * @param {number} delayMs
+   */
+  triggerCalibrationOverallObserver(status, delayMs) {
+    return this.triggerObserverAfterMs(
+        'CalibrationObserver_onCalibrationStepComplete', status, delayMs);
   }
 
   /**
@@ -773,6 +869,7 @@ export class FakeShimlessRmaService {
     this.methods_.register('chooseManuallyDisableWriteProtect');
     this.methods_.register('chooseRsuDisableWriteProtect');
     this.methods_.register('getRsuDisableWriteProtectChallenge');
+    this.methods_.register('getRsuDisableWriteProtectHwid');
     this.methods_.register('getRsuDisableWriteProtectChallengeQrCode');
     this.methods_.register('setRsuDisableWriteProtectCode');
 
@@ -795,6 +892,13 @@ export class FakeShimlessRmaService {
     this.methods_.register('getOriginalSku');
     this.methods_.register('setDeviceInformation');
 
+    this.methods_.register('getCalibrationComponentList');
+    this.methods_.register('getCalibrationSetupInstructions');
+    this.methods_.register('startCalibration');
+    this.methods_.register('runCalibrationStep');
+    this.methods_.register('continueCalibration');
+    this.methods_.register('calibrationComplete');
+
     this.methods_.register('finalizeAndReboot');
     this.methods_.register('finalizeAndShutdown');
     this.methods_.register('cutoffBattery');
@@ -812,6 +916,7 @@ export class FakeShimlessRmaService {
     this.observables_.register('ErrorObserver_onError');
     this.observables_.register('OsUpdateObserver_onOsUpdateProgressUpdated');
     this.observables_.register('CalibrationObserver_onCalibrationUpdated');
+    this.observables_.register('CalibrationObserver_onCalibrationStepComplete');
     this.observables_.register('ProvisioningObserver_onProvisioningUpdated');
     this.observables_.register(
         'HardwareWriteProtectionStateObserver_onHardwareWriteProtectionStateChanged');

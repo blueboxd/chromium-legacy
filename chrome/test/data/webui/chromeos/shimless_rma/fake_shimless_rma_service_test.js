@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_service.js';
-import {CalibrationObserverRemote, ComponentRepairStatus, ComponentType, ErrorObserverRemote, HardwareWriteProtectionStateObserverRemote, OsUpdateObserverRemote, OsUpdateOperation, PowerCableStateObserverRemote, ProvisioningObserverRemote, ProvisioningStep, RmadErrorCode, RmaState} from 'chrome://shimless-rma/shimless_rma_types.js';
+import {CalibrationComponentStatus, CalibrationObserverRemote, CalibrationOverallStatus, CalibrationSetupInstruction, CalibrationStatus, ComponentRepairStatus, ComponentType, ErrorObserverRemote, HardwareWriteProtectionStateObserverRemote, OsUpdateObserverRemote, OsUpdateOperation, PowerCableStateObserverRemote, ProvisioningObserverRemote, ProvisioningStep, RmadErrorCode, RmaState} from 'chrome://shimless-rma/shimless_rma_types.js';
 
 import {assertDeepEquals, assertEquals} from '../../chai_assert.js';
 
@@ -599,6 +599,106 @@ export function fakeShimlessRmaServiceTestSuite() {
     });
   });
 
+  test('GetCalibrationComponentList', () => {
+    let states = [
+      {state: RmaState.kCheckCalibration, error: RmadErrorCode.kOk},
+      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+    ];
+    service.setStates(states);
+    let expectedCalibrationComponents = [
+      /** @type {!CalibrationComponentStatus} */
+      ({
+        component: ComponentType.kLidAccelerometer,
+        status: CalibrationStatus.kCalibrationInProgress,
+        progress: 0.5
+      }),
+      /** @type {!CalibrationComponentStatus} */
+      ({
+        component: ComponentType.kBaseAccelerometer,
+        status: CalibrationStatus.kCalibrationComplete,
+        progress: 1.0
+      }),
+    ];
+    service.setGetCalibrationComponentListResult(expectedCalibrationComponents);
+
+    return service.getCalibrationComponentList().then((result) => {
+      assertDeepEquals(expectedCalibrationComponents, result.components);
+    });
+  });
+
+  test('GetCalibrationInstructions', () => {
+    let states = [
+      {state: RmaState.kCheckCalibration, error: RmadErrorCode.kOk},
+      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+    ];
+    service.setStates(states);
+    service.setGetCalibrationSetupInstructionsResult(
+        CalibrationSetupInstruction
+            .kCalibrationInstructionPlaceBaseOnFlatSurface);
+
+    return service.getCalibrationSetupInstructions().then((result) => {
+      assertDeepEquals(
+          CalibrationSetupInstruction
+              .kCalibrationInstructionPlaceBaseOnFlatSurface,
+          result.instructions);
+    });
+  });
+
+  test('StartCalibrationOk', () => {
+    let states = [
+      {state: RmaState.kCheckCalibration, error: RmadErrorCode.kOk},
+      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+    ];
+    service.setStates(states);
+    service.setGetCalibrationSetupInstructionsResult(
+        CalibrationSetupInstruction
+            .kCalibrationInstructionPlaceBaseOnFlatSurface);
+
+    return service.startCalibration().then((state) => {
+      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.error, RmadErrorCode.kOk);
+    });
+  });
+
+  test('RunCalibrationStepOk', () => {
+    let states = [
+      {state: RmaState.kSetupCalibration, error: RmadErrorCode.kOk},
+      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+    ];
+    service.setStates(states);
+
+    return service.runCalibrationStep().then((state) => {
+      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.error, RmadErrorCode.kOk);
+    });
+  });
+
+  test('ContinueCalibrationOk', () => {
+    let states = [
+      {state: RmaState.kRunCalibration, error: RmadErrorCode.kOk},
+      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+    ];
+    service.setStates(states);
+
+    return service.continueCalibration().then((state) => {
+      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.error, RmadErrorCode.kOk);
+    });
+  });
+
+  test('CalibrationCompleteOk', () => {
+    let states = [
+      {state: RmaState.kRunCalibration, error: RmadErrorCode.kOk},
+      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+    ];
+    service.setStates(states);
+
+    return service.calibrationComplete().then((state) => {
+      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.error, RmadErrorCode.kOk);
+    });
+  });
+
   test('FinalizeAndRebootOk', () => {
     let states = [
       {state: RmaState.kRepairComplete, error: RmadErrorCode.kOk},
@@ -736,17 +836,42 @@ export function fakeShimlessRmaServiceTestSuite() {
     const calibrationObserver = /** @type {!CalibrationObserverRemote} */ ({
       /**
        * Implements CalibrationObserverRemote.onCalibrationUpdated()
-       * @param {!ComponentType} component
-       * @param {number} progress
+       * @param {!CalibrationComponentStatus} calibrationStatus
        */
-      onCalibrationUpdated(component, progress) {
-        assertEquals(component, ComponentType.kBaseAccelerometer);
-        assertEquals(progress, 0.5);
+      onCalibrationUpdated(calibrationStatus) {
+        assertEquals(
+            calibrationStatus.component, ComponentType.kBaseAccelerometer);
+        assertEquals(
+            calibrationStatus.status, CalibrationStatus.kCalibrationComplete);
+        assertEquals(calibrationStatus.progress, 0.5);
       }
     });
     service.observeCalibrationProgress(calibrationObserver);
     return service.triggerCalibrationObserver(
-        ComponentType.kBaseAccelerometer, 0.5, 0);
+        /** @type {!CalibrationComponentStatus} */
+        ({
+          component: ComponentType.kBaseAccelerometer,
+          status: CalibrationStatus.kCalibrationComplete,
+          progress: 0.5
+        }),
+        0);
+  });
+
+  test('ObserveCalibrationStepComplete', () => {
+    /** @type {!CalibrationObserverRemote} */
+    const calibrationObserver = /** @type {!CalibrationObserverRemote} */ ({
+      /**
+       * Implements CalibrationObserverRemote.onCalibrationUpdated()
+       * @param {!CalibrationOverallStatus} status
+       */
+      onCalibrationStepComplete(status) {
+        assertEquals(
+            status, CalibrationOverallStatus.kCalibrationOverallComplete);
+      }
+    });
+    service.observeCalibrationProgress(calibrationObserver);
+    return service.triggerCalibrationOverallObserver(
+        CalibrationOverallStatus.kCalibrationOverallComplete, 0);
   });
 
   test('ObserveProvisioningUpdated', () => {

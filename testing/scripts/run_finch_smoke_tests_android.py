@@ -72,7 +72,8 @@ def get_package_name(apk_path):
   """Get package name from apk
 
   Args:
-    apk_path: Path to apk"""
+    apk_path: Path to apk
+  """
   return apk_helper.GetPackageName(apk_path)
 
 
@@ -82,7 +83,8 @@ def install_apks(device, options):
 
   Args:
     device: Interface for device
-    options: Command line options"""
+    options: Command line options
+  """
   device.Uninstall(get_package_name(options.webview_shell_apk))
   device.Install(options.webview_shell_apk, reinstall=True)
   with webview_app.UseWebViewProvider(device,
@@ -95,7 +97,8 @@ def install_seed(device, options):
 
   Args:
     device: Interface for device
-    options: Command line options"""
+    options: Command line options
+  """
   shell_pkg_name = get_package_name(options.webview_shell_apk)
   app_data_dir = posixpath.join(
       device.GetApplicationDataDirectory(shell_pkg_name), 'app_webview')
@@ -112,23 +115,10 @@ def install_seed(device, options):
 
   # We need to make the WebView shell package an owner of the seeds,
   # see crbug.com/1191169#c19
-  user_id = GetUidForPackage(device, shell_pkg_name)
+  user_id = device.GetUidForPackage(shell_pkg_name)
   logger.info('Setting owner of seed files to %r', user_id)
   device.RunShellCommand(['chown', user_id, seed_path], as_root=True)
   device.RunShellCommand(['chown', user_id, seed_new_path], as_root=True)
-
-
-def GetUidForPackage(device, package_name):
-  """Get user id for package name on device
-
-  Args:
-    package_name: Package name installed on device"""
-  # TODO(rmhasan): Move this method to devil
-  dumpsys_output = device._GetDumpsysOutput(
-      ['package', package_name], 'userId=')
-  assert dumpsys_output, 'No output was recieved from dumpsys'
-  user_id = re.sub('.*userId=', '', dumpsys_output[0])
-  return user_id
 
 
 def run_tests(device, options, test_suffix, webview_flags):
@@ -138,7 +128,8 @@ def run_tests(device, options, test_suffix, webview_flags):
     device: Interface for device
     options: Command line options
     test_suffix: Suffix for log output
-    webview_flags: Flags for webview browser"""
+    webview_flags: Flags for webview browser
+  """
   webview_flags.ReplaceFlags(['--webview-verbose-logging'])
   shell_pkg_name = get_package_name(options.webview_shell_apk)
   activity_name = (
@@ -174,7 +165,8 @@ def check_browser(device, options):
 
   Args:
     device: Interface for device
-    options: command line options"""
+    options: command line options
+  """
   zygotes = device.ListProcesses('zygote')
   zygote_pids = set(p.pid for p in zygotes)
   assert zygote_pids, 'No Android zygote found'
@@ -187,8 +179,9 @@ def get_json_results(w_seed_res, wo_seed_res):
 
   Args:
     w_seed_res: Test result with seed installed
-    wo_seed_res: Test result with no seed installed"""
-  json_results = {'version': 3}
+    wo_seed_res: Test result with no seed installed
+  """
+  json_results = {'version': 3, 'interrupted': False}
   json_results['tests'] = {'webview_finch_smoke_tests': {}}
   json_results['tests']['webview_finch_smoke_tests']['test_wo_seed'] = (
       {'expected': 'PASS', 'actual': wo_seed_res})
@@ -219,6 +212,12 @@ def main(args):
                       required=True,
                       type=os.path.realpath,
                       help='Path to the WebView provider apk')
+  parser.add_argument('--write-full-results-to',
+                      '--isolated-script-test-output',
+                      action='store',
+                      type=os.path.realpath,
+                      default=os.path.join(os.getcwd(), 'output.json'),
+                      help='Path to output directory')
   add_emulator_args(parser)
   script_common.AddDeviceArguments(parser)
   script_common.AddEnvironmentArguments(parser)
@@ -233,8 +232,9 @@ def main(args):
     device.EnableRoot()
     log_mon = logcat_monitor.LogcatMonitor(
           device.adb,
-          output_file=os.path.join(os.getcwd(),
-                                   'webview_finch_logcat.txt'),
+          output_file=os.path.join(
+              os.path.dirname(options.write_full_results_to),
+              'webview_finch_logcat.txt'),
           filter_specs=_LOGCAT_FILTERS)
     log_mon.Start()
 
@@ -255,7 +255,7 @@ def main(args):
 
     log_mon.Stop()
     json_results = get_json_results(w_seed_res, wo_seed_res)
-    with open(os.path.join(os.getcwd(), 'output.json'), 'w') as json_out:
+    with open(options.write_full_results_to, 'w') as json_out:
       json_out.write(json.dumps(json_results, indent=4))
   return ret
 

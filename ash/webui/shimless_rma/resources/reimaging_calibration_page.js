@@ -12,7 +12,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
-import {CalibrationObserverInterface, CalibrationObserverReceiver, ComponentType, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
+import {CalibrationComponentStatus, CalibrationObserverInterface, CalibrationObserverReceiver, CalibrationOverallStatus, CalibrationStatus, ComponentType, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
 
 /**
  * @fileoverview
@@ -82,14 +82,22 @@ export class ReimagingCalibrationPageElement extends PolymerElement {
   }
 
   /**
-   * Implements ProvisioningObserver.onProvisioningUpdated()
-   * @param {!ComponentType} component
-   * @param {number} progress
+   * Implements CalibrationObserver.onCalibrationUpdated()
+   * @param {!CalibrationComponentStatus} componentStatus
    */
-  onCalibrationUpdated(component, progress) {
-    if (this.repairedComponent === component && progress === 100) {
+  onCalibrationUpdated(componentStatus) {
+    if (this.repairedComponent === componentStatus.component &&
+        componentStatus.status === CalibrationStatus.kCalibrationComplete) {
       this.calibrationComplete_ = true;
     }
+  }
+
+  /**
+   * Implements CalibrationObserver.onCalibrationUpdated()
+   * @param {!CalibrationOverallStatus} status
+   */
+  onCalibrationStepComplete(status) {
+    // TODO(gavindodd): Handle calibration step complete observation.
   }
 
   /** @private */

@@ -107,6 +107,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/context_menu_data/untrustworthy_context_menu_params.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enum_util.h"
@@ -140,18 +141,6 @@ using ::pdf_extension_test_util::ConvertPageCoordToScreenCoord;
 using ::ui::AXTreeFormatter;
 
 const int kNumberLoadTestParts = 10;
-
-// `base::test::WithFeatureOverride` for `chrome_pdf::features::kPdfUnseasoned`.
-// This should be the first class a test fixture inherits from.
-//
-// This class should be used only for tests that are identical or substantially
-// identical in Pepper and Pepper-free modes. Otherwise, it makes more sense to
-// define separate test fixtures for each mode.
-class WithUnseasonedOverride : public base::test::WithFeatureOverride {
- public:
-  WithUnseasonedOverride()
-      : base::test::WithFeatureOverride(chrome_pdf::features::kPdfUnseasoned) {}
-};
 
 #if defined(OS_MAC)
 const int kDefaultKeyModifier = blink::WebInputEvent::kMetaKey;
@@ -440,8 +429,12 @@ class PDFExtensionTestWithoutUnseasonedOverride
   base::test::ScopedFeatureList feature_list_;
 };
 
-class PDFExtensionTest : public WithUnseasonedOverride,
-                         public PDFExtensionTestWithoutUnseasonedOverride {};
+class PDFExtensionTest : public base::test::WithFeatureOverride,
+                         public PDFExtensionTestWithoutUnseasonedOverride {
+ public:
+  PDFExtensionTest()
+      : base::test::WithFeatureOverride(chrome_pdf::features::kPdfUnseasoned) {}
+};
 
 class PDFExtensionTestWithPartialLoading : public PDFExtensionTest {
  protected:
@@ -893,11 +886,7 @@ IN_PROC_BROWSER_TEST_P(PDFPluginDisabledTest,
   ValidateSingleSuccessfulDownloadAndNoPDFPluginLaunch();
 }
 
-class PDFExtensionJSTestWithoutUnseasonedOverride
-    : public PDFExtensionTestWithoutUnseasonedOverride {
- public:
-  ~PDFExtensionJSTestWithoutUnseasonedOverride() override = default;
-
+class PDFExtensionJSTest : public PDFExtensionTest {
  protected:
   void RunTestsInJsModule(const std::string& filename,
                           const std::string& pdf_filename) {
@@ -942,10 +931,6 @@ class PDFExtensionJSTestWithoutUnseasonedOverride
     if (!catcher.GetNextResult())
       FAIL() << catcher.message();
   }
-};
-
-class PDFExtensionJSTest : public WithUnseasonedOverride,
-                           public PDFExtensionJSTestWithoutUnseasonedOverride {
 };
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionJSTest, Basic) {
@@ -1182,12 +1167,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionJSTest, ViewerToolbarDropdown) {
 }
 #endif  // BUILDFLAG(ENABLE_INK)
 
-class PDFExtensionContentSettingJSTestWithoutUnseasonedOverride
-    : public PDFExtensionJSTestWithoutUnseasonedOverride {
- public:
-  ~PDFExtensionContentSettingJSTestWithoutUnseasonedOverride() override =
-      default;
-
+class PDFExtensionContentSettingJSTest : public PDFExtensionJSTest {
  protected:
   // When blocking JavaScript, block the exact query from pdf/main.js while
   // still allowing enough JavaScript to run in the extension for the test
@@ -1204,24 +1184,16 @@ class PDFExtensionContentSettingJSTestWithoutUnseasonedOverride
   }
 };
 
-class PDFExtensionContentSettingJSTest
-    : public WithUnseasonedOverride,
-      public PDFExtensionContentSettingJSTestWithoutUnseasonedOverride {};
-
 IN_PROC_BROWSER_TEST_P(PDFExtensionContentSettingJSTest, Beep) {
   RunTestsInJsModule("beep_test.js", "test-beep.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(
-    PDFExtensionContentSettingJSTestWithoutUnseasonedOverride,
-    NoBeep) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionContentSettingJSTest, NoBeep) {
   SetPdfJavaScript(/*enabled=*/false);
   RunTestsInJsModule("nobeep_test.js", "test-beep.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(
-    PDFExtensionContentSettingJSTestWithoutUnseasonedOverride,
-    BeepThenNoBeep) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionContentSettingJSTest, BeepThenNoBeep) {
   RunTestsInJsModule("beep_test.js", "test-beep.pdf");
   SetPdfJavaScript(/*enabled=*/false);
   RunTestsInJsModuleNewTab("nobeep_test.js", "test-beep.pdf");
@@ -1232,9 +1204,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(1, CountPDFProcesses());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    PDFExtensionContentSettingJSTestWithoutUnseasonedOverride,
-    NoBeepThenBeep) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionContentSettingJSTest, NoBeepThenBeep) {
   SetPdfJavaScript(/*enabled=*/false);
   RunTestsInJsModule("nobeep_test.js", "test-beep.pdf");
   SetPdfJavaScript(/*enabled=*/true);
@@ -1810,8 +1780,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, PdfAccessibilityContextMenuAction) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Test a particular PDF encountered in the wild that triggered a crash
 // when accessibility is enabled.  (http://crbug.com/668724)
-IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithoutUnseasonedOverride,
-                       PdfAccessibilityTextRunCrash) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest, PdfAccessibilityTextRunCrash) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   WebContents* guest_contents = LoadPdfGetGuestContents(
       embedded_test_server()->GetURL("/pdf_private/accessibility_crash_2.pdf"));
@@ -2245,21 +2214,17 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionInternalLinkClickTest, ShiftLeft) {
   EXPECT_EQ("page=2&zoom=100,0,200", url.ref());
 }
 
-class PDFExtensionClipboardTest
-    : public PDFExtensionTestWithoutUnseasonedOverride,
-      public ui::ClipboardObserver {
+class PDFExtensionClipboardTest : public PDFExtensionTest,
+                                  public ui::ClipboardObserver {
  public:
-  PDFExtensionClipboardTest() : guest_contents_(nullptr) {}
-  ~PDFExtensionClipboardTest() override {}
-
   // PDFExtensionTest:
   void SetUpOnMainThread() override {
-    PDFExtensionTestWithoutUnseasonedOverride::SetUpOnMainThread();
+    PDFExtensionTest::SetUpOnMainThread();
     ui::TestClipboard::CreateForCurrentThread();
   }
   void TearDownOnMainThread() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
-    PDFExtensionTestWithoutUnseasonedOverride::TearDownOnMainThread();
+    PDFExtensionTest::TearDownOnMainThread();
   }
 
   // ui::ClipboardObserver:
@@ -2288,9 +2253,17 @@ class PDFExtensionClipboardTest
   }
 
   void ClickLeftSideOfEditableComboBox() {
-    content::SimulateMouseClickAt(GetWebContentsForInputRouting(), 0,
+    WebContents* contents = GetWebContentsForInputRouting();
+    content::SimulateMouseClickAt(contents, 0,
                                   blink::WebMouseEvent::Button::kLeft,
                                   GetEditableComboBoxLeftPosition());
+
+    // Make sure mouse events are sent completely before proceeding, in order to
+    // avoid races with subsequent keyboard events.
+    content::InputEventAckWaiter mouse_waiter(
+        GetPluginFrame(contents)->GetRenderWidgetHost(),
+        blink::WebInputEvent::Type::kMouseUp);
+    mouse_waiter.Wait();
   }
 
   void TypeHello() {
@@ -2397,11 +2370,11 @@ class PDFExtensionClipboardTest
   }
 
   base::RepeatingClosure clipboard_quit_closure_;
-  WebContents* guest_contents_;
+  WebContents* guest_contents_ = nullptr;
   bool clipboard_changed_ = false;
 };
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
+IN_PROC_BROWSER_TEST_P(PDFExtensionClipboardTest,
                        IndividualShiftRightArrowPresses) {
   LoadTestComboBoxPdfGetGuestContents();
 
@@ -2422,7 +2395,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
 }
 
 // TODO(crbug.com/897801): test is flaky.
-IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
+IN_PROC_BROWSER_TEST_P(PDFExtensionClipboardTest,
                        DISABLED_IndividualShiftLeftArrowPresses) {
   LoadTestComboBoxPdfGetGuestContents();
 
@@ -2449,7 +2422,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
   SendCopyCommandAndCheckCopyPasteClipboard("HEL");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
+IN_PROC_BROWSER_TEST_P(PDFExtensionClipboardTest,
                        CombinedShiftRightArrowPresses) {
   LoadTestComboBoxPdfGetGuestContents();
 
@@ -2482,7 +2455,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
 #else
 #define MAYBE_CombinedShiftArrowPresses CombinedShiftArrowPresses
 #endif
-IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
+IN_PROC_BROWSER_TEST_P(PDFExtensionClipboardTest,
                        MAYBE_CombinedShiftArrowPresses) {
   LoadTestComboBoxPdfGetGuestContents();
 
@@ -3580,6 +3553,7 @@ INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionWebUICodeCacheJSTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionServiceWorkerJSTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionLinkClickTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionInternalLinkClickTest);
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionClipboardTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(
     PDFExtensionAccessibilityTextExtractionTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionHitTestTest);

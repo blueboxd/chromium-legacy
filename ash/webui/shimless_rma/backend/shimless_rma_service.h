@@ -57,6 +57,8 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
       ChooseRsuDisableWriteProtectCallback callback) override;
   void GetRsuDisableWriteProtectChallenge(
       GetRsuDisableWriteProtectChallengeCallback callback) override;
+  void GetRsuDisableWriteProtectHwid(
+      GetRsuDisableWriteProtectHwidCallback callback) override;
   void GetRsuDisableWriteProtectChallengeQrCode(
       GetRsuDisableWriteProtectChallengeQrCodeCallback callback) override;
   void SetRsuDisableWriteProtectCode(
@@ -90,6 +92,15 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
                             uint8_t sku_index,
                             SetDeviceInformationCallback callback) override;
 
+  void GetCalibrationComponentList(
+      GetCalibrationComponentListCallback callback) override;
+  void GetCalibrationSetupInstructions(
+      GetCalibrationSetupInstructionsCallback callback) override;
+  void StartCalibration(StartCalibrationCallback callback) override;
+  void RunCalibrationStep(RunCalibrationStepCallback callback) override;
+  void ContinueCalibration(ContinueCalibrationCallback callback) override;
+  void CalibrationComplete(CalibrationCompleteCallback callback) override;
+
   void FinalizeAndReboot(FinalizeAndRebootCallback callback) override;
   void FinalizeAndShutdown(FinalizeAndShutdownCallback callback) override;
   void CutoffBattery(CutoffBatteryCallback callback) override;
@@ -113,8 +124,10 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
 
   // RmadClient::Observer interface.
   void Error(rmad::RmadErrorCode error) override;
-  void CalibrationProgress(rmad::RmadComponent component,
-                           double progress) override;
+  void CalibrationProgress(
+      const rmad::CalibrationComponentStatus& componentStatus) override;
+  void CalibrationOverallProgress(
+      rmad::CalibrationOverallStatus status) override;
   void ProvisioningProgress(rmad::ProvisionDeviceState::ProvisioningStep step,
                             double progress) override;
   void HardwareWriteProtectionState(bool enabled) override;

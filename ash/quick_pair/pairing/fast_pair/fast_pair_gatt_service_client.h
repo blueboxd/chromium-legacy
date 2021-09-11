@@ -7,6 +7,12 @@
 
 #include "device/bluetooth/bluetooth_adapter.h"
 
+namespace {
+
+constexpr int kBlockByteSize = 16;
+
+}  // namespace
+
 namespace ash {
 namespace quick_pair {
 
@@ -44,6 +50,14 @@ class FastPairGattServiceClient : public device::BluetoothAdapter::Observer {
       base::OnceCallback<void(std::vector<uint8_t>,
                               absl::optional<PairFailure>)>
           write_response_callback) = 0;
+
+  // Writes the account key to the account key characteristic.
+  virtual void WriteAccountKey(
+      std::array<uint8_t, 16> account_key,
+      FastPairDataEncryptor* fast_pair_data_encryptor,
+      base::OnceCallback<
+          void(absl::optional<device::BluetoothGattService::GattErrorCode>)>
+          write_account_key_callback) = 0;
 };
 
 }  // namespace quick_pair

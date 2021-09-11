@@ -230,7 +230,7 @@
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
 #include "components/full_restore/features.h"
-#include "components/metrics/structured/structured_metrics_features.h"
+#include "components/metrics/structured/structured_metrics_features.h"  // nogncheck
 #include "media/capture/video/chromeos/video_capture_features_chromeos.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #include "ui/events/ozone/features.h"
@@ -1636,6 +1636,17 @@ const FeatureEntry::FeatureVariation kLongpressResolveVariations[] = {
     {"and preserve Tap behavior", &kLongpressResolvePreserveTap, 1, nullptr},
 };
 
+const FeatureEntry::FeatureParam kContextualSearchPromoCardShow3Times = {
+    "promo_card_max_shown", "3"};
+const FeatureEntry::FeatureParam kContextualSearchPromoCardShow100Times = {
+    "promo_card_max_shown", "100"};
+const FeatureEntry::FeatureVariation ContextualSearchNewSettingsVariations[] = {
+    {"with promo show 3 times", &kContextualSearchPromoCardShow3Times, 1,
+     nullptr},
+    {"with promo show 100 times", &kContextualSearchPromoCardShow100Times, 1,
+     nullptr},
+};
+
 const FeatureEntry::FeatureParam kRelatedSearchesUrl = {"stamp", "1Ru"};
 const FeatureEntry::FeatureParam kRelatedSearchesContent = {"stamp", "1Rc"};
 const FeatureEntry::FeatureVariation kRelatedSearchesVariations[] = {
@@ -2861,7 +2872,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"contextual-search-new-settings",
      flag_descriptions::KContextualSearchNewSettingsName,
      flag_descriptions::KContextualSearchNewSettingsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::KContextualSearchNewSettings)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::KContextualSearchNewSettings,
+         ContextualSearchNewSettingsVariations,
+         "ContextualSearchNewSettings")},
     {"contextual-search-ranker-query",
      flag_descriptions::kContextualSearchRankerQueryName,
      flag_descriptions::kContextualSearchRankerQueryDescription, kOsAndroid,
@@ -2922,6 +2936,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowAutofillTypePredictionsName,
      flag_descriptions::kShowAutofillTypePredictionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillShowTypePredictions)},
+    {"autofill-center-aligned-suggestions",
+     flag_descriptions::kAutofillCenterAligngedSuggestionsName,
+     flag_descriptions::kAutofillCenterAligngedSuggestionsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillCenterAlignedSuggestions)},
     {"smooth-scrolling", flag_descriptions::kSmoothScrollingName,
      flag_descriptions::kSmoothScrollingDescription,
      // Mac has a separate implementation with its own setting to disable.
@@ -4014,6 +4033,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(feed::kWebFeed,
                                     kWebFeedVariations,
                                     "WebFeed")},
+    {"web-feed-sort", flag_descriptions::kWebFeedSortName,
+     flag_descriptions::kWebFeedSortDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(feed::kWebFeedSort)},
     {"xsurface-metrics-reporting",
      flag_descriptions::kXsurfaceMetricsReportingName,
      flag_descriptions::kXsurfaceMetricsReportingDescription, kOsAndroid,
@@ -6526,9 +6548,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"scan-app-sticky-settings", flag_descriptions::kScanAppStickySettingsName,
      flag_descriptions::kScanAppStickySettingsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kScanAppStickySettings)},
-    {"avatar-toolbar-button", flag_descriptions::kAvatarToolbarButtonName,
-     flag_descriptions::kAvatarToolbarButtonDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kAvatarToolbarButton)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"color-provider-redirection",
@@ -7698,6 +7717,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAppDiscoveryForOobeName,
      flag_descriptions::kAppDiscoveryForOobeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAppDiscoveryForOobe)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"ambient-mode-new-url", flag_descriptions::kAmbientModeNewUrlName,
+     flag_descriptions::kAmbientModeNewUrlDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kAmbientModeNewUrl)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

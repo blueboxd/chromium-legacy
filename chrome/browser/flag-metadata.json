@@ -124,6 +124,11 @@
     "expiry_milestone": 93
   },
   {
+    "name": "ambient-mode-new-url",
+    "owners": [ "xiaohuic", "assistive-eng@google.com" ],
+    "expiry_milestone": 101
+  },
+  {
     "name": "android-detailed-language-settings",
     "owners": [ "perrier", "chrome-language@google.com" ],
     "expiry_milestone": 97
@@ -368,6 +373,11 @@
     "expiry_milestone": 98
   },
   {
+    "name": "autofill-center-aligned-suggestions",
+    "owners": [ "koerber", "mamir" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "autofill-enable-google-issued-card",
     "owners": [ "siashah" ],
     "expiry_milestone": 92
@@ -491,11 +501,6 @@
     "name": "autofill-use-renderer-ids",
     "owners": [ "kazinova@google.com" ],
     "expiry_milestone": 96
-  },
-  {
-    "name": "avatar-toolbar-button",
-    "owners": [ "droger", "my-chrome-everywhere@google.com" ],
-    "expiry_milestone": 92
   },
   {
     "name": "back-forward-cache",
@@ -1802,7 +1807,7 @@
   {
     "name": "enable-desktop-pwas-protocol-handling",
     "owners": [ "samtan@microsoft.com", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 97
   },
   {
     "name": "enable-desktop-pwas-remove-status-bar",
@@ -5701,6 +5706,11 @@
     "name": "web-feed",
     "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "web-feed-sort",
+    "owners": ["//chrome/android/feed/OWNERS", "feed@chromium.org" ],
+    "expiry_milestone": 100
   },
   {
     "name": "web-otp-backend",

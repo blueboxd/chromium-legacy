@@ -205,13 +205,6 @@ try_.blink_builder(
 )
 
 try_.blink_builder(
-    name = "win10-blink-rel",
-    goma_backend = goma.backend.RBE_PROD,
-    os = os.WINDOWS_ANY,
-    builderless = True,
-)
-
-try_.blink_builder(
     name = "win7-blink-rel",
     goma_backend = goma.backend.RBE_PROD,
     os = os.WINDOWS_ANY,
@@ -398,6 +391,22 @@ try_.chromium_android_builder(
     experiments = {
         "chromium.chromium_tests.use_isolate": 50,
     },
+)
+
+try_.chromium_android_builder(
+    name = "android-marshmallow-arm64-rel-rts",
+    builderless = not settings.is_main,
+    cores = 32 if settings.is_main else 16,
+    goma_jobs = goma.jobs.J300,
+    main_list_view = "try",
+    ssd = True,
+    use_java_coverage = True,
+    coverage_test_types = ["unit", "overall"],
+    tryjob = try_.job(
+        experiment_percentage = 5,
+    ),
+    # TODO(crbug/1202741)
+    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
 
 try_.chromium_android_builder(
@@ -1003,6 +1012,12 @@ try_.chromium_dawn_builderless_builder(
     pool = "luci.chromium.gpu.mac.retina.amd.try",
 )
 
+try_.chromium_dawn_builderless_builder(
+    name = "dawn-try-mac-intel-exp",
+    os = os.MAC_ANY,
+    pool = "luci.chromium.gpu.mac.mini.intel.uhd630.try",
+)
+
 try_.chromium_dawn_builder(
     name = "win-dawn-rel",
     os = os.WINDOWS_ANY,
@@ -1286,7 +1301,7 @@ try_.chromium_linux_builder(
 try_.chromium_linux_builder(
     name = "linux-rel-orchestrator",
     builderless = False,
-    cores = 2,
+    cores = None,
     executable = "recipe:chromium/orchestrator",
     main_list_view = "try",
     use_clang_coverage = True,
@@ -1877,7 +1892,7 @@ try_.chromium_win_builder(
 try_.chromium_win_builder(
     name = "win10-rel-orchestrator",
     builderless = False,
-    cores = 2,
+    cores = None,
     os = os.LINUX_BIONIC,
     executable = "recipe:chromium/orchestrator",
     use_clang_coverage = True,

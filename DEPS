@@ -773,7 +773,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': '1NocJWRE8QB8O35w50pBDv2FxJwpspFRuxccSjdSkY8C',
+          'version': 'tMlz-qjSJu5_4ZPAOef4SJ7w7D30zXN_y5iKL-P93n0C',
       },
     ],
     'condition': 'checkout_android',
@@ -1653,7 +1653,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': '93HPekEUblvrn33MgtM_mPQjnsJ5_IqJUTt3XiUUloYC',
+          'version': 'fLni5XbrGVSo96Fpye2OmTEwheZVoDU49HrRUCzw_L0C',
         },
       ],
       'dep_type': 'cipd',
@@ -1674,7 +1674,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@15605ec494e50a38d5d6469e60bfe481eaaab47e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6a1e3828e2b936927d7e9068ece03eb99771df79',
     'condition': 'checkout_src_internal',
   },
 
@@ -1704,7 +1704,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'W_4PHpdNzrNzFVkCRylTP9Fm9t81AoRKdV-ztMHma44C',
+        'version': 'paTqgfMHZ4CeaFp0K_gxSt-MbMGYs_eggI2BMyvx1H8C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

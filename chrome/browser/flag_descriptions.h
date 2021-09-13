@@ -842,6 +842,9 @@ extern const char kIncognitoReauthenticationForAndroidDescription[];
 extern const char kIncognitoBrandConsistencyForDesktopName[];
 extern const char kIncognitoBrandConsistencyForDesktopDescription[];
 
+extern const char kIncognitoDownloadsWarningName[];
+extern const char kIncognitoDownloadsWarningDescription[];
+
 extern const char kIncognitoClearBrowsingDataDialogForDesktopName[];
 extern const char kIncognitoClearBrowsingDataDialogForDesktopDescription[];
 
@@ -1184,12 +1187,6 @@ extern const char kPrivacyAdvisorDescription[];
 
 extern const char kPrivacyReviewName[];
 extern const char kPrivacyReviewDescription[];
-
-extern const char kPrivacySandboxSettingsName[];
-extern const char kPrivacySandboxSettingsDescription[];
-
-extern const char kPrivacySandboxSettings2Name[];
-extern const char kPrivacySandboxSettings2Description[];
 
 extern const char kSafeBrowsingPerProfileNetworkContextsName[];
 extern const char kSafeBrowsingPerProfileNetworkContextsDescription[];

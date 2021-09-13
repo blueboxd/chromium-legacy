@@ -5908,12 +5908,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kAutoScreenBrightness)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-    {"privacy-sandbox-settings-2",
-     flag_descriptions::kPrivacySandboxSettings2Name,
-     flag_descriptions::kPrivacySandboxSettings2Description,
-     kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kPrivacySandboxSettings2)},
-
 #if defined(OS_ANDROID)
     {"metrics-settings-android", flag_descriptions::kMetricsSettingsAndroidName,
      flag_descriptions::kMetricsSettingsAndroidDescription, kOsAndroid,
@@ -7017,6 +7011,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIncognitoScreenshotDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kIncognitoScreenshot)},
 #endif
+    {"incognito-downloads-warning",
+     flag_descriptions::kIncognitoDownloadsWarningName,
+     flag_descriptions::kIncognitoDownloadsWarningDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kIncognitoDownloadsWarning)},
+
     {"incognito-ntp-revamp", flag_descriptions::kIncognitoNtpRevampName,
      flag_descriptions::kIncognitoNtpRevampDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kIncognitoNtpRevamp)},

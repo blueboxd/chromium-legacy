@@ -548,6 +548,10 @@ const base::Feature kIncognitoBrandConsistencyForAndroid{
     "IncognitoBrandConsistencyForAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// When enabled, users will see a warning when downloading from Incognito.
+const base::Feature kIncognitoDownloadsWarning{
+    "IncognitoDownloadsWarning", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, users will see updated UI in Incognito NTP
 const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -786,13 +790,6 @@ const base::Feature kPrivacyAdvisor{"PrivacyAdvisor",
 
 const base::Feature kPrivacyReview{"PrivacyReview",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables additional control set 2 on the privacy sandbox settings page.
-const base::Feature kPrivacySandboxSettings2{"PrivacySandboxSettings2",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-const base::FeatureParam<std::string> kPrivacySandboxSettings2FlocURL{
-    &kPrivacySandboxSettings2, "floc-website-url",
-    "https://privacysandbox.com/proposals/floc"};
 
 // Enables or disables push subscriptions keeping Chrome running in the
 // background when closed.

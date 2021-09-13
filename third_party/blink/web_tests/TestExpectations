@@ -156,8 +156,6 @@ crbug.com/949003 http/tests/printing/cross-site-frame.html [ Failure Pass ]
 crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.js [ Failure ]
 # ====== Browserside navigation until here ======
 
-crbug.com/1214030 http/tests/devtools/network/request-parameters-decoding.js [ Failure Pass ]
-
 # ====== Paint team owned tests from here ======
 # The paint team tracks and triages its test failures, and keeping them colocated
 # makes tracking much easier.
@@ -260,6 +258,10 @@ crbug.com/1171298 http/tests/inspector-protocol/bfcache/* [ Skip ]
 crbug.com/1171298 http/tests/devtools/bfcache/* [ Skip ]
 crbug.com/1171298 virtual/bfcache/http/tests/inspector-protocol/bfcache/* [ Pass ]
 crbug.com/1171298 virtual/bfcache/http/tests/devtools/bfcache/* [ Pass ]
+
+# These tests require LazyEmbed, which is currently disabled by default.
+crbug.com/1247131 virtual/automatic-lazy-frame-loading/wpt_internal/lazyembed/* [ Pass ]
+crbug.com/1247131 wpt_internal/lazyembed/* [ Skip ]
 
 # Ref test with very minor differences. We need fuzzy matching for our ref tests,
 # or upstream this to WPT.
@@ -1237,6 +1239,7 @@ virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-018.h
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-022.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-nested-023.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-oof-inline-cb-001.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-oof-inline-cb-002.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-nested-balancing-004.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-scroll-content.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-006.html [ Pass ]
@@ -1288,7 +1291,6 @@ virtual/layout_ng_block_frag/fast/multicol/vertical-rl/nested-columns.html [ Pas
 
 ### Tests failing with LayoutNGBlockFragmentation enabled:
 crbug.com/1225630 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/large-actual-column-count.html [ Skip ]
-crbug.com/1246602 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-oof-inline-cb-002.html [ Crash ]
 crbug.com/1066629 virtual/layout_ng_block_frag/fast/multicol/hit-test-translate-z.html [ Failure ]
 crbug.com/1225630 virtual/layout_ng_block_frag/fast/multicol/infinite-height-causing-fractional-row-height-crash.html [ Skip ]
 crbug.com/1225630 virtual/layout_ng_block_frag/fast/multicol/infinitely-tall-content-in-outer-crash.html [ Skip ]
@@ -4165,7 +4167,7 @@ crbug.com/1052641 external/wpt/service-workers/service-worker/unregister-immedia
 crbug.com/1052642 external/wpt/service-workers/service-worker/unregister-immediately-during-extendable-events.https.html [ Skip ]
 
 # known bug of SubresourceWebBundles
-crbug.com/1244483 external/wpt/web-bundle/subresource-loading/subresource-loading-non-utf8-query-encoding-encoded-src.https.tentative.html [ Failure ]
+crbug.com/1244483 external/wpt/web-bundle/subresource-loading/link-non-utf8-query-encoding-encoded-src.https.tentative.html [ Failure ]
 
 # Sheriff failures 2017-07-03
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Pass Skip Timeout ]
@@ -6754,23 +6756,11 @@ crbug.com/1237909 external/wpt/webrtc-svc/RTCRtpParameters-scalability.html [ Cr
 crbug.com/1239161 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/htmlanchorelement_noopener.html [ Failure Pass ]
 crbug.com/1239139 virtual/prerender/wpt_internal/prerender/restriction-prompt-by-before-unload.html [ Crash Pass ]
 
-# Sheriff 2021-08-16
-crbug.com/1240252 [ Linux ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-errors.js [ Pass Timeout ]
-crbug.com/1240252 [ Linux ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-with-pierce-details.js [ Pass Timeout ]
-crbug.com/1240252 [ Linux ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-with-pierce-unslotted-elements.js [ Pass Timeout ]
-crbug.com/1240252 [ Linux ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-with-pierce.js [ Pass Timeout ]
-crbug.com/1240252 [ Linux ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style.js [ Pass Timeout ]
-
 # Sheriff 2021-08-19
 crbug.com/1234315 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-overflow-hidden.https.html [ Failure ]
 
 # Sheriff 2021-08-20
 crbug.com/1241778 [ Mac10.13 ] virtual/web-bluetooth-new-permissions-backend/wpt_internal/bluetooth/requestDevice/filter-does-not-match.https.html [ Pass Timeout ]
-crbug.com/1241787 [ Mac10.15 ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-errors.js [ Pass Timeout ]
-crbug.com/1241787 [ Mac10.15 ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-with-pierce-details.js [ Pass Timeout ]
-crbug.com/1241787 [ Mac10.15 ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-with-pierce-unslotted-elements.js [ Pass Timeout ]
-crbug.com/1241787 [ Mac10.15 ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-with-pierce.js [ Pass Timeout ]
-crbug.com/1241787 [ Mac10.15 ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style.js [ Pass Timeout ]
 crbug.com/1194498 http/tests/misc/iframe-script-modify-attr.html [ Crash Failure Pass Timeout ]
 
 # Sheriff 2021-08-23
@@ -6781,7 +6771,6 @@ crbug.com/1242243 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-a
 crbug.com/1244896 [ Mac ] fast/mediacapturefromelement/CanvasCaptureMediaStream-set-size-too-large.html [ Pass Timeout ]
 
 # Sheriff 2021-08-25
-crbug.com/1243128 [ Win ] external/wpt/editing/run/insertparagraph.html?6001-last [ Failure ]
 crbug.com/1243128 [ Win ] external/wpt/editing/run/justifyright.html?4001-last [ Failure ]
 crbug.com/1243128 [ Win ] external/wpt/html/canvas/element/wide-gamut-canvas/2d.color.space.p3.fillText.html [ Failure ]
 crbug.com/1243128 [ Win ] external/wpt/html/canvas/element/wide-gamut-canvas/2d.color.space.p3.fillText.shadow.html [ Failure ]
@@ -6863,3 +6852,6 @@ external/wpt/WebIDL/* [ Skip ]
 
 # Sheriff 2021-09-10
 crbug.com/1248437 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/one-custom-property-animation-half-opaque.https.html [ Pass Failure ]
+
+# Sheriff 2021-09-13
+crbug.com/1248912 virtual/threaded/external/wpt/scroll-animations/css/at-scroll-timeline-dynamic.tentative.html [ Failure Pass ]

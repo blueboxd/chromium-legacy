@@ -3500,20 +3500,6 @@ NavigationRequest::ErrorPageProcess NavigationRequest::ComputeErrorPageProcess(
   return ErrorPageProcess::kDestinationProcess;
 }
 
-namespace {
-
-void OnServiceWorkerAccessedThreadSafeWrapper(
-    base::WeakPtr<NavigationRequest> navigation,
-    const GURL& scope,
-    AllowServiceWorkerResult allowed) {
-  RunOrPostTaskOnThread(
-      FROM_HERE, BrowserThread::UI,
-      base::BindOnce(&NavigationRequest::OnServiceWorkerAccessed, navigation,
-                     scope, allowed));
-}
-
-}  // namespace
-
 void NavigationRequest::OnStartChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
   DCHECK(result.action() != NavigationThrottle::DEFER);
@@ -3591,7 +3577,7 @@ void NavigationRequest::OnStartChecksComplete(
             partition->GetServiceWorkerContext());
     service_worker_handle_ = std::make_unique<ServiceWorkerMainResourceHandle>(
         service_worker_context,
-        base::BindRepeating(&OnServiceWorkerAccessedThreadSafeWrapper,
+        base::BindRepeating(&NavigationRequest::OnServiceWorkerAccessed,
                             weak_factory_.GetWeakPtr()));
   }
 
@@ -5666,6 +5652,14 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
     base::AutoReset<bool> resetter(&is_safe_to_delete_, false);
 #endif
     GetDelegate()->ReadyToCommitNavigation(this);
+  }
+
+  if (IsInMainFrame()) {
+    NavigationEntry* entry = GetNavigationEntry();
+    if (entry && entry->IsViewSourceMode()) {
+      // Put the renderer in view source mode.
+      render_frame_host_->GetAssociatedLocalFrame()->EnableViewSourceMode();
+    }
   }
 
   if (ready_to_commit_callback_for_testing_)

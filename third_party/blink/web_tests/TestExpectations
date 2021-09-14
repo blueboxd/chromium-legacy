@@ -3895,7 +3895,6 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/* [ Skip ]
 
 ### Tests failing with SVGTextNG enabled:
 crbug.com/1179585 external/wpt/css/css-pseudo/textpath-selection-011.html [ Failure ]
-crbug.com/1179585 images/color-profile-svg-fill-text.html [ Failure ]
 crbug.com/1179585 svg/custom/visibility-collapse.html [ Failure ]
 crbug.com/1179585 svg/text/text-decorations-in-scaled-pattern.svg [ Failure ]
 
@@ -5306,6 +5305,9 @@ crbug.com/1066579 http/tests/devtools/har-importer.js [ Failure Pass ]
 # The "timeout" was detected by the wpt-importer bot.
 crbug.com/1069714 [ Mac10.13 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Failure Pass Skip Timeout ]
 
+# COOP access reporting:
+crbug.com/1090273 external/wpt/html/cross-origin-opener-policy/reporting/access-reporting/property-opener-set.https.html [ Timeout ]
+
 # COOP top navigation:
 crbug.com/1153648 external/wpt/html/cross-origin-opener-policy/navigate-top-to-aboutblank.https.html [ Failure ]
 
@@ -6314,6 +6316,10 @@ crbug.com/1210658 [ Mac10.14 ] virtual/jxl-enabled/images/jxl/jxl-images.html [ 
 crbug.com/1210658 [ Mac10.15 ] virtual/jxl-enabled/images/jxl/jxl-images.html [ Failure ]
 crbug.com/1210658 [ Win ] virtual/jxl-enabled/images/jxl/jxl-images.html [ Failure ]
 
+# Temporarily disabled to unblock https://crrev.com/c/3099011
+crbug.com/1199701 http/tests/devtools/console/console-big-array.js [ Skip ]
+crbug.com/1199701 http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.js [ Skip ]
+
 # Sheriff 2021-5-19
 # Flaky on Webkit Linux Leak
 crbug.com/1210731 [ Linux ] http/tests/devtools/sources/debugger-step/debugger-step-out-document-write.js [ Failure Pass ]
@@ -6797,7 +6803,6 @@ external/wpt/WebIDL/* [ Skip ]
 crbug.com/1248437 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/one-custom-property-animation-half-opaque.https.html [ Pass Failure ]
 
 # Sheriff 2021-09-13
-crbug.com/1248912 virtual/threaded/external/wpt/scroll-animations/css/at-scroll-timeline-dynamic.tentative.html [ Failure Pass ]
 crbug.com/1229701 [ Linux ] http/tests/inspector-protocol/network/disable-cache-media-resource.js [ Pass Failure ]
 
 # WebRTC simulcast tests contineue to be flaky

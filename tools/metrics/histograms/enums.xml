@@ -10314,6 +10314,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="7" label="Data wipe failed">
     Failed to delete lacros data directory with old data.
   </int>
+  <int value="8" label="Size limit exceeded">
+    The total size of data that needs to be copied exceeded the limit. This
+    limit is set as a short-term fix to avoid making users stuck on the
+    migration screen for more than a few minutes.
+  </int>
 </enum>
 
 <enum name="BrowserGestureActionType">
@@ -53872,7 +53877,7 @@ Called by update_use_counter_css.py.-->
   <int value="409" label="user-zoom"/>
   <int value="410" label="webkit-dashboard-region"/>
   <int value="411" label="webkit-overflow-scrolling"/>
-  <int value="412" label="webkit-app-region"/>
+  <int value="412" label="alias-webkit-app-region"/>
   <int value="413" label="alias-webkit-filter"/>
   <int value="414" label="webkit-box-decoration-break"/>
   <int value="415" label="webkit-tap-highlight-color"/>
@@ -54162,6 +54167,8 @@ Called by update_use_counter_css.py.-->
   <int value="699" label="container"/>
   <int value="700" label="font-synthesis-weight"/>
   <int value="701" label="font-synthesis-style"/>
+  <int value="702" label="app-region"/>
+  <int value="703" label="font-synthesis-small-caps"/>
 </enum>
 
 <enum name="MappedEditingCommands">

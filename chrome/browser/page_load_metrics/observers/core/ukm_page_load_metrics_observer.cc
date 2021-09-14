@@ -31,7 +31,7 @@
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_utils.h"
-#include "components/no_state_prefetch/common/prerender_final_status.h"
+#include "components/no_state_prefetch/common/no_state_prefetch_final_status.h"
 #include "components/no_state_prefetch/common/prerender_origin.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
@@ -1006,6 +1006,14 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
         "Gap1000ms.Max5000ms",
         page_load_metrics::LayoutShiftUmaValue(
             normalized_cls_data.session_windows_gap1000ms_max5000ms_max_cls));
+    // TODO(sullivan): remove this histogram in resolving crbug.com/1230786.
+    base::UmaHistogramCustomCounts(
+        "PageLoad.Experimental.LayoutInstability.MaxCumulativeShiftScore."
+        "SessionWindow."
+        "Gap1000ms.Max5000ms.Bucketing50_GoodRange",
+        page_load_metrics::LayoutShiftExperimentalUmaValue10000(
+            normalized_cls_data.session_windows_gap1000ms_max5000ms_max_cls),
+        1, 1000, 50);
   }
   builder.Record(ukm::UkmRecorder::Get());
 

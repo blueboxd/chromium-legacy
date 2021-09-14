@@ -215,6 +215,39 @@ const BrowserAppInstance* BrowserAppInstanceTracker::GetChromeInstance(
   return chrome_instances_.GetInstance(browser);
 }
 
+void BrowserAppInstanceTracker::ActivateTabInstance(BrowserAppInstanceId id) {
+  for (const auto& pair : app_instances_) {
+    const BrowserAppInstance& instance = *pair.second;
+    if (instance.id == id) {
+      Browser* browser = chrome::FindBrowserWithWebContents(pair.first);
+      TabStripModel* tab_strip = browser->tab_strip_model();
+      int index = tab_strip->GetIndexOfWebContents(pair.first);
+      DCHECK_NE(TabStripModel::kNoTab, index);
+      tab_strip->ActivateTabAt(index);
+      break;
+    }
+  }
+}
+
+void BrowserAppInstanceTracker::StopInstancesOfApp(const std::string& app_id) {
+  std::vector<content::WebContents*> web_contents_to_close;
+  for (const auto& pair : app_instances_) {
+    if (pair.second->app_id == app_id) {
+      web_contents_to_close.push_back(pair.first);
+    }
+  }
+
+  for (content::WebContents* web_contents : web_contents_to_close) {
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+    if (!browser)
+      continue;
+    int index = browser->tab_strip_model()->GetIndexOfWebContents(web_contents);
+    DCHECK(index != TabStripModel::kNoTab);
+    browser->tab_strip_model()->CloseWebContentsAt(index,
+                                                   TabStripModel::CLOSE_NONE);
+  }
+}
+
 void BrowserAppInstanceTracker::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,

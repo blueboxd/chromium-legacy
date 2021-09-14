@@ -9,10 +9,30 @@ assert(is_chromeos_ash,
 
 source_set("cpp") {
   sources = [
+    "account_key_filter.cc",
+    "account_key_filter.h",
     "decrypted_passkey.cc",
     "decrypted_passkey.h",
     "decrypted_response.cc",
     "decrypted_response.h",
     "fast_pair_message_type.h",
+    "not_discoverable_advertisement.cc",
+    "not_discoverable_advertisement.h",
+  ]
+
+  deps = [ "//crypto" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [ "account_key_filter_unittest.cc" ]
+
+  deps = [
+    ":cpp",
+    "//base/test:test_support",
+    "//crypto",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

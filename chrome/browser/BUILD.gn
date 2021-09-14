@@ -243,6 +243,10 @@ static_library("browser") {
     "browsing_data/browsing_data_quota_helper.h",
     "browsing_data/browsing_data_quota_helper_impl.cc",
     "browsing_data/browsing_data_quota_helper_impl.h",
+    "browsing_data/chrome_browsing_data_lifetime_manager.cc",
+    "browsing_data/chrome_browsing_data_lifetime_manager.h",
+    "browsing_data/chrome_browsing_data_lifetime_manager_factory.cc",
+    "browsing_data/chrome_browsing_data_lifetime_manager_factory.h",
     "browsing_data/chrome_browsing_data_remover_delegate.cc",
     "browsing_data/chrome_browsing_data_remover_delegate.h",
     "browsing_data/chrome_browsing_data_remover_delegate_factory.cc",
@@ -1183,8 +1187,6 @@ static_library("browser") {
     "policy/javascript_policy_handler.h",
     "policy/messaging_layer/public/report_client.cc",
     "policy/messaging_layer/public/report_client.h",
-    "policy/messaging_layer/public/report_queue_impl.cc",
-    "policy/messaging_layer/public/report_queue_impl.h",
     "policy/messaging_layer/upload/dm_server_upload_service.cc",
     "policy/messaging_layer/upload/dm_server_upload_service.h",
     "policy/messaging_layer/upload/record_handler_impl.cc",
@@ -3571,10 +3573,6 @@ static_library("browser") {
       "banners/app_banner_manager_desktop.h",
       "bookmarks/bookmark_html_writer.cc",
       "bookmarks/bookmark_html_writer.h",
-      "browsing_data/chrome_browsing_data_lifetime_manager.cc",
-      "browsing_data/chrome_browsing_data_lifetime_manager.h",
-      "browsing_data/chrome_browsing_data_lifetime_manager_factory.cc",
-      "browsing_data/chrome_browsing_data_lifetime_manager_factory.h",
       "cart/cart_db.cc",
       "cart/cart_db.h",
       "cart/cart_discount_fetcher.cc",
@@ -4720,6 +4718,8 @@ static_library("browser") {
       "speech/tts_chromeos.h",
       "speech/tts_controller_delegate_impl.cc",
       "speech/tts_controller_delegate_impl.h",
+      "sync/desk_sync_service_factory.cc",
+      "sync/desk_sync_service_factory.h",
       "sync/sync_error_notifier_ash.cc",
       "sync/sync_error_notifier_ash.h",
       "sync/sync_error_notifier_factory_ash.cc",
@@ -4819,6 +4819,7 @@ static_library("browser") {
       "//components/arc:arc_base_utils",
       "//components/arc/enterprise",
       "//components/arc/mojom",
+      "//components/desks_storage",
       "//components/full_restore",
       "//components/metrics/structured",
       "//components/metrics/structured:neutrino_logging",
@@ -5656,7 +5657,7 @@ static_library("browser") {
     ]
   }
 
-  if (is_win || is_linux || is_chromeos) {
+  if ((is_win || is_linux || is_chromeos) && is_chrome_branded) {
     # TODO(crbug/1229334): Add Mac support for Lens Region Search feature.
     deps += [ "//chrome/browser/lens/region_search" ]
   }

@@ -57,6 +57,10 @@
       dark: "$google_grey_400",
       debug: "$google_yellow_700",
     },
+    text_color_disabled: {
+      light: "$google_grey_600",
+      dark: "$google_grey_500",
+    },
     text_color_alert: {
       light: "$google_red_600",
       dark: "$google_red_300",
@@ -290,6 +294,10 @@
     tab_icon_color_inactive: {
       light: "$google_grey_600",
       dark: "$google_grey_500",
+    },
+    tab_slider_track_color: {
+      light: "rgba($black_rgb, 0.06)",
+      dark: "rgba($white_rgb, 0.1)",
     },
 
     /* textfield */

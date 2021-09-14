@@ -2427,9 +2427,16 @@ TEST_P(AppsGridViewTabletTest, TouchDragFlipToNextPage) {
     page_flip_waiter_->Wait();
   }
 
-  // We flip to an extra page created at the end.
-  EXPECT_EQ("1,2,3", page_flip_waiter_->selected_pages());
-  EXPECT_EQ(3, GetPaginationModel()->selected_page());
+  if (features::IsAppListBubbleEnabled()) {
+    // A new page cannot be created or flipped to with the AppListBubble flag
+    // enabled.
+    EXPECT_EQ("1,2", page_flip_waiter_->selected_pages());
+    EXPECT_EQ(2, GetPaginationModel()->selected_page());
+  } else {
+    // We flip to an extra page created at the end.
+    EXPECT_EQ("1,2,3", page_flip_waiter_->selected_pages());
+    EXPECT_EQ(3, GetPaginationModel()->selected_page());
+  }
   // The drag is centered relative to the app item icon bounds, not the whole
   // app item view.
   gfx::Vector2d icon_offset(
@@ -2536,6 +2543,50 @@ TEST_P(AppsGridViewDragTest, FocusOfDraggedViewAfterDrag) {
     EXPECT_FALSE(item_view->HasFocus());
   } else {
     EXPECT_FALSE(search_box_view_->search_box()->HasFocus());
+    EXPECT_TRUE(item_view->HasFocus());
+  }
+}
+
+TEST_P(AppsGridViewDragTest, FocusOfReparentedDragViewAfterDrag) {
+  // Creates a folder item - the folder size was chosen arbitrarily.
+  model_->CreateAndPopulateFolderWithApps(5);
+  // Add more apps to the root apps grid.
+  model_->PopulateApps(2);
+  test_api_->Update();
+
+  // Open the folder.
+  test_api_->PressItemAt(0);
+
+  // Drag the first folder child out of the folder.
+  InitiateDragForItemAtCurrentPageAt(AppsGridView::MOUSE, 0, 0,
+                                     folder_apps_grid_view());
+  gfx::Point point_outside_folder =
+      app_list_folder_view()->GetLocalBounds().bottom_center() +
+      gfx::Vector2d(10, 10);
+  UpdateDrag(AppsGridView::MOUSE, point_outside_folder, folder_apps_grid_view(),
+             /*steps=*/10);
+
+  // Fire the reparent timer that should be started when an item is dragged out
+  // of folder bounds.
+  ASSERT_TRUE(folder_apps_grid_view()->FireFolderItemReparentTimerForTest());
+
+  // Drop the item in (0,3) spot is the root apps grid. The spot is expected to
+  // be empty.
+  gfx::Point drop_point = GetItemRectOnCurrentPageAt(0, 3).CenterPoint();
+  views::View::ConvertPointToTarget(apps_grid_view_, folder_apps_grid_view(),
+                                    &drop_point);
+  UpdateDrag(AppsGridView::MOUSE, drop_point, folder_apps_grid_view(),
+             /*steps=*/5);
+  EndDrag(folder_apps_grid_view(), /*cancel=*/false);
+
+  AppListItemView* const item_view = GetItemViewInTopLevelGrid(3);
+  EXPECT_EQ("Item 0", item_view->item()->id());
+
+  if (features::IsAppListBubbleEnabled()) {
+    // AppListBubble keeps focus on the search box after drags.
+    EXPECT_TRUE(search_box_view_->search_box()->HasFocus());
+    EXPECT_FALSE(item_view->HasFocus());
+  } else {
     EXPECT_TRUE(item_view->HasFocus());
   }
 }
@@ -2684,7 +2735,9 @@ TEST_F(AppsGridViewTest, PopulateAppsGridWithAFolder) {
   EXPECT_TRUE(folder_apps_grid_view()->IsInFolder());
 }
 
-TEST_P(AppsGridViewTabletTest, MoveAnItemToNewEmptyPage) {
+// This is a NonBubble test because new empty pages cannot be created with the
+// AppListBubble feature.
+TEST_P(AppsGridViewDragNonBubbleTest, MoveAnItemToNewEmptyPage) {
   const int kApps = 2;
   model_->PopulateApps(kApps);
   const views::ViewModelT<AppListItemView>* view_model =
@@ -2713,7 +2766,9 @@ TEST_P(AppsGridViewTabletTest, MoveAnItemToNewEmptyPage) {
             model_->GetModelContent());
 }
 
-TEST_P(AppsGridViewTabletTest, MoveLastItemToCreateFolderInNextPage) {
+// This is a NonBubble test because new empty pages cannot be created with the
+// AppListBubble feature.
+TEST_P(AppsGridViewDragNonBubbleTest, MoveLastItemToCreateFolderInNextPage) {
   const int kApps = 2;
   model_->PopulateApps(kApps);
   const views::ViewModelT<AppListItemView>* view_model =
@@ -2748,7 +2803,9 @@ TEST_P(AppsGridViewTabletTest, MoveLastItemToCreateFolderInNextPage) {
             model_->GetModelContent());
 }
 
-TEST_P(AppsGridViewTabletTest, MoveLastItemForReorderInNextPage) {
+// This is a NonBubble test because new empty pages cannot be created with the
+// AppListBubble feature.
+TEST_P(AppsGridViewDragNonBubbleTest, MoveLastItemForReorderInNextPage) {
   const int kApps = 2;
   model_->PopulateApps(kApps);
   const views::ViewModelT<AppListItemView>* view_model =
@@ -2785,7 +2842,9 @@ TEST_P(AppsGridViewTabletTest, MoveLastItemForReorderInNextPage) {
             model_->GetModelContent());
 }
 
-TEST_P(AppsGridViewTabletTest, MoveLastItemToNewEmptyPage) {
+// This is a NonBubble test because new empty pages cannot be created with the
+// AppListBubble feature.
+TEST_P(AppsGridViewDragNonBubbleTest, MoveLastItemToNewEmptyPage) {
   const int kApps = 1;
   model_->PopulateApps(kApps);
   const views::ViewModelT<AppListItemView>* view_model =
@@ -2826,7 +2885,9 @@ TEST_F(AppsGridViewTest, NoPageBreakItemWithFullGrid) {
   EXPECT_EQ(model_content, model_->GetModelContent());
 }
 
-TEST_P(AppsGridViewTabletTest, PageBreakItemAddedAfterDrag) {
+// This is a NonBubble test because page breaks are ignored with the
+// AppListBubble feature.
+TEST_P(AppsGridViewDragNonBubbleTest, PageBreakItemAddedAfterDrag) {
   // There are two pages and last item is on second page.
   const int kApps = 2 + GetTilesPerPage(0);
   model_->PopulateApps(kApps);
@@ -2883,7 +2944,9 @@ TEST_P(AppsGridViewTabletTest, MoveItemToPreviousFullPage) {
   }
 }
 
-TEST_P(AppsGridViewTabletTest, MoveItemSubsequentDragKeepPageBreak) {
+// This is a NonBubble test because page breaks are ignored with the
+// AppListBubble feature.
+TEST_P(AppsGridViewDragNonBubbleTest, MoveItemSubsequentDragKeepPageBreak) {
   // There are two pages and last item is on second page.
   const int kApps = 2 + GetTilesPerPage(0);
   model_->PopulateApps(kApps);
@@ -2947,7 +3010,9 @@ TEST_F(AppsGridViewTest, CreateANewPageWithKeyboardLogsMetrics) {
       AppListPageCreationType::kMovingAppWithKeyboard, 1);
 }
 
-TEST_P(AppsGridViewTabletTest, CreateANewPageByDraggingLogsMetrics) {
+// This is a NonBubble test because new empty pages cannot be created with the
+// AppListBubble feature.
+TEST_P(AppsGridViewDragNonBubbleTest, CreateANewPageByDraggingLogsMetrics) {
   ASSERT_TRUE(paged_apps_grid_view_)
       << "Only available in tablet mode or when AppListBubble is disabled.";
 
@@ -3139,7 +3204,9 @@ TEST_P(AppsGridViewCardifiedStateTest, BackgroundCardBoundsOnSecondPage) {
   EXPECT_EQ(0, paged_apps_grid_view_->BackgroundCardCountForTesting());
 }
 
-TEST_P(AppsGridViewCardifiedStateTest,
+// This is a NonBubble test because new empty pages cannot be created with the
+// AppListBubble feature.
+TEST_P(AppsGridViewDragNonBubbleTest,
        PeekingCardOnLastPageAfterCreatingNewPage) {
   ASSERT_TRUE(paged_apps_grid_view_);
 

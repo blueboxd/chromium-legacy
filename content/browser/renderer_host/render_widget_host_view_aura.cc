@@ -1503,7 +1503,7 @@ bool RenderWidgetHostViewAura::ShouldDoLearning() {
   return GetTextInputManager() && GetTextInputManager()->should_do_learning();
 }
 
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 bool RenderWidgetHostViewAura::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
@@ -2274,6 +2274,10 @@ void RenderWidgetHostViewAura::NotifyVirtualKeyboardOverlayRect(
   if (ShouldVirtualKeyboardOverlayContent()) {
     frame->NotifyVirtualKeyboardOverlayRect(keyboard_rect);
   }
+}
+
+bool RenderWidgetHostViewAura::IsHTMLFormPopup() const {
+  return !!popup_parent_host_view_;
 }
 
 bool RenderWidgetHostViewAura::FocusedFrameHasStickyActivation() const {

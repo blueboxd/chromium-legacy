@@ -1371,11 +1371,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "enable-android-spellchecker",
-    "owners": [ "timvolodine" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-app-discovery-for-oobe",
     "owners": [ "melzhang", "tsergeant", "chromeos-apps-foundation-team" ],
     "expiry_milestone": 100
@@ -1609,32 +1604,32 @@
   {
     "name": "enable-cros-ime-assist-autocorrect",
     "owners": [ "jopalmer", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "enable-cros-ime-assist-emoji-enhanced",
     "owners": [ "myy", "curtismcmullan", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 100
   },
   {
     "name": "enable-cros-ime-assist-multi-word",
     "owners": [ "curtismcmullan", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "enable-cros-ime-assist-multi-word-expanded",
     "owners": [ "curtismcmullan", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 100
   },
   {
     "name": "enable-cros-ime-assist-personal-info",
     "owners": [ "jiwan", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "enable-cros-ime-emoji-suggest-addition",
     "owners": [ "myy", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "enable-cros-ime-mozc-proto",
@@ -1654,7 +1649,7 @@
   {
     "name": "enable-cros-ime-system-emoji-picker",
     "owners": [ "jopalmer", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "enable-cros-ime-system-emoji-picker-clipboard",
@@ -1679,7 +1674,7 @@
   {
     "name": "enable-cros-on-device-grammar-check",
     "owners": [ "jiwan", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "enable-cros-system-chinese-physical-typing",
@@ -1704,17 +1699,17 @@
   {
     "name": "enable-cros-virtual-keyboard-bordered-key",
     "owners": [ "essential-inputs-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "enable-cros-virtual-keyboard-multipaste",
-    "owners": [ "essential-inputs-team@google.com" ],
-    "expiry_milestone": 95
+    "owners": [ "jiwan", "essential-inputs-team@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "enable-cros-virtual-keyboard-multipaste-suggestion",
     "owners": [ "jiwan", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 100
   },
   {
     "name": "enable-dangerous-download-dialog",
@@ -2857,11 +2852,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-web-payments-minimal-ui",
-    "owners": [ "rouslan", "web-payments-team@google.com" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "enable-webassembly-baseline",
     "owners": [ "clemensb", "wasm-team@google.com" ],
     // This flag is often used by developers and partners to test
@@ -3229,11 +3219,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "force-secure-payment-confirmation-dialog",
-    "owners": [ "//components/payments/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "force-show-update-menu-badge",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
     // This is required by test teams to verify functionality on devices which
@@ -3337,11 +3322,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "global-media-controls-overlay-controls",
-    "owners" : [ "jazzhsu", "steimel", "media-dev" ],
-    "expiry_milestone": 93
-  },
-  {
     "name": "global-media-controls-picture-in-picture",
     "owners": [ "jazzhsu", "steimel", "media-dev" ],
     "expiry_milestone": 90
@@ -3363,7 +3343,7 @@
   },
   {
     "name": "handwriting-gesture-editing",
-    "owners": [ "essential-inputs-team@google.com" ],
+    "owners": [ "curtismcmullan", "essential-inputs-team@google.com" ],
     "expiry_milestone": 95
   },
   {
@@ -5333,7 +5313,7 @@
   {
     "name": "tab-groups-save",
     "owners": [ "chrome-desktop-ui-sea@google.com", "cyan" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "tab-hover-card-images",

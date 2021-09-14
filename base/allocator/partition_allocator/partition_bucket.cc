@@ -225,17 +225,18 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
         slot_span_alignment - PartitionPageSize();
     const size_t reservation_size =
         PartitionRoot<thread_safe>::GetDirectMapReservationSize(
-            raw_size + padding_for_alignment);
+            raw_size + padding_for_alignment, root->brp_enabled());
 #if DCHECK_IS_ON()
     const size_t available_reservation_size =
         reservation_size - padding_for_alignment -
-        PartitionRoot<thread_safe>::GetDirectMapMetadataAndGuardPagesSize();
+        PartitionRoot<thread_safe>::GetDirectMapMetadataAndGuardPagesSize(
+            root->brp_enabled());
     PA_DCHECK(slot_size <= available_reservation_size);
 #endif
 
     // Allocate from GigaCage. Route to the appropriate GigaCage pool based on
     // BackupRefPtr support.
-    pool_handle pool = root->ChooseGigaCagePool();
+    pool_handle pool = root->ChoosePool();
     char* reservation_start =
         ReserveMemoryFromGigaCage(pool, nullptr, reservation_size);
     if (UNLIKELY(!reservation_start)) {
@@ -543,7 +544,7 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSuperPage(
   char* requested_address = root->next_super_page;
   // Allocate from GigaCage. Route to the appropriate GigaCage pool based on
   // BackupRefPtr support.
-  pool_handle pool = root->ChooseGigaCagePool();
+  pool_handle pool = root->ChoosePool();
   char* super_page =
       ReserveMemoryFromGigaCage(pool, requested_address, kSuperPageSize);
   if (UNLIKELY(!super_page)) {

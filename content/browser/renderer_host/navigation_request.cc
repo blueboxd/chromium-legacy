@@ -318,8 +318,8 @@ std::string ComputeUserAgentValue(const net::HttpRequestHeaders& headers,
   // If Sec-CH-UA-Reduced is set on the headers, it means that the token for the
   // UserAgentReduction Origin Trial has been validated and we should send a
   // reduced UA string on the request.
-  std::string header = network::kClientHintsNameMapping[static_cast<int>(
-      network::mojom::WebClientHintsType::kUAReduced)];
+  std::string header = network::GetClientHintToNameMap().at(
+      network::mojom::WebClientHintsType::kUAReduced);
   std::string value;
   const bool reduced = headers.GetHeader(header, &value) && value == "?1";
   base::UmaHistogramEnumeration("Navigation.UserAgentStringType",
@@ -3802,8 +3802,10 @@ void NavigationRequest::OnRedirectChecksComplete(
   std::vector<std::string> removed_headers = TakeRemovedRequestHeaders();
   // Removes all Client Hints from the request, that were passed on from the
   // previous one.
-  for (size_t i = 0; i < network::kClientHintsNameMappingCount; ++i)
-    removed_headers.push_back(network::kClientHintsNameMapping[i]);
+  for (const auto& elem : network::GetClientHintToNameMap()) {
+    const auto& header = elem.second;
+    removed_headers.push_back(header);
+  }
 
   // Add any required Client Hints to the current request.
   BrowserContext* browser_context =
@@ -5953,7 +5955,6 @@ NavigationRequest::MakeDidCommitProvisionalLoadParamsForActivation() {
   DCHECK_EQ(params->http_status_code, net::HTTP_OK);
   DCHECK_EQ(params->url_is_unreachable, false);
 
-  params->intended_as_new_entry = commit_params().intended_as_new_entry;
   params->should_replace_current_entry =
       common_params().should_replace_current_entry;
   DCHECK_EQ(params->post_id, -1);

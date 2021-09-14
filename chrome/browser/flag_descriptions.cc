@@ -951,10 +951,6 @@ const char kEnableLayoutNGName[] = "Enable LayoutNG";
 const char kEnableLayoutNGDescription[] =
     "Enable Blink's next generation layout engine.";
 
-const char kEnableLayoutNGTableName[] = "Enable TableNG";
-const char kEnableLayoutNGTableDescription[] =
-    "Enable Blink's next generation table layout.";
-
 const char kEnableLazyFrameLoadingName[] = "Enable lazy frame loading";
 const char kEnableLazyFrameLoadingDescription[] =
     "Defers the loading of iframes marked with the attribute 'loading=lazy' "
@@ -2730,11 +2726,6 @@ const char kWebPaymentsExperimentalFeaturesName[] =
 const char kWebPaymentsExperimentalFeaturesDescription[] =
     "Enable experimental Web Payments API features";
 
-const char kWebPaymentsMinimalUIName[] = "Web Payments Minimal UI";
-const char kWebPaymentsMinimalUIDescription[] =
-    "Allow Payment Request API to open a minimal UI to replace the Payment "
-    "Request UI when appropriate.";
-
 const char kAppStoreBillingDebugName[] =
     "Web Payments App Store Billing Debug Mode";
 const char kAppStoreBillingDebugDescription[] =
@@ -3080,9 +3071,6 @@ const char kEnableAutofillRefreshStyleName[] =
     "Enable Autofill refresh style (Android)";
 const char kEnableAutofillRefreshStyleDescription[] =
     "Enable modernized style for Autofill on Android";
-
-const char kEnableAndroidSpellcheckerDescription[] =
-    "Enables use of the Android spellchecker.";
 
 const char kEnableCommandLineOnNonRootedName[] =
     "Enable command line on non-rooted devices";

@@ -124,9 +124,14 @@ struct PartitionOptions {
     kAllowed,
   };
 
-  enum class RefCount : uint8_t {
-    kDisallowed,
-    kAllowed,
+  enum class BackupRefPtr : uint8_t {
+    kDisabled,
+    kEnabled,
+  };
+
+  enum class UseConfigurablePool : uint8_t {
+    kNo,
+    kIfAvailable,
   };
 
   // Constructor to suppress aggregate initialization.
@@ -134,18 +139,21 @@ struct PartitionOptions {
                              ThreadCache thread_cache,
                              Quarantine quarantine,
                              Cookie cookie,
-                             RefCount ref_count)
+                             BackupRefPtr backup_ref_ptr,
+                             UseConfigurablePool use_configurable_pool)
       : aligned_alloc(aligned_alloc),
         thread_cache(thread_cache),
         quarantine(quarantine),
         cookie(cookie),
-        ref_count(ref_count) {}
+        backup_ref_ptr(backup_ref_ptr),
+        use_configurable_pool(use_configurable_pool) {}
 
   AlignedAlloc aligned_alloc;
   ThreadCache thread_cache;
   Quarantine quarantine;
   Cookie cookie;
-  RefCount ref_count;
+  BackupRefPtr backup_ref_ptr;
+  UseConfigurablePool use_configurable_pool;
 };
 
 // Never instantiate a PartitionRoot directly, instead use
@@ -187,7 +195,10 @@ struct BASE_EXPORT PartitionRoot {
 
   bool allow_aligned_alloc;
   bool allow_cookie;
-  bool allow_ref_count;
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+  bool brp_enabled_;
+#endif
+  bool use_configurable_pool;
 
   // Lazy commit should only be enabled on Windows, because commit charge is
   // only meaningful and limited on Windows. It affects performance on other
@@ -430,9 +441,12 @@ struct BASE_EXPORT PartitionRoot {
     return TS_UNCHECKED_READ(max_size_of_allocated_bytes);
   }
 
-  internal::pool_handle ChooseGigaCagePool() const {
+  internal::pool_handle ChoosePool() const {
+    if (use_configurable_pool) {
+      return internal::GetConfigurablePool();
+    }
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-    return allow_ref_count ? internal::GetBRPPool() : internal::GetNonBRPPool();
+    return brp_enabled() ? internal::GetBRPPool() : internal::GetNonBRPPool();
 #else
     return internal::GetNonBRPPool();
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
@@ -453,7 +467,7 @@ struct BASE_EXPORT PartitionRoot {
   }
 
   static PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
-  GetDirectMapMetadataAndGuardPagesSize() {
+  GetDirectMapMetadataAndGuardPagesSize(bool brp_enabled) {
     // Because we need to fake a direct-map region to look like a super page, we
     // need to allocate a bunch of system pages more around the payload:
     // - The first few system pages are the partition page in which the super
@@ -465,7 +479,8 @@ struct BASE_EXPORT PartitionRoot {
     // for the BRP pool bitmap which excludes guard pages and operates at
     // PartitionPageSize() granularity. This is to match the behavior of normal
     // buckets allocations.
-    return PartitionPageSize() + PartitionPageSize();
+    return PartitionPageSize() +
+           (brp_enabled ? PartitionPageSize() : SystemPageSize());
 #else
     return PartitionPageSize() + SystemPageSize();
 #endif
@@ -481,13 +496,13 @@ struct BASE_EXPORT PartitionRoot {
   }
 
   static ALWAYS_INLINE size_t
-  GetDirectMapReservationSize(size_t padded_raw_size) {
+  GetDirectMapReservationSize(size_t padded_raw_size, bool brp_enabled) {
     // Caller must check that the size is not above the MaxDirectMapped()
     // limit before calling. This also guards against integer overflow in the
     // calculation here.
     PA_DCHECK(padded_raw_size <= MaxDirectMapped());
     return bits::AlignUp(
-        padded_raw_size + GetDirectMapMetadataAndGuardPagesSize(),
+        padded_raw_size + GetDirectMapMetadataAndGuardPagesSize(brp_enabled),
         DirectMapAllocationGranularity());
   }
 
@@ -527,6 +542,10 @@ struct BASE_EXPORT PartitionRoot {
     // sizeof(PartitionRefCount) is 8, it fills the entire smallest slot on
     // 32-bit systems (kSmallestBucket is 8). Adjusting the request size from 0
     // to 1 guarantees that we'll never allocate the smallest slot.
+    //
+    // Deliberately don't check for |brp_enabled|, because cost of patching up
+    // 0->1 unnecessarily is negligible, but cost of checking |brp_enabled| may
+    // not be.
     if (UNLIKELY(size == 0))
       return 1;
 #else
@@ -589,6 +608,14 @@ struct BASE_EXPORT PartitionRoot {
   ALWAYS_INLINE void* AdjustPointerForExtrasSubtract(void* ptr) const {
     return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(ptr) -
                                    extras_offset);
+  }
+
+  bool brp_enabled() const {
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+    return brp_enabled_;
+#else
+    return false;
+#endif
   }
 
  private:
@@ -753,7 +780,7 @@ ALWAYS_INLINE void* PartitionAllocGetSlotStartInBRPPool(void* ptr) {
           ptr);
   auto* root = PartitionRoot<internal::ThreadSafe>::FromSlotSpan(slot_span);
   // Double check that ref-count is indeed present.
-  PA_DCHECK(root->allow_ref_count);
+  PA_DCHECK(root->brp_enabled());
 
   // Get the offset from the beginning of the slot span.
   uintptr_t ptr_addr = reinterpret_cast<uintptr_t>(ptr);
@@ -797,7 +824,7 @@ ALWAYS_INLINE bool PartitionAllocIsValidPtrDelta(void* ptr, ptrdiff_t delta) {
           adjusted_ptr);
   auto* root = PartitionRoot<internal::ThreadSafe>::FromSlotSpan(slot_span);
   // Double check that ref-count is indeed present.
-  PA_DCHECK(root->allow_ref_count);
+  PA_DCHECK(root->brp_enabled());
 
   uintptr_t user_data_start =
       reinterpret_cast<uintptr_t>(root->AdjustPointerForExtrasAdd(
@@ -820,7 +847,7 @@ ALWAYS_INLINE void PartitionAllocFreeForRefCounting(void* slot_start) {
   auto* root = PartitionRoot<ThreadSafe>::FromSlotSpan(slot_span);
   // PartitionRefCount is required to be allocated inside a `PartitionRoot` that
   // supports reference counts.
-  PA_DCHECK(root->allow_ref_count);
+  PA_DCHECK(root->brp_enabled());
 
   // memset() can be really expensive.
 #if EXPENSIVE_DCHECKS_ARE_ON()
@@ -1043,7 +1070,9 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
   }
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-  if (allow_ref_count) {
+  // TODO(keishi): Add LIKELY when brp is fully enabled as |brp_enabled| will be
+  // false only for the aligned partition.
+  if (brp_enabled()) {
     auto* ref_count = internal::PartitionRefCountPointer(slot_start);
     // If there are no more references to the allocation, it can be freed
     // immediately. Otherwise, defer the operation and zap the memory to turn
@@ -1516,8 +1545,9 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlagsNoHooks(
   }
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-  // LIKELY: |allow_ref_count| is false only for the aligned partition.
-  if (LIKELY(allow_ref_count)) {
+  // TODO(keishi): Add LIKELY when brp is fully enabled as |brp_enabled| will be
+  // false only for the aligned partition.
+  if (brp_enabled()) {
     new (internal::PartitionRefCountPointer(slot_start))
         internal::PartitionRefCount();
   }

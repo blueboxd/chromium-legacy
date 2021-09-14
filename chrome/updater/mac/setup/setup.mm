@@ -122,11 +122,11 @@ bool CopyBundle(const base::FilePath& dest_path, UpdaterScope scope) {
 
 bool CopyKeystoneBundle(UpdaterScope scope) {
   // The Keystone Bundle is in
-  // GoogleUpdater.app/Contents/Frameworks/GoogleSoftwareUpdate.bundle.
+  // GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle.
   base::FilePath keystone_bundle_path =
       base::mac::OuterBundlePath()
           .Append(FILE_PATH_LITERAL("Contents"))
-          .Append(FILE_PATH_LITERAL("Frameworks"))
+          .Append(FILE_PATH_LITERAL("Helpers"))
           .Append(FILE_PATH_LITERAL(KEYSTONE_NAME ".bundle"));
 
   if (!base::PathExists(keystone_bundle_path)) {
@@ -421,8 +421,6 @@ int DoSetup(UpdaterScope scope) {
     return setup_exit_codes::kFailedToGetVersionedUpdaterFolderPath;
   if (!CopyBundle(*dest_path, scope))
     return setup_exit_codes::kFailedToCopyBundle;
-  if (!CopyKeystoneBundle(scope))
-    return setup_exit_codes::kFailedToCopyKeystoneBundle;
 
   const base::FilePath updater_executable_path =
       dest_path->Append(GetExecutableRelativePath());
@@ -478,6 +476,9 @@ int PromoteCandidate(UpdaterScope scope) {
 
   if (!StartLaunchdServiceJob(scope))
     return setup_exit_codes::kFailedToStartLaunchdActiveServiceJob;
+
+  if (!CopyKeystoneBundle(scope))
+    return setup_exit_codes::kFailedToCopyKeystoneBundle;
 
   // Wait for launchd to finish the load operation for the update service.
   base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(2));

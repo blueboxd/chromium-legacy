@@ -1404,78 +1404,10 @@ const FeatureEntry::FeatureVariation kTabScrollingVariations[] = {
     {" - tabs don't shrink", kMinimumTabWidthSettingFull,
      base::size(kMinimumTabWidthSettingFull), nullptr}};
 
-const FeatureEntry::FeatureParam kTabHoverCardImagesOptimizationCaptureSpeed[] =
-    {{features::kTabHoverCardImagesNotReadyDelayParameterName, "0"},
-     {features::kTabHoverCardImagesLoadingDelayParameterName, "0"},
-     {features::kTabHoverCardImagesLoadedDelayParameterName, "0"}};
-const FeatureEntry::FeatureParam
-    kTabHoverCardImagesOptimizationResourceUsage[] = {
-        {features::kTabHoverCardImagesNotReadyDelayParameterName, "800"},
-        {features::kTabHoverCardImagesLoadingDelayParameterName, "300"},
-        {features::kTabHoverCardImagesLoadedDelayParameterName, "300"}};
-const FeatureEntry::FeatureParam
-    kTabHoverCardImagesImmediatePlaceholderCrossfade[] = {
-        {features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
-        {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
-        {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
-        {features::kTabHoverCardImagesCrossfadePreviewAtParameterName, "0.0"}};
-const FeatureEntry::FeatureParam
-    kTabHoverCardImagesEarlySlidePlaceholderCrossfade[] = {
-        {features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
-        {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
-        {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
-        {features::kTabHoverCardImagesCrossfadePreviewAtParameterName, "0.25"}};
-const FeatureEntry::FeatureParam
-    kTabHoverCardImagesMidSlidePlaceholderCrossfade[] = {
-        {features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
-        {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
-        {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
-        {features::kTabHoverCardImagesCrossfadePreviewAtParameterName, "0.5"}};
-const FeatureEntry::FeatureParam kTabHoverCardImagesLatePlaceholderCrossfade[] =
-    {{features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
-     {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
-     {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
-     {features::kTabHoverCardImagesCrossfadePreviewAtParameterName, "1.0"}};
-const FeatureEntry::FeatureParam
-    kTabHoverCardImagesSmallAdditionalFullWidthDelay[] = {
-        {features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
-        {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
-        {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
-        {features::kTabHoverCardAdditionalMaxWidthDelay, "200"}};
-const FeatureEntry::FeatureParam
-    kTabHoverCardImagesNoAdditionalFullWidthDelay[] = {
-        {features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
-        {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
-        {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
-        {features::kTabHoverCardAdditionalMaxWidthDelay, "0"}};
 const FeatureEntry::FeatureParam kTabHoverCardImagesAlternateFormat[] = {
-    {features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
-    {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
-    {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
     {features::kTabHoverCardAlternateFormat, "1"}};
 
 const FeatureEntry::FeatureVariation kTabHoverCardImagesVariations[] = {
-    {" capture speed", kTabHoverCardImagesOptimizationCaptureSpeed,
-     base::size(kTabHoverCardImagesOptimizationCaptureSpeed), nullptr},
-    {" resource usage", kTabHoverCardImagesOptimizationResourceUsage,
-     base::size(kTabHoverCardImagesOptimizationResourceUsage), nullptr},
-    {" immediate placeholder crossfade",
-     kTabHoverCardImagesImmediatePlaceholderCrossfade,
-     base::size(kTabHoverCardImagesImmediatePlaceholderCrossfade), nullptr},
-    {" early-transition placeholder crossfade",
-     kTabHoverCardImagesEarlySlidePlaceholderCrossfade,
-     base::size(kTabHoverCardImagesEarlySlidePlaceholderCrossfade), nullptr},
-    {" mid-transition placeholder crossfade",
-     kTabHoverCardImagesMidSlidePlaceholderCrossfade,
-     base::size(kTabHoverCardImagesMidSlidePlaceholderCrossfade), nullptr},
-    {" placeholder crossfade on land",
-     kTabHoverCardImagesLatePlaceholderCrossfade,
-     base::size(kTabHoverCardImagesImmediatePlaceholderCrossfade), nullptr},
-    {" smaller full width show delay",
-     kTabHoverCardImagesSmallAdditionalFullWidthDelay,
-     base::size(kTabHoverCardImagesSmallAdditionalFullWidthDelay), nullptr},
-    {" no full width show delay", kTabHoverCardImagesNoAdditionalFullWidthDelay,
-     base::size(kTabHoverCardImagesNoAdditionalFullWidthDelay), nullptr},
     {" alternate hover card format", kTabHoverCardImagesAlternateFormat,
      base::size(kTabHoverCardImagesAlternateFormat), nullptr}};
 
@@ -2702,6 +2634,13 @@ const FeatureEntry::FeatureVariation kReadLaterVariations[] = {
     {"(use root bookmark as default)", kReadLaterUseRootBookmarkAsDefault,
      base::size(kReadLaterUseRootBookmarkAsDefault), nullptr}};
 
+const FeatureEntry::FeatureParam kScrollCaptureInMemory[] = {
+    {"in_memory_capture", "true"}};
+
+const FeatureEntry::FeatureVariation kScrollCaptureVariations[] = {
+    {"(in memory capture)", kScrollCaptureInMemory,
+     base::size(kScrollCaptureInMemory), nullptr}};
+
 #endif  // defined(OS_ANDROID)
 
 const FeatureEntry::Choice kDocumentTransitionSlowdownFactorChoices[] = {
@@ -3002,12 +2941,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalWebPlatformFeaturesName,
      flag_descriptions::kExperimentalWebPlatformFeaturesDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebPlatformFeatures)},
-#if BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_ANDROID)
-    {"enable-android-spellchecker",
-     flag_descriptions::kEnableAndroidSpellcheckerDescription,
-     flag_descriptions::kEnableAndroidSpellcheckerDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(spellcheck::kAndroidSpellCheckerNonLowEnd)},
-#endif  // ENABLE_SPELLCHECK && OS_ANDROID
     {"top-chrome-touch-ui", flag_descriptions::kTopChromeTouchUiName,
      flag_descriptions::kTopChromeTouchUiDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kTopChromeTouchUiChoices)},
@@ -4240,10 +4173,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebPaymentsExperimentalFeaturesName,
      flag_descriptions::kWebPaymentsExperimentalFeaturesDescription, kOsAll,
      FEATURE_VALUE_TYPE(payments::features::kWebPaymentsExperimentalFeatures)},
-    {"enable-web-payments-minimal-ui",
-     flag_descriptions::kWebPaymentsMinimalUIName,
-     flag_descriptions::kWebPaymentsMinimalUIDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kWebPaymentsMinimalUI)},
     {"enable-debug-for-store-billing",
      flag_descriptions::kAppStoreBillingDebugName,
      flag_descriptions::kAppStoreBillingDebugDescription, kOsAll,
@@ -5161,7 +5090,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCommercePriceTrackingAndroidDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(commerce::kCommercePriceTracking,
                                     kCommercePriceTrackingAndroidVariations,
-                                    "CommercePriceTrackingAndroid")},
+                                    "CommercePriceTracking")},
 
     {"enable-tab-groups", flag_descriptions::kTabGroupsAndroidName,
      flag_descriptions::kTabGroupsAndroidDescription, kOsAndroid,
@@ -5222,10 +5151,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-layout-ng", flag_descriptions::kEnableLayoutNGName,
      flag_descriptions::kEnableLayoutNGDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kLayoutNG)},
-
-    {"enable-table-ng", flag_descriptions::kEnableLayoutNGTableName,
-     flag_descriptions::kEnableLayoutNGTableDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kLayoutNGTable)},
 
     {"enable-lazy-image-loading",
      flag_descriptions::kEnableLazyImageLoadingName,
@@ -6008,12 +5933,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kGlobalMediaControlsSeamlessTransferDescription,
      kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(media::kGlobalMediaControlsSeamlessTransfer)},
-
-    {"global-media-controls-overlay-controls",
-     flag_descriptions::kGlobalMediaControlsOverlayControlsName,
-     flag_descriptions::kGlobalMediaControlsOverlayControlsDescription,
-     kOsWin | kOsMac | kOsLinux,
-     FEATURE_VALUE_TYPE(media::kGlobalMediaControlsOverlayControls)},
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
@@ -6966,8 +6885,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-browsing-data-lifetime-manager",
      flag_descriptions::kEnableBrowsingDataLifetimeManagerName,
-     flag_descriptions::kEnableBrowsingDataLifetimeManagerDescription,
-     kOsDesktop,
+     flag_descriptions::kEnableBrowsingDataLifetimeManagerDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          browsing_data::features::kEnableBrowsingDataLifetimeManager)},
 
@@ -7119,7 +7037,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"scroll-capture", flag_descriptions::kScrollCaptureName,
      flag_descriptions::kScrollCaptureDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kScrollCapture)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kScrollCapture,
+                                    kScrollCaptureVariations,
+                                    "ScrollCapture")},
 #endif  // defined(OS_ANDROID)
 
     {"chrome-labs", flag_descriptions::kChromeLabsName,

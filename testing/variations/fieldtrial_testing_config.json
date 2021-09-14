@@ -150,24 +150,6 @@
             ]
         }
     ],
-    "AndroidElasticOverscroll": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "type": "transform"
-                    },
-                    "enable_features": [
-                        "ElasticOverscroll"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidHatsNext": [
         {
             "platforms": [
@@ -583,12 +565,8 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_2021-06-21",
-                    "params": {
-                        "save_password_message_dismiss_duration_ms": "10000"
-                    },
+                    "name": "Enabled",
                     "enable_features": [
-                        "MessagesForAndroidInfrastructure",
                         "MessagesForAndroidPasswords"
                     ]
                 }
@@ -603,9 +581,6 @@
             "experiments": [
                 {
                     "name": "Enabled",
-                    "params": {
-                        "use_followup_button_text": "true"
-                    },
                     "enable_features": [
                         "MessagesForAndroidUpdatePassword"
                     ]
@@ -2354,8 +2329,9 @@
             ],
             "experiments": [
                 {
-                    "name": "PriceDropIndicators_20210729",
+                    "name": "PriceDropIndicators_20210910",
                     "params": {
+                        "enable_persisted_tab_data_maintenance": "true",
                         "enable_price_tracking": "true",
                         "price_tracking_with_optimization_guide": "true"
                     },
@@ -3820,6 +3796,26 @@
             ]
         }
     ],
+    "FirstInputDelayWithoutEventListener": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FirstInputDelayWithoutEventListener"
+                    ]
+                }
+            ]
+        }
+    ],
     "FirstPartySetsOriginTrial": [
         {
             "platforms": [
@@ -4108,6 +4104,48 @@
                     },
                     "enable_features": [
                         "HappinessTrackingOnboardingExperience"
+                    ]
+                }
+            ]
+        }
+    ],
+    "HatsSmartUnlock": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "prob": "0.05",
+                        "survey_cycle_length": "7",
+                        "survey_start_date_ms": "1627801200000",
+                        "trigger_id": "4oPHNnPJy0jBnuKU19R0T1NSmNes"
+                    },
+                    "enable_features": [
+                        "HappinessTrackingSmartLock"
+                    ]
+                }
+            ]
+        }
+    ],
+    "HatsUnlock": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "prob": "0.001",
+                        "survey_cycle_length": "7",
+                        "survey_start_date_ms": "1627801200000",
+                        "trigger_id": "qqZi3hpfx0jBnuKU19R0UA7zE7e4"
+                    },
+                    "enable_features": [
+                        "HappinessTrackingUnlock"
                     ]
                 }
             ]

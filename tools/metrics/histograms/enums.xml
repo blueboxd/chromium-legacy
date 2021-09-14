@@ -14109,6 +14109,7 @@ Called by update_net_error_codes.py.-->
   <int value="80" label="HTTP allowed"/>
   <int value="81" label="Formfill metadata"/>
   <int value="82" label="Federated identity active session"/>
+  <int value="83" label="Auto-darken web content"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -29044,8 +29045,8 @@ Called by update_extension_histograms.py.-->
   <int value="1427" label="INPUTMETHODPRIVATE_RESET"/>
   <int value="1428" label="PRINTING_GETPRINTERINFO"/>
   <int value="1429" label="AUTOTESTPRIVATE_ISARCPACKAGELISTINITIALREFRESHED"/>
-  <int value="1430" label="AUTOTESTPRIVATE_STARTTRACING"/>
-  <int value="1431" label="AUTOTESTPRIVATE_STOPTRACING"/>
+  <int value="1430" label="DELETED_AUTOTESTPRIVATE_STARTTRACING"/>
+  <int value="1431" label="DELETED_AUTOTESTPRIVATE_STOPTRACING"/>
   <int value="1432" label="LOGIN_LOCKMANAGEDGUESTSESSION"/>
   <int value="1433" label="LOGIN_UNLOCKMANAGEDGUESTSESSION"/>
   <int value="1434" label="AUTOTESTPRIVATE_SETARCTOUCHMODE"/>
@@ -48332,6 +48333,7 @@ from previous Chrome versions.
   <int value="-1228546373"
       label="UseLookalikesForNavigationSuggestions:enabled"/>
   <int value="-1227660915" label="WebContentsOcclusion:disabled"/>
+  <int value="-1226536953" label="DeskTemplateSync:disabled"/>
   <int value="-1225772151" label="OfflineHome:disabled"/>
   <int value="-1225629234" label="SyncPseudoUSSFavicons:enabled"/>
   <int value="-1225198073" label="ReaderModeInCCT:disabled"/>
@@ -50102,6 +50104,7 @@ from previous Chrome versions.
       label="QueryTilesRemoveTrendingAfterInactivity:disabled"/>
   <int value="194573877" label="MacViewsNativeDialogs:disabled"/>
   <int value="194895489" label="passive-listeners-default"/>
+  <int value="195112080" label="DeskTemplateSync:enabled"/>
   <int value="195335115" label="AudioWorkletRealtimeThread:disabled"/>
   <int value="195570937" label="EnableHomeLauncher:disabled"/>
   <int value="196103097" label="PaintPreviewShowOnStartup:disabled"/>
@@ -75043,6 +75046,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="A session restore deferred one or more tabs"/>
 </enum>
 
+<enum name="SessionRestoreExitResult">
+  <int value="0" label="No Exit"/>
+  <int value="1" label="Has One Service and Did Schedule"/>
+  <int value="2" label="Has One Service and No Schedule"/>
+  <int value="3" label="Is not first service and Did Schedule"/>
+  <int value="4" label="Is not first service and No Schedule"/>
+</enum>
+
 <enum name="SessionRestoreFinishReason">
   <int value="0"
       label="SessionRestore.ForegroundTabFirstPaint4_XX successfully
@@ -75059,6 +75070,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="The loading of a tab's content was deferred"/>
   <int value="3" label="A deferred tab's content was loaded via user action"/>
   <int value="4" label="A tab's content automatically started to load"/>
+</enum>
+
+<enum name="SessionRestoreWindowCount">
+  <int value="0" label="No window"/>
+  <int value="1" label="No app window, has normal window"/>
+  <int value="2" label="Has app window, no normal window"/>
+  <int value="3" label="Has app window, has normal window"/>
 </enum>
 
 <enum name="SessionStartupPref">

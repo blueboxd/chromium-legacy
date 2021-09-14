@@ -88,9 +88,9 @@ PASS image2.bottom is 125.00
 PASS text2.left is 175.00
 PASS text2.top is 132.66
 PASS text2.width is 47.98
-FAIL text2.height should be 6.02. Was 5.929279327392578.
+PASS text2.height is 6.02
 PASS text2.right is 222.98
-FAIL text2.bottom should be 138.7. Was 138.5980110168457.
+PASS text2.bottom is 138.70
 
 
 PASS svg3.left is 900.00

@@ -329,6 +329,10 @@ const base::Feature kDarkLightMode{"DarkLightMode",
 const base::Feature kDemoModeSWA{"DemoModeSWA",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables Sync for desk templates on Chrome OS.
+const base::Feature kDeskTemplateSync{"DeskTemplateSync",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the Diagnostics app.
 const base::Feature kDiagnosticsApp{"DiagnosticsApp",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -684,11 +688,6 @@ const base::Feature kLanguageSettingsUpdate2{"LanguageSettingsUpdate2",
 const base::Feature kLauncherAppSort{"LauncherAppSort",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables the flag to remove empty spaces on launcher pages. If the
-// flag is enabled, all of pages expect for the last one should be filled.
-const base::Feature kLauncherRemoveEmptySpace{
-    "LauncherRemoveEmptySpace", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables new flow for license packaged devices with enterprise license.
 const base::Feature kLicensePackagedOobeFlow{"LicensePackagedOobeFlow",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
@@ -760,7 +759,7 @@ const base::Feature kMultilingualTyping{"MultilingualTyping",
 // Enables Nearby Connections to specificy KeepAlive interval and timeout while
 // also making the Nearby Connections WebRTC defaults longer.
 const base::Feature kNearbyKeepAliveFix{"NearbyKeepAliveFix",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether new Lockscreen reauth layout is shown or not.
 const base::Feature kNewLockScreenReauthLayout{
@@ -1320,6 +1319,10 @@ bool IsDemoModeSWAEnabled() {
   return base::FeatureList::IsEnabled(kDemoModeSWA);
 }
 
+bool IsDeskTemplateSyncEnabled() {
+  return base::FeatureList::IsEnabled(kDeskTemplateSync);
+}
+
 bool IsDiagnosticsAppEnabled() {
   return base::FeatureList::IsEnabled(kDiagnosticsApp);
 }
@@ -1412,12 +1415,8 @@ bool IsKeyboardBasedDisplayArrangementInSettingsEnabled() {
 }
 
 bool IsLauncherAppSortEnabled() {
-  return IsLauncherRemoveEmptySpaceEnabled() &&
+  return IsAppListBubbleEnabled() &&
          base::FeatureList::IsEnabled(kLauncherAppSort);
-}
-
-bool IsLauncherRemoveEmptySpaceEnabled() {
-  return base::FeatureList::IsEnabled(kLauncherRemoveEmptySpace);
 }
 
 bool IsLicensePackagedOobeFlowEnabled() {

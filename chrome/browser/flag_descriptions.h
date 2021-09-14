@@ -532,9 +532,6 @@ extern const char kEnableGpuServiceLoggingDescription[];
 extern const char kEnableLayoutNGName[];
 extern const char kEnableLayoutNGDescription[];
 
-extern const char kEnableLayoutNGTableName[];
-extern const char kEnableLayoutNGTableDescription[];
-
 extern const char kEnableLazyFrameLoadingName[];
 extern const char kEnableLazyFrameLoadingDescription[];
 
@@ -1549,9 +1546,6 @@ extern const char kWebglDraftExtensionsDescription[];
 extern const char kWebPaymentsExperimentalFeaturesName[];
 extern const char kWebPaymentsExperimentalFeaturesDescription[];
 
-extern const char kWebPaymentsMinimalUIName[];
-extern const char kWebPaymentsMinimalUIDescription[];
-
 extern const char kAppStoreBillingDebugName[];
 extern const char kAppStoreBillingDebugDescription[];
 
@@ -1752,8 +1746,6 @@ extern const char kAutofillManualFallbackAndroidDescription[];
 
 extern const char kEnableAutofillRefreshStyleName[];
 extern const char kEnableAutofillRefreshStyleDescription[];
-
-extern const char kEnableAndroidSpellcheckerDescription[];
 
 extern const char kEnableCommandLineOnNonRootedName[];
 extern const char kEnableCommandLineOnNoRootedDescription[];

@@ -23,8 +23,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/os_settings_resources.h"
+#include "components/app_restore/features.h"
 #include "components/arc/arc_prefs.h"
-#include "components/full_restore/features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -318,6 +318,8 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_APP_NOTIFICATIONS_DO_NOT_DISTURB_TOGGLE_DESCRIPTION},
       {"appNotificationsLinkToBrowserSettingsDescription",
        IDS_SETTINGS_APP_NOTIFICATIONS_LINK_TO_BROWSER_SETTINGS_DESCRIPTION},
+      {"appNotificationsCountDescription",
+       IDS_SETTINGS_APP_NOTIFICATIONS_SUBLABEL_TEXT},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 

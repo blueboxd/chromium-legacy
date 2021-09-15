@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
 
+#include <alpha-compositing-unstable-v1-client-protocol.h>
 #include <linux-explicit-synchronization-unstable-v1-client-protocol.h>
 #include <viewporter-client-protocol.h>
 #include <algorithm>
@@ -72,6 +73,17 @@ bool WaylandSurface::Initialize() {
     }
   } else {
     LOG(WARNING) << "Server doesn't support wp_viewporter.";
+  }
+
+  if (connection_->alpha_compositing()) {
+    blending_.reset(zcr_alpha_compositing_v1_get_blending(
+        connection_->alpha_compositing(), surface()));
+    if (!blending_) {
+      LOG(ERROR) << "Failed to create zcr_blending_v1";
+      return false;
+    }
+  } else {
+    LOG(WARNING) << "Server doesn't support zcr_alpha_compositing_v1.";
   }
 
   return true;
@@ -178,23 +190,31 @@ void WaylandSurface::UpdateBufferDamageRegion(
 }
 
 void WaylandSurface::Commit() {
-  auto* surface_sync = GetSurfaceSync();
-  if (surface_sync && buffer_attached_since_last_commit_) {
-    auto* linux_buffer_release =
-        zwp_linux_surface_synchronization_v1_get_release(surface_sync);
+  if (buffer_attached_since_last_commit_) {
+    // Do not call GetSurfaceSync() if the buffer management doesn't happen with
+    // WaylandBufferManagerHost. That is, if Wayland EGL implementation is used,
+    // buffers are attached/swapped via eglSwapBuffers, which may internally
+    // (depends on the implementation) also create a surface sync. Creating a
+    // surface sync in this case is not necessary. Moreover, a Wayland protocol
+    // error will be raised as only one surface sync can exist.
+    auto* surface_sync = GetSurfaceSync();
+    if (surface_sync) {
+      auto* linux_buffer_release =
+          zwp_linux_surface_synchronization_v1_get_release(surface_sync);
 
-    static struct zwp_linux_buffer_release_v1_listener release_listener = {
-        &WaylandSurface::FencedRelease,
-        &WaylandSurface::ImmediateRelease,
-    };
-    zwp_linux_buffer_release_v1_add_listener(linux_buffer_release,
-                                             &release_listener, this);
+      static struct zwp_linux_buffer_release_v1_listener release_listener = {
+          &WaylandSurface::FencedRelease,
+          &WaylandSurface::ImmediateRelease,
+      };
+      zwp_linux_buffer_release_v1_add_listener(linux_buffer_release,
+                                               &release_listener, this);
 
-    linux_buffer_releases_.emplace(
-        linux_buffer_release,
-        ExplicitReleaseInfo(
-            wl::Object<zwp_linux_buffer_release_v1>(linux_buffer_release),
-            buffer_attached_since_last_commit_));
+      linux_buffer_releases_.emplace(
+          linux_buffer_release,
+          ExplicitReleaseInfo(
+              wl::Object<zwp_linux_buffer_release_v1>(linux_buffer_release),
+              buffer_attached_since_last_commit_));
+    }
   }
   wl_surface_commit(surface_.get());
   buffer_attached_since_last_commit_ = nullptr;

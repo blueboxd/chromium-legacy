@@ -1832,7 +1832,7 @@
   {
     "name": "enable-desktop-pwas-url-handling",
     "owners": [ "luhua@microsoft.com", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 102
   },
   {
     "name": "enable-desktop-pwas-web-bundles",
@@ -4388,11 +4388,6 @@
     "expiry_milestone": 105
   },
   {
-    "name": "page-info-discoverability",
-    "owners": [ "eokoyomon", "dullweber" ],
-    "expiry_milestone": 95
-  },
-  {
     "name": "page-info-history",
     "owners": [ "eokoyomon", "dullweber" ],
     "expiry_milestone": 95
@@ -4788,6 +4783,11 @@
     "name": "request-desktop-site-for-tablets",
     "owners": [ "gangwu@chromium.org", "fgorski@chromium.org" ],
     "expiry_milestone": 96
+  },
+  {
+    "name": "request-desktop-site-global",
+    "owners": [ "shuyng@google.com", "twellington", "clank-app-team@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "restore-gaia-cookies-if-deleted",

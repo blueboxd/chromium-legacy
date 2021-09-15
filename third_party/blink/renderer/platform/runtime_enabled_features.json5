@@ -359,9 +359,11 @@
     {
       name: "CapabilityDelegation",
       implied_by: ["CapabilityDelegationPaymentRequest"],
+      origin_trial_feature_name: "CapabilityDelegationPaymentRequest",
     },
     {
       name: "CapabilityDelegationPaymentRequest",
+      origin_trial_feature_name: "CapabilityDelegationPaymentRequest",
     },
     {
       name: "CaptureHandle",
@@ -383,10 +385,6 @@
     },
     {
       name: "ClipboardCustomFormats",
-      status: "experimental",
-    },
-    {
-      name: "ClipboardReadPng",
       status: "experimental",
     },
     {
@@ -989,7 +987,11 @@
     },
     {
       name: "EyeDropperAPI",
-      status: "stable",
+      status: {
+        // EyeDropper UI is available only on desktop operating systems.
+        "Android": "test",
+        "default": "stable",
+      },
     },
     {
       name: "FaceDetector",
@@ -2308,6 +2310,10 @@
       status: "experimental",
     },
     {
+      name: "ViewportSegments",
+      status: "experimental",
+    },
+    {
       name: "VirtualKeyboard",
       status: "stable",
     },
@@ -2609,10 +2615,6 @@
     {
       name: "WindowPlacement",
       origin_trial_feature_name: "WindowPlacementOT2",
-      status: "experimental",
-    },
-    {
-      name: "WindowSegments",
       status: "experimental",
     },
     {

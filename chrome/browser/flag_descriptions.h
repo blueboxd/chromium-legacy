@@ -1461,13 +1461,6 @@ extern const char kTouchSelectionStrategyDescription[];
 extern const char kTouchSelectionStrategyCharacter[];
 extern const char kTouchSelectionStrategyDirection[];
 
-extern const char kTraceUploadUrlName[];
-extern const char kTraceUploadUrlDescription[];
-extern const char kTraceUploadUrlChoiceOther[];
-extern const char kTraceUploadUrlChoiceEmloading[];
-extern const char kTraceUploadUrlChoiceQa[];
-extern const char kTraceUploadUrlChoiceTesting[];
-
 extern const char kTranslateAssistContentName[];
 extern const char kTranslateAssistContentDescription[];
 
@@ -1848,9 +1841,6 @@ extern const char kOfflineIndicatorV2Description[];
 extern const char kOfflinePagesLivePageSharingName[];
 extern const char kOfflinePagesLivePageSharingDescription[];
 
-extern const char kPageInfoDiscoverabilityName[];
-extern const char kPageInfoDiscoverabilityDescription[];
-
 extern const char kPageInfoHistoryName[];
 extern const char kPageInfoHistoryDescription[];
 
@@ -1932,6 +1922,9 @@ extern const char kRelatedSearchesSimplifiedUxDescription[];
 
 extern const char kRelatedSearchesUiName[];
 extern const char kRelatedSearchesUiDescription[];
+
+extern const char kRequestDesktopSiteGlobalName[];
+extern const char kRequestDesktopSiteGlobalDescription[];
 
 extern const char kShareUsageRankingName[];
 extern const char kShareUsageRankingDescription[];

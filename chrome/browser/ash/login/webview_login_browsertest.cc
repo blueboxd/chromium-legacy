@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
-#include "base/hash/sha1.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -25,9 +24,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -35,7 +34,6 @@
 #include "chrome/browser/ash/login/signin_partition_manager.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
-#include "chrome/browser/ash/login/test/https_forwarder.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
@@ -109,6 +107,8 @@
 #include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_status_code.h"
+#include "net/ssl/ssl_info.h"
+#include "net/ssl/ssl_server_config.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -118,13 +118,11 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/boringssl/src/include/openssl/pool.h"
 
-namespace em = enterprise_management;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+namespace em = ::enterprise_management;
 
 constexpr char kTestGuid[] = "cccccccc-cccc-4ccc-0ccc-ccccccccccc1";
 constexpr char kTestCookieName[] = "TestCookie";
@@ -275,19 +273,18 @@ class ErrorScreenWatcher : public OobeUI::Observer {
   bool has_error_screen_been_shown_ = false;
 };
 
-std::string GetCertSha1Fingerprint(const std::string& cert_name) {
+MATCHER_P(EqualsCert,
+          cert_name,
+          base::StringPrintf("Is test certificate %s", cert_name.c_str())) {
   const std::string cert_file_name =
       base::StringPrintf("%s.pem", cert_name.c_str());
-  scoped_refptr<net::X509Certificate> cert =
+  scoped_refptr<net::X509Certificate> expected =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), cert_file_name);
-  if (!cert) {
-    ADD_FAILURE() << "Failed to read certificate " << cert_name;
-    return std::string();
+  if (!expected) {
+    *result_listener << "Failed to read test certificate " << cert_name;
+    return false;
   }
-  unsigned char hash[base::kSHA1Length];
-  base::SHA1HashBytes(CRYPTO_BUFFER_data(cert->cert_buffer()),
-                      CRYPTO_BUFFER_len(cert->cert_buffer()), hash);
-  return base::ToLowerASCII(base::HexEncode(hash, base::kSHA1Length));
+  return expected->EqualsExcludingChain(&arg);
 }
 
 }  // namespace
@@ -368,8 +365,8 @@ class WebviewLoginTest : public OobeBaseTest {
   }
 
  protected:
-  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  ScopedTestingCrosSettings scoped_testing_cros_settings_;
+  FakeGaiaMixin fake_gaia_{&mixin_host_};
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
@@ -388,10 +385,10 @@ class WebviewCloseViewLoginTest
     scoped_feature_list_.Reset();
     if (IsFeatureEnabled(GetParam())) {
       scoped_feature_list_.InitAndEnableFeature(
-          ash::features::kGaiaCloseViewMessage);
+          features::kGaiaCloseViewMessage);
     } else {
       scoped_feature_list_.InitAndDisableFeature(
-          ash::features::kGaiaCloseViewMessage);
+          features::kGaiaCloseViewMessage);
     }
   }
 
@@ -727,11 +724,11 @@ class ReauthWebviewLoginTest : public WebviewLoginTest {
 
 IN_PROC_BROWSER_TEST_F(ReauthWebviewLoginTest, EmailPrefill) {
   EXPECT_TRUE(
-      ash::LoginScreenTestApi::IsForcedOnlineSignin(reauth_user_.account_id));
+      LoginScreenTestApi::IsForcedOnlineSignin(reauth_user_.account_id));
   // Focus triggers online signin.
-  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(reauth_user_.account_id));
+  EXPECT_TRUE(LoginScreenTestApi::FocusUser(reauth_user_.account_id));
   WaitForGaiaPageLoad();
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
   EXPECT_EQ(fake_gaia_.fake_gaia()->prefilled_email(),
             reauth_user_.account_id.GetUserEmail());
 }
@@ -759,11 +756,11 @@ class ReauthEndpointWebviewLoginTest : public WebviewLoginTest {
 
 IN_PROC_BROWSER_TEST_F(ReauthEndpointWebviewLoginTest, SupervisedUser) {
   EXPECT_TRUE(
-      ash::LoginScreenTestApi::IsForcedOnlineSignin(reauth_user_.account_id));
+      LoginScreenTestApi::IsForcedOnlineSignin(reauth_user_.account_id));
   // Focus triggers online signin.
-  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(reauth_user_.account_id));
+  EXPECT_TRUE(LoginScreenTestApi::FocusUser(reauth_user_.account_id));
   WaitForGaiaPageLoad();
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
   EXPECT_EQ(fake_gaia_.fake_gaia()->prefilled_email(),
             reauth_user_.account_id.GetUserEmail());
   EXPECT_EQ(fake_gaia_.fake_gaia()->is_supervised(), "1");
@@ -782,11 +779,11 @@ class ReauthEndpointWebviewLoginOwnerTest
 
 IN_PROC_BROWSER_TEST_F(ReauthEndpointWebviewLoginOwnerTest, SupervisedUser) {
   EXPECT_TRUE(
-      ash::LoginScreenTestApi::IsForcedOnlineSignin(reauth_user_.account_id));
+      LoginScreenTestApi::IsForcedOnlineSignin(reauth_user_.account_id));
   // Focus triggers online signin.
-  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(reauth_user_.account_id));
+  EXPECT_TRUE(LoginScreenTestApi::FocusUser(reauth_user_.account_id));
   WaitForGaiaPageLoad();
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
   EXPECT_EQ(fake_gaia_.fake_gaia()->prefilled_email(),
             reauth_user_.account_id.GetUserEmail());
   EXPECT_EQ(fake_gaia_.fake_gaia()->is_supervised(), "1");
@@ -907,52 +904,62 @@ class WebviewLoginWithIframeTest
   void RegisterAdditionalRequestHandlers() override {
     WebviewLoginTest::RegisterAdditionalRequestHandlers();
 
-    embedded_test_server()->RegisterRequestHandler(base::BindLambdaForTesting(
-        [](const net::test_server::HttpRequest& request)
-            -> std::unique_ptr<net::test_server::HttpResponse> {
-          if (!base::EndsWith(request.relative_url, kFrameRelativePath,
-                              base::CompareCase::INSENSITIVE_ASCII)) {
-            return nullptr;
-          }
-          auto response =
-              std::make_unique<net::test_server::BasicHttpResponse>();
-          response->set_code(net::HTTP_OK);
-          response->set_content("<!DOCTYPE html>");
-          response->AddCustomHeader("X-Frame-Options", "SAMEORIGIN");
-          return response;
-        }));
+    // For simplicity the request handler is registered on both servers. The
+    // test will only request the path from one of them, depending on the
+    // FrameUrlOrigin test parameter.
+    fake_gaia_.gaia_server()->RegisterRequestHandler(base::BindRepeating(
+        &WebviewLoginWithIframeTest::HandleFrameRelativePath));
+    other_origin_server_.RegisterRequestHandler(base::BindRepeating(
+        &WebviewLoginWithIframeTest::HandleFrameRelativePath));
   }
 
   void SetUpInProcessBrowserTestFixture() override {
     WebviewLoginTest::SetUpInProcessBrowserTestFixture();
 
-    ASSERT_TRUE(other_origin_https_forwarder_.Initialize(
-        kOtherOriginHost, embedded_test_server()->base_url()));
+    net::EmbeddedTestServer::ServerCertificateConfig other_origin_cert_config;
+    other_origin_cert_config.dns_names = {kOtherOriginHost};
+    other_origin_server_.SetSSLConfig(other_origin_cert_config);
+    // Initialize the server so the port is known, but don't start the IO thread
+    // until SetupThreadMain().
+    ASSERT_TRUE(other_origin_server_.InitializeAndListen());
 
-    // /frame_with_same_origin_requirement is reachable through both
-    // HTTPSForwarders (the one for fake gaia and the one for another origin),
-    // because they both eventually point to embedded_test_server().
-    // From chrome's perspective, they are a different origins.
     switch (GetParam()) {
       case FrameUrlOrigin::kSameOrigin:
-        frame_url_ = fake_gaia_.gaia_https_forwarder()->GetURLForSSLHost(
-            kFrameRelativePath);
+        frame_url_ = fake_gaia_.GetFakeGaiaURL(kFrameRelativePath);
         break;
       case FrameUrlOrigin::kDifferentOrigin:
         frame_url_ =
-            other_origin_https_forwarder_.GetURLForSSLHost(kFrameRelativePath);
+            other_origin_server_.GetURL(kOtherOriginHost, kFrameRelativePath);
         break;
     }
 
     fake_gaia_.fake_gaia()->SetIframeOnEmbeddedSetupChromeosUrl(frame_url_);
   }
 
+  void SetUpOnMainThread() override {
+    other_origin_server_.StartAcceptingConnections();
+    WebviewLoginTest::SetUpOnMainThread();
+  }
+
  protected:
   static constexpr const char* kOtherOriginHost = "other.example.com";
   static constexpr const char* kFrameRelativePath =
-      "frame_with_same_origin_requirement";
+      "/frame_with_same_origin_requirement";
 
-  HTTPSForwarder other_origin_https_forwarder_;
+  static std::unique_ptr<net::test_server::HttpResponse>
+  HandleFrameRelativePath(const net::test_server::HttpRequest& request) {
+    if (request.relative_url != kFrameRelativePath) {
+      return nullptr;
+    }
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+    response->set_code(net::HTTP_OK);
+    response->set_content("<!DOCTYPE html>");
+    response->AddCustomHeader("X-Frame-Options", "SAMEORIGIN");
+    return response;
+  }
+
+  net::EmbeddedTestServer other_origin_server_{
+      net::EmbeddedTestServer::TYPE_HTTPS};
   GURL frame_url_;
 };
 
@@ -1043,42 +1050,46 @@ class WebviewClientCertsLoginTestBase : public WebviewLoginTest {
   }
 
   // Starts the Test HTTPS server with `ssl_options`.
-  void StartHttpsServer(const net::SpawnedTestServer::SSLOptions& ssl_options) {
-    https_server_ = std::make_unique<net::SpawnedTestServer>(
-        net::SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath());
+  void StartHttpsServer(const net::SSLServerConfig& server_config) {
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK,
+                                server_config);
+    https_server_->RegisterRequestHandler(base::BindLambdaForTesting(
+        [this](const net::test_server::HttpRequest& request)
+            -> std::unique_ptr<net::test_server::HttpResponse> {
+          if (request.relative_url != "/client-cert") {
+            return nullptr;
+          }
+          {
+            // Save the `SSLInfo` for `RequestClientCertTestPageInFrame`.
+            base::AutoLock lock(server_ssl_info_lock_);
+            DCHECK(request.ssl_info);
+            server_ssl_info_ = request.ssl_info;
+          }
+          return std::make_unique<net::test_server::BasicHttpResponse>();
+        }));
     ASSERT_TRUE(https_server_->Start());
   }
 
   // Requests `http_server_`'s client-cert test page in the webview specified by
-  // the given `webview_path`. Returns the content of the client-cert test page.
-  std::string RequestClientCertTestPageInFrame(
+  // the given `webview_path`. Returns the `net::SSLInfo` as observed by the
+  // server, or `absl::nullopt` if the server did not report any such value.
+  absl::optional<net::SSLInfo> RequestClientCertTestPageInFrame(
       const std::string& webview_path) {
-    const GURL url = https_server_->GetURL("client-cert");
+    const GURL url = https_server_->GetURL("/client-cert");
     content::TestNavigationObserver navigation_observer(url);
     navigation_observer.WatchExistingWebContents();
     navigation_observer.StartWatchingNewWebContents();
 
-    // TODO(https://crbug.com/1092562): Remove the logs if flakiness is gone.
-    // If you see this after April 2019, please ping the owner of the above bug.
     test::OobeJS().Evaluate(base::StringPrintf(
         "%s.src='%s'", webview_path.c_str(), url.spec().c_str()));
     navigation_observer.Wait();
-    LOG(INFO) << "Navigation done.";
 
-    const std::string https_reply_content =
-        test::GetWebViewContentsById(webview_path);
-    // TODO(https://crbug.com/1092562): Remove this is if flakiness does not
-    // reproduce.
-    // If you see this after October 2020, please ping the above bug.
-    if (https_reply_content.empty()) {
-      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1000));
-      const std::string https_reply_content_after_sleep =
-          test::GetWebViewContentsById(webview_path);
-      if (!https_reply_content_after_sleep.empty())
-        LOG(INFO) << "Magic - textContent appeared after sleep.";
-    }
-
-    return https_reply_content;
+    base::AutoLock lock(server_ssl_info_lock_);
+    absl::optional<net::SSLInfo> server_ssl_info = std::move(server_ssl_info_);
+    server_ssl_info_ = absl::nullopt;
+    return server_ssl_info;
   }
 
   void ShowEulaScreen() {
@@ -1140,7 +1151,12 @@ class WebviewClientCertsLoginTestBase : public WebviewLoginTest {
   }
 
   policy::DevicePolicyBuilder device_policy_builder_;
-  std::unique_ptr<net::SpawnedTestServer> https_server_;
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  // `net::EmbeddedTestServer`'s callbacks run on a background thread, so this
+  // field must be protected with a lock.
+  base::Lock server_ssl_info_lock_;
+  absl::optional<net::SSLInfo> server_ssl_info_
+      GUARDED_BY(server_ssl_info_lock_);
 
   DeviceStateMixin device_state_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
@@ -1173,9 +1189,9 @@ class WebviewClientCertsLoginTest : public WebviewClientCertsLoginTestBase {
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
                        DISABLED_ClientCertRequestedInOtherWebView) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertsInSystemSlot({kClientCert1Name}));
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
+  net::SSLServerConfig server_config;
+  server_config.client_cert_type = net::SSLServerConfig::OPTIONAL_CLIENT_CERT;
+  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(server_config));
 
   const std::vector<std::string> autoselect_patterns = {
       R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
@@ -1184,9 +1200,10 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
   ShowEulaScreen();
 
   // Use `watch_new_webcontents` because the EULA webview has not navigated yet.
-  const std::string https_reply_content =
+  absl::optional<net::SSLInfo> ssl_info =
       RequestClientCertTestPageInFrame("$('cros-eula-frame')");
-  EXPECT_EQ("got no client cert", https_reply_content);
+  ASSERT_TRUE(ssl_info);
+  EXPECT_FALSE(ssl_info->cert);
 }
 
 namespace {
@@ -1206,7 +1223,7 @@ struct SigninCertParam {
   // device policy - see `SetAutoSelectCertificatePatterns()`.
   std::vector<std::string> arrange_autoselect_patterns;
   // Make the web server include the specified CA certificates in its client
-  // certificate request.
+  // certificate request. Entries should be DER-encoded X.509 names.
   std::vector<std::string> act_ca_certs;
   // Assert that the selected certificate is the one specified here. When null,
   // asserts that no certificate is selected.
@@ -1237,30 +1254,24 @@ IN_PROC_BROWSER_TEST_P(SigninFrameWebviewClientCertsLoginTest, Test) {
   SetAutoSelectCertificatePatterns(GetParam().arrange_autoselect_patterns);
 
   // Prepare the test server for the "act" part of the test.
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  for (const std::string& ca_cert : GetParam().act_ca_certs) {
-    const std::string ca_cert_file_name =
-        base::StringPrintf("%s.pem", ca_cert.c_str());
-    const base::FilePath ca_cert_file_path =
-        net::GetTestCertsDirectory().AppendASCII(ca_cert_file_name);
-    ssl_options.client_authorities.push_back(ca_cert_file_path);
-  }
-  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
+  net::SSLServerConfig server_config;
+  server_config.client_cert_type = net::SSLServerConfig::OPTIONAL_CLIENT_CERT;
+  server_config.cert_authorities = GetParam().act_ca_certs;
+  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(server_config));
 
   WaitForGaiaPageLoadAndPropertyUpdate();
 
   // Act: navigate to the page hosted by the test server.
-  const std::string https_reply_content =
+  absl::optional<net::SSLInfo> ssl_info =
       RequestClientCertTestPageInFrame(kSigninWebview);
+  ASSERT_TRUE(ssl_info);
 
   // Assert the expectation on the client certificate that got selected.
   if (GetParam().assert_cert) {
-    EXPECT_EQ("got client cert with fingerprint: " +
-                  GetCertSha1Fingerprint(*GetParam().assert_cert),
-              https_reply_content);
+    ASSERT_TRUE(ssl_info->cert);
+    EXPECT_THAT(*ssl_info->cert, EqualsCert(*GetParam().assert_cert));
   } else {
-    EXPECT_EQ("got no client cert", https_reply_content);
+    EXPECT_FALSE(ssl_info->cert);
   }
 }
 
@@ -1303,7 +1314,10 @@ INSTANTIATE_TEST_SUITE_P(
         /*arrange_intermediate_cert=*/absl::nullopt,
         /*arrange_autoselect_patterns=*/
         {R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"},
-        /*act_ca_certs=*/{"client_1_ca"},
+        /*act_ca_certs=*/
+        {// client_1_ca ("B CA")
+         {0x30, 0x0f, 0x31, 0x0d, 0x30, 0x0b, 0x06, 0x03, 0x55, 0x04, 0x03,
+          0x0c, 0x04, 0x42, 0x20, 0x43, 0x41}},
         /*assert_cert=*/kClientCert1Name}));
 
 // Test that client certificate will be discovered if the server requests
@@ -1318,7 +1332,10 @@ INSTANTIATE_TEST_SUITE_P(
         /*arrange_intermediate_cert=*/"client_1_ca",
         /*arrange_autoselect_patterns=*/
         {R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"},
-        /*act_ca_certs=*/{"client_root_ca"},
+        /*act_ca_certs=*/
+        {// client_root_ca ("C Root CA")
+         {0x30, 0x14, 0x31, 0x12, 0x30, 0x10, 0x06, 0x03, 0x55, 0x04, 0x03,
+          0x0c, 0x09, 0x43, 0x20, 0x52, 0x6f, 0x6f, 0x74, 0x20, 0x43, 0x41}},
         /*assert_cert=*/kClientCert1Name}));
 
 // Test that if no client certificate is auto-selected using policy on the
@@ -1330,7 +1347,11 @@ INSTANTIATE_TEST_SUITE_P(ErrorNoAutoSelect,
                              /*arrange_intermediate_cert=*/absl::nullopt,
                              /*arrange_autoselect_patterns=*/
                              {},
-                             /*act_ca_certs=*/{"client_1_ca"},
+                             /*act_ca_certs=*/
+                             {// client_1_ca ("B CA")
+                              {0x30, 0x0f, 0x31, 0x0d, 0x30, 0x0b, 0x06, 0x03,
+                               0x55, 0x04, 0x03, 0x0c, 0x04, 0x42, 0x20, 0x43,
+                               0x41}},
                              /*assert_cert=*/absl::nullopt}));
 
 // Test that client certificate authentication using certificates from the
@@ -1345,7 +1366,10 @@ INSTANTIATE_TEST_SUITE_P(
         /*arrange_intermediate_cert=*/absl::nullopt,
         /*arrange_autoselect_patterns=*/
         {R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"},
-        /*act_ca_certs=*/{"client_2_ca"},
+        /*act_ca_certs=*/
+        {// client_2_ca ("E CA")
+         {0x30, 0x0f, 0x31, 0x0d, 0x30, 0x0b, 0x06, 0x03, 0x55, 0x04, 0x03,
+          0x0c, 0x04, 0x45, 0x20, 0x43, 0x41}},
         /*assert_cert=*/absl::nullopt}));
 
 // Test that client certificate will not be discovered if the server requests
@@ -1361,7 +1385,10 @@ INSTANTIATE_TEST_SUITE_P(
         /*arrange_intermediate_cert=*/absl::nullopt,
         /*arrange_autoselect_patterns=*/
         {R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"},
-        /*act_ca_certs=*/{"client_root_ca"},
+        /*act_ca_certs=*/
+        {// client_root_ca ("C Root CA")
+         {0x30, 0x14, 0x31, 0x12, 0x30, 0x10, 0x06, 0x03, 0x55, 0x04, 0x03,
+          0x0c, 0x09, 0x43, 0x20, 0x52, 0x6f, 0x6f, 0x74, 0x20, 0x43, 0x41}},
         /*assert_cert=*/absl::nullopt}));
 
 // Tests the scenario where the system token is not initialized initially (due
@@ -1472,9 +1499,9 @@ bool IsTpmTokenReady() {
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsTokenLoadingLoginTest,
                        SystemSlotInitialization) {
   ASSERT_NO_FATAL_FAILURE(PrepareSystemSlot());
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
+  net::SSLServerConfig server_config;
+  server_config.client_cert_type = net::SSLServerConfig::OPTIONAL_CLIENT_CERT;
+  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(server_config));
 
   const std::vector<std::string> autoselect_patterns = {
       R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
@@ -1493,11 +1520,11 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsTokenLoadingLoginTest,
       ->set_is_owned(true);
   TpmManagerClient::Get()->GetTestInterface()->EmitOwnershipTakenSignal();
 
-  const std::string https_reply_content =
+  absl::optional<net::SSLInfo> ssl_info =
       RequestClientCertTestPageInFrame(kSigninWebview);
-  EXPECT_EQ("got client cert with fingerprint: " +
-                GetCertSha1Fingerprint(kClientCert1Name),
-            https_reply_content);
+  ASSERT_TRUE(ssl_info);
+  ASSERT_TRUE(ssl_info->cert);
+  EXPECT_THAT(*ssl_info->cert, EqualsCert(std::string(kClientCert1Name)));
 
   EXPECT_TRUE(IsTpmTokenReady());
 }
@@ -1833,4 +1860,4 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Combine(testing::Bool(), testing::Bool()),
                          &WebviewCloseViewLoginTest::GetName);
 
-}  // namespace chromeos
+}  // namespace ash

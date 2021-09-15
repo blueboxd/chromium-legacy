@@ -5548,6 +5548,7 @@ others/histograms.xml -->
   <int value="9" label="User is logged into an unsupported domain"/>
   <int value="10" label="Card upload feature flag disabled"/>
   <int value="11" label="Success, card upload enabled"/>
+  <int value="12" label="User is in an unlaunched/unsupported country"/>
 </enum>
 
 <enum name="AutofillCreditCardAuthenticationEvents">
@@ -7134,6 +7135,42 @@ others/histograms.xml -->
   <int value="51814" label="MixedContentSettingsTabHelper"/>
   <int value="55334" label="WebUSB"/>
   <int value="58230" label="MediaWebContentsObserver::OnMediaPlaying"/>
+</enum>
+
+<enum name="BackForwardCacheDisallowActivationReason">
+  <int value="0" label="ForTesting"/>
+  <int value="1" label="LoadPostCommitErrorPage"/>
+  <int value="2" label="BeginNavigation"/>
+  <int value="3" label="CapturePaintPreview"/>
+  <int value="4" label="OpenURL"/>
+  <int value="5" label="AXEvent"/>
+  <int value="6" label="AXLocationChange"/>
+  <int value="7" label="AXUpdateTree"/>
+  <int value="8" label="AXHitTest"/>
+  <int value="9" label="AXHitTestCallback"/>
+  <int value="10" label="AXPerformAction"/>
+  <int value="11" label="AXSetFocus"/>
+  <int value="12" label="AXGetNativeView"/>
+  <int value="13" label="AXGetNativeViewForWindow"/>
+  <int value="14" label="AXWebContents"/>
+  <int value="15" label="CertificateErrors"/>
+  <int value="16" label="CreateChildFrame"/>
+  <int value="17" label="CommitSameDocumentNavigation"/>
+  <int value="18" label="FullScreenStateChanged"/>
+  <int value="19" label="SetNeedsOcclusionTrack"/>
+  <int value="20" label="DispatchLoad"/>
+  <int value="21" label="ForwardResourceTimingToParent"/>
+  <int value="22" label="CapturePaintPreviewProxy"/>
+  <int value="23" label="ShowContextMenu"/>
+  <int value="24" label="DetermineActionForHistoryNavigation"/>
+  <int value="25" label="NavigatingInInactiveFrame"/>
+  <int value="26" label="PostMessage"/>
+  <int value="27" label="RequestPermission"/>
+  <int value="28" label="PermissionRequestSource"/>
+  <int value="29" label="PermissionAddRequest"/>
+  <int value="30" label="ContentsPreferredSizeChanged"/>
+  <int value="31" label="BeginDownload"/>
+  <int value="32" label="Bug1234857"/>
 </enum>
 
 <enum name="BackForwardCacheEligibilityDuringCommit">
@@ -9357,6 +9394,11 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BooleanIsAdaptiveIcon">
   <int value="0" label="Non adaptive icon"/>
   <int value="1" label="Adaptive icon"/>
+</enum>
+
+<enum name="BooleanIsAddToCart">
+  <int value="0" label="Not Add-to-cart"/>
+  <int value="1" label="Is Add-to-cart"/>
 </enum>
 
 <enum name="BooleanIsGenerationTriggeredManually">
@@ -34501,6 +34543,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4020"
       label="V8SharedArrayBufferConstructedInExtensionWithoutIsolation"/>
   <int value="4021" label="MediaSourceExtensionsForWebCodecs"/>
+  <int value="4023" label="PaymentRequestResponse"/>
+  <int value="4024" label="PaymentRequestComplete"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -49104,6 +49148,7 @@ from previous Chrome versions.
   <int value="-626329144" label="SyncSupportTrustedVaultPassphrase:enabled"/>
   <int value="-626211146" label="DesktopMinimalUI:disabled"/>
   <int value="-625858826" label="EnableDuplicateDownloadDialog:disabled"/>
+  <int value="-625520587" label="RequestDesktopSiteGlobal:enabled"/>
   <int value="-624221121" label="CommandLineOnNonRooted:enabled"/>
   <int value="-623364791" label="ClickToCallReceiver:disabled"/>
   <int value="-622685174" label="enable-pdf-material-ui"/>
@@ -50904,6 +50949,7 @@ from previous Chrome versions.
   <int value="806783713" label="DesktopPWAsTabStripLinkCapturing:enabled"/>
   <int value="807447752" label="ChromeMemex:disabled"/>
   <int value="807734471" label="tab-management-experiment-type-disabled"/>
+  <int value="808855873" label="RequestDesktopSiteGlobal:disabled"/>
   <int value="809698565" label="WebRtcHybridAgc:enabled"/>
   <int value="811057677" label="ConfirmNtpSuggestionRemovals:disabled"/>
   <int value="811374216" label="disable-new-bookmark-apps"/>
@@ -73826,6 +73872,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="ADF is empty"/>
   <int value="7" label="Flatbed cover is open"/>
   <int value="8" label="Communication error"/>
+  <int value="9" label="Success"/>
 </enum>
 
 <enum name="ScanJobSettingsColorMode">
@@ -80039,6 +80086,27 @@ would be helpful to identify which type is being sent.
   <int value="6" label="User selected for survey"/>
   <int value="7" label="Survey already exists [removed]"/>
   <int value="8" label="First time user"/>
+</enum>
+
+<enum name="SurveyPresentationStatusCode">
+  <summary>
+    Results when survey has been download and requested to be shown. Used by
+    Android.Survey.ShowSurveyStatus.
+  </summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Account changed or signed out"/>
+  <int value="2" label="Survey container was invalid"/>
+  <int value="3" label="Survey data was unavailable"/>
+  <int value="4" label="Client activity was destroyed"/>
+  <int value="5" label="Client activity was finishing"/>
+  <int value="6" label="Client activity was invalid"/>
+  <int value="7" label="Survey completion style was invalid"/>
+  <int value="8" label="Survey prompt style was invalid"/>
+  <int value="9" label="Survey data type was invalid"/>
+  <int value="10" label="Survey payload was invalid"/>
+  <int value="11" label="Survey was already running"/>
+  <int value="12" label="Survey had expired"/>
+  <int value="13" label="Unknown reason for failure"/>
 </enum>
 
 <enum name="SuspendAttempt">

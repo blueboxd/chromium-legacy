@@ -129,11 +129,16 @@ bool RegisterRootCertsInternal(const base::FilePath& file_path) {
 BaseTestServer::SSLOptions::SSLOptions() = default;
 BaseTestServer::SSLOptions::SSLOptions(ServerCertificate cert)
     : server_certificate(cert) {}
+BaseTestServer::SSLOptions::SSLOptions(base::FilePath cert)
+    : custom_certificate(std::move(cert)) {}
 BaseTestServer::SSLOptions::SSLOptions(const SSLOptions& other) = default;
 
 BaseTestServer::SSLOptions::~SSLOptions() = default;
 
 base::FilePath BaseTestServer::SSLOptions::GetCertificateFile() const {
+  if (!custom_certificate.empty())
+    return custom_certificate;
+
   switch (server_certificate) {
     case CERT_OK:
     case CERT_MISMATCHED_NAME:
@@ -154,8 +159,6 @@ base::FilePath BaseTestServer::SSLOptions::GetCertificateFile() const {
     case CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE:
       return base::FilePath(
           FILE_PATH_LITERAL("key_usage_rsa_digitalsignature.pem"));
-    case CERT_AUTO:
-      return base::FilePath();
     default:
       NOTREACHED();
   }

@@ -227,9 +227,9 @@
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
+#include "components/app_restore/features.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
-#include "components/full_restore/features.h"
 #include "components/metrics/structured/structured_metrics_features.h"  // nogncheck
 #include "media/capture/video/chromeos/video_capture_features_chromeos.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
@@ -316,18 +316,6 @@ const FeatureEntry::Choice kTouchTextSelectionStrategyChoices[] = {
      blink::switches::kTouchTextSelectionStrategy, "character"},
     {flag_descriptions::kTouchSelectionStrategyDirection,
      blink::switches::kTouchTextSelectionStrategy, "direction"}};
-
-const FeatureEntry::Choice kTraceUploadURL[] = {
-    {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
-    {flag_descriptions::kTraceUploadUrlChoiceOther, switches::kTraceUploadURL,
-     "https://performance-insights.appspot.com/upload?tags=flags,Other"},
-    {flag_descriptions::kTraceUploadUrlChoiceEmloading,
-     switches::kTraceUploadURL,
-     "https://performance-insights.appspot.com/upload?tags=flags,emloading"},
-    {flag_descriptions::kTraceUploadUrlChoiceQa, switches::kTraceUploadURL,
-     "https://performance-insights.appspot.com/upload?tags=flags,QA"},
-    {flag_descriptions::kTraceUploadUrlChoiceTesting, switches::kTraceUploadURL,
-     "https://performance-insights.appspot.com/upload?tags=flags,TestingTeam"}};
 
 const FeatureEntry::Choice kLiteVideoDefaultDownlinkBandwidthKbps[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -3313,9 +3301,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTouchSelectionStrategyDescription,
      kOsAndroid,  // TODO(mfomitchev): Add CrOS/Win/Linux support soon.
      MULTI_VALUE_TYPE(kTouchTextSelectionStrategyChoices)},
-    {"trace-upload-url", flag_descriptions::kTraceUploadUrlName,
-     flag_descriptions::kTraceUploadUrlDescription, kOsAll,
-     MULTI_VALUE_TYPE(kTraceUploadURL)},
     {"enable-suggestions-with-substring-match",
      flag_descriptions::kSuggestionsWithSubStringMatchName,
      flag_descriptions::kSuggestionsWithSubStringMatchDescription, kOsAll,
@@ -6411,10 +6396,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-    {"page-info-discoverability",
-     flag_descriptions::kPageInfoDiscoverabilityName,
-     flag_descriptions::kPageInfoDiscoverabilityDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(page_info::kPageInfoDiscoverability)},
     {"page-info-history", flag_descriptions::kPageInfoHistoryName,
      flag_descriptions::kPageInfoHistoryDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(page_info::kPageInfoHistory)},
@@ -7643,6 +7624,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAmbientModeNewUrlDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kAmbientModeNewUrl)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(OS_ANDROID)
+    {"request-desktop-site-global",
+     flag_descriptions::kRequestDesktopSiteGlobalName,
+     flag_descriptions::kRequestDesktopSiteGlobalDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kRequestDesktopSiteGlobal)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

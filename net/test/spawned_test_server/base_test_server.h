@@ -54,10 +54,6 @@ class BaseTestServer {
     enum ServerCertificate {
       CERT_OK,
 
-      // CERT_AUTO causes the testserver to generate a test certificate issued
-      // by "Testing CA" (see net/data/ssl/certificates/ocsp-test-root.pem).
-      CERT_AUTO,
-
       CERT_MISMATCHED_NAME,
       CERT_EXPIRED,
       // Cross-signed certificate to test PKIX path building. Contains an
@@ -145,6 +141,7 @@ class BaseTestServer {
 
     // Initialize a new SSLOptions that will use the specified certificate.
     explicit SSLOptions(ServerCertificate cert);
+    explicit SSLOptions(base::FilePath cert);
     SSLOptions(const SSLOptions& other);
     ~SSLOptions();
 
@@ -154,6 +151,7 @@ class BaseTestServer {
 
     // The certificate to use when serving requests.
     ServerCertificate server_certificate = CERT_OK;
+    base::FilePath custom_certificate;
 
     // True if a CertificateRequest should be sent to the client during
     // handshaking.

@@ -19,13 +19,28 @@
 
 namespace {
 
-// Changes the priority class of the process if it is not NORMAL_PRIORITY_CLASS.
-void EnsurePriorityClassNormal() {
+// If the priority class is not NORMAL_PRIORITY_CLASS, then the function makes:
+// - the priority class of the process NORMAL_PRIORITY_CLASS
+// - the process memory priority MEMORY_PRIORITY_NORMAL
+// - the current thread priority THREAD_PRIORITY_NORMAL
+void FixExecutionPriorities() {
   const HANDLE process = ::GetCurrentProcess();
   const DWORD priority_class = ::GetPriorityClass(process);
   if (priority_class == NORMAL_PRIORITY_CLASS)
     return;
   ::SetPriorityClass(process, NORMAL_PRIORITY_CLASS);
+
+  static const auto set_process_information_fn =
+      reinterpret_cast<decltype(&::SetProcessInformation)>(::GetProcAddress(
+          ::GetModuleHandle(L"Kernel32.dll"), "SetProcessInformation"));
+  if (!set_process_information_fn)
+    return;
+  MEMORY_PRIORITY_INFORMATION memory_priority = {};
+  memory_priority.MemoryPriority = MEMORY_PRIORITY_NORMAL;
+  set_process_information_fn(process, ProcessMemoryPriority, &memory_priority,
+                             sizeof(memory_priority));
+
+  ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 }
 
 }  // namespace
@@ -42,7 +57,7 @@ int main(int argc, char** argv) {
   // Typically, the test suite runner expects the swarming task to run with
   // normal priority but for some reason, on the updater bots with UAC on, the
   // swarming task runs with a priority below normal.
-  EnsurePriorityClassNormal();
+  FixExecutionPriorities();
 
   auto scoped_com_initializer =
       std::make_unique<base::win::ScopedCOMInitializer>(

@@ -147,7 +147,9 @@ SharedImageFactory::SharedImageFactory(
     factories_.push_back(std::move(wrapped_sk_image_factory));
   }
 
-  bool use_gl = gl::GetGLImplementation() != gl::kGLImplementationNone;
+  bool use_gl =
+      gl::GetGLImplementation() != gl::kGLImplementationNone &&
+      (!is_for_display_compositor_ || gr_context_type_ == GrContextType::kGL);
   if (use_gl) {
     auto gl_texture_backing_factory =
         std::make_unique<SharedImageBackingFactoryGLTexture>(
@@ -237,12 +239,9 @@ SharedImageFactory::SharedImageFactory(
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (gpu_preferences.enable_webgpu ||
-      gr_context_type_ == GrContextType::kVulkan) {
-    auto ozone_factory =
-        std::make_unique<SharedImageBackingFactoryOzone>(context_state);
-    factories_.push_back(std::move(ozone_factory));
-  }
+  auto ozone_factory =
+      std::make_unique<SharedImageBackingFactoryOzone>(context_state);
+  factories_.push_back(std::move(ozone_factory));
 #endif  // IS_CHROMEOS_ASH
 
 #if defined(OS_FUCHSIA)

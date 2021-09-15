@@ -43,8 +43,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 // Use consumer.example.com to keep policy code out of the tests.
@@ -221,7 +220,8 @@ class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(CrashRestoreComplexTest, RestoreSessionForThreeUsers) {
+// TODO(crbug.com/1249033): Disabled due to flakiness.
+IN_PROC_BROWSER_TEST_F(CrashRestoreComplexTest, DISABLED_RestoreSessionForThreeUsers) {
   {
     UserSessionRestoreObserver restore_observer;
     restore_observer.Wait();
@@ -296,4 +296,4 @@ IN_PROC_BROWSER_TEST_F(CrashRestoreChildUserTest, SessionRestore) {
   // Verify that there is no crash on chrome restart.
 }
 
-}  // namespace chromeos
+}  // namespace ash

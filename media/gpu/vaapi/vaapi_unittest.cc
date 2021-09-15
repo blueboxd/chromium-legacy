@@ -140,6 +140,8 @@ uint32_t ToVaFourcc(unsigned int va_rt_format) {
   switch (va_rt_format) {
     case VA_RT_FORMAT_YUV420:
       return VA_FOURCC_NV12;
+    case VA_RT_FORMAT_YUV420_10:
+      return VA_FOURCC_P010;
   }
   return DRM_FORMAT_INVALID;
 }
@@ -148,8 +150,74 @@ int ToGBMFormat(unsigned int va_rt_format) {
   switch (va_rt_format) {
     case VA_RT_FORMAT_YUV420:
       return DRM_FORMAT_NV12;
+    case VA_RT_FORMAT_YUV420_10:
+      return DRM_FORMAT_P010;
   }
   return DRM_FORMAT_INVALID;
+}
+
+const std::string VARTFormatToString(unsigned int va_rt_format) {
+  switch (va_rt_format) {
+    case VA_RT_FORMAT_YUV420:
+      return "VA_RT_FORMAT_YUV420";
+    case VA_RT_FORMAT_YUV420_10:
+      return "VA_RT_FORMAT_YUV420_10";
+  }
+  NOTREACHED() << "Unknown VA_RT_FORMAT 0x" << std::hex << va_rt_format;
+  return "Unknown VA_RT_FORMAT";
+}
+
+#define TOSTR(enumCase) \
+  case enumCase:        \
+    return #enumCase
+
+const char* VAProfileToString(VAProfile profile) {
+  // clang-format off
+  switch (profile) {
+    TOSTR(VAProfileNone);
+    TOSTR(VAProfileMPEG2Simple);
+    TOSTR(VAProfileMPEG2Main);
+    TOSTR(VAProfileMPEG4Simple);
+    TOSTR(VAProfileMPEG4AdvancedSimple);
+    TOSTR(VAProfileMPEG4Main);
+    case VAProfileH264Baseline:
+      NOTREACHED() << "VAProfileH264Baseline is deprecated";
+      return "Deprecated VAProfileH264Baseline";
+    TOSTR(VAProfileH264Main);
+    TOSTR(VAProfileH264High);
+    TOSTR(VAProfileVC1Simple);
+    TOSTR(VAProfileVC1Main);
+    TOSTR(VAProfileVC1Advanced);
+    TOSTR(VAProfileH263Baseline);
+    TOSTR(VAProfileH264ConstrainedBaseline);
+    TOSTR(VAProfileJPEGBaseline);
+    TOSTR(VAProfileVP8Version0_3);
+    TOSTR(VAProfileH264MultiviewHigh);
+    TOSTR(VAProfileH264StereoHigh);
+    TOSTR(VAProfileHEVCMain);
+    TOSTR(VAProfileHEVCMain10);
+    TOSTR(VAProfileVP9Profile0);
+    TOSTR(VAProfileVP9Profile1);
+    TOSTR(VAProfileVP9Profile2);
+    TOSTR(VAProfileVP9Profile3);
+    TOSTR(VAProfileHEVCMain12);
+    TOSTR(VAProfileHEVCMain422_10);
+    TOSTR(VAProfileHEVCMain422_12);
+    TOSTR(VAProfileHEVCMain444);
+    TOSTR(VAProfileHEVCMain444_10);
+    TOSTR(VAProfileHEVCMain444_12);
+    TOSTR(VAProfileHEVCSccMain);
+    TOSTR(VAProfileHEVCSccMain10);
+    TOSTR(VAProfileHEVCSccMain444);
+    TOSTR(VAProfileAV1Profile0);
+    TOSTR(VAProfileAV1Profile1);
+    TOSTR(VAProfileHEVCSccMain444_10);
+#if VA_MAJOR_VERSION >= 2 || VA_MINOR_VERSION >= 11
+    TOSTR(VAProfileProtected);
+#endif
+  }
+  // clang-format on
+  return "<unknown profile>";
 }
 
 }  // namespace
@@ -544,8 +612,9 @@ class VaapiMinigbmTest
       // Using here vaProfileStr(std::get<0>(info.param)) crashes the binary.
       // TODO(mcasas): investigate why and use it instead of codec%d.
       return base::StringPrintf(
-          "codec%d__VA_RT_FORMAT_0x%x__%s", std::get<0>(info.param),
-          std::get<1>(info.param), std::get<2>(info.param).ToString().c_str());
+          "%s__%s__%s", VAProfileToString(std::get<0>(info.param)),
+          VARTFormatToString(std::get<1>(info.param)).c_str(),
+          std::get<2>(info.param).ToString().c_str());
     }
   };
 };
@@ -569,8 +638,7 @@ TEST_P(VaapiMinigbmTest, AllocateAndCompareWithMinigbm) {
 
   if (!VaapiWrapper::IsDecodingSupportedForInternalFormat(va_profile,
                                                           va_rt_format)) {
-    GTEST_SKIP() << "VA_RT_FORMAT 0x" << std::hex << va_rt_format
-                 << " not supported.";
+    GTEST_SKIP() << VARTFormatToString(va_rt_format) << " not supported.";
   }
 
   gfx::Size minimum_supported_size;
@@ -648,6 +716,7 @@ TEST_P(VaapiMinigbmTest, AllocateAndCompareWithMinigbm) {
     DVLOG(2) << "plane " << i
              << ", pitch: " << va_descriptor.layers[i].pitch[0];
     // Luma and chroma planes have different |pitch| expectations.
+    // TODO(mcasas): consider bitdepth for pitch lower thresholds.
     if (i == 0) {
       EXPECT_GE(
           va_descriptor.layers[i].pitch[0],
@@ -672,9 +741,15 @@ TEST_P(VaapiMinigbmTest, AllocateAndCompareWithMinigbm) {
 
   const auto gbm_format = ToGBMFormat(va_rt_format);
   ASSERT_NE(gbm_format, DRM_FORMAT_INVALID);
-  struct gbm_bo* bo = gbm_bo_create(
-      gbm, resolution.width(), resolution.height(), gbm_format,
-      GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING | GBM_BO_USE_HW_VIDEO_DECODER);
+  const auto bo_use_flags = GBM_BO_USE_TEXTURING | GBM_BO_USE_HW_VIDEO_DECODER;
+  struct gbm_bo* bo =
+      gbm_bo_create(gbm, resolution.width(), resolution.height(), gbm_format,
+                    bo_use_flags | GBM_BO_USE_SCANOUT);
+  if (!bo) {
+    // Try again without the scanout flag. This reproduces Chrome's behaviour.
+    bo = gbm_bo_create(gbm, resolution.width(), resolution.height(), gbm_format,
+                       bo_use_flags);
+  }
   ASSERT_TRUE(bo);
   EXPECT_EQ(scoped_va_surface->size(),
             gfx::Size(base::checked_cast<int>(gbm_bo_get_width(bo)),
@@ -697,8 +772,10 @@ TEST_P(VaapiMinigbmTest, AllocateAndCompareWithMinigbm) {
 
 constexpr VAProfile kVACodecProfiles[] = {
     VAProfileVP8Version0_3, VAProfileH264ConstrainedBaseline,
-    VAProfileVP9Profile0, VAProfileAV1Profile0, VAProfileJPEGBaseline};
-constexpr uint32_t kVARTFormatsForGBM[] = {VA_RT_FORMAT_YUV420};
+    VAProfileVP9Profile0,   VAProfileVP9Profile2,
+    VAProfileAV1Profile0,   VAProfileJPEGBaseline};
+constexpr uint32_t kVARTFormatsForGBM[] = {VA_RT_FORMAT_YUV420,
+                                           VA_RT_FORMAT_YUV420_10};
 constexpr gfx::Size kResolutions[] = {
     // clang-format off
     gfx::Size(127, 127),

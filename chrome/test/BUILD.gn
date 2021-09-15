@@ -2670,6 +2670,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/extensions/view_extension_source_browsertest.cc",
         "../browser/extensions/wake_event_page_apitest.cc",
         "../browser/extensions/wasm_app_browsertest.cc",
+        "../browser/extensions/wasm_mv3_browsertest.cc",
         "../browser/extensions/web_contents_browsertest.cc",
         "../browser/extensions/webstore_installer_browsertest.cc",
         "../browser/extensions/webstore_installer_test.cc",
@@ -3471,7 +3472,6 @@ if (!is_android && !is_fuchsia) {
         # TODO(GYP): figure out which of these things are
         # actually needed and also which should be pulled in via
         # data or data_deps and through which dependencies.
-        "//chrome/browser/ash/login/test/https_forwarder.py",
         "//chrome/browser/resources/chromeos/wallpaper_manager/",
         "//chromeos/test/data/",
         "//ui/file_manager/base/",
@@ -3655,13 +3655,13 @@ if (!is_android && !is_fuchsia) {
         "//chromeos/ui/frame",
         "//chromeos/ui/frame:test_support",
         "//chromeos/ui/wm",
+        "//components/app_restore",
         "//components/arc:arc_test_support",
         "//components/arc/enterprise",
         "//components/crash/content/browser/error_reporting:mock_crash_endpoint",
         "//components/device_event_log",
         "//components/drive",
         "//components/exo:test_support",
-        "//components/full_restore",
         "//components/onc",
         "//components/prefs",
         "//components/quirks",
@@ -5552,6 +5552,7 @@ test("unit_tests") {
       "../browser/autofill/manual_filling_controller_impl_unittest.cc",
       "../browser/enterprise/reporting/browser_report_generator_unittest.cc",
       "../browser/enterprise/reporting/profile_report_generator_unittest.cc",
+      "../browser/enterprise/reporting/report_generator_unittest.cc",
       "../browser/enterprise/util/android_enterprise_info_unittest.cc",
       "../browser/long_screenshots/long_screenshots_tab_service_unittest.cc",
       "../browser/media/android/cdm/media_drm_origin_id_manager_unittest.cc",
@@ -6466,8 +6467,8 @@ test("unit_tests") {
       "//chromeos/dbus/u2f",
       "//chromeos/services/nearby/public/cpp:test_support",
       "//chromeos/ui/wm",
+      "//components/app_restore:unit_tests",
       "//components/arc:arc_test_support",
-      "//components/full_restore:unit_tests",
     ]
   }
 
@@ -7161,10 +7162,7 @@ test("unit_tests") {
   if (is_linux || is_chromeos_ash || is_mac || is_win) {
     sources += [
       "../browser/enterprise/connectors/device_trust/device_trust_service_unittest.cc",
-      "../browser/enterprise/connectors/device_trust/mock_signal_reporter.cc",
-      "../browser/enterprise/connectors/device_trust/mock_signal_reporter.h",
       "../browser/enterprise/connectors/device_trust/navigation_throttle_unittest.cc",
-      "../browser/enterprise/connectors/device_trust/signal_reporter_unittest.cc",
       "../browser/enterprise/connectors/device_trust/signals/signals_service_impl_unittest.cc",
     ]
 

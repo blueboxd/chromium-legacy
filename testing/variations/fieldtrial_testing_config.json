@@ -1710,6 +1710,7 @@
     "CanvasOutOfProcessRasterization": [
         {
             "platforms": [
+                "android",
                 "mac"
             ],
             "experiments": [
@@ -2056,12 +2057,10 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledSingleSurfaceFinale",
+                    "name": "CandidateA",
                     "params": {
                         "hide_switch_when_no_incognito_tabs": "true",
-                        "home_button_on_grid_tab_switcher": "true",
-                        "new_home_surface_from_home_button": "hide_tab_switcher_only",
-                        "omnibox_focused_on_new_tab": "true",
+                        "show_last_active_tab_only": "true",
                         "start_surface_variation": "single",
                         "support_accessibility": "false",
                         "tab_count_button_on_start_surface": "true",
@@ -2073,13 +2072,30 @@
                     ]
                 },
                 {
-                    "name": "EnabledSingleSurfaceV2Finale",
+                    "name": "FinaleV2",
                     "params": {
                         "hide_switch_when_no_incognito_tabs": "true",
                         "home_button_on_grid_tab_switcher": "true",
                         "new_home_surface_from_home_button": "hide_tab_switcher_only",
                         "omnibox_focused_on_new_tab": "true",
                         "show_last_active_tab_only": "true",
+                        "start_surface_variation": "single",
+                        "support_accessibility": "false",
+                        "tab_count_button_on_start_surface": "true",
+                        "tab_switcher_on_return_time_ms": "3600000"
+                    },
+                    "enable_features": [
+                        "StartSurfaceAndroid",
+                        "TabSwitcherOnReturn"
+                    ]
+                },
+                {
+                    "name": "Finale",
+                    "params": {
+                        "hide_switch_when_no_incognito_tabs": "true",
+                        "home_button_on_grid_tab_switcher": "true",
+                        "new_home_surface_from_home_button": "hide_tab_switcher_only",
+                        "omnibox_focused_on_new_tab": "true",
                         "start_surface_variation": "single",
                         "support_accessibility": "false",
                         "tab_count_button_on_start_surface": "true",
@@ -4038,6 +4054,31 @@
             ]
         }
     ],
+    "GwpAsanLinux": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "AllocationSamplingRange": "16",
+                        "MaxAllocations": "70",
+                        "MaxMetadata": "255",
+                        "ProcessSamplingBoost2": "10",
+                        "ProcessSamplingProbability": "0.015"
+                    },
+                    "enable_features": [
+                        "GwpAsanMalloc",
+                        "GwpAsanPartitionAlloc"
+                    ]
+                }
+            ]
+        }
+    ],
     "HTTP2": [
         {
             "platforms": [
@@ -5551,14 +5592,14 @@
             ]
         }
     ],
-    "OfflinePageServiceTurndown": [
+    "OfflinePageServiceTurndownM91": [
         {
             "platforms": [
                 "android"
             ],
             "experiments": [
                 {
-                    "name": "Control",
+                    "name": "Turndown_Disabled",
                     "disable_features": [
                         "OfflinePagesPrefetching"
                     ]
@@ -5850,13 +5891,13 @@
             ],
             "experiments": [
                 {
-                    "name": "Segmentation_AutoNoWait_20210811",
+                    "name": "Segmentation_AutoNoWait_20210907",
                     "params": {
                         "default_segment": "new-tab",
                         "disable_ui": "false",
                         "ignore_segmentation_results": "false",
                         "min_version_adaptive": "3",
-                        "segment_selection_ttl_days": "14",
+                        "segment_selection_ttl_days": "1",
                         "show_ui_only_after_ready": "false"
                     },
                     "enable_features": [
@@ -5868,13 +5909,13 @@
                     ]
                 },
                 {
-                    "name": "Segmentation_Auto_20210811",
+                    "name": "Segmentation_Auto_20210907",
                     "params": {
                         "default_segment": "new-tab",
                         "disable_ui": "false",
                         "ignore_segmentation_results": "false",
                         "min_version_adaptive": "3",
-                        "segment_selection_ttl_days": "14",
+                        "segment_selection_ttl_days": "1",
                         "show_ui_only_after_ready": "true"
                     },
                     "enable_features": [
@@ -5886,13 +5927,13 @@
                     ]
                 },
                 {
-                    "name": "Segmentation_Default_Segment_20210811",
+                    "name": "Segmentation_Default_Segment_20210907",
                     "params": {
                         "default_segment": "new-tab",
                         "disable_ui": "false",
                         "ignore_segmentation_results": "true",
                         "min_version_adaptive": "3",
-                        "segment_selection_ttl_days": "14",
+                        "segment_selection_ttl_days": "1",
                         "show_ui_only_after_ready": "true"
                     },
                     "enable_features": [
@@ -5904,14 +5945,7 @@
                     ]
                 },
                 {
-                    "name": "Segmentation_Control_20210811",
-                    "params": {
-                        "default_segment": "new-tab",
-                        "disable_ui": "false",
-                        "ignore_segmentation_results": "false",
-                        "segment_selection_ttl_days": "14",
-                        "show_ui_only_after_ready": "true"
-                    },
+                    "name": "Segmentation_Control_20210907",
                     "disable_features": [
                         "AdaptiveButtonInTopToolbar",
                         "AdaptiveButtonInTopToolbarCustomizationV2",
@@ -5919,7 +5953,7 @@
                     ]
                 },
                 {
-                    "name": "Adaptive_AlwaysNewTab_20210730",
+                    "name": "Adaptive_AlwaysNewTab_20210812",
                     "params": {
                         "mode": "always-new-tab"
                     },
@@ -5931,7 +5965,7 @@
                     ]
                 },
                 {
-                    "name": "Adaptive_AlwaysShare_20210730",
+                    "name": "Adaptive_AlwaysShare_20210812",
                     "params": {
                         "mode": "always-share"
                     },
@@ -5943,7 +5977,7 @@
                     ]
                 },
                 {
-                    "name": "Adaptive_AlwaysVoice_20210730",
+                    "name": "Adaptive_AlwaysVoice_20210812",
                     "params": {
                         "mode": "always-voice"
                     },
@@ -5955,7 +5989,7 @@
                     ]
                 },
                 {
-                    "name": "Adaptive_Control_20210730",
+                    "name": "Adaptive_Control_20210812",
                     "params": {
                         "mode": "always-none"
                     },
@@ -6343,29 +6377,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PageInfoV2Desktop"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PageLoadMetricsBufferTimer": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled100ms",
-                    "params": {
-                        "BufferTimerDelayMillis": "100"
-                    },
-                    "enable_features": [
-                        "PageLoadMetricsTimerDelay"
                     ]
                 }
             ]
@@ -8084,6 +8095,28 @@
             ]
         }
     ],
+    "SharedHighlightingTimeout": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_600",
+                    "params": {
+                        "TimeoutLengthMs": "600"
+                    },
+                    "enable_features": [
+                        "PreemptiveLinkToTextGeneration"
+                    ]
+                }
+            ]
+        }
+    ],
     "SharingFilterDevices": [
         {
             "platforms": [
@@ -9443,6 +9476,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WebAuthenticationCableSecondFactor"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebFeedsMVP": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_Grouped_IphIntro",
+                    "params": {
+                        "following_feed_content_order": "grouped",
+                        "intro_style": "IPH"
+                    },
+                    "enable_features": [
+                        "WebFeed"
                     ]
                 }
             ]

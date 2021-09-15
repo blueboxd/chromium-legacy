@@ -4,6 +4,10 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 static_library("power_bookmarks") {
   sources = [
     "power_bookmark_utils.cc",
@@ -15,8 +19,10 @@ static_library("power_bookmarks") {
   deps = [
     "//base",
     "//base:i18n",
+    "//chrome/browser/commerce/shopping_list",
     "//components/bookmarks/browser",
     "//components/commerce/core:proto",
+    "//content/public/browser",
     "//ui/base",
     "//url",
   ]
@@ -26,6 +32,14 @@ proto_library("proto") {
   proto_in_dir = "//"
   sources = [ "proto/power_bookmark_meta.proto" ]
   deps = [ "//components/commerce/core:proto" ]
+}
+
+if (is_android) {
+  proto_java_library("proto_java") {
+    proto_path = "//"
+    sources = [ "proto/power_bookmark_meta.proto" ]
+    deps = [ "//components/commerce/core:proto_java" ]
+  }
 }
 
 static_library("unit_tests") {
@@ -38,6 +52,7 @@ static_library("unit_tests") {
     "//base/test:test_support",
     "//components/bookmarks/browser",
     "//components/bookmarks/test",
+    "//content/public/browser",
     "//testing/gtest",
   ]
 }

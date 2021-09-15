@@ -256,7 +256,8 @@ def main():
     if not args.build_mac_arm:
       # TODO(thakis): Figure out why this doesn't build in --build-mac-arm
       # builds.
-      want.append('lib/clang/$V/lib/x86_64-unknown-fuchsia/libclang_rt.profile.a')
+      want.append(
+          'lib/clang/$V/lib/x86_64-unknown-fuchsia/libclang_rt.profile.a')
     if sys.platform != 'darwin':
       # The Fuchsia asan runtime is only built on non-Mac platforms.
       want.append('lib/clang/$V/lib/x86_64-unknown-fuchsia/libclang_rt.asan.so')
@@ -348,7 +349,9 @@ def main():
         'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a.syms',
 
         # UndefinedBehaviorSanitizer Android runtime, needed for CFI.
+        # pylint: disable=line-too-long
         'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-aarch64-android.so',
+        # pylint: enable=line-too-long
         'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-arm-android.so',
 
         # Ignorelist for MemorySanitizer (used on Linux only).
@@ -483,8 +486,10 @@ def main():
   objdumpdir = 'llvmobjdump-' + stamp
   shutil.rmtree(objdumpdir, ignore_errors=True)
   os.makedirs(os.path.join(objdumpdir, 'bin'))
-  for filename in ['llvm-bcanalyzer', 'llvm-cxxfilt', 'llvm-nm', 'llvm-objdump',
-                   'llvm-readobj']:
+  for filename in [
+      'llvm-bcanalyzer', 'llvm-cxxfilt', 'llvm-dwarfdump', 'llvm-nm',
+      'llvm-objdump', 'llvm-readobj'
+  ]:
     shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', filename + exe_ext),
                 os.path.join(objdumpdir, 'bin'))
   llvmobjdump_stamp_file_base = 'llvmobjdump_build_revision'

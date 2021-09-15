@@ -377,6 +377,7 @@ android_library("chrome_java") {
     "//chrome/browser/password_manager/android:java",
     "//chrome/browser/performance_hints/android:java",
     "//chrome/browser/policy/android:java",
+    "//chrome/browser/power_bookmarks:proto_java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/privacy:java",
     "//chrome/browser/privacy_sandbox/android:java",
@@ -1312,6 +1313,7 @@ android_library("chrome_test_java") {
     "//chrome/browser/fullscreen/android:java",
     "//chrome/browser/gsa:java",
     "//chrome/browser/image_descriptions:javatests",
+    "//chrome/browser/incognito:incognito_java_tests",
     "//chrome/browser/incognito:java",
     "//chrome/browser/language/android:base_module_java",
     "//chrome/browser/language/android:java",
@@ -3175,6 +3177,11 @@ android_test_apk("chrome_bundle_smoke_test_apk") {
 _bundle_smoke_test_extra_args = [
   # Make extra args be passed through to the bundle under test (see below).
   "--use-apk-under-test-flags-file",
+
+  # Enable breakpad dumps in order to detect Chrome crashes (because the
+  # test intentionally does not set <instrumentation android:targetPackage> to
+  # the bundle under test.)
+  "--enable-breakpad-dump",
 
   # Chrome crashes at startup if strict mode is turned on.
   "--strict-mode=off",

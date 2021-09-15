@@ -2090,6 +2090,28 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="BackForwardCacheDisallowActivationReason">
+  <owner>altimin@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>fergal@chromium.org</owner>
+  <summary>
+    Recorded at a history commit for each reason passed to
+    RenderFrameHost::IsInactiveAndDisallowActivation. The source IDs match with
+    the source IDs of HistoryNavigation events.
+  </summary>
+  <metric name="Reason" enum="BackForwardCacheDisallowActivationReason">
+    <summary>
+      For history navigations, records the reason passed to
+      RenderFrameHost::IsInactiveAndDisallowActivation.
+
+      The metric is recorded when a history navigation commits and emits a
+      sample for each reason. One history navigation can emit multiple reasons,
+      and these reasons are recorded as multiple events with the same source ID
+      based on the navigation ID.
+    </summary>
+  </metric>
+</event>
+
 <event name="BackgroundFetch">
   <owner>nator@chromium.org</owner>
   <owner>rayankans@chromium.org</owner>
@@ -11044,7 +11066,11 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="IsRoaming" enum="Boolean">
     <summary>
-      Whether the device was roaming when the background task ran.
+      Whether the device was roaming when the background task ran. This field is
+      only set if we can determine whether the network was roaming or not. This
+      means in cases where the HTTP probe was cancelled or we ecountered an
+      error while getting whether the network is roaming or not that this field
+      will be null.
     </summary>
   </metric>
   <metric name="LocalHourOfDayStart">
@@ -15300,6 +15326,20 @@ be describing additional metrics about the same event.
     <summary>
       Whether the form submission is a shopping transaction. This has 50% chance
       randomized.
+    </summary>
+  </metric>
+</event>
+
+<event name="Shopping.WillSendRequest">
+  <owner>wychen@chromium.org</owner>
+  <owner>yuezhanggg@chromium.org</owner>
+  <summary>
+    Recorded when an XHR is about to be sent.
+  </summary>
+  <metric name="IsAddToCart" enum="Boolean">
+    <summary>
+      Whether the XHR is to add a product to a shopping cart. This has 50%
+      chance randomized.
     </summary>
   </metric>
 </event>

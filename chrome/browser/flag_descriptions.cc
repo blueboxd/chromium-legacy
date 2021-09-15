@@ -1108,7 +1108,7 @@ const char kEnableLensRegionSearchFlagId[] = "enable-lens-region-search";
 const char kEnableLensRegionSearchName[] =
     "Search your screen with Google Lens";
 const char kEnableLensRegionSearchDescription[] =
-    "Right click and select \"Search part of the page with Google Lens\" to "
+    "Right click and select \"Search images with Google Lens\" to "
     "search any region of the site to learn more about the visual content you "
     "see while you browse and shop on the web.";
 
@@ -2550,17 +2550,6 @@ const char kTouchSelectionStrategyDescription[] =
 const char kTouchSelectionStrategyCharacter[] = "Character";
 const char kTouchSelectionStrategyDirection[] = "Direction";
 
-const char kTraceUploadUrlName[] = "Trace label for navigation tracing";
-const char kTraceUploadUrlDescription[] =
-    "This is to be used in conjunction with the enable-navigation-tracing "
-    "flag. Please select the label that best describes the recorded traces. "
-    "This will choose the destination the traces are uploaded to. If you are "
-    "not sure, select other. If left empty, no traces will be uploaded.";
-const char kTraceUploadUrlChoiceOther[] = "Other";
-const char kTraceUploadUrlChoiceEmloading[] = "emloading";
-const char kTraceUploadUrlChoiceQa[] = "QA";
-const char kTraceUploadUrlChoiceTesting[] = "Testing";
-
 const char kTranslateAssistContentName[] = "Translate AssistContent";
 const char kTranslateAssistContentDescription[] =
     "Enables populating translate details for the current page in "
@@ -3225,12 +3214,6 @@ const char kOfflinePagesLivePageSharingDescription[] =
     "Enables to share current loaded page as offline page by saving as MHTML "
     "first.";
 
-const char kPageInfoDiscoverabilityName[] = "Page info discoverability";
-const char kPageInfoDiscoverabilityDescription[] =
-    "Improve discoverability of permission controls in the page info bubble. "
-    "After a permission decision is made, the page info icon in the address "
-    "bar will show a brief animation.";
-
 const char kPageInfoHistoryName[] = "Page info history";
 const char kPageInfoHistoryDescription[] =
     "Enable a history sub page to the page info menu, and a button to forget "
@@ -3389,6 +3372,12 @@ const char kRelatedSearchesUiDescription[] =
     "Forces the Related Searches UI and underlying requests to be enabled "
     "regardless of whether they are safe or useful. This requires the Related "
     "Searches feature flag to also be enabled.";
+
+const char kRequestDesktopSiteGlobalName[] =
+    "Global setting to request desktop site on Android.";
+const char kRequestDesktopSiteGlobalDescription[] =
+    "An option in `Site settings` to persistently request the "
+    "desktop version of websites.";
 
 const char kShareUsageRankingName[] =
     "Incorporate usage history into share target ranking.";

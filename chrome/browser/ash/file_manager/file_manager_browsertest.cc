@@ -136,6 +136,16 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableBannersFramework() {
+    options.enable_banners_framework = true;
+    return *this;
+  }
+
+  TestCase& DisableBannersFramework() {
+    options.enable_banners_framework = false;
+    return *this;
+  }
+
   std::string GetFullName() const {
     std::string full_name = name;
 
@@ -168,6 +178,9 @@ struct TestCase {
 
     if (options.enable_trash)
       full_name += "_Trash";
+
+    if (options.enable_banners_framework)
+      full_name += "_BannersFramework";
 
     return full_name;
   }
@@ -897,45 +910,125 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("openFileDialogUnload").WithBrowser(),
+        TestCase("openFileDialogUnload").WithBrowser().FilesSwa(),
         TestCase("openFileDialogDownloads").WithBrowser(),
+        TestCase("openFileDialogDownloads").WithBrowser().FilesSwa(),
         TestCase("openFileDialogDownloads").WithBrowser().InGuestMode(),
+        TestCase("openFileDialogDownloads")
+            .WithBrowser()
+            .InGuestMode()
+            .FilesSwa(),
         TestCase("openFileDialogDownloads").WithBrowser().InIncognito(),
+        // TODO(b/194255793): Fix this.
+        // TestCase("openFileDialogDownloads").WithBrowser().InIncognito().FilesSwa(),
         TestCase("openFileDialogPanelsDisabled").WithBrowser(),
+        TestCase("openFileDialogPanelsDisabled").WithBrowser().FilesSwa(),
         TestCase("openFileDialogAriaMultipleSelect").WithBrowser(),
+        TestCase("openFileDialogAriaMultipleSelect").WithBrowser().FilesSwa(),
         TestCase("saveFileDialogAriaSingleSelect").WithBrowser(),
+        TestCase("saveFileDialogAriaSingleSelect").WithBrowser().FilesSwa(),
         TestCase("saveFileDialogDownloads").WithBrowser(),
         TestCase("saveFileDialogDownloads").WithBrowser().FilesSwa(),
         TestCase("saveFileDialogDownloads").WithBrowser().InGuestMode(),
+        TestCase("saveFileDialogDownloads")
+            .WithBrowser()
+            .InGuestMode()
+            .FilesSwa(),
         TestCase("saveFileDialogDownloads").WithBrowser().InIncognito(),
+        // TODO(b/194255793): Fix this.
+        // TestCase("saveFileDialogDownloads")
+        //     .WithBrowser()
+        //     .InIncognito()
+        //     .FilesSwa(),
         // TODO(crbug.com/1236842): Remove flakiness and enable this test.
         // TestCase("saveFileDialogDownloadsNewFolderButton").WithBrowser(),
+        // TestCase("saveFileDialogDownloadsNewFolderButton")
+        //     .WithBrowser()
+        //     .FilesSwa(),
         TestCase("saveFileDialogPanelsDisabled").WithBrowser(),
+        TestCase("saveFileDialogPanelsDisabled").WithBrowser().FilesSwa(),
         TestCase("openFileDialogCancelDownloads").WithBrowser(),
+        TestCase("openFileDialogCancelDownloads").WithBrowser().FilesSwa(),
         TestCase("openFileDialogEscapeDownloads").WithBrowser(),
+        TestCase("openFileDialogEscapeDownloads").WithBrowser().FilesSwa(),
         TestCase("openFileDialogDrive").WithBrowser(),
+        TestCase("openFileDialogDrive").WithBrowser().FilesSwa(),
         TestCase("openFileDialogDrive").WithBrowser().InIncognito(),
+        // TODO(b/194255793): Fix this.
+        // TestCase("openFileDialogDrive").WithBrowser().InIncognito().FilesSwa(),
         TestCase("saveFileDialogDrive").WithBrowser(),
+        TestCase("saveFileDialogDrive").WithBrowser().FilesSwa(),
         TestCase("saveFileDialogDrive").WithBrowser().InIncognito(),
+        // TODO(b/194255793): Fix this.
+        // TestCase("saveFileDialogDrive").WithBrowser().InIncognito().FilesSwa(),
         TestCase("openFileDialogDriveFromBrowser").WithBrowser(),
+        // TODO(b/194255793): Fix this.
+        // TestCase("openFileDialogDriveFromBrowser").WithBrowser().FilesSwa(),
         TestCase("openFileDialogDriveHostedDoc").WithBrowser(),
+        // TODO(b/194255793): Fix this.
+        // TestCase("openFileDialogDriveHostedDoc").WithBrowser().FilesSwa(),
         TestCase("openFileDialogDriveHostedNeedsFile").WithBrowser(),
+        TestCase("openFileDialogDriveHostedNeedsFile").WithBrowser().FilesSwa(),
         TestCase("saveFileDialogDriveHostedNeedsFile").WithBrowser(),
+        TestCase("saveFileDialogDriveHostedNeedsFile").WithBrowser().FilesSwa(),
         TestCase("openFileDialogCancelDrive").WithBrowser(),
+        TestCase("openFileDialogCancelDrive").WithBrowser().FilesSwa(),
         TestCase("openFileDialogEscapeDrive").WithBrowser(),
+        TestCase("openFileDialogEscapeDrive").WithBrowser().FilesSwa(),
         TestCase("openFileDialogDriveOffline").WithBrowser().Offline(),
+        TestCase("openFileDialogDriveOffline")
+            .WithBrowser()
+            .Offline()
+            .FilesSwa(),
         TestCase("saveFileDialogDriveOffline").WithBrowser().Offline(),
+        TestCase("saveFileDialogDriveOffline")
+            .WithBrowser()
+            .Offline()
+            .FilesSwa(),
         TestCase("openFileDialogDriveOfflinePinned").WithBrowser().Offline(),
+        TestCase("openFileDialogDriveOfflinePinned")
+            .WithBrowser()
+            .Offline()
+            .FilesSwa(),
         TestCase("saveFileDialogDriveOfflinePinned").WithBrowser().Offline(),
+        TestCase("saveFileDialogDriveOfflinePinned")
+            .WithBrowser()
+            .Offline()
+            .FilesSwa(),
         TestCase("openFileDialogDefaultFilter").WithBrowser(),
+        TestCase("openFileDialogDefaultFilter").WithBrowser().FilesSwa(),
         TestCase("saveFileDialogDefaultFilter").WithBrowser(),
+        TestCase("saveFileDialogDefaultFilter").WithBrowser().FilesSwa(),
         TestCase("saveFileDialogDefaultFilterKeyNavigation").WithBrowser(),
+        TestCase("saveFileDialogDefaultFilterKeyNavigation")
+            .WithBrowser()
+            .FilesSwa(),
         TestCase("saveFileDialogSingleFilterNoAcceptAll").WithBrowser(),
+        TestCase("saveFileDialogSingleFilterNoAcceptAll")
+            .WithBrowser()
+            .FilesSwa(),
         TestCase("saveFileDialogExtensionNotAddedWithNoFilter").WithBrowser(),
+        TestCase("saveFileDialogExtensionNotAddedWithNoFilter")
+            .WithBrowser()
+            .FilesSwa(),
         TestCase("saveFileDialogExtensionAddedWithJpegFilter").WithBrowser(),
+        TestCase("saveFileDialogExtensionAddedWithJpegFilter")
+            .WithBrowser()
+            .FilesSwa(),
         TestCase("saveFileDialogExtensionNotAddedWhenProvided").WithBrowser(),
+        TestCase("saveFileDialogExtensionNotAddedWhenProvided")
+            .WithBrowser()
+            .FilesSwa(),
         TestCase("openFileDialogFileListShowContextMenu").WithBrowser(),
+        TestCase("openFileDialogFileListShowContextMenu")
+            .WithBrowser()
+            .FilesSwa(),
         TestCase("openFileDialogSelectAllDisabled").WithBrowser(),
-        TestCase("openMultiFileDialogSelectAllEnabled").WithBrowser()));
+        TestCase("openFileDialogSelectAllDisabled").WithBrowser().FilesSwa(),
+        TestCase("openMultiFileDialogSelectAllEnabled").WithBrowser(),
+        TestCase("openMultiFileDialogSelectAllEnabled")
+            .WithBrowser()
+            .FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     CopyBetweenWindows, /* copy_between_windows.js */
@@ -1164,6 +1257,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     AndroidPhotos, /* android_photos.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        TestCase("androidPhotosBanner").EnablePhotosDocumentsProvider()));
+        // TODO(crbug.com/1228128): Remove disabled test when framework is live.
+        TestCase("androidPhotosBanner")
+            .EnablePhotosDocumentsProvider()
+            .EnableBannersFramework(),
+        TestCase("androidPhotosBanner")
+            .EnablePhotosDocumentsProvider()
+            .DisableBannersFramework()));
 
 }  // namespace file_manager

@@ -181,7 +181,8 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
                             bool enable_blend,
                             const gfx::Rect& damage_rect,
                             float opacity,
-                            std::unique_ptr<gfx::GpuFence> gpu_fence) override;
+                            std::unique_ptr<gfx::GpuFence> gpu_fence,
+                            gfx::OverlayPriorityHint priority_hint) override;
   gfx::SurfaceOrigin GetOrigin() const override;
   EGLTimestampClient* GetEGLTimestampClient() override;
 
@@ -203,6 +204,10 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
   EGLNativeWindowType window_ = 0;
   gfx::Size size_ = gfx::Size(1, 1);
   bool enable_fixed_size_angle_ = true;
+
+  GLSurfacePresentationHelper* presentation_helper() const {
+    return presentation_helper_.get();
+  }
 
   gfx::SwapResult SwapBuffersWithDamage(const std::vector<int>& rects,
                                         PresentationCallback callback);

@@ -18,6 +18,7 @@
 #include "components/web_resource/web_resource_pref_names.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/first_run/first_run_configuration.h"
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
@@ -30,7 +31,6 @@
 #include "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #include "ios/chrome/browser/ui/first_run/first_run_util.h"
-#import "ios/chrome/browser/ui/first_run/location_permissions_field_trial.h"
 #include "ios/chrome/browser/ui/first_run/static_file_view_controller.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -302,11 +302,19 @@ const BOOL kDefaultStatsCheckboxValue = YES;
                            presentingViewController];
       break;
     case SigninCompletionActionNone:
+    case SigninCompletionActionShowManagedLearnMore:
       if (self.interruptCompletion) {
         self.interruptCompletion();
-      } else if (location_permissions_field_trial::IsInFirstRunModalGroup()) {
+      } else {
         [self.dispatcher
             showLocationPermissionsFromViewController:presentingViewController];
+      }
+      if (completionInfo.signinCompletionAction ==
+          SigninCompletionActionShowManagedLearnMore) {
+        OpenNewTabCommand* command = [OpenNewTabCommand
+            commandWithURLFromChrome:GURL(kChromeUIManagementURL)];
+        command.userInitiated = YES;
+        [self.dispatcher openURLInNewTab:command];
       }
       break;
   }

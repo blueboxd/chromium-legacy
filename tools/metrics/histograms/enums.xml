@@ -19261,6 +19261,7 @@ Called by update_debug_scenarios.py.-->
   <int value="46" label="OSFeedbackApp"/>
   <int value="47" label="Cursive"/>
   <int value="48" label="Media App Audio"/>
+  <int value="49" label="Projector"/>
 </enum>
 
 <enum name="DefaultBrowserAsyncAttemptResult">
@@ -47007,6 +47008,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="LocationPermissionsIOSUI">
+  <obsolete>
+    Removed in September 2021
+  </obsolete>
   <int value="0" label="First Run Location Prompt Not Shown"/>
   <int value="1" label="First Run Location Permissions Modal Shown"/>
 </enum>
@@ -54215,6 +54219,7 @@ Called by update_use_counter_css.py.-->
   <int value="701" label="font-synthesis-style"/>
   <int value="702" label="app-region"/>
   <int value="703" label="font-synthesis-small-caps"/>
+  <int value="704" label="font-synthesis"/>
 </enum>
 
 <enum name="MappedEditingCommands">

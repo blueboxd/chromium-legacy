@@ -18,7 +18,7 @@ export function setUp() {
       <button slot="extra-button" href="http://test.com">
         Test Banner
       </button>
-      <button slot="dismiss-button" class="dismiss-button">
+      <button slot="dismiss-button" id="dismiss-button">
         Dismiss
       </button>
     </warning-banner>
@@ -59,7 +59,7 @@ export async function testDefaultDismissButtonEmitsEvent(done) {
     done();
   };
   warningBanner.addEventListener(Banner.Event.BANNER_DISMISSED, handler);
-  warningBanner.shadowRoot.querySelector('.dismiss-button').click();
+  warningBanner.shadowRoot.querySelector('#dismiss-button').click();
 }
 
 /**
@@ -81,7 +81,7 @@ export async function testAdditionalButtonCanBeClicked() {
  */
 export function testWarningBannerDefaults() {
   // Ensure the warning banner default timeout is 36 hours.
-  assertEquals(warningBanner.hideAfterDismissedDuration(), 36 * 60 * 60);
+  assertEquals(warningBanner.hideAfterDismissedDurationSeconds(), 36 * 60 * 60);
 
   // Ensure the default allowed volume type is empty. This ensures any
   // banners that don't override this property do not show by default.

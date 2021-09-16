@@ -12,7 +12,10 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/views/bubble/bubble_border.h"
+
+namespace views {
+class View;
+}
 
 // Describes the content and appearance of an in-product help bubble.
 // |body_string_specifier|, |anchor_view|, and |arrow| are required, all
@@ -62,9 +65,25 @@ struct FeaturePromoBubbleParams {
   // View bubble is positioned relative to. Required.
   views::View* anchor_view = nullptr;
 
-  // Determines position relative to |anchor_view|. Required. Note
-  // that contrary to the name, no visible arrow is shown.
-  views::BubbleBorder::Arrow arrow = views::BubbleBorder::TOP_LEFT;
+  // Mirrors most values of views::BubbleBorder::Arrow
+  enum class Arrow {
+    TOP_LEFT,
+    TOP_RIGHT,
+    BOTTOM_LEFT,
+    BOTTOM_RIGHT,
+    LEFT_TOP,
+    RIGHT_TOP,
+    LEFT_BOTTOM,
+    RIGHT_BOTTOM,
+    TOP_CENTER,
+    BOTTOM_CENTER,
+    LEFT_CENTER,
+    RIGHT_CENTER,
+  };
+
+  // Determines position relative to |anchor_view|, and where the bubble's arrow
+  // points. Required.
+  Arrow arrow = Arrow::TOP_LEFT;
 
   // If set, determines the width of the bubble. Prefer the default if
   // possible.
@@ -86,7 +105,11 @@ struct FeaturePromoBubbleParams {
   // intended to be true for tutorial use cases.
   bool show_close_button = false;
 
-  // Changes the bubble timeout. Intended for tests, avoid use.
+  // Changes the bubble timeout before and after hovering the bubble,
+  // respectively. If a timeout is not provided a default will be used. If
+  // |timeout_after_interaction| is 0, |timeout_no_interaction| is used in
+  // both cases. If both are 0, the bubble never times out. A bubble with
+  // buttons never times out regardless of the values.
   absl::optional<base::TimeDelta> timeout_no_interaction;
   absl::optional<base::TimeDelta> timeout_after_interaction;
 };

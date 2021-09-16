@@ -474,6 +474,7 @@
     'cast_audio_specific_chromium_gtests': {
       'cast_audio_backend_unittests': {},
       'cast_base_unittests': {},
+      'cast_cast_core_unittests': {},
       'cast_crash_unittests': {},
       'cast_media_unittests': {},
       'cast_shell_browsertests': {
@@ -1005,7 +1006,6 @@
     },
 
     'chromium_gtests_for_win_and_linux_only': {
-      'traffic_annotation_auditor_unittests': {},
     },
 
     'chromium_junit_tests': {
@@ -5141,9 +5141,6 @@
           '--ui-test-action-timeout=40000',
         ],
       },
-    },
-
-    'updater_system_gtests': {
       'updater_tests_system': {
         'args': [
           # Timeouts based on empirical observations of test runtimes, 2021-07.
@@ -5154,12 +5151,40 @@
         'swarming': {
           'dimension_sets': [
             {
-              'pool': 'chromium.updater.mac',
+              'integrity': 'high',
             }
           ]
         }
       },
     },
+
+    'updater_gtests_uac': {
+      'updater_tests': {
+        'args': [
+          '--deelevate',
+          # Timeouts based on empirical observations of test runtimes, 2021-07.
+          '--test-launcher-timeout=90000',
+          '--ui-test-action-max-timeout=45000',
+          '--ui-test-action-timeout=40000',
+        ],
+      },
+      'updater_tests_system': {
+        'args': [
+          # Timeouts based on empirical observations of test runtimes, 2021-07.
+          '--test-launcher-timeout=90000',
+          '--ui-test-action-max-timeout=45000',
+          '--ui-test-action-timeout=40000',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'integrity': 'high',
+            }
+          ]
+        }
+      },
+    },
+
 
     'upload_perfetto': {
       'upload_trace_processor': {},
@@ -6858,11 +6883,6 @@
       'chromium_browser_tests',
     ],
 
-    'updater_mac_gtests': [
-      'updater_gtests',
-      'updater_system_gtests',
-    ],
-
     'webrtc_android_tests_with_baremetal_tests': [
       'webrtc_chromium_simple_baremetal_gtests',
       'webrtc_chromium_simple_gtests',
@@ -7400,7 +7420,7 @@
     'lacros_skylab_arm': {
       'lacros_skylab_arm_tests': {
         'variants': [
-          'CROS_KEVIN_TOT',
+          'CROS_KEVIN_LKGM',
         ]
       },
     },
@@ -7409,12 +7429,14 @@
     'lacros_skylab_tests_amd64_generic': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_ATLAS_TOT',
-          'CROS_ATLAS_TOT-1',
-          'CROS_ATLAS_TOT-2',
-          'CROS_EVE_TOT',
-          'CROS_EVE_TOT-1',
-          'CROS_EVE_TOT-2',
+          'CROS_ATLAS_LKGM',
+          'CROS_ATLAS_DEV',
+          'CROS_ATLAS_BETA',
+          'CROS_ATLAS_STABLE',
+          'CROS_EVE_LKGM',
+          'CROS_EVE_DEV',
+          'CROS_EVE_BETA',
+          'CROS_EVE_STABLE',
         ]
       },
     },
@@ -7423,12 +7445,14 @@
     'lacros_skylab_x86_64': {
       'lacros_skylab_poc': {
         'variants': [
-          'CROS_ATLAS_TOT',
-          'CROS_ATLAS_TOT-1',
-          'CROS_ATLAS_TOT-2',
-          'CROS_EVE_TOT',
-          'CROS_EVE_TOT-1',
-          'CROS_EVE_TOT-2',
+          'CROS_ATLAS_LKGM',
+          'CROS_ATLAS_DEV',
+          'CROS_ATLAS_BETA',
+          'CROS_ATLAS_STABLE',
+          'CROS_EVE_LKGM',
+          'CROS_EVE_DEV',
+          'CROS_EVE_BETA',
+          'CROS_EVE_STABLE',
         ]
       },
     },

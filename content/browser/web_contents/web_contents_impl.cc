@@ -3332,7 +3332,14 @@ void WebContentsImpl::FullscreenStateChanged(
   // See https://fullscreen.spec.whatwg.org.
   size_t size_before_deletion = fullscreen_frames_.size();
   base::EraseIf(fullscreen_frames_, [&](RenderFrameHostImpl* current) {
-    return (current == rfh || current->IsDescendantOf(rfh));
+    while (current) {
+      if (current == rfh)
+        return true;
+      // We only look for direct parents. fencedframes and portals will not
+      // enter fullscreen.
+      current = current->GetParent();
+    }
+    return false;
   });
 
   if (size_before_deletion != fullscreen_frames_.size())
@@ -5076,7 +5083,7 @@ void WebContentsImpl::DidEndColorChooser() {
 int WebContentsImpl::DownloadImage(
     const GURL& url,
     bool is_favicon,
-    uint32_t preferred_size,
+    const gfx::Size& preferred_size,
     uint32_t max_bitmap_size,
     bool bypass_cache,
     WebContents::ImageDownloadCallback callback) {
@@ -5091,7 +5098,7 @@ int WebContentsImpl::DownloadImageInFrame(
     const GlobalRenderFrameHostId& initiator_frame_routing_id,
     const GURL& url,
     bool is_favicon,
-    uint32_t preferred_size,
+    const gfx::Size& preferred_size,
     uint32_t max_bitmap_size,
     bool bypass_cache,
     WebContents::ImageDownloadCallback callback) {

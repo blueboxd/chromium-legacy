@@ -164,25 +164,22 @@ public class SectionHeaderView extends LinearLayout {
             mEnabledIndicatorDrawable = mTabLayout.getTabSelectedIndicator();
         }
 
-        int touchPadding;
+        int touchSize;
         // If we are animating padding, add additional touch area around the menu.
         if (mAnimatePaddingWhenDisabled) {
-            touchPadding =
-                    getResources().getDimensionPixelSize(R.dimen.feed_v2_header_menu_touch_padding);
+            touchSize =
+                    getResources().getDimensionPixelSize(R.dimen.feed_v2_header_menu_touch_size);
         } else {
-            touchPadding = 0;
+            touchSize = 0;
         }
-        post(() -> {
-            Rect rect = new Rect();
-            mMenuView.getHitRect(rect);
 
-            rect.top -= touchPadding;
-            rect.bottom += touchPadding;
-            rect.left -= touchPadding;
-            rect.right += touchPadding;
-
-            setTouchDelegate(new TouchDelegate(rect, mMenuView));
-        });
+        // #getHitRect() will not be valid until the first layout pass completes. Additionally, if
+        // the header's enabled state changes, |mMenuView| will move slightly sideways, and the
+        // touch target needs to be adjusted. This is a bit chatty during animations, but it should
+        // also be fairly cheap.
+        mMenuView.addOnLayoutChangeListener(
+                (View v, int left, int top, int right, int bottom, int oldLeft, int oldTop,
+                        int oldRight, int oldBottom) -> adjustMenuTouchDelegate(touchSize));
     }
 
     /** Updates header text for this view. */
@@ -341,8 +338,8 @@ public class SectionHeaderView extends LinearLayout {
     /** Collapse the header to indicate the section has been disabled. */
     void collapseHeader() {
         if (mAnimatePaddingWhenDisabled) {
-            int finalHorizontalPadding = getResources().getDimensionPixelSize(
-                    R.dimen.feed_v2_header_menu_disabled_padding);
+            int finalHorizontalPadding =
+                    getResources().getDimensionPixelSize(R.dimen.feed_v2_header_disabled_padding);
             ValueAnimator animator = ValueAnimator.ofInt(getPaddingLeft(), finalHorizontalPadding);
             animator.addUpdateListener((ValueAnimator animation) -> {
                 int horizontalPadding = (Integer) animation.getAnimatedValue();
@@ -451,6 +448,21 @@ public class SectionHeaderView extends LinearLayout {
                         })
                         .setHighlightParams(params)
                         .build());
+    }
+
+    private void adjustMenuTouchDelegate(int touchSize) {
+        Rect rect = new Rect();
+        mMenuView.getHitRect(rect);
+
+        int halfWidthDelta = Math.max((touchSize - mMenuView.getWidth()) / 2, 0);
+        int halfHeightDelta = Math.max((touchSize - mMenuView.getHeight()) / 2, 0);
+
+        rect.left -= halfWidthDelta;
+        rect.right += halfWidthDelta;
+        rect.top -= halfHeightDelta;
+        rect.bottom += halfHeightDelta;
+
+        setTouchDelegate(new TouchDelegate(rect, mMenuView));
     }
 
     private void displayMenu(ModelList listItems, ListMenu.Delegate listMenuDelegate) {

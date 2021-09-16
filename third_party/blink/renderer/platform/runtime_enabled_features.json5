@@ -216,6 +216,7 @@
     },
     {
       name: "AutoExpandDetailsElement",
+      status: "experimental",
     },
     {
       name: "AutofillShadowDOM",
@@ -1220,10 +1221,6 @@
     {
       name: "LangAttributeAwareFormControlUI",
       settable_from_internals: true,
-    },
-    {
-      name: "LangClientHintHeader",
-      status: "experimental",
     },
     {
       // LayoutNG has been enabled in M76, but we still keep this flag for
@@ -2394,6 +2391,10 @@
     {
       name: "WebAuth",
       status: "stable",
+    },
+    // When enabled adds the transport used for authentication to the assertion payload.
+    {
+      name: "WebAuthAssertionTransport",
     },
     // A more subtle UI for WebAuthn that is web exposed. Under development.
     // It's controlled by the corresponding Chromium feature which needs to

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -47,9 +48,19 @@ void StandaloneBrowserExtensionApps::Connect(
   mojo::Remote<apps::mojom::Subscriber> subscriber(
       std::move(subscriber_remote));
 
-  subscribers_.Add(std::move(subscriber));
-  // TODO(https://crbug.com/1225848): Call subscriber->OnApps() with the set of
-  // registered apps.
+  mojo::RemoteSetElementId id = subscribers_.Add(std::move(subscriber));
+
+  if (app_ptr_cache_.empty())
+    return;
+
+  std::vector<apps::mojom::AppPtr> apps;
+  for (auto& it : app_ptr_cache_) {
+    apps.push_back(it.second.Clone());
+  }
+
+  subscribers_.Get(id)->OnApps(
+      std::move(apps), apps::mojom::AppType::kStandaloneBrowserExtension,
+      true /* should_notify_initialized */);
 }
 
 void StandaloneBrowserExtensionApps::LoadIcon(const std::string& app_id,
@@ -58,6 +69,13 @@ void StandaloneBrowserExtensionApps::LoadIcon(const std::string& app_id,
                                               int32_t size_hint_in_dip,
                                               bool allow_placeholder_icon,
                                               LoadIconCallback callback) {
+  // It is possible that Lacros is briefly unavailable, for example if it shuts
+  // down for an update.
+  if (!controller_.is_bound()) {
+    std::move(callback).Run(apps::mojom::IconValue::New());
+    return;
+  }
+
   controller_->LoadIcon(app_id, std::move(icon_key), std::move(icon_type),
                         size_hint_in_dip, std::move(callback));
 }
@@ -67,8 +85,15 @@ void StandaloneBrowserExtensionApps::Launch(
     int32_t event_flags,
     apps::mojom::LaunchSource launch_source,
     apps::mojom::WindowInfoPtr window_info) {
-  // TODO(https://crbug.com/1225848): Implement.
-  NOTIMPLEMENTED();
+  // It is possible that Lacros is briefly unavailable, for example if it shuts
+  // down for an update.
+  if (!controller_.is_bound())
+    return;
+
+  crosapi::mojom::LaunchParamsPtr params = crosapi::mojom::LaunchParams::New();
+  params->app_id = app_id;
+  params->launch_source = launch_source;
+  controller_->Launch(std::move(params), /*callback=*/base::DoNothing());
 }
 
 void StandaloneBrowserExtensionApps::GetMenuModel(
@@ -76,13 +101,15 @@ void StandaloneBrowserExtensionApps::GetMenuModel(
     apps::mojom::MenuType menu_type,
     int64_t display_id,
     GetMenuModelCallback callback) {
-  // TODO(https://crbug.com/1225848): Implement.
-  NOTIMPLEMENTED();
+  // The current implementation of chrome apps menu models never uses the
+  // AppService GetMenuModel method. We always returns an empty array here.
+  std::move(callback).Run(mojom::MenuItems::New());
 }
 
 void StandaloneBrowserExtensionApps::OnApps(
     std::vector<apps::mojom::AppPtr> deltas) {
   for (apps::mojom::AppPtr& delta : deltas) {
+    app_ptr_cache_[delta->app_id] = delta.Clone();
     Publish(std::move(delta), subscribers_);
   }
 }

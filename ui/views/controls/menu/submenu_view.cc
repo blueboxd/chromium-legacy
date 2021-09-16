@@ -15,6 +15,8 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -231,8 +233,8 @@ void SubmenuView::PaintChildren(const PaintInfo& paint_info) {
   if (paint_drop_indicator) {
     gfx::Rect bounds = CalculateDropIndicatorBounds(drop_item_, drop_position_);
     ui::PaintRecorder recorder(paint_info.context(), size());
-    const SkColor drop_indicator_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_MenuDropIndicator);
+    const SkColor drop_indicator_color =
+        GetColorProvider()->GetColor(ui::kColorMenuDropmarker);
     recorder.canvas()->FillRect(bounds, drop_indicator_color);
   }
 }
@@ -480,17 +482,12 @@ void SubmenuView::SetDropMenuItem(MenuItemView* item,
   if (drop_item_ == item && drop_position_ == position)
     return;
   SchedulePaintForDropIndicator(drop_item_, drop_position_);
-  MenuItemView* old_drop_item = drop_item_;
   drop_item_ = item;
   drop_position_ = position;
-  if (old_drop_item && old_drop_item != drop_item_)
-    old_drop_item->OnDropStatusChanged();
-  if (drop_item_)
-    drop_item_->OnDropStatusChanged();
   SchedulePaintForDropIndicator(drop_item_, drop_position_);
 }
 
-bool SubmenuView::GetShowSelection(const MenuItemView* item) const {
+bool SubmenuView::GetShowSelection(MenuItemView* item) {
   if (drop_item_ == nullptr)
     return true;
   // Something is being dropped on one of this menus items. Show the

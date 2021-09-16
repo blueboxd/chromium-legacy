@@ -355,6 +355,10 @@
     "label": "//chromecast/base:cast_base_unittests",
     "type": "console_test_launcher",
   },
+  "cast_cast_core_unittests": {
+    "label": "//chromecast/cast_core:cast_cast_core_unittests",
+    "type": "console_test_launcher",
+  },
   "cast_crash_unittests": {
     "label": "//chromecast/crash:cast_crash_unittests",
     "type": "console_test_launcher",
@@ -1809,10 +1813,6 @@
     "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
-  },
-  "traffic_annotation_auditor_unittests": {
-    "label": "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests",
-    "type": "console_test_launcher",
   },
   "trichrome_chrome_bundle_smoke_test": {
     "label": "//chrome/android:trichrome_chrome_bundle_smoke_test",

@@ -187,13 +187,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, DISABLED_CloseAndReload) {
   ASSERT_EQ(crash_count_before, GetTerminatedExtensionCount());
 }
 
-// Flaky. crbug.com/846172
+// TODO(crbug.com/846172): Flaky.
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_ReloadIndependently DISABLED_ReloadIndependently
 #else
 #define MAYBE_ReloadIndependently ReloadIndependently
 #endif
-IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, ReloadIndependently) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, MAYBE_ReloadIndependently) {
   const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
@@ -535,14 +535,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 
   extensions::TestExtensionRegistryObserver observer(GetExtensionRegistry());
   {
-    content::WindowedNotificationObserver observer(
+    content::WindowedNotificationObserver notification_observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&browser()
                                                    ->tab_strip_model()
                                                    ->GetActiveWebContents()
                                                    ->GetController()));
     chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-    observer.Wait();
+    notification_observer.Wait();
   }
   scoped_refptr<const Extension> extension = observer.WaitForExtensionLoaded();
   EXPECT_EQ(first_extension_id_, extension->id());

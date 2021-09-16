@@ -364,7 +364,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kForceSynchronousHTMLParsing},
           {"InterestCohortFeaturePolicy",
            blink::features::kInterestCohortFeaturePolicy},
-          {"LangClientHintHeader", blink::features::kLangClientHintHeader},
           {"LayoutNG", blink::features::kLayoutNG},
           {"LegacyWindowsDWriteFontFallback",
            features::kLegacyWindowsDWriteFontFallback},
@@ -396,6 +395,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"WebAppTabStrip", features::kDesktopPWAsTabStrip},
           {"WebAppWindowControlsOverlay",
            features::kWebAppWindowControlsOverlay},
+          {"WebAuthAssertionTransport", features::kWebAuthAssertionTransport},
           {"WebAuthenticationConditionalUI", features::kWebAuthConditionalUI},
           {"SyncLoadDataUrlFonts", blink::features::kSyncLoadDataUrlFonts},
       };

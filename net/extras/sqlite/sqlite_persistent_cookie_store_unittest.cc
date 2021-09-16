@@ -25,6 +25,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -594,10 +595,11 @@ TEST_F(SQLitePersistentCookieStoreTest, FilterBadCookiesAndFixupDb) {
   std::unique_ptr<sql::Database> db(std::make_unique<sql::Database>());
   ASSERT_TRUE(db->Open(store_name));
   sql::Statement stmt(db->GetUniqueStatement(
-      "INSERT INTO cookies (creation_utc, top_frame_site_key, host_key, name, "
+      "INSERT INTO cookies (creation_utc, host_key, top_frame_site_key, name, "
       "value, encrypted_value, path, expires_utc, is_secure, is_httponly, "
-      "samesite, last_access_utc, has_expires, is_persistent, priority) "
-      "VALUES (?,?,?,?,?,'',?,0,0,0,0,0,1,1,0)"));
+      "samesite, last_access_utc, has_expires, is_persistent, priority, "
+      "source_scheme, source_port, is_same_party) "
+      "VALUES (?,?,?,?,?,'',?,0,0,0,0,0,1,1,0,?,?,0)"));
   ASSERT_TRUE(stmt.is_valid());
 
   struct CookieInfo {
@@ -622,13 +624,15 @@ TEST_F(SQLitePersistentCookieStoreTest, FilterBadCookiesAndFixupDb) {
     stmt.Reset(true);
 
     stmt.BindInt64(0, creation_time++);
+    stmt.BindString(1, cookie_info.domain);
     // TODO(crbug.com/1225444) Test some non-empty values when CanonicalCookie
     // supports partition key.
-    stmt.BindString(1, net::kEmptyCookiePartitionKey);
-    stmt.BindString(2, cookie_info.domain);
+    stmt.BindString(2, net::kEmptyCookiePartitionKey);
     stmt.BindString(3, cookie_info.name);
     stmt.BindString(4, cookie_info.value);
     stmt.BindString(5, cookie_info.path);
+    stmt.BindInt(6, static_cast<int>(CookieSourceScheme::kUnset));
+    stmt.BindInt(7, SQLitePersistentCookieStore::kDefaultUnknownPort);
     ASSERT_TRUE(stmt.Run());
   }
   stmt.Clear();
@@ -1845,6 +1849,41 @@ bool CreateV13Schema(sql::Database* db) {
   return true;
 }
 
+bool CreateV15Schema(sql::Database* db) {
+  sql::MetaTable meta_table;
+  if (!meta_table.Init(db, /* version = */ 13,
+                       /* earliest compatible version = */ 13)) {
+    return false;
+  }
+
+  // Version 13 schema
+  static constexpr char kCreateSql[] =
+      "CREATE TABLE cookies("
+      "creation_utc INTEGER NOT NULL,"
+      "top_frame_site_key TEXT NOT NULL,"
+      "host_key TEXT NOT NULL,"
+      "name TEXT NOT NULL,"
+      "value TEXT NOT NULL,"
+      "path TEXT NOT NULL,"
+      "expires_utc INTEGER NOT NULL,"
+      "is_secure INTEGER NOT NULL,"
+      "is_httponly INTEGER NOT NULL,"
+      "last_access_utc INTEGER NOT NULL,"
+      "has_expires INTEGER NOT NULL DEFAULT 1,"
+      "is_persistent INTEGER NOT NULL DEFAULT 1,"
+      "priority INTEGER NOT NULL DEFAULT 1,"  // COOKIE_PRIORITY_DEFAULT
+      "encrypted_value BLOB DEFAULT '',"
+      "samesite INTEGER NOT NULL DEFAULT -1,"      // UNSPECIFIED
+      "source_scheme INTEGER NOT NULL DEFAULT 0,"  // CookieSourceScheme::kUnset
+      "source_port INTEGER NOT NULL DEFAULT -1,"   // UNKNOWN
+      "is_same_party INTEGER NOT NULL DEFAULT 0,"
+      "UNIQUE (top_frame_site_key, host_key, name, path))";
+  if (!db->Execute(kCreateSql))
+    return false;
+
+  return true;
+}
+
 std::vector<CanonicalCookie> CookiesForMigrationTest() {
   static base::Time now = base::Time::Now();
 
@@ -2027,6 +2066,60 @@ bool AddV13CookiesToDB(sql::Database* db) {
   return true;
 }
 
+bool AddV15CookiesToDB(sql::Database* db) {
+  std::vector<CanonicalCookie> cookies = CookiesForMigrationTest();
+  sql::Statement statement(db->GetCachedStatement(
+      SQL_FROM_HERE,
+      "INSERT INTO cookies (creation_utc, top_frame_site_key, host_key, name, "
+      "value, encrypted_value, path, expires_utc, is_secure, is_httponly, "
+      "samesite, last_access_utc, has_expires, is_persistent, priority, "
+      "source_scheme, source_port, is_same_party) "
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+  if (!statement.is_valid())
+    return false;
+  sql::Transaction transaction(db);
+  transaction.Begin();
+  for (const CanonicalCookie& cookie : cookies) {
+    statement.Reset(true);
+    statement.BindInt64(
+        0, cookie.CreationDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
+    std::string top_frame_site_key;
+    EXPECT_TRUE(CookiePartitionKey::Serialize(cookie.PartitionKey(),
+                                              top_frame_site_key));
+    statement.BindString(1, top_frame_site_key);
+    statement.BindString(2, cookie.Domain());
+    statement.BindString(3, cookie.Name());
+    statement.BindString(4, cookie.Value());
+    statement.BindBlob(5, base::span<uint8_t>());  // encrypted_value
+    statement.BindString(6, cookie.Path());
+    statement.BindInt64(
+        7, cookie.ExpiryDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
+    statement.BindInt(8, cookie.IsSecure());
+    statement.BindInt(9, cookie.IsHttpOnly());
+    // Note that this, Priority(), and SourceScheme() below nominally rely on
+    // the enums in sqlite_persistent_cookie_store.cc having the same values as
+    // the ones in ../../cookies/cookie_constants.h.  But nothing in this test
+    // relies on that equivalence, so it's not worth the hassle to guarantee
+    // that.
+    statement.BindInt(10, static_cast<int>(cookie.SameSite()));
+    statement.BindInt64(
+        11,
+        cookie.LastAccessDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
+    statement.BindInt(12, cookie.IsPersistent());
+    statement.BindInt(13, cookie.IsPersistent());
+    statement.BindInt(14, static_cast<int>(cookie.Priority()));
+    statement.BindInt(15, static_cast<int>(cookie.SourceScheme()));
+    statement.BindInt(16, cookie.SourcePort());
+    statement.BindInt(17, cookie.IsSameParty());
+    if (!statement.Run())
+      return false;
+  }
+  if (!transaction.Commit())
+    return false;
+
+  return true;
+}
+
 // Confirm the cookie list passed in has the above cookies in it.
 void ConfirmCookiesAfterMigrationTest(
     std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies,
@@ -2125,6 +2218,117 @@ TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion15) {
   std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies;
   CreateAndLoad(false, false, &read_in_cookies);
   ConfirmCookiesAfterMigrationTest(std::move(read_in_cookies), true);
+}
+
+TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion16) {
+  // Open db
+  sql::Database connection;
+  ASSERT_TRUE(connection.Open(temp_dir_.GetPath().Append(kCookieFilename)));
+  ASSERT_TRUE(CreateV15Schema(&connection));
+  ASSERT_TRUE(AddV15CookiesToDB(&connection));
+  connection.Close();
+
+  std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies;
+  CreateAndLoad(false, false, &read_in_cookies);
+  ConfirmCookiesAfterMigrationTest(std::move(read_in_cookies), true);
+}
+
+class PartitionedCookiesSQLitePersistentCookieStoreTest
+    : public SQLitePersistentCookieStoreTest,
+      public testing::WithParamInterface<bool> {
+ protected:
+  // testing::Test
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatureState(features::kPartitionedCookies,
+                                              PartitionedCookiesEnabled());
+    SQLitePersistentCookieStoreTest::SetUp();
+  }
+
+  bool PartitionedCookiesEnabled() { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(/* no label */,
+                         PartitionedCookiesSQLitePersistentCookieStoreTest,
+                         testing::Bool());
+
+TEST_P(PartitionedCookiesSQLitePersistentCookieStoreTest,
+       SavingPartitionedCookies) {
+  InitializeStore(false, false);
+
+  store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
+      "__Host-foo", "bar", GURL("https://example.com/").host(), "/",
+      base::Time::Now(), base::Time::Now() + base::TimeDelta::FromDays(1),
+      base::Time::Now(), true /* secure */, false /* httponly */,
+      CookieSameSite::UNSPECIFIED, COOKIE_PRIORITY_DEFAULT,
+      false /* sameparty */,
+      CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com"))));
+  Flush();
+
+  std::string got_db_content(ReadRawDBContents());
+  EXPECT_EQ(PartitionedCookiesEnabled(),
+            got_db_content.find("__Host-foo") != std::string::npos);
+
+  DestroyStore();
+}
+
+TEST_P(PartitionedCookiesSQLitePersistentCookieStoreTest,
+       LoadingPartitionedCookies) {
+  InitializeStore(false, false);
+  DestroyStore();
+
+  // Insert a partitioned cookie into the database manually.
+  base::FilePath store_name(temp_dir_.GetPath().Append(kCookieFilename));
+  std::unique_ptr<sql::Database> db(std::make_unique<sql::Database>());
+  ASSERT_TRUE(db->Open(store_name));
+
+  sql::Statement stmt(db->GetUniqueStatement(
+      "INSERT INTO cookies (creation_utc, host_key, top_frame_site_key, name, "
+      "value, encrypted_value, path, expires_utc, is_secure, is_httponly, "
+      "samesite, last_access_utc, has_expires, is_persistent, priority, "
+      "source_scheme, source_port, is_same_party) "
+      "VALUES (?,?,?,?,?,'',?,?,1,0,0,?,1,1,0,?,?,0)"));
+  ASSERT_TRUE(stmt.is_valid());
+
+  base::Time creation(base::Time::Now());
+  base::Time expiration(creation + base::TimeDelta::FromDays(1));
+  base::Time last_access(base::Time::Now());
+
+  stmt.BindTime(0, creation);
+  stmt.BindString(1, GURL("https://www.example.com/").host());
+  stmt.BindString(2, "https://toplevelsite.com");
+  stmt.BindString(3, "__Host-foo");
+  stmt.BindString(4, "bar");
+  stmt.BindString(5, "/");
+  stmt.BindTime(6, expiration);
+  stmt.BindTime(7, last_access);
+  stmt.BindInt(8, static_cast<int>(CookieSourceScheme::kUnset));
+  stmt.BindInt(9, SQLitePersistentCookieStore::kDefaultUnknownPort);
+  ASSERT_TRUE(stmt.Run());
+  stmt.Clear();
+
+  CanonicalCookieVector cookies;
+  CreateAndLoad(false, false, &cookies);
+
+  if (PartitionedCookiesEnabled()) {
+    EXPECT_EQ(1u, cookies.size());
+    auto cc = std::move(cookies[0]);
+    EXPECT_EQ("__Host-foo", cc->Name());
+    EXPECT_EQ("bar", cc->Value());
+    EXPECT_EQ(GURL("https://www.example.com/").host(), cc->Domain());
+    EXPECT_TRUE(cc->IsPartitioned());
+    EXPECT_EQ(
+        CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com")),
+        cc->PartitionKey());
+  } else {
+    EXPECT_EQ(0u, cookies.size());
+    // If Partitioned cookies are disabled, then we should delete any
+    // Partitioned cookie we tried to load.
+    std::string db_content(ReadRawDBContents());
+    EXPECT_EQ(db_content.find("__Host-foo"), std::string::npos);
+  }
 }
 
 }  // namespace net

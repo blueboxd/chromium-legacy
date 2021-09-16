@@ -340,6 +340,13 @@ const char kAutofillFixOfferInIncognitoDescription[] =
     "When enabled, the fix will be enabled and offers should work correctly in "
     "Incognito mode.";
 
+const char kAutofillHighlightOnlyChangedValuesInPreviewModeName[] =
+    "Highlight only changed values in preview mode.";
+const char kAutofillHighlightOnlyChangedValuesInPreviewModeDescription[] =
+    "When Autofill is previewing filling a form, already autofilled values "
+    "and other values that are not changed by accepting the preview should "
+    "not be highlighted.";
+
 const char kAutofillParseMerchantPromoCodeFieldsName[] =
     "Parse promo code fields in forms";
 const char kAutofillParseMerchantPromoCodeFieldsDescription[] =
@@ -2835,6 +2842,11 @@ const char kExtensionWorkflowJustificationDescription[] =
     "Enables users to justify their extension requests by causing a text field "
     "to appear on the extension request dialog.";
 
+const char kShareContextMenuName[] = "Share context menu";
+const char kShareContextMenuDescription[] =
+    "Whether the sharing options in various context menus are grouped into "
+    "a common submenu.";
+
 // Android ---------------------------------------------------------------------
 
 #if defined(OS_ANDROID)
@@ -3177,6 +3189,10 @@ const char kMessagesForAndroidPermissionUpdateDescription[] =
 const char kMessagesForAndroidPopupBlockedName[] = "Popup Blocked Messages UI";
 const char kMessagesForAndroidPopupBlockedDescription[] =
     "When enabled, popup blocked prompt will use the new Messages UI.";
+
+const char kMessagesForAndroidPWAInstallName[] = "PWA Installation Messages UI";
+const char kMessagesForAndroidPWAInstallDescription[] =
+    "When enabled, PWA Installation prompt will use the new Messages UI.";
 
 const char kMessagesForAndroidReaderModeName[] = "Reader Mode Messages UI";
 const char kMessagesForAndroidReaderModeDescription[] =
@@ -5189,12 +5205,6 @@ const char kDownloadShelfWebUIDescription[] =
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 
-const char kEnableOopPrintDriversName[] =
-    "Enables Out-of-Process Printer Drivers";
-const char kEnableOopPrintDriversDescription[] =
-    "Enables printing interactions with the operating system to be performed "
-    "out-of-process.";
-
 const char kWebUIBrandingUpdateName[] = "WebUI Branding Update";
 const char kWebUIBrandingUpdateDescription[] =
     "Changes various UI components in WebUI pages to have a more modern look.";
@@ -5275,6 +5285,14 @@ const char kNaclDescription[] =
     "Support Native Client for all web applications, even those that were not "
     "installed from the Chrome Web Store.";
 #endif  // ENABLE_NACL
+
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+const char kEnableOopPrintDriversName[] =
+    "Enables Out-of-Process Printer Drivers";
+const char kEnableOopPrintDriversDescription[] =
+    "Enables printing interactions with the operating system to be performed "
+    "out-of-process.";
+#endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW) && defined(OS_ANDROID)
 const char kPaintPreviewDemoName[] = "Paint Preview Demo";

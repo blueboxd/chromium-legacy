@@ -5,48 +5,6 @@
 import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
 /**
- * Types of ProjectorError.
- * @enum {string}
- */
-export const ProjectorError = {
-  NONE: 'NONE',
-  TOKEN_FETCH_FAILURE: 'TOKEN_FETCH_FAILURE',
-  TOKEN_FETCH_ALREADY_IN_PROGRESS: 'TOKEN_FETCH_ALREADY_IN_PROGRESS',
-  OTHER: 'OTHER',
-};
-
-/**
- * Account passed when getAccounts is called.
- * @typedef {{
- *   name: string,
- *   email: string,
- *   pictureURL: string,
- *   isPrimaryUser: boolean
- * }}
- */
-export let Account;
-
-/**
- * Account passed when getAccounts is called.
- * @typedef {{
- *   token: string,
- *   expirationTime: string,
- * }}
- */
-export let OAuthTokenInfo;
-
-/**
- * Oauth token returned when getOAuthTokenForAccount is called.
- * @typedef {{
- *   email: string,
- *   oauthTokenInfo: OAuthTokenInfo,
- *   error: ProjectorError
- * }}
- */
-export let OAuthToken;
-
-
-/**
  * To use the browser proxy, please import this module and call
  * ProjectorBrowserProxyImpl.getInstance().*
  *
@@ -54,9 +12,23 @@ export let OAuthToken;
  */
 export class ProjectorBrowserProxy {
   /**
+   * Notifies the embedder content that tool has been set for annotator.
+   * @param {!projectorApp.AnnotatorToolParams} tool
+   */
+  onToolSet(tool) {}
+
+  /**
+   * Notifies the embedder content that undo/redo availability changed for
+   * annotator.
+   * @param {boolean} undoAvailable
+   * @param {boolean} redoAvailable
+   */
+  onUndoRedoAvailabilityChanged(undoAvailable, redoAvailable) {}
+
+  /**
    * Gets the list of primary and secondary accounts currently available on the
    * device.
-   * @return {Promise<Array<Account>>}
+   * @return {Promise<Array<!projectorApp.Account>>}
    */
   getAccounts() {}
 
@@ -78,7 +50,7 @@ export class ProjectorBrowserProxy {
   /**
    * Gets the oauth token with the required scopes for the specified account.
    * @param {string} email, user's email.
-   * @return {!Promise<OAuthToken>}
+   * @return {!Promise<!projectorApp.OAuthToken>}
    */
   getOAuthTokenForAccount(email) {}
 
@@ -95,6 +67,17 @@ export class ProjectorBrowserProxy {
  * @implements {ProjectorBrowserProxy}
  */
 export class ProjectorBrowserProxyImpl {
+  /** @override */
+  onToolSet(tool) {
+    return chrome.send('onToolSet', [tool]);
+  }
+
+  /** @override */
+  onUndoRedoAvailabilityChanged(undoAvailable, redoAvailable) {
+    return chrome.send(
+        'onUndoRedoAvailabilityChanged', [undoAvailable, redoAvailable]);
+  }
+
   /** @override */
   getAccounts() {
     return sendWithPromise('getAccounts');

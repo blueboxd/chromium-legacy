@@ -2305,6 +2305,7 @@ if (!is_android && !is_fuchsia) {
 
     if (is_chromeos_lacros) {
       sources += [
+        "../browser/lacros/app_mode/kiosk_session_service_browsertest.cc",
         "../browser/lacros/lacros_extension_apps_controller_browsertest.cc",
         "../browser/lacros/lacros_extension_apps_publisher_browsertest.cc",
         "../browser/web_applications/app_service/web_apps_publisher_host_browsertest.cc",
@@ -3318,6 +3319,11 @@ if (!is_android && !is_fuchsia) {
         "../browser/chromeos/extensions/login_screen/login_state/login_state_apitest.cc",
         "../browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher_apitest.cc",
         "../browser/chromeos/extensions/login_screen/storage_apitest.cc",
+        "../browser/chromeos/extensions/speech/speech_recognition_private_apitest.cc",
+        "../browser/chromeos/extensions/speech/speech_recognition_private_base_test.cc",
+        "../browser/chromeos/extensions/speech/speech_recognition_private_base_test.h",
+        "../browser/chromeos/extensions/speech/speech_recognition_private_manager_browsertest.cc",
+        "../browser/chromeos/extensions/speech/speech_recognition_private_recognizer_browsertest.cc",
         "../browser/chromeos/extensions/users_private/users_private_apitest.cc",
         "../browser/chromeos/extensions/wallpaper_apitest.cc",
         "../browser/chromeos/extensions/wallpaper_manager_browsertest.cc",
@@ -3882,8 +3888,7 @@ if (!is_android && !is_fuchsia) {
         "//third_party/widevine/cdm",
       ]
     }
-    if (enable_basic_printing &&
-        (is_win || is_mac || is_linux || is_chromeos)) {
+    if (enable_oop_printing) {
       sources += [ "../browser/printing/print_backend_browsertest.cc" ]
       deps += [
         "//chrome/services/printing:lib",
@@ -6346,7 +6351,6 @@ test("unit_tests") {
       "../browser/nearby_sharing/webrtc_signaling_messenger_unittest.cc",
       "../browser/notifications/chrome_ash_message_center_client_unittest.cc",
       "../browser/notifications/web_page_notifier_controller_unittest.cc",
-      "../browser/policy/printing_restrictions_policy_handler_unittest.cc",
       "../browser/speech/tts_chromeos_unittest.cc",
       "../browser/speech/tts_controller_delegate_impl_unittest.cc",
       "../browser/sync/sync_error_notifier_ash_unittest.cc",
@@ -7206,6 +7210,7 @@ test("unit_tests") {
 
   if (enable_basic_printing) {
     sources += [
+      "../browser/policy/printing_restrictions_policy_handler_unittest.cc",
       "../browser/printing/print_job_unittest.cc",
       "../browser/printing/print_test_utils.cc",
       "../browser/printing/print_test_utils.h",

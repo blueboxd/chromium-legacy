@@ -336,8 +336,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
         accept_entry_proto->add_file_extensions(file_extension);
     }
 
-    for (const apps::IconInfo& icon_info : file_handler.icons) {
-      *(file_handler_proto->add_icon_infos()) =
+    for (const apps::IconInfo& icon_info : file_handler.downloaded_icons) {
+      *(file_handler_proto->add_downloaded_icons()) =
           AppIconInfoToSyncProto(icon_info);
     }
   }
@@ -436,6 +436,12 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
        web_app.approved_launch_protocols()) {
     DCHECK(!approved_launch_protocols.empty());
     local_data->add_approved_launch_protocols(approved_launch_protocols);
+  }
+
+  for (const auto& disallowed_launch_protocols :
+       web_app.disallowed_launch_protocols()) {
+    DCHECK(!disallowed_launch_protocols.empty());
+    local_data->add_disallowed_launch_protocols(disallowed_launch_protocols);
   }
 
   for (const auto& url_handler : web_app.url_handlers()) {
@@ -711,12 +717,12 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
 
     if (WebAppFileHandlerManager::IconsEnabled()) {
       absl::optional<std::vector<apps::IconInfo>> parsed_icon_infos =
-          ParseAppIconInfos("WebApp", file_handler_proto.icon_infos());
+          ParseAppIconInfos("WebApp", file_handler_proto.downloaded_icons());
       if (!parsed_icon_infos) {
         // ParseAppIconInfos() reports any errors.
         return nullptr;
       }
-      file_handler.icons = std::move(parsed_icon_infos.value());
+      file_handler.downloaded_icons = std::move(parsed_icon_infos.value());
     }
 
     file_handlers.push_back(std::move(file_handler));
@@ -868,6 +874,18 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     approved_launch_protocols.push_back(approved_launch_protocol);
   }
   web_app->SetApprovedLaunchProtocols(std::move(approved_launch_protocols));
+
+  std::vector<std::string> disallowed_launch_protocols;
+  for (const std::string& disallowed_launch_protocol :
+       local_data.disallowed_launch_protocols()) {
+    if (disallowed_launch_protocol.empty()) {
+      DLOG(ERROR)
+          << "WebApp DisallowedLaunchProtocols proto action parse error";
+      return nullptr;
+    }
+    disallowed_launch_protocols.push_back(disallowed_launch_protocol);
+  }
+  web_app->SetDisallowedLaunchProtocols(std::move(disallowed_launch_protocols));
 
   std::vector<apps::UrlHandlerInfo> url_handlers;
   for (const auto& url_handler_proto : local_data.url_handlers()) {

@@ -10586,6 +10586,10 @@ Called by update_bad_message_reasons.py.-->
 </enum>
 
 <enum name="CanvasContextType">
+  <obsolete>
+    Deprecated 09/2021 with the removal of the Blink.Canvas.ContextType and
+    Blink.OffscreenCanvas.ContextType histograms
+  </obsolete>
   <int value="0" label="2d"/>
   <int value="1" label="(obsolete) webkit-3d"/>
   <int value="2" label="experimental-webgl"/>
@@ -10701,6 +10705,21 @@ Called by update_bad_message_reasons.py.-->
   <int value="9" label="Ended with fallback to software"/>
   <int value="10" label="Ended with teardown"/>
   <int value="11" label="Aborted because there was no surface"/>
+</enum>
+
+<enum name="CanvasOverdrawOp">
+  <int value="0" label="None (should have 0 counts)"/>
+  <int value="1" label="Total ops"/>
+  <int value="2" label="ClearRect op"/>
+  <int value="3" label="FillRect op"/>
+  <int value="4" label="PutImageData op"/>
+  <int value="5" label="DrawImage op"/>
+  <int value="6" label="ContextReset op"/>
+  <int value="7" label="ClearForSrcBlendMode op"/>
+  <int value="8" label="Has opaque shader"/>
+  <int value="9" label="Has transform"/>
+  <int value="10" label="Has source-over blend mode"/>
+  <int value="11" label="Has clear blend mode"/>
 </enum>
 
 <enum name="CanvasRenderingAPI">
@@ -26330,6 +26349,7 @@ Called by update_document_policy_enum.py.-->
   <int value="893" label="BrowserLegacyExtensionPointsBlocked"/>
   <int value="894" label="DeviceRestrictedManagedGuestSessionEnabled"/>
   <int value="895" label="PrintPostScriptMode"/>
+  <int value="896" label="PrintPdfAsImageDefault"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -29261,6 +29281,7 @@ Called by update_extension_histograms.py.-->
   <int value="1587" label="FILEMANAGERPRIVATE_OPENWINDOW"/>
   <int value="1588" label="OS_DIAGNOSTICS_RUNMEMORYROUTINE"/>
   <int value="1589" label="OS_DIAGNOSTICS_GETROUTINEUPDATE"/>
+  <int value="1590" label="SPEECHRECOGNITIONPRIVATE_START"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -29885,6 +29906,7 @@ Called by update_extension_permission.py.-->
   <int value="232" label="kWebAuthenticationProxy"/>
   <int value="233" label="kDeclarativeNetRequestWithHostAccess"/>
   <int value="234" label="kChromeOSTelemetry"/>
+  <int value="235" label="kSpeechRecognitionPrivate"/>
 </enum>
 
 <enum name="ExtensionPointEnableState">
@@ -34546,6 +34568,17 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4021" label="MediaSourceExtensionsForWebCodecs"/>
   <int value="4023" label="PaymentRequestResponse"/>
   <int value="4024" label="PaymentRequestComplete"/>
+  <int value="4025" label="HTMLCanvasElement_2D"/>
+  <int value="4026" label="HTMLCanvasElement_WebGL"/>
+  <int value="4027" label="HTMLCanvasElement_WebGL2"/>
+  <int value="4028" label="HTMLCanvasElement_BitmapRenderer"/>
+  <int value="4029" label="HTMLCanvasElement_WebGPU"/>
+  <int value="4030" label="OffscreenCanvas_2D"/>
+  <int value="4031" label="OffscreenCanvas_WebGL"/>
+  <int value="4032" label="OffscreenCanvas_WebGL2"/>
+  <int value="4033" label="OffscreenCanvas_BitmapRenderer"/>
+  <int value="4034" label="OffscreenCanvas_WebGPU"/>
+  <int value="4035" label="CanvasRenderingContext2DHasOverdraw"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -43464,6 +43497,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="19" label="Intel ElkhartLake"/>
   <int value="20" label="Intel JaspterLake"/>
   <int value="21" label="Intel TigerLake"/>
+  <int value="22" label="Intel AlderLake"/>
+  <int value="23" label="Intel AmberLake"/>
+  <int value="24" label="Intel RocketLake"/>
+  <int value="25" label="Intel DG1"/>
 </enum>
 
 <enum name="IntelMaxMicroArchitecture">
@@ -45961,6 +45998,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="Disabled"/>
   <int value="10" label="Error: additional web context malformed (nonfatal)"/>
   <int value="11" label="Success: Image is translatable"/>
+  <int value="12" label="Error: user context changed"/>
+  <int value="13" label="Disabled: user context changed"/>
+  <int value="14" label="Error: unexpected state"/>
+  <int value="15" label="Disabled: AGSA out of date"/>
+  <int value="16" label="Disabled: OS out of date"/>
+  <int value="17" label="Disabled: user not signed in"/>
+  <int value="18" label="Disabled: UMA reporting is disabled"/>
+  <int value="19" label="Disabled: user is in Incognito mode"/>
 </enum>
 
 <enum name="LensRegionSearchAspectRatio">
@@ -47357,6 +47402,8 @@ from previous Chrome versions.
       label="OmniboxGroupSuggestionsBySearchVsUrl:enabled"/>
   <int value="-1996087238" label="kAutofillEnableOffersInDownstream:enabled"/>
   <int value="-1995534832" label="DownloadProgressMessage:disabled"/>
+  <int value="-1993739187"
+      label="AutofillHighlightOnlyChangedValuesInPreviewMode:disabled"/>
   <int value="-1993730028" label="CrostiniPortForwarding:enabled"/>
   <int value="-1992999120" label="composite-after-paint"/>
   <int value="-1992488524" label="AutofillAcrossIframes:disabled"/>
@@ -49518,6 +49565,7 @@ from previous Chrome versions.
   <int value="-322937746" label="disable-desktop-capture-picker-new-ui"/>
   <int value="-322827131" label="tab-management-experiment-type-basil"/>
   <int value="-320820051" label="enable-zero-copy"/>
+  <int value="-319235277" label="ShareMenu:disabled"/>
   <int value="-319002650" label="ArcUsbStorageUI:enabled"/>
   <int value="-317758331" label="WebViewThreadSafeMedia:disabled"/>
   <int value="-317195508" label="TabGroupsContinuationAndroid:disabled"/>
@@ -49610,6 +49658,8 @@ from previous Chrome versions.
   <int value="-249415830" label="FilteringScrollPrediction:disabled"/>
   <int value="-248223420" label="AutofillKeyboardAccessory:disabled"/>
   <int value="-247542772" label="CheckOfflineCapability:enabled"/>
+  <int value="-245813749"
+      label="AutofillHighlightOnlyChangedValuesInPreviewMode:enabled"/>
   <int value="-245342115" label="PermissionChip:enabled"/>
   <int value="-241353344" label="MidiManagerWinrt:disabled"/>
   <int value="-240531943" label="ContextualSearchRankerQuery:disabled"/>
@@ -50637,6 +50687,7 @@ from previous Chrome versions.
   <int value="567368307" label="enable-experimental-canvas-features"/>
   <int value="570469494" label="LoginDetection:disabled"/>
   <int value="571349694" label="AllowAllSitesToInitiateMirroring:enabled"/>
+  <int value="571562912" label="InstallableAmbientBadgeMessage:disabled"/>
   <int value="572915501" label="FilesZipUnpack:disabled"/>
   <int value="573385109" label="SharedClipboardUI:enabled"/>
   <int value="575380532" label="ExperimentalAccessibilityLabels:disabled"/>
@@ -50776,6 +50827,7 @@ from previous Chrome versions.
   <int value="666871156" label="KaleidoscopeModule:enabled"/>
   <int value="667643314" label="LitePageServerPreviews:enabled"/>
   <int value="669097106" label="NtpRealboxMatchOmniboxTheme:disabled"/>
+  <int value="672067370" label="InstallableAmbientBadgeMessage:enabled"/>
   <int value="673588373" label="OmniboxPedalSuggestions:disabled"/>
   <int value="674627327" label="MagnifierNewFocusFollowing:enabled"/>
   <int value="674777894" label="WebAuthenticationAssertionTransport:disabled"/>
@@ -51698,6 +51750,7 @@ from previous Chrome versions.
   <int value="1398333721" label="ForceEnableDevicesPage:disabled"/>
   <int value="1399950951" label="AutofillTokenPrefixMatching:disabled"/>
   <int value="1403195370" label="ArcCupsApi:enabled"/>
+  <int value="1403792475" label="ShareMenu:enabled"/>
   <int value="1404726271" label="ReduceHorizontalFlingVelocity:enabled"/>
   <int value="1405459667" label="enable-fast-text-autosizing"/>
   <int value="1406046556" label="enable-slimming-paint-v175"/>
@@ -72572,6 +72625,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="Scan failure"/>
 </enum>
 
+<enum name="SafeBrowsingNoCachedPopulationReason">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Not populated due to startup"/>
+  <int value="2" label="Not populated due to MBB pref changing"/>
+  <int value="3" label="Not populated due to SB pref changing"/>
+</enum>
+
 <enum name="SafeBrowsingParseV4HashResult">
   <int value="0" label="PARSE_FROM_STRING_ERROR"/>
   <int value="1" label="UNEXPECTED_THREAT_ENTRY_TYPE_ERROR"/>
@@ -80451,12 +80511,6 @@ would be helpful to identify which type is being sent.
   <int value="22" label="SYNCER_OK"/>
 </enum>
 
-<enum name="SyncErrorInfoBarAction">
-  <int value="0" label="Shown"/>
-  <int value="1" label="Dismissed"/>
-  <int value="2" label="Button clicked"/>
-</enum>
-
 <enum name="SyncErrorInfobarTypes">
   <summary>Possible errors that can trigger a sync error infobar.</summary>
   <int value="1" label="Sign in needs update"/>
@@ -80466,6 +80520,12 @@ would be helpful to identify which type is being sent.
   <int value="5" label="Sync settings not confirmed"/>
   <int value="6" label="Sync needs trusted vault key"/>
   <int value="7" label="Sync trusted vault recoverability degraded"/>
+</enum>
+
+<enum name="SyncErrorPromptUIAction">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Dismissed"/>
+  <int value="2" label="Button clicked"/>
 </enum>
 
 <!-- This must be kept current with

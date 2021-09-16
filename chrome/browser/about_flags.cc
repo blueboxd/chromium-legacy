@@ -215,6 +215,7 @@
 #include "components/content_creation/notes/core/note_features.h"
 #include "components/external_intents/android/external_intents_features.h"
 #include "components/power_scheduler/power_scheduler_features.h"
+#include "components/webapps/browser/android/features.h"
 #else  // OS_ANDROID
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/web_applications/preinstalled_app_install_features.h"
@@ -1762,6 +1763,9 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TabGroupAutoCreation[] =
     {{"enable_tab_group_auto_creation", "false"}};
 
 const FeatureEntry::FeatureParam kCommercePriceTracking_PriceNotifications[] = {
+    {"enable_price_tracking", "true"},
+    {"price_tracking_with_optimization_guide", "true"},
+    {"enable_persisted_tab_data_maintenance", "true"},
     {"enable_price_notification", "true"}};
 
 const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
@@ -1853,6 +1857,21 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_CandidateA[] = {
     {"hide_switch_when_no_incognito_tabs", "true"},
     {"tab_count_button_on_start_surface", "true"}};
 
+const FeatureEntry::FeatureParam kStartSurfaceAndroid_CandidateA_SyncCheck[] = {
+    {"start_surface_variation", "single"},
+    {"show_last_active_tab_only", "true"},
+    {"hide_switch_when_no_incognito_tabs", "true"},
+    {"tab_count_button_on_start_surface", "true"},
+    {"check_sync_before_show_start_at_startup", "true"}};
+
+const FeatureEntry::FeatureParam
+    kStartSurfaceAndroid_CandidateA_SigninPromoTimeLimit[] = {
+        {"start_surface_variation", "single"},
+        {"show_last_active_tab_only", "true"},
+        {"hide_switch_when_no_incognito_tabs", "true"},
+        {"tab_count_button_on_start_surface", "true"},
+        {"sign_in_promo_show_since_last_background_limit_ms", "30000"}};
+
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_CandidateB[] = {
     {"start_surface_variation", "single"},
     {"show_last_active_tab_only", "true"},
@@ -1863,6 +1882,11 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_CandidateB[] = {
 const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
     {"Canidate A", kStartSurfaceAndroid_CandidateA,
      base::size(kStartSurfaceAndroid_CandidateA), nullptr},
+    {"Canidate A + Sync check", kStartSurfaceAndroid_CandidateA_SyncCheck,
+     base::size(kStartSurfaceAndroid_CandidateA_SyncCheck), nullptr},
+    {"Canidate A + Sign in promo backgrounded time limit",
+     kStartSurfaceAndroid_CandidateA_SigninPromoTimeLimit,
+     base::size(kStartSurfaceAndroid_CandidateA_SigninPromoTimeLimit), nullptr},
     {"Canidate B", kStartSurfaceAndroid_CandidateB,
      base::size(kStartSurfaceAndroid_CandidateB), nullptr},
     {"Single Surface", kStartSurfaceAndroid_SingleSurface,
@@ -1905,6 +1929,24 @@ const FeatureEntry::FeatureVariation kConditionalTabStripAndroidVariations[] = {
      base::size(kConditionalTabStripAndroid_Immediate), nullptr},
     {"60 minutes", kConditionalTabStripAndroid_60Minutes,
      base::size(kConditionalTabStripAndroid_60Minutes), nullptr},
+};
+
+const FeatureEntry::FeatureParam
+    kEnhancedProtectionPromoCard_SigninPromoImpressions_Count1[] = {
+        {"MaxSigninPromoImpressions", "1"}};
+const FeatureEntry::FeatureParam
+    kEnhancedProtectionPromoCard_SigninPromoImpressions_Count5[] = {
+        {"MaxSigninPromoImpressions", "5"}};
+const FeatureEntry::FeatureVariation kEnhancedProtectionPromoCardVariations[] =
+    {
+        {"Max Impressions 1",
+         kEnhancedProtectionPromoCard_SigninPromoImpressions_Count1,
+         base::size(kEnhancedProtectionPromoCard_SigninPromoImpressions_Count1),
+         nullptr},
+        {"Max Impressions 5",
+         kEnhancedProtectionPromoCard_SigninPromoImpressions_Count5,
+         base::size(kEnhancedProtectionPromoCard_SigninPromoImpressions_Count5),
+         nullptr},
 };
 #endif  // OS_ANDROID
 
@@ -5840,7 +5882,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"safe-browsing-enhanced-protection-promo-android",
      flag_descriptions::kEnhancedProtectionPromoAndroidName,
      flag_descriptions::kEnhancedProtectionPromoAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kEnhancedProtectionPromoCard)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kEnhancedProtectionPromoCard,
+         kEnhancedProtectionPromoCardVariations,
+         "EnhancedProtectionPromoCard")},
 
     {"safe-browsing-passwordcheck-integration-for-saved-passwords-android",
      flag_descriptions::
@@ -6785,6 +6830,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMessagesForAndroidPopupBlockedName,
      flag_descriptions::kMessagesForAndroidPopupBlockedDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(messages::kMessagesForAndroidPopupBlocked)},
+    {"messages-for-android-pwa-install",
+     flag_descriptions::kMessagesForAndroidPWAInstallName,
+     flag_descriptions::kMessagesForAndroidPWAInstallDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(webapps::features::kInstallableAmbientBadgeMessage)},
     {"messages-for-android-reader-mode",
      flag_descriptions::kMessagesForAndroidReaderModeName,
      flag_descriptions::kMessagesForAndroidReaderModeDescription, kOsAndroid,
@@ -6846,9 +6895,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncAutofillWalletOfferDataDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncAutofillWalletOfferData)},
 
-#if (defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-     defined(OS_CHROMEOS)) &&                                   \
-    BUILDFLAG(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
     {"enable-oop-print-drivers", flag_descriptions::kEnableOopPrintDriversName,
      flag_descriptions::kEnableOopPrintDriversDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(printing::features::kEnableOopPrintDrivers)},
@@ -7264,6 +7311,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillFixOfferInIncognitoDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillFixOfferInIncognito)},
 
+    {"autofill-highlight-only-changed-value-in-preview-mode",
+     flag_descriptions::kAutofillHighlightOnlyChangedValuesInPreviewModeName,
+     flag_descriptions::
+         kAutofillHighlightOnlyChangedValuesInPreviewModeDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillHighlightOnlyChangedValuesInPreviewMode)},
+
     {"sanitizer-api", flag_descriptions::kSanitizerApiName,
      flag_descriptions::kSanitizerApiDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kSanitizerAPI)},
@@ -7555,6 +7610,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShareUsageRankingFixedMoreDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kShareUsageRankingFixedMore)},
 #endif
+
+    {"share-context-menu", flag_descriptions::kShareContextMenuName,
+     flag_descriptions::kShareContextMenuDescription, kOsAll,
+     FEATURE_VALUE_TYPE(sharing::kShareMenu)},
 
     {"enable-safe-browsing-per-profile-network-contexts",
      flag_descriptions::kSafeBrowsingPerProfileNetworkContextsName,

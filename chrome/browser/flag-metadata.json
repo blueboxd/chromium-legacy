@@ -438,6 +438,11 @@
     "expiry_milestone": 97
   },
   {
+    "name": "autofill-highlight-only-changed-value-in-preview-mode",
+    "owners": [ "koerber", "mamir" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "autofill-ios-delay-between-fields",
     "owners": [ "olivierrobin", "bling-flags@google.com" ],
     "expiry_milestone": 86
@@ -3821,6 +3826,11 @@
     "expiry_milestone": 97
   },
   {
+    "name": "messages-for-android-pwa-install",
+    "owners": [ "pavely", "lazzzis" ],
+    "expiry_milestone": 101
+  },
+  {
     "name": "messages-for-android-reader-mode",
     "owners": [ "pavely", "lazzzis" ],
     "expiry_milestone": 99
@@ -4826,7 +4836,7 @@
   {
     "name": "safe-browsing-enhanced-protection-promo-android",
     "owners": [ "bdea", "chrome-safebrowsing-core@google.com" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 100
   },
   {
     "name": "safe-browsing-password-protection-for-signed-in-users",
@@ -5016,6 +5026,11 @@
     "name": "share-button-in-top-toolbar",
     "owners": [ "jeffreycohen", "chrome-sharing-eng@google.com" ],
     "expiry_milestone": 92
+  },
+  {
+    "name": "share-context-menu",
+    "owners": [ "ellyjones", "chrome-sharing-eng@google.com" ],
+    "expiry_milestone": 97
   },
   {
     "name": "share-usage-ranking",

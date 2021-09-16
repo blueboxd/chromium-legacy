@@ -16,8 +16,8 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
-#include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
-#include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
+#include "chrome/browser/web_applications/test/fake_web_app_database_factory.h"
+#include "chrome/browser/web_applications/test/fake_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -61,17 +61,17 @@ class WebAppRegistrarTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    test_registry_controller_ =
-        std::make_unique<TestWebAppRegistryController>();
-    test_registry_controller_->SetUp(profile());
+    fake_registry_controller_ =
+        std::make_unique<FakeWebAppRegistryController>();
+    fake_registry_controller_->SetUp(profile());
   }
 
  protected:
-  TestWebAppRegistryController& controller() {
-    return *test_registry_controller_;
+  FakeWebAppRegistryController& controller() {
+    return *fake_registry_controller_;
   }
 
-  TestWebAppDatabaseFactory& database_factory() {
+  FakeWebAppDatabaseFactory& database_factory() {
     return controller().database_factory();
   }
   WebAppRegistrar& registrar() { return controller().registrar(); }
@@ -145,7 +145,7 @@ class WebAppRegistrarTest : public WebAppTest {
   }
 
  private:
-  std::unique_ptr<TestWebAppRegistryController> test_registry_controller_;
+  std::unique_ptr<FakeWebAppRegistryController> fake_registry_controller_;
 };
 
 TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
@@ -944,6 +944,26 @@ TEST_F(WebAppRegistrarTest, ApprovedLaunchProtocols) {
   sync_bridge().RemoveApprovedLaunchProtocol(app_id, protocol_scheme);
   EXPECT_EQ(false,
             registrar().IsApprovedLaunchProtocol(app_id, protocol_scheme));
+}
+
+TEST_F(WebAppRegistrarTest, DisallowedLaunchProtocols) {
+  controller().Init();
+
+  auto web_app = test::CreateWebApp();
+  const AppId app_id = web_app->app_id();
+  RegisterApp(std::move(web_app));
+  const std::string protocol_scheme = "test";
+
+  EXPECT_EQ(false,
+            registrar().IsDisallowedLaunchProtocol(app_id, protocol_scheme));
+
+  sync_bridge().AddDisallowedLaunchProtocol(app_id, protocol_scheme);
+  EXPECT_EQ(true,
+            registrar().IsDisallowedLaunchProtocol(app_id, protocol_scheme));
+
+  sync_bridge().RemoveDisallowedLaunchProtocol(app_id, protocol_scheme);
+  EXPECT_EQ(false,
+            registrar().IsDisallowedLaunchProtocol(app_id, protocol_scheme));
 }
 
 }  // namespace web_app

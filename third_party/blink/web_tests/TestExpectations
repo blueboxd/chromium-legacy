@@ -208,10 +208,6 @@ crbug.com/1176933 [ Linux ] virtual/gpu/fast/canvas/canvas-formattedtext-2.html 
 # These tests were disabled to allow enabling WebAssembly Reference Types.
 crbug.com/v8/7581 external/wpt/wasm/jsapi/global/type.tentative.any.html [ Failure Pass ]
 crbug.com/v8/7581 external/wpt/wasm/jsapi/global/type.tentative.any.worker.html [ Failure Pass ]
-crbug.com/v8/7581 external/wpt/wasm/jsapi/table/constructor-reftypes.tentative.any.html [ Failure Pass ]
-crbug.com/v8/7581 external/wpt/wasm/jsapi/table/constructor-reftypes.tentative.any.worker.html [ Failure Pass ]
-crbug.com/v8/7581 external/wpt/wasm/jsapi/table/set-reftypes.tentative.any.html [ Failure Pass ]
-crbug.com/v8/7581 external/wpt/wasm/jsapi/table/set-reftypes.tentative.any.worker.html [ Failure Pass ]
 
 # These tests block fixes done in V8. The tests run on the V8 bots as well.
 crbug.com/v8/12227 external/wpt/wasm/jsapi/exception/type.tentative.any.html [ Failure Pass ]
@@ -222,7 +218,6 @@ crbug.com/v8/12227 external/wpt/wasm/jsapi/memory/types.tentative.any.html [ Fai
 crbug.com/v8/12227 external/wpt/wasm/jsapi/prototypes.any.html [ Failure Pass ]
 crbug.com/v8/12227 external/wpt/wasm/jsapi/table/type.tentative.any.html [ Failure Pass ]
 crbug.com/v8/12227 external/wpt/wasm/jsapi/table/constructor-types.tentative.any.html [ Failure Pass ]
-crbug.com/v8/12227 external/wpt/wasm/jsapi/table/grow-reftypes.tentative.any.html [ Failure Pass ]
 
 # Sheriff on 2020-09-03
 crbug.com/1124352 media/picture-in-picture/clear-after-request.html [ Crash Pass ]
@@ -831,6 +826,9 @@ crbug.com/722825 media/controls/video-enter-exit-fullscreen-while-hovering-shows
 
 #### crbug.com/783229 overflow
 crbug.com/724701 overflow/overflow-basic-004.html [ Failure ]
+
+# Temporary failure as trying to ship inline-end padding for overflow.
+crbug.com/1245722 external/wpt/css/cssom-view/scrollWidthHeight.xht [ Failure ]
 
 crbug.com/846753 [ Mac ] http/tests/media/reload-after-dialog.html [ Failure Pass Timeout ]
 
@@ -2759,7 +2757,9 @@ crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/servi
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Linux ] external/wpt/cookies/attributes/domain.sub.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/cookies/attributes/domain.sub.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/mediaqueries/test_media_queries.html [ Failure ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/css/mediaqueries/test_media_queries.html [ Failure ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/mediaqueries/test_media_queries.html [ Failure ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/css/mediaqueries/test_media_queries.html [ Failure ]
 crbug.com/626703 external/wpt/html/syntax/speculative-parsing/generated/document-write/link-rel-alternate-stylesheet.tentative.sub.html [ Failure ]
 crbug.com/626703 external/wpt/html/syntax/speculative-parsing/generated/document-write/link-rel-stylesheet-nomatch-media.tentative.sub.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/html/syntax/speculative-parsing/generated/document-write/link-rel-stylesheet-disabled.tentative.sub.html [ Failure ]
@@ -4327,6 +4327,14 @@ crbug.com/990439 http/tests/cookies/same-site/popup-cross-site-post.https.html [
 # Flaky Windows-only content_shell crash
 crbug.com/1162205 [ Win ] virtual/schemeful-same-site/external/wpt/cookies/attributes/path-redirect.html [ Crash Pass ]
 crbug.com/1162205 [ Win ] external/wpt/cookies/attributes/path-redirect.html [ Crash Pass ]
+
+# Temporarily disable failing cookie control character tests until we implement
+# the latest spec changes. Specifically, 0x00, 0x0d and 0x0a should cause
+# cookie rejection instead of truncation, and the tab character should be
+# treated as a valid character.
+crbug.com/1233602 external/wpt/cookies/attributes/attributes-ctl.sub.html [ Failure ]
+crbug.com/1233602 external/wpt/cookies/name/name-ctl.html [ Failure ]
+crbug.com/1233602 external/wpt/cookies/value/value-ctl.html [ Failure ]
 
 # The virtual tests run with Schemeful Same-Site disabled. These should fail to ensure the disabled feature code paths work.
 crbug.com/1127348 virtual/schemeful-same-site/external/wpt/cookies/schemeful-same-site/schemeful-websockets.sub.tentative.html [ Failure ]
@@ -6364,6 +6372,10 @@ crbug.com/1210658 [ Mac10.14 ] virtual/jxl-enabled/images/jxl/jxl-images.html [ 
 crbug.com/1210658 [ Mac10.15 ] virtual/jxl-enabled/images/jxl/jxl-images.html [ Failure ]
 crbug.com/1210658 [ Win ] virtual/jxl-enabled/images/jxl/jxl-images.html [ Failure ]
 
+# Temporarily disabled to unblock https://crrev.com/c/3099011
+crbug.com/1199701 http/tests/devtools/console/console-big-array.js [ Skip ]
+crbug.com/1199701 http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.js [ Skip ]
+
 # Sheriff 2021-5-19
 # Flaky on Webkit Linux Leak
 crbug.com/1210731 [ Linux ] http/tests/devtools/sources/debugger-step/debugger-step-out-document-write.js [ Failure Pass ]
@@ -6831,14 +6843,14 @@ crbug.com/1110752 http/tests/devtools/application-panel/resources-panel-websql.j
 # Credentials in same-origin Reporting-API reports are currently not implemented.
 crbug.com/1163645 external/wpt/reporting/same-origin-report-credentials.https.sub.html [ Failure ]
 
+# [CompositeClipPathAnimations] failing test
+crbug.com/1249071 virtual/composite-clip-path-animation/external/wpt/css/css-masking/clip-path/animations/clip-path-animation-filter.html [ Crash Failure Pass ]
+
 # Sheriff 2021-09-08
 crbug.com/1233826 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-before-load.https.html [ Crash Failure Pass ]
 crbug.com/1233826 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-after-load.https.html [ Crash Failure Pass ]
 crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-shadow-part4.html [ Crash Pass ]
 crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-color-over-pattern.html [ Crash Pass ]
-
-# Skip external/wpt/WebIDL to unblock wpt-importer, will revert this later
-external/wpt/WebIDL/* [ Skip ]
 
 # Sheriff 2021-09-10
 crbug.com/1248437 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/one-custom-property-animation-half-opaque.https.html [ Failure Pass ]
@@ -6877,21 +6889,5 @@ crbug.com/1249176 [ Mac11-arm64 ] fast/forms/plaintext-mode-2.html [ Failure Pas
 crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/color-profile-image-canvas.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] http/tests/inspector-protocol/page/consecutive-navigate.js [ Pass Timeout ]
 
-# Fix test expectations for webidl/ecmascript-binding
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/class-string-iterator-prototype-object.any.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/class-string-iterator-prototype-object.any.worker.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/constructors.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/default-iterator-object.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/global-object-implicit-this-value-cross-realm.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/global-object-implicit-this-value.any.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/global-object-implicit-this-value.any.serviceworker.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/global-object-implicit-this-value.any.sharedworker.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/global-object-implicit-this-value.any.worker.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/invalid-this-value-cross-realm.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/iterator-prototype-object.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/put-forwards.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/sequence-conversion.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/window-named-properties-object.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/es-exceptions/DOMException-custom-bindings.any.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/es-exceptions/DOMException-custom-bindings.any.worker.html [ Failure ]
-crbug.com/1249673 external/wpt/webidl/ecmascript-binding/legacy-platform-object/OwnPropertyKeys.html [ Failure ]
+# Sheriff 2021-09-15
+crbug.com/1250066 [ Win ] external/wpt/css/mediaqueries/test_media_queries.html [ Failure ]

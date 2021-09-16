@@ -203,6 +203,9 @@ extern const char kAutofillFillMerchantPromoCodeFieldsDescription[];
 extern const char kAutofillFixOfferInIncognitoName[];
 extern const char kAutofillFixOfferInIncognitoDescription[];
 
+extern const char kAutofillHighlightOnlyChangedValuesInPreviewModeName[];
+extern const char kAutofillHighlightOnlyChangedValuesInPreviewModeDescription[];
+
 extern const char kAutofillParseMerchantPromoCodeFieldsName[];
 extern const char kAutofillParseMerchantPromoCodeFieldsDescription[];
 
@@ -1616,6 +1619,9 @@ extern const char kUsePassthroughCommandDecoderDescription[];
 extern const char kExtensionWorkflowJustificationName[];
 extern const char kExtensionWorkflowJustificationDescription[];
 
+extern const char kShareContextMenuName[];
+extern const char kShareContextMenuDescription[];
+
 // Android --------------------------------------------------------------------
 
 #if defined(OS_ANDROID)
@@ -1816,6 +1822,9 @@ extern const char kMessagesForAndroidPermissionUpdateDescription[];
 
 extern const char kMessagesForAndroidPopupBlockedName[];
 extern const char kMessagesForAndroidPopupBlockedDescription[];
+
+extern const char kMessagesForAndroidPWAInstallName[];
+extern const char kMessagesForAndroidPWAInstallDescription[];
 
 extern const char kMessagesForAndroidReaderModeName[];
 extern const char kMessagesForAndroidReaderModeDescription[];
@@ -3003,9 +3012,6 @@ extern const char kDownloadShelfWebUIDescription[];
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 
-extern const char kEnableOopPrintDriversName[];
-extern const char kEnableOopPrintDriversDescription[];
-
 extern const char kWebUIBrandingUpdateName[];
 extern const char kWebUIBrandingUpdateDescription[];
 
@@ -3064,6 +3070,11 @@ extern const char kEnableJXLDescription[];
 extern const char kNaclName[];
 extern const char kNaclDescription[];
 #endif  // ENABLE_NACL
+
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+extern const char kEnableOopPrintDriversName[];
+extern const char kEnableOopPrintDriversDescription[];
+#endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW) && defined(OS_ANDROID)
 extern const char kPaintPreviewDemoName[];

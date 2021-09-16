@@ -533,8 +533,6 @@
 #include "chrome/browser/ash/child_accounts/time_limits/web_time_limit_navigation_throttle.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_settings_navigation_throttle.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
-// TODO(b/195975836): Support Lacros as well.
-#include "chrome/browser/ui/ash/projector/projector_navigation_throttle.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
@@ -2549,7 +2547,6 @@ void ChromeContentBrowserClient::GuestPermissionRequestHelper(
     bool allow) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::map<int, int> process_map;
-  std::map<int, int>::const_iterator it;
   bool has_web_view_guest = false;
   // Record access to file system for potential display in UI.
   for (const auto& it : render_frames) {
@@ -2566,7 +2563,7 @@ void ChromeContentBrowserClient::GuestPermissionRequestHelper(
     return;
   }
   DCHECK_EQ(1U, process_map.size());
-  it = process_map.begin();
+  std::map<int, int>::const_iterator it = process_map.begin();
 
   extensions::WebViewPermissionHelper* web_view_permission_helper =
       extensions::WebViewPermissionHelper::FromFrameID(it->first, it->second);
@@ -3941,10 +3938,6 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   MaybeAddThrottle(
       ash::WebTimeLimitNavigationThrottle::MaybeCreateThrottleFor(handle),
-      &throttles);
-  // TODO(b/195975836): Support Lacros as well.
-  MaybeAddThrottle(
-      ash::ProjectorNavigationThrottle::MaybeCreateThrottleFor(handle),
       &throttles);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

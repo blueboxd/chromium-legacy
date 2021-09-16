@@ -1042,13 +1042,14 @@ bool FeedStream::HasUnreadContent(const StreamType& stream_type) {
   if (stream.content_ids.IsEmpty())
     return false;
   if (feedstore::GetViewContentIds(metadata_, stream_type)
-          .ContainsAllOf(stream.content_ids))
+          .ContainsAllOf(stream.content_ids)) {
     return false;
+  }
 
   // If there is currently a surface already viewing the content, update the
   // ViewContentIds to whatever the current set is. This can happen if the
   // surface already shown is refreshed.
-  if (stream.surfaces.HasSurfaceShowingContent()) {
+  if (stream.model && stream.surfaces.HasSurfaceShowingContent()) {
     SetMetadata(SetStreamViewContentIds(metadata_, stream_type,
                                         stream.model->GetContentIds()));
     return false;

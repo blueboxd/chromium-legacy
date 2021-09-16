@@ -68,8 +68,10 @@ apps::FileHandlers CreateRandomFileHandlers(uint32_t suffix) {
     file_handler.action = GURL("https://example.com/open-" + suffix_str);
     file_handler.accept.push_back(std::move(accept_entry1));
     file_handler.accept.push_back(std::move(accept_entry2));
-    file_handler.icons.emplace_back(GURL("https://example.com/image.png"), 16);
-    file_handler.icons.emplace_back(GURL("https://example.com/image2.png"), 48);
+    file_handler.downloaded_icons.emplace_back(
+        GURL("https://example.com/image.png"), 16);
+    file_handler.downloaded_icons.emplace_back(
+        GURL("https://example.com/image2.png"), 48);
     file_handler.display_name = base::ASCIIToUTF16(suffix_str) + u" file";
 
     file_handlers.push_back(std::move(file_handler));
@@ -375,6 +377,15 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
         "web+test_" + seed_str + "_" + base::NumberToString(i);
   }
   app->SetApprovedLaunchProtocols(std::move(approved_launch_protocols));
+
+  const int num_disallowed_launch_protocols = random.next_uint(8);
+  std::vector<std::string> disallowed_launch_protocols(
+      num_disallowed_launch_protocols);
+  for (int i = 0; i < num_disallowed_launch_protocols; ++i) {
+    disallowed_launch_protocols[i] =
+        "web+disallowed_" + seed_str + "_" + base::NumberToString(i);
+  }
+  app->SetDisallowedLaunchProtocols(std::move(disallowed_launch_protocols));
 
   app->SetStorageIsolated(random.next_bool());
 

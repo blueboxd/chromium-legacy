@@ -67,7 +67,7 @@ class ConversionInternalsWebUiBrowserTest : public ContentBrowserTest {
   // Registers a mutation observer that sets the window title to |title| when
   // the report table is empty.
   void SetTitleOnReportsTableEmpty(const std::u16string& title) {
-    const std::string kObserveEmptyReportsTableScript = R"(
+    static constexpr char kObserveEmptyReportsTableScript[] = R"(
     let table = document.querySelector("#report-table-wrapper tbody");
     let obs = new MutationObserver(() => {
       if (table.children.length === 1 &&
@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   // Create a mutation observer to wait for the content to render to the dom.
   // Waiting on calls to TestConversionManager is not sufficient because the
   // results are returned in promises.
-  std::string wait_script = R"(
+  static constexpr char wait_script[] = R"(
     let status = document.getElementById("feature-status-content");
     let obs = new MutationObserver(() => {
       if (status.innerText.trim() === "enabled") {
@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   // Create a mutation observer to wait for the content to render to the dom.
   // Waiting on calls to TestConversionManager is not sufficient because the
   // results are returned in promises.
-  std::string wait_script = R"(
+  static constexpr char wait_script[] = R"(
     let status = document.getElementById("feature-status-content");
     let obs = new MutationObserver(() => {
       if (status.innerText.trim() === "disabled") {
@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(
   TestConversionManager manager;
   OverrideWebUIConversionManager(&manager);
 
-  std::string wait_script = R"(
+  static constexpr char wait_script[] = R"(
     let table = document.querySelector("#source-table-wrapper tbody");
     let obs = new MutationObserver(() => {
       if (table.children.length === 1 &&
@@ -186,6 +186,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   manager.SetActiveImpressionsForWebUI(
       {ImpressionBuilder(base::Time::Now())
            .SetData(std::numeric_limits<uint64_t>::max())
+           .SetAttributionLogic(StorableImpression::AttributionLogic::kNever)
            .Build(),
        ImpressionBuilder(base::Time::Now())
            .SetSourceType(StorableImpression::SourceType::kEvent)
@@ -194,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
            .Build()});
   OverrideWebUIConversionManager(&manager);
 
-  std::string wait_script = R"(
+  static constexpr char wait_script[] = R"(
     let table = document.querySelector("#source-table-wrapper tbody");
     let obs = new MutationObserver(() => {
       if (table.children.length === 2 &&
@@ -204,7 +205,9 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
           table.children[0].children[7].innerText === "0" &&
           table.children[1].children[7].innerText === $2 &&
           table.children[0].children[8].innerText === "" &&
-          table.children[1].children[8].innerText === "13, 17") {
+          table.children[1].children[8].innerText === "13, 17" &&
+          table.children[0].children[9].innerText === "unreportable" &&
+          table.children[1].children[9].innerText === "reportable") {
         document.title = $3;
       }
     });
@@ -240,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   // Create a mutation observer to wait for the content to render to the dom.
   // Waiting on calls to TestConversionManager is not sufficient because the
   // results are returned in promises.
-  std::string wait_script = R"(
+  static constexpr char wait_script[] = R"(
     let status = document.getElementById("debug-mode-content");
     let obs = new MutationObserver(() => {
       if (status.innerText.trim() === "") {
@@ -268,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   // Create a mutation observer to wait for the content to render to the dom.
   // Waiting on calls to TestConversionManager is not sufficient because the
   // results are returned in promises.
-  std::string wait_script = R"(
+  static constexpr char wait_script[] = R"(
     let status = document.getElementById("debug-mode-content");
     let obs = new MutationObserver(() => {
       if (status.innerText.trim() !== "") {
@@ -309,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   OverrideWebUIConversionManager(&manager);
 
   {
-    std::string wait_script = R"(
+    static constexpr char wait_script[] = R"(
       let table = document.querySelector("#report-table-wrapper tbody");
       let obs = new MutationObserver(() => {
         if (table.children.length === 2 &&
@@ -322,12 +325,11 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
             table.children[1].children[4].innerText === "0" &&
             table.children[1].children[5].innerText === "no" &&
             table.children[1].children[6].innerText === "Sent: HTTP 200") {
-          document.title = $2;
+          document.title = $1;
         }
       });
       obs.observe(table, {'childList': true});)";
-    EXPECT_TRUE(ExecJsInWebUI(
-        JsReplace(wait_script, kMaxUint64String, kCompleteTitle)));
+    EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
     ClickRefreshButton();
@@ -335,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   }
 
   {
-    std::string wait_script = R"(
+    static constexpr char wait_script[] = R"(
       let table = document.querySelector("#report-table-wrapper tbody");
       let obs = new MutationObserver(() => {
         if (table.children.length === 2 &&
@@ -348,12 +350,11 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
             table.children[0].children[4].innerText === "0" &&
             table.children[0].children[5].innerText === "no" &&
             table.children[0].children[6].innerText === "Sent: HTTP 200") {
-          document.title = $2;
+          document.title = $1;
         }
       });
       obs.observe(table, {'childList': true});)";
-    EXPECT_TRUE(ExecJsInWebUI(
-        JsReplace(wait_script, kMaxUint64String, kCompleteTitle2)));
+    EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle2)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle2);
     // Sort by priority ascending.
@@ -363,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   }
 
   {
-    std::string wait_script = R"(
+    static constexpr char wait_script[] = R"(
       let table = document.querySelector("#report-table-wrapper tbody");
       let obs = new MutationObserver(() => {
         if (table.children.length === 2 &&
@@ -376,12 +377,11 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
             table.children[1].children[4].innerText === "0" &&
             table.children[1].children[5].innerText === "no" &&
             table.children[1].children[6].innerText === "Sent: HTTP 200") {
-          document.title = $2;
+          document.title = $1;
         }
       });
       obs.observe(table, {'childList': true});)";
-    EXPECT_TRUE(ExecJsInWebUI(
-        JsReplace(wait_script, kMaxUint64String, kCompleteTitle3)));
+    EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle3)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle3);
     // Sort by priority descending.
@@ -409,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   OverrideWebUIConversionManager(&manager);
 
   // Verify both rows get rendered.
-  std::string wait_script = R"(
+  static constexpr char wait_script[] = R"(
     let table = document.querySelector("#report-table-wrapper tbody");
     let obs = new MutationObserver(() => {
       if (table.children.length === 2 &&
@@ -451,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   manager.SetReportsForWebUI({report});
   OverrideWebUIConversionManager(&manager);
 
-  std::string wait_script = R"(
+  static constexpr char wait_script[] = R"(
     let table = document.querySelector("#report-table-wrapper tbody");
     let obs = new MutationObserver(() => {
       if (table.children.length === 1 &&

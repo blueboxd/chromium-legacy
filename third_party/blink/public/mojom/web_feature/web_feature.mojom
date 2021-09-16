@@ -2121,7 +2121,7 @@ enum WebFeature {
   kNoSysexWebMIDIOnInsecureOrigin = 2771,
   kApplicationCacheInstalledButNoManifest = 2772,
   kCustomCursorIntersectsViewport = 2776,
-  kClientHintsLang = 2777,
+  kOBSOLETE_ClientHintsLang = 2777,
   kLinkRelPreloadImageSrcset = 2778,
   kV8HTMLMediaElement_Remote_AttributeGetter = 2779,
   kV8RemotePlayback_WatchAvailability_Method = 2780,
@@ -3332,6 +3332,17 @@ enum WebFeature {
   kMediaSourceExtensionsForWebCodecs = 4021,
   kPaymentRequestResponse = 4023,
   kPaymentRequestComplete = 4024,
+  kHTMLCanvasElement_2D = 4025,
+  kHTMLCanvasElement_WebGL = 4026,
+  kHTMLCanvasElement_WebGL2 = 4027,
+  kHTMLCanvasElement_BitmapRenderer = 4028,
+  kHTMLCanvasElement_WebGPU = 4029,
+  kOffscreenCanvas_2D = 4030,
+  kOffscreenCanvas_WebGL = 4031,
+  kOffscreenCanvas_WebGL2 = 4032,
+  kOffscreenCanvas_BitmapRenderer = 4033,
+  kOffscreenCanvas_WebGPU = 4034,
+  kCanvasRenderingContext2DHasOverdraw = 4035,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

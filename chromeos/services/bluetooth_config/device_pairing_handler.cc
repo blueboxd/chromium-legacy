@@ -6,7 +6,6 @@
 
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "chromeos/services/bluetooth_config/adapter_state_controller.h"
 #include "components/device_event_log/device_event_log.h"
 
 namespace chromeos {
@@ -55,7 +54,16 @@ void DevicePairingHandler::CancelPairing(mojom::PairingResult result) {
         << current_pairing_device_id_;
   }
 
-  FinishPairing(result);
+  FinishCurrentPairingRequest(result);
+}
+
+void DevicePairingHandler::NotifyFinished() {
+  // |finished_pairing_callback_| can be null if we already succeeded from
+  // pairing or the delegate disconnected, and now this handler is being
+  // deleted.
+  if (finished_pairing_callback_.is_null())
+    return;
+  std::move(finished_pairing_callback_).Run();
 }
 
 void DevicePairingHandler::PairDevice(
@@ -77,7 +85,7 @@ void DevicePairingHandler::PairDevice(
     BLUETOOTH_LOG(ERROR) << "Pairing failed due to Bluetooth not being "
                             "enabled, device identifier: "
                          << device_id;
-    FinishPairing(mojom::PairingResult::kNonAuthFailure);
+    FinishCurrentPairingRequest(mojom::PairingResult::kNonAuthFailure);
     return;
   }
 
@@ -88,7 +96,7 @@ void DevicePairingHandler::PairDevice(
     BLUETOOTH_LOG(ERROR) << "Pairing failed due to device not being "
                             "found, identifier: "
                          << device_id;
-    FinishPairing(mojom::PairingResult::kNonAuthFailure);
+    FinishCurrentPairingRequest(mojom::PairingResult::kNonAuthFailure);
     return;
   }
 
@@ -165,7 +173,8 @@ void DevicePairingHandler::OnDeviceConnect(
     device::BluetoothDeviceType device_type,
     absl::optional<device::BluetoothDevice::ConnectErrorCode> error_code) {
   if (!error_code.has_value()) {
-    FinishPairing(mojom::PairingResult::kSuccess);
+    FinishCurrentPairingRequest(mojom::PairingResult::kSuccess);
+    NotifyFinished();
     return;
   }
 
@@ -180,7 +189,7 @@ void DevicePairingHandler::OnDeviceConnect(
     case ErrorCode::ERROR_AUTH_REJECTED:
       FALLTHROUGH;
     case ErrorCode::ERROR_AUTH_TIMEOUT:
-      FinishPairing(mojom::PairingResult::kAuthFailed);
+      FinishCurrentPairingRequest(mojom::PairingResult::kAuthFailed);
       return;
 
     case ErrorCode::ERROR_FAILED:
@@ -190,7 +199,7 @@ void DevicePairingHandler::OnDeviceConnect(
     case ErrorCode::ERROR_UNKNOWN:
       FALLTHROUGH;
     case ErrorCode::ERROR_UNSUPPORTED_DEVICE:
-      FinishPairing(mojom::PairingResult::kNonAuthFailure);
+      FinishCurrentPairingRequest(mojom::PairingResult::kNonAuthFailure);
       return;
 
     default:
@@ -206,7 +215,7 @@ void DevicePairingHandler::OnRequestPinCode(const std::string& pin_code) {
         << "OnRequestPinCode failed due to device no longer being "
            "found, identifier: "
         << current_pairing_device_id_;
-    FinishPairing(mojom::PairingResult::kNonAuthFailure);
+    FinishCurrentPairingRequest(mojom::PairingResult::kNonAuthFailure);
     return;
   }
 
@@ -220,7 +229,7 @@ void DevicePairingHandler::OnRequestPasskey(const std::string& passkey) {
         << "OnRequestPasskey failed due to device no longer being "
            "found, identifier: "
         << current_pairing_device_id_;
-    FinishPairing(mojom::PairingResult::kNonAuthFailure);
+    FinishCurrentPairingRequest(mojom::PairingResult::kNonAuthFailure);
     return;
   }
 
@@ -241,7 +250,7 @@ void DevicePairingHandler::OnConfirmPairing(bool confirmed) {
         << "OnConfirmPairing failed due to device no longer being "
            "found, identifier: "
         << current_pairing_device_id_;
-    FinishPairing(mojom::PairingResult::kNonAuthFailure);
+    FinishCurrentPairingRequest(mojom::PairingResult::kNonAuthFailure);
     return;
   }
 
@@ -251,16 +260,10 @@ void DevicePairingHandler::OnConfirmPairing(bool confirmed) {
     device->CancelPairing();
 }
 
-void DevicePairingHandler::FinishPairing(mojom::PairingResult result) {
+void DevicePairingHandler::FinishCurrentPairingRequest(
+    mojom::PairingResult result) {
   current_pairing_device_id_.clear();
   std::move(pair_device_callback_).Run(result);
-
-  if (result == mojom::PairingResult::kSuccess)
-    InvokeFinishedPairingCallback();
-}
-
-void DevicePairingHandler::InvokeFinishedPairingCallback() {
-  std::move(finished_pairing_callback_).Run();
 }
 
 void DevicePairingHandler::OnDelegateDisconnect() {
@@ -269,7 +272,7 @@ void DevicePairingHandler::OnDelegateDisconnect() {
   if (!current_pairing_device_id_.empty())
     CancelPairing(mojom::PairingResult::kNonAuthFailure);
 
-  InvokeFinishedPairingCallback();
+  NotifyFinished();
 }
 
 bool DevicePairingHandler::IsBluetoothEnabled() const {

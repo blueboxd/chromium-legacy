@@ -2745,6 +2745,34 @@ TEST_F(FeedApiTest, ContentOrderPrefOverridesFinch) {
   EXPECT_EQ(ContentOrder::kGrouped, stream_->GetContentOrder(kWebFeedStream));
 }
 
+// This is a regression test for crbug.com/1249772.
+TEST_F(FeedApiTest, SignInWhileSurfaceIsOpen) {
+  // Load content and simulate a restart, so that there is stored content.
+  {
+    response_translator_.InjectResponse(MakeTypicalInitialModelState());
+    TestForYouSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+    CreateStream();
+  }
+
+  // Simulate signing-in while the feed is open.
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  stream_->ReportFeedViewed(surface.GetStreamType(), surface.GetSurfaceId());
+  TestUnreadContentObserver observer;
+  stream_->AddUnreadContentObserver(kForYouStream, &observer);
+  signed_in_gaia_ = "gaia";
+  stream_->OnSignedIn();
+  response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ("loading -> 2 slices -> loading -> 3 slices",
+            surface.DescribeUpdates());
+  // Even though content is updated, the feed remains in view, so content is not
+  // unread.
+  EXPECT_EQ(std::vector<bool>({false}), observer.calls);
+}
+
 // Keep instantiations at the bottom.
 INSTANTIATE_TEST_SUITE_P(FeedApiTest,
                          FeedStreamTestForAllStreamTypes,

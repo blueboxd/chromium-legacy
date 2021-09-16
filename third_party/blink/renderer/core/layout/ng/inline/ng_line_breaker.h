@@ -135,7 +135,7 @@ class CORE_EXPORT NGLineBreaker {
   void HandleText(const NGInlineItem& item, const ShapeResult&, NGLineInfo*);
   // Split |item| into segments, and add them to |line_info|.
   // This is for SVG <text>.
-  void SplitTextIntoSegements(const NGInlineItem& item, NGLineInfo* line_info);
+  void SplitTextIntoSegments(const NGInlineItem& item, NGLineInfo* line_info);
   // Returns true if we should split NGInlineItem before
   // svg_addressable_offset_.
   bool ShouldCreateNewSvgSegment() const;
@@ -298,6 +298,9 @@ class CORE_EXPORT NGLineBreaker {
 
   // True if the resultant line contains a RubyRun with inline-end overhang.
   bool maybe_have_end_overhang_ = false;
+
+  // True if ShouldCreateNewSvgSegment() should be called.
+  bool needs_svg_segmentation_ = false;
 
   const NGInlineItemsData& items_data_;
 

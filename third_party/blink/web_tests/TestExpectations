@@ -208,16 +208,32 @@ crbug.com/1176933 [ Linux ] virtual/gpu/fast/canvas/canvas-formattedtext-2.html 
 # These tests were disabled to allow enabling WebAssembly Reference Types.
 crbug.com/v8/7581 external/wpt/wasm/jsapi/global/type.tentative.any.html [ Failure Pass ]
 crbug.com/v8/7581 external/wpt/wasm/jsapi/global/type.tentative.any.worker.html [ Failure Pass ]
+crbug.com/v8/7581 external/wpt/wasm/jsapi/table/constructor-reftypes.tentative.any.html [ Failure Pass ]
+crbug.com/v8/7581 external/wpt/wasm/jsapi/table/constructor-reftypes.tentative.any.worker.html [ Failure Pass ]
+crbug.com/v8/7581 external/wpt/wasm/jsapi/table/set-reftypes.tentative.any.html [ Failure Pass ]
+crbug.com/v8/7581 external/wpt/wasm/jsapi/table/set-reftypes.tentative.any.worker.html [ Failure Pass ]
 
 # These tests block fixes done in V8. The tests run on the V8 bots as well.
 crbug.com/v8/12227 external/wpt/wasm/jsapi/exception/type.tentative.any.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/exception/type.tentative.any.worker.html [ Failure Pass ]
 crbug.com/v8/12227 external/wpt/wasm/jsapi/exception/toString.tentative.any.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/exception/toString.tentative.any.worker.html [ Failure Pass ]
 crbug.com/v8/12227 external/wpt/wasm/jsapi/memory/constructor-types.tentative.any.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/memory/constructor-types.tentative.any.worker.html [ Failure Pass ]
 crbug.com/v8/12227 external/wpt/wasm/jsapi/memory/type.tentative.any.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/memory/type.tentative.any.worker.html [ Failure Pass ]
 crbug.com/v8/12227 external/wpt/wasm/jsapi/memory/types.tentative.any.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/memory/types.tentative.any.worker.html [ Failure Pass ]
 crbug.com/v8/12227 external/wpt/wasm/jsapi/prototypes.any.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/prototypes.any.worker.html [ Failure Pass ]
 crbug.com/v8/12227 external/wpt/wasm/jsapi/table/type.tentative.any.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/table/type.tentative.any.worker.html [ Failure Pass ]
 crbug.com/v8/12227 external/wpt/wasm/jsapi/table/constructor-types.tentative.any.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/table/constructor-types.tentative.any.worker.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/table/grow-reftypes.tentative.any.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/table/grow-reftypes.tentative.any.worker.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/table/get-set.any.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/table/get-set.any.worker.html [ Failure Pass ]
 
 # Sheriff on 2020-09-03
 crbug.com/1124352 media/picture-in-picture/clear-after-request.html [ Crash Pass ]
@@ -3452,6 +3468,24 @@ crbug.com/626703 [ Win ] external/wpt/websockets/Create-url-with-space.any.html 
 crbug.com/626703 [ Win ] virtual/plz-dedicated-worker/external/wpt/resource-timing/cross-origin-start-end-time-with-redirects.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/webrtc/RTCDTMFSender-ontonechange-long.https.html [ Failure Pass ]
 crbug.com/626703 [ Mac ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCDTMFSender-ontonechange-long.https.html [ Failure Pass ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/html/dom/idlharness.https.html?include=(Document|Window) [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/html/dom/idlharness.worker.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/html/webappapis/scripting/events/event-handler-attributes-frameset-window.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/html/webappapis/scripting/events/event-handler-attributes-windowless-body.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/payment-handler/idlharness.https.any.serviceworker.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/payment-request/idlharness.https.window.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/private-click-measurement/idlharness.window.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/service-workers/idlharness.https.any.serviceworker.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/service-workers/idlharness.https.any.worker.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/streams/idlharness.any.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/streams/idlharness.any.sharedworker.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/webhid/idlharness.https.window.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/webrtc-encoded-transform/idlharness.https.window.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] virtual/not-plz-service-worker/external/wpt/service-workers/idlharness.https.any.sharedworker.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] virtual/not-plz-service-worker/external/wpt/service-workers/idlharness.https.any.worker.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] virtual/plz-dedicated-worker/external/wpt/service-workers/idlharness.https.any.sharedworker.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] virtual/plz-dedicated-worker/external/wpt/service-workers/idlharness.https.any.worker.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] virtual/portals/external/wpt/portals/idlharness.window.html [ Failure ]
 
 ### See crbug.com/891427 comment near the top of this file:
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins-2.html [ Failure ]
@@ -6374,7 +6408,6 @@ crbug.com/1210658 [ Win ] virtual/jxl-enabled/images/jxl/jxl-images.html [ Failu
 
 # Temporarily disabled to unblock https://crrev.com/c/3099011
 crbug.com/1199701 http/tests/devtools/console/console-big-array.js [ Skip ]
-crbug.com/1199701 http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.js [ Skip ]
 
 # Sheriff 2021-5-19
 # Flaky on Webkit Linux Leak

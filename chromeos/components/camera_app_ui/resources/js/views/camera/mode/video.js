@@ -61,10 +61,9 @@ let avc1Parameters = null;
 const MINIMUM_VIDEO_DURATION_IN_MILLISECONDS = 500;
 
 /**
- * The resolution of the generated gif file.
- * TODO(b:191950622): Rotate the scaled size according to input orientation.
+ * The maximal length of the longer side of gif width or height.
  */
-export const GIF_RESOLUTION = new Resolution(640, 360);
+export const GIF_MAX_SIDE = 640;
 
 /**
  * Maximum recording time for GIF animation mode.
@@ -208,6 +207,39 @@ export class VideoHandler {
 }
 
 /**
+ * @enum {string}
+ */
+const RecordType = {
+  NORMAL: 'normal',
+  GIF: 'gif',
+};
+
+const recordTypeValues = new Set(Object.values(RecordType));
+
+/**
+ * @param {!HTMLInputElement} el
+ * @return {!RecordType}
+ */
+function getRecordTypeFromElement(el) {
+  const s = el.dataset['recordtype'];
+  assert(recordTypeValues.has(s), `No such recordtype: ${s}`);
+  return /** @type {!RecordType} */ (s);
+}
+
+/**
+ * @param {!RecordType} type
+ * @return {!HTMLInputElement}
+ */
+function getElemetFromRecordType(type) {
+  return dom.get(`input[data-recordtype=${type}]`, HTMLInputElement);
+}
+
+/**
+ * @type {!Array<!HTMLInputElement>}
+ */
+const recordTypeInputs = [...recordTypeValues].map(getElemetFromRecordType);
+
+/**
  * Video mode capture controller.
  */
 export class Video extends ModeBase {
@@ -272,6 +304,13 @@ export class Video extends ModeBase {
     this.recordTime_ = new RecordTime();
 
     /**
+     * Record type of ongoing recording.
+     * @type {!RecordType}
+     * @private
+     */
+    this.recordingType_ = RecordType.NORMAL;
+
+    /**
      * Queueing all taking video snapshot jobs requested in a single recording.
      * @type {!AsyncJobQueue}
      * @private
@@ -288,11 +327,15 @@ export class Video extends ModeBase {
 
     /**
      * Whether current recording ever paused/resumed before it ended.
+     * @type {boolean}
+     * @private
      */
     this.everPaused_ = false;
 
     /**
      * Whether the user press the stop button while recording GIF.
+     * @type {boolean}
+     * @private
      */
     this.isRecordingGif_ = false;
   }
@@ -305,6 +348,21 @@ export class Video extends ModeBase {
     if (this.captureStream_ !== null) {
       await this.captureStream_.close();
     }
+  }
+
+  /**
+   * @return {!RecordType} Returns record type of checked radio buttons in
+   *     record type option groups.
+   */
+  getToggledRecordOption_() {
+    if (state.get(state.State.SHOULD_HANDLE_INTENT_RESULT) ||
+        !state.get(state.State.EXPERT) ||
+        !state.get(state.State.ENABLE_GIF_RECORDING)) {
+      return RecordType.NORMAL;
+    }
+    const checkedEl = assertInstanceof(
+        recordTypeInputs.find(({checked}) => checked), HTMLInputElement);
+    return getRecordTypeFromElement(checkedEl);
   }
 
   /**
@@ -459,10 +517,12 @@ export class Video extends ModeBase {
       throw e;
     }
 
-
-    if (state.get(state.State.ENABLE_GIF_RECORDING)) {
+    this.recordingType_ = this.getToggledRecordOption_();
+    if (this.recordingType_ === RecordType.GIF) {
+      state.set(state.State.RECORDING_GIF, true);
       const gifSaver = await this.captureGif_();
       await this.handler_.handleResultGif(gifSaver);
+      state.set(state.State.RECORDING_GIF, false);
     } else {
       this.recordTime_.start({resume: false});
       let /** ?VideoSaver */ videoSaver = null;
@@ -519,7 +579,7 @@ export class Video extends ModeBase {
    * @override
    */
   stop_() {
-    if (state.get(state.State.ENABLE_GIF_RECORDING)) {
+    if (this.recordingType_ === RecordType.GIF) {
       this.isRecordingGif_ = false;
     } else {
       sound.cancel(dom.get('#sound-rec-start', HTMLAudioElement));
@@ -540,11 +600,16 @@ export class Video extends ModeBase {
    * @private
    */
   async captureGif_() {
-    const gifSaver = await this.handler_.createGifSaver(GIF_RESOLUTION);
-
     const video = this.handler_.getPreviewVideo();
-    const canvas =
-        new OffscreenCanvas(GIF_RESOLUTION.width, GIF_RESOLUTION.height);
+    let {videoWidth: width, videoHeight: height} = video;
+    if (width > GIF_MAX_SIDE || height > GIF_MAX_SIDE) {
+      const ratio = GIF_MAX_SIDE / Math.max(width, height);
+      width = Math.round(width * ratio);
+      height = Math.round(height * ratio);
+    }
+    const gifSaver =
+        await this.handler_.createGifSaver(new Resolution(width, height));
+    const canvas = new OffscreenCanvas(width, height);
     const context = assertInstanceof(
         canvas.getContext('2d'), OffscreenCanvasRenderingContext2D);
     this.isRecordingGif_ = true;
@@ -562,12 +627,9 @@ export class Video extends ModeBase {
         }
         encodedFrames++;
         if (encodedFrames % GRAB_GIF_FRAME_RATIO === 0) {
-          context.drawImage(
-              video, 0, 0, GIF_RESOLUTION.width, GIF_RESOLUTION.height);
+          context.drawImage(video, 0, 0, width, height);
           gifSaver.write(new Blob([
-            context
-                .getImageData(0, 0, GIF_RESOLUTION.width, GIF_RESOLUTION.height)
-                .data,
+            context.getImageData(0, 0, width, height).data,
           ]));
         }
         video.requestVideoFrameCallback(updateCanvas);

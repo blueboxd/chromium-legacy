@@ -145,7 +145,7 @@ LayoutUnit ComputeFloatAncestorInlineEndSize(
   return inline_end_size;
 }
 
-// See NGLineBreaker::SplitTextByGlyphs().
+// See NGLineBreaker::SplitTextIntoSegments().
 void CollectCharIndex(void* context,
                       unsigned char_index,
                       Glyph,
@@ -248,9 +248,18 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
   available_width_ = ComputeAvailableWidth();
   break_iterator_.SetBreakSpace(BreakSpaceType::kAfterSpaceRun);
   if (is_svg_text_) {
-    svg_resolved_iterator_ =
-        std::make_unique<ResolvedTextLayoutAttributesIterator>(
-            node_.SvgCharacterDataList());
+    const auto& char_data_list = node_.SvgCharacterDataList();
+    if (node_.SvgTextPathRangeList().IsEmpty() &&
+        node_.SvgTextLengthRangeList().IsEmpty() &&
+        (char_data_list.IsEmpty() ||
+         (char_data_list.size() == 1 && char_data_list[0].first == 0))) {
+      needs_svg_segmentation_ = false;
+    } else {
+      needs_svg_segmentation_ = true;
+      svg_resolved_iterator_ =
+          std::make_unique<ResolvedTextLayoutAttributesIterator>(
+              char_data_list);
+    }
   }
 
   if (!break_token)
@@ -954,7 +963,7 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
   }
 
   if (is_svg_text_) {
-    SplitTextIntoSegements(item, line_info);
+    SplitTextIntoSegments(item, line_info);
     return;
   }
 
@@ -989,15 +998,16 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
 // Split in PrepareLayout() or after producing NGFragmentItem would need
 // additional memory overhead. So we split in NGLineBreaker while it converts
 // NGInlineItems to NGInlineItemResults.
-void NGLineBreaker::SplitTextIntoSegements(const NGInlineItem& item,
-                                           NGLineInfo* line_info) {
+void NGLineBreaker::SplitTextIntoSegments(const NGInlineItem& item,
+                                          NGLineInfo* line_info) {
   DCHECK(RuntimeEnabledFeatures::SVGTextNGEnabled());
   DCHECK(is_svg_text_);
   DCHECK_EQ(offset_, item.StartOffset());
 
   const ShapeResult& shape = *item.TextShapeResult();
-  if (shape.NumGlyphs() == 0) {
+  if (shape.NumGlyphs() == 0 || !needs_svg_segmentation_) {
     NGInlineItemResult* result = AddItem(item, line_info);
+    result->should_create_line_box = true;
     result->shape_result = ShapeResultView::Create(&shape);
     result->inline_size = shape.SnappedWidth();
     offset_ = item.EndOffset();

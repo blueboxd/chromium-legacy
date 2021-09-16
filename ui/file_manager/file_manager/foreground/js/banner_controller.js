@@ -8,15 +8,18 @@ import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {xfm} from '../../common/js/xfm.js';
 import {Crostini} from '../../externs/background/crostini.js';
 import {Banner} from '../../externs/banner.js';
+import {FakeEntry, FilesAppDirEntry} from '../../externs/files_app_entry_interfaces.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 
+import {constants} from './constants.js';
 import {DirectoryModel} from './directory_model.js';
 import {TAG_NAME as DriveOfflinePinningBannerTagName} from './ui/banners/drive_offline_pinning_banner.js';
 import {TAG_NAME as DriveWelcomeBannerTagName} from './ui/banners/drive_welcome_banner.js';
 import {TAG_NAME as HoldingSpaceWelcomeBannerTagName} from './ui/banners/holding_space_welcome_banner.js';
 import {TAG_NAME as LocalDiskLowSpaceBannerTagName} from './ui/banners/local_disk_low_space_banner.js';
 import {TAG_NAME as PhotosWelcomeBannerTagName} from './ui/banners/photos_welcome_banner.js';
+import {TAG_NAME as SharedWithCrostiniPluginVmBanner} from './ui/banners/shared_with_crostini_pluginvm_banner.js';
 import {TAG_NAME as TrashBannerTagName} from './ui/banners/trash_banner.js';
 
 /**
@@ -119,6 +122,13 @@ export class BannerController extends EventTarget {
     this.currentRootType_ = null;
 
     /**
+     * Maintains the currently navigated directory entry. This is updated when
+     * a reconcile event is called.
+     * @private {?DirectoryEntry|?FakeEntry|?FilesAppDirEntry}
+     */
+    this.currentEntry_ = null;
+
+    /**
      * Maintains a cache of the current size for all observed volumes. If a
      * banner requests to observe a volumeType on initialization, the volume
      * size is cached here, keyed by volumeId.
@@ -160,6 +170,13 @@ export class BannerController extends EventTarget {
      * @private {boolean}
      */
     this.disableBanners_ = false;
+
+    /**
+     * A single banner to isolate and test it's functionality. Denoted by it's
+     * tagName (in uppercase).
+     * @private {?string}
+     */
+    this.isolatedBannerForTesting_ = null;
 
     /**
      * setInterval handle that keeps track of the total time a banner has
@@ -211,7 +228,33 @@ export class BannerController extends EventTarget {
         DriveOfflinePinningBannerTagName,
         PhotosWelcomeBannerTagName,
       ]);
-      this.setStateBannersInOrder([TrashBannerTagName]);
+      this.setStateBannersInOrder([
+        SharedWithCrostiniPluginVmBanner,
+        TrashBannerTagName,
+      ]);
+
+      // Register custom filters that verify whether the currently navigated
+      // path is shared with Crostini, PluginVM or both.
+      this.registerCustomBannerFilter_(SharedWithCrostiniPluginVmBanner, {
+        shouldShow: () =>
+            isPathSharedWithVm(
+                this.crostini_, this.currentEntry_,
+                constants.DEFAULT_CROSTINI_VM) &&
+            isPathSharedWithVm(
+                this.crostini_, this.currentEntry_, constants.PLUGIN_VM),
+        context: () =>
+            ({type: constants.PLUGIN_VM + constants.DEFAULT_CROSTINI_VM}),
+      });
+      this.registerCustomBannerFilter_(SharedWithCrostiniPluginVmBanner, {
+        shouldShow: () => isPathSharedWithVm(
+            this.crostini_, this.currentEntry_, constants.DEFAULT_CROSTINI_VM),
+        context: () => ({type: constants.DEFAULT_CROSTINI_VM}),
+      });
+      this.registerCustomBannerFilter_(SharedWithCrostiniPluginVmBanner, {
+        shouldShow: () => isPathSharedWithVm(
+            this.crostini_, this.currentEntry_, constants.PLUGIN_VM),
+        context: () => ({type: constants.PLUGIN_VM}),
+      });
     }
 
     for (const banner of this.warningBanners_) {
@@ -259,8 +302,9 @@ export class BannerController extends EventTarget {
    */
   async reconcile() {
     const previousVolume = this.currentVolume_;
-    this.currentVolume_ = this.directoryModel_.getCurrentVolumeInfo();
+    this.currentEntry_ = this.directoryModel_.getCurrentDirEntry();
     this.currentRootType_ = this.directoryModel_.getCurrentRootType();
+    this.currentVolume_ = this.directoryModel_.getCurrentVolumeInfo();
 
     // When navigating to a different volume, refresh the volume size stats
     // when first navigating. A listener will keep this in sync.
@@ -306,6 +350,14 @@ export class BannerController extends EventTarget {
   shouldShowBanner_(banner) {
     if (banner.hasAttribute(_BANNER_FORCE_SHOW_ATTRIBUTE)) {
       return true;
+    }
+
+    // If a banner has been isolated to be shown for testing, all other banners
+    // should not show. The isolated baner should still ensure it should be
+    // displayed.
+    if (this.isolatedBannerForTesting_ &&
+        this.isolatedBannerForTesting_ !== banner.tagName) {
+      return false;
     }
 
     // Check if the banner should be shown on this particular volume type.
@@ -505,6 +557,17 @@ export class BannerController extends EventTarget {
    */
   disableBannersForTesting() {
     this.disableBanners_ = true;
+  }
+
+  /**
+   * Isolates a banner from the priority list for testing. Used to test
+   * functionality of a specific banner in integration tests.
+   * @param {string} bannerTagName Banner tagName to isolate.
+   */
+  async isolateBannerForTesting(bannerTagName) {
+    const tagName = bannerTagName.toUpperCase();
+    this.isolatedBannerForTesting_ = tagName;
+    await this.reconcile();
   }
 
   /**
@@ -781,4 +844,22 @@ async function getSizeStats(volumeId) {
   return new Promise((resolve) => {
     chrome.fileManagerPrivate.getSizeStats(volumeId, resolve);
   });
+}
+
+/**
+ * Identifies if a supplied Entry is shared with a particularly VM. Returns a
+ * curried function that takes the vm type.
+ * @param {!Crostini} crostini
+ * @param {?DirectoryEntry|?FakeEntry|?FilesAppDirEntry} entry
+ * @param {string} vmType
+ * @returns {boolean}
+ */
+function isPathSharedWithVm(crostini, entry, vmType) {
+  if (!crostini.isEnabled(vmType)) {
+    return false;
+  }
+  if (!entry) {
+    return false;
+  }
+  return crostini.isPathShared(vmType, /** @type {!Entry} */ (entry));
 }

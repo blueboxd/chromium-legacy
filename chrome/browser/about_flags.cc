@@ -639,6 +639,16 @@ const FeatureEntry::FeatureVariation kQueryTilesVariations[] = {
      base::size(kShowSingleRowMVTiles), nullptr},
     {"(show two rows of MV tiles)", kShowTwoRowsMVTiles,
      base::size(kShowTwoRowsMVTiles), nullptr}};
+
+const FeatureEntry::FeatureParam kDangerousDownloadNoFilledNegativeButton = {
+    "filled_negative_button", "false"};
+const FeatureEntry::FeatureParam kDangerousDownloadFilledNegativeButton = {
+    "filled_negative_button", "true"};
+const FeatureEntry::FeatureVariation kDangerousDownloadDialogVariations[] = {
+    {"without filled negative button",
+     &kDangerousDownloadNoFilledNegativeButton, 1, nullptr},
+    {"with filled negative button", &kDangerousDownloadFilledNegativeButton, 1,
+     nullptr}};
 #endif  // OS_ANDROID
 
 const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
@@ -3729,6 +3739,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsWindowControlsOverlayDescription,
      kOsWin | kOsLinux | kOsMac,
      FEATURE_VALUE_TYPE(features::kWebAppWindowControlsOverlay)},
+    {"enable-desktop-pwas-additional-windowing-controls",
+     flag_descriptions::kDesktopPWAsAdditionalWindowingControlsName,
+     flag_descriptions::kDesktopPWAsAdditionalWindowingControlsDescription,
+     kOsWin | kOsLinux | kOsMac | kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kDesktopPWAsAdditionalWindowingControls)},
     {"enable-desktop-pwas-web-bundles",
      flag_descriptions::kDesktopPWAsWebBundlesName,
      flag_descriptions::kDesktopPWAsWebBundlesDescription, kOsDesktop,
@@ -4961,7 +4976,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-dangerous-download-dialog",
      flag_descriptions::kEnableDangerousDownloadDialogName,
      flag_descriptions::kEnableDangerousDownloadDialogDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kEnableDangerousDownloadDialog)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kEnableDangerousDownloadDialog,
+         kDangerousDownloadDialogVariations,
+         "DangerousDownloadDialogVariations")},
 
     {"enable-duplicate-download-dialog",
      flag_descriptions::kEnableDuplicateDownloadDialogName,

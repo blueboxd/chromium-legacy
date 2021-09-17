@@ -48753,6 +48753,8 @@ from previous Chrome versions.
   <int value="-987191098" label="FontAccessPersistent:disabled"/>
   <int value="-984052166" label="DoodlesOnLocalNtp:enabled"/>
   <int value="-983342281" label="TabSwitcherLongpressMenu:disabled"/>
+  <int value="-981993135"
+      label="DesktopPWAsAdditionalWindowingControls:enabled"/>
   <int value="-981237342" label="SyncUSSAutofillWalletMetadata:disabled"/>
   <int value="-980889204" label="SharingRenameDevices:enabled"/>
   <int value="-980317085" label="EnablePasswordsAccountStorage:disabled"/>
@@ -51068,6 +51070,8 @@ from previous Chrome versions.
   <int value="851238417" label="VirtualKeyboardFloatingResizable:enabled"/>
   <int value="851616920" label="EnableTLS13EarlyData:disabled"/>
   <int value="852313529" label="RTCUnifiedPlanByDefault:disabled"/>
+  <int value="853279705"
+      label="DesktopPWAsAdditionalWindowingControls:disabled"/>
   <int value="854294457" label="EnableOmniboxRichEntities:disabled"/>
   <int value="854391022" label="SmartLockUIRevamp:enabled"/>
   <int value="854730848" label="disable-app-info-dialog-mac"/>
@@ -75359,6 +75363,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="Open custom spell check"/>
   <int value="5" label="Open 'Manage Google Account language'"/>
   <int value="6" label="Open 'Learn more' link about web languages"/>
+  <int value="7" label="Open 'Learn more' link about language packs"/>
 </enum>
 
 <enum name="SettingsLanguagesSupportPage">
@@ -87872,6 +87877,9 @@ others/histograms.xml -->
 </enum>
 
 <enum name="WebOTPServiceDestroyedReason">
+  <obsolete>
+    Deprecated 09/2021. We have learned about the pattern of the destruction.
+  </obsolete>
   <int value="0" label="Navigated to new page"/>
   <int value="1" label="Navigated to existing page"/>
   <int value="2" label="(Deprecated) Nagivated to same page"/>

@@ -929,20 +929,45 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("tabindexSearchBoxFocus"),
-        TestCase("tabindexFocus"),
-        TestCase("tabindexFocusDownloads"),
-        TestCase("tabindexFocusDownloads").InGuestMode(),
-        TestCase("tabindexFocusDirectorySelected").DisableSharesheet(),
+        TestCase("tabindexFocus").DisableBannersFramework(),
+        TestCase("tabindexFocus").EnableBannersFramework(),
+        TestCase("tabindexFocusDownloads").DisableBannersFramework(),
+        TestCase("tabindexFocusDownloads").EnableBannersFramework(),
+        TestCase("tabindexFocusDownloads")
+            .DisableBannersFramework()
+            .InGuestMode(),
+        TestCase("tabindexFocusDirectorySelected")
+            .DisableBannersFramework()
+            .DisableSharesheet(),
+        TestCase("tabindexFocusDirectorySelected")
+            .EnableBannersFramework()
+            .DisableSharesheet(),
         TestCase("tabindexFocusDirectorySelectedSharesheetEnabled")
+            .DisableBannersFramework()
             .EnableSharesheet(),
-        TestCase("tabindexOpenDialogDownloads").WithBrowser(),
-        TestCase("tabindexOpenDialogDownloads").WithBrowser().InGuestMode()
-// TODO(crbug.com/1236842): Remove flakiness and enable this test.
-//      ,
-//      TestCase("tabindexSaveFileDialogDrive").WithBrowser(),
-//      TestCase("tabindexSaveFileDialogDownloads").WithBrowser(),
-//      TestCase("tabindexSaveFileDialogDownloads").WithBrowser().InGuestMode()
-            ));
+        TestCase("tabindexFocusDirectorySelectedSharesheetEnabled")
+            .EnableBannersFramework()
+            .EnableSharesheet(),
+        TestCase("tabindexOpenDialogDownloads")
+            .WithBrowser()
+            .DisableBannersFramework(),
+        TestCase("tabindexOpenDialogDownloads")
+            .WithBrowser()
+            .EnableBannersFramework(),
+        TestCase("tabindexOpenDialogDownloads")
+            .WithBrowser()
+            .DisableBannersFramework()
+            .InGuestMode(),
+        TestCase("tabindexOpenDialogDownloads")
+            .WithBrowser()
+            .EnableBannersFramework()
+            .InGuestMode()
+        // TODO(crbug.com/1236842): Remove flakiness and enable this test.
+        //      ,
+        //      TestCase("tabindexSaveFileDialogDrive").WithBrowser(),
+        //      TestCase("tabindexSaveFileDialogDownloads").WithBrowser(),
+        //      TestCase("tabindexSaveFileDialogDownloads").WithBrowser().InGuestMode()
+        ));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FileDialog, /* file_dialog.js */
@@ -1164,12 +1189,14 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Crostini, /* crostini.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("mountCrostini"),
-                      TestCase("enableDisableCrostini"),
-                      TestCase("sharePathWithCrostini"),
-                      TestCase("pluginVmDirectoryNotSharedErrorDialog"),
-                      TestCase("pluginVmFileOnExternalDriveErrorDialog"),
-                      TestCase("pluginVmFileDropFailErrorDialog")));
+    ::testing::Values(
+        TestCase("mountCrostini"),
+        TestCase("enableDisableCrostini"),
+        TestCase("sharePathWithCrostini").EnableBannersFramework(),
+        TestCase("sharePathWithCrostini").DisableBannersFramework(),
+        TestCase("pluginVmDirectoryNotSharedErrorDialog"),
+        TestCase("pluginVmFileOnExternalDriveErrorDialog"),
+        TestCase("pluginVmFileDropFailErrorDialog")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     MyFiles, /* my_files.js */

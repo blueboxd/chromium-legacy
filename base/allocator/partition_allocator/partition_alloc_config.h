@@ -123,4 +123,11 @@ static_assert(sizeof(void*) != 8, "");
 #define PA_EXTRAS_REQUIRED
 #endif
 
+// Count and total wall clock time spent in memory related system calls. This
+// doesn't cover all system calls, in particular the ones related to locking.
+//
+// Not enabled by default, as it has a runtime cost, and causes issues with some
+// builds (e.g. Windows).
+// #define PA_COUNT_SYSCALL_TIME
+
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_CONFIG_H_

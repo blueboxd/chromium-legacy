@@ -137,6 +137,7 @@ TEST(ExtensionsMetricsProvider, SystemProtoEncoding) {
           &local_state, &enabled_state_provider, std::wstring(),
           base::FilePath(), base::BindRepeating(&StoreNoClientInfoBackup),
           base::BindRepeating(&ReturnNoBackup)));
+  metrics_state_manager->InstantiateFieldTrialList();
   TestExtensionsMetricsProvider extension_metrics(metrics_state_manager.get());
   extension_metrics.ProvideSystemProfileMetrics(&system_profile);
   ASSERT_EQ(2, system_profile.occupied_extension_bucket_size());
@@ -148,6 +149,12 @@ class ExtensionMetricsProviderInstallsTest
     : public extensions::ExtensionServiceTestBase {
  public:
   ExtensionMetricsProviderInstallsTest() {}
+
+  ExtensionMetricsProviderInstallsTest(
+      const ExtensionMetricsProviderInstallsTest&) = delete;
+  ExtensionMetricsProviderInstallsTest& operator=(
+      const ExtensionMetricsProviderInstallsTest&) = delete;
+
   ~ExtensionMetricsProviderInstallsTest() override {}
 
   void SetUp() override {
@@ -175,8 +182,6 @@ class ExtensionMetricsProviderInstallsTest
  private:
   extensions::ExtensionPrefs* prefs_ = nullptr;
   base::Time last_sample_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionMetricsProviderInstallsTest);
 };
 
 // Tests the various aspects of constructing a relevant proto for a given

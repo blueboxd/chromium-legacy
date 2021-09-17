@@ -46,6 +46,10 @@ class ExtensionSystemImpl : public ExtensionSystem {
   using InstallUpdateCallback = ExtensionSystem::InstallUpdateCallback;
 
   explicit ExtensionSystemImpl(Profile* profile);
+
+  ExtensionSystemImpl(const ExtensionSystemImpl&) = delete;
+  ExtensionSystemImpl& operator=(const ExtensionSystemImpl&) = delete;
+
   ~ExtensionSystemImpl() override;
 
   // KeyedService implementation.
@@ -60,7 +64,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
   UserScriptManager* user_script_manager() override;        // shared
   StateStore* state_store() override;                              // shared
   StateStore* rules_store() override;                              // shared
-  StateStore* dynamic_user_scripts_store() override;               // shared
   scoped_refptr<value_store::ValueStoreFactory> store_factory()
       override;                                                    // shared
   InfoMap* info_map() override;                                    // shared
@@ -113,7 +116,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
     StateStore* state_store();
     StateStore* rules_store();
-    StateStore* dynamic_user_scripts_store();
     scoped_refptr<value_store::ValueStoreFactory> store_factory() const;
     ExtensionService* extension_service();
     RuntimeData* runtime_data();
@@ -134,7 +136,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
     std::unique_ptr<StateStore> state_store_;
     std::unique_ptr<StateStore> rules_store_;
-    std::unique_ptr<StateStore> dynamic_user_scripts_store_;
     scoped_refptr<value_store::ValueStoreFactoryImpl> store_factory_;
     std::unique_ptr<NavigationObserver> navigation_observer_;
     std::unique_ptr<ServiceWorkerManager> service_worker_manager_;
@@ -172,8 +173,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
   Profile* profile_;
 
   Shared* shared_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionSystemImpl);
 };
 
 }  // namespace extensions

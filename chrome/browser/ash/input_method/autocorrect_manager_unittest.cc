@@ -10,9 +10,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
-#include "ui/base/ime/chromeos/input_method_chromeos.h"
-#include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
+#include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/input_method_ash.h"
+#include "ui/base/ime/ash/mock_ime_input_context_handler.h"
 #include "ui/base/ime/fake_text_input_client.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
@@ -167,7 +167,7 @@ TEST(AutocorrectManagerTest, MovingCursorOutsideRangeHidesAssistiveWindow) {
 TEST(AutocorrectManagerTest, UndoAutocorrectSingleWordInComposition) {
   ui::IMEBridge::Initialize();
   ui::FakeTextInputClient fake_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
-  ui::InputMethodChromeOS ime(nullptr);
+  ui::InputMethodAsh ime(nullptr);
   ui::IMEBridge::Get()->SetInputContextHandler(&ime);
   ime.SetFocusedTextInputClient(&fake_text_input_client);
 
@@ -189,7 +189,7 @@ TEST(AutocorrectManagerTest, UndoAutocorrectSingleWordInComposition) {
 TEST(AutocorrectManagerTest, UndoAutocorrectMultipleWordInComposition) {
   ui::IMEBridge::Initialize();
   ui::FakeTextInputClient fake_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
-  ui::InputMethodChromeOS ime(nullptr);
+  ui::InputMethodAsh ime(nullptr);
   ui::IMEBridge::Get()->SetInputContextHandler(&ime);
   ime.SetFocusedTextInputClient(&fake_text_input_client);
 

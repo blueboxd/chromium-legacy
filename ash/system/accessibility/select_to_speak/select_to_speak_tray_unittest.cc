@@ -17,7 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/events/event.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -43,6 +43,10 @@ ui::GestureEvent CreateTapEvent() {
 class SelectToSpeakTrayTest : public AshTestBase {
  public:
   SelectToSpeakTrayTest() = default;
+
+  SelectToSpeakTrayTest(const SelectToSpeakTrayTest&) = delete;
+  SelectToSpeakTrayTest& operator=(const SelectToSpeakTrayTest&) = delete;
+
   ~SelectToSpeakTrayTest() override = default;
 
   void SetUp() override {
@@ -75,9 +79,6 @@ class SelectToSpeakTrayTest : public AshTestBase {
         return gfx::CreateVectorIcon(kSystemTrayStopNewuiIcon, color);
     }
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SelectToSpeakTrayTest);
 };
 
 // Ensures that creation doesn't cause any crashes and adds the image icon.

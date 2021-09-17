@@ -2750,6 +2750,11 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
       return false;
   }
 
+  // Note that since we store pointers to these regions in our mapping below,
+  // these may be accessed after the Unmap() below. These must therefore live
+  // until the end of the function.
+  VARectangle input_region;
+  VARectangle output_region;
   {
     ScopedVABufferMapping mapping(va_lock_, va_display_,
                                   va_buffer_for_vpp_->id());
@@ -2764,7 +2769,6 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
     if (!dest_rect)
       dest_rect.emplace(gfx::Rect(va_surface_dest.size()));
 
-    VARectangle input_region;
     input_region.x = src_rect->x();
     input_region.y = src_rect->y();
     input_region.width = src_rect->width();
@@ -2773,7 +2777,6 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
     pipeline_param->surface = va_surface_src.id();
     pipeline_param->surface_color_standard = VAProcColorStandardNone;
 
-    VARectangle output_region;
     output_region.x = dest_rect->x();
     output_region.y = dest_rect->y();
     output_region.width = dest_rect->width();
@@ -2803,7 +2806,7 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  std::unique_ptr<base::ScopedClosureRunner> protected_session_detacher;
+  base::ScopedClosureRunner protected_session_detacher;
   if (va_protected_session_id != VA_INVALID_ID) {
     const VAStatus va_res = vaAttachProtectedSession(
         va_display_, va_context_id_, va_protected_session_id);
@@ -2811,12 +2814,11 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
                          false);
     // Note that we use a lambda expression to wrap vaDetachProtectedSession()
     // because the function in |protected_session_detacher| must return void.
-    protected_session_detacher =
-        std::make_unique<base::ScopedClosureRunner>(base::BindOnce(
-            [](VADisplay va_display, VAContextID va_context_id) {
-              vaDetachProtectedSession(va_display, va_context_id);
-            },
-            va_display_, va_context_id_));
+    protected_session_detacher.ReplaceClosure(base::BindOnce(
+        [](VADisplay va_display, VAContextID va_context_id) {
+          vaDetachProtectedSession(va_display, va_context_id);
+        },
+        va_display_, va_context_id_));
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

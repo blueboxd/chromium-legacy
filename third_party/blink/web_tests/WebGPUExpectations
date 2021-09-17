@@ -46,8 +46,7 @@ crbug.com/dawn/1046 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,executi
 # These tests are still slow even though they are already splitted down to the batch__ level
 crbug.com/dawn/1111 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:* [ Crash Slow ]
 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:* [ Slow ]
-# Device lost failures for certain batches on Mac AMD
-crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:* [ Failure Slow ]
+[ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:* [ Slow ]
 
 ###
 ### Untriaged failures. Please prefer to triage thoroughly and file a bug!
@@ -288,6 +287,9 @@ wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createView:mip_levels:viewD
 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,image_copy:rowsPerImage_and_bytesPerRow_copy_with_stencil_aspect:stencilFormat="stencil8";* [ Failure ]
 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,image_copy:offsets_and_sizes_copy_with_stencil_aspect:stencilFormat="stencil8";* [ Failure ]
 
+crbug.com/dawn/570 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,buffer_related:bytes_per_row_alignment:format="depth16unorm";* [ Failure ]
+crbug.com/dawn/666 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,buffer_related:bytes_per_row_alignment:format="stencil8";* [ Failure ]
+
 # maxArrayLayoutCount limit should be 256 instead of 2048
 crbug.com/dawn/685 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createTexture:texture_size,2d_texture,compressed_format:size=[4,4,2047];* [ Failure ]
 crbug.com/dawn/685 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createTexture:texture_size,2d_texture,compressed_format:size=[4,4,2048];* [ Failure ]
@@ -307,10 +309,6 @@ wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_
 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:subresources_and_binding_types_combination_for_color:type0="readonly-storage-texture";* [ Failure ]
 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:subresources_and_binding_types_combination_for_color:type1="readonly-storage-texture";* [ Failure ]
 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:unused_bindings_in_pipeline:* [ Failure ]
-
-# Dawn treats 0 and undefined as the same
-crbug.com/dawn/1026 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createView:mip_levels:mipLevelCount=0;* [ Failure ]
-crbug.com/dawn/1026 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createView:array_layers:arrayLayerCount=0;* [ Failure ]
 
 crbug.com/1197369 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,queue,copyToTexture,CopyExternalImageToTexture:source_image,crossOrigin:* [ Failure ]
 crbug.com/1197369 wpt_internal/webgpu/cts.html?q=webgpu:web_platform,copyToTexture,ImageBitmap:from_ImageData:alpha="premultiply";orientation="flipY";* [ Skip ]
@@ -403,6 +401,34 @@ crbug.com/dawn/1071 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation
 crbug.com/dawn/1071 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,image_copy,texture_related:format:method="WriteTexture";* [ Failure ]
 crbug.com/dawn/1071 [ Mac ] wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api,operation,render_pass,storeOp:* [ Failure ]
 
+# Only Mac AMD
+# Device lost failures for certain batches on Mac AMD
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="function";batch__=17;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="function";batch__=18;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="function";batch__=19;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="function";batch__=20;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="function";batch__=21;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="function";batch__=22;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="function";batch__=23;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="function";batch__=24;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="function";batch__=25;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="function";batch__=26;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="function";batch__=27;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="function";batch__=28;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="function";batch__=29;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="private";batch__=17;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="private";batch__=18;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="private";batch__=19;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="private";batch__=20;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="private";batch__=21;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="private";batch__=22;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="private";batch__=23;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="private";batch__=24;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="private";batch__=25;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="private";batch__=26;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="private";batch__=27;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="private";batch__=28;* [ Failure ]
+crbug.com/dawn/1116 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,zero_init:compute,zero_init:storageClass="private";batch__=29;* [ Failure ]
 ###
 ### Linux (Vulkan) specific
 ###
@@ -477,3 +503,6 @@ crbug.com/dawn/1107 [ Mac11.5 ] wpt_internal/webgpu/cts.html?q=webgpu:api,operat
 crbug.com/dawn/1107 [ Mac11.5 ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rg32float";* [ Failure ]
 crbug.com/dawn/1107 [ Mac11.5 ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rgba16float";* [ Failure ]
 crbug.com/dawn/1107 [ Mac11.5 ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rgba32float";* [ Failure ]
+
+# (Intel-only?) Flaky test failures on Mac 11.5.2
+crbug.com/dawn/1119 [ Mac11.5 ] wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api,operation,rendering,basic:large_draw:* [ RetryOnFailure ]

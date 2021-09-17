@@ -1407,7 +1407,8 @@ const FeatureEntry::FeatureParam kNtpChromeCartModuleFakeData[] = {
     {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam, "true"}};
 const FeatureEntry::FeatureParam kNtpChromeCartModuleAbandonedCartDiscount[] = {
     {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam, "true"},
-    {ntp_features::NtpChromeCartModuleAbandonedCartDiscountUseUtmParam, "true"},
+    {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountUseUtmParam,
+     "true"},
     {"partner-merchant-pattern",
      "(electronicexpress.com|zazzle.com|wish.com|homesquare.com)"}};
 const FeatureEntry::FeatureParam kNtpChromeCartModuleHeuristicsImprovement[] = {
@@ -1415,7 +1416,8 @@ const FeatureEntry::FeatureParam kNtpChromeCartModuleHeuristicsImprovement[] = {
 const FeatureEntry::FeatureParam kNtpChromeCartModuleRBDAndCouponDiscount[] = {
     {ntp_features::kNtpChromeCartModuleHeuristicsImprovementParam, "true"},
     {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam, "true"},
-    {ntp_features::NtpChromeCartModuleAbandonedCartDiscountUseUtmParam, "true"},
+    {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountUseUtmParam,
+     "true"},
     {"partner-merchant-pattern",
      "(electronicexpress.com|zazzle.com|wish.com|homesquare.com)"},
     {ntp_features::kNtpChromeCartModuleCouponParam, "true"}};
@@ -3482,6 +3484,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"chrome-sharing-hub", flag_descriptions::kChromeSharingHubName,
      flag_descriptions::kChromeSharingHubDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeSharingHub)},
+    {"chrome-sharing-hub-launch-adjacent",
+     flag_descriptions::kChromeSharingHubLaunchAdjacentName,
+     flag_descriptions::kChromeSharingHubLaunchAdjacentDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kChromeSharingHubLaunchAdjacent)},
     {"webnotes-stylize", flag_descriptions::kWebNotesStylizeName,
      flag_descriptions::kWebNotesStylizeDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(content_creation::kWebNotesStylizeEnabled,
@@ -4879,6 +4885,10 @@ const FeatureEntry kFeatureEntries[] = {
                                     kNtpChromeCartModuleVariations,
                                     "DesktopNtpModules")},
 
+    {"enable-retail-coupons", flag_descriptions::kRetailCouponsName,
+     flag_descriptions::kRetailCouponsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(commerce::kRetailCoupons)},
+
     {"ntp-safe-browsing-module", flag_descriptions::kNtpSafeBrowsingModuleName,
      flag_descriptions::kNtpSafeBrowsingModuleDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpSafeBrowsingModule,
@@ -5254,6 +5264,21 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kCCTIncognitoAvailableToThirdParty)},
 #endif
 
+#if defined(OS_ANDROID)
+    {"cct-resizable-90-maximum-height",
+     flag_descriptions::kCCTResizable90MaximumHeightName,
+     flag_descriptions::kCCTResizable90MaximumHeightDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCCTResizable90MaximumHeight)},
+    {"cct-resizable-for-first-parties",
+     flag_descriptions::kCCTResizableForFirstPartiesName,
+     flag_descriptions::kCCTResizableForFirstPartiesDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCCTResizableForFirstParties)},
+    {"cct-resizable-for-third-parties",
+     flag_descriptions::kCCTResizableForThirdPartiesName,
+     flag_descriptions::kCCTResizableForThirdPartiesDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCCTResizableForThirdParties)},
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enforce-system-aec", flag_descriptions::kCrOSEnforceSystemAecName,
      flag_descriptions::kCrOSEnforceSystemAecDescription, kOsCrOS,
@@ -5408,11 +5433,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableQuickAnswersTextAnnotatorName,
      flag_descriptions::kEnableQuickAnswersTextAnnotatorDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersTextAnnotator)},
-
-    {"enable-quick-answers-translation",
-     flag_descriptions::kEnableQuickAnswersTranslationName,
-     flag_descriptions::kEnableQuickAnswersTranslationDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersTranslation)},
 
     {"enable-quick-answers-translation-cloud-api",
      flag_descriptions::kEnableQuickAnswersTranslationCloudAPIName,

@@ -1153,6 +1153,10 @@ const char kReduceHorizontalFlingVelocityDescription[] =
     "Reduces the velocity of horizontal flings to 20\% of their original"
     "velocity.";
 
+const char kRetailCouponsName[] = "Enable to fetch for retail coupons";
+const char kRetailCouponsDescription[] =
+    "Allow to fetch retail coupons for consented users";
+
 const char kEnableResamplingInputEventsName[] =
     "Enable resampling input events";
 const char kEnableResamplingInputEventsDescription[] =
@@ -2939,6 +2943,22 @@ const char kCCTIncognitoAvailableToThirdPartyDescription[] =
     "Enabling it would allow third party apps to open incognito mode for "
     "Chrome Custom Tabs, on Android.";
 
+const char kCCTResizable90MaximumHeightName[] =
+    "Bottom sheet Custom Tabs maximum height";
+const char kCCTResizable90MaximumHeightDescription[] =
+    "When enabled, the bottom sheet Custom Tabs will have maximum height 90% "
+    "of the screen height, otherwise the maximum height is 100% of the screen "
+    "height. In both cases, Custom Tabs will yield to the top status bar when "
+    "at full stop";
+const char kCCTResizableForFirstPartiesName[] =
+    "Bottom sheet Custom Tabs (first party)";
+const char kCCTResizableForFirstPartiesDescription[] =
+    "Enable bottom sheet Custom Tabs for first party apps.";
+const char kCCTResizableForThirdPartiesName[] =
+    "Bottom sheet Custom Tabs (third party)";
+const char kCCTResizableForThirdPartiesDescription[] =
+    "Enable bottom sheet Custom Tabs for third party apps.";
+
 const char kChimeAlwaysShowNotificationDescription[] =
     "A debug flag to always show Chime notification after receiving a payload.";
 const char kChimeAlwaysShowNotificationName[] =
@@ -2964,6 +2984,12 @@ const char kChromeShareScreenshotDescription[] =
 const char kChromeSharingHubName[] = "Chrome Sharing Hub";
 const char kChromeSharingHubDescription[] =
     "Enables the Chrome Sharing Hub/custom share sheet for Android.";
+
+const char kChromeSharingHubLaunchAdjacentName[] =
+    "Launch new share hub actions in adjacent window";
+const char kChromeSharingHubLaunchAdjacentDescription[] =
+    "In multi-window mode, launches share hub actions in an adjacent window. "
+    "For internal debugging.";
 
 const char kClipboardSuggestionContentHiddenName[] =
     "Clipboard suggestion content hidden";
@@ -4460,11 +4486,6 @@ const char kEnableQuickAnswersTextAnnotatorName[] =
     "Enable Quick Answers text annotator";
 const char kEnableQuickAnswersTextAnnotatorDescription[] =
     "Enable Quick Answers text annotator.";
-
-const char kEnableQuickAnswersTranslationName[] =
-    "Enable Quick Answers translation";
-const char kEnableQuickAnswersTranslationDescription[] =
-    "Enable Quick Answers translation.";
 
 const char kEnableQuickAnswersTranslationCloudAPIName[] =
     "Enable Quick Answers translation using the Cloud API";

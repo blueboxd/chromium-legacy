@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "ui/base/ime/chromeos/ime_keyset.h"
+#include "ui/base/ime/ash/ime_keyset.h"
 #include "ui/display/display_observer.h"
 
 namespace ui {
@@ -47,6 +47,10 @@ class ASH_EXPORT ImeControllerImpl : public ImeController,
   };
 
   ImeControllerImpl();
+
+  ImeControllerImpl(const ImeControllerImpl&) = delete;
+  ImeControllerImpl& operator=(const ImeControllerImpl&) = delete;
+
   ~ImeControllerImpl() override;
 
   void AddObserver(Observer* observer);
@@ -189,8 +193,6 @@ class ASH_EXPORT ImeControllerImpl : public ImeController,
   base::ObserverList<Observer>::Unchecked observers_;
 
   std::unique_ptr<ModeIndicatorObserver> mode_indicator_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImeControllerImpl);
 };
 
 }  // namespace ash

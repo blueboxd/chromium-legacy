@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -273,7 +274,13 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestFocus) {
   EXPECT_TRUE(focused_view);
 }
 
-IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, OriginNameTest) {
+#if defined(OS_WIN)
+#define MAYBE_OriginNameTest DISABLED_OriginNameTest
+#else
+#define MAYBE_OriginNameTest OriginNameTest
+#endif
+IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
+                       MAYBE_OriginNameTest) {
   ASSERT_TRUE(embedded_test_server()->Start());
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

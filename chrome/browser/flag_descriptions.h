@@ -663,6 +663,9 @@ extern const char kEnableSRPIsolatedPrerendersNSPDescription[];
 extern const char kReduceHorizontalFlingVelocityName[];
 extern const char kReduceHorizontalFlingVelocityDescription[];
 
+extern const char kRetailCouponsName[];
+extern const char kRetailCouponsDescription[];
+
 extern const char kEnableResamplingInputEventsName[];
 extern const char kEnableResamplingInputEventsDescription[];
 extern const char kEnableResamplingScrollEventsName[];
@@ -1674,6 +1677,13 @@ extern const char kCCTIncognitoDescription[];
 extern const char kCCTIncognitoAvailableToThirdPartyName[];
 extern const char kCCTIncognitoAvailableToThirdPartyDescription[];
 
+extern const char kCCTResizable90MaximumHeightName[];
+extern const char kCCTResizable90MaximumHeightDescription[];
+extern const char kCCTResizableForFirstPartiesName[];
+extern const char kCCTResizableForFirstPartiesDescription[];
+extern const char kCCTResizableForThirdPartiesName[];
+extern const char kCCTResizableForThirdPartiesDescription[];
+
 extern const char kChimeAlwaysShowNotificationDescription[];
 extern const char kChimeAlwaysShowNotificationName[];
 
@@ -1691,6 +1701,9 @@ extern const char kChromeShareScreenshotDescription[];
 
 extern const char kChromeSharingHubName[];
 extern const char kChromeSharingHubDescription[];
+
+extern const char kChromeSharingHubLaunchAdjacentName[];
+extern const char kChromeSharingHubLaunchAdjacentDescription[];
 
 extern const char kClipboardSuggestionContentHiddenName[];
 extern const char kClipboardSuggestionContentHiddenDescription[];
@@ -2548,9 +2561,6 @@ extern const char kEnableQuickAnswersOnEditableTextDescription[];
 
 extern const char kEnableQuickAnswersTextAnnotatorName[];
 extern const char kEnableQuickAnswersTextAnnotatorDescription[];
-
-extern const char kEnableQuickAnswersTranslationName[];
-extern const char kEnableQuickAnswersTranslationDescription[];
 
 extern const char kEnableQuickAnswersTranslationCloudAPIName[];
 extern const char kEnableQuickAnswersTranslationCloudAPIDescription[];

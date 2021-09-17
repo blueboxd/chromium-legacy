@@ -1957,6 +1957,7 @@ static_library("browser") {
     "//chrome/browser/safe_browsing:advanced_protection",
     "//chrome/browser/safe_browsing:metrics_collector",
     "//chrome/browser/safe_browsing:verdict_cache_manager_factory",
+    "//chrome/browser/share",
     "//chrome/browser/sharing:buildflags",
     "//chrome/browser/sharing/proto",
     "//chrome/browser/signin:identity_manager_provider",
@@ -2732,6 +2733,7 @@ static_library("browser") {
       "android/favicon_helper.cc",
       "android/favicon_helper.h",
       "android/feature_engagement/tracker_factory_android.cc",
+      "android/feed/feed_process_scope_dependency_provider.cc",
       "android/feed/feed_surface_scope_dependency_provider.cc",
       "android/feed/v2/background_refresh_task.cc",
       "android/feed/v2/background_refresh_task.h",
@@ -3328,7 +3330,6 @@ static_library("browser") {
       "//chrome/browser/privacy_sandbox/android:jni_headers",
       "//chrome/browser/reading_list/android",
       "//chrome/browser/safety_check/android",
-      "//chrome/browser/share",
       "//chrome/browser/share/android:jni_headers",
       "//chrome/browser/signin/services/android:jni_headers",
       "//chrome/browser/tab:jni_headers",
@@ -3582,6 +3583,7 @@ static_library("browser") {
       "cart/cart_discount_link_fetcher.h",
       "cart/cart_discount_metric_collector.cc",
       "cart/cart_discount_metric_collector.h",
+      "cart/cart_features.h",
       "cart/cart_handler.cc",
       "cart/cart_handler.h",
       "cart/cart_metrics_tracker.cc",
@@ -5961,6 +5963,7 @@ static_library("browser") {
       "//components/services/print_compositor/public/cpp",
       "//components/services/print_compositor/public/mojom",
       "//printing",
+      "//printing/backend",
     ]
 
     if (is_win) {
@@ -7231,6 +7234,8 @@ static_library("test_support") {
     "predictors/loading_test_util.h",
     "resource_coordinator/tab_load_tracker_test_support.cc",
     "resource_coordinator/tab_load_tracker_test_support.h",
+    "share/fake_share_history.cc",
+    "share/fake_share_history.h",
     "signin/chrome_signin_client_test_util.cc",
     "signin/chrome_signin_client_test_util.h",
     "signin/e2e_tests/test_accounts_util.cc",
@@ -7257,6 +7262,7 @@ static_library("test_support") {
     ":browser_process",
     "//build:chromeos_buildflags",
     "//chrome/app/theme:theme_resources",
+    "//chrome/browser/share:share",
     "//chrome/common",
     "//chrome/common/notifications",
     "//chrome/common/safe_browsing:proto",
@@ -7323,13 +7329,8 @@ static_library("test_support") {
       "autofill/mock_password_accessory_controller.h",
       "download/android/mock_download_controller.cc",
       "download/android/mock_download_controller.h",
-      "share/fake_share_history.cc",
-      "share/fake_share_history.h",
     ]
-    deps += [
-      "//chrome/android:test_support_jni_headers",
-      "//chrome/browser/share:share",
-    ]
+    deps += [ "//chrome/android:test_support_jni_headers" ]
   } else {
     sources += [
       "download/test_download_shelf.cc",
@@ -7424,7 +7425,7 @@ static_library("test_support") {
       "//components/webapk:proto",
       "//extensions/browser/api/messaging",
       "//ui/base:test_support",
-      "//ui/base/ime/chromeos",
+      "//ui/base/ime/ash",
     ]
   }
 

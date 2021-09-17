@@ -118,6 +118,10 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
 class ScrollableEventCountView : public EventCountView {
  public:
   ScrollableEventCountView() = default;
+
+  ScrollableEventCountView(const ScrollableEventCountView&) = delete;
+  ScrollableEventCountView& operator=(const ScrollableEventCountView&) = delete;
+
   ~ScrollableEventCountView() override = default;
 
  private:
@@ -141,21 +145,21 @@ class ScrollableEventCountView : public EventCountView {
     if (event->type() == ui::ET_SCROLL)
       event->SetHandled();
   }
-
-  DISALLOW_COPY_AND_ASSIGN(ScrollableEventCountView);
 };
 
 // A view that implements GetMinimumSize.
 class MinimumSizeFrameView : public NativeFrameView {
  public:
   explicit MinimumSizeFrameView(Widget* frame) : NativeFrameView(frame) {}
+
+  MinimumSizeFrameView(const MinimumSizeFrameView&) = delete;
+  MinimumSizeFrameView& operator=(const MinimumSizeFrameView&) = delete;
+
   ~MinimumSizeFrameView() override = default;
 
  private:
   // Overridden from View:
   gfx::Size GetMinimumSize() const override { return gfx::Size(300, 400); }
-
-  DISALLOW_COPY_AND_ASSIGN(MinimumSizeFrameView);
 };
 
 // An event handler that simply keeps a count of the different types of events
@@ -163,6 +167,10 @@ class MinimumSizeFrameView : public NativeFrameView {
 class EventCountHandler : public ui::EventHandler {
  public:
   EventCountHandler() = default;
+
+  EventCountHandler(const EventCountHandler&) = delete;
+  EventCountHandler& operator=(const EventCountHandler&) = delete;
+
   ~EventCountHandler() override = default;
 
   int GetEventCount(ui::EventType type) { return event_count_[type]; }
@@ -180,8 +188,6 @@ class EventCountHandler : public ui::EventHandler {
   void RecordEvent(const ui::Event& event) { ++event_count_[event.type()]; }
 
   std::map<ui::EventType, int> event_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventCountHandler);
 };
 
 TEST_F(WidgetTest, WidgetInitParams) {
@@ -528,6 +534,10 @@ TEST_F(WidgetTest, ChildBoundsRelativeToParent) {
 class WidgetOwnershipTest : public WidgetTest {
  public:
   WidgetOwnershipTest() = default;
+
+  WidgetOwnershipTest(const WidgetOwnershipTest&) = delete;
+  WidgetOwnershipTest& operator=(const WidgetOwnershipTest&) = delete;
+
   ~WidgetOwnershipTest() override = default;
 
   void SetUp() override {
@@ -542,8 +552,6 @@ class WidgetOwnershipTest : public WidgetTest {
 
  private:
   Widget* desktop_widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetOwnershipTest);
 };
 
 // A bag of state to monitor destructions.
@@ -558,12 +566,14 @@ struct OwnershipTestState {
 class OwnershipTestWidget : public Widget {
  public:
   explicit OwnershipTestWidget(OwnershipTestState* state) : state_(state) {}
+
+  OwnershipTestWidget(const OwnershipTestWidget&) = delete;
+  OwnershipTestWidget& operator=(const OwnershipTestWidget&) = delete;
+
   ~OwnershipTestWidget() override { state_->widget_deleted = true; }
 
  private:
   OwnershipTestState* state_;
-
-  DISALLOW_COPY_AND_ASSIGN(OwnershipTestWidget);
 };
 
 // TODO(sky): add coverage of ownership for the desktop variants.
@@ -940,6 +950,10 @@ class WidgetActivationForwarder : public TestWidgetObserver {
       : TestWidgetObserver(current_active_widget),
         widget_to_activate_(widget_to_activate) {}
 
+  WidgetActivationForwarder(const WidgetActivationForwarder&) = delete;
+  WidgetActivationForwarder& operator=(const WidgetActivationForwarder&) =
+      delete;
+
   ~WidgetActivationForwarder() override = default;
 
  private:
@@ -954,8 +968,6 @@ class WidgetActivationForwarder : public TestWidgetObserver {
   }
 
   Widget* widget_to_activate_;
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetActivationForwarder);
 };
 
 // This class observes a widget and counts the number of times OnWidgetClosing
@@ -963,6 +975,9 @@ class WidgetActivationForwarder : public TestWidgetObserver {
 class WidgetCloseCounter : public TestWidgetObserver {
  public:
   explicit WidgetCloseCounter(Widget* widget) : TestWidgetObserver(widget) {}
+
+  WidgetCloseCounter(const WidgetCloseCounter&) = delete;
+  WidgetCloseCounter& operator=(const WidgetCloseCounter&) = delete;
 
   ~WidgetCloseCounter() override = default;
 
@@ -973,8 +988,6 @@ class WidgetCloseCounter : public TestWidgetObserver {
   void OnWidgetClosing(Widget* widget) override { close_count_++; }
 
   int close_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetCloseCounter);
 };
 
 }  // namespace
@@ -1133,6 +1146,11 @@ class MoveTrackingTestDesktopWidgetDelegate : public TestDesktopWidgetDelegate {
 class DesktopWidgetObserverTest : public WidgetObserverTest {
  public:
   DesktopWidgetObserverTest() = default;
+
+  DesktopWidgetObserverTest(const DesktopWidgetObserverTest&) = delete;
+  DesktopWidgetObserverTest& operator=(const DesktopWidgetObserverTest&) =
+      delete;
+
   ~DesktopWidgetObserverTest() override = default;
 
   // WidgetObserverTest:
@@ -1140,9 +1158,6 @@ class DesktopWidgetObserverTest : public WidgetObserverTest {
     set_native_widget_type(NativeWidgetType::kDesktop);
     WidgetObserverTest::SetUp();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DesktopWidgetObserverTest);
 };
 
 // An extension to the WidgetBoundsChangedNative test above to ensure move
@@ -1513,6 +1528,12 @@ class DesktopAuraTestValidPaintWidget : public Widget, public WidgetObserver {
       : Widget(std::move(init_params)) {
     observation_.Observe(this);
   }
+
+  DesktopAuraTestValidPaintWidget(const DesktopAuraTestValidPaintWidget&) =
+      delete;
+  DesktopAuraTestValidPaintWidget& operator=(
+      const DesktopAuraTestValidPaintWidget&) = delete;
+
   ~DesktopAuraTestValidPaintWidget() override = default;
 
   bool ReadReceivedPaintAndReset() {
@@ -1555,8 +1576,6 @@ class DesktopAuraTestValidPaintWidget : public Widget, public WidgetObserver {
   bool received_paint_while_hidden_ = false;
   base::OnceClosure quit_closure_;
   base::ScopedObservation<Widget, WidgetObserver> observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopAuraTestValidPaintWidget);
 };
 
 class DesktopAuraPaintWidgetTest : public DesktopWidgetTest {
@@ -1937,6 +1956,10 @@ class CaptureEventConsumer : public ui::EventHandler {
  public:
   explicit CaptureEventConsumer(Widget* widget)
       : event_count_view_(new EventCountView()), widget_(widget) {}
+
+  CaptureEventConsumer(const CaptureEventConsumer&) = delete;
+  CaptureEventConsumer& operator=(const CaptureEventConsumer&) = delete;
+
   ~CaptureEventConsumer() override { widget_->CloseNow(); }
 
  private:
@@ -1955,7 +1978,6 @@ class CaptureEventConsumer : public ui::EventHandler {
 
   EventCountView* event_count_view_;
   Widget* widget_;
-  DISALLOW_COPY_AND_ASSIGN(CaptureEventConsumer);
 };
 
 }  // namespace
@@ -2388,12 +2410,16 @@ TEST_F(WidgetTest, WidgetDeleted_InDispatchGestureEvent) {
 class GetNativeThemeFromDestructorView : public WidgetDelegateView {
  public:
   GetNativeThemeFromDestructorView() = default;
+
+  GetNativeThemeFromDestructorView(const GetNativeThemeFromDestructorView&) =
+      delete;
+  GetNativeThemeFromDestructorView& operator=(
+      const GetNativeThemeFromDestructorView&) = delete;
+
   ~GetNativeThemeFromDestructorView() override { VerifyNativeTheme(); }
 
  private:
   void VerifyNativeTheme() { ASSERT_TRUE(GetNativeTheme() != nullptr); }
-
-  DISALLOW_COPY_AND_ASSIGN(GetNativeThemeFromDestructorView);
 };
 
 // Verifies GetNativeTheme() from the destructor of a WidgetDelegateView doesn't
@@ -2433,6 +2459,9 @@ class CloseDestroysWidget : public Widget {
     DCHECK(quit_closure_);
   }
 
+  CloseDestroysWidget(const CloseDestroysWidget&) = delete;
+  CloseDestroysWidget& operator=(const CloseDestroysWidget&) = delete;
+
   ~CloseDestroysWidget() override {
     *destroyed_ = true;
     std::move(quit_closure_).Run();
@@ -2443,14 +2472,16 @@ class CloseDestroysWidget : public Widget {
  private:
   bool* destroyed_;
   base::OnceClosure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(CloseDestroysWidget);
 };
 
 // An observer that registers that an animation has ended.
 class AnimationEndObserver : public ui::ImplicitAnimationObserver {
  public:
   AnimationEndObserver() = default;
+
+  AnimationEndObserver(const AnimationEndObserver&) = delete;
+  AnimationEndObserver& operator=(const AnimationEndObserver&) = delete;
+
   ~AnimationEndObserver() override = default;
 
   bool animation_completed() const { return animation_completed_; }
@@ -2460,14 +2491,16 @@ class AnimationEndObserver : public ui::ImplicitAnimationObserver {
 
  private:
   bool animation_completed_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(AnimationEndObserver);
 };
 
 // An observer that registers the bounds of a widget on destruction.
 class WidgetBoundsObserver : public WidgetObserver {
  public:
   WidgetBoundsObserver() = default;
+
+  WidgetBoundsObserver(const WidgetBoundsObserver&) = delete;
+  WidgetBoundsObserver& operator=(const WidgetBoundsObserver&) = delete;
+
   ~WidgetBoundsObserver() override = default;
 
   gfx::Rect bounds() { return bounds_; }
@@ -2481,8 +2514,6 @@ class WidgetBoundsObserver : public WidgetObserver {
 
  private:
   gfx::Rect bounds_;
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetBoundsObserver);
 };
 
 // Verifies Close() results in destroying.
@@ -3160,6 +3191,10 @@ TEST_F(WidgetTest, ScrollGestureEventDispatch) {
 class GestureLocationView : public EventCountView {
  public:
   GestureLocationView() = default;
+
+  GestureLocationView(const GestureLocationView&) = delete;
+  GestureLocationView& operator=(const GestureLocationView&) = delete;
+
   ~GestureLocationView() override = default;
 
   void set_expected_location(gfx::Point expected_location) {
@@ -3178,8 +3213,6 @@ class GestureLocationView : public EventCountView {
  private:
   // The expected location of a gesture event dispatched to |this|.
   gfx::Point expected_location_;
-
-  DISALLOW_COPY_AND_ASSIGN(GestureLocationView);
 };
 
 // Verifies that the location of a gesture event is always in the local
@@ -3297,13 +3330,14 @@ class DestroyedTrackingView : public View {
                         std::vector<std::string>* add_to)
       : name_(name), add_to_(add_to) {}
 
+  DestroyedTrackingView(const DestroyedTrackingView&) = delete;
+  DestroyedTrackingView& operator=(const DestroyedTrackingView&) = delete;
+
   ~DestroyedTrackingView() override { add_to_->push_back(name_); }
 
  private:
   const std::string name_;
   std::vector<std::string>* add_to_;
-
-  DISALLOW_COPY_AND_ASSIGN(DestroyedTrackingView);
 };
 
 class WidgetChildDestructionTest : public DesktopWidgetTest {
@@ -3433,6 +3467,10 @@ class FullscreenAwareFrame : public views::NonClientFrameView {
  public:
   explicit FullscreenAwareFrame(views::Widget* widget)
       : widget_(widget), fullscreen_layout_called_(false) {}
+
+  FullscreenAwareFrame(const FullscreenAwareFrame&) = delete;
+  FullscreenAwareFrame& operator=(const FullscreenAwareFrame&) = delete;
+
   ~FullscreenAwareFrame() override = default;
 
   // views::NonClientFrameView overrides:
@@ -3459,8 +3497,6 @@ class FullscreenAwareFrame : public views::NonClientFrameView {
  private:
   views::Widget* widget_;
   bool fullscreen_layout_called_;
-
-  DISALLOW_COPY_AND_ASSIGN(FullscreenAwareFrame);
 };
 
 }  // namespace
@@ -3493,11 +3529,13 @@ namespace {
 class IsActiveFromDestroyObserver : public WidgetObserver {
  public:
   IsActiveFromDestroyObserver() = default;
+
+  IsActiveFromDestroyObserver(const IsActiveFromDestroyObserver&) = delete;
+  IsActiveFromDestroyObserver& operator=(const IsActiveFromDestroyObserver&) =
+      delete;
+
   ~IsActiveFromDestroyObserver() override = default;
   void OnWidgetDestroying(Widget* widget) override { widget->IsActive(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IsActiveFromDestroyObserver);
 };
 
 }  // namespace
@@ -3637,6 +3675,9 @@ class SubclassWindowHelper {
     EXPECT_TRUE(Subclass());
   }
 
+  SubclassWindowHelper(const SubclassWindowHelper&) = delete;
+  SubclassWindowHelper& operator=(const SubclassWindowHelper&) = delete;
+
   ~SubclassWindowHelper() {
     Unsubclass();
     instance_ = nullptr;
@@ -3689,8 +3730,6 @@ class SubclassWindowHelper {
   static SubclassWindowHelper* instance_;
   std::set<unsigned int> messages_;
   unsigned int message_to_destroy_on_;
-
-  DISALLOW_COPY_AND_ASSIGN(SubclassWindowHelper);
 };
 
 SubclassWindowHelper* SubclassWindowHelper::instance_ = nullptr;
@@ -3852,6 +3891,11 @@ namespace {
 class TestWidgetRemovalsObserver : public WidgetRemovalsObserver {
  public:
   TestWidgetRemovalsObserver() = default;
+
+  TestWidgetRemovalsObserver(const TestWidgetRemovalsObserver&) = delete;
+  TestWidgetRemovalsObserver& operator=(const TestWidgetRemovalsObserver&) =
+      delete;
+
   ~TestWidgetRemovalsObserver() override = default;
 
   void OnWillRemoveView(Widget* widget, View* view) override {
@@ -3864,8 +3908,6 @@ class TestWidgetRemovalsObserver : public WidgetRemovalsObserver {
 
  private:
   std::set<View*> removed_views_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWidgetRemovalsObserver);
 };
 
 }  // namespace
@@ -3951,6 +3993,10 @@ TEST_F(WidgetTest, MouseWheelEvent) {
 class WidgetShadowTest : public WidgetTest {
  public:
   WidgetShadowTest() = default;
+
+  WidgetShadowTest(const WidgetShadowTest&) = delete;
+  WidgetShadowTest& operator=(const WidgetShadowTest&) = delete;
+
   ~WidgetShadowTest() override = default;
 
   // WidgetTest:
@@ -4009,8 +4055,6 @@ class WidgetShadowTest : public WidgetTest {
   std::unique_ptr<wm::FocusController> focus_controller_;
   std::unique_ptr<wm::ShadowController> shadow_controller_;
 #endif  // !BUILDFLAG(ENABLE_DESKTOP_AURA) && !defined(OS_MAC)
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetShadowTest);
 };
 
 // Disabled on Mac: All drop shadows are managed out of process for now.
@@ -4187,6 +4231,10 @@ class CompositingWidgetTest : public DesktopWidgetTest {
                       Widget::InitParams::TYPE_TOOLTIP,
                       Widget::InitParams::TYPE_BUBBLE,
                       Widget::InitParams::TYPE_DRAG} {}
+
+  CompositingWidgetTest(const CompositingWidgetTest&) = delete;
+  CompositingWidgetTest& operator=(const CompositingWidgetTest&) = delete;
+
   ~CompositingWidgetTest() override = default;
 
   Widget::InitParams CreateParams(Widget::InitParams::Type type) override {
@@ -4244,8 +4292,6 @@ class CompositingWidgetTest : public DesktopWidgetTest {
   const std::vector<Widget::InitParams::Type> widget_types_;
   Widget::InitParams::WindowOpacity opacity_ =
       Widget::InitParams::WindowOpacity::kInferred;
-
-  DISALLOW_COPY_AND_ASSIGN(CompositingWidgetTest);
 };
 
 }  // namespace

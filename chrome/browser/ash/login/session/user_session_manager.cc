@@ -82,8 +82,8 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/about_flags.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
+#include "chrome/browser/ash/sync/ash_turn_sync_on_helper.h"
 #include "chrome/browser/ash/sync/os_sync_util.h"
-#include "chrome/browser/ash/sync/turn_sync_on_helper.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_notification_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
@@ -167,9 +167,9 @@
 #include "extensions/common/mojom/feature_session_type.mojom.h"
 #include "rlz/buildflags/buildflags.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
-#include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/ime/ash/input_method_descriptor.h"
+#include "ui/base/ime/ash/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_util.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -1732,7 +1732,7 @@ void UserSessionManager::InitializeBrowser(Profile* profile) {
 
   if (features::ShouldUseBrowserSyncConsent() &&
       SyncServiceFactory::IsSyncAllowed(profile)) {
-    turn_sync_on_helper_ = std::make_unique<TurnSyncOnHelper>(profile);
+    ash_turn_sync_on_helper_ = std::make_unique<AshTurnSyncOnHelper>(profile);
   }
 
   // Schedule a flush if profile is not ephemeral.
@@ -1850,7 +1850,7 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
     }
     if (!user_manager->IsCurrentUserNew() && !pending_screen.empty()) {
       LoginDisplayHost::default_host()->GetSigninUI()->ResumeUserOnboarding(
-          chromeos::OobeScreenId(pending_screen));
+          OobeScreenId(pending_screen));
       return false;
     }
     if (!user_manager->IsCurrentUserNew() &&
@@ -2358,7 +2358,7 @@ bool UserSessionManager::TokenHandlesEnabled() {
 }
 
 void UserSessionManager::Shutdown() {
-  turn_sync_on_helper_.reset();
+  ash_turn_sync_on_helper_.reset();
   token_handle_fetcher_.reset();
   token_handle_util_.reset();
   token_observers_.clear();

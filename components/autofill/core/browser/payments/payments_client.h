@@ -18,6 +18,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
@@ -148,8 +149,8 @@ class PaymentsClient {
     // An opaque token used to logically chain consecutive UnmaskCard and
     // OptChange calls together.
     std::string card_authorization_token;
-    // Available ID&V challenge options.
-    absl::optional<base::Value> idv_challenge_options;
+    // Available card unmask challenge options.
+    std::vector<CardUnmaskChallengeOption> card_unmask_challenge_options;
     // An opaque token used to chain consecutive payments requests together.
     // Client should not update or modify this token.
     std::string context_token;
@@ -238,6 +239,21 @@ class PaymentsClient {
     int64_t billing_customer_number = 0;
     std::u16string context_token;
     std::string risk_data;
+    std::string app_locale;
+  };
+
+  // A collection of the information required to make select challenge option
+  // request.
+  struct SelectChallengeOptionRequestDetails {
+    SelectChallengeOptionRequestDetails();
+    SelectChallengeOptionRequestDetails(
+        const SelectChallengeOptionRequestDetails& other);
+    ~SelectChallengeOptionRequestDetails();
+
+    CardUnmaskChallengeOption selected_challenge_option;
+    // An opaque token used to chain consecutive payments requests together.
+    std::string context_token;
+    int64_t billing_customer_number = 0;
     std::string app_locale;
   };
 
@@ -343,6 +359,13 @@ class PaymentsClient {
       const MigrationRequestDetails& details,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrateCardsCallback callback);
+
+  // The user has chosen one of the available challenge options. Send the
+  // selected challenge option to server to continue the unmask flow.
+  virtual void SelectChallengeOption(
+      const SelectChallengeOptionRequestDetails& details,
+      base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                              const std::string&)> callback);
 
   // Cancels and clears the current |request_|.
   void CancelRequest();

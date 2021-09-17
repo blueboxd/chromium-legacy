@@ -33,8 +33,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
-#include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
+#include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/mock_ime_input_context_handler.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method_base.h"
 #include "ui/events/test/event_generator.h"
@@ -387,7 +387,7 @@ IN_PROC_BROWSER_TEST_P(DictationTest, SwitchInputContext) {
   EXPECT_EQ(kFirstSpeechResult16, input_context_handler_->last_commit_text());
 
   // Simulate a remote app instantiating a new IMEInputContextHandler, like
-  // the keyboard shortcut viewer app creating a second InputMethodChromeOS.
+  // the keyboard shortcut viewer app creating a second `InputMethodAsh`.
   ui::MockIMEInputContextHandler input_context_handler2;
   ui::IMEBridge::Get()->SetInputContextHandler(&input_context_handler2);
 

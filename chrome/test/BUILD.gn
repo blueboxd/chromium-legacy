@@ -3695,7 +3695,7 @@ if (!is_android && !is_fuchsia) {
         "//third_party/blink/public/common",
         "//ui/base/idle",
         "//ui/base/idle:test_support",
-        "//ui/base/ime/chromeos",
+        "//ui/base/ime/ash",
         "//ui/chromeos",
         "//ui/display:display_manager_test_api",
         "//ui/display/manager",
@@ -3896,6 +3896,7 @@ if (!is_android && !is_fuchsia) {
         "//components/printing/browser",
         "//components/printing/common:mojo_interfaces",
         "//printing:test_support",
+        "//printing/backend",
       ]
     }
     if (enable_print_preview) {
@@ -4047,7 +4048,10 @@ if (is_chromeos_lacros) {
       "//ui/platform_window",
     ]
 
-    data = [ "data/media/" ]
+    data = [
+      "data/media/",
+      "data/extensions/platform_apps/minimal/",
+    ]
 
     data_deps = [
       "//build/lacros:lacros_version_metadata",
@@ -4671,6 +4675,8 @@ test("unit_tests") {
     "../browser/sessions/chrome_serialized_navigation_driver_unittest.cc",
     "../browser/sessions/restore_on_startup_policy_handler_unittest.cc",
     "../browser/sessions/session_common_utils_unittest.cc",
+    "../browser/share/share_history_unittest.cc",
+    "../browser/share/share_ranking_unittest.cc",
     "../browser/sharing/ack_message_handler_unittest.cc",
     "../browser/sharing/fake_device_info.cc",
     "../browser/sharing/fake_device_info.h",
@@ -4847,8 +4853,6 @@ test("unit_tests") {
       "../browser/optimization_guide/android/optimization_guide_tab_url_provider_android_unittest.cc",
       "../browser/password_manager/android/password_ui_view_android_unittest.cc",
       "../browser/search/contextual_search_policy_handler_android_unittest.cc",
-      "../browser/share/share_history_unittest.cc",
-      "../browser/share/share_ranking_unittest.cc",
       "../browser/translate/android/translate_bridge_unittest.cc",
       "../browser/ui/android/autofill/save_card_message_controller_android_unittest.cc",
       "../browser/ui/android/tab_model/tab_model_list_unittest.cc",
@@ -4943,6 +4947,10 @@ test("unit_tests") {
     if (target_cpu == "x64") {
       sources += [ "../browser/performance_manager/policies/userspace_swap_policy_chromeos_unittest.cc" ]
     }
+  }
+
+  if (is_win || is_mac || is_linux) {
+    sources += [ "../browser/accessibility/soda_installer_impl_unittest.cc" ]
   }
 
   if (is_linux || is_chromeos) {
@@ -5165,6 +5173,7 @@ test("unit_tests") {
     "//chrome/browser/safe_browsing:advanced_protection",
     "//chrome/browser/safe_browsing:metrics_collector",
     "//chrome/browser/safe_browsing:verdict_cache_manager_factory",
+    "//chrome/browser/share",
     "//chrome/browser/sharing/proto",
     "//chrome/browser/storage_access_api:permissions",
     "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
@@ -6006,6 +6015,9 @@ test("unit_tests") {
     ]
     if (!is_fuchsia) {
       sources += [
+        # File type policies are not supported on Fuchsia.
+        "../browser/component_updater/file_type_policies_component_installer_unittest.cc",
+
         # Fuchsia does not need real file lock as the filesystem is not shared
         # across components.
         "../browser/importer/firefox_profile_lock_unittest.cc",
@@ -6157,7 +6169,7 @@ test("unit_tests") {
         "//components/services/app_service/public/cpp:instance_update",
         "//components/session_manager/core",
         "//components/webapk:proto",
-        "//ui/base/ime/chromeos",
+        "//ui/base/ime/ash",
         "//ui/chromeos",
         "//ui/file_manager:resources_grit",
         "//ui/wm/public",
@@ -7225,6 +7237,7 @@ test("unit_tests") {
       "//components/printing/common:mojo_interfaces",
       "//printing",
       "//printing:test_support",
+      "//printing/backend",
       "//printing/mojom",
     ]
 

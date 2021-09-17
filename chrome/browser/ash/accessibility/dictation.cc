@@ -32,10 +32,10 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
-#include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
-#include "ui/base/ime/chromeos/ime_input_context_handler_interface.h"
-#include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/ime_input_context_handler_interface.h"
+#include "ui/base/ime/ash/input_method_util.h"
 #include "ui/base/ime/composition_text.h"
 
 namespace ash {
@@ -172,7 +172,7 @@ std::string GetSupportedLocale(const std::string& lang_or_locale) {
 
 // Returns the current input context. This may change during the session, even
 // if the IME engine does not change, because remote mojo applications have
-// their own instance of InputMethodChromeOS. See comment on InputMethodBridge.
+// their own instance of `InputMethodAsh`. See comment on `InputMethodBridge`.
 ui::IMEInputContextHandlerInterface* GetInputContext() {
   return ui::IMEBridge::Get()->GetInputContextHandler();
 }

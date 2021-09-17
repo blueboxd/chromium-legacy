@@ -1711,6 +1711,7 @@
         {
             "platforms": [
                 "android",
+                "chromeos",
                 "mac"
             ],
             "experiments": [
@@ -4448,6 +4449,21 @@
             ]
         }
     ],
+    "IOSFeedPreview": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableDiscoverFeedPreview"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSMetrickitCrashReport": [
         {
             "platforms": [
@@ -5108,6 +5124,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MediaCapabilitiesQueryGpuFactories"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MediaFoundationD3D11VideoCapture": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MediaFoundationD3D11VideoCapture"
                     ]
                 }
             ]
@@ -8449,6 +8480,12 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "crossfade_preview_at": "0.25",
+                        "page_loaded_delay": "300",
+                        "page_loading_delay": "300",
+                        "page_not_ready_delay": "800"
+                    },
                     "enable_features": [
                         "TabHoverCardImages"
                     ]
@@ -10056,7 +10093,7 @@
             ]
         }
     ],
-    "WebViewZeroCopyVideoWithParam": [
+    "WebViewSurfaceControl": [
         {
             "platforms": [
                 "android_webview"
@@ -10064,10 +10101,8 @@
             "experiments": [
                 {
                     "name": "Enabled",
-                    "params": {
-                        "WebViewZeroCopyVideoBlocklist": "MIBOX, MITV, PHILIPS, SONY, TPM191E"
-                    },
                     "enable_features": [
+                        "WebViewSurfaceControl",
                         "WebViewZeroCopyVideo"
                     ]
                 }

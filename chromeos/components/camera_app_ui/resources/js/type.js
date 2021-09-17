@@ -82,7 +82,9 @@ export class Resolution {
  * @enum {string}
  */
 export const MimeType = {
+  GIF: 'image/gif',
   JPEG: 'image/jpeg',
+  MP4: 'video/mp4',
   PDF: 'application/pdf',
 };
 
@@ -192,17 +194,18 @@ export let FpsRangeList;
  * @enum {string}
  */
 export const PerfEvent = {
-  PHOTO_TAKING: 'photo-taking',
-  PHOTO_CAPTURE_SHUTTER: 'photo-capture-shutter',
-  PHOTO_CAPTURE_POST_PROCESSING: 'photo-capture-post-processing',
-  VIDEO_CAPTURE_POST_PROCESSING: 'video-capture-post-processing',
-  PORTRAIT_MODE_CAPTURE_POST_PROCESSING:
-      'portrait-mode-capture-post-processing',
-  MODE_SWITCHING: 'mode-switching',
   CAMERA_SWITCHING: 'camera-switching',
-  LAUNCHING_FROM_WINDOW_CREATION: 'launching-from-window-creation',
+  GIF_CAPTURE_POST_PROCESSING: 'gif-capture-post-processing',
   LAUNCHING_FROM_LAUNCH_APP_COLD: 'launching-from-launch-app-cold',
   LAUNCHING_FROM_LAUNCH_APP_WARM: 'launching-from-launch-app-warm',
+  LAUNCHING_FROM_WINDOW_CREATION: 'launching-from-window-creation',
+  MODE_SWITCHING: 'mode-switching',
+  PHOTO_CAPTURE_POST_PROCESSING: 'photo-capture-post-processing',
+  PHOTO_CAPTURE_SHUTTER: 'photo-capture-shutter',
+  PHOTO_TAKING: 'photo-taking',
+  PORTRAIT_MODE_CAPTURE_POST_PROCESSING:
+      'portrait-mode-capture-post-processing',
+  VIDEO_CAPTURE_POST_PROCESSING: 'video-capture-post-processing',
 };
 
 /**

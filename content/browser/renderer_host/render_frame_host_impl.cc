@@ -981,17 +981,13 @@ GURL GetLastDocumentURL(
     // kUnreachableWebDataURL here.
     return GURL(kUnreachableWebDataURL);
   }
-  if (request->IsNavigationTreatedAsLoadDataWithBaseURLInTheRenderer() &&
-      !request->common_params().base_url_for_data_url.is_empty()) {
+  if (request->IsLoadDataWithBaseURL()) {
     // loadDataWithBaseURL() navigation can set its own "base URL", which is
     // also used by the renderer as the document URL unless the navigation
-    // failed (which is already accountted for in the
-    // IsNavigationTreatedAsLoadDataWithBaseURLInTheRenderer() function above),
-    // or the base URL is empty.
+    // failed (which is already accounted for in the error page case above).
     return request->common_params().base_url_for_data_url;
   }
   if (renderer_url_info.is_loaded_from_load_data_with_base_url &&
-      renderer_url_info.loading_url_for_document_is_data_url &&
       request->IsSameDocument()) {
     // If this is a same-document navigation on a document loaded from
     // loadDataWithBaseURL(), it is not currently possible to figure out the
@@ -1050,22 +1046,6 @@ GURL GetLastHistoryURL(
   // that is used to commit. This includes error page navigations, where the
   // URL that failed to commit is returned.
   return params.url;
-}
-
-// Whether the navigation went through the special path for loadDataWithBaseURL
-// navigations that sets the "loading URL" to the data: URL used to commit,
-// instead of defaulting the "loading URL" to the document URL (which in most
-// cases will be the "base URL").
-// See RenderFrameImpl::GetLoadingUrl() and BuildDocumentStateFromParams() for
-// more details. Note that the checks are a bit different: it checks for
-// validity instead of whether the URL is empty or not, as the URL received
-// by the renderer would have gone through reparsing, so invalid URLs will also
-// end up as empty in the renderer.
-bool LoadingURLForDocumentIsDataURL(
-    const blink::mojom::CommonNavigationParams& common_params) {
-  return common_params.base_url_for_data_url.is_valid() &&
-         common_params.history_url_for_data_url.is_valid() &&
-         common_params.url.SchemeIs(url::kDataScheme);
 }
 
 }  // namespace
@@ -2131,13 +2111,13 @@ const GURL& RenderFrameHostImpl::GetLastLoadingURLInRenderer() const {
   // Handle some special cases:
   // - The "loading URL" for an error page commit is the URL that it failed to
   // load. This will be retained as long as the document stays the same.
-  // - For some loadDataWithBaseURL() navigations where the renderer decides to
-  // return CommitNavigationParams's URL (the data: URL) instead of the document
-  // URL (which might be set to the base URL), the "loading URL" will be the
-  // last committed URL. This will also be retained as long as the document
-  // stays the same.
-  if (is_error_page_ || renderer_url_info_.loading_url_for_document_is_data_url)
+  // - For loadDataWithBaseURL() navigations the "loading URL" will be the
+  // last committed URL (the data: URL). This will also be retained as long as
+  // the document stays the same.
+  if (is_error_page_ ||
+      renderer_url_info_.is_loaded_from_load_data_with_base_url) {
     return last_committed_url_;
+  }
   // Otherwise, return the last history URL (which will fall back to the
   // document URL if it's the same).
   return renderer_url_info_.last_history_url;
@@ -2762,8 +2742,7 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
   // frames arguably are renderer-created.
   //
   // TODO(https://crbug.com/1194421): Address the prerendering case.
-  if (frame_tree_node_->IsMainFrame() &&
-      !renderer_initiated_creation_of_main_frame &&
+  if (is_main_frame() && !renderer_initiated_creation_of_main_frame &&
       lifecycle_state_ != LifecycleStateImpl::kPrerendering) {
     policies->ip_address_space = network::mojom::IPAddressSpace::kLocal;
   }
@@ -3067,7 +3046,7 @@ void RenderFrameHostImpl::DeleteRenderFrame(
     // (1) to allow the process to be potentially reused by future navigations
     // withjin a short time window, and
     // (2) to give the subframe unload handlers a chance to execute.
-    if (!frame_tree_node_->IsMainFrame() && IsActive()) {
+    if (!is_main_frame() && IsActive()) {
       base::TimeDelta subframe_shutdown_timeout =
           frame_tree_->IsBeingDestroyed()
               ? base::TimeDelta()
@@ -3263,7 +3242,7 @@ void RenderFrameHostImpl::PropagateEmbeddingTokenToParentFrame() {
     target_render_frame_proxy =
         frame_tree_node()->render_manager()->GetProxyToParent();
     DCHECK(target_render_frame_proxy);
-  } else if (frame_tree_node()->IsMainFrame()) {
+  } else if (is_main_frame()) {
     // The main frame in an inner web contents could have a delegate in the
     // outer web contents, so we need to account for that as well.
     target_render_frame_proxy =
@@ -3401,8 +3380,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     // this new subframe. Ignore the call because otherwise we will hit a
     // browser CHECK. Also trigger a DumpWithoutCrashing for debugging purposes.
     // TODO(https://crbug.com/1243541): Add tracing, debug, and remove this.
-    SCOPED_CRASH_KEY_BOOL("NoRVH", "is_main_frame",
-                          frame_tree_node_->IsMainFrame());
+    SCOPED_CRASH_KEY_BOOL("NoRVH", "is_main_frame", is_main_frame());
     SCOPED_CRASH_KEY_BOOL("NoRVH", "is_created_by_script",
                           is_created_by_script);
     SCOPED_CRASH_KEY_STRING32("NoRVH", "lifecycle_state",
@@ -3589,7 +3567,7 @@ void RenderFrameHostImpl::DidNavigate(
     // ensure that this navigation has updated all relevant properties of
     // RenderFrameHost / Page (e.g. RenderFrameHost::GetLastCommittedURL).
     FrameTreeNode* frame_tree_node = navigation_request->frame_tree_node();
-    if (frame_tree_node->IsMainFrame()) {
+    if (is_main_frame()) {
       frame_tree_node->frame_tree()->delegate()->NotifyPageChanged(GetPage());
     }
   }
@@ -3606,7 +3584,7 @@ void RenderFrameHostImpl::SetLastCommittedOriginForTesting(
 
 const url::Origin& RenderFrameHostImpl::ComputeTopFrameOrigin(
     const url::Origin& frame_origin) const {
-  if (frame_tree_node_->IsMainFrame()) {
+  if (is_main_frame()) {
     return frame_origin;
   }
 
@@ -3635,9 +3613,8 @@ net::IsolationInfo RenderFrameHostImpl::ComputeIsolationInfoForNavigation(
     const GURL& destination,
     bool anonymous) {
   net::IsolationInfo::RequestType request_type =
-      frame_tree_node_->IsMainFrame()
-          ? net::IsolationInfo::RequestType::kMainFrame
-          : net::IsolationInfo::RequestType::kSubFrame;
+      is_main_frame() ? net::IsolationInfo::RequestType::kMainFrame
+                      : net::IsolationInfo::RequestType::kSubFrame;
   return ComputeIsolationInfoInternal(url::Origin::Create(destination),
                                       request_type, anonymous);
 }
@@ -5310,7 +5287,7 @@ void RenderFrameHostImpl::DidContainInsecureFormAction() {
 
 void RenderFrameHostImpl::DocumentAvailableInMainFrame(
     bool uses_temporary_zoom_level) {
-  if (!frame_tree_node_->IsMainFrame()) {
+  if (!is_main_frame()) {
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::RFH_INVALID_CALL_FROM_NOT_MAIN_FRAME);
     return;
@@ -5655,7 +5632,7 @@ void RenderFrameHostImpl::ForwardResourceTimingToParent(
 
 RenderWidgetHostViewBase* RenderFrameHostImpl::GetViewForAccessibility() {
   return static_cast<RenderWidgetHostViewBase*>(
-      frame_tree_node_->IsMainFrame()
+      is_main_frame()
           ? render_view_host_->GetWidget()->GetView()
           : GetMainFrame()->render_view_host_->GetWidget()->GetView());
 }
@@ -5664,7 +5641,7 @@ void RenderFrameHostImpl::UpdateBrowserControlsState(
     cc::BrowserControlsState constraints,
     cc::BrowserControlsState current,
     bool animate) {
-  DCHECK(frame_tree_node_->IsMainFrame());
+  DCHECK(is_main_frame());
 
   // TODO(https://crbug.com/1154852): Asking for the LocalMainFrame interface
   // before the RenderFrame is created is racy.
@@ -5870,7 +5847,10 @@ void RenderFrameHostImpl::EnterFullscreen(
     }
   }
 
-  if (!IsActive() || !delegate_->CanEnterFullscreenMode()) {
+  // Frames (possibly a subframe) that are not active nor belonging to a primary
+  // page should not enter fullscreen.
+  if (!IsActive() || !GetPage().IsPrimary() ||
+      !delegate_->CanEnterFullscreenMode()) {
     std::move(callback).Run(/*granted=*/false);
     return;
   }
@@ -7186,7 +7166,7 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
   // which the frame was at the time of generating the MHTML
   // (e.g. "http://localhost"). In such cases, don't verify the URL, but require
   // the URL to commit in the process of the main frame.
-  if (!frame_tree_node()->IsMainFrame()) {
+  if (!is_main_frame()) {
     RenderFrameHostImpl* main_frame = GetMainFrame();
     if (main_frame->is_mhtml_document()) {
       if (IsSameSiteInstance(main_frame))
@@ -7287,8 +7267,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
   // TAB_CLOSE and DISCARD should only dispatch beforeunload on main frames.
   DCHECK(type == BeforeUnloadType::BROWSER_INITIATED_NAVIGATION ||
          type == BeforeUnloadType::RENDERER_INITIATED_NAVIGATION ||
-         type == BeforeUnloadType::INNER_DELEGATE_ATTACH ||
-         frame_tree_node_->IsMainFrame());
+         type == BeforeUnloadType::INNER_DELEGATE_ATTACH || is_main_frame());
 
   if (!for_navigation) {
     // Cancel any pending navigations, to avoid their navigation commit/fail
@@ -7617,7 +7596,7 @@ bool RenderFrameHostImpl::ShouldDispatchPagehideAndVisibilitychangeDuringCommit(
   if (!old_frame_host->IsNavigationSameSite(dest_url_info)) {
     return false;
   }
-  DCHECK(frame_tree_node_->IsMainFrame());
+  DCHECK(is_main_frame());
   DCHECK_NE(old_frame_host, this);
   DCHECK_NE(old_frame_host->GetSiteInstance(), GetSiteInstance());
   return true;
@@ -7725,7 +7704,7 @@ void RenderFrameHostImpl::CommitNavigation(
         navigation_request->GetSubresourceWebBundleNavigationInfo();
   }
 
-  UpdatePermissionsForNavigation(*common_params, *commit_params);
+  UpdatePermissionsForNavigation(navigation_request);
 
   // Get back to a clean state, in case we start a new navigation without
   // completing an unload handler.
@@ -8133,7 +8112,7 @@ void RenderFrameHostImpl::FailedNavigation(
 
   // Update renderer permissions even for failed commits, so that for example
   // the URL bar correctly displays privileged URLs instead of filtering them.
-  UpdatePermissionsForNavigation(common_params, commit_params);
+  UpdatePermissionsForNavigation(navigation_request);
 
   // Get back to a clean state, in case a new navigation started without
   // completing an unload handler.
@@ -8248,7 +8227,7 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
       },
       base::Unretained(this)));
 
-  if (frame_tree_node_->IsMainFrame()) {
+  if (is_main_frame()) {
     associated_registry_->AddInterface(base::BindRepeating(
         [](RenderFrameHostImpl* impl,
            mojo::PendingAssociatedReceiver<blink::mojom::LocalMainFrameHost>
@@ -8469,7 +8448,7 @@ RenderFrameHostImpl::GetAssociatedLocalFrame() {
 
 blink::mojom::LocalMainFrame*
 RenderFrameHostImpl::GetAssociatedLocalMainFrame() {
-  DCHECK(frame_tree_node_->IsMainFrame());
+  DCHECK(is_main_frame());
   if (!local_main_frame_)
     GetRemoteAssociatedInterfaces()->GetInterface(&local_main_frame_);
   return local_main_frame_.get();
@@ -8730,20 +8709,20 @@ void RenderFrameHostImpl::GrantFileAccessFromResourceRequestBody(
 }
 
 void RenderFrameHostImpl::UpdatePermissionsForNavigation(
-    const blink::mojom::CommonNavigationParams& common_params,
-    const blink::mojom::CommitNavigationParams& commit_params) {
+    NavigationRequest* request) {
   // Browser plugin guests are not allowed to navigate outside web-safe schemes,
   // so do not grant them the ability to commit additional URLs.
   if (!GetProcess()->IsForGuestsOnly()) {
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantCommitURL(
-        GetProcess()->GetID(), common_params.url);
-    if (NavigationRequest::IsLoadDataWithBaseURL(common_params)) {
+        GetProcess()->GetID(), request->common_params().url);
+    if (request->IsLoadDataWithBaseURL()) {
       // When there's a base URL specified for the data URL, we also need to
       // grant access to the base URL. This allows file: and other unexpected
       // schemes to be accepted at commit time and during CORS checks (e.g., for
       // font requests).
       ChildProcessSecurityPolicyImpl::GetInstance()->GrantCommitURL(
-          GetProcess()->GetID(), common_params.base_url_for_data_url);
+          GetProcess()->GetID(),
+          request->common_params().base_url_for_data_url);
     }
   }
 
@@ -8752,8 +8731,8 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
   // access again.  Abuse is prevented, because the files listed in the page
   // state are validated earlier, when they are received from the renderer (in
   // RenderFrameHostImpl::CanAccessFilesOfPageState).
-  blink::PageState page_state =
-      blink::PageState::CreateFromEncodedData(commit_params.page_state);
+  blink::PageState page_state = blink::PageState::CreateFromEncodedData(
+      request->commit_params().page_state);
   if (page_state.IsValid())
     GrantFileAccessFromPageState(page_state);
 
@@ -8762,8 +8741,8 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
   // ability to access files that the old renderer could access.  Abuse is
   // prevented, because the files listed in ResourceRequestBody are validated
   // earlier, when they are received from the renderer.
-  if (common_params.post_data)
-    GrantFileAccessFromResourceRequestBody(*common_params.post_data);
+  if (request->common_params().post_data)
+    GrantFileAccessFromResourceRequestBody(*request->common_params().post_data);
 }
 
 bool RenderFrameHostImpl::WindowPlacementAllowsFullscreen() {
@@ -9224,9 +9203,8 @@ void RenderFrameHostImpl::BindMediaMetricsProviderReceiver(
       GetProcess()->GetBrowserContext()->IsOffTheRecord()
           ? media::MediaMetricsProvider::BrowsingMode::kIncognito
           : media::MediaMetricsProvider::BrowsingMode::kNormal,
-      frame_tree_node_->IsMainFrame()
-          ? media::MediaMetricsProvider::FrameStatus::kTopFrame
-          : media::MediaMetricsProvider::FrameStatus::kNotTopFrame,
+      is_main_frame() ? media::MediaMetricsProvider::FrameStatus::kTopFrame
+                      : media::MediaMetricsProvider::FrameStatus::kNotTopFrame,
       GetPage().last_main_document_source_id(),
       media::learning::FeatureValue(GetLastCommittedOrigin().host()),
       std::move(save_stats_cb),
@@ -9920,8 +9898,8 @@ bool RenderFrameHostImpl::IsNavigationSameSite(const UrlInfo& dest_url_info) {
     return false;
   }
   return GetSiteInstance()->IsNavigationSameSite(
-      last_successful_url(), GetLastCommittedOrigin(),
-      frame_tree_node()->IsMainFrame(), dest_url_info);
+      last_successful_url(), GetLastCommittedOrigin(), is_main_frame(),
+      dest_url_info);
 }
 
 bool RenderFrameHostImpl::ValidateDidCommitParams(
@@ -9982,8 +9960,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   DCHECK(navigation_request || is_same_document_navigation ||
          !frame_tree_node_->has_committed_real_load());
   bool bypass_checks_for_webview = false;
-  if ((navigation_request && NavigationRequest::IsLoadDataWithBaseURL(
-                                 navigation_request->common_params())) ||
+  if ((navigation_request && navigation_request->IsLoadDataWithBaseURL()) ||
       (is_same_document_navigation &&
        renderer_url_info_.is_loaded_from_load_data_with_base_url)) {
     // Allow bypass if the process isn't locked. Otherwise run normal checks.
@@ -10348,8 +10325,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   }
 
   if (!is_same_document_navigation) {
-    DCHECK_EQ(navigation_request->is_overriding_user_agent() &&
-                  frame_tree_node_->IsMainFrame(),
+    DCHECK_EQ(navigation_request->is_overriding_user_agent() && is_main_frame(),
               params->is_overriding_user_agent);
     if (navigation_request->IsPrerenderedPageActivation()) {
       DCHECK(blink::features::IsPrerender2Enabled());
@@ -10525,27 +10501,20 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
   is_mhtml_document_ = navigation_request->IsWaitingToCommit() &&
                        navigation_request->IsMhtmlOrSubframe();
 
-  is_overriding_user_agent_ = navigation_request->is_overriding_user_agent() &&
-                              frame_tree_node_->IsMainFrame();
+  is_overriding_user_agent_ =
+      navigation_request->is_overriding_user_agent() && is_main_frame();
 
   // Mark whether then navigation was intended as a loadDataWithBaseURL or not.
   // If |renderer_url_info_.is_loaded_from_load_data_with_base_url| is true, we
   // will bypass checks in VerifyDidCommitParams for same-document navigations
-  // in the loaded document. Note that the renderer might not have actually gone
-  // through the special "loadDataWithBaseURL" path that tries to set the base
-  // URL and history URL with user-supplied URLs even if this is true.
+  // in the loaded document.
   renderer_url_info_.is_loaded_from_load_data_with_base_url =
-      NavigationRequest::IsLoadDataWithBaseURL(
-          navigation_request->common_params());
+      navigation_request->IsLoadDataWithBaseURL();
 
   // Mark whether the document is loaded with loadDataWithBaseURL and has a
   // non-empty "unreachable URL" (set to the supplied history URL).
   renderer_url_info_.document_has_unreachable_url_from_load_data_with_base_url =
       navigation_request->IsLoadDataWithBaseURLAndHasUnreachableURL();
-
-  // See comment in LoadingURLForDocumentIsDataURL().
-  renderer_url_info_.loading_url_for_document_is_data_url =
-      LoadingURLForDocumentIsDataURL(navigation_request->common_params());
 
   // If we still have a PeakGpuMemoryTracker, then the loading it was observing
   // never completed. Cancel it's callback so that we don't report partial
@@ -11441,10 +11410,10 @@ GURL CalculateLoadingURL(
   }
 
   if (request->IsSameDocument()) {
-    // Documents that have an "override" URL (some loadDataWithBaseURL
-    // navigations, error pages) will continue using that URL even after
-    // same-document navigations.
-    if (last_renderer_url_info.loading_url_for_document_is_data_url ||
+    // Documents that have an "override" URL (loadDataWithBaseURL navigations,
+    // error pages) will continue using that URL even after same-document
+    // navigations.
+    if (last_renderer_url_info.is_loaded_from_load_data_with_base_url ||
         last_document_is_error_page)
       return last_committed_url;
 
@@ -11453,23 +11422,10 @@ GURL CalculateLoadingURL(
     return request->common_params().url;
   }
 
-  if (request->IsNavigationTreatedAsLoadDataWithBaseURLInTheRenderer()) {
-    // Handle loadDataWithBaseURL navigations. See MaybeGetOverriddenURL() in
-    // render_frame_impl.cc.
-    // If the navigation qualifies, the URL returned will be the URL in
-    // CommonNavigationParams (the data: URL).
-    if (LoadingURLForDocumentIsDataURL(request->common_params()))
-      return request->common_params().url;
-
-    // Otherwise, the "unreachable URL" (history URL) will be used if it's set.
-    if (request->common_params().history_url_for_data_url.is_valid())
-      return request->common_params().history_url_for_data_url;
-
-    // Finally, the "document URL" will be used for all other cases. If the
-    // base URL is set, the document URL will be the base URL. If not, it will
-    // use the CommonNavigationParams' URL, which is handled further below.
-    if (request->common_params().base_url_for_data_url.is_valid())
-      return request->common_params().base_url_for_data_url;
+  if (request->IsLoadDataWithBaseURLAndHasUnreachableURL() &&
+      !request->common_params().base_url_for_data_url.is_valid()) {
+    // See RenderFrameImpl::CommitNavigation().
+    return request->common_params().history_url_for_data_url;
   }
 
   // For all other navigations, the returned URL should be the same as the URL

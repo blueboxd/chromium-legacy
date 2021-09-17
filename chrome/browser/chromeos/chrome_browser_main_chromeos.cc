@@ -227,9 +227,9 @@
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/ime/ash/ime_keyboard.h"
+#include "ui/base/ime/ash/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_util.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/chromeos/events/pref_names.h"
@@ -683,7 +683,7 @@ int ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   // This should be in PreProfileInit but it needs to be created before the
   // policy connector is started.
   bulk_printers_calculator_factory_ =
-      std::make_unique<BulkPrintersCalculatorFactory>();
+      std::make_unique<ash::BulkPrintersCalculatorFactory>();
 
   // StatsReportingController is created in
   // ChromeBrowserMainParts::PreCreateThreads, so this must come afterwards.

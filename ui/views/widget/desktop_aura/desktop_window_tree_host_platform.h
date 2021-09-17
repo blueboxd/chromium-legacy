@@ -34,6 +34,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   DesktopWindowTreeHostPlatform(
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura);
+
+  DesktopWindowTreeHostPlatform(const DesktopWindowTreeHostPlatform&) = delete;
+  DesktopWindowTreeHostPlatform& operator=(
+      const DesktopWindowTreeHostPlatform&) = delete;
+
   ~DesktopWindowTreeHostPlatform() override;
 
   // A way of converting a |widget| into the content_window()
@@ -151,6 +156,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   gfx::Rect ToDIPRect(const gfx::Rect& rect_in_pixels) const;
   gfx::Rect ToPixelRect(const gfx::Rect& rect_in_dip) const;
 
+  Widget* GetWidget();
+  const Widget* GetWidget() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostPlatformTest,
                            UpdateWindowShapeFromWindowMask);
@@ -158,9 +166,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
                            MakesParentChildRelationship);
 
   void ScheduleRelayout();
-
-  Widget* GetWidget();
-  const Widget* GetWidget() const;
 
   // Set visibility and fire OnNativeWidgetVisibilityChanged() if it changed.
   void SetVisible(bool visible);
@@ -199,8 +204,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
 
   base::WeakPtrFactory<DesktopWindowTreeHostPlatform> close_widget_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostPlatform);
 };
 
 }  // namespace views

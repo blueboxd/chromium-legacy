@@ -23,7 +23,7 @@
 #include "base/gtest_prod_util.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_map.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 
 class PrefRegistrySimple;
 
@@ -98,6 +98,10 @@ class ASH_EXPORT AcceleratorControllerImpl
   class TestApi {
    public:
     explicit TestApi(AcceleratorControllerImpl* controller);
+
+    TestApi(const TestApi&) = delete;
+    TestApi& operator=(const TestApi&) = delete;
+
     ~TestApi() = default;
 
     // If |controller_->tablet_mode_volume_adjust_timer_| is running, stops it,
@@ -132,8 +136,6 @@ class ASH_EXPORT AcceleratorControllerImpl
 
    private:
     AcceleratorControllerImpl* controller_;  // Not owned.
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
   // Fields of the side volume button location info.

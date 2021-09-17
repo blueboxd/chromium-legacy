@@ -11,6 +11,7 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/cart/cart_db_content.pb.h"
 #include "chrome/browser/cart/cart_discount_metric_collector.h"
+#include "chrome/browser/cart/cart_features.h"
 #include "chrome/browser/cart/fetch_discount_worker.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
@@ -40,11 +41,6 @@ const int kDelayStartMs = 10;
 constexpr char kNoRbdUtmTag[] = "chrome_cart_no_rbd";
 constexpr char kRbdUtmTag[] = "chrome_cart_rbd";
 
-constexpr base::FeatureParam<std::string> kPartnerMerchantPattern{
-    &ntp_features::kNtpChromeCartModule, "partner-merchant-pattern",
-    // This regex does not match anything.
-    "\\b\\B"};
-
 constexpr base::FeatureParam<std::string> kSkipCartExtractionPattern{
     &ntp_features::kNtpChromeCartModule, "skip-cart-extraction-pattern",
     // This regex does not match anything.
@@ -52,7 +48,7 @@ constexpr base::FeatureParam<std::string> kSkipCartExtractionPattern{
 
 constexpr base::FeatureParam<bool> kRbdUtmParam{
     &ntp_features::kNtpChromeCartModule,
-    ntp_features::NtpChromeCartModuleAbandonedCartDiscountUseUtmParam, false};
+    ntp_features::kNtpChromeCartModuleAbandonedCartDiscountUseUtmParam, false};
 
 std::string eTLDPlusOne(const GURL& url) {
   return net::registry_controlled_domains::GetDomainAndRegistry(
@@ -91,8 +87,8 @@ bool IsExpired(const cart_db::ChromeCartContentProto& proto) {
 const re2::RE2& GetPartnerMerchantPattern() {
   re2::RE2::Options options;
   options.set_case_sensitive(false);
-  static base::NoDestructor<re2::RE2> instance(kPartnerMerchantPattern.Get(),
-                                               options);
+  static base::NoDestructor<re2::RE2> instance(
+      cart_features::kPartnerMerchantPattern.Get(), options);
   return *instance;
 }
 

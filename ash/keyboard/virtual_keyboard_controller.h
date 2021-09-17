@@ -13,7 +13,7 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/macros.h"
-#include "ui/base/ime/chromeos/ime_keyset.h"
+#include "ui/base/ime/ash/ime_keyset.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
 namespace ash {
@@ -29,6 +29,11 @@ class ASH_EXPORT VirtualKeyboardController
       public SessionObserver {
  public:
   VirtualKeyboardController();
+
+  VirtualKeyboardController(const VirtualKeyboardController&) = delete;
+  VirtualKeyboardController& operator=(const VirtualKeyboardController&) =
+      delete;
+
   ~VirtualKeyboardController() override;
 
   // Force enable the keyboard and show it with the given keyset: none, emoji,
@@ -77,8 +82,6 @@ class ASH_EXPORT VirtualKeyboardController
 
   // Observer to observe the bluetooth devices.
   std::unique_ptr<BluetoothDevicesObserver> bluetooth_devices_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardController);
 };
 
 }  // namespace ash

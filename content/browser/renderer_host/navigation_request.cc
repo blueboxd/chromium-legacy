@@ -686,10 +686,7 @@ void EnterChildTraceEvent(const char* name,
 network::mojom::RequestDestination GetDestinationFromFrameTreeNode(
     FrameTreeNode* frame_tree_node) {
   if (frame_tree_node->IsMainFrame()) {
-    return frame_tree_node->current_frame_host()
-                   ->GetRenderViewHost()
-                   ->GetDelegate()
-                   ->IsPortal()
+    return frame_tree_node->current_frame_host()->InsidePortal()
                ? network::mojom::RequestDestination::kIframe
                : network::mojom::RequestDestination::kDocument;
   } else {
@@ -952,8 +949,18 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
             .GetBackForwardCache()
             .GetEntry(entry->GetUniqueID());
     if (restored_entry) {
-      rfh_restored_from_back_forward_cache =
-          restored_entry->render_frame_host();
+      if (frame_tree_node->IsMainFrame()) {
+        rfh_restored_from_back_forward_cache =
+            restored_entry->render_frame_host();
+      } else {
+        // We have a matching BFCache entry for a subframe navigation. This
+        // shouldn't happen as we should've triggered deletion of BFCache
+        // entries that have the same BrowsingInstance as the current document.
+        // See https://crbug.com/1250111.
+        CaptureTraceForNavigationDebugScenario(
+            DebugScenario::
+                kDebugBackForwardCacheEntryExistsOnSubframeHistoryNav);
+      }
     }
   }
 
@@ -4659,12 +4666,7 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
   const PolicyContainerPolicies* parent_policies =
       policy_container_navigation_bundle_->ParentPolicies();
   DCHECK(!parent == !parent_policies);
-  if (!parent &&
-      frame_tree_node()
-          ->current_frame_host()
-          ->GetRenderViewHost()
-          ->GetDelegate()
-          ->IsPortal() &&
+  if (!parent && frame_tree_node()->current_frame_host()->InsidePortal() &&
       frame_tree_node()->render_manager()->GetOuterDelegateNode()) {
     parent = frame_tree_node()
                  ->render_manager()

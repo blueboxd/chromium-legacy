@@ -256,6 +256,8 @@ component("ash") {
     "capture_mode/capture_mode_util.h",
     "capture_mode/capture_window_observer.cc",
     "capture_mode/capture_window_observer.h",
+    "capture_mode/recording_overlay_controller.cc",
+    "capture_mode/recording_overlay_controller.h",
     "capture_mode/stop_recording_button_tray.cc",
     "capture_mode/stop_recording_button_tray.h",
     "capture_mode/video_recording_watcher.cc",
@@ -710,7 +712,6 @@ component("ash") {
     "public/cpp/autotest_desks_api.h",
     "public/cpp/autotest_private_api_utils.h",
     "public/cpp/capture_mode/capture_mode_api.h",
-    "public/cpp/capture_mode/capture_mode_delegate.h",
     "public/cpp/capture_mode/capture_mode_test_api.h",
     "public/cpp/debug_utils.h",
     "public/cpp/event_rewriter_controller.h",
@@ -1924,6 +1925,7 @@ component("ash") {
     "//ash/login/resources:resources_grit",
     "//ash/public/cpp/ambient/proto",
     "//ash/quick_pair",
+    "//ash/quick_pair/feature_status_tracker",
     "//ash/quick_pair/keyed_service",
     "//ash/quick_pair/repository",
     "//ash/quick_pair/ui",
@@ -2081,6 +2083,7 @@ component("ash") {
     "//ash/app_list",
     "//ash/assistant/ui",
     "//ash/quick_pair/ui",
+    "//ash/quick_pair/feature_status_tracker",
   ]
 
   if (enable_cros_ambient_mode_backend) {

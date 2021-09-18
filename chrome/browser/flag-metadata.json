@@ -3122,6 +3122,11 @@
     "expiry_milestone": 99
   },
   {
+    "name": "feed-loading-placeholder",
+    "owners": [ "//chrome/android/feed/OWNERS", "dewittj@chromium.org" ],
+    "expiry_milestone": 99
+  },
+  {
     "name": "feed-share",
     "owners": ["//chrome/android/feed/OWNERS", "chili@chromium.org"],
     "expiry_milestone": 95
@@ -4423,6 +4428,16 @@
     "expiry_milestone": 105
   },
   {
+    "name": "page-info-about-this-site",
+    "owners": [ "eokoyomon", "dullweber", "olesiamarukhno" ],
+    "expiry_milestone": 99
+  },
+  {
+    "name": "page-info-discoverability",
+    "owners": [ "eokoyomon", "dullweber" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "page-info-history",
     "owners": [ "eokoyomon", "dullweber" ],
     "expiry_milestone": 95
@@ -5493,6 +5508,11 @@
     "name": "turn-off-streaming-media-caching-on-battery",
     "owners": [ "wicarr@microsoft.com", "cassew@google.com" ],
     "expiry_milestone": 91
+  },
+  {
+    "name": "u2f-security-key-api",
+    "owners": [ "//device/fido/OWNERS" ],
+    "expiry_milestone": 104
   },
   {
     "name": "ui-debug-tools",

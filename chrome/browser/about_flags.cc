@@ -4000,6 +4000,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"feed-interactive-refresh", flag_descriptions::kFeedInteractiveRefreshName,
      flag_descriptions::kFeedInteractiveRefreshDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kFeedInteractiveRefresh)},
+    {"feed-loading-placeholder", flag_descriptions::kFeedLoadingPlaceholderName,
+     flag_descriptions::kFeedLoadingPlaceholderDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(feed::kFeedLoadingPlaceholder)},
     {"feed-stamp", flag_descriptions::kFeedStampName,
      flag_descriptions::kFeedStampDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kFeedStamp)},
@@ -6490,6 +6493,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(page_info::kPageInfoV2Desktop)},
 #endif  // !defined(OS_ANDROID)
 
+    {"page-info-about-this-site", flag_descriptions::kPageInfoAboutThisSiteName,
+     flag_descriptions::kPageInfoAboutThisSiteDescription,
+     kOsDesktop | kOsAndroid,
+     FEATURE_VALUE_TYPE(page_info::kPageInfoAboutThisSite)},
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enhanced_clipboard", flag_descriptions::kEnhancedClipboardName,
      flag_descriptions::kEnhancedClipboardDescription, kOsCrOS,
@@ -7728,6 +7736,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kRequestDesktopSiteGlobalDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kRequestDesktopSiteGlobal)},
 #endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    {"u2f-security-key-api", flag_descriptions::kU2FSecurityKeyAPIName,
+     flag_descriptions::kU2FSecurityKeyAPIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(extensions_features::kU2FSecurityKeyAPI)},
+#endif  // ENABLE_EXTENSIONS
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

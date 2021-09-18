@@ -2006,7 +2006,7 @@ ci.cipd_builder(
         short_name = "sdk",
     ),
     executable = "recipe:android/sdk_packager",
-    schedule = "0 7 * * 0 *",
+    schedule = "0 * * * 0 *",
     triggered_by = [],
     properties = {
         # We still package part of build-tools;25.0.2 to support
@@ -4184,6 +4184,7 @@ ci.fyi_windows_builder(
 ci.fyi_mac_builder(
     name = "Mac Builder (reclient)",
     builderless = True,
+    cores = None,  # crbug.com/1245114
     console_view_entry = consoles.console_view_entry(
         category = "mac",
         short_name = "re",

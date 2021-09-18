@@ -130,6 +130,9 @@ extern const char kEnableSignedExchangeSubresourcePrefetchDescription[];
 extern const char kEnableSignedExchangePrefetchCacheForNavigationsName[];
 extern const char kEnableSignedExchangePrefetchCacheForNavigationsDescription[];
 
+extern const char kU2FSecurityKeyAPIName[];
+extern const char kU2FSecurityKeyAPIDescription[];
+
 extern const char kUseLookalikesForNavigationSuggestionsName[];
 extern const char kUseLookalikesForNavigationSuggestionsDescription[];
 
@@ -1122,6 +1125,9 @@ extern const char kOverrideSimilarLanguagesForHrefTranslateDescription[];
 extern const char kOverscrollHistoryNavigationName[];
 extern const char kOverscrollHistoryNavigationDescription[];
 
+extern const char kPageInfoAboutThisSiteName[];
+extern const char kPageInfoAboutThisSiteDescription[];
+
 extern const char kPageInfoV2DesktopName[];
 extern const char kPageInfoV2DesktopDescription[];
 
@@ -1779,6 +1785,9 @@ extern const char kFeedBackToTopDescription[];
 
 extern const char kFeedInteractiveRefreshName[];
 extern const char kFeedInteractiveRefreshDescription[];
+
+extern const char kFeedLoadingPlaceholderName[];
+extern const char kFeedLoadingPlaceholderDescription[];
 
 extern const char kFeedStampName[];
 extern const char kFeedStampDescription[];

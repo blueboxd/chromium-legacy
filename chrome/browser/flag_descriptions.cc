@@ -183,6 +183,13 @@ const char kEnableSignedExchangePrefetchCacheForNavigationsDescription[] =
     "a blob and the verification process of the signed exchange is skipped for "
     "the succeeding navigation.";
 
+const char kU2FSecurityKeyAPIName[] = "Enable the U2F Security Key API";
+const char kU2FSecurityKeyAPIDescription[] =
+    "Enable the legacy U2F Security Key API (CryptoToken). The U2F Security "
+    "Key API has been deprecated and will be removed soon. For more "
+    "information, refer to the deprecation announcement at "
+    "https://groups.google.com/a/chromium.org/g/blink-dev/c/xHC3AtU_65A";
+
 const char kUseLookalikesForNavigationSuggestionsName[] =
     "Use lookalike URL suggestions for navigation suggestions";
 const char kUseLookalikesForNavigationSuggestionsDescription[] =
@@ -1091,9 +1098,9 @@ const char kMemlogSamplingRateName[] =
     "Heap profiling sampling interval (in bytes).";
 const char kMemlogSamplingRateDescription[] =
     "Heap profiling service uses Poisson process to sample allocations. "
-    "Default value for the interval between samples is 100000 (100KB). "
+    "Default value for the interval between samples is 1000000 (1MB). "
     "This results in low noise for large and/or frequent allocations "
-    "[size * frequency >> 100KB]. This means that aggregate numbers [e.g. "
+    "[size * frequency >> 1MB]. This means that aggregate numbers [e.g. "
     "total size of malloc-ed objects] and large and/or frequent allocations "
     "can be trusted with high fidelity. "
     "Lower intervals produce higher samples resolution, but come at a cost of "
@@ -1980,6 +1987,11 @@ const char kOverscrollHistoryNavigationDescription[] =
 const char kOverviewButtonName[] = "Overview button at the status area";
 const char kOverviewButtonDescription[] =
     "If enabled, always show the overview button at the status area.";
+
+const char kPageInfoAboutThisSiteName[] =
+    "'About this site' section in page info";
+const char kPageInfoAboutThisSiteDescription[] =
+    "Enable the 'About this site' section in the page info.";
 
 const char kPageInfoV2DesktopName[] = "Page info version two desktop";
 const char kPageInfoV2DesktopDescription[] =
@@ -3132,6 +3144,11 @@ const char kFeedBackToTopDescription[] =
 const char kFeedInteractiveRefreshName[] = "Refresh feeds";
 const char kFeedInteractiveRefreshDescription[] =
     "Enables refreshing feeds triggered by the users.";
+
+const char kFeedLoadingPlaceholderName[] = "Feed loading placeholder";
+const char kFeedLoadingPlaceholderDescription[] =
+    "Enables a placeholder UI in "
+    "the feed instead of the loading spinner at first load.";
 
 const char kFeedStampName[] = "StAMP cards in the feed";
 const char kFeedStampDescription[] = "Enables StAMP cards in the feed.";

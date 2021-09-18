@@ -34,9 +34,10 @@ namespace {
 // Convert a `history_clusters::Visit` to `mojom::VisitPtr`.
 mojom::URLVisitPtr VisitToMojom(const Visit& visit) {
   auto visit_mojom = mojom::URLVisit::New();
-  auto& annotated_visit = visit.annotated_visit;
-  visit_mojom->normalized_url = annotated_visit.url_row.url();
+  visit_mojom->normalized_url = visit.normalized_url;
+  visit_mojom->score = visit.score;
 
+  auto& annotated_visit = visit.annotated_visit;
   visit_mojom->raw_urls.push_back(annotated_visit.url_row.url());
   visit_mojom->last_visit_time = annotated_visit.visit_row.visit_time;
   visit_mojom->first_visit_time = annotated_visit.visit_row.visit_time;
@@ -64,12 +65,11 @@ mojom::URLVisitPtr VisitToMojom(const Visit& visit) {
       annotated_visit.context_annotations.is_new_bookmark) {
     visit_mojom->annotations.push_back(mojom::Annotation::kBookmarked);
   }
-  visit_mojom->score = visit.score;
 
   if (base::FeatureList::IsEnabled(kDebug)) {
     visit_mojom->debug_info["score"] = base::NumberToString(visit_mojom->score);
     visit_mojom->debug_info["visit_duration"] = base::NumberToString(
-        visit.annotated_visit.visit_row.visit_duration.InSecondsF());
+        annotated_visit.visit_row.visit_duration.InSecondsF());
   }
 
   return visit_mojom;
@@ -134,20 +134,25 @@ void ServiceResultToMojom(
         top_visit->related_visits.push_back(std::move(visit_mojom));
       }
 
+      // Coalesce the related searches of this visit into the top visit, but
+      // only if the top visit's related searches count is still under the cap.
+      // Note we coalesce a whole visit's worth of searches at a time, so we
+      // can exceed the cap, but we ignore further visits' searches after that.
+      constexpr size_t kMaxRelatedSearches = 8;
       auto& top_visit = cluster_mojom->visits.front();
-      // The top visit's related searches are the set of related searches across
-      // all the visits in the order they are encountered.
-      for (const auto& search_query :
-           visit.annotated_visit.content_annotations.related_searches) {
-        if (!related_searches.insert(search_query).second) {
-          continue;
-        }
+      if (top_visit->related_searches.size() < kMaxRelatedSearches) {
+        for (const auto& search_query :
+             visit.annotated_visit.content_annotations.related_searches) {
+          if (!related_searches.insert(search_query).second) {
+            continue;
+          }
 
-        auto search_query_mojom =
-            SearchQueryToMojom(search_query, template_url_service);
-        if (search_query_mojom) {
-          top_visit->related_searches.emplace_back(
-              std::move(*search_query_mojom));
+          auto search_query_mojom =
+              SearchQueryToMojom(search_query, template_url_service);
+          if (search_query_mojom) {
+            top_visit->related_searches.emplace_back(
+                std::move(*search_query_mojom));
+          }
         }
       }
     }

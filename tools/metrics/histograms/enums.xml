@@ -19188,6 +19188,7 @@ Called by update_debug_scenarios.py.-->
   <int value="5" label="kDebugBackForwardCacheEvictRestoreRace"/>
   <int value="6" label="kDebugNoResponseHeadForHttpOrHttps"/>
   <int value="7" label="kDebugSubframeProxyCreationWithNoRVH"/>
+  <int value="8" label="kDebugBackForwardCacheEntryExistsOnSubframeHistoryNav"/>
 </enum>
 
 <enum name="DeclarativeAPIFunctionType">
@@ -36585,6 +36586,12 @@ Called by update_permissions_policy_enum.py.-->
   <int value="5" label="GNOME failure"/>
 </enum>
 
+<enum name="FormDataEquality">
+  <int value="0" label="Shallow comparison is enough to find difference"/>
+  <int value="1" label="Deep comparison is needed to find difference"/>
+  <int value="2" label="Equal forms"/>
+</enum>
+
 <enum name="FormInputAccessoryAction">
   <int value="0" label="PreviousElement"/>
   <int value="1" label="NextElement"/>
@@ -47560,6 +47567,7 @@ from previous Chrome versions.
   <int value="-1894054576" label="FontAccess:enabled"/>
   <int value="-1893668420"
       label="AutofillSaveCreditCardUsesStrikeSystem:enabled"/>
+  <int value="-1893119399" label="U2FSecurityKeyAPI:enabled"/>
   <int value="-1893019071" label="CSSOMViewScrollCoordinates:disabled"/>
   <int value="-1892758622" label="SendTabToSelfV2:disabled"/>
   <int value="-1892555086" label="disable-compositor-animation-timelines"/>
@@ -47586,6 +47594,7 @@ from previous Chrome versions.
   <int value="-1875383510" label="UseGoogleLocalNtp:disabled"/>
   <int value="-1875168316" label="UseMonitorColorSpace:disabled"/>
   <int value="-1874908826" label="enable-instant-search-clicks"/>
+  <int value="-1874842483" label="FeedLoadingPlaceholder:disabled"/>
   <int value="-1874141108" label="NewOmniboxAnswerTypes:enabled"/>
   <int value="-1872989945" label="enable-webview-based-signin"/>
   <int value="-1872867546" label="EnumerateAudioDevices:disabled"/>
@@ -49835,6 +49844,7 @@ from previous Chrome versions.
   <int value="-102537270" label="extension-content-verification"/>
   <int value="-102387656" label="FillingAcrossAffiliatedWebsites:disabled"/>
   <int value="-102227288" label="PasswordExport:disabled"/>
+  <int value="-100702864" label="PageInfoAboutThisSite:disabled"/>
   <int value="-100148609" label="EvDetailsInPageInfo:disabled"/>
   <int value="-99781021" label="disable-roboto-font-ui"/>
   <int value="-97145978" label="DesktopPWAsStayInWindow:enabled"/>
@@ -52327,6 +52337,7 @@ from previous Chrome versions.
   <int value="1839005510" label="MutingCompromisedCredentials:enabled"/>
   <int value="1839740266" label="LocationHardReload:disabled"/>
   <int value="1841793150" label="TwoPanesStartSurfaceAndroid:enabled"/>
+  <int value="1841976850" label="FeedLoadingPlaceholder:enabled"/>
   <int value="1842219851" label="enable-incognito-window-counter"/>
   <int value="1843088575" label="OutOfBlinkCors:enabled"/>
   <int value="1844110073" label="enable-app-view"/>
@@ -52489,6 +52500,7 @@ from previous Chrome versions.
   <int value="1961068026"
       label="EnableEphemeralGuestProfilesOnDesktop:enabled"/>
   <int value="1961425320" label="force-qtkit"/>
+  <int value="1961717207" label="PageInfoAboutThisSite:enabled"/>
   <int value="1962485086" label="DesktopPWAsLocalUpdating:enabled"/>
   <int value="1963766060"
       label="AutofillEnableFixedPaymentsBubbleLogging:enabled"/>
@@ -52586,6 +52598,7 @@ from previous Chrome versions.
   <int value="2027793952" label="EditPasswordsInSettings:disabled"/>
   <int value="2032558514"
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:enabled"/>
+  <int value="2032880973" label="U2FSecurityKeyAPI:disabled"/>
   <int value="2034198538" label="TabHoverCards:enabled"/>
   <int value="2037562553" label="OmniboxBubbleUrlSuggestions:disabled"/>
   <int value="2037756154" label="enable-impl-side-painting"/>
@@ -59720,24 +59733,39 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NetworkServiceSandboxGrantResult">
-  <int value="0" label="kSuccess">The operation was successful</int>
+  <int value="0" label="kSuccess">A data migration was successful.</int>
   <int value="1" label="kFailedToCreateCacheDirectory">
-    Failed to create cache directory
+    Failed to create cache directory.
   </int>
   <int value="2" label="kFailedToCreateDataDirectory">
-    Failed to create data directory
+    Failed to create data directory.
   </int>
-  <int value="3" label="kFailedToCopyData">Failed to copy data</int>
-  <int value="4" label="kFailedToDeleteOldData">Failed to delete old data</int>
+  <int value="3" label="kFailedToCopyData">Failed to copy data.</int>
+  <int value="4" label="kFailedToDeleteOldData">Failed to delete old data.</int>
   <int value="5" label="kFailedToGrantSandboxAccessToCache">
-    Failed to grant sandbox access to cache directory
+    Failed to grant sandbox access to cache directory.
   </int>
   <int value="6" label="kFailedToGrantSandboxAccessToData">
-    Failed to grant sandbox access to data directory
+    Failed to grant sandbox access to data directory.
   </int>
   <int value="7" label="kDidNotAttemptToGrantSandboxAccess">
     The operation was not attempted because granting sandbox access was not
-    supported on the current platform configuration
+    supported on the current platform configuration, no data paths were
+    specified (e.g. in-memory) or no unsandboxed_data_path was specified to
+    migrate from.
+  </int>
+  <int value="8" label="kFailedToCreateCheckpointFile">
+    Failed to create checkpoint file.
+  </int>
+  <int value="9" label="kNoMigrationRequested">
+    A valid unsandboxed_data_path was specified but no migration was requested.
+  </int>
+  <int value="10" label="kMigrationAlreadySucceeded">
+    Migration has already succeeded previously.
+  </int>
+  <int value="11" label="kMigrationAlreadySucceededWithNoAccess">
+    Migration has already succeeded but it was not possible to grant the sandbox
+    access to the data directory.
   </int>
 </enum>
 
@@ -73333,6 +73361,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="12" label="ALLOWLISTED_BY_POLICY"/>
   <int value="13" label="CLASSIFY"/>
   <int value="14" label="NO_CLASSIFY_HAS_DELAYED_WARNING"/>
+  <int value="15" label="LOCAL_RESOURCE"/>
+  <int value="16" label="CHROME_UI_PAGE"/>
 </enum>
 
 <enum name="SBClientDownloadCheckDownloadStats">

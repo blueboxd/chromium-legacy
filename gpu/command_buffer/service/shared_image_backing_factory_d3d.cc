@@ -104,8 +104,7 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> ValidateAndOpenSharedHandle(
     return nullptr;
   }
 
-  if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(
-          size, format, gfx::BufferPlane::DEFAULT)) {
+  if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, format)) {
     DLOG(ERROR) << "Invalid image size " << size.ToString() << " for "
                 << gfx::BufferFormatToString(format);
     return nullptr;
@@ -333,6 +332,11 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
     DLOG(ERROR) << "CreateTexture2D failed with error " << std::hex << hr;
     return nullptr;
   }
+
+  const std::string debug_label =
+      "SharedImage_Texture2D" + CreateLabelForSharedImageUsage(usage);
+  d3d11_device_->SetPrivateData(WKPDID_D3DDebugObjectName, debug_label.length(),
+                                debug_label.c_str());
 
   Microsoft::WRL::ComPtr<IDXGIResource1> dxgi_resource;
   hr = d3d11_texture.As(&dxgi_resource);

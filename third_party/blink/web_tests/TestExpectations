@@ -234,6 +234,10 @@ crbug.com/v8/12227 external/wpt/wasm/jsapi/table/grow-reftypes.tentative.any.htm
 crbug.com/v8/12227 external/wpt/wasm/jsapi/table/grow-reftypes.tentative.any.worker.html [ Failure Pass ]
 crbug.com/v8/12227 external/wpt/wasm/jsapi/table/get-set.any.html [ Failure Pass ]
 crbug.com/v8/12227 external/wpt/wasm/jsapi/table/get-set.any.worker.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/table/constructor.any.js [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/table/constructor.any.worker.js [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/table/grow.any.js [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/table/grow.any.worker.js [ Failure Pass ]
 
 # Sheriff on 2020-09-03
 crbug.com/1124352 media/picture-in-picture/clear-after-request.html [ Crash Pass ]
@@ -3684,8 +3688,7 @@ crbug.com/1017164 external/wpt/css/css-text/word-break/word-break-normal-tdd-000
 
 crbug.com/899264 external/wpt/css/css-text/letter-spacing/letter-spacing-control-chars-001.html [ Failure ]
 
-# Failure due to on-going off-thread paint worklet project.
-crbug.com/957457 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash Failure Pass ]
+crbug.com/1250666 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Timeout Pass ]
 
 crbug.com/829028 external/wpt/css/css-break/abspos-in-opacity-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/avoid-border-break.html [ Failure ]
@@ -6842,10 +6845,8 @@ crbug.com/1233826 [ Mac ] virtual/threaded/external/wpt/animation-worklet/workle
 crbug.com/1233826 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-cancel.https.html [ Crash Failure Pass ]
 # Also reported as failing via crbug.com/1233766:
 crbug.com/1233826 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-after-duration.https.html [ Crash Failure Pass ]
-# Previously reported as failing on all platforms via crbug.com/626703:
-crbug.com/1236558 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/overdraw.https.html [ Crash Failure Pass ]
-# Previously reported as failing via crbug.com/626703:
-crbug.com/1236558 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/invalid-image-paint-error.https.html [ Crash Failure Pass ]
+crbug.com/1250666 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/overdraw.https.html [ Timeout Pass ]
+crbug.com/1250666 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/invalid-image-paint-error.https.html [ Timeout Pass ]
 # Previously reported as failing via crbug.com/626703:
 crbug.com/1236558 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/no-op-animation.https.html [ Crash Failure Pass ]
 crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-before-start.https.html [ Crash Failure Pass ]
@@ -6871,14 +6872,11 @@ crbug.com/1163645 external/wpt/reporting/same-origin-report-credentials.https.su
 crbug.com/1249071 virtual/composite-clip-path-animation/external/wpt/css/css-masking/clip-path/animations/clip-path-animation-filter.html [ Crash Failure Pass ]
 
 # Sheriff 2021-09-08
-crbug.com/1233826 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-before-load.https.html [ Crash Failure Pass ]
-crbug.com/1233826 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-after-load.https.html [ Crash Failure Pass ]
+crbug.com/1250666 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-before-load.https.html [ Timeout Pass ]
+crbug.com/1250666 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-after-load.https.html [ Timeout Pass ]
 crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-shadow-part4.html [ Crash Pass ]
 crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-color-over-pattern.html [ Crash Pass Timeout ]
 crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-pattern-over-image.html [ Pass Timeout ]
-
-# Sheriff 2021-09-10
-crbug.com/1248437 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/one-custom-property-animation-half-opaque.https.html [ Failure Pass ]
 
 # Sheriff 2021-09-13
 crbug.com/1229701 [ Linux ] http/tests/inspector-protocol/network/disable-cache-media-resource.js [ Failure Pass ]
@@ -6961,3 +6959,9 @@ crbug.com/1250457 [ Mac ] virtual/scroll-unification/fast/events/space-scroll-te
 crbug.com/1250457 [ Mac ] virtual/shared_array_buffer_on_desktop/fast/css/text-overflow-ellipsis-bidi.html [ Timeout ]
 crbug.com/1250457 [ Mac ] virtual/shared_array_buffer_on_desktop/storage/indexeddb/keypath-arrays.html [ Timeout ]
 crbug.com/1250457 [ Mac ] external/wpt/html/syntax/speculative-parsing/generated/document-write/meta-viewport-link-stylesheet-media.tentative.sub.html [ Failure ]
+
+# FileSystemHandle::move() is temporarily disabled outside of the Origin Private File System
+crbug.com/1247850 external/wpt/file-system-access/local_FileSystemBaseHandle-move-manual.https.html [ Failure ]
+crbug.com/1247850 external/wpt/file-system-access/local_FileSystemBaseHandle-rename-manual.https.html [ Failure ]
+crbug.com/1247850 virtual/file-system-access-access-handle-incognito/external/wpt/file-system-access/local_FileSystemBaseHandle-move-manual.https.html [ Failure ]
+crbug.com/1247850 virtual/file-system-access-access-handle-incognito/external/wpt/file-system-access/local_FileSystemBaseHandle-rename-manual.https.html [ Failure ]

@@ -23,6 +23,8 @@ import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.ChildAccountStatus;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -45,8 +47,8 @@ class FREBottomGroupMediator implements AccountsChangeObserver, ProfileDataCache
         mModalDialogManager = modalDialogManager;
         mListener = listener;
         mProfileDataCache = ProfileDataCache.createWithDefaultImageSizeAndNoBadge(mContext);
-        mModel = FREBottomGroupProperties.createModel(this::onSelectedAccountClicked,
-                this::onContinueAsClicked, mListener::advanceToNextPage);
+        mModel = FREBottomGroupProperties.createModel(
+                this::onSelectedAccountClicked, this::onContinueAsClicked, this::onDismissClicked);
 
         mProfileDataCache.addObserver(this);
 
@@ -107,8 +109,7 @@ class FREBottomGroupMediator implements AccountsChangeObserver, ProfileDataCache
     }
 
     /**
-     * Callback for the PropertyKey
-     * {@link FREBottomGroupProperties#ON_CONTINUE_AS_CLICKED}.
+     * Callback for the PropertyKey {@link FREBottomGroupProperties#ON_CONTINUE_AS_CLICKED}.
      */
     private void onContinueAsClicked() {
         if (mSelectedAccountName == null) {
@@ -119,7 +120,13 @@ class FREBottomGroupMediator implements AccountsChangeObserver, ProfileDataCache
             return;
         }
         assert mModel.get(FREBottomGroupProperties.ARE_NATIVE_AND_POLICY_LOADED)
-            : "The continue button shouldn't be visible before the native is not initialize!";
+            : "The continue button shouldn't be visible before the native is not initialized!";
+        if (IdentityServicesProvider.get()
+                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .hasPrimaryAccount(ConsentLevel.SIGNIN)) {
+            mListener.advanceToNextPage();
+            return;
+        }
         final SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
                 Profile.getLastUsedRegularProfile());
         signinManager.onFirstRunCheckDone();
@@ -135,6 +142,24 @@ class FREBottomGroupMediator implements AccountsChangeObserver, ProfileDataCache
                         // TODO(crbug/1248090): Handle the sign-in error here
                     }
                 });
+    }
+
+    /**
+     * Callback for the PropertyKey {@link FREBottomGroupProperties#ON_DISMISS_CLICKED}.
+     */
+    private void onDismissClicked() {
+        assert mModel.get(FREBottomGroupProperties.ARE_NATIVE_AND_POLICY_LOADED)
+            : "The dismiss button shouldn't be visible before the native is not initialized!";
+        if (IdentityServicesProvider.get()
+                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .hasPrimaryAccount(ConsentLevel.SIGNIN)) {
+            IdentityServicesProvider.get()
+                    .getSigninManager(Profile.getLastUsedRegularProfile())
+                    .signOut(SignoutReason.ABORT_SIGNIN, mListener::advanceToNextPage,
+                            /* forceWipeUserData= */ false);
+        } else {
+            mListener.advanceToNextPage();
+        }
     }
 
     private void setSelectedAccountName(String accountName) {

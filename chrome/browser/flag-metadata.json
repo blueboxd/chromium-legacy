@@ -814,10 +814,6 @@
       "owners":["gambard", "bling-flags@google.com"],
       "expiry_milestone":100
   },
-  { "name":"context-menu-phase3",
-      "owners":["gambard", "bling-flags@google.com"],
-      "expiry_milestone":100
-  },
   {
     "name": "context-menu-search-and-shop-with-google-lens",
     "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "lens-chrome@google.com" ],
@@ -1474,11 +1470,6 @@
     "name": "enable-aura-window-subtree-capture",
     "owners": [ "jophba" ],
     "expiry_milestone": 102
-  },
-  {
-    "name": "enable-auto-select",
-    "owners": ["croissant-eng"],
-    "expiry_milestone": 95
   },
   {
     "name": "enable-autofill-account-wallet-storage",
@@ -2519,11 +2510,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "enable-quick-answers-translation-cloud-api",
-    "owners": [ "croissant-eng" ],
-    "expiry_milestone": 95
-  },
-  {
     "name": "enable-quick-answers-v2",
     "owners": [ "croissant-eng" ],
     "expiry_milestone": 100
@@ -3179,7 +3165,7 @@
   {
     "name": "files-trash",
     "owners": [ "joelhockey", "noel", "simmonsjosh@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 105
   },
   {
     "name": "files-zip-unpack",
@@ -3691,14 +3677,6 @@
     "name": "lens-camera-assisted-search",
     "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "fgorski", "wylieb", "lens-chrome@google.com" ],
     "expiry_milestone": 96
-  },
-  {
-    "name": "link-doctor-deprecation-android",
-    "owners": [
-      "andzaytsev@google.com",
-      "msramek",
-      "chrome-friendly-settings@google.com"],
-    "expiry_milestone": 97
   },
   {
     "name": "list-all-display-modes",

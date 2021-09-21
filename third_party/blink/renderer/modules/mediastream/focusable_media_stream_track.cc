@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/modules/imagecapture/image_capture.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 
@@ -15,14 +16,56 @@ FocusableMediaStreamTrack::FocusableMediaStreamTrack(
     ExecutionContext* execution_context,
     MediaStreamComponent* component,
     base::OnceClosure callback,
-    const String& descriptor_id)
-    : MediaStreamTrack(execution_context, component, std::move(callback)),
-      descriptor_id_(descriptor_id) {}
+    const String& descriptor_id,
+    bool is_clone)
+    : FocusableMediaStreamTrack(execution_context,
+                                component,
+                                component->Source()->GetReadyState(),
+                                std::move(callback),
+                                descriptor_id,
+                                is_clone) {}
 
-MediaStreamTrack* FocusableMediaStreamTrack::clone(ScriptState* script_state) {
-  // Clones do not expose focus(). They are intentionally of the parent type.
-  return MediaStreamTrack::clone(script_state);
+FocusableMediaStreamTrack::FocusableMediaStreamTrack(
+    ExecutionContext* execution_context,
+    MediaStreamComponent* component,
+    MediaStreamSource::ReadyState ready_state,
+    base::OnceClosure callback,
+    const String& descriptor_id,
+    bool is_clone)
+    : MediaStreamTrack(execution_context,
+                       component,
+                       ready_state,
+                       std::move(callback)),
+#if !defined(OS_ANDROID)
+      is_clone_(is_clone),
+#endif
+      descriptor_id_(descriptor_id) {
 }
+
+FocusableMediaStreamTrack* FocusableMediaStreamTrack::clone(
+    ScriptState* script_state) {
+  MediaStreamComponent* const cloned_component = Component()->Clone();
+  FocusableMediaStreamTrack* cloned_track =
+      MakeGarbageCollected<FocusableMediaStreamTrack>(
+          ExecutionContext::From(script_state), cloned_component,
+          GetReadyState(), base::DoNothing(), descriptor_id_,
+          /*is_clone=*/true);
+  MediaStreamTrack::DidCloneMediaStreamTrack(Component(), cloned_component);
+  cloned_track->CloneImageCaptureFrom(*this);
+
+#if !defined(OS_ANDROID)
+  // Copied for completeness, but should never be read on clones.
+  cloned_track->focus_called_ = focus_called_;
+#endif
+
+  return cloned_track;
+}
+
+#if !defined(OS_ANDROID)
+void FocusableMediaStreamTrack::CloseFocusWindowOfOpportunity() {
+  promise_settled_ = true;
+}
+#endif
 
 void FocusableMediaStreamTrack::focus(
     ExecutionContext* execution_context,
@@ -42,12 +85,25 @@ void FocusableMediaStreamTrack::focus(
     return;
   }
 
+  if (is_clone_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Method may not be invoked on clones.");
+    return;
+  }
+
   if (focus_called_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Method may only be called once.");
     return;
   }
   focus_called_ = true;
+
+  if (promise_settled_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The microtask on which the Promise was settled has terminated.");
+    return;
+  }
 
   client->FocusCapturedSurface(
       descriptor_id_,

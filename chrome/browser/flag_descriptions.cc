@@ -1559,12 +1559,6 @@ const char kLensCameraAssistedSearchDescription[] =
     "Enable an entry point to Google Lens to allow users to search what they "
     "see using their mobile camera.";
 
-const char kLinkDoctorDeprecationAndroidName[] =
-    "Link Doctor Deprecation on Android";
-const char kLinkDoctorDeprecationAndroidDescription[] =
-    "Removes the setting for retrieving suggestions on navigation errors since "
-    "this feature is deprecated.";
-
 const char kLiteVideoName[] = "Enable LiteVideos";
 const char kLiteVideoDescription[] =
     "Enable the LiteVideo optimization to throttle media requests to "
@@ -2876,10 +2870,12 @@ const char kExtensionWorkflowJustificationDescription[] =
     "Enables users to justify their extension requests by causing a text field "
     "to appear on the extension request dialog.";
 
+#if !defined(OS_ANDROID)
 const char kShareContextMenuName[] = "Share context menu";
 const char kShareContextMenuDescription[] =
     "Whether the sharing options in various context menus are grouped into "
     "a common submenu.";
+#endif
 
 const char kForceMajorVersion100InUserAgentName[] =
     "Force major version to 100 in User-Agent";
@@ -4363,10 +4359,6 @@ const char kEnableAssistantLauncherIntegrationDescription[] =
 const char kEnableAssistantRoutinesName[] = "Assistant Routines";
 const char kEnableAssistantRoutinesDescription[] = "Enable Assistant Routines.";
 
-const char kEnableAutoSelectName[] = "Auto Select";
-const char kEnableAutoSelectDescription[] =
-    "Automatically select the word under cursor on contextual menu click.";
-
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Launcher, Shelf, Unified System Tray etc.";
@@ -4523,11 +4515,6 @@ const char kEnableQuickAnswersTextAnnotatorName[] =
     "Enable Quick Answers text annotator";
 const char kEnableQuickAnswersTextAnnotatorDescription[] =
     "Enable Quick Answers text annotator.";
-
-const char kEnableQuickAnswersTranslationCloudAPIName[] =
-    "Enable Quick Answers translation using the Cloud API";
-const char kEnableQuickAnswersTranslationCloudAPIDescription[] =
-    "Enable Quick Answers translation using the Cloud API.";
 
 const char kEnableQuickAnswersV2Name[] = "Enable Quick Answers V2 features";
 const char kEnableQuickAnswersV2Description[] =

@@ -5641,10 +5641,14 @@ const CSSValue* Rotate::ParseSingleValue(CSSParserTokenRange& range,
       range, context, absl::optional<WebFeature>());
 
   CSSValue* axis = css_parsing_utils::ConsumeAxis(range, context);
-  if (axis)
-    list->Append(*axis);
-  else if (!rotation)
+  if (axis) {
+    if (To<cssvalue::CSSAxisValue>(axis)->AxisName() != CSSValueID::kZ) {
+      // The z axis should be normalized away and stored as a 2D rotate.
+      list->Append(*axis);
+    }
+  } else if (!rotation) {
     return nullptr;
+  }
 
   if (!rotation) {
     rotation = css_parsing_utils::ConsumeAngle(range, context,
@@ -7312,8 +7316,11 @@ const CSSValue* Translate::ParseSingleValue(
   CSSPrimitiveValue* translate_y =
       css_parsing_utils::ConsumeLengthOrPercent(range, context, kValueRangeAll);
   if (translate_y) {
-    CSSValue* translate_z =
+    CSSPrimitiveValue* translate_z =
         css_parsing_utils::ConsumeLength(range, context, kValueRangeAll);
+
+    if (translate_z && translate_z->IsZero())
+      translate_z = nullptr;
     if (translate_y->IsZero() && !translate_z)
       return list;
 

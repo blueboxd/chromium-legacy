@@ -55,6 +55,7 @@
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_params.h"
 #include "chrome/browser/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
+#include "chrome/browser/share/share_submenu_model.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sms/sms_flags.h"
@@ -5446,12 +5447,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableQuickAnswersTextAnnotatorDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersTextAnnotator)},
 
-    {"enable-quick-answers-translation-cloud-api",
-     flag_descriptions::kEnableQuickAnswersTranslationCloudAPIName,
-     flag_descriptions::kEnableQuickAnswersTranslationCloudAPIDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersTranslationCloudAPI)},
-
     {"enable-quick-answers-v2", flag_descriptions::kEnableQuickAnswersV2Name,
      flag_descriptions::kEnableQuickAnswersV2Description, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersV2)},
@@ -6810,12 +6805,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kAImageReader)},
 #endif  // OS_ANDROID
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-auto-select", flag_descriptions::kEnableAutoSelectName,
-     flag_descriptions::kEnableAutoSelectDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(blink::features::kCrOSAutoSelect)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 #if defined(OS_ANDROID)
     {"smart-suggestion-for-large-downloads",
      flag_descriptions::kSmartSuggestionForLargeDownloadsName,
@@ -7461,13 +7450,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kEnableInputInDiagnosticsApp)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_ANDROID)
-    {"link-doctor-deprecation-android",
-     flag_descriptions::kLinkDoctorDeprecationAndroidName,
-     flag_descriptions::kLinkDoctorDeprecationAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kLinkDoctorDeprecationAndroid)},
-#endif
-
 #if defined(TOOLKIT_VIEWS)
     {"download-shelf-webui", flag_descriptions::kDownloadShelfWebUI,
      flag_descriptions::kDownloadShelfWebUIDescription, kOsDesktop,
@@ -7642,9 +7624,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kShareUsageRankingFixedMore)},
 #endif
 
+#if !defined(OS_ANDROID)
     {"share-context-menu", flag_descriptions::kShareContextMenuName,
      flag_descriptions::kShareContextMenuDescription, kOsAll,
-     FEATURE_VALUE_TYPE(sharing::kShareMenu)},
+     FEATURE_VALUE_TYPE(share::kShareMenu)},
+#endif
 
     {"enable-safe-browsing-per-profile-network-contexts",
      flag_descriptions::kSafeBrowsingPerProfileNetworkContextsName,

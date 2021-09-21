@@ -50,14 +50,8 @@ class InputMethodManagerImpl : public InputMethodManager,
    public:
     StateImpl(InputMethodManagerImpl* manager, Profile* profile);
 
-    // Init new state as a copy of other.
-    void InitFrom(const StateImpl& other);
-
     // Returns true if (manager_->state_ == this).
     bool IsActive() const;
-
-    // Returns human-readable dump (for debug).
-    std::string Dump() const;
 
     // Adds new input method to given list if possible
     bool EnableInputMethodImpl(
@@ -66,13 +60,6 @@ class InputMethodManagerImpl : public InputMethodManager,
 
     // Returns true if |input_method_id| is in |active_input_method_ids|.
     bool InputMethodIsActivated(const std::string& input_method_id) const;
-
-    // If |current_input_methodid_| is not in |input_method_ids|, switch to
-    // input_method_ids[0]. If the ID is equal to input_method_ids[N], switch to
-    // input_method_ids[N+1].
-    void SwitchToNextInputMethodInternal(
-        const std::vector<std::string>& input_method_ids,
-        const std::string& current_input_methodid);
 
     // Returns true if given input method requires pending extension.
     bool MethodAwaitsExtensionLoad(const std::string& input_method_id) const;
@@ -186,8 +173,7 @@ class InputMethodManagerImpl : public InputMethodManager,
     InputMethodManager::UIStyle ui_style_ =
         InputMethodManager::UIStyle::kNormal;
 
-    // Do not forget to update StateImpl::InitFrom(const StateImpl& other) and
-    // StateImpl::Dump() when adding new data members!!!
+    // Do not forget to update StateImpl::Clone() when adding new data members!!
   };
 
   // Constructs an InputMethodManager instance. The client is responsible for

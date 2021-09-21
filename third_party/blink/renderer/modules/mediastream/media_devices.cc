@@ -63,8 +63,7 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
         on_success_follow_up_(std::move(on_success_follow_up)) {}
   ~PromiseResolverCallbacks() override = default;
 
-  void OnSuccess(ScriptWrappable* callback_this_value,
-                 MediaStream* stream) override {
+  void OnSuccess(MediaStream* stream) override {
     DCHECK(stream);
 
     MediaStreamTrack* video_track = nullptr;
@@ -605,6 +604,9 @@ void MediaDevices::CloseFocusWindowOfOpportunity(const String& id,
   if (!window) {
     return;
   }
+
+  // Inform the track that further calls to focus() should raise an exception.
+  track->CloseFocusWindowOfOpportunity();
 
   GetDispatcherHost(window->GetFrame())->CloseFocusWindowOfOpportunity(id);
 }

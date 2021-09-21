@@ -139,76 +139,30 @@ InputMethodManagerImpl::StateImpl::StateImpl(InputMethodManagerImpl* manager,
 
 InputMethodManagerImpl::StateImpl::~StateImpl() = default;
 
-void InputMethodManagerImpl::StateImpl::InitFrom(const StateImpl& other) {
-  last_used_input_method = other.last_used_input_method;
-  current_input_method = other.current_input_method;
-
-  active_input_method_ids = other.active_input_method_ids;
-  allowed_keyboard_layout_input_method_ids =
-      other.allowed_keyboard_layout_input_method_ids;
-
-  pending_input_method_id = other.pending_input_method_id;
-
-  enabled_extension_imes = other.enabled_extension_imes;
-  available_input_methods = other.available_input_methods;
-  menu_activated = other.menu_activated;
-  input_view_url = other.input_view_url;
-  input_view_url_overridden = other.input_view_url_overridden;
-  ui_style_ = other.ui_style_;
-}
-
 bool InputMethodManagerImpl::StateImpl::IsActive() const {
   return manager_->state_.get() == this;
-}
-
-std::string InputMethodManagerImpl::StateImpl::Dump() const {
-  std::ostringstream os;
-
-  os << "################# "
-     << (profile ? profile->GetProfileUserName() : std::string("NULL"))
-     << " #################\n";
-
-  os << "last_used_input_method: '" << last_used_input_method.keyboard_layout()
-     << "'\n";
-  os << "current_input_method: '" << current_input_method.keyboard_layout()
-     << "'\n";
-  os << "active_input_method_ids (size=" << active_input_method_ids.size()
-     << "):";
-  for (const auto& active_input_method_id : active_input_method_ids) {
-    os << " '" << active_input_method_id << "',";
-  }
-  os << "\n";
-  os << "allowed_keyboard_layout_input_method_ids (size="
-     << allowed_keyboard_layout_input_method_ids.size() << "):";
-  for (const auto& allowed_keyboard_layout_input_method_id :
-       allowed_keyboard_layout_input_method_ids) {
-    os << " '" << allowed_keyboard_layout_input_method_id << "',";
-  }
-  os << "\n";
-  os << "pending_input_method_id: '" << pending_input_method_id << "'\n";
-  os << "enabled_extension_imes (size=" << enabled_extension_imes.size()
-     << "):";
-  for (const auto& enabled_extension_ime : enabled_extension_imes) {
-    os << " '" << enabled_extension_ime << "'\n";
-  }
-  os << "\n";
-  os << "available_input_methods (size=" << available_input_methods.size()
-     << "):";
-  for (const auto& entry : available_input_methods) {
-    os << " '" << entry.first << "' => '" << entry.second.id() << "',\n";
-  }
-  os << "menu_activated: '" << menu_activated << "'\n";
-  os << "input_view_url: '" << input_view_url << "'\n";
-  os << "input_view_url_overridden: '" << input_view_url_overridden << "'\n";
-  os << "ui_style_: '" << static_cast<int>(ui_style_) << "'\n";
-
-  return os.str();
 }
 
 scoped_refptr<InputMethodManager::State>
 InputMethodManagerImpl::StateImpl::Clone() const {
   scoped_refptr<StateImpl> new_state(new StateImpl(this->manager_, profile));
-  new_state->InitFrom(*this);
+
+  new_state->last_used_input_method = last_used_input_method;
+  new_state->current_input_method = current_input_method;
+
+  new_state->active_input_method_ids = active_input_method_ids;
+  new_state->allowed_keyboard_layout_input_method_ids =
+      allowed_keyboard_layout_input_method_ids;
+
+  new_state->pending_input_method_id = pending_input_method_id;
+
+  new_state->enabled_extension_imes = enabled_extension_imes;
+  new_state->available_input_methods = available_input_methods;
+  new_state->menu_activated = menu_activated;
+  new_state->input_view_url = input_view_url;
+  new_state->input_view_url_overridden = input_view_url_overridden;
+  new_state->ui_style_ = ui_style_;
+
   return scoped_refptr<InputMethodManager::State>(new_state.get());
 }
 
@@ -808,9 +762,14 @@ void InputMethodManagerImpl::StateImpl::SwitchToNextInputMethod() {
   if (!CanCycleInputMethod())
     return;
 
-  // Find the next input method and switch to it.
-  SwitchToNextInputMethodInternal(active_input_method_ids,
-                                  current_input_method.id());
+  auto iter =
+      std::find(active_input_method_ids.begin(), active_input_method_ids.end(),
+                current_input_method.id());
+  if (iter != active_input_method_ids.end())
+    ++iter;
+  if (iter == active_input_method_ids.end())
+    iter = active_input_method_ids.begin();
+  ChangeInputMethod(*iter, true);
 }
 
 void InputMethodManagerImpl::StateImpl::SwitchToLastUsedInputMethod() {
@@ -831,18 +790,6 @@ void InputMethodManagerImpl::StateImpl::SwitchToLastUsedInputMethod() {
     SwitchToNextInputMethod();
     return;
   }
-  ChangeInputMethod(*iter, true);
-}
-
-void InputMethodManagerImpl::StateImpl::SwitchToNextInputMethodInternal(
-    const std::vector<std::string>& input_method_ids,
-    const std::string& current_input_method_id) {
-  auto iter = std::find(input_method_ids.begin(), input_method_ids.end(),
-                        current_input_method_id);
-  if (iter != input_method_ids.end())
-    ++iter;
-  if (iter == input_method_ids.end())
-    iter = input_method_ids.begin();
   ChangeInputMethod(*iter, true);
 }
 

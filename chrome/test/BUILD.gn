@@ -1304,7 +1304,6 @@ if (!is_android && !is_fuchsia) {
       "//components/unified_consent",
       "//components/user_manager",
       "//components/variations/service",
-      "//components/variations/service:constants",
       "//components/webapps/browser",
       "//components/webrtc",
       "//components/webrtc_logging/browser",
@@ -4926,6 +4925,7 @@ test("unit_tests") {
 
   if (is_chromeos) {
     sources += [
+      "../browser/apps/intent_helper/metrics/intent_handling_metrics_unittest.cc",
       "chromeos/printing/fake_local_printer_chromeos.cc",
       "chromeos/printing/fake_local_printer_chromeos.h",
     ]

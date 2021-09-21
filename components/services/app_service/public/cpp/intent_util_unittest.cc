@@ -485,6 +485,13 @@ GURL test_url(const std::string& file_name) {
   return url;
 }
 
+std::vector<apps::mojom::IntentFilePtr> vectorise(
+    const apps::mojom::IntentFilePtr& file) {
+  std::vector<apps::mojom::IntentFilePtr> vector;
+  vector.push_back(file.Clone());
+  return vector;
+}
+
 TEST_F(IntentUtilTest, FileExtensionMatch) {
   std::string mime_type_mp3 = "audio/mp3";
   std::string file_ext_mp3 = "mp3";
@@ -493,36 +500,30 @@ TEST_F(IntentUtilTest, FileExtensionMatch) {
   auto file_filter =
       apps_util::CreateFileFilterForView(mime_type_mp3, file_ext_mp3, "label");
 
-  std::vector<GURL> urls;
-  std::vector<std::string> mime_types;
-
-  urls.push_back(test_url("abc.mp3"));
+  auto file = apps::mojom::IntentFile::New();
+  file->url = test_url("abc.mp3");
+  file->is_directory = apps::mojom::OptionalBool::kFalse;
 
   // Test match with the same mime type and the same file extension.
-  mime_types.push_back(mime_type_mp3);
-  auto intent = apps_util::CreateViewIntentFromFiles(urls, mime_types);
+  file->mime_type = mime_type_mp3;
+  auto intent = apps_util::CreateViewIntentFromFiles(vectorise(file));
   EXPECT_TRUE(apps_util::IntentMatchesFilter(intent, file_filter));
 
   // Test match with different mime types and the same file extension.
-  mime_types.clear();
-  mime_types.push_back(mime_type_mpeg);
-  intent = apps_util::CreateViewIntentFromFiles(urls, mime_types);
+  file->mime_type = mime_type_mpeg;
+  intent = apps_util::CreateViewIntentFromFiles(vectorise(file));
   EXPECT_TRUE(apps_util::IntentMatchesFilter(intent, file_filter));
 
   // Test match with the same mime type and a different file extension.
-  urls.clear();
-  urls.push_back(test_url("abc.png"));
-  mime_types.clear();
-  mime_types.push_back(mime_type_mp3);
-  intent = apps_util::CreateViewIntentFromFiles(urls, mime_types);
+  file->url = test_url("abc.png");
+  file->mime_type = mime_type_mp3;
+  intent = apps_util::CreateViewIntentFromFiles(vectorise(file));
   EXPECT_TRUE(apps_util::IntentMatchesFilter(intent, file_filter));
 
   // Test match with different mime types and a different file extension.
-  urls.clear();
-  urls.push_back(test_url("abc.png"));
-  mime_types.clear();
-  mime_types.push_back(mime_type_mpeg);
-  intent = apps_util::CreateViewIntentFromFiles(urls, mime_types);
+  file->url = test_url("abc.png");
+  file->mime_type = mime_type_mpeg;
+  intent = apps_util::CreateViewIntentFromFiles(vectorise(file));
   EXPECT_FALSE(apps_util::IntentMatchesFilter(intent, file_filter));
 }
 
@@ -667,4 +668,108 @@ TEST_F(IntentUtilTest, CalculateCommonMimeType) {
             apps_util::CalculateCommonMimeType({"image/png", "text/plain"}));
   EXPECT_EQ("*/*", apps_util::CalculateCommonMimeType(
                        {"image/png", "image/jpeg", "text/plain"}));
+}
+
+TEST_F(IntentUtilTest, IsGenericFileHandler) {
+  using apps::mojom::IntentFile;
+  using apps::mojom::IntentFilePtr;
+  using apps::mojom::IntentFilterPtr;
+  using apps::mojom::IntentPtr;
+  using apps::mojom::OptionalBool;
+
+  std::vector<IntentFilePtr> intent_files;
+  IntentFilePtr foo = IntentFile::New();
+  foo->url = test_url("foo.jpg");
+  foo->mime_type = "image/jpeg";
+  foo->is_directory = OptionalBool::kFalse;
+  intent_files.push_back(std::move(foo));
+
+  IntentFilePtr bar = IntentFile::New();
+  bar->url = test_url("bar.txt");
+  bar->mime_type = "text/plain";
+  bar->is_directory = OptionalBool::kFalse;
+  intent_files.push_back(std::move(bar));
+
+  std::vector<IntentFilePtr> intent_files2;
+  IntentFilePtr foo2 = IntentFile::New();
+  foo2->url = test_url("foo.ics");
+  foo2->mime_type = "text/calendar";
+  foo2->is_directory = OptionalBool::kFalse;
+  intent_files2.push_back(std::move(foo2));
+
+  std::vector<IntentFilePtr> intent_files3;
+  IntentFilePtr foo_dir = IntentFile::New();
+  foo_dir->url = test_url("foo/");
+  foo_dir->mime_type = "";
+  foo_dir->is_directory = OptionalBool::kTrue;
+  intent_files3.push_back(std::move(foo_dir));
+
+  IntentPtr intent =
+      apps_util::CreateViewIntentFromFiles(std::move(intent_files));
+  IntentPtr intent2 =
+      apps_util::CreateViewIntentFromFiles(std::move(intent_files2));
+  IntentPtr intent3 =
+      apps_util::CreateViewIntentFromFiles(std::move(intent_files3));
+
+  const std::string kLabel = "";
+
+  // extensions: ["*"]
+  IntentFilterPtr filter1 = apps_util::CreateFileFilterForView("", "*", kLabel);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent, filter1));
+
+  // extensions: ["*", "jpg"]
+  IntentFilterPtr filter2 = apps_util::CreateFileFilterForView("", "*", kLabel);
+  apps_util::AddConditionValue(apps::mojom::ConditionType::kFile, "jpg",
+                               apps::mojom::PatternMatchType::kFileExtension,
+                               filter2);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent, filter2));
+
+  // extensions: ["jpg"]
+  IntentFilterPtr filter3 =
+      apps_util::CreateFileFilterForView("", "jpg", kLabel);
+  EXPECT_FALSE(apps_util::IsGenericFileHandler(intent, filter3));
+
+  // types: ["*"]
+  IntentFilterPtr filter4 = apps_util::CreateFileFilterForView("*", "", kLabel);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent, filter4));
+
+  // types: ["*/*"]
+  IntentFilterPtr filter5 =
+      apps_util::CreateFileFilterForView("*/*", "", kLabel);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent, filter5));
+
+  // types: ["image/*"]
+  IntentFilterPtr filter6 =
+      apps_util::CreateFileFilterForView("image/*", "", kLabel);
+  // Partial wild card is not generic.
+  EXPECT_FALSE(apps_util::IsGenericFileHandler(intent, filter6));
+
+  // types: ["*", "image/*"]
+  IntentFilterPtr filter7 = apps_util::CreateFileFilterForView("*", "", kLabel);
+  apps_util::AddConditionValue(apps::mojom::ConditionType::kFile, "image/*",
+                               apps::mojom::PatternMatchType::kMimeType,
+                               filter7);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent, filter7));
+
+  // extensions: ["*"], types: ["image/*"]
+  IntentFilterPtr filter8 =
+      apps_util::CreateFileFilterForView("image/*", "*", kLabel);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent, filter8));
+
+  // types: ["text/*"] and target files contain unsupported text mime type, e.g.
+  // text/calendar.
+  IntentFilterPtr filter9 =
+      apps_util::CreateFileFilterForView("text/*", "", kLabel);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent2, filter9));
+
+  // types: ["text/*"] and target files don't contain unsupported text mime
+  // type.
+  IntentFilterPtr filter10 =
+      apps_util::CreateFileFilterForView("text/*", "", kLabel);
+  EXPECT_FALSE(apps_util::IsGenericFileHandler(intent, filter10));
+
+  // File is a directory.
+  IntentFilterPtr filter11 =
+      apps_util::CreateFileFilterForView("text/*", "", kLabel);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent3, filter11));
 }

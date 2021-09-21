@@ -893,9 +893,6 @@ extern const char kLegacyTLSEnforcedDescription[];
 extern const char kLensCameraAssistedSearchName[];
 extern const char kLensCameraAssistedSearchDescription[];
 
-extern const char kLinkDoctorDeprecationAndroidName[];
-extern const char kLinkDoctorDeprecationAndroidDescription[];
-
 extern const char kLiteVideoName[];
 extern const char kLiteVideoDescription[];
 
@@ -1637,8 +1634,10 @@ extern const char kUsePassthroughCommandDecoderDescription[];
 extern const char kExtensionWorkflowJustificationName[];
 extern const char kExtensionWorkflowJustificationDescription[];
 
+#if !defined(OS_ANDROID)
 extern const char kShareContextMenuName[];
 extern const char kShareContextMenuDescription[];
+#endif
 
 extern const char kForceMajorVersion100InUserAgentName[];
 extern const char kForceMajorVersion100InUserAgentDescription[];
@@ -2493,9 +2492,6 @@ extern const char kEnableAssistantLauncherIntegrationDescription[];
 extern const char kEnableAssistantRoutinesName[];
 extern const char kEnableAssistantRoutinesDescription[];
 
-extern const char kEnableAutoSelectName[];
-extern const char kEnableAutoSelectDescription[];
-
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
 
@@ -2579,9 +2575,6 @@ extern const char kEnableQuickAnswersOnEditableTextDescription[];
 
 extern const char kEnableQuickAnswersTextAnnotatorName[];
 extern const char kEnableQuickAnswersTextAnnotatorDescription[];
-
-extern const char kEnableQuickAnswersTranslationCloudAPIName[];
-extern const char kEnableQuickAnswersTranslationCloudAPIDescription[];
 
 extern const char kEnableQuickAnswersV2Name[];
 extern const char kEnableQuickAnswersV2Description[];

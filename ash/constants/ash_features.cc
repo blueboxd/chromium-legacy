@@ -509,7 +509,7 @@ const base::Feature kFilesArchivemount{"FilesArchivemount",
 // Enable the updated banner framework.
 // https://crbug.com/1228128
 const base::Feature kFilesBannerFramework{"FilesBannerFramework",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the System Web App (SWA) version of file manager.
 const base::Feature kFilesSWA{"FilesSWA", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -881,10 +881,6 @@ const base::Feature kQuickAnswersOnEditableText{
 // Controls whether to enable quick answers text annotator.
 const base::Feature kQuickAnswersTextAnnotator{
     "QuickAnswersTextAnnotator", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether to enable quick answers translation using Cloud API.
-const base::Feature kQuickAnswersTranslationCloudAPI{
-    "QuickAnswersTranslationCloudAPI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable quick answers V2 features.
 const base::Feature kQuickAnswersV2{"QuickAnswersV2",
@@ -1573,10 +1569,6 @@ bool IsQuickAnswersEnabled() {
 
 bool IsQuickAnswersOnEditableTextEnabled() {
   return base::FeatureList::IsEnabled(kQuickAnswersOnEditableText);
-}
-
-bool IsQuickAnswersTranslationCloudAPIEnabled() {
-  return base::FeatureList::IsEnabled(kQuickAnswersTranslationCloudAPI);
 }
 
 bool IsQuickAnswersV2Enabled() {

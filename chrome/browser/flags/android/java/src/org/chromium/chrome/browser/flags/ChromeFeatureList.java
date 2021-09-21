@@ -334,9 +334,10 @@ public abstract class ChromeFeatureList {
     public static final String EXPERIMENTS_FOR_AGSA = "ExperimentsForAgsa";
     public static final String EXPLICIT_LANGUAGE_ASK = "ExplicitLanguageAsk";
     public static final String EXPLORE_SITES = "ExploreSites";
+    public static final String FEED_BACK_TO_TOP = "FeedBackToTop";
+    public static final String FEED_CLEAR_IMAGE_MEMORY_CACHE = "FeedClearImageMemoryCache";
     public static final String FEED_IMAGE_MEMORY_CACHE_SIZE_PERCENTAGE =
             "FeedImageMemoryCacheSizePercentage";
-    public static final String FEED_BACK_TO_TOP = "FeedBackToTop";
     public static final String FEED_INTERACTIVE_REFRESH = "FeedInteractiveRefresh";
     public static final String FEED_LOADING_PLACEHOLDER = "FeedLoadingPlaceholder";
     public static final String FEED_RELIABILITY_LOGGING = "FeedReliabilityLogging";
@@ -527,8 +528,6 @@ public abstract class ChromeFeatureList {
     public static final String TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT_WARNING =
             "TrustedWebActivityQualityEnforcementWarning";
     public static final String VIDEO_TUTORIALS = "VideoTutorials";
-    public static final String UPDATE_NOTIFICATION_SCHEDULING_INTEGRATION =
-            "UpdateNotificationSchedulingIntegration";
     public static final String UPDATE_NOTIFICATION_IMMEDIATE_SHOW_OPTION =
             "UpdateNotificationScheduleServiceImmediateShowOption";
     public static final String UPDATE_HISTORY_ENTRY_POINTS_IN_INCOGNITO =

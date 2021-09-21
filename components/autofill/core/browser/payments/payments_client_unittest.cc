@@ -125,6 +125,10 @@ struct CardUnmaskOptions {
 class PaymentsClientTest : public testing::Test {
  public:
   PaymentsClientTest() = default;
+
+  PaymentsClientTest(const PaymentsClientTest&) = delete;
+  PaymentsClientTest& operator=(const PaymentsClientTest&) = delete;
+
   ~PaymentsClientTest() override = default;
 
   void SetUp() override {
@@ -345,7 +349,6 @@ class PaymentsClientTest : public testing::Test {
     PaymentsClient::SelectChallengeOptionRequestDetails request_details;
     request_details.billing_customer_number = 555666777888;
     request_details.context_token = "fake context token";
-    request_details.app_locale = "language-LOCALE";
 
     CardUnmaskChallengeOption selected_challenge_option;
     selected_challenge_option.type = challenge_type;
@@ -480,8 +483,6 @@ class PaymentsClientTest : public testing::Test {
   base::WeakPtrFactory<PaymentsClientTest> weak_ptr_factory_{this};
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PaymentsClientTest);
-
   std::vector<AutofillProfile> BuildTestProfiles() {
     std::vector<AutofillProfile> profiles;
     profiles.push_back(BuildProfile("John", "Smith", "1234 Main St.", "Miami",

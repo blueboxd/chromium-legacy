@@ -89,6 +89,9 @@ class CONTENT_EXPORT FrameTreeNode {
       blink::mojom::FrameOwnerElementType owner_type,
       const blink::FramePolicy& frame_owner);
 
+  FrameTreeNode(const FrameTreeNode&) = delete;
+  FrameTreeNode& operator=(const FrameTreeNode&) = delete;
+
   ~FrameTreeNode();
 
   void AddObserver(Observer* observer);
@@ -487,6 +490,10 @@ class CONTENT_EXPORT FrameTreeNode {
   bool HasNavigation();
 
   // Fenced frames (meta-bug crbug.com/1111084):
+  // Note that these two functions cannot be invoked from a FrameTree's or
+  // its root node's constructor since they require the frame tree and the
+  // root node to be completely constructed.
+  //
   // Returns false if fenced frames are disabled. Returns true if the feature is
   // enabled and if |this| is a fenced frame. Returns false for
   // iframes embedded in a fenced frame. To clarify: for the MPArch
@@ -499,6 +506,18 @@ class CONTENT_EXPORT FrameTreeNode {
   // feature is enabled and if |this| or any of its ancestor nodes is a
   // fenced frame.
   bool IsInFencedFrameTree() const;
+
+  // Returns a valid nonce if `IsInFencedFrameTree()` returns true for `this`.
+  // Returns nullopt otherwise. See comments on `fenced_frame_nonce_` for more
+  // details.
+  absl::optional<base::UnguessableToken> fenced_frame_nonce() {
+    return fenced_frame_nonce_;
+  }
+
+  // If applicable, set the fenced frame nonce. See comment on
+  // fenced_frame_nonce() for when it is set to a non-null value. Invoked
+  // by FrameTree::Init() or FrameTree::AddFrame().
+  void SetFencedFrameNonceIfNeeded();
 
   // Sets the unique_name and name fields on replication_state_. To be used in
   // prerender activation to make sure the FrameTreeNode replication state is
@@ -682,6 +701,22 @@ class CONTENT_EXPORT FrameTreeNode {
   // to the core logic of FrameTreeNode.
   FrameTreeNodeBlameContext blame_context_;
 
+  // Fenced Frames:
+  // Nonce used in the net::IsolationInfo and blink::StorageKey for a fenced
+  // frame and any iframes nested within it. Not set if this frame is not in a
+  // fenced frame's FrameTree. Note that this could be a field in FrameTree for
+  // the MPArch version but for the shadow DOM version we need to keep it here
+  // since the fenced frame root is not a main frame for the latter. The value
+  // of the nonce will be the same for all of the the frames inside a fenced
+  // frame tree. If there is a nested fenced frame it will have a different
+  // nonce than its parent fenced frame. The nonce will stay the same across
+  // navigations because it is always used in conjunction with other fields of
+  // the keys. If the navigation is same-origin/site then the same network stack
+  // partition/storage will be reused and if it's cross-origin/site then other
+  // parts of the key will change and so, even with the same nonce, another
+  // partition will be used.
+  absl::optional<base::UnguessableToken> fenced_frame_nonce_;
+
   // Manages creation and swapping of RenderFrameHosts for this frame.
   //
   // This field needs to be declared last, because destruction of
@@ -693,8 +728,6 @@ class CONTENT_EXPORT FrameTreeNode {
   // before the RenderFrameHostManager's destructor runs.  See also
   // https://crbug.com/1157988.
   RenderFrameHostManager render_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameTreeNode);
 };
 
 }  // namespace content

@@ -3024,6 +3024,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"dark-light-mode", flag_descriptions::kDarkLightTestName,
      flag_descriptions::kDarkLightTestDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDarkLightMode)},
+    {"vertical-snap", flag_descriptions::kVerticalSnapName,
+     flag_descriptions::kVerticalSnapDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kVerticalSnapState)},
     {"ash-bento-bar", flag_descriptions::kBentoBarName,
      flag_descriptions::kBentoBarDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kBentoBar)},
@@ -4680,11 +4683,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kOmniboxDynamicMaxAutocompleteVariations,
                                     "OmniboxBundledExperimentV1")},
 
-    {"omnibox-webui-omnibox-popup",
-     flag_descriptions::kOmniboxWebUIOmniboxPopupName,
-     flag_descriptions::kOmniboxWebUIOmniboxPopupDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kWebUIOmniboxPopup)},
-
     {"memories", flag_descriptions::kMemoriesName,
      flag_descriptions::kMemoriesDescription, kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(history_clusters::kMemories,
@@ -5320,13 +5318,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSignedExchangeSubresourcePrefetchName,
      flag_descriptions::kEnableSignedExchangeSubresourcePrefetchDescription,
      kOsAll, FEATURE_VALUE_TYPE(features::kSignedExchangeSubresourcePrefetch)},
-
-    {"enable-sxg-prefetch-cache-for-navigations",
-     flag_descriptions::kEnableSignedExchangePrefetchCacheForNavigationsName,
-     flag_descriptions::
-         kEnableSignedExchangePrefetchCacheForNavigationsDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(features::kSignedExchangePrefetchCacheForNavigations)},
 
     {"enable-autofill-account-wallet-storage",
      flag_descriptions::kEnableAutofillAccountWalletStorageName,
@@ -7080,12 +7071,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPrerender2Description, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kPrerender2)},
 
-#if defined(OS_ANDROID)
-    {"enable-swipe-to-move-cursor", flag_descriptions::kSwipeToMoveCursorName,
-     flag_descriptions::kSwipeToMoveCursorDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kSwipeToMoveCursor)},
-#endif  // defined(OS_ANDROID)
-
 #if !defined(OS_ANDROID)
     {"settings-landing-page-redesign",
      flag_descriptions::kSettingsLandingPageRedesignName,
@@ -7742,6 +7727,18 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kU2FSecurityKeyAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(extensions_features::kU2FSecurityKeyAPI)},
 #endif  // ENABLE_EXTENSIONS
+
+    {"force-major-version-to-100",
+     flag_descriptions::kForceMajorVersion100InUserAgentName,
+     flag_descriptions::kForceMajorVersion100InUserAgentDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kForceMajorVersion100InUserAgent)},
+    {"autofill-enable-offer-notification-for-promo-codes",
+     flag_descriptions::kAutofillEnableOfferNotificationForPromoCodesName,
+     flag_descriptions::
+         kAutofillEnableOfferNotificationForPromoCodesDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableOfferNotificationForPromoCodes)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

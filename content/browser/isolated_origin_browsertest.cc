@@ -56,6 +56,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/dom_storage.mojom-test-utils.h"
@@ -3266,8 +3267,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, IsolatedOriginWithSubdomain) {
   }
 }
 
-// This class allows intercepting the OpenLocalStorage method and changing
-// the parameters to the real implementation of it.
+// This class allows intercepting the BindStorageArea and OpenLocalStorage
+// methods in order to test what happens when parameters are changed.
 class StoragePartitonInterceptor
     : public blink::mojom::DomStorageInterceptorForTesting,
       public RenderProcessHostObserver {
@@ -3275,8 +3276,8 @@ class StoragePartitonInterceptor
   StoragePartitonInterceptor(
       RenderProcessHostImpl* rph,
       mojo::PendingReceiver<blink::mojom::DomStorage> receiver,
-      const url::Origin& origin_to_inject)
-      : origin_to_inject_(origin_to_inject) {
+      const blink::StorageKey& storage_key_to_inject)
+      : storage_key_to_inject_(storage_key_to_inject) {
     StoragePartitionImpl* storage_partition =
         static_cast<StoragePartitionImpl*>(rph->GetStoragePartition());
 
@@ -3314,14 +3315,25 @@ class StoragePartitonInterceptor
     return dom_storage_;
   }
 
-  // Override this method to allow changing the origin. It simulates a
+  // Override this method to allow changing the `storage_key`. It simulates a
   // renderer process sending incorrect data to the browser process, so
   // security checks can be tested.
   void OpenLocalStorage(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override {
-    GetForwardingInterface()->OpenLocalStorage(origin_to_inject_,
+    GetForwardingInterface()->OpenLocalStorage(storage_key_to_inject_,
                                                std::move(receiver));
+  }
+
+  // Override this method to allow changing the `storage_key`. It simulates a
+  // renderer process sending incorrect data to the browser process, so
+  // security checks can be tested.
+  void BindSessionStorageArea(
+      const blink::StorageKey& storage_key,
+      const std::string& namespace_id,
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override {
+    GetForwardingInterface()->BindSessionStorageArea(
+        storage_key_to_inject_, namespace_id, std::move(receiver));
   }
 
  private:
@@ -3329,16 +3341,40 @@ class StoragePartitonInterceptor
   // calls can be forwarded to it.
   blink::mojom::DomStorage* dom_storage_;
 
-  url::Origin origin_to_inject_;
+  blink::StorageKey storage_key_to_inject_;
 };
 
 void CreateTestDomStorageBackend(
-    const url::Origin& origin_to_inject,
+    const blink::StorageKey& storage_key_to_inject,
     RenderProcessHostImpl* rph,
     mojo::PendingReceiver<blink::mojom::DomStorage> receiver) {
   // This object will register as RenderProcessHostObserver, so it will
   // clean itself automatically on process exit.
-  new StoragePartitonInterceptor(rph, std::move(receiver), origin_to_inject);
+  new StoragePartitonInterceptor(rph, std::move(receiver),
+                                 storage_key_to_inject);
+}
+
+// Verify that a renderer process cannot read sessionStorage of another origin.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
+                       SessionStorageOriginEnforcement_WrongOrigin) {
+  auto mismatched_storage_key =
+      blink::StorageKey::CreateFromStringForTesting("http://bar.com");
+  RenderProcessHostImpl::SetDomStorageBinderForTesting(base::BindRepeating(
+      &CreateTestDomStorageBackend, mismatched_storage_key));
+
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
+  EXPECT_TRUE(IsIsolatedOrigin(url::Origin::Create(isolated_url)));
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
+
+  content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
+      shell()->web_contents()->GetMainFrame()->GetProcess());
+  // Use ignore_result here, since on Android the renderer process is
+  // terminated, but ExecuteScript still returns true. It properly returns
+  // false on all other platforms.
+  ignore_result(ExecJs(shell()->web_contents()->GetMainFrame(),
+                       "sessionStorage.length;"));
+  EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
 // Verify that an isolated renderer process cannot read localStorage of an
@@ -3346,10 +3382,11 @@ void CreateTestDomStorageBackend(
 IN_PROC_BROWSER_TEST_F(
     IsolatedOriginTest,
     LocalStorageOriginEnforcement_IsolatedAccessingNonIsolated) {
-  auto mismatched_origin = url::Origin::Create(GURL("http://abc.foo.com"));
-  EXPECT_FALSE(IsIsolatedOrigin(mismatched_origin));
-  RenderProcessHostImpl::SetDomStorageBinderForTesting(
-      base::BindRepeating(&CreateTestDomStorageBackend, mismatched_origin));
+  auto mismatched_storage_key =
+      blink::StorageKey::CreateFromStringForTesting("http://abc.foo.com");
+  EXPECT_FALSE(IsIsolatedOrigin(mismatched_storage_key.origin()));
+  RenderProcessHostImpl::SetDomStorageBinderForTesting(base::BindRepeating(
+      &CreateTestDomStorageBackend, mismatched_storage_key));
 
   GURL isolated_url(
       embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
@@ -3385,15 +3422,16 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     IsolatedOriginTest,
     MAYBE_LocalStorageOriginEnforcement_NonIsolatedAccessingIsolated) {
-  auto isolated_origin = url::Origin::Create(GURL("http://isolated.foo.com"));
-  EXPECT_TRUE(IsIsolatedOrigin(isolated_origin));
+  auto isolated_storage_key =
+      blink::StorageKey::CreateFromStringForTesting("http://isolated.foo.com");
+  EXPECT_TRUE(IsIsolatedOrigin(isolated_storage_key.origin()));
 
   GURL nonisolated_url(
       embedded_test_server()->GetURL("non-isolated.com", "/title1.html"));
   EXPECT_FALSE(IsIsolatedOrigin(url::Origin::Create(nonisolated_url)));
 
   RenderProcessHostImpl::SetDomStorageBinderForTesting(
-      base::BindRepeating(&CreateTestDomStorageBackend, isolated_origin));
+      base::BindRepeating(&CreateTestDomStorageBackend, isolated_storage_key));
   EXPECT_TRUE(NavigateToURL(shell(), nonisolated_url));
 
   content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
@@ -3412,9 +3450,10 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
                        LocalStorageOriginEnforcement_OpaqueOrigin) {
   url::Origin precursor_origin =
       url::Origin::Create(GURL("https://non-isolated.com"));
-  url::Origin opaque_origin = precursor_origin.DeriveNewOpaqueOrigin();
+  blink::StorageKey opaque_storage_key =
+      blink::StorageKey(precursor_origin.DeriveNewOpaqueOrigin());
   RenderProcessHostImpl::SetDomStorageBinderForTesting(
-      base::BindRepeating(&CreateTestDomStorageBackend, opaque_origin));
+      base::BindRepeating(&CreateTestDomStorageBackend, opaque_storage_key));
 
   GURL isolated_url(
       embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));

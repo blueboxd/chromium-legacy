@@ -210,7 +210,7 @@ suite('OsSyncControlsTest', function() {
   test('FeatureDisabled', function() {
     setupWithFeatureDisabled();
 
-    assertTrue(!!syncControls.$.syncOnOffButton);
+    assertTrue(!!syncControls.$$('#syncOnOffButton'));
 
     assertTrue(syncControls.$.syncEverythingCheckboxLabel.hasAttribute(
         'label-disabled'));
@@ -236,7 +236,7 @@ suite('OsSyncControlsTest', function() {
   test('FeatureEnabled', function() {
     setupWithFeatureEnabled();
 
-    assertTrue(!!syncControls.$.syncOnOffButton);
+    assertTrue(!!syncControls.$$('#syncOnOffButton'));
 
     assertFalse(syncControls.$.syncEverythingCheckboxLabel.hasAttribute(
         'label-disabled'));
@@ -261,7 +261,7 @@ suite('OsSyncControlsTest', function() {
 
   test('ClickingTurnOffDisablesFeature', async function() {
     setupWithFeatureEnabled();
-    syncControls.$.syncOnOffButton.click();
+    syncControls.$$('#syncOnOffButton').click();
     const enabled = await browserProxy.whenCalled('setOsSyncFeatureEnabled');
     assertFalse(enabled);
   });
@@ -273,7 +273,7 @@ suite('OsSyncControlsTest', function() {
     params.append('settingId', '302');
     settings.Router.getInstance().navigateTo(settings.routes.OS_SYNC, params);
 
-    const deepLinkElement = syncControls.$.syncOnOffButton;
+    const deepLinkElement = syncControls.$$('#syncOnOffButton');
     await test_util.waitAfterNextRender(deepLinkElement);
     assertEquals(
         deepLinkElement, getDeepActiveElement(),
@@ -282,7 +282,7 @@ suite('OsSyncControlsTest', function() {
 
   test('ClickingTurnOnEnablesFeature', async function() {
     setupWithFeatureDisabled();
-    syncControls.$.syncOnOffButton.click();
+    syncControls.$$('#syncOnOffButton').click();
     const enabled = await browserProxy.whenCalled('setOsSyncFeatureEnabled');
     assertTrue(enabled);
   });

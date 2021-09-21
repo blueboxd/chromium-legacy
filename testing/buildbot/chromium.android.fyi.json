@@ -5763,7 +5763,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M94",
-              "revision": "version:94.0.4606.55"
+              "revision": "version:94.0.4606.57"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -5850,7 +5850,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M95",
-              "revision": "version:95.0.4638.14"
+              "revision": "version:95.0.4638.16"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -6024,7 +6024,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M94",
-              "revision": "version:94.0.4606.55"
+              "revision": "version:94.0.4606.57"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -6111,7 +6111,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M95",
-              "revision": "version:95.0.4638.14"
+              "revision": "version:95.0.4638.16"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -6298,8 +6298,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
-          "--log-wptreport"
+          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
         ],
         "isolate_name": "system_webview_wpt",
         "merge": {

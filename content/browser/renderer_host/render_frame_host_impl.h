@@ -294,6 +294,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   static void SetCodeCacheHostReceiverHandlerForTesting(
       CodeCacheHostReceiverHandler handler);
 
+  RenderFrameHostImpl(const RenderFrameHostImpl&) = delete;
+  RenderFrameHostImpl& operator=(const RenderFrameHostImpl&) = delete;
+
   ~RenderFrameHostImpl() override;
 
   // RenderFrameHost
@@ -1569,9 +1572,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                  browser_reported_scheduler_tracked_features_);
   }
 
-  // Returns a PrefetchedSignedExchangeCache which is attached to |this| iff
-  // SignedExchangeSubresourcePrefetch feature or
-  // SignedExchangePrefetchCacheForNavigations feature is enabled.
+  // Returns a PrefetchedSignedExchangeCache which is attached to |this|.
   scoped_refptr<PrefetchedSignedExchangeCache>
   EnsurePrefetchedSignedExchangeCache();
 
@@ -2340,6 +2341,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //  A GetParent & GetParentOrOuterDocumentOrEmbedder returns
   //  nullptr.
   RenderFrameHostImpl* GetParentOrOuterDocumentOrEmbedder();
+
+  static const char* LifecycleStateImplToString(LifecycleStateImpl state);
 
  protected:
   friend class RenderFrameHostFactory;
@@ -3983,8 +3986,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostImpl);
 };
 
 // Used when DCHECK_STATE_TRANSITION triggers.

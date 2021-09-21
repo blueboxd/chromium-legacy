@@ -27,6 +27,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
+#include "chrome/browser/enterprise/reporting/prefs.h"
 #include "chrome/browser/enterprise/util/managed_browser_utils.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -232,7 +233,6 @@
 #else  // defined(OS_ANDROID)
 #include "chrome/browser/cart/cart_service.h"
 #include "chrome/browser/device_api/device_service_impl.h"
-#include "chrome/browser/enterprise/reporting/prefs.h"
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
@@ -276,6 +276,7 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_cryptohome_remover.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/ash/app_restore/full_restore_prefs.h"
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
@@ -295,7 +296,6 @@
 #include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/file_system_provider/registry.h"
 #include "chrome/browser/ash/first_run/first_run.h"
-#include "chrome/browser/ash/full_restore/full_restore_prefs.h"
 #include "chrome/browser/ash/guest_os/guest_os_mime_types_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/lock_screen_apps/state_controller.h"
@@ -886,6 +886,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chrome::enterprise_util::RegisterLocalStatePrefs(registry);
   component_updater::RegisterPrefs(registry);
   embedder_support::OriginTrialPrefs::RegisterPrefs(registry);
+  enterprise_reporting::RegisterLocalStatePrefs(registry);
   ExternalProtocolHandler::RegisterPrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterPrefs(registry);
   GpuModeManager::RegisterPrefs(registry);
@@ -948,7 +949,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(first_run::kTosDialogBehavior, 0);
   registry->RegisterBooleanPref(lens::kLensCameraAssistedSearchEnabled, true);
 #else  // defined(OS_ANDROID)
-  enterprise_reporting::RegisterLocalStatePrefs(registry);
   gcm::RegisterPrefs(registry);
   IntranetRedirectDetector::RegisterPrefs(registry);
   media_router::RegisterLocalStatePrefs(registry);

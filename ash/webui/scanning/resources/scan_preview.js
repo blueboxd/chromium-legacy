@@ -42,6 +42,9 @@ Polymer({
   /** @private {?Function} */
   onWindowResized_: null,
 
+  /** @private {?ResizeObserver} */
+  previewAreaResizeObserver_: null,
+
   /** @private {?Function} */
   onDialogActionClick_: null,
 
@@ -160,6 +163,12 @@ Polymer({
       value: false,
       reflectToAttribute: true,
     },
+
+    /** @private {boolean} */
+    showSingleImageFocus_: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
   },
 
   observers: [
@@ -172,10 +181,9 @@ Polymer({
   created() {
     // ScanningBrowserProxy is initialized when scanning_app.js is created.
     this.browserProxy_ = ScanningBrowserProxyImpl.getInstance();
-    this.onWindowResized_ = () => {
-      this.setMultiPageScanProgessHeight_();
-      this.setActionToolbarPosition_();
-    };
+    this.onWindowResized_ = () => this.setActionToolbarPosition_();
+    this.previewAreaResizeObserver_ =
+        new ResizeObserver(() => this.setMultiPageScanProgessHeight_());
   },
 
   /** @override */
@@ -188,6 +196,7 @@ Polymer({
   detached() {
     if (this.isMultiPageScan) {
       window.removeEventListener('resize', this.onWindowResized_);
+      this.previewAreaResizeObserver_.disconnect();
     }
   },
 
@@ -205,6 +214,8 @@ Polymer({
     this.showHelpOrProgress_ = !this.showScannedImages_ ||
         this.appState === AppState.MULTI_PAGE_SCANNING;
     this.multiPageScanning_ = this.appState === AppState.MULTI_PAGE_SCANNING;
+    this.showSingleImageFocus_ =
+        this.appState === AppState.MULTI_PAGE_NEXT_ACTION;
 
     // If no longer showing the scanned images, reset |scannedImagesLoaded_| so
     // it can be used again for the next scan job.
@@ -396,8 +407,6 @@ Polymer({
     this.setFocusedScannedImage_(
         scannedImages, this.getCurrentPageInView_(scannedImages));
 
-    this.setMultiPageScanProgessHeight_();
-
     // The below actions only needed for the first scanned image load.
     if (this.scannedImagesLoaded_) {
       return;
@@ -550,12 +559,19 @@ Polymer({
 
   /** @private */
   onIsMultiPageScanChange_() {
-    // Only listen for window size changes during multi-page scan sessions so
-    // the position of the action toolbar can be updated.
+    // Listen for window size changes during multi-page scan sessions so the
+    // position of the action toolbar can be updated.
     if (this.isMultiPageScan) {
       window.addEventListener('resize', this.onWindowResized_);
+
+      // Observe changes to the preview area during multi-page scan sessions so
+      // the scan progress div height can be updated when images are
+      // added/removed.
+      this.previewAreaResizeObserver_.observe(
+          /** @type {!HTMLElement} */ (this.$$('#previewDiv')));
     } else {
       window.removeEventListener('resize', this.onWindowResized_);
+      this.previewAreaResizeObserver_.disconnect();
     }
   },
 

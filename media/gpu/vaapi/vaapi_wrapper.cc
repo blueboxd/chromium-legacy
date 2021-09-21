@@ -884,7 +884,8 @@ bool GetRequiredAttribs(const base::Lock* va_lock,
     }
 
     const uint32_t packed_header_attributes =
-        (VA_ENC_PACKED_HEADER_SEQUENCE | VA_ENC_PACKED_HEADER_PICTURE);
+        (VA_ENC_PACKED_HEADER_SEQUENCE | VA_ENC_PACKED_HEADER_PICTURE |
+         VA_ENC_PACKED_HEADER_SLICE);
     if ((packed_header_attributes & attrib.value) == packed_header_attributes) {
       required_attribs->push_back(
           {VAConfigAttribEncPackedHeaders, packed_header_attributes});
@@ -2816,6 +2817,9 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
         va_display_, va_context_id_));
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  TRACE_EVENT2("media,gpu", "VaapiWrapper::BlitSurface", "src_rect",
+               src_rect->ToString(), "dest_rect", dest_rect->ToString());
 
   VAStatus va_res =
       vaBeginPicture(va_display_, va_context_id_, va_surface_dest.id());

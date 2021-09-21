@@ -299,6 +299,12 @@ const char kAutofillEnableOfferNotificationCrossTabTrackingDescription[] =
     "When enabled, the offer notification showing will be tracked cross-tab, "
     "and on one merchant, the notification will only be shown once.";
 
+const char kAutofillEnableOfferNotificationForPromoCodesName[] =
+    "Extend Autofill offers and rewards notification to promo code offers";
+const char kAutofillEnableOfferNotificationForPromoCodesDescription[] =
+    "When enabled, a notification will be displayed on page navigation if the "
+    "domain has an eligible merchant promo code offer or reward.";
+
 const char kAutofillEnableOffersInClankKeyboardAccessoryName[] =
     "Enable Autofill offers in keyboard accessory";
 const char kAutofillEnableOffersInClankKeyboardAccessoryDescription[] =
@@ -2690,6 +2696,12 @@ const char kV8VmFutureDescription[] =
     "This enables upcoming and experimental V8 VM features. "
     "This flag does not enable experimental JavaScript features.";
 
+const char kVerticalSnapName[] = "Vertical Snap features";
+const char kVerticalSnapDescription[] =
+    "This enables Vertical Snap feature in portrait display."
+    "This feature allows users to snap windows to top and bottom in portrait "
+    "display orientation and maintains left/right snap for landscape display.";
+
 const char kWalletServiceUseSandboxName[] =
     "Use Google Payments sandbox servers";
 const char kWalletServiceUseSandboxDescription[] =
@@ -2868,6 +2880,13 @@ const char kShareContextMenuName[] = "Share context menu";
 const char kShareContextMenuDescription[] =
     "Whether the sharing options in various context menus are grouped into "
     "a common submenu.";
+
+const char kForceMajorVersion100InUserAgentName[] =
+    "Force major version to 100 in User-Agent";
+const char kForceMajorVersion100InUserAgentDescription[] =
+    "Force the Chrome major version in the User-Agent string to 100, which "
+    "allows testing the 3-digit major version number before the actual M100 "
+    "release. This flag is only available from M96-M99.";
 
 // Android ---------------------------------------------------------------------
 
@@ -3622,11 +3641,6 @@ const char kInlineUpdateFlowDescription[] =
     "Store when an update is available, the user is presented with an inline "
     "flow where they do not have to leave Chrome until the update is ready "
     "to install.";
-
-const char kSwipeToMoveCursorName[] = "Swipe to move cursor";
-const char kSwipeToMoveCursorDescription[] =
-    "Allows user to use touch gestures to move the text cursor around. This "
-    "flag will only take effect on Android 11 and above.";
 
 const char kWalletRequiresFirstSyncSetupCompleteName[] =
     "Controls whether Wallet (GPay) integration on Android requires "

@@ -4,6 +4,8 @@
 
 #include "ui/base/ui_base_features.h"
 
+#include <stdlib.h>
+
 #include "build/chromeos_buildflags.h"
 
 #if defined(OS_WIN)
@@ -297,20 +299,21 @@ const base::Feature kUIDebugTools{"ui-debug-tools",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsSwipeToMoveCursorEnabled() {
-  static const bool enabled =
-      base::FeatureList::IsEnabled(kSwipeToMoveCursor)
 #if defined(OS_ANDROID)
-      && base::android::BuildInfo::GetInstance()->sdk_int() >=
-             base::android::SDK_VERSION_R;
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+         base::android::SDK_VERSION_R;
 #else
-      ;
+  return base::FeatureList::IsEnabled(kSwipeToMoveCursor);
 #endif
-  return enabled;
 }
 
 bool ShouldApplyNativeOcclusionToCompositor() {
 #if defined(OS_WIN)
-  return base::FeatureList::IsEnabled(kCalculateNativeWinOcclusion) &&
+  // chromedriver uses the environment variable CHROME_HEADLESS. In this case
+  // it expected that native occlusion is not applied.
+  static bool is_headless = getenv("CHROME_HEADLESS") != nullptr;
+  return !is_headless &&
+         base::FeatureList::IsEnabled(kCalculateNativeWinOcclusion) &&
          base::FeatureList::IsEnabled(kApplyNativeOcclusionToCompositor);
 #else
   return false;

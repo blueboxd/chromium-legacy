@@ -277,6 +277,12 @@ class CloseDialogCallbackWrapper
 class JavaScriptDialogDismissNotifier {
  public:
   JavaScriptDialogDismissNotifier() = default;
+
+  JavaScriptDialogDismissNotifier(const JavaScriptDialogDismissNotifier&) =
+      delete;
+  JavaScriptDialogDismissNotifier& operator=(
+      const JavaScriptDialogDismissNotifier&) = delete;
+
   ~JavaScriptDialogDismissNotifier() {
     for (auto& callback : callbacks_) {
       std::move(callback).Run();
@@ -289,8 +295,6 @@ class JavaScriptDialogDismissNotifier {
 
  private:
   std::vector<base::OnceClosure> callbacks_;
-
-  DISALLOW_COPY_AND_ASSIGN(JavaScriptDialogDismissNotifier);
 };
 
 bool FrameCompareDepth(RenderFrameHostImpl* a, RenderFrameHostImpl* b) {
@@ -617,6 +621,11 @@ class WebContentsImpl::RenderWidgetHostDestructionObserver
     watched_host_->AddObserver(this);
   }
 
+  RenderWidgetHostDestructionObserver(
+      const RenderWidgetHostDestructionObserver&) = delete;
+  RenderWidgetHostDestructionObserver& operator=(
+      const RenderWidgetHostDestructionObserver&) = delete;
+
   ~RenderWidgetHostDestructionObserver() override {
     watched_host_->RemoveObserver(this);
   }
@@ -629,8 +638,6 @@ class WebContentsImpl::RenderWidgetHostDestructionObserver
  private:
   WebContentsImpl* owner_;
   RenderWidgetHost* watched_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostDestructionObserver);
 };
 
 // WebContentsImpl::WebContentsDestructionObserver ----------------------------
@@ -984,8 +991,7 @@ WebContentsImpl::~WebContentsImpl() {
   //
   // Currently the only instances of the non-primary FrameTrees are for
   // prerendering. Shutdown them by destructing PrerenderHostRegistry.
-  if (blink::features::IsPrerender2Enabled())
-    prerender_host_registry_.reset();
+  prerender_host_registry_.reset();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Call this before WebContentsDestroyed() is broadcasted since
@@ -1249,9 +1255,6 @@ RenderFrameHostImpl* WebContentsImpl::GetFocusedFrame() {
 }
 
 bool WebContentsImpl::IsPrerenderedFrame(int frame_tree_node_id) {
-  if (!blink::features::IsPrerender2Enabled())
-    return false;
-
   if (frame_tree_node_id == RenderFrameHost::kNoFrameTreeNodeId)
     return false;
 
@@ -4426,17 +4429,15 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
       FrameTree* frame_tree = frame_tree_node->frame_tree();
       CHECK_EQ(frame_tree->controller().DeprecatedGetWebContents(), this);
 
-      if (blink::features::IsPrerender2Enabled()) {
-        // Prerendering is generally hidden from embedders. If the navigation is
-        // targeting a frame in a prerendering frame tree, we shouldn't run that
-        // navigation through the embedder delegate. Instead, we just navigate
-        // directly on the prerendering frame tree.
-        if (frame_tree->type() == FrameTree::Type::kPrerender) {
-          DCHECK_EQ(params.disposition, WindowOpenDisposition::CURRENT_TAB);
-          frame_tree->controller().LoadURLWithParams(
-              NavigationController::LoadURLParams(params));
-          return this;
-        }
+      // Prerendering is generally hidden from embedders. If the navigation is
+      // targeting a frame in a prerendering frame tree, we shouldn't run that
+      // navigation through the embedder delegate. Instead, we just navigate
+      // directly on the prerendering frame tree.
+      if (frame_tree->type() == FrameTree::Type::kPrerender) {
+        DCHECK_EQ(params.disposition, WindowOpenDisposition::CURRENT_TAB);
+        frame_tree->controller().LoadURLWithParams(
+            NavigationController::LoadURLParams(params));
+        return this;
       }
     } else {
       // If the node doesn't exist it was probably removed from its frame tree.

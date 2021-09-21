@@ -4,6 +4,7 @@
 
 #include "components/sync/driver/non_ui_syncable_service_based_model_type_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"

@@ -84,6 +84,9 @@ class CONTENT_EXPORT StoragePartitionImpl
       public network::mojom::NetworkContextClient,
       public network::mojom::URLLoaderNetworkServiceObserver {
  public:
+  StoragePartitionImpl(const StoragePartitionImpl&) = delete;
+  StoragePartitionImpl& operator=(const StoragePartitionImpl&) = delete;
+
   // It is guaranteed that storage partitions are destructed before the
   // browser context starts shutting down its corresponding IO thread residents
   // (e.g. resource context).
@@ -228,14 +231,16 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   // blink::mojom::DomStorage interface.
   void OpenLocalStorage(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
+      // TODO(https://crbug.com/1212808): add local_frame_token
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override;
   void BindSessionStorageNamespace(
       const std::string& namespace_id,
       mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver)
       override;
   void BindSessionStorageArea(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
+      // TODO(https://crbug.com/1212808): add local_frame_token
       const std::string& namespace_id,
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override;
 
@@ -663,8 +668,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   int next_pending_trust_token_issuance_callback_key_ = 0;
 
   base::WeakPtrFactory<StoragePartitionImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(StoragePartitionImpl);
 };
 
 }  // namespace content

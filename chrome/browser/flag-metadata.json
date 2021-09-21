@@ -191,7 +191,7 @@
    {
     "name": "apps-shortcut-default-off",
     "owners": [ "chrome-desktop-ui-sea@google.com", "cyan" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 99
   },
   {
     "name": "arc-custom-tabs-experiment",
@@ -396,6 +396,11 @@
     "name": "autofill-enable-offer-notification-cross-tab-tracking",
     "owners": [ "siyua" ],
     "expiry_milestone": 97
+  },
+  {
+    "name": "autofill-enable-offer-notification-for-promo-codes",
+    "owners": [ "jsaul@google.com", "siyua" ],
+    "expiry_milestone": 100
   },
   {
     "name": "autofill-enable-offers-in-clank-keyboard-accessory",
@@ -1749,8 +1754,8 @@
   },
   {
     "name": "enable-de-jelly",
-    "owners": [ "ericrk", "//components/viz/OWNERS" ],
-    "expiry_milestone": 94
+    "owners": [ "boliu", "//components/viz/OWNERS" ],
+    "expiry_milestone": 104
   },
   {
     "name": "enable-debug-for-secure-payment-confirmation",
@@ -2666,8 +2671,8 @@
   },
   {
     "name": "enable-suggested-drive-files",
-    "owners": [ "edimitriadis", "tby", "wrong" ],
-    "expiry_milestone": 95
+    "owners": [ "tby", "wrong" ],
+    "expiry_milestone": 100
   },
   {
     "name": "enable-suggested-files",
@@ -2685,18 +2690,8 @@
     "expiry_milestone": 100
   },
   {
-    "name": "enable-swipe-to-move-cursor",
-    "owners": [ "ctzsm" ],
-    "expiry_milestone": 100
-  },
-  {
     "name": "enable-switch-access-point-scanning",
     "owners": ["anastasi@google.com", "//ui/accessibility/OWNERS"],
-    "expiry_milestone": 92
-  },
-  {
-    "name": "enable-sxg-prefetch-cache-for-navigations",
-    "owners": [ "horo", "//content/browser/web_package/OWNERS" ],
     "expiry_milestone": 92
   },
   {
@@ -3252,6 +3247,11 @@
     // ECT is a baked-in feature of Chrome. This flag is used for frequent
     // testing and should not be removed.
     "expiry_milestone": -1
+  },
+  {
+    "name": "force-major-version-to-100",
+    "owners": [ "abeyad", "potassium-katabolism@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "force-show-update-menu-badge",
@@ -4367,11 +4367,6 @@
     "name": "omnibox-updated-connection-security-indicators",
     "owners": [ "meacer", "chrome-trusty-transport@google.com" ],
     "expiry_milestone": 96
-  },
-  {
-    "name": "omnibox-webui-omnibox-popup",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 99
   },
   {
     "name": "optimization-guide-model-downloading",
@@ -5680,6 +5675,11 @@
     "name": "username-first-flow-filling",
     "owners": [ "kazinova@google.com", "kolos" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "vertical-snap",
+    "owners": [ "cattalyya", "afakhry", "nupurjain", "fanafan"],
+    "expiry_milestone": 100
   },
   {
     "name": "video-tutorials",

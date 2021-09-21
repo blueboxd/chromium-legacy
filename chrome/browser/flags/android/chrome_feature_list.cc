@@ -135,8 +135,9 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &feature_engagement::kIPHNewTabPageHomeButtonFeature,
     &feature_engagement::kIPHSnooze,
     &feature_engagement::kIPHTabSwitcherButtonFeature,
-    &feed::kFeedImageMemoryCacheSizePercentage,
     &feed::kFeedBackToTop,
+    &feed::kFeedClearImageMemoryCache,
+    &feed::kFeedImageMemoryCacheSizePercentage,
     &feed::kFeedInteractiveRefresh,
     &feed::kFeedLoadingPlaceholder,
     &feed::kInterestFeedContentSuggestions,
@@ -284,7 +285,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kStartSurfaceAndroid,
     &kUmaBackgroundSessions,
     &kUpdateHistoryEntryPointsInIncognito,
-    &kUpdateNotificationSchedulingIntegration,
     &kUpdateNotificationScheduleServiceImmediateShowOption,
     &kVoiceSearchAudioCapturePolicy,
     &kVoiceButtonInTopToolbar,
@@ -748,7 +748,7 @@ const base::Feature kTestDefaultEnabled{"TestDefaultEnabled",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kThemeRefactorAndroid{"ThemeRefactorAndroid",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kToolbarIphAndroid{"ToolbarIphAndroid",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
@@ -785,10 +785,6 @@ const base::Feature kUmaBackgroundSessions{"UMABackgroundSessions",
 
 const base::Feature kUpdateHistoryEntryPointsInIncognito{
     "UpdateHistoryEntryPointsInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kUpdateNotificationSchedulingIntegration{
-    "UpdateNotificationSchedulingIntegration",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kUpdateNotificationScheduleServiceImmediateShowOption{
     "UpdateNotificationScheduleServiceImmediateShowOption",

@@ -234,10 +234,10 @@ crbug.com/v8/12227 external/wpt/wasm/jsapi/table/grow-reftypes.tentative.any.htm
 crbug.com/v8/12227 external/wpt/wasm/jsapi/table/grow-reftypes.tentative.any.worker.html [ Failure Pass ]
 crbug.com/v8/12227 external/wpt/wasm/jsapi/table/get-set.any.html [ Failure Pass ]
 crbug.com/v8/12227 external/wpt/wasm/jsapi/table/get-set.any.worker.html [ Failure Pass ]
-crbug.com/v8/12227 external/wpt/wasm/jsapi/table/constructor.any.js [ Failure Pass ]
-crbug.com/v8/12227 external/wpt/wasm/jsapi/table/constructor.any.worker.js [ Failure Pass ]
-crbug.com/v8/12227 external/wpt/wasm/jsapi/table/grow.any.js [ Failure Pass ]
-crbug.com/v8/12227 external/wpt/wasm/jsapi/table/grow.any.worker.js [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/table/constructor.any.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/table/constructor.any.worker.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/table/grow.any.html [ Failure Pass ]
+crbug.com/v8/12227 external/wpt/wasm/jsapi/table/grow.any.worker.html [ Failure Pass ]
 
 # Sheriff on 2020-09-03
 crbug.com/1124352 media/picture-in-picture/clear-after-request.html [ Crash Pass ]
@@ -422,6 +422,10 @@ crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-local-ma
 crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-image.html [ Failure ]
 crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-remote-mask.html [ Failure ]
 crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-image-hash.html [ Failure ]
+
+# CSS cascade layers
+crbug.com/1095765 external/wpt/css/css-cascade/layer-stylesheet-sharing.html [ Failure ]
+
 # Fails, at a minimum, due to lack of support for CSS mask property in html elements
 crbug.com/432153 external/wpt/svg/painting/reftests/display-none-mask.html [ Skip ]
 
@@ -2813,15 +2817,6 @@ crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/selection-originating-dec
 crbug.com/626703 external/wpt/css/css-text-decor/text-emphasis-position-over-left-001.xht [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/selection-background-painting-order.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-emphasis-position-under-right-001.xht [ Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-cascade/layer-stylesheet-sharing.html [ Failure ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-cascade/layer-stylesheet-sharing.html [ Failure ]
-crbug.com/626703 [ Mac10.14 ] external/wpt/css/css-cascade/layer-stylesheet-sharing.html [ Failure ]
-crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-cascade/layer-stylesheet-sharing.html [ Failure ]
-crbug.com/626703 [ Mac11.0 ] external/wpt/css/css-cascade/layer-stylesheet-sharing.html [ Failure ]
-crbug.com/626703 [ Win7 ] external/wpt/css/css-cascade/layer-stylesheet-sharing.html [ Crash Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-cascade/layer-stylesheet-sharing.html [ Crash Failure ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-cascade/layer-stylesheet-sharing.html [ Crash Failure ]
-crbug.com/626703 [ Win10.20h2 ] external/wpt/css/css-cascade/layer-stylesheet-sharing.html [ Crash Failure ]
 crbug.com/626703 [ Linux ] external/wpt/infrastructure/testdriver/actions/eventOrder.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/input-events/input-events-cut-paste.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-emphasis-position-over-left-002.xht [ Failure ]
@@ -3688,7 +3683,7 @@ crbug.com/1017164 external/wpt/css/css-text/word-break/word-break-normal-tdd-000
 
 crbug.com/899264 external/wpt/css/css-text/letter-spacing/letter-spacing-control-chars-001.html [ Failure ]
 
-crbug.com/1250666 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Timeout Pass ]
+crbug.com/1250666 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Pass Timeout ]
 
 crbug.com/829028 external/wpt/css/css-break/abspos-in-opacity-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/avoid-border-break.html [ Failure ]
@@ -6800,7 +6795,6 @@ crbug.com/1242243 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-a
 crbug.com/1244896 [ Mac ] fast/mediacapturefromelement/CanvasCaptureMediaStream-set-size-too-large.html [ Pass Timeout ]
 
 # Sheriff 2021-08-25
-crbug.com/1243128 [ Win ] external/wpt/editing/run/justifyright.html?4001-last [ Failure ]
 crbug.com/1243128 [ Win ] external/wpt/html/canvas/element/wide-gamut-canvas/2d.color.space.p3.fillText.html [ Failure ]
 crbug.com/1243128 [ Win ] external/wpt/html/canvas/element/wide-gamut-canvas/2d.color.space.p3.fillText.shadow.html [ Failure ]
 crbug.com/1243128 [ Win ] external/wpt/web-share/disabled-by-permissions-policy.https.sub.html [ Failure ]
@@ -6845,8 +6839,8 @@ crbug.com/1233826 [ Mac ] virtual/threaded/external/wpt/animation-worklet/workle
 crbug.com/1233826 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-cancel.https.html [ Crash Failure Pass ]
 # Also reported as failing via crbug.com/1233766:
 crbug.com/1233826 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-after-duration.https.html [ Crash Failure Pass ]
-crbug.com/1250666 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/overdraw.https.html [ Timeout Pass ]
-crbug.com/1250666 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/invalid-image-paint-error.https.html [ Timeout Pass ]
+crbug.com/1250666 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/overdraw.https.html [ Pass Timeout ]
+crbug.com/1250666 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/invalid-image-paint-error.https.html [ Pass Timeout ]
 # Previously reported as failing via crbug.com/626703:
 crbug.com/1236558 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/no-op-animation.https.html [ Crash Failure Pass ]
 crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-before-start.https.html [ Crash Failure Pass ]
@@ -6872,8 +6866,8 @@ crbug.com/1163645 external/wpt/reporting/same-origin-report-credentials.https.su
 crbug.com/1249071 virtual/composite-clip-path-animation/external/wpt/css/css-masking/clip-path/animations/clip-path-animation-filter.html [ Crash Failure Pass ]
 
 # Sheriff 2021-09-08
-crbug.com/1250666 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-before-load.https.html [ Timeout Pass ]
-crbug.com/1250666 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-after-load.https.html [ Timeout Pass ]
+crbug.com/1250666 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-before-load.https.html [ Pass Timeout ]
+crbug.com/1250666 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-after-load.https.html [ Pass Timeout ]
 crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-shadow-part4.html [ Crash Pass ]
 crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-color-over-pattern.html [ Crash Pass Timeout ]
 crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-pattern-over-image.html [ Pass Timeout ]

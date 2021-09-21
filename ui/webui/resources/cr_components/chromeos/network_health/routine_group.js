@@ -16,7 +16,7 @@ Polymer({
   properties: {
     /**
      * List of routines to display in the group.
-     * @private {!Array<!Routine>}
+     * @type {!Array<!Routine>}
      */
     routines: {
       type: Array,
@@ -25,7 +25,7 @@ Polymer({
 
     /**
      * Localized name for the group of routines.
-     * @private {String}
+     * @type {string}
      */
     name: {
       type: String,
@@ -33,17 +33,8 @@ Polymer({
     },
 
     /**
-     * Boolean flag if any routines in the group are running.
-     * @private {Boolean}
-     */
-    running: {
-      type: Boolean,
-      computed: 'routinesRunning_(routines.*)',
-    },
-
-    /**
      * Boolean flag if the container is expanded.
-     * @private {Boolean}
+     * @type {boolean}
      */
     expanded: {
       type: Boolean,
@@ -51,12 +42,21 @@ Polymer({
     },
 
     /**
-     * Boolean flag if icon representing the group result should be shown.
-     * @private {Boolean}
+     * Boolean flag if any routines in the group are running.
+     * @private {boolean}
      */
-    showGroupIcon: {
+    running_: {
       type: Boolean,
-      computed: 'showGroupIcon_(running, expanded)',
+      computed: 'routinesRunning_(routines.*)',
+    },
+
+    /**
+     * Boolean flag if icon representing the group result should be shown.
+     * @private {boolean}
+     */
+    showGroupIcon_: {
+      type: Boolean,
+      computed: 'computeShowGroupIcon_(running_, expanded)',
     },
   },
 
@@ -102,13 +102,11 @@ Polymer({
 
   /**
    * Determine if the group routine icon should be showing.
-   * @param {boolean} running
-   * @param {boolean} expanded
    * @return {boolean}
    * @private
    */
-  showGroupIcon_(running, expanded) {
-    return !running && !expanded;
+  computeShowGroupIcon_() {
+    return !this.running_ && !this.expanded;
   },
 
   /**

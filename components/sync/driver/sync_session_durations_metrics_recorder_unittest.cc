@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"

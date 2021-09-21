@@ -34,6 +34,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
+#include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "sql/database_memory_dump_provider.h"
 #include "sql/initialization.h"
@@ -162,7 +163,7 @@ std::string AsUTF8ForSQL(const base::FilePath& path) {
 namespace sql {
 
 // static
-Database::ErrorExpecterCallback* Database::current_expecter_cb_ = nullptr;
+Database::ScopedErrorExpecterCallback* Database::current_expecter_cb_ = nullptr;
 
 // static
 bool Database::IsExpectedSqliteError(int error) {
@@ -172,13 +173,16 @@ bool Database::IsExpectedSqliteError(int error) {
 }
 
 // static
-void Database::SetErrorExpecter(Database::ErrorExpecterCallback* cb) {
+void Database::SetScopedErrorExpecter(
+    Database::ScopedErrorExpecterCallback* cb,
+    base::PassKey<test::ScopedErrorExpecter>) {
   CHECK(!current_expecter_cb_);
   current_expecter_cb_ = cb;
 }
 
 // static
-void Database::ResetErrorExpecter() {
+void Database::ResetScopedErrorExpecter(
+    base::PassKey<test::ScopedErrorExpecter>) {
   CHECK(current_expecter_cb_);
   current_expecter_cb_ = nullptr;
 }
@@ -427,7 +431,8 @@ void Database::ReleaseCacheMemoryIfNeeded(bool implicit_change_performed) {
     --total_changes_at_last_release_;
 
   // Cached pages may be re-used within the same transaction.
-  if (transaction_nesting())
+  DCHECK_GE(transaction_nesting_, 0);
+  if (transaction_nesting_)
     return;
 
   // If no changes have been made, skip flushing.  This allows the first page of
@@ -781,6 +786,7 @@ bool Database::Raze() {
     return false;
   }
 
+  DCHECK_GE(transaction_nesting_, 0);
   if (transaction_nesting_ > 0) {
     DLOG(DCHECK) << "Cannot raze within a transaction";
     return false;
@@ -1016,6 +1022,7 @@ bool Database::BeginTransaction() {
   }
 
   bool success = true;
+  DCHECK_GE(transaction_nesting_, 0);
   if (!transaction_nesting_) {
     needs_rollback_ = false;
 
@@ -1023,19 +1030,21 @@ bool Database::BeginTransaction() {
     if (!begin.Run())
       return false;
   }
-  transaction_nesting_++;
+  ++transaction_nesting_;
   return success;
 }
 
 void Database::RollbackTransaction() {
   TRACE_EVENT0("sql", "Database::RollbackTransaction");
 
+  DCHECK_GE(transaction_nesting_, 0);
   if (!transaction_nesting_) {
     DCHECK(poisoned_) << "Rolling back a nonexistent transaction";
     return;
   }
 
-  transaction_nesting_--;
+  DCHECK_GT(transaction_nesting_, 0);
+  --transaction_nesting_;
 
   if (transaction_nesting_ > 0) {
     // Mark the outermost transaction as needing rollback.
@@ -1049,11 +1058,14 @@ void Database::RollbackTransaction() {
 bool Database::CommitTransaction() {
   TRACE_EVENT0("sql", "Database::CommitTransaction");
 
+  DCHECK_GE(transaction_nesting_, 0);
   if (!transaction_nesting_) {
     DCHECK(poisoned_) << "Committing a nonexistent transaction";
     return false;
   }
-  transaction_nesting_--;
+
+  DCHECK_GT(transaction_nesting_, 0);
+  --transaction_nesting_;
 
   if (transaction_nesting_ > 0) {
     // Mark any nested transactions as failing after we've already got one.
@@ -1078,6 +1090,7 @@ bool Database::CommitTransaction() {
 void Database::RollbackAllTransactions() {
   TRACE_EVENT0("sql", "Database::RollbackAllTransactions");
 
+  DCHECK_GE(transaction_nesting_, 0);
   if (transaction_nesting_ > 0) {
     transaction_nesting_ = 0;
     DoRollback();
@@ -1764,10 +1777,12 @@ int Database::OnSqliteError(int sqlite_error_code,
   }
 
   if (!error_callback_.is_null()) {
-    // Fire from a copy of the callback in case of reentry into
-    // re/set_error_callback().
-    // TODO(shess): <http://crbug.com/254584>
-    ErrorCallback(error_callback_).Run(sqlite_error_code, statement);
+    // Create an additional reference to the state in `error_callback_`, so the
+    // state doesn't go away if the callback changes `error_callback_` by
+    // calling set_error_callback() or reset_error_callback(). This avoids a
+    // subtle source of use-after-frees. See https://crbug.com/254584.
+    ErrorCallback error_callback_copy = error_callback_;
+    error_callback_copy.Run(sqlite_error_code, statement);
     return sqlite_error_code;
   }
 

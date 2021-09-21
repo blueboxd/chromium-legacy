@@ -254,7 +254,6 @@ class PaymentsClient {
     // An opaque token used to chain consecutive payments requests together.
     std::string context_token;
     int64_t billing_customer_number = 0;
-    std::string app_locale;
   };
 
   // An enum set in the GetUploadDetailsRequest indicating the source of the
@@ -287,6 +286,9 @@ class PaymentsClient {
       signin::IdentityManager* const identity_manager,
       AccountInfoGetter* const account_info_getter,
       bool is_off_the_record = false);
+
+  PaymentsClient(const PaymentsClient&) = delete;
+  PaymentsClient& operator=(const PaymentsClient&) = delete;
 
   virtual ~PaymentsClient();
 
@@ -441,8 +443,6 @@ class PaymentsClient {
   bool has_retried_authorization_;
 
   base::WeakPtrFactory<PaymentsClient> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PaymentsClient);
 };
 
 }  // namespace payments

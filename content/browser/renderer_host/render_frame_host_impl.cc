@@ -748,29 +748,6 @@ DetermineAfterCommitWhetherToForbidTrustTokenRedemption(
              : network::mojom::TrustTokenRedemptionPolicy::kForbid;
 }
 
-// Returns the string corresponding to LifecycleStateImpl, used for logging
-// crash keys.
-const char* LifecycleStateImplToString(
-    RenderFrameHostImpl::LifecycleStateImpl state) {
-  using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
-  switch (state) {
-    case LifecycleStateImpl::kSpeculative:
-      return "Speculative";
-    case LifecycleStateImpl::kPrerendering:
-      return "Prerendering";
-    case LifecycleStateImpl::kPendingCommit:
-      return "PendingCommit";
-    case LifecycleStateImpl::kActive:
-      return "Active";
-    case LifecycleStateImpl::kInBackForwardCache:
-      return "InBackForwardCache";
-    case LifecycleStateImpl::kRunningUnloadHandlers:
-      return "RunningUnloadHandlers";
-    case LifecycleStateImpl::kReadyToBeDeleted:
-      return "ReadyToBeDeleted";
-  }
-}
-
 // Verify that |browser_side_origin| and |renderer_side_origin| match.  See also
 // https://crbug.com/888079.
 void VerifyThatBrowserAndRendererCalculatedOriginsToCommitMatch(
@@ -1233,6 +1210,10 @@ class RenderFrameHostImpl::DroppedInterfaceRequestLogger
     receiver_.Bind(std::move(receiver));
   }
 
+  DroppedInterfaceRequestLogger(const DroppedInterfaceRequestLogger&) = delete;
+  DroppedInterfaceRequestLogger& operator=(
+      const DroppedInterfaceRequestLogger&) = delete;
+
   ~DroppedInterfaceRequestLogger() override {
     UMA_HISTOGRAM_EXACT_LINEAR("RenderFrameHostImpl.DroppedInterfaceRequests",
                                num_dropped_requests_, 20);
@@ -1254,8 +1235,6 @@ class RenderFrameHostImpl::DroppedInterfaceRequestLogger
  private:
   mojo::Receiver<blink::mojom::BrowserInterfaceBroker> receiver_{this};
   int num_dropped_requests_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(DroppedInterfaceRequestLogger);
 };
 
 struct PendingNavigation {
@@ -1450,7 +1429,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   }
 
   if (frame_tree_->is_prerendering()) {
-    DCHECK(blink::features::IsPrerender2Enabled());
     // TODO(https://crbug.com/1132752): Check the prerendering page is
     // same-origin to the prerender trigger page.
     broker_.ApplyMojoBinderPolicies(
@@ -3456,7 +3434,6 @@ void RenderFrameHostImpl::OnCreateChildFrame(
         "NoRVH", "proxy_bi_in_bfcache",
         back_forward_cache.IsBrowsingInstanceInBackForwardCacheForDebugging(
             proxy_si->GetBrowsingInstanceId()));
-
     SCOPED_CRASH_KEY_BOOL(
         "NoRVH", "proxy_si_in_bfcache",
         back_forward_cache.IsSiteInstanceInBackForwardCacheForDebugging(
@@ -3738,8 +3715,24 @@ net::IsolationInfo RenderFrameHostImpl::ComputeIsolationInfoInternal(
     candidate_site_for_cookies = net::SiteForCookies(top_frame_site);
   }
 
-  const base::UnguessableToken* nonce =
-      anonymous ? &GetPage().anonymous_iframes_nonce() : nullptr;
+  const base::UnguessableToken* nonce = nullptr;
+
+  absl::optional<base::UnguessableToken> fenced_frame_nonce =
+      frame_tree_node_->fenced_frame_nonce();
+
+  // If it's an anonymous frame tree, use its nonce even if it's within a fenced
+  // frame tree to maintain the guarantee that an anonymous frame tree has
+  // a unique nonce. Otherwise, use the fenced frame nonce for fenced frames.
+  // Note that MPArch will ensure that fenced frame tree within an anonymous
+  // iframe does not have `anonymous` set to true. The ShadowDOM architecture
+  // cannot make the same guarantee that MPArch will, and therefore the shadow
+  // DOM version and will lead to the anonymous iframe nonce being used
+  // (crbug.com/1249865).
+  if (anonymous) {
+    nonce = &GetPage().anonymous_iframes_nonce();
+  } else if (fenced_frame_nonce.has_value()) {
+    nonce = &(fenced_frame_nonce.value());
+  }
 
   return net::IsolationInfo::Create(request_type, top_frame_origin,
                                     frame_origin, candidate_site_for_cookies,
@@ -4003,6 +3996,10 @@ void RenderFrameHostImpl::DidFailLoadWithError(const GURL& url,
 }
 
 void RenderFrameHostImpl::DidFocusFrame() {
+  TRACE_EVENT("navigation", "RenderFrameHostImpl::DidFocusFrame",
+              ChromeTrackEvent::kFrameTreeNodeInfo, *frame_tree_node_,
+              ChromeTrackEvent::kSiteInstance,
+              *static_cast<SiteInstanceImpl*>(GetSiteInstance()));
   // We don't handle this IPC signal for non-active RenderFrameHost.
   //
   // For RenderFrameHost in BackForwardCache, it is safe to ignore this IPC as
@@ -4867,7 +4864,6 @@ void RenderFrameHostImpl::DownloadURL(
   // prerendering page is activated, and it will comply with the prerendering
   // spec.
   if (frame_tree()->is_prerendering()) {
-    DCHECK(blink::features::IsPrerender2Enabled());
     CancelPrerendering(PrerenderHost::FinalStatus::kDownload);
     return;
   }
@@ -6353,7 +6349,6 @@ void RenderFrameHostImpl::BindBrowserInterfaceBrokerReceiver(
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> receiver) {
   DCHECK(receiver.is_valid());
   if (frame_tree()->is_prerendering()) {
-    DCHECK(blink::features::IsPrerender2Enabled());
     // RenderFrameHostImpl will rebind the receiver end of
     // BrowserInterfaceBroker if it receives a new one sent from renderer
     // processes. It happens when renderer processes navigate to a new document,
@@ -10390,7 +10385,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     DCHECK_EQ(navigation_request->is_overriding_user_agent() && is_main_frame(),
               params->is_overriding_user_agent);
     if (navigation_request->IsPrerenderedPageActivation()) {
-      DCHECK(blink::features::IsPrerender2Enabled());
       // Set the NavigationStart time for
       // PerformanceNavigationTiming.activationStart.
       // https://jeremyroman.github.io/alternate-loading-modes/#performance-navigation-timing-extension
@@ -12656,6 +12650,29 @@ bool RenderFrameHostImpl::IsInPrimaryMainFrame() {
   return !GetParent() && GetPage().IsPrimary();
 }
 
+// Returns the string corresponding to LifecycleStateImpl, used for logging
+// crash keys.
+const char* RenderFrameHostImpl::LifecycleStateImplToString(
+    RenderFrameHostImpl::LifecycleStateImpl state) {
+  using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
+  switch (state) {
+    case LifecycleStateImpl::kSpeculative:
+      return "Speculative";
+    case LifecycleStateImpl::kPrerendering:
+      return "Prerendering";
+    case LifecycleStateImpl::kPendingCommit:
+      return "PendingCommit";
+    case LifecycleStateImpl::kActive:
+      return "Active";
+    case LifecycleStateImpl::kInBackForwardCache:
+      return "InBackForwardCache";
+    case LifecycleStateImpl::kRunningUnloadHandlers:
+      return "RunningUnloadHandlers";
+    case LifecycleStateImpl::kReadyToBeDeleted:
+      return "ReadyToBeDeleted";
+  }
+}
+
 RenderFrameHostImpl::DocumentAssociatedData::DocumentAssociatedData(
     RenderFrameHostImpl& document) {
   // Only create page object for the main document as the PageImpl is 1:1 with
@@ -12667,12 +12684,13 @@ RenderFrameHostImpl::DocumentAssociatedData::DocumentAssociatedData(
   }
   reporting_source = base::UnguessableToken::Create();
 }
+
 RenderFrameHostImpl::DocumentAssociatedData::~DocumentAssociatedData() =
     default;
 
 std::ostream& operator<<(std::ostream& o,
                          const RenderFrameHostImpl::LifecycleStateImpl& s) {
-  return o << LifecycleStateImplToString(s);
+  return o << RenderFrameHostImpl::LifecycleStateImplToString(s);
 }
 
 }  // namespace content

@@ -25,7 +25,10 @@ export function cellularInfoTestSuite() {
     cellularInfoElement = null;
   });
 
-  function initializeCellularInfo() {
+  /**
+   * @param {!Network} network
+   */
+  function initializeCellularInfo(network) {
     assertFalse(!!cellularInfoElement);
 
     // Add the cellular info to the DOM.
@@ -33,14 +36,31 @@ export function cellularInfoTestSuite() {
         /** @type {!CellularInfoElement} */ (
             document.createElement('cellular-info'));
     assertTrue(!!cellularInfoElement);
-    cellularInfoElement.network = fakeCellularNetwork;
+    cellularInfoElement.network = network;
     document.body.appendChild(cellularInfoElement);
 
     return flushTasks();
   }
 
+  /**
+   * Forces update to cellular network technology.
+   * @param {string} networkTechnology
+   * @return {!Promise}
+   */
+  function setNetworkTechnology(networkTechnology) {
+    assertTrue(!!cellularInfoElement);
+
+    const cellularTypeProps = Object.assign(
+        {}, fakeCellularNetwork.typeProperties.cellular, {networkTechnology});
+    cellularInfoElement.network = Object.assign(
+        {}, fakeCellularNetwork,
+        {typeProperties: {cellular: cellularTypeProps}});
+
+    return flushTasks();
+  }
+
   test('CellularInfoPopulated', () => {
-    return initializeCellularInfo().then(() => {
+    return initializeCellularInfo(fakeCellularNetwork).then(() => {
       assertDataPointHasExpectedHeaderAndValue(
           cellularInfoElement, '#ipAddress',
           cellularInfoElement.i18n('networkIpAddressLabel'),
@@ -73,5 +93,80 @@ export function cellularInfoTestSuite() {
           cellularInfoElement.i18n('networkEidLabel'),
           `${fakeCellularNetwork.typeProperties.cellular.eid}`);
     });
+  });
+
+  test('CellularNetworkTechnologyTranslated', () => {
+    return initializeCellularInfo()
+        .then(() => setNetworkTechnology('CDMA1XRTT'))
+        .then(
+            () => assertDataPointHasExpectedHeaderAndValue(
+                cellularInfoElement, '#technology',
+                cellularInfoElement.i18n('networkTechnologyLabel'),
+                cellularInfoElement.i18n('networkTechnologyCdma1xrttLabel')))
+        .then(() => setNetworkTechnology('EDGE'))
+        .then(
+            () => assertDataPointHasExpectedHeaderAndValue(
+                cellularInfoElement, '#technology',
+                cellularInfoElement.i18n('networkTechnologyLabel'),
+                cellularInfoElement.i18n('networkTechnologyEdgeLabel')))
+        .then(() => setNetworkTechnology('EVDO'))
+        .then(
+            () => assertDataPointHasExpectedHeaderAndValue(
+                cellularInfoElement, '#technology',
+                cellularInfoElement.i18n('networkTechnologyLabel'),
+                cellularInfoElement.i18n('networkTechnologyEvdoLabel')))
+        .then(() => setNetworkTechnology('GPRS'))
+        .then(
+            () => assertDataPointHasExpectedHeaderAndValue(
+                cellularInfoElement, '#technology',
+                cellularInfoElement.i18n('networkTechnologyLabel'),
+                cellularInfoElement.i18n('networkTechnologyGprsLabel')))
+        .then(() => setNetworkTechnology('GSM'))
+        .then(
+            () => assertDataPointHasExpectedHeaderAndValue(
+                cellularInfoElement, '#technology',
+                cellularInfoElement.i18n('networkTechnologyLabel'),
+                cellularInfoElement.i18n('networkTechnologyGsmLabel')))
+        .then(() => setNetworkTechnology('HSPA'))
+        .then(
+            () => assertDataPointHasExpectedHeaderAndValue(
+                cellularInfoElement, '#technology',
+                cellularInfoElement.i18n('networkTechnologyLabel'),
+                cellularInfoElement.i18n('networkTechnologyHspaLabel')))
+        .then(() => setNetworkTechnology('HSPAPlus'))
+        .then(
+            () => assertDataPointHasExpectedHeaderAndValue(
+                cellularInfoElement, '#technology',
+                cellularInfoElement.i18n('networkTechnologyLabel'),
+                cellularInfoElement.i18n('networkTechnologyHspaPlusLabel')))
+        .then(() => setNetworkTechnology('LTE'))
+        .then(
+            () => assertDataPointHasExpectedHeaderAndValue(
+                cellularInfoElement, '#technology',
+                cellularInfoElement.i18n('networkTechnologyLabel'),
+                cellularInfoElement.i18n('networkTechnologyLteLabel')))
+        .then(() => setNetworkTechnology('LTEAdvanced'))
+        .then(
+            () => assertDataPointHasExpectedHeaderAndValue(
+                cellularInfoElement, '#technology',
+                cellularInfoElement.i18n('networkTechnologyLabel'),
+                cellularInfoElement.i18n('networkTechnologyLteAdvancedLabel')))
+        .then(() => setNetworkTechnology('UMTS'))
+        .then(
+            () => assertDataPointHasExpectedHeaderAndValue(
+                cellularInfoElement, '#technology',
+                cellularInfoElement.i18n('networkTechnologyLabel'),
+                cellularInfoElement.i18n('networkTechnologyUmtsLabel')))
+        // When typeProperties have not been set yet display empty string.
+        .then(() => {
+          assertTrue(!!cellularInfoElement);
+          cellularInfoElement.network =
+              Object.assign({}, fakeCellularNetwork, {typeProperties: null});
+          return flushTasks();
+        })
+        .then(
+            () => assertDataPointHasExpectedHeaderAndValue(
+                cellularInfoElement, '#technology',
+                cellularInfoElement.i18n('networkTechnologyLabel'), ''));
   });
 }

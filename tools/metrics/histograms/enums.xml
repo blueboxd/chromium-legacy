@@ -19189,6 +19189,7 @@ Called by update_debug_scenarios.py.-->
   <int value="6" label="kDebugNoResponseHeadForHttpOrHttps"/>
   <int value="7" label="kDebugSubframeProxyCreationWithNoRVH"/>
   <int value="8" label="kDebugBackForwardCacheEntryExistsOnSubframeHistoryNav"/>
+  <int value="9" label="kDebugNoRenderFrameProxyHostOnSetFocusedFrame"/>
 </enum>
 
 <enum name="DeclarativeAPIFunctionType">
@@ -20486,6 +20487,9 @@ Called by update_debug_scenarios.py.-->
 </enum>
 
 <enum name="DifferentPrimaryAccounts">
+  <obsolete>
+    No longer used after 2021-05 and the switch to OAuthMultilogin.
+  </obsolete>
   <int value="0" label="Primary Accounts the same"/>
   <int value="1" label="(obsolete) Primary Accounts different"/>
   <int value="2" label="No GAIA account in cookie jar"/>
@@ -29909,6 +29913,7 @@ Called by update_extension_permission.py.-->
   <int value="233" label="kDeclarativeNetRequestWithHostAccess"/>
   <int value="234" label="kChromeOSTelemetry"/>
   <int value="235" label="kSpeechRecognitionPrivate"/>
+  <int value="236" label="kChromeOSDiagnostics"/>
 </enum>
 
 <enum name="ExtensionPointEnableState">
@@ -34583,6 +34588,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4035" label="CanvasRenderingContext2DHasOverdraw"/>
   <int value="4036" label="DigitalGoodsConsume"/>
   <int value="4037" label="DigitalGoodsListPurchaseHistory"/>
+  <int value="4038" label="WebShareContainingFiles"/>
+  <int value="4039" label="WebShareContainingTitle"/>
+  <int value="4040" label="WebShareContainingText"/>
+  <int value="4041" label="WebShareContainingUrl"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -48151,6 +48160,7 @@ from previous Chrome versions.
   <int value="-1449590570" label="RestrictGamepadAccess:enabled"/>
   <int value="-1449358747" label="RemoveStatusBarInWebApps:enabled"/>
   <int value="-1448511207" label="UseMessagesStagingUrl:disabled"/>
+  <int value="-1448309039" label="VerticalSnapState:enabled"/>
   <int value="-1447147245" label="VideoPlayerNativeControls:enabled"/>
   <int value="-1446625028" label="CrostiniUsbAllowUnsupported:enabled"/>
   <int value="-1446425986" label="ProtectSyncCredentialOnReauth:disabled"/>
@@ -48706,6 +48716,7 @@ from previous Chrome versions.
   <int value="-1027254093" label="LockScreenNotifications:disabled"/>
   <int value="-1027124889" label="NtlmV2Enabled:enabled"/>
   <int value="-1026192558" label="OopRasterizationDDL:enabled"/>
+  <int value="-1026082043" label="VerticalSnapState:disabled"/>
   <int value="-1025125875" label="AssistantTimersV2:disabled"/>
   <int value="-1024731815" label="MessagesForAndroidNearOomReduction:enabled"/>
   <int value="-1024065253" label="EnableWireGuard:disabled"/>
@@ -51001,6 +51012,8 @@ from previous Chrome versions.
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>
   <int value="779703052" label="ChromeOSAmbientMode:enabled"/>
   <int value="779849093" label="OfflinePagesCTSuppressNotifications:disabled"/>
+  <int value="780177218"
+      label="AutofillEnableOfferNotificationForPromoCodes:disabled"/>
   <int value="780743733" label="QueryTilesLocalOrdering:disabled"/>
   <int value="781085897" label="IncognitoReauthenticationForAndroid:disabled"/>
   <int value="781573553" label="UnifiedPasswordManagerAndroid:enabled"/>
@@ -51061,6 +51074,8 @@ from previous Chrome versions.
   <int value="839230937" label="AutofillEnableCardNicknameUpstream:disabled"/>
   <int value="839798268" label="SafeBrowsingTelemetryForApkDownloads:disabled"/>
   <int value="840057845" label="HardwareMediaKeyHandling:enabled"/>
+  <int value="840222947"
+      label="AutofillEnableOfferNotificationForPromoCodes:enabled"/>
   <int value="841276069" label="ChromeHomeDoodle:disabled"/>
   <int value="841343322" label="disable-new-korean-ime"/>
   <int value="841779535" label="password-export:enabled"/>
@@ -51283,6 +51298,7 @@ from previous Chrome versions.
   <int value="1028817487"
       label="OmniboxOnFocusSuggestionsContextualWeb:disabled"/>
   <int value="1030608602" label="AutofillAssistantProactiveHelp:enabled"/>
+  <int value="1031239808" label="ForceMajorVersion100InUserAgent:disabled"/>
   <int value="1031281564"
       label="DisablePeripheralDataAccessProtection:disabled"/>
   <int value="1033148287" label="NTPShortcuts:disabled"/>
@@ -52633,6 +52649,7 @@ from previous Chrome versions.
   <int value="2069999572"
       label="AllowSignedHTTPExchangeCertsWithoutExtension:disabled"/>
   <int value="2070207131" label="OpenscreenCastStreamingSession:disabled"/>
+  <int value="2071148245" label="ForceMajorVersion100InUserAgent:enabled"/>
   <int value="2071229145" label="BloatedRendererDetection:enabled"/>
   <int value="2071340353" label="progress-bar-completion"/>
   <int value="2071461362" label="disable-credit-card-scan"/>
@@ -76077,6 +76094,16 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Failure"/>
 </enum>
 
+<enum name="ShoppingDataProviderFallback">
+  <summary>
+    The different kinds of fallback data used by the ShoppingDataProvider.
+  </summary>
+  <int value="0" label="Title"/>
+  <int value="1" label="Lead Image"/>
+  <int value="2" label="Fallback Image"/>
+  <int value="3" label="Price"/>
+</enum>
+
 <enum name="ShortcutsCreationResult">
   <summary>Result of creating shortcuts for PWA.</summary>
   <int value="0" label="Success"/>
@@ -84741,6 +84768,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="UserDataMoveResult">
+  <obsolete>
+    Removed from code in M96.
+  </obsolete>
   <int value="0" label="CreateTargetFailure">
     Failed to create a temporary directory within User Data into which the
     contents are to be moved for subsequent deletion.

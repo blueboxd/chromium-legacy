@@ -181,6 +181,9 @@ extern const char kAutofillEnableOfferNotificationDescription[];
 extern const char kAutofillEnableOfferNotificationCrossTabTrackingName[];
 extern const char kAutofillEnableOfferNotificationCrossTabTrackingDescription[];
 
+extern const char kAutofillEnableOfferNotificationForPromoCodesName[];
+extern const char kAutofillEnableOfferNotificationForPromoCodesDescription[];
+
 extern const char kAutofillEnableOffersInClankKeyboardAccessoryName[];
 extern const char kAutofillEnableOffersInClankKeyboardAccessoryDescription[];
 
@@ -1521,6 +1524,9 @@ extern const char kUseSearchClickForRightClickDescription[];
 extern const char kV8VmFutureName[];
 extern const char kV8VmFutureDescription[];
 
+extern const char kVerticalSnapName[];
+extern const char kVerticalSnapDescription[];
+
 extern const char kWalletServiceUseSandboxName[];
 extern const char kWalletServiceUseSandboxDescription[];
 
@@ -1633,6 +1639,9 @@ extern const char kExtensionWorkflowJustificationDescription[];
 
 extern const char kShareContextMenuName[];
 extern const char kShareContextMenuDescription[];
+
+extern const char kForceMajorVersion100InUserAgentName[];
+extern const char kForceMajorVersion100InUserAgentDescription[];
 
 // Android --------------------------------------------------------------------
 
@@ -2055,9 +2064,6 @@ extern const char kVoiceButtonInTopToolbarDescription[];
 
 extern const char kInlineUpdateFlowName[];
 extern const char kInlineUpdateFlowDescription[];
-
-extern const char kSwipeToMoveCursorName[];
-extern const char kSwipeToMoveCursorDescription[];
 
 extern const char kWalletRequiresFirstSyncSetupCompleteName[];
 extern const char kWalletRequiresFirstSyncSetupCompleteDescription[];

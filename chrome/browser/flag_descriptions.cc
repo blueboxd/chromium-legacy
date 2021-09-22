@@ -2756,6 +2756,11 @@ const char kWebPaymentsExperimentalFeaturesName[] =
 const char kWebPaymentsExperimentalFeaturesDescription[] =
     "Enable experimental Web Payments API features";
 
+const char kPaymentRequestBasicCardName[] =
+    "PaymentRequest API 'basic-card' method";
+const char kPaymentRequestBasicCardDescription[] =
+    "The 'basic-card' payment method of the PaymentRequest API.";
+
 const char kAppStoreBillingDebugName[] =
     "Web Payments App Store Billing Debug Mode";
 const char kAppStoreBillingDebugDescription[] =
@@ -4524,15 +4529,6 @@ const char kEnablePalmSuppressionName[] =
 const char kEnablePalmSuppressionDescription[] =
     "If enabled, suppresses touch when a stylus is on a touchscreen.";
 
-const char kEnableQuickAnswersName[] = "Enable Quick Answers";
-const char kEnableQuickAnswersDescription[] =
-    "Enable the Quick Answers feature";
-
-const char kEnableQuickAnswersOnEditableTextName[] =
-    "Enable Quick Answers on editable text";
-const char kEnableQuickAnswersOnEditableTextDescription[] =
-    "Enable Quick Answers on editable text.";
-
 const char kEnableQuickAnswersV2Name[] = "Enable Quick Answers V2 features";
 const char kEnableQuickAnswersV2Description[] =
     "Enable Quick Answers V2 features.";
@@ -5006,10 +5002,6 @@ const char kSelectToSpeakNavigationControlName[] =
     "Select-to-speak navigation control";
 const char kSelectToSpeakNavigationControlDescription[] =
     "Enables enhanced Select-to-speak navigation features.";
-
-const char kSharesheetContentPreviewsName[] = "Sharesheet Content Previews";
-const char kSharesheetContentPreviewsDescription[] =
-    "Chrome OS content previews for sharesheet.";
 
 const char kSharesheetName[] = "Sharesheet";
 const char kSharesheetDescription[] = "Chrome OS sharesheet.";

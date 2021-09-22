@@ -1032,6 +1032,11 @@
     "expiry_milestone": 97
   },
   {
+    "name": "default-user-agent",
+    "owners": [ "gambard", "bling-flags@google.com" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "default-wkwebview-context-menu",
     "owners": [ "gambard", "bling-flags@google.com" ],
     "expiry_milestone": 100
@@ -1067,11 +1072,6 @@
     "name": "desktop-restructured-language-settings",
     "owners": [ "chrome-language@google.com" ],
     "expiry_milestone": 97
-  },
-  {
-    "name": "desktop-version-default",
-    "owners": [ "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 100
   },
   {
     "name": "destroy-profile-on-browser-close",
@@ -2109,11 +2109,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "enable-incognito-authentication-ios",
-    "owners": [ "stkhapugin", "bling-flags@google.com" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "enable-incognito-shortcut-on-desktop",
     "owners": [ "rhalavati", "chrome-privacy-core@google.com" ],
     "expiry_milestone": 92
@@ -2403,6 +2398,14 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-payment-request-basic-card",
+    "owners": [ "maxlg", "web-payments-team@google.com" ],
+    // This flag is used by developers to disable the "basic-card" method, to
+    // make sure their web pages do not break after Chrome deprecates
+    // "basic-card" in M100.
+    "expiry_milestone": 100
+  },
+  {
     "name": "enable-pci-guard-ui",
     "owners": [ "jimmyxgong", "cros-peripherals@google.com" ],
     "expiry_milestone": 94
@@ -2493,16 +2496,6 @@
     "name": "enable-quick-action-search-widget-android-dino-variant",
     "owners": [ "maxtauro@google.com", "ender@google.com" ],
     "expiry_milestone": 98
-  },
-  {
-    "name": "enable-quick-answers",
-    "owners": [ "croissant-eng" ],
-    "expiry_milestone": 95
-  },
-  {
-    "name": "enable-quick-answers-on-editable-text",
-    "owners": [ "croissant-eng" ],
-    "expiry_milestone": 95
   },
   {
     "name": "enable-quick-answers-v2",
@@ -3906,11 +3899,6 @@
     "name": "mixed-forms-interstitial",
     "owners": [ "carlosil" ],
     "expiry_milestone": 92
-  },
-  {
-    "name": "mobile-google-srp",
-    "owners": [ "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 100
   },
   {
     "name": "mobile-identity-consistency",

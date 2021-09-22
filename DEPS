@@ -232,7 +232,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '0ced286faabd96bb475bc03d5d31cde51f5b40db',
+  'v8_revision': 'fbba2862f13eda82033d350aad441a4376373afb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -275,7 +275,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '61903609674f2a4ad18abbbcb1d40f5c8beeeaf4',
+  'freetype_revision': 'b4dddd8244fb59795f030530ad2b401ec4d5b477',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -303,7 +303,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '2947c29029c5d46011130fd5c505a05bb1fa2297',
+  'devtools_frontend_revision': 'cd7c3815feebdf809f13cfb3190eae26d443b978',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -343,7 +343,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'edeb54abf348847387fee370eea5aac7329c30b2',
+  'dawn_revision': 'a10f5331f2b5263375b504a20cf3c1caec9b5d70',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -773,7 +773,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': '9NWqy0Mwybr2-UnSDAVpZ77TLsWo0E6-CKkEfwzylNYC',
+          'version': 'zzVIaEA3uTWNbAiFgL34RFj52xan_NtxkXTFIZjsrroC',
       },
     ],
     'condition': 'checkout_android',
@@ -1007,7 +1007,7 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '40f89cd25998a6aa1331542d3660c4963174ab7b',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '6497f0b126d4d6673ce7552d13fa76505250173c',
       'condition': 'checkout_linux',
   },
 
@@ -1398,7 +1398,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'df2e9fecdfb26f36a6a674b1f97a9117ab714a42',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '8f0fabf54bc923165ac47bc1b7de45b9eee0ff3d',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1619,7 +1619,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '2a6a882c94af7ca19b2121fc268a7db1ea671df6',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '2d0e82e4cfa78787ce11e056d0449f0bd3f76bac',
+    Var('webrtc_git') + '/src.git' + '@' + '070dbe13d104afe52754a2412f5ad95d21f60702',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1677,7 +1677,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@bfacf67ee9616cf45c6ebcee8d069bf02112066d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@36ebb13c47bdb96046c77ead32b2b42e78d7e5bf',
     'condition': 'checkout_src_internal',
   },
 
@@ -1718,7 +1718,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': '7y9MRIzWlHdbocmrSRj_cR6ywn-cXPir8zejFA4yUboC',
+        'version': 'IBU8QLtkSw-VH1bf4vgWHEQrgj01kjHDXYlKrPg-2WQC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

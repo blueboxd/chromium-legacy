@@ -412,12 +412,6 @@ const base::Feature kEmojiSuggestAddition{"EmojiSuggestAddition",
 const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables some trials aimed at improving user experiencing when using the
-// trackpad to switch desks.
-// TODO(https://crbug.com/1191545): Remove this after the feature is launched.
-const base::Feature kEnableDesksTrackpadSwipeImprovements{
-    "EnableDesksTrackpadSwipeImprovements", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables the DNS proxy service providing support split and secure DNS
 // for Chrome OS.
 const base::Feature kEnableDnsProxy{"EnableDnsProxy",
@@ -876,14 +870,6 @@ const base::Feature kProjector{"Projector", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kProjectorFeaturePod{"ProjectorFeaturePod",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether to enable quick answers.
-const base::Feature kQuickAnswers{"QuickAnswers",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether to trigger quick answers on editable text selection.
-const base::Feature kQuickAnswersOnEditableText{
-    "QuickAnswersOnEditableText", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether to enable quick answers V2 features.
 const base::Feature kQuickAnswersV2{"QuickAnswersV2",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1207,10 +1193,6 @@ bool AreContextualNudgesEnabled() {
 
 bool AreDesksTemplatesEnabled() {
   return base::FeatureList::IsEnabled(kDesksTemplates);
-}
-
-bool AreDesksTrackpadSwipeImprovementsEnabled() {
-  return base::FeatureList::IsEnabled(kEnableDesksTrackpadSwipeImprovements);
 }
 
 bool AreImprovedScreenCaptureSettingsEnabled() {
@@ -1567,14 +1549,6 @@ bool IsProjectorEnabled() {
 bool IsProjectorFeaturePodEnabled() {
   return IsProjectorEnabled() &&
          base::FeatureList::IsEnabled(kProjectorFeaturePod);
-}
-
-bool IsQuickAnswersEnabled() {
-  return base::FeatureList::IsEnabled(kQuickAnswers);
-}
-
-bool IsQuickAnswersOnEditableTextEnabled() {
-  return base::FeatureList::IsEnabled(kQuickAnswersOnEditableText);
 }
 
 bool IsQuickAnswersV2Enabled() {

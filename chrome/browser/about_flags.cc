@@ -4238,6 +4238,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebPaymentsExperimentalFeaturesName,
      flag_descriptions::kWebPaymentsExperimentalFeaturesDescription, kOsAll,
      FEATURE_VALUE_TYPE(payments::features::kWebPaymentsExperimentalFeatures)},
+    {"enable-payment-request-basic-card",
+     flag_descriptions::kPaymentRequestBasicCardName,
+     flag_descriptions::kPaymentRequestBasicCardDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kPaymentRequestBasicCard)},
     {"enable-debug-for-store-billing",
      flag_descriptions::kAppStoreBillingDebugName,
      flag_descriptions::kAppStoreBillingDebugDescription, kOsAll,
@@ -5446,15 +5450,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAssistantAppSupportName,
      flag_descriptions::kEnableAssistantAppSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantAppSupport)},
-
-    {"enable-quick-answers", flag_descriptions::kEnableQuickAnswersName,
-     flag_descriptions::kEnableQuickAnswersDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswers)},
-
-    {"enable-quick-answers-on-editable-text",
-     flag_descriptions::kEnableQuickAnswersOnEditableTextName,
-     flag_descriptions::kEnableQuickAnswersOnEditableTextDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersOnEditableText)},
 
     {"enable-quick-answers-v2", flag_descriptions::kEnableQuickAnswersV2Name,
      flag_descriptions::kEnableQuickAnswersV2Description, kOsCrOS,
@@ -6689,11 +6684,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-sharesheet", flag_descriptions::kSharesheetName,
      flag_descriptions::kSharesheetDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kSharesheet)},
-
-    {"enable-sharesheet-content-previews",
-     flag_descriptions::kSharesheetContentPreviewsName,
-     flag_descriptions::kSharesheetContentPreviewsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kSharesheetContentPreviews)},
 
     {"chromeos-sharing-hub", flag_descriptions::kChromeOSSharingHubName,
      flag_descriptions::kChromeOSSharingHubDescription, kOsCrOS,

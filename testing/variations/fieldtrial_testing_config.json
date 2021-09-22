@@ -1419,6 +1419,7 @@
                         "unload_support": "opt_in_header_required"
                     },
                     "enable_features": [
+                        "BFCachePerformanceManagerPolicy",
                         "BackForwardCache",
                         "LoadingTasksUnfreezable"
                     ]
@@ -4620,21 +4621,6 @@
                         "IPH_IdentityDisc"
                     ],
                     "disable_features": []
-                }
-            ]
-        }
-    ],
-    "IncognitoBiometricReauth": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "enable-incognito-authentication-ios"
-                    ]
                 }
             ]
         }

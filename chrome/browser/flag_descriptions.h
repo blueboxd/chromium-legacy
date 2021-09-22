@@ -1560,6 +1560,9 @@ extern const char kWebglDraftExtensionsDescription[];
 extern const char kWebPaymentsExperimentalFeaturesName[];
 extern const char kWebPaymentsExperimentalFeaturesDescription[];
 
+extern const char kPaymentRequestBasicCardName[];
+extern const char kPaymentRequestBasicCardDescription[];
+
 extern const char kAppStoreBillingDebugName[];
 extern const char kAppStoreBillingDebugDescription[];
 
@@ -2581,12 +2584,6 @@ extern const char kEnablePalmOnToolTypePalmDescription[];
 extern const char kEnablePalmSuppressionName[];
 extern const char kEnablePalmSuppressionDescription[];
 
-extern const char kEnableQuickAnswersName[];
-extern const char kEnableQuickAnswersDescription[];
-
-extern const char kEnableQuickAnswersOnEditableTextName[];
-extern const char kEnableQuickAnswersOnEditableTextDescription[];
-
 extern const char kEnableQuickAnswersV2Name[];
 extern const char kEnableQuickAnswersV2Description[];
 
@@ -2882,9 +2879,6 @@ extern const char kSchedulerConfigurationPerformance[];
 
 extern const char kSelectToSpeakNavigationControlName[];
 extern const char kSelectToSpeakNavigationControlDescription[];
-
-extern const char kSharesheetContentPreviewsName[];
-extern const char kSharesheetContentPreviewsDescription[];
 
 extern const char kSharesheetName[];
 extern const char kSharesheetDescription[];

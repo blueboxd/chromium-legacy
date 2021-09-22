@@ -224,7 +224,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FetchHandlerExistence fetch_handler_existence() const {
     return fetch_handler_existence_;
   }
-  // This also updates |site_for_uma_| when it was Site::OTHER.
   void set_fetch_handler_existence(FetchHandlerExistence existence);
 
   base::TimeDelta TimeSinceNoControllees() const {
@@ -251,8 +250,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // ServiceWorkerRegistration::status() instead of this function.
   void SetRegistrationStatus(
       ServiceWorkerRegistration::Status registration_status);
-
-  ServiceWorkerMetrics::Site site_for_uma() const { return site_for_uma_; }
 
   // This sets the new status and also run status change callbacks
   // if there're any (see RegisterStatusChangeCallback).
@@ -308,10 +305,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // called. If FinishRequest is not called the request will eventually time
   // out and the worker will be forcibly terminated.
   //
-  // The |error_callback| is called if either ServiceWorkerVersion decides the
+  // `error_callback` is called if either ServiceWorkerVersion decides the
   // event is taking too long, or if for some reason the worker stops or is
   // killed before the request finishes. In this case, the caller should not
-  // call FinishRequest.
+  // call FinishRequest. EXCEPTION: If CreateSimpleEventCallback() is used,
+  // `error_callback` is always called, even in the case of success.
+  // TODO(http://crbug.com/1251834): Clean up this exception.
   int StartRequest(ServiceWorkerMetrics::EventType event_type,
                    StatusCallback error_callback);
 
@@ -930,7 +929,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // cached value because it must be looked up quickly and a live registration
   // doesn't necessarily exist whenever there is a live version.
   blink::mojom::NavigationPreloadState navigation_preload_state_;
-  ServiceWorkerMetrics::Site site_for_uma_;
 
   // A copy of ServiceWorkerRegistration::status(). Cached for the same reason
   // as `navigation_preload_state_`: A live registration doesn't necessarily

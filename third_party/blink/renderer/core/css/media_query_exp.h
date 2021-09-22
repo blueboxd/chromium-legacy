@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/css/media_feature_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -124,6 +125,86 @@ class CORE_EXPORT MediaQueryExpValue {
   };
 };
 
+// https://drafts.csswg.org/mediaqueries-4/#mq-syntax
+enum class MediaQueryOperator {
+  // Used for <mf-plain>, <mf-boolean>
+  kNone,
+
+  // Used for <mf-range>
+  kEq,
+  kLt,
+  kLe,
+  kGt,
+  kGe,
+};
+
+// This represents the following part of a <media-feature> (example):
+//
+//  (width >= 10px)
+//         ^^^^^^^
+//
+struct CORE_EXPORT MediaQueryExpComparison {
+  DISALLOW_NEW();
+  MediaQueryExpComparison() = default;
+  explicit MediaQueryExpComparison(const MediaQueryExpValue& value)
+      : value(value) {}
+  MediaQueryExpComparison(const MediaQueryExpValue& value,
+                          MediaQueryOperator op)
+      : value(value), op(op) {}
+
+  bool operator==(const MediaQueryExpComparison& o) const {
+    return value == o.value && op == o.op;
+  }
+  bool operator!=(const MediaQueryExpComparison& o) const {
+    return !(*this == o);
+  }
+
+  bool IsValid() const { return value.IsValid(); }
+
+  MediaQueryExpValue value;
+  MediaQueryOperator op = MediaQueryOperator::kNone;
+};
+
+// There exists three types of <media-feature>s.
+//
+//  1) Boolean features, which is just the feature name, e.g. (color)
+//  2) Plain features, which can appear in two different forms:
+//       - Feature with specific value, e.g. (width: 100px)
+//       - Feature with min/max prefix, e.g. (min-width: 100px)
+//  3) Range features, which can appear in three different forms:
+//       - Feature compared with value, e.g. (width >= 100px)
+//       - Feature compared with value (reversed), e.g. (100px <= width)
+//       - Feature within a certain range, e.g. (100px < width < 200px)
+//
+// In the first case, both |left| and |right| values are not set.
+// In the second case, only |right| is set.
+// In the third case, either |left| is set, |right| is set, or both, depending
+// on the form.
+//
+// https://drafts.csswg.org/mediaqueries-4/#typedef-media-feature
+struct CORE_EXPORT MediaQueryExpBounds {
+  DISALLOW_NEW();
+  MediaQueryExpBounds() = default;
+  explicit MediaQueryExpBounds(const MediaQueryExpComparison& right)
+      : right(right) {}
+  MediaQueryExpBounds(const MediaQueryExpComparison& left,
+                      const MediaQueryExpComparison& right)
+      : left(left), right(right) {}
+
+  bool IsRange() const {
+    return left.op != MediaQueryOperator::kNone ||
+           right.op != MediaQueryOperator::kNone;
+  }
+
+  bool operator==(const MediaQueryExpBounds& o) const {
+    return left == o.left && right == o.right;
+  }
+  bool operator!=(const MediaQueryExpBounds& o) const { return !(*this == o); }
+
+  MediaQueryExpComparison left;
+  MediaQueryExpComparison right;
+};
+
 class CORE_EXPORT MediaQueryExp {
   DISALLOW_NEW();
 
@@ -133,6 +214,8 @@ class CORE_EXPORT MediaQueryExp {
                               CSSParserTokenRange&,
                               const CSSParserContext&,
                               const ExecutionContext*);
+  static MediaQueryExp Create(const String& media_feature,
+                              const MediaQueryExpBounds&);
   static MediaQueryExp Invalid() {
     return MediaQueryExp(String(), MediaQueryExpValue());
   }
@@ -142,11 +225,20 @@ class CORE_EXPORT MediaQueryExp {
 
   const String& MediaFeature() const { return media_feature_; }
 
-  MediaQueryExpValue ExpValue() const { return exp_value_; }
+  // TODO(crbug.com/1034465): Replace with MediaQueryExpBounds.
+  MediaQueryExpValue ExpValue() const {
+    DCHECK(!bounds_.left.IsValid());
+    return bounds_.right.value;
+  }
+
+  const MediaQueryExpBounds& Bounds() const { return bounds_; }
 
   bool IsValid() const { return !media_feature_.IsNull(); }
 
   bool operator==(const MediaQueryExp& other) const;
+  bool operator!=(const MediaQueryExp& other) const {
+    return !(*this == other);
+  }
 
   bool IsViewportDependent() const;
 
@@ -160,9 +252,161 @@ class CORE_EXPORT MediaQueryExp {
 
  private:
   MediaQueryExp(const String&, const MediaQueryExpValue&);
+  MediaQueryExp(const String&, const MediaQueryExpBounds&);
 
   String media_feature_;
-  MediaQueryExpValue exp_value_;
+  MediaQueryExpBounds bounds_;
+};
+
+// MediaQueryExpNode representing a tree of MediaQueryExp objects capable of
+// nested/compound expressions.
+class CORE_EXPORT MediaQueryExpNode {
+  USING_FAST_MALLOC(MediaQueryExpNode);
+
+ public:
+  virtual ~MediaQueryExpNode() = default;
+
+  enum class Type { kFeature, kNested, kNot, kAnd, kOr };
+
+  String Serialize() const;
+
+  virtual Type GetType() const = 0;
+  virtual void SerializeTo(StringBuilder&) const = 0;
+  virtual std::unique_ptr<MediaQueryExpNode> Copy() const = 0;
+};
+
+class CORE_EXPORT MediaQueryFeatureExpNode : public MediaQueryExpNode {
+  USING_FAST_MALLOC(MediaQueryFeatureExpNode);
+
+ public:
+  explicit MediaQueryFeatureExpNode(const MediaQueryExp& exp) : exp_(exp) {}
+
+  MediaQueryExp Expression() const { return exp_; }
+
+  Type GetType() const override { return Type::kFeature; }
+  void SerializeTo(StringBuilder&) const override;
+  std::unique_ptr<MediaQueryExpNode> Copy() const override;
+
+ private:
+  MediaQueryExp exp_;
+};
+
+class CORE_EXPORT MediaQueryNestedExpNode : public MediaQueryExpNode {
+  USING_FAST_MALLOC(MediaQueryNestedExpNode);
+
+ public:
+  explicit MediaQueryNestedExpNode(std::unique_ptr<MediaQueryExpNode> child)
+      : child_(std::move(child)) {
+    DCHECK(child_);
+  }
+
+  const MediaQueryExpNode& Child() const { return *child_; }
+
+  Type GetType() const override { return Type::kNested; }
+  void SerializeTo(StringBuilder&) const override;
+  std::unique_ptr<MediaQueryExpNode> Copy() const override;
+
+ private:
+  std::unique_ptr<MediaQueryExpNode> child_;
+};
+
+class CORE_EXPORT MediaQueryNotExpNode : public MediaQueryExpNode {
+  USING_FAST_MALLOC(MediaQueryNotExpNode);
+
+ public:
+  explicit MediaQueryNotExpNode(std::unique_ptr<MediaQueryExpNode> operand)
+      : operand_(std::move(operand)) {
+    DCHECK(operand_);
+  }
+
+  const MediaQueryExpNode& Operand() const { return *operand_; }
+
+  Type GetType() const override { return Type::kNot; }
+  void SerializeTo(StringBuilder&) const override;
+  std::unique_ptr<MediaQueryExpNode> Copy() const override;
+
+ private:
+  std::unique_ptr<MediaQueryExpNode> operand_;
+};
+
+class CORE_EXPORT MediaQueryCompoundExpNode : public MediaQueryExpNode {
+  USING_FAST_MALLOC(MediaQueryCompoundExpNode);
+
+ public:
+  MediaQueryCompoundExpNode(std::unique_ptr<MediaQueryExpNode> left,
+                            std::unique_ptr<MediaQueryExpNode> right)
+      : left_(std::move(left)), right_(std::move(right)) {
+    DCHECK(left_);
+    DCHECK(right_);
+  }
+
+  const MediaQueryExpNode& Left() const { return *left_; }
+  const MediaQueryExpNode& Right() const { return *right_; }
+
+ private:
+  std::unique_ptr<MediaQueryExpNode> left_;
+  std::unique_ptr<MediaQueryExpNode> right_;
+};
+
+class CORE_EXPORT MediaQueryAndExpNode : public MediaQueryCompoundExpNode {
+  USING_FAST_MALLOC(MediaQueryAndExpNode);
+
+ public:
+  MediaQueryAndExpNode(std::unique_ptr<MediaQueryExpNode> left,
+                       std::unique_ptr<MediaQueryExpNode> right)
+      : MediaQueryCompoundExpNode(std::move(left), std::move(right)) {}
+
+  Type GetType() const override { return Type::kAnd; }
+  void SerializeTo(StringBuilder&) const override;
+  std::unique_ptr<MediaQueryExpNode> Copy() const override;
+};
+
+class CORE_EXPORT MediaQueryOrExpNode : public MediaQueryCompoundExpNode {
+  USING_FAST_MALLOC(MediaQueryOrExpNode);
+
+ public:
+  MediaQueryOrExpNode(std::unique_ptr<MediaQueryExpNode> left,
+                      std::unique_ptr<MediaQueryExpNode> right)
+      : MediaQueryCompoundExpNode(std::move(left), std::move(right)) {}
+
+  Type GetType() const override { return Type::kOr; }
+  void SerializeTo(StringBuilder&) const override;
+  std::unique_ptr<MediaQueryExpNode> Copy() const override;
+};
+
+template <>
+struct DowncastTraits<MediaQueryFeatureExpNode> {
+  static bool AllowFrom(const MediaQueryExpNode& node) {
+    return node.GetType() == MediaQueryExpNode::Type::kFeature;
+  }
+};
+
+template <>
+struct DowncastTraits<MediaQueryNestedExpNode> {
+  static bool AllowFrom(const MediaQueryExpNode& node) {
+    return node.GetType() == MediaQueryExpNode::Type::kNested;
+  }
+};
+
+template <>
+struct DowncastTraits<MediaQueryNotExpNode> {
+  static bool AllowFrom(const MediaQueryExpNode& node) {
+    return node.GetType() == MediaQueryExpNode::Type::kNot;
+  }
+};
+
+template <>
+struct DowncastTraits<MediaQueryAndExpNode> {
+  static bool AllowFrom(const MediaQueryExpNode& node) {
+    return node.GetType() == MediaQueryExpNode::Type::kAnd;
+  }
+};
+
+template <>
+struct DowncastTraits<MediaQueryOrExpNode> {
+  static bool AllowFrom(const MediaQueryExpNode& node) {
+    return node.GetType() == MediaQueryExpNode::Type::kOr;
+  }
 };
 
 }  // namespace blink

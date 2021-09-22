@@ -250,7 +250,6 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       scope_(registration->scope()),
       script_type_(script_type),
       fetch_handler_existence_(FetchHandlerExistence::UNKNOWN),
-      site_for_uma_(ServiceWorkerMetrics::SiteFromURL(scope_)),
       registration_status_(registration->status()),
       context_(context),
       script_cache_map_(this, context),
@@ -413,12 +412,6 @@ void ServiceWorkerVersion::set_fetch_handler_existence(
   DCHECK_EQ(fetch_handler_existence_, FetchHandlerExistence::UNKNOWN);
   DCHECK_NE(existence, FetchHandlerExistence::UNKNOWN);
   fetch_handler_existence_ = existence;
-  if (site_for_uma_ != ServiceWorkerMetrics::Site::OTHER)
-    return;
-  if (existence == FetchHandlerExistence::EXISTS)
-    site_for_uma_ = ServiceWorkerMetrics::Site::WITH_FETCH_HANDLER;
-  else
-    site_for_uma_ = ServiceWorkerMetrics::Site::WITHOUT_FETCH_HANDLER;
 }
 
 void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
@@ -1721,13 +1714,14 @@ void ServiceWorkerVersion::OnSimpleEventFinished(
   if (!request)
     return;
   // Copy error callback before calling FinishRequest.
-  StatusCallback callback = std::move(request->error_callback);
+  StatusCallback error_callback = std::move(request->error_callback);
 
   FinishRequest(request_id,
                 status == blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-
-  std::move(callback).Run(
-      mojo::ConvertTo<blink::ServiceWorkerStatusCode>(status));
+  // TODO(http://crbug.com/1251834): Why are we running the "error callback"
+  // even when there is no error? Clean this up.
+  std::move(error_callback)
+      .Run(mojo::ConvertTo<blink::ServiceWorkerStatusCode>(status));
 }
 
 void ServiceWorkerVersion::CountFeature(blink::mojom::WebFeature feature) {

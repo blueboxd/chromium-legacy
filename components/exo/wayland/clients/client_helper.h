@@ -18,6 +18,7 @@
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
 #include <linux-explicit-synchronization-unstable-v1-client-protocol.h>
 #include <notification-shell-unstable-v1-client-protocol.h>
+#include <overlay-prioritizer-client-protocol.h>
 #include <pointer-constraints-unstable-v1-client-protocol.h>
 #include <pointer-gestures-unstable-v1-client-protocol.h>
 #include <presentation-time-client-protocol.h>
@@ -27,12 +28,14 @@
 #include <secure-output-unstable-v1-client-protocol.h>
 #include <stylus-tools-unstable-v1-client-protocol.h>
 #include <stylus-unstable-v2-client-protocol.h>
+#include <surface-augmenter-client-protocol.h>
 #include <text-input-extension-unstable-v1-client-protocol.h>
 #include <text-input-unstable-v1-client-protocol.h>
 #include <viewporter-client-protocol.h>
 #include <vsync-feedback-unstable-v1-client-protocol.h>
 #include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
+#include <weston-test-client-protocol.h>
 #include <xdg-decoration-unstable-v1-client-protocol.h>
 #include <xdg-output-unstable-v1-client-protocol.h>
 #include <xdg-shell-client-protocol.h>
@@ -55,6 +58,8 @@
   };                                    \
   }
 
+DEFAULT_DELETER_FDECL(surface_augmenter)
+DEFAULT_DELETER_FDECL(overlay_prioritizer)
 DEFAULT_DELETER_FDECL(wl_buffer)
 DEFAULT_DELETER_FDECL(wl_callback)
 DEFAULT_DELETER_FDECL(wl_compositor)
@@ -115,6 +120,7 @@ DEFAULT_DELETER_FDECL(xdg_toplevel)
 DEFAULT_DELETER_FDECL(zxdg_surface_v6)
 DEFAULT_DELETER_FDECL(zxdg_toplevel_v6)
 DEFAULT_DELETER_FDECL(zxdg_output_manager_v1)
+DEFAULT_DELETER_FDECL(weston_test)
 
 #if defined(USE_GBM)
 DEFAULT_DELETER_FDECL(gbm_bo)

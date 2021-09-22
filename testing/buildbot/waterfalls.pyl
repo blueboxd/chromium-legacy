@@ -829,7 +829,6 @@
           'chrome_nocompile_tests',
           'cronet_test_instrumentation_apk',
           'monochrome_static_initializers',
-          'rust_build_tests',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
@@ -847,7 +846,6 @@
         'additional_compile_targets': [
           'monochrome_static_initializers',
           'weblayer_shell',
-          'rust_build_tests',
         ],
         'test_suites': {
           'gtest_tests': 'android_marshmallow_device_gtests',
@@ -870,9 +868,6 @@
           'gtest_tests': 'android_marshmallow_emulator_gtests',
           'isolated_scripts': 'monochrome_public_apk_checker_isolated_script',
         },
-        'additional_compile_targets': [
-          'rust_build_tests',
-        ]
       },
       'android-marshmallow-x86-rel-non-cq': {
         'mixins': [
@@ -943,7 +938,6 @@
         'additional_compile_targets': [
           'monochrome_static_initializers',
           'weblayer_shell',
-          'rust_build_tests',
         ],
         'test_suites': {
           'gtest_tests': 'android_pie_rel_gtests',
@@ -1656,14 +1650,14 @@
           ],
         },
         'test_suites': {
-          'gtest_tests': 'fuchsia_gtests_with_runner_logs',
+          'gtest_tests': 'fuchsia_gtests',
           'isolated_scripts': 'fuchsia_isolated_scripts',
           'gpu_telemetry_tests': 'fuchsia_gpu_telemetry_tests',
         },
       },
       'ToTFuchsiaOfficial': {
         'test_suites': {
-          'gtest_tests': 'fuchsia_gtests_with_runner_logs',
+          'gtest_tests': 'fuchsia_gtests',
           'isolated_scripts': 'fuchsia_arm64_isolated_scripts',
         },
         'mixins': [
@@ -2825,7 +2819,7 @@
       },
       'fuchsia-code-coverage': {
         'test_suites': {
-          'gtest_tests': 'fuchsia_gtests_with_runner_logs',
+          'gtest_tests': 'fuchsia_gtests',
           'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
         },
         'mixins': [
@@ -2839,7 +2833,7 @@
           'all',
         ],
         'test_suites': {
-          'gtest_tests': 'fuchsia_gtests_with_runner_logs',
+          'gtest_tests': 'fuchsia_gtests',
           'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
         },
         'mixins': [
@@ -2856,7 +2850,7 @@
         'os_type': 'linux',
         'test_suites': {
           'gpu_telemetry_tests': 'fuchsia_gpu_telemetry_tests',
-          'gtest_tests': 'fuchsia_gtests_with_runner_logs',
+          'gtest_tests': 'fuchsia_gtests',
           'isolated_scripts': 'fuchsia_isolated_scripts',
         },
         'mixins': [
@@ -2871,7 +2865,7 @@
           'all',
         ],
         'test_suites': {
-          'gtest_tests': 'fuchsia_experimental_gtests_with_runner_logs',
+          'gtest_tests': 'fuchsia_experimental_gtests',
         },
         'mixins': [
           'arm64',
@@ -2895,7 +2889,7 @@
           ],
         },
         'test_suites': {
-          'gtest_tests': 'fuchsia_gtests_with_runner_logs',
+          'gtest_tests': 'fuchsia_gtests',
           'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
         },
       },
@@ -2918,7 +2912,7 @@
         },
         'test_suites': {
           'gpu_telemetry_tests': 'fuchsia_gpu_telemetry_tests',
-          'gtest_tests': 'fuchsia_experimental_gtests_with_runner_logs',
+          'gtest_tests': 'fuchsia_experimental_gtests',
         },
       },
       'ios-asan': {
@@ -4865,7 +4859,7 @@
           'all',
         ],
         'test_suites': {
-          'gtest_tests': 'fuchsia_gtests_with_runner_logs',
+          'gtest_tests': 'fuchsia_gtests',
           'isolated_scripts': 'fuchsia_arm64_isolated_scripts',
         },
         'mixins': [
@@ -4891,7 +4885,7 @@
           ],
         },
         'test_suites': {
-          'gtest_tests': 'fuchsia_gtests_with_runner_logs',
+          'gtest_tests': 'fuchsia_gtests',
           'isolated_scripts': 'fuchsia_isolated_scripts',
         },
       },
@@ -5430,7 +5424,7 @@
     'name': 'chromium.reclient.fyi',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
-      'Linux Builder Re-Client Staging': {
+      'Linux Builder reclient staging': {
         # Copied from
         # https://source.chromium.org/chromium/chromium/src/+/main:testing/buildbot/waterfalls.pyl;l=4844-4854;drc=75f767e92e86611728189739fb26f4e2cdf212d9
         'mixins': [
@@ -5440,7 +5434,7 @@
           'all'
         ],
       },
-      'Linux Builder Re-Client Test': {
+      'Linux Builder reclient test': {
         # Copied from
         # https://source.chromium.org/chromium/chromium/src/+/main:testing/buildbot/waterfalls.pyl;l=4844-4854;drc=75f767e92e86611728189739fb26f4e2cdf212d9
         'mixins': [
@@ -5448,6 +5442,22 @@
         ],
         'additional_compile_targets': [
           'all'
+        ],
+      },
+    },
+  },
+  {
+    'name': 'chromium.rust',
+    'mixins': ['chromium-tester-service-account'],
+    'machines': {
+      'android-rust-arm-rel': {
+        'additional_compile_targets': [
+          'rust_build_tests',
+        ],
+      },
+      'linux-rust-x64-rel' : {
+        'additional_compile_targets': [
+          'rust_build_tests',
         ],
       },
     },

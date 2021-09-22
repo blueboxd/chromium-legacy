@@ -1,0 +1,40 @@
+<template>
+  <style include="cr-shared-style settings-shared">
+    :host {
+      display: block;
+      padding: 16px;
+    }
+
+    .description-column {
+      width: 50%;
+    }
+
+    .description-column-first {
+      padding-inline-end: 12px;
+    }
+
+    .description-header {
+      font-weight: 400;
+      text-transform: uppercase;
+    }
+
+    .description-wrapper {
+      padding: 16px;
+    }
+
+    .embedded-setting-wrapper {
+      border: 1px solid var(--google-grey-refresh-300);
+      border-radius: 4px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .embedded-setting-wrapper {
+        border: 1px solid var(--google-grey-refresh-700);
+      }
+    }
+
+    .two-column {
+      display: flex;
+    }
+  </style>
+</template>

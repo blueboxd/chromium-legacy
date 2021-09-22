@@ -169,6 +169,9 @@ extern const char kAutofillAutoTriggerManualFallbackForCardsDescription[];
 extern const char kAutofillCenterAligngedSuggestionsName[];
 extern const char kAutofillCenterAligngedSuggestionsDescription[];
 
+extern const char kAutofillTypeSpecificPopupWidthName[];
+extern const char kAutofillTypeSpecificPopupWidthDescription[];
+
 extern const char kAutofillEnableGoogleIssuedCardName[];
 extern const char kAutofillEnableGoogleIssuedCardDescription[];
 
@@ -2203,11 +2206,8 @@ extern const char kRawAudioCaptureDescription[];
 extern const char kRunVideoCaptureServiceInBrowserProcessName[];
 extern const char kRunVideoCaptureServiceInBrowserProcessDescription[];
 
-extern const char kUseAngleName[];
-extern const char kUseAngleDescription[];
+extern const char kUseAngleDescriptionWindows[];
 
-extern const char kUseAngleDefault[];
-extern const char kUseAngleGL[];
 extern const char kUseAngleD3D11[];
 extern const char kUseAngleD3D9[];
 extern const char kUseAngleD3D11on12[];
@@ -2261,7 +2261,21 @@ extern const char kMetalDescription[];
 extern const char kScreenTimeName[];
 extern const char kScreenTimeDescription[];
 
+extern const char kUseAngleDescriptionMac[];
+extern const char kUseAngleMetal[];
+
 #endif  // defined(OS_MAC)
+
+// Windows and Mac ------------------------------------------------------------
+
+#if defined(OS_WIN) || defined(OS_MAC)
+
+extern const char kUseAngleName[];
+
+extern const char kUseAngleDefault[];
+extern const char kUseAngleGL[];
+
+#endif  // defined(OS_WIN) || defined(OS_MAC)
 
 // Chrome OS ------------------------------------------------------------------
 
@@ -2572,9 +2586,6 @@ extern const char kEnableQuickAnswersDescription[];
 
 extern const char kEnableQuickAnswersOnEditableTextName[];
 extern const char kEnableQuickAnswersOnEditableTextDescription[];
-
-extern const char kEnableQuickAnswersTextAnnotatorName[];
-extern const char kEnableQuickAnswersTextAnnotatorDescription[];
 
 extern const char kEnableQuickAnswersV2Name[];
 extern const char kEnableQuickAnswersV2Description[];

@@ -115,7 +115,7 @@ def ci_builder(
     experiments = dict(experiments or {})
 
     # TODO(crbug.com/1249938) Promote out of experiment for all builders
-    experiments.setdefault("chromium.chromium_tests.use_gitiles_trigger", 50)
+    experiments.setdefault("chromium.chromium_tests.use_gitiles_trigger", 100)
 
     # TODO(crbug.com/1135718): Promote out of experiment for all builders.
     experiments.setdefault("chromium.chromium_tests.use_rdb_results", 100)
@@ -759,6 +759,17 @@ def mojo_builder(
         **kwargs
     )
 
+def rust_builder(
+        *,
+        name,
+        **kwargs):
+    return ci.builder(
+        name = name,
+        builder_group = "chromium.rust",
+        goma_backend = builders.goma.backend.RBE_PROD,
+        **kwargs
+    )
+
 def swangle_builder(*, name, builderless = True, pinned = True, **kwargs):
     builder_args = dict(kwargs)
     builder_args.update(
@@ -909,6 +920,7 @@ ci = struct(
     mac_thin_tester = mac_thin_tester,
     memory_builder = memory_builder,
     mojo_builder = mojo_builder,
+    rust_builder = rust_builder,
     swangle_linux_builder = swangle_linux_builder,
     swangle_mac_builder = swangle_mac_builder,
     swangle_windows_builder = swangle_windows_builder,

@@ -412,6 +412,12 @@ const base::Feature kEmojiSuggestAddition{"EmojiSuggestAddition",
 const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables some trials aimed at improving user experiencing when using the
+// trackpad to switch desks.
+// TODO(https://crbug.com/1191545): Remove this after the feature is launched.
+const base::Feature kEnableDesksTrackpadSwipeImprovements{
+    "EnableDesksTrackpadSwipeImprovements", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the DNS proxy service providing support split and secure DNS
 // for Chrome OS.
 const base::Feature kEnableDnsProxy{"EnableDnsProxy",
@@ -818,7 +824,7 @@ const base::Feature kOsFeedback{"OsFeedback",
 
 // If enabled, a new App Notifications subpage will appear in CrOS Apps section.
 const base::Feature kOsSettingsAppNotificationsPage{
-    "OsSettingsAppNotificationsPage", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OsSettingsAppNotificationsPage", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOverviewButton{"OverviewButton",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -877,10 +883,6 @@ const base::Feature kQuickAnswers{"QuickAnswers",
 // Controls whether to trigger quick answers on editable text selection.
 const base::Feature kQuickAnswersOnEditableText{
     "QuickAnswersOnEditableText", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether to enable quick answers text annotator.
-const base::Feature kQuickAnswersTextAnnotator{
-    "QuickAnswersTextAnnotator", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable quick answers V2 features.
 const base::Feature kQuickAnswersV2{"QuickAnswersV2",
@@ -1205,6 +1207,10 @@ bool AreContextualNudgesEnabled() {
 
 bool AreDesksTemplatesEnabled() {
   return base::FeatureList::IsEnabled(kDesksTemplates);
+}
+
+bool AreDesksTrackpadSwipeImprovementsEnabled() {
+  return base::FeatureList::IsEnabled(kEnableDesksTrackpadSwipeImprovements);
 }
 
 bool AreImprovedScreenCaptureSettingsEnabled() {
@@ -1709,8 +1715,7 @@ bool ShouldUseBrowserSyncConsent() {
 
 bool ShouldUseQuickAnswersTextAnnotator() {
   // The text classifier is only available on ChromeOS.
-  return base::FeatureList::IsEnabled(kQuickAnswersTextAnnotator) &&
-         base::SysInfo::IsRunningOnChromeOS();
+  return base::SysInfo::IsRunningOnChromeOS();
 }
 
 bool ShouldUseV1DeviceSync() {

@@ -20,6 +20,7 @@ namespace {
 // components/payments/core/features.h, content/public/common/content_features.h
 // or the .h file (for Android only features).
 const base::Feature* const kFeaturesExposedToJava[] = {
+    &::features::kPaymentRequestBasicCard,
     &::features::kSecurePaymentConfirmation,
     &::features::kServiceWorkerPaymentApps,
     &::features::kWebPayments,
@@ -28,8 +29,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kAppStoreBillingDebug,
     &features::kEnforceFullDelegation,
     &features::kGPayAppDynamicUpdate,
-    &features::kPaymentRequestSkipToGPay,
-    &features::kPaymentRequestSkipToGPayIfNoCard,
     &features::kReturnGooglePayInBasicCard,
     &features::kStrictHasEnrolledAutofillInstrument,
     &features::kWebPaymentsExperimentalFeatures,

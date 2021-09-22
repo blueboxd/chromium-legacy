@@ -166,7 +166,7 @@
 #include "media/capture/capture_switches.h"
 #include "media/media_buildflags.h"
 #include "media/midi/midi_switches.h"
-#include "media/webrtc/webrtc_switches.h"
+#include "media/webrtc/webrtc_features.h"
 #include "mojo/core/embedder/features.h"
 #include "net/base/features.h"
 #include "net/net_buildflags.h"
@@ -349,7 +349,7 @@ const FeatureEntry::Choice kLiteVideoDefaultDownlinkBandwidthKbps[] = {
      "900"}};
 
 #if defined(OS_WIN)
-const FeatureEntry::Choice kUseAngleChoices[] = {
+const FeatureEntry::Choice kUseAngleChoicesWindows[] = {
     {flag_descriptions::kUseAngleDefault, "", ""},
     {flag_descriptions::kUseAngleGL, switches::kUseANGLE,
      gl::kANGLEImplementationOpenGLName},
@@ -359,6 +359,13 @@ const FeatureEntry::Choice kUseAngleChoices[] = {
      gl::kANGLEImplementationD3D9Name},
     {flag_descriptions::kUseAngleD3D11on12, switches::kUseANGLE,
      gl::kANGLEImplementationD3D11on12Name}};
+#elif defined(OS_MAC)
+const FeatureEntry::Choice kUseAngleChoicesMac[] = {
+    {flag_descriptions::kUseAngleDefault, "", ""},
+    {flag_descriptions::kUseAngleGL, switches::kUseANGLE,
+     gl::kANGLEImplementationOpenGLName},
+    {flag_descriptions::kUseAngleMetal, switches::kUseANGLE,
+     gl::kANGLEImplementationMetalName}};
 #endif
 
 #if BUILDFLAG(ENABLE_VR)
@@ -1454,8 +1461,7 @@ const FeatureEntry::FeatureParam kNtpShoppingTasksModuleFakeData[] = {
     {ntp_features::kNtpShoppingTasksModuleDataParam, "fake"}};
 const FeatureEntry::FeatureVariation kNtpShoppingTasksModuleVariations[] = {
     {"- Fake Data", kNtpShoppingTasksModuleFakeData,
-     base::size(kNtpShoppingTasksModuleFakeData),
-     "t3329139" /* variation_id */},
+     base::size(kNtpShoppingTasksModuleFakeData), nullptr},
 };
 
 const FeatureEntry::FeatureParam kNtpDriveModuleFakeData[] = {
@@ -2923,6 +2929,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillCenterAligngedSuggestionsDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillCenterAlignedSuggestions)},
+    {"autofill-type-specific-popup-width",
+     flag_descriptions::kAutofillTypeSpecificPopupWidthName,
+     flag_descriptions::kAutofillTypeSpecificPopupWidthDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillTypeSpecificPopupWidth)},
     {"smooth-scrolling", flag_descriptions::kSmoothScrollingName,
      flag_descriptions::kSmoothScrollingDescription,
      // Mac has a separate implementation with its own setting to disable.
@@ -5419,8 +5429,12 @@ const FeatureEntry kFeatureEntries[] = {
 
 #if defined(OS_WIN)
     {"use-angle", flag_descriptions::kUseAngleName,
-     flag_descriptions::kUseAngleDescription, kOsWin,
-     MULTI_VALUE_TYPE(kUseAngleChoices)},
+     flag_descriptions::kUseAngleDescriptionWindows, kOsWin,
+     MULTI_VALUE_TYPE(kUseAngleChoicesWindows)},
+#elif defined(OS_MAC)
+    {"use-angle", flag_descriptions::kUseAngleName,
+     flag_descriptions::kUseAngleDescriptionMac, kOsMac,
+     MULTI_VALUE_TYPE(kUseAngleChoicesMac)},
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -5441,11 +5455,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableQuickAnswersOnEditableTextName,
      flag_descriptions::kEnableQuickAnswersOnEditableTextDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersOnEditableText)},
-
-    {"enable-quick-answers-text-annotator",
-     flag_descriptions::kEnableQuickAnswersTextAnnotatorName,
-     flag_descriptions::kEnableQuickAnswersTextAnnotatorDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersTextAnnotator)},
 
     {"enable-quick-answers-v2", flag_descriptions::kEnableQuickAnswersV2Name,
      flag_descriptions::kEnableQuickAnswersV2Description, kOsCrOS,

@@ -261,6 +261,7 @@ crbug.com/1012289 external/wpt/css/css-pseudo/marker-unicode-bidi-normal.html [ 
 crbug.com/1147859 external/wpt/css/css-pseudo/selection-decoration-p3.html [ Failure ]
 
 ### external/wpt/css/css-ruby/
+crbug.com/591099 external/wpt/css/css-ruby/br-clear-all-002.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-ruby/ruby-line-breaking-002.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-ruby/ruby-with-floats-002.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-ruby/ruby-with-floats-003.html [ Failure ]
@@ -1106,6 +1107,8 @@ crbug.com/667785 external/wpt/css/css-grid/table-grid-item-005.html [ Failure ]
 
 ### external/wpt/css/css-pseudo/
 crbug.com/591099 external/wpt/css/css-pseudo/active-selection-011.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-pseudo/active-selection-012.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-pseudo/highlight-paired-cascade-004.tentative.html [ Failure ]
 
 ### external/wpt/css/css-writing-modes/
 crbug.com/591099 external/wpt/css/css-writing-modes/table-column-order-002.xht [ Failure ]

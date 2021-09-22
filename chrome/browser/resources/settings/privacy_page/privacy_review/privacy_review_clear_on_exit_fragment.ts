@@ -10,10 +10,9 @@
 import '../../controls/settings_toggle_button.js';
 import '../../prefs/prefs.js';
 import './privacy_review_description_item.js';
-import './privacy_review_shared_css.js';
+import './privacy_review_fragment_shared_css.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
 
 /** @polymer */
 export class PrivacyReviewClearOnExitFragmentElement extends PolymerElement {

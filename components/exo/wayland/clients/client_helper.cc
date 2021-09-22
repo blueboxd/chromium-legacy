@@ -30,6 +30,8 @@
   }                                                          \
   }
 
+DEFAULT_DELETER(surface_augmenter, surface_augmenter_destroy)
+DEFAULT_DELETER(overlay_prioritizer, overlay_prioritizer_destroy)
 DEFAULT_DELETER(wl_buffer, wl_buffer_destroy)
 DEFAULT_DELETER(wl_callback, wl_callback_destroy)
 DEFAULT_DELETER(wl_compositor, wl_compositor_destroy)
@@ -98,6 +100,7 @@ DEFAULT_DELETER(xdg_toplevel, xdg_toplevel_destroy)
 DEFAULT_DELETER(zxdg_surface_v6, zxdg_surface_v6_destroy)
 DEFAULT_DELETER(zxdg_toplevel_v6, zxdg_toplevel_v6_destroy)
 DEFAULT_DELETER(zxdg_output_manager_v1, zxdg_output_manager_v1_destroy)
+DEFAULT_DELETER(weston_test, weston_test_destroy)
 
 #if defined(USE_GBM)
 DEFAULT_DELETER(gbm_bo, gbm_bo_destroy)

@@ -498,6 +498,11 @@
     "expiry_milestone":98
   },
   {
+    "name": "autofill-type-specific-popup-width",
+    "owners": [ "koerber", "mamir" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "autofill-use-improved-label-disambiguation",
     "owners": [ "autofill-squad-muc@google.com" ],
     "expiry_milestone": 98
@@ -1370,11 +1375,6 @@
     "name": "enable-accessibility-live-caption-soda",
     "owners": [ "abigailbklein@google.com", "evliu@google.com", "robsc@chromium.org", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 95
-  },
-  {
-    "name": "enable-advanced-ppd-attributes",
-    "owners": [ "vkuzkokov", "skau" ],
-    "expiry_milestone": 83
   },
   {
     "name": "enable-ambient-mode",
@@ -2282,7 +2282,7 @@
   {
     "name": "enable-navigation-predictor",
     "owners": [ "spelchat", "ryansturm", "instant-nav@google.com" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 100
   },
   {
     "name": "enable-network-logging-to-file",
@@ -2501,11 +2501,6 @@
   },
   {
     "name": "enable-quick-answers-on-editable-text",
-    "owners": [ "croissant-eng" ],
-    "expiry_milestone": 95
-  },
-  {
-    "name": "enable-quick-answers-text-annotator",
     "owners": [ "croissant-eng" ],
     "expiry_milestone": 95
   },
@@ -4413,7 +4408,7 @@
   {
     "name": "page-info-history",
     "owners": [ "eokoyomon", "dullweber" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 97
   },
   {
     "name": "page-info-performance-hints",
@@ -5226,9 +5221,9 @@
   {
     "name": "smooth-scrolling",
     "owners": [ "bokan", "input-dev" ],
-    // This needs to continue to be extended until the UI contains a proper
-    // option for it, see crbug.com/817814.
-    "expiry_milestone": 95
+    // This flag is needed for debugging scrolling issues. However, it can be
+    // removed if and when we add it as a UI setting (crbug.com/817814).
+    "expiry_milestone": -1
   },
   {
     "name": "sms-receiver-cross-device",

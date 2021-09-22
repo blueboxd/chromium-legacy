@@ -27,14 +27,18 @@
 
 class TemplateURLService;
 
+namespace optimization_guide {
+class EntityMetadataProvider;
+}  // namespace optimization_guide
+
 namespace history_clusters {
 
-// This Service is the API for UIs to fetch Chrome Memories.
+// This Service provides an API to the History Clusters for UI entry points.
 class HistoryClustersService : public KeyedService {
  public:
   class Observer : public base::CheckedObserver {
    public:
-    virtual void OnMemoriesDebugMessage(const std::string& message) = 0;
+    virtual void OnDebugMessage(const std::string& message) = 0;
   };
 
   // Used to track incomplete, unpersisted visits.
@@ -47,6 +51,7 @@ class HistoryClustersService : public KeyedService {
   HistoryClustersService(
       history::HistoryService* history_service,
       TemplateURLService* template_url_service,
+      optimization_guide::EntityMetadataProvider* entity_metadata_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   HistoryClustersService(const HistoryClustersService&) = delete;
   HistoryClustersService& operator=(const HistoryClustersService&) = delete;

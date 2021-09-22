@@ -7093,6 +7093,7 @@ others/histograms.xml -->
   <int value="131081" label="kContent-kWebUSB"/>
   <int value="131082" label="kContent-kMediaSession"/>
   <int value="131083" label="kContent-kMediaSessionService"/>
+  <int value="131084" label="kContent-kMediaPlay"/>
   <int value="196608" label="kEmbedder-kUnknown"/>
   <int value="196609" label="kEmbedder-kPopupBlockerTabHelper"/>
   <int value="196610" label="kEmbedder-kSafeBrowsingTriggeredPopupBlocker"/>
@@ -7770,6 +7771,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="248" label="MDDH_NOT_TOP_LEVEL"/>
   <int value="249" label="RFH_DID_CHANGE_IFRAME_ATTRIBUTE"/>
   <int value="250" label="FARI_LOGOUT_BAD_ENDPOINT"/>
+  <int value="251" label="RFH_CHILD_FRAME_UNEXPECTED_OWNER_ELEMENT_TYPE"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -12010,6 +12012,21 @@ In case of new special images, values 3 to 9 can be used. -->
   <int value="90" label="Sneaker"/>
   <int value="91" label="Van"/>
   <int value="92" label="Watermelon"/>
+  <int value="93" label="Person watering plants"/>
+  <int value="94" label="Person daydreaming"/>
+  <int value="95" label="Person with flowers"/>
+  <int value="96" label="Person with cats"/>
+  <int value="97" label="Artist"/>
+  <int value="98" label="Person doing tai chi"/>
+  <int value="99" label="Signing thank you"/>
+  <int value="100" label="Person with coffee"/>
+  <int value="101" label="Dog wagging tail"/>
+  <int value="102" label="Nurse"/>
+  <int value="103" label="Gamer"/>
+  <int value="104" label="Bookworm"/>
+  <int value="105" label="Biking"/>
+  <int value="106" label="Person in snow"/>
+  <int value="107" label="Person with megaphone"/>
 </enum>
 
 <enum name="ChromePDFViewerActions">
@@ -23777,9 +23794,18 @@ Called by update_document_policy_enum.py.-->
   <int value="4" label="ANGLE D3D11"/>
   <int value="5" label="ANGLE OpenGL"/>
   <int value="6" label="ANGLE OpenGL ES"/>
-  <int value="13" label="Angle D3D11on12"/>
-  <int value="15" label="Angle OpenGL EGL"/>
-  <int value="16" label="Angle OpenGL ES EGL"/>
+  <int value="7" label="ANGLE NULL"/>
+  <int value="8" label="ANGLE D3D11 NULL"/>
+  <int value="9" label="ANGLE OpenGL NULL"/>
+  <int value="10" label="ANGLE OpenGLES NULL"/>
+  <int value="11" label="ANGLE Vulkan"/>
+  <int value="12" label="ANGLE Vulkan NULL"/>
+  <int value="13" label="ANGLE D3D11on12"/>
+  <int value="14" label="ANGLE SwiftShader"/>
+  <int value="15" label="ANGLE OpenGL EGL"/>
+  <int value="16" label="ANGLE OpenGL ES EGL"/>
+  <int value="17" label="ANGLE Metal"/>
+  <int value="18" label="ANGLE Metal NULL"/>
 </enum>
 
 <enum name="EligibilityFailureReason">
@@ -34596,6 +34622,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4042" label="CoepNoneSharedWorker"/>
   <int value="4043" label="CoepRequireCorpSharedWorker"/>
   <int value="4044" label="CoepCredentiallessSharedWorker"/>
+  <int value="4045" label="PaymentRequestBasicCard"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34757,6 +34784,12 @@ Called by update_permissions_policy_enum.py.-->
   <int value="18" label="Bento Bar"/>
   <int value="19" label="Quick Answers"/>
   <int value="20" label="What's New"/>
+</enum>
+
+<enum name="FeedContentOrder">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="Grouped"/>
+  <int value="2" label="Reverse Chronological"/>
 </enum>
 
 <enum name="FeedControlsActions">
@@ -44255,6 +44288,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="IppAttribute">
+  <obsolete>
+    Removed 2021/09.
+  </obsolete>
   <int value="0" label="confirmation-sheet-print"/>
   <int value="1" label="finishings"/>
   <int value="2" label="ipp-attribute-fidelity"/>
@@ -48625,6 +48661,7 @@ from previous Chrome versions.
   <int value="-1105686819" label="ShareUsageRanking:enabled"/>
   <int value="-1105637876" label="FilteringScrollPrediction:enabled"/>
   <int value="-1104914981" label="frame-throttle-fps"/>
+  <int value="-1104609838" label="UserMediaCaptureOnFocus:enabled"/>
   <int value="-1103221768" label="DefaultChatWebApp:enabled"/>
   <int value="-1103099187" label="NotificationStackingBarRedesign:disabled"/>
   <int value="-1102212525" label="enable-tcp-fastopen"/>
@@ -48646,6 +48683,7 @@ from previous Chrome versions.
   <int value="-1084055006" label="disable-web-notification-custom-layouts"/>
   <int value="-1083736482" label="OmniboxCompactSuggestions:enabled"/>
   <int value="-1083547717" label="NotificationExpansionAnimation:disabled"/>
+  <int value="-1083146397" label="AutofillTypeSpecificPopupWidth:enabled"/>
   <int value="-1082302549" label="scan-cards-in-web-payments"/>
   <int value="-1082053427"
       label="OmniboxUIExperimentElideToRegistrableDomain:disabled"/>
@@ -48948,6 +48986,7 @@ from previous Chrome versions.
   <int value="-853455968"
       label="OmniboxDefaultTypedNavigationsToHttps:disabled"/>
   <int value="-850821337" label="WebContentsForceDark:enabled"/>
+  <int value="-849792130" label="UserMediaCaptureOnFocus:disabled"/>
   <int value="-848691867" label="DesktopPWAWindowing:enabled"/>
   <int value="-847735582" label="NotificationsViaHelperApp:enabled"/>
   <int value="-847216521" label="ChromeDuplex:enabled"/>
@@ -51424,6 +51463,7 @@ from previous Chrome versions.
       label="AbusiveOriginNotificationPermissionRevocation:disabled"/>
   <int value="1114270092" label="PortalsCrossOrigin:disabled"/>
   <int value="1114629582" label="enable-floating-virtual-keyboard"/>
+  <int value="1114794286" label="AutofillTypeSpecificPopupWidth:disabled"/>
   <int value="1115635149" label="EnableUnifiedMultiDeviceSetup:enabled"/>
   <int value="1116593018" label="CaptureThumbnailOnLoadFinished:disabled"/>
   <int value="1117270978" label="ArcDocumentsProviderUnknownSize:disabled"/>
@@ -63763,6 +63803,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="DisplayPort Alt Mode Peripheral"/>
   <int value="9" label="USB Hub"/>
   <int value="10" label="USB Peripheral"/>
+  <int value="11" label="PD Power Source"/>
+  <int value="12" label="PD Sourcing Device"/>
+  <int value="13" label="Non-PD Power Source"/>
+  <int value="14" label="PD Sink"/>
+  <int value="15" label="PD Sinking Host"/>
+  <int value="16" label="Non-PD Sink"/>
 </enum>
 
 <enum name="PassiveForcedListenerResultType">
@@ -68265,6 +68311,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Valid minidump in running app"/>
   <int value="4" label="Valid minidump in paused app"/>
   <int value="5" label="Valid minidump in background app"/>
+</enum>
+
+<enum name="ProcessIntegrityResult">
+  <int value="0" label="Low integrity level"/>
+  <int value="1" label="Medium integrity level from Open GL"/>
+  <int value="2" label="Medium integrity level from Desktop access check"/>
 </enum>
 
 <enum name="ProcessNameHash">

@@ -1134,6 +1134,12 @@ const char kForceYouTubeRestrict[] = "settings.force_youtube_restrict";
 // only using an account that belongs to one of the domains from this pref.
 const char kAllowedDomainsForApps[] = "settings.allowed_domains_for_apps";
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// A boolean pref that controls whether proxy settings from Ash-Chrome are
+// applied or ignored. Always true for the primary profile.
+const char kUseAshProxy[] = "lacros.proxy.use_ash_proxy";
+#endif  //  BUILDFLAG(IS_CHROMEOS_LACROS)
+
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -3274,6 +3280,9 @@ const char kCartDiscountAcknowledged[] = "cart_discount_acknowledged";
 const char kCartDiscountEnabled[] = "cart_discount_enabled";
 // Map pref recording the discounts used by users.
 const char kCartUsedDiscounts[] = "cart_used_discounts";
+// A time pref indicating the timestamp of when last cart discount fetch
+// happened.
+const char kCartDiscountLastFetchedTime[] = "cart_discount_last_fetched_time";
 #endif
 
 #if defined(OS_ANDROID)

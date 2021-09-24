@@ -34657,6 +34657,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4043" label="CoepRequireCorpSharedWorker"/>
   <int value="4044" label="CoepCredentiallessSharedWorker"/>
   <int value="4045" label="PaymentRequestBasicCard"/>
+  <int value="4046" label="ClientHintsDeviceMemory"/>
+  <int value="4047" label="ClientHintsDPR"/>
+  <int value="4048" label="ClientHintsResourceWidth"/>
+  <int value="4049" label="ClientHintsViewportWidth"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -85277,6 +85281,16 @@ Full version information for the fingerprint enum values:
   <int value="20" label="kHitIsolateCacheWhenStreamingSource">
     Blink parsed and compiled the script as it was streamed, but we then hit
     V8's isolate's compilation cache and did not require the streamed result.
+  </int>
+</enum>
+
+<enum name="V8CagedMemoryAllocationOutcome">
+  <int value="0" label="kSuccess">Allocation succeeded inside the cage.</int>
+  <int value="1" label="kOutsideCage">
+    Allocation failed inside the cage but succeeded outside of it.
+  </int>
+  <int value="2" label="kFailure">
+    Allocation failed inside and outside of the cage.
   </int>
 </enum>
 

@@ -555,7 +555,7 @@ TEST_F(WebTransportTest, CloseDuringConnect) {
 
   EXPECT_FALSE(web_transport->HasPendingActivity());
   EXPECT_TRUE(ready_tester.IsRejected());
-  EXPECT_TRUE(closed_tester.IsFulfilled());
+  EXPECT_TRUE(closed_tester.IsRejected());
 }
 
 TEST_F(WebTransportTest, CloseAfterConnection) {
@@ -568,7 +568,7 @@ TEST_F(WebTransportTest, CloseAfterConnection) {
                                     web_transport->closed());
 
   WebTransportCloseInfo close_info;
-  close_info.setErrorCode(42);
+  close_info.setCloseCode(42);
   close_info.setReason("because");
   web_transport->close(&close_info);
 
@@ -583,6 +583,44 @@ TEST_F(WebTransportTest, CloseAfterConnection) {
 
   // Calling close again does nothing.
   web_transport->close(nullptr);
+}
+
+TEST_F(WebTransportTest, CloseWithNull) {
+  V8TestingScope scope;
+  auto* web_transport =
+      CreateAndConnectSuccessfully(scope, "https://example.com");
+  ScriptPromiseTester ready_tester(scope.GetScriptState(),
+                                   web_transport->ready());
+  ScriptPromiseTester closed_tester(scope.GetScriptState(),
+                                    web_transport->closed());
+
+  web_transport->close(nullptr);
+
+  test::RunPendingTasks();
+
+  EXPECT_FALSE(web_transport->HasPendingActivity());
+  EXPECT_TRUE(ready_tester.IsFulfilled());
+  EXPECT_TRUE(closed_tester.IsFulfilled());
+
+  // TODO(yhirano): Make sure Close() is called.
+}
+
+TEST_F(WebTransportTest, CloseWithReasonOnly) {
+  V8TestingScope scope;
+  auto* web_transport =
+      CreateAndConnectSuccessfully(scope, "https://example.com");
+  ScriptPromiseTester ready_tester(scope.GetScriptState(),
+                                   web_transport->ready());
+  ScriptPromiseTester closed_tester(scope.GetScriptState(),
+                                    web_transport->closed());
+
+  WebTransportCloseInfo close_info;
+  close_info.setReason("because");
+  web_transport->close(&close_info);
+
+  test::RunPendingTasks();
+
+  // TODO(yhirano): Make sure Close() is called.
 }
 
 // A live connection will be kept alive even if there is no explicit reference.
@@ -809,19 +847,6 @@ Vector<uint8_t> GetValueAsVector(ScriptState* script_state,
   return result;
 }
 
-bool IsDone(ScriptState* script_state, ScriptValue iterator_result) {
-  bool done = false;
-  v8::Local<v8::Value> value;
-  if (!V8UnpackIteratorResult(script_state,
-                              iterator_result.V8Value().As<v8::Object>(), &done)
-           .ToLocal(&value)) {
-    ADD_FAILURE() << "unable to unpack iterator_result";
-    return false;
-  }
-
-  return done;
-}
-
 TEST_F(WebTransportTest, ReceiveDatagramBeforeRead) {
   V8TestingScope scope;
   auto* web_transport =
@@ -885,7 +910,7 @@ TEST_F(WebTransportTest, CancelDatagramReadableWorks) {
   test::RunPendingTasks();
 }
 
-TEST_F(WebTransportTest, DatagramsStillReadableAfterClose) {
+TEST_F(WebTransportTest, DatagramsShouldBeErroredAfterClose) {
   V8TestingScope scope;
   auto* web_transport =
       CreateAndConnectSuccessfully(scope, "https://example.com");
@@ -904,15 +929,7 @@ TEST_F(WebTransportTest, DatagramsStillReadableAfterClose) {
   ScriptPromise result1 = reader->read(script_state, ASSERT_NO_EXCEPTION);
   ScriptPromiseTester tester1(script_state, result1);
   tester1.WaitUntilSettled();
-  EXPECT_TRUE(tester1.IsFulfilled());
-  EXPECT_THAT(GetValueAsVector(script_state, tester1.Value()),
-              ElementsAre('A'));
-
-  ScriptPromise result2 = reader->read(script_state, ASSERT_NO_EXCEPTION);
-  ScriptPromiseTester tester2(script_state, result2);
-  tester2.WaitUntilSettled();
-  EXPECT_TRUE(tester2.IsFulfilled());
-  EXPECT_TRUE(IsDone(script_state, tester2.Value()));
+  EXPECT_TRUE(tester1.IsRejected());
 }
 
 TEST_F(WebTransportTest, ResettingIncomingHighWaterMarkWorksAfterClose) {
@@ -937,8 +954,7 @@ TEST_F(WebTransportTest, ResettingIncomingHighWaterMarkWorksAfterClose) {
 
   ScriptPromiseTester tester(script_state, result);
   tester.WaitUntilSettled();
-  EXPECT_TRUE(tester.IsFulfilled());
-  EXPECT_TRUE(IsDone(script_state, tester.Value()));
+  EXPECT_TRUE(tester.IsRejected());
 }
 
 TEST_F(WebTransportTest, TransportErrorErrorsReadableStream) {
@@ -1710,6 +1726,60 @@ TEST_F(WebTransportTest, SetOutgoingMaxAgeBeforeConnectComplete) {
   web_transport->datagrams()->setOutgoingMaxAge(kDuration);
 
   ConnectSuccessfully(web_transport, kDurationDelta);
+}
+
+TEST_F(WebTransportTest, OnClosed) {
+  V8TestingScope scope;
+  v8::Isolate* isolate = scope.GetIsolate();
+
+  auto* web_transport =
+      CreateAndConnectSuccessfully(scope, "https://example.com");
+
+  auto* script_state = scope.GetScriptState();
+  ScriptPromiseTester tester(script_state, web_transport->closed());
+
+  absl::optional<WebTransportCloseInfo> input_close_info(absl::in_place);
+  input_close_info->setCloseCode(99);
+  input_close_info->setReason("reason");
+
+  web_transport->OnClosed(input_close_info);
+
+  tester.WaitUntilSettled();
+
+  EXPECT_TRUE(tester.IsFulfilled());
+  ScriptValue value = tester.Value();
+  ASSERT_FALSE(value.IsEmpty());
+  ASSERT_TRUE(value.IsObject());
+  WebTransportCloseInfo* close_info = WebTransportCloseInfo::Create(
+      isolate, value.V8Value(), ASSERT_NO_EXCEPTION);
+  EXPECT_TRUE(close_info->hasCloseCode());
+  EXPECT_TRUE(close_info->hasReason());
+  EXPECT_EQ(close_info->closeCode(), 99u);
+  EXPECT_EQ(close_info->reason(), "reason");
+}
+
+TEST_F(WebTransportTest, OnClosedWithNull) {
+  V8TestingScope scope;
+  v8::Isolate* isolate = scope.GetIsolate();
+
+  auto* web_transport =
+      CreateAndConnectSuccessfully(scope, "https://example.com");
+
+  auto* script_state = scope.GetScriptState();
+  ScriptPromiseTester tester(script_state, web_transport->closed());
+
+  web_transport->OnClosed(absl::nullopt);
+
+  tester.WaitUntilSettled();
+
+  EXPECT_TRUE(tester.IsFulfilled());
+  ScriptValue value = tester.Value();
+  ASSERT_FALSE(value.IsEmpty());
+  ASSERT_TRUE(value.IsObject());
+  WebTransportCloseInfo* close_info = WebTransportCloseInfo::Create(
+      isolate, value.V8Value(), ASSERT_NO_EXCEPTION);
+  EXPECT_FALSE(close_info->hasCloseCode());
+  EXPECT_FALSE(close_info->hasReason());
 }
 
 }  // namespace

@@ -14,13 +14,14 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -70,6 +71,18 @@ class CandidateWindowBorder : public views::BubbleBorder {
     if (bounds.x() < work_area.x())
       bounds.set_x(work_area.x());
 
+    // For vertical offscreen, we need to check the arrow position first. Only
+    // move the candidate window up when the arrow is at the bottom, and only
+    // move it down when the arrow is on the top. Otherwise the candidate window
+    // will cover the input text which is very bad for user experience. Note
+    // that when the arrow is on top and the candidate window is out of the
+    // bottom edge of the screen, some other code will change the arrow to
+    // bottom to make the candidate window inside screen.
+    if (!is_arrow_on_top(arrow()) && bounds.bottom() > work_area.bottom())
+      bounds.set_y(work_area.bottom() - bounds.height());
+    if (is_arrow_on_top(arrow()) && bounds.y() < work_area.y())
+      bounds.set_y(work_area.y());
+
     return bounds;
   }
 
@@ -114,11 +127,9 @@ class InformationTextArea : public views::View {
   // views::View:
   void OnThemeChanged() override {
     View::OnThemeChanged();
-    SetBackground(views::CreateSolidBackground(
-        color_utils::AlphaBlend(SK_ColorBLACK,
-                                GetNativeTheme()->GetSystemColor(
-                                    ui::NativeTheme::kColorId_WindowBackground),
-                                0.0625f)));
+    SetBackground(views::CreateSolidBackground(color_utils::AlphaBlend(
+        SK_ColorBLACK, GetColorProvider()->GetColor(ui::kColorWindowBackground),
+        0.0625f)));
     UpdateBorder();
   }
 
@@ -141,8 +152,7 @@ class InformationTextArea : public views::View {
       return;
     SetBorder(views::CreateSolidSidedBorder(
         (position_ == TOP) ? 1 : 0, 0, (position_ == BOTTOM) ? 1 : 0, 0,
-        GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_MenuBorderColor)));
+        GetColorProvider()->GetColor(ui::kColorMenuBorder)));
   }
 
  protected:
@@ -227,8 +237,7 @@ views::Widget* CandidateWindowView::InitWidget() {
 void CandidateWindowView::OnThemeChanged() {
   BubbleDialogDelegateView::OnThemeChanged();
   SetBorder(views::CreateSolidBorder(
-      1, GetNativeTheme()->GetSystemColor(
-             ui::NativeTheme::kColorId_MenuBorderColor)));
+      1, GetColorProvider()->GetColor(ui::kColorMenuBorder)));
 }
 
 void CandidateWindowView::UpdateVisibility() {

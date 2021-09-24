@@ -18,10 +18,18 @@ TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
 }
 
 TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
+       InvalidSerialNumberPermissionInRequiredPermissions) {
+  LoadAndExpectError(
+      "chromeos_system_extension_invalid_serial_number_permission.json",
+      chromeos::kSerialNumberPermissionMustBeOptional);
+}
+
+TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
        ValidChromeOSSystemExtension) {
   scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("chromeos_system_extension.json"));
   EXPECT_TRUE(extension->is_chromeos_system_extension());
+  EXPECT_TRUE(extension->install_warnings().empty());
 }
 
 TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
@@ -31,4 +39,53 @@ TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
   EXPECT_FALSE(extension->is_chromeos_system_extension());
 }
 
+TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
+       InvalidExternallyConnectableEmpty) {
+  LoadAndExpectError(
+      "chromeos_system_extension_invalid_externally_connectable_empty.json",
+      chromeos::kInvalidExternallyConnectableDeclaration);
+}
+
+TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
+       InvalidExternallyConnectableIds) {
+  LoadAndExpectError(
+      "chromeos_system_extension_invalid_externally_connectable_ids.json",
+      chromeos::kInvalidExternallyConnectableDeclaration);
+}
+
+TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
+       InvalidExternallyConnectableTls) {
+  LoadAndExpectError(
+      "chromeos_system_extension_invalid_externally_connectable_tls.json",
+      chromeos::kInvalidExternallyConnectableDeclaration);
+}
+
+TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
+       InvalidExternallyConnectableMatchesMoreThanOne) {
+  LoadAndExpectError(
+      "chromeos_system_extension_invalid_externally_connectable_2_origins.json",
+      chromeos::kInvalidExternallyConnectableDeclaration);
+}
+
+TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
+       InvalidExternallyConnectableMatchesEmpty) {
+  LoadAndExpectError(
+      "chromeos_system_extension_invalid_externally_connectable_matches_empty."
+      "json",
+      chromeos::kInvalidExternallyConnectableDeclaration);
+}
+
+TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
+       InvalidExternallyConnectableMatchesDisallowedOrigin) {
+  LoadAndExpectError(
+      "chromeos_system_extension_invalid_externally_connectable_1_origin.json",
+      chromeos::kInvalidExternallyConnectableDeclaration);
+}
+
+TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
+       InvalidExternallyConnectableNotExist) {
+  LoadAndExpectError(
+      "chromeos_system_extension_invalid_externally_connectable_not_exist.json",
+      chromeos::kInvalidExternallyConnectableDeclaration);
+}
 }  // namespace chromeos

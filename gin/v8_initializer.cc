@@ -29,7 +29,6 @@
 #include "base/system/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
-#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "gin/gin_features.h"
 #include "v8/include/v8-initialization.h"
@@ -210,48 +209,6 @@ void SetV8FlagsFormatted(const char* format, ...) {
   v8::V8::SetFlagsFromString(buffer, length - 1);
 }
 
-void RunArrayBufferCageReservationExperiment() {
-  // TODO(1218005) remove this function and windows_version.h include once the
-  // experiment has ended.
-#if defined(ARCH_CPU_64_BITS)
-  constexpr size_t kGigaBytes = 1024 * 1024 * 1024;
-  constexpr size_t kTeraBytes = 1024 * kGigaBytes;
-
-  constexpr size_t kCageMaxSize = 1 * kTeraBytes;
-  constexpr size_t kCageMinSize = 8 * kGigaBytes;
-
-#if defined(OS_WIN)
-  // Windows prior to Win10 (or possibly Win8/8.1) appears to create page table
-  // entries when reserving virtual memory, causing unacceptably high memory
-  // consumption (e.g. ~2GB when reserving 1TB). As such, the experiment is
-  // only enabled on Win10.
-  if (base::win::GetVersion() < base::win::Version::WIN10) {
-    return;
-  }
-#endif
-
-  void* reservation = nullptr;
-  size_t current_size = kCageMaxSize;
-  while (!reservation && current_size >= kCageMinSize) {
-    // The cage reservation will need to be 4GB aligned.
-    reservation = base::AllocPages(nullptr, current_size, 4 * kGigaBytes,
-                                   base::PageInaccessible, base::PageTag::kV8);
-    if (!reservation) {
-      current_size /= 2;
-    }
-  }
-
-  int result = current_size / kGigaBytes;
-  if (reservation) {
-    base::FreePages(reservation, current_size);
-  } else {
-    result = 0;
-  }
-
-  base::UmaHistogramSparse("V8.MaxArrayBufferCageReservationSize", result);
-#endif
-}
-
 template <size_t N, size_t M>
 void SetV8FlagsIfOverridden(const base::Feature& feature,
                             const char (&enabling_flag)[N],
@@ -275,11 +232,6 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
   if (v8_is_initialized)
     return;
 
-  if (base::FeatureList::IsEnabled(
-          features::kV8ArrayBufferCageReservationExperiment)) {
-    RunArrayBufferCageReservationExperiment();
-  }
-
   v8::V8::InitializePlatform(V8Platform::Get());
 
 #if defined(V8_VIRTUAL_MEMORY_CAGE)
@@ -291,73 +243,67 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
   bool v8_cage_is_initialized = false;
   if (base::FeatureList::IsEnabled(features::kV8VirtualMemoryCage)) {
     v8_cage_is_initialized = v8::V8::InitializeVirtualMemoryCage();
+
+    // Record the size of the virtual memory cage, in GB. The size will always
+    // be a power of two, so we use a sparse histogram to capture it.
+    // If the initialization failed, this API will return zero.
+    // The main reason for capturing this histogram here instead of having V8
+    // do it is that there are no Isolates available yet, which are required
+    // for recording histograms in V8.
+    size_t size = v8::V8::GetVirtualMemoryCageSizeInBytes();
+    int sizeInGB = size >> 30;
+    DCHECK(base::bits::IsPowerOfTwo(size));
+    DCHECK(size == 0 || sizeInGB > 0);
+    base::UmaHistogramSparse("V8.VirtualMemoryCageSizeGB", sizeInGB);
   }
 #endif
 
-  if (!base::FeatureList::IsEnabled(features::kV8OptimizeJavascript)) {
-    // We avoid explicitly passing --opt if kV8OptimizeJavascript is enabled
-    // since it is the default, and doing so would override flags passed
-    // explicitly, e.g., via --js-flags=--no-opt.
-    SetV8Flags("--no-opt");
-  }
-
+  // We assume that all feature flag defaults correspond to the default
+  // values of the coresponding V8 flags.
+  // TODO(cbruni): Fix flag priorities to let --js-flags override feature
+  // flags.
+  SetV8FlagsIfOverridden(features::kV8OptimizeJavascript, "--opt", "--no-opt");
   SetV8FlagsIfOverridden(features::kV8FlushBytecode, "--flush-bytecode",
                          "--no-flush-bytecode");
-
   SetV8FlagsIfOverridden(features::kV8FlushBaselineCode,
                          "--flush-baseline-code", "--no-flush-baseline-code");
-
-  if (base::FeatureList::IsEnabled(features::kV8OffThreadFinalization)) {
-    SetV8Flags("--finalize-streaming-on-background");
-  }
-
-  if (!base::FeatureList::IsEnabled(features::kV8LazyFeedbackAllocation)) {
-    SetV8Flags("--no-lazy-feedback-allocation");
-  }
-
-  if (base::FeatureList::IsEnabled(features::kV8ConcurrentInlining)) {
-    SetV8Flags("--concurrent_inlining");
-  }
-
-  if (base::FeatureList::IsEnabled(features::kV8PerContextMarkingWorklist)) {
-    SetV8Flags("--stress-per-context-marking-worklist");
-  }
-
-  if (base::FeatureList::IsEnabled(features::kV8FlushEmbeddedBlobICache)) {
-    SetV8Flags("--experimental-flush-embedded-blob-icache");
-  }
-
-  if (base::FeatureList::IsEnabled(features::kV8ReduceConcurrentMarkingTasks)) {
-    SetV8Flags("--gc-experiment-reduce-concurrent-marking-tasks");
-  }
-
-  if (base::FeatureList::IsEnabled(features::kV8NoReclaimUnmodifiedWrappers)) {
-    SetV8Flags("--no-reclaim-unmodified-wrappers");
-  }
-
-  if (!base::FeatureList::IsEnabled(features::kV8ExperimentalRegexpEngine)) {
-    // The --enable-experimental-regexp-engine-on-excessive-backtracks flag is
-    // enabled by default, so we need to explicitly disable it if
-    // kV8ExperimentalRegexpEngine is disabled.
-    SetV8Flags(
-        "--no-enable-experimental-regexp-engine-on-excessive-backtracks");
-  }
-
-  if (base::FeatureList::IsEnabled(features::kV8TurboFastApiCalls)) {
-    SetV8Flags("--turbo-fast-api-calls");
-  }
-
-  if (base::FeatureList::IsEnabled(features::kV8Turboprop)) {
-    SetV8Flags("--turboprop");
-  }
-
+  SetV8FlagsIfOverridden(features::kV8OffThreadFinalization,
+                         "--finalize-streaming-on-background",
+                         "--no-finalize-streaming-on-background");
+  SetV8FlagsIfOverridden(features::kV8LazyFeedbackAllocation,
+                         "--lazy-feedback-allocation",
+                         "--no-lazy-feedback-allocation");
+  SetV8FlagsIfOverridden(features::kV8ConcurrentInlining,
+                         "--concurrent_inlining", "--no-concurrent_inlining");
+  SetV8FlagsIfOverridden(features::kV8PerContextMarkingWorklist,
+                         "--stress-per-context-marking-worklist",
+                         "--no-stress-per-context-marking-worklist");
+  SetV8FlagsIfOverridden(features::kV8FlushEmbeddedBlobICache,
+                         "--experimental-flush-embedded-blob-icache",
+                         "--no-experimental-flush-embedded-blob-icache");
+  SetV8FlagsIfOverridden(features::kV8ReduceConcurrentMarkingTasks,
+                         "--gc-experiment-reduce-concurrent-marking-tasks",
+                         "--no-gc-experiment-reduce-concurrent-marking-tasks");
+  SetV8FlagsIfOverridden(features::kV8NoReclaimUnmodifiedWrappers,
+                         "--no-reclaim-unmodified-wrappers",
+                         "--reclaim-unmodified-wrappers");
+  SetV8FlagsIfOverridden(
+      features::kV8ExperimentalRegexpEngine,
+      "--enable-experimental-regexp-engine-on-excessive-backtracks",
+      "--no-enable-experimental-regexp-engine-on-excessive-backtracks");
+  SetV8FlagsIfOverridden(features::kV8TurboFastApiCalls,
+                         "--turbo-fast-api-calls", "--no-turbo-fast-api-calls");
+  SetV8FlagsIfOverridden(features::kV8Turboprop, "--turboprop",
+                         "--no-turboprop");
   SetV8FlagsIfOverridden(features::kV8Sparkplug, "--sparkplug",
                          "--no-sparkplug");
-
-  if (base::FeatureList::IsEnabled(
-          features::kV8SparkplugNeedsShortBuiltinCalls)) {
-    SetV8Flags("--sparkplug-needs-short-builtins");
-  }
+  SetV8FlagsIfOverridden(features::kV8SparkplugNeedsShortBuiltinCalls,
+                         "--sparkplug-needs-short-builtins",
+                         "--no-sparkplug-needs-short-builtins");
+  SetV8FlagsIfOverridden(features::kV8ShortBuiltinCalls,
+                         "--short-builtin-calls", "--no-short-builtin-calls");
+  SetV8FlagsIfOverridden(features::kV8SlowHistograms, "--slow-histograms",
+                         "--no-slow-histograms");
 
   if (base::FeatureList::IsEnabled(features::kV8ScriptAblation)) {
     if (int delay = features::kV8ScriptDelayMs.Get()) {
@@ -371,17 +317,6 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
     }
   }
 
-  if (!base::FeatureList::IsEnabled(features::kV8ShortBuiltinCalls)) {
-    // The --short-builtin-calls flag is enabled by default on x64 and arm64
-    // desktop configurations, so we need to explicitly disable it if
-    // kV8ShortBuiltinCalls is disabled.
-    // On other configurations it's not supported, so we don't try to enable
-    // it if the feature flag is on.
-    SetV8Flags("--no-short-builtin-calls");
-  }
-
-  SetV8FlagsIfOverridden(features::kV8SlowHistograms, "--slow-histograms",
-                         "--no-slow-histograms");
 
   if (IsolateHolder::kStrictMode == mode) {
     SetV8Flags("--use_strict");

@@ -25,11 +25,23 @@ namespace ash {
 namespace diagnostics {
 namespace {
 
-const char kRoutineLogSectionHeader[] = "=== Routine Log === \n";
-const char kTelemetryLogSectionHeader[] = "=== Telemetry Log === \n";
-const char kNetworkingLogSectionHeader[] = "=== Networking Log === \n";
+const char kRoutineLogSubsectionHeader[] = "--- Test Routines --- \n";
+const char kSystemLogSectionHeader[] = "=== System === \n";
+const char kNetworkingLogSectionHeader[] = "=== Networking === \n";
+const char kNoRoutinesRun[] =
+    "No routines of this type were run in the session.\n";
 const char kDefaultSessionLogFileName[] = "session_log.txt";
-const char kRoutineLogPath[] = "/tmp/diagnostics/diagnostics_routine_log";
+const char kRoutineLogBasePath[] = "/tmp/diagnostics/";
+
+std::string GetRoutineResultsString(const std::string& results) {
+  const std::string section_header =
+      std::string(kRoutineLogSubsectionHeader) + "\n";
+  if (results.empty()) {
+    return section_header + kNoRoutinesRun;
+  }
+
+  return section_header + results;
+}
 
 }  // namespace
 
@@ -39,8 +51,8 @@ SessionLogHandler::SessionLogHandler(
     : SessionLogHandler(
           select_file_policy_creator,
           std::make_unique<TelemetryLog>(),
-          std::make_unique<RoutineLog>(base::FilePath(kRoutineLogPath)),
-          std::make_unique<NetworkingLog>(),
+          std::make_unique<RoutineLog>(base::FilePath(kRoutineLogBasePath)),
+          std::make_unique<NetworkingLog>(base::FilePath(kRoutineLogBasePath)),
           holding_space_client) {}
 
 SessionLogHandler::SessionLogHandler(
@@ -121,20 +133,36 @@ void SessionLogHandler::SetLogCreatedClosureForTest(base::OnceClosure closure) {
 }
 
 bool SessionLogHandler::CreateSessionLog(const base::FilePath& file_path) {
-  // Fetch RoutineLog
-  const std::string routine_log_contents = routine_log_->GetContents();
+  // Fetch Routine logs
+  const std::string system_routines =
+      routine_log_->GetContentsForCategory("system");
+  const std::string network_routines =
+      routine_log_->GetContentsForCategory("network");
 
-  // Fetch TelemetryLog
-  const std::string telemetry_log_contents = telemetry_log_->GetContents();
+  // Fetch system data from TelemetryLog.
+  const std::string system_log_contents = telemetry_log_->GetContents();
 
-  std::vector<std::string> pieces = {
-      kTelemetryLogSectionHeader, telemetry_log_contents,
-      kRoutineLogSectionHeader, routine_log_contents};
+  std::vector<std::string> pieces;
+  pieces.push_back(kSystemLogSectionHeader);
+  if (!system_log_contents.empty()) {
+    pieces.push_back(system_log_contents);
+  }
+
+  // Add the routine section for the system category.
+  pieces.push_back(GetRoutineResultsString(system_routines));
 
   if (features::IsNetworkingInDiagnosticsAppEnabled()) {
-    // Fetch NetworkingLog
+    // Add networking category.
     pieces.push_back(kNetworkingLogSectionHeader);
-    pieces.push_back(networking_log_->GetContents());
+
+    // Add the network info section.
+    pieces.push_back(networking_log_->GetNetworkInfo());
+
+    // Add the routine section for the network category.
+    pieces.push_back(GetRoutineResultsString(network_routines));
+
+    // Add the network events section.
+    pieces.push_back(networking_log_->GetNetworkEvents());
   }
 
   return base::WriteFile(file_path, base::JoinString(pieces, "\n"));

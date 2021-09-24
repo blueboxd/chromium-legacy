@@ -305,6 +305,7 @@ void CastMetricsServiceClient::InitializeMetricsService() {
       // Pass an empty file path since Chromecast does not use the Variations
       // framework.
       /*user_data_dir=*/base::FilePath(),
+      ::metrics::StartupVisibility::kUnknown,
       base::BindRepeating(&CastMetricsServiceClient::StoreClientInfo,
                           base::Unretained(this)),
       base::BindRepeating(&CastMetricsServiceClient::LoadClientInfo,
@@ -318,8 +319,7 @@ void CastMetricsServiceClient::InitializeMetricsService() {
   // exists, the entropy provider type is unused.
   // TODO(crbug/1249485): Make Chromecast consistent with other platforms. I.e.
   // create the FieldTrialList and the MetricsStateManager around the same time.
-  metrics_state_manager_->InstantiateFieldTrialList(
-      ::metrics::EntropyProviderType::kDefault);
+  metrics_state_manager_->InstantiateFieldTrialList();
 
   metrics_service_.reset(new ::metrics::MetricsService(
       metrics_state_manager_.get(), this, pref_service_));

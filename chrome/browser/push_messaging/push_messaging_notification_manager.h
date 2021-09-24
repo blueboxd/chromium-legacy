@@ -16,7 +16,7 @@
 #include "chrome/browser/push_messaging/budget_database.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
+#include "chrome/browser/ash/android_sms/android_sms_app_manager.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #endif
 
@@ -100,7 +100,7 @@ class PushMessagingNotificationManager {
           multidevice_setup_client);
 
   void SetTestAndroidSmsAppManager(
-      chromeos::android_sms::AndroidSmsAppManager* android_sms_app_manager);
+      ash::android_sms::AndroidSmsAppManager* android_sms_app_manager);
 #endif
 
   // Weak. This manager is owned by a keyed service on this profile.
@@ -112,7 +112,7 @@ class PushMessagingNotificationManager {
   chromeos::multidevice_setup::MultiDeviceSetupClient*
       test_multidevice_setup_client_ = nullptr;
 
-  chromeos::android_sms::AndroidSmsAppManager* test_android_sms_app_manager_ =
+  ash::android_sms::AndroidSmsAppManager* test_android_sms_app_manager_ =
       nullptr;
 #endif
 

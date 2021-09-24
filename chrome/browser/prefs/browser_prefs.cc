@@ -181,11 +181,11 @@
 #include "extensions/browser/extension_prefs.h"
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/attestation/tpm_challenge_key.h"
+#include "chrome/browser/ash/device_name/device_name_store.h"
 #include "chrome/browser/ash/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
-#include "chrome/browser/chromeos/device_name/device_name_store.h"
 #include "chrome/browser/chromeos/extensions/extensions_permissions_tracker.h"
 #include "chrome/browser/chromeos/net/system_proxy_manager.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_manager_impl.h"
@@ -266,6 +266,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/audio/audio_devices_pref_handler_impl.h"
+#include "ash/components/device_activity/device_activity_controller.h"
 #include "ash/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/ash_prefs.h"
@@ -293,6 +294,8 @@
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_controller.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
+#include "chrome/browser/ash/cryptauth/client_app_metadata_provider_service.h"
+#include "chrome/browser/ash/cryptauth/cryptauth_device_id_provider_impl.h"
 #include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/file_system_provider/registry.h"
 #include "chrome/browser/ash/first_run/first_run.h"
@@ -341,8 +344,6 @@
 #include "chrome/browser/ash/settings/device_settings_cache.h"
 #include "chrome/browser/ash/system/automatic_reboot_manager.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
-#include "chrome/browser/chromeos/cryptauth/client_app_metadata_provider_service.h"
-#include "chrome/browser/chromeos/cryptauth/cryptauth_device_id_provider_impl.h"
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login/login_api.h"
 #include "chrome/browser/chromeos/net/network_throttling_observer.h"
@@ -355,7 +356,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_reinstall_search_provider.h"
-#include "chrome/browser/ui/ash/chrome_shelf_prefs.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/webui/certificates_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
@@ -621,6 +622,7 @@ const char kGuestProfilesNumCreated[] = "profile.guest_profiles_created";
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 constexpr char kProfileSwitchInterceptionDeclinedPref[] =
     "signin.ProfileSwitchInterceptionDeclinedPref";
+const char kDiceMigrationCompletePref[] = "signin.DiceMigrationComplete";
 #endif
 
 const char kSuggestionsBlocklist[] = "suggestions.blacklist";
@@ -847,6 +849,7 @@ void RegisterProfilePrefsForMigration(
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   registry->RegisterDictionaryPref(kProfileSwitchInterceptionDeclinedPref);
+  registry->RegisterDictionaryPref(kDiceMigrationCompletePref);
 #endif
 
   registry->RegisterStringPref(kSuggestionsBlocklist, std::string());
@@ -983,12 +986,13 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ash::DemoModeResourcesRemover::RegisterLocalStatePrefs(registry);
   ash::DemoSession::RegisterLocalStatePrefs(registry);
   ash::DemoSetupController::RegisterLocalStatePrefs(registry);
-  chromeos::DeviceNameStore::RegisterLocalStatePrefs(registry);
+  ash::DeviceNameStore::RegisterLocalStatePrefs(registry);
   chromeos::DeviceOAuth2TokenStoreChromeOS::RegisterPrefs(registry);
   ash::device_settings_cache::RegisterPrefs(registry);
   ash::EasyUnlockService::RegisterPrefs(registry);
   chromeos::echo_offer::RegisterPrefs(registry);
   ash::EnableAdbSideloadingScreen::RegisterPrefs(registry);
+  ash::device_activity::DeviceActivityController::RegisterPrefs(registry);
   chromeos::EnableDebuggingScreenHandler::RegisterPrefs(registry);
   chromeos::FastTransitionObserver::RegisterPrefs(registry);
   chromeos::HIDDetectionScreenHandler::RegisterPrefs(registry);
@@ -1301,7 +1305,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ash::app_time::AppTimeController::RegisterProfilePrefs(registry);
   chromeos::assistant::prefs::RegisterProfilePrefs(registry);
   ash::bluetooth::DebugLogsManager::RegisterPrefs(registry);
-  chromeos::ClientAppMetadataProviderService::RegisterProfilePrefs(registry);
+  ash::ClientAppMetadataProviderService::RegisterProfilePrefs(registry);
   chromeos::CupsPrintersManager::RegisterProfilePrefs(registry);
   chromeos::device_sync::RegisterProfilePrefs(registry);
   ash::FamilyUserChromeActivityMetrics::RegisterProfilePrefs(registry);
@@ -1348,7 +1352,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
       registry);
   policy::StatusCollector::RegisterProfilePrefs(registry);
   chromeos::SystemProxyManager::RegisterProfilePrefs(registry);
-  RegisterChromeShelfProfilePrefs(registry);
+  ChromeShelfPrefs::RegisterProfilePrefs(registry);
   ::onc::RegisterProfilePrefs(registry);
   ash::cert_provisioning::RegisterProfilePrefs(registry);
   borealis::prefs::RegisterProfilePrefs(registry);
@@ -1706,6 +1710,11 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 09/2021.
   profile_prefs->ClearPref(kAutofillAcceptSaveCreditCardPromptState);
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  // Added 09/2021.
+  profile_prefs->ClearPref(kDiceMigrationCompletePref);
+#endif
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

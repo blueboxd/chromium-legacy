@@ -7,18 +7,18 @@
 
 #include <string>
 
+#include "chrome/browser/chromeos/extensions/telemetry/api/hardware_info_delegate.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "extensions/test/test_extension_dir.h"
-
-namespace extensions {
-class Extension;
-}  // namespace extensions
+#include "content/public/browser/render_frame_host.h"
 
 namespace chromeos {
 
 class BaseTelemetryExtensionBrowserTest
     : public extensions::ExtensionBrowserTest {
  public:
+  static const char kManifestFile[];
+  static const char kPwaPageUrlString[];
+
   BaseTelemetryExtensionBrowserTest();
   ~BaseTelemetryExtensionBrowserTest() override;
 
@@ -31,30 +31,14 @@ class BaseTelemetryExtensionBrowserTest
   void SetUpOnMainThread() override;
 
  protected:
-  const extensions::Extension* LoadExtensionWithManifestAndServiceWorker(
-      extensions::TestExtensionDir& test_dir,
-      const std::string& manifest_content,
-      const std::string& service_worker_content);
-  const extensions::Extension* LoadExtensionWithServiceWorker(
-      extensions::TestExtensionDir& test_dir,
-      const std::string& service_worker_content);
   void CreateExtensionAndRunServiceWorker(
       const std::string& service_worker_content);
-};
 
-class BaseTelemetryExtensionApiAllowedBrowserTest
-    : public BaseTelemetryExtensionBrowserTest {
- public:
-  BaseTelemetryExtensionApiAllowedBrowserTest();
-  ~BaseTelemetryExtensionApiAllowedBrowserTest() override;
+  std::unique_ptr<HardwareInfoDelegate::Factory>
+      hardware_info_delegate_factory_;
 
-  BaseTelemetryExtensionApiAllowedBrowserTest(
-      const BaseTelemetryExtensionApiAllowedBrowserTest&) = delete;
-  BaseTelemetryExtensionApiAllowedBrowserTest& operator=(
-      const BaseTelemetryExtensionApiAllowedBrowserTest&) = delete;
-
-  // BrowserTestBase:
-  void SetUpOnMainThread() override;
+  bool should_open_pwa_ui_ = true;
+  content::RenderFrameHost* pwa_page_rfh_ = nullptr;
 };
 
 }  // namespace chromeos

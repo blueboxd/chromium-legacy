@@ -1399,9 +1399,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_SEARCH_KEY" desc="Name of [Search] key name. This name should be lower case.">
         search
       </message>
-  <message name="IDS_ASH_SEARCH_RESULT_SEPARATOR" desc="Separator between the title and details text in ash search result view.">
-       ''' - '''
-  </message>
+      <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_BEST_MATCH" desc="Category title for the list of search result shown in launcher search that are a best match for the query in the search box.">
+        Best Match
+      </message>
+      <message name="IDS_ASH_SEARCH_RESULT_SEPARATOR" desc="Separator between the title and details text in ash search result view.">
+        ''' - '''
+      </message>
       <message name="IDS_ASH_ALTGR_KEY" desc="Name of [AltGr] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
         altgr
       </message>
@@ -2912,11 +2915,14 @@ This file contains the strings for ash.
       </if>
 
       <!-- Notification -->
-      <message name="IDS_ASH_NOTIFICATION_EXPAND_TOOLTIP" desc="The tooltip for the expand button, indicating action to expand the notification">
+      <message name="IDS_ASH_NOTIFICATION_EXPAND_TOOLTIP" desc="The tooltip for the expand button, indicating action to expand the notification.">
         Expand notification
       </message>
-      <message name="IDS_ASH_NOTIFICATION_COLLAPSE_TOOLTIP" desc="The tooltip for the expand button, indicating action to collapse the notification">
+      <message name="IDS_ASH_NOTIFICATION_COLLAPSE_TOOLTIP" desc="The tooltip for the expand button, indicating action to collapse the notification.">
         Collapse notification
+      </message>
+      <message name="IDS_ASH_NOTIFICATION_INLINE_REPLY_PLACEHOLDER" desc="The placeholder string for the textfield of an in-line reply notification.">
+        Reply
       </message>
 
       <message name="IDS_ASH_DIALOG_DONT_SHOW_AGAIN" desc="Label for checkbox dismissing show of a dialog.">

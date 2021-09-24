@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "remoting/host/config_watcher.h"
 #include "remoting/host/current_process_stats_agent.h"
 #include "remoting/host/host_status_monitor.h"
@@ -48,6 +49,9 @@ class DaemonProcess
  public:
   typedef std::list<DesktopSession*> DesktopSessionList;
 
+  DaemonProcess(const DaemonProcess&) = delete;
+  DaemonProcess& operator=(const DaemonProcess&) = delete;
+
   ~DaemonProcess() override;
 
   // Creates a platform-specific implementation of the daemon process object
@@ -70,6 +74,9 @@ class DaemonProcess
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnPermanentError(int exit_code) override;
   void OnWorkerProcessStopped() override;
+  void OnAssociatedInterfaceRequest(
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle handle) override;
 
   // Sends an IPC message to the network process. The message will be dropped
   // unless the network process is connected over the IPC channel.
@@ -87,6 +94,9 @@ class DaemonProcess
   // Closes the desktop session identified by |terminal_id|.
   void CloseDesktopSession(int terminal_id);
 
+  // Requests the network process to crash.
+  void CrashNetworkProcess(const base::Location& location);
+
  protected:
   DaemonProcess(scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
                 scoped_refptr<AutoThreadTaskRunner> io_task_runner,
@@ -100,9 +110,6 @@ class DaemonProcess
   // Changes the screen resolution of the desktop session identified by
   // |terminal_id|.
   void SetScreenResolution(int terminal_id, const ScreenResolution& resolution);
-
-  // Requests the network process to crash.
-  void CrashNetworkProcess(const base::Location& location);
 
   // Reads the host configuration and launches the network process.
   void Initialize();
@@ -209,8 +216,6 @@ class DaemonProcess
   int process_stats_request_count_ = 0;
 
   CurrentProcessStatsAgent current_process_stats_;
-
-  DISALLOW_COPY_AND_ASSIGN(DaemonProcess);
 };
 
 }  // namespace remoting

@@ -47,8 +47,8 @@ const char kVersion[] = "1.0.0.1";
 // the OS sync feature.
 class SingleClientWebAppsOsSyncTest : public SyncConsentOptionalSyncTest {
  public:
-  SingleClientWebAppsOsSyncTest() : SyncConsentOptionalSyncTest(SINGLE_CLIENT) {
-  }
+  SingleClientWebAppsOsSyncTest()
+      : SyncConsentOptionalSyncTest(SINGLE_CLIENT) {}
   ~SingleClientWebAppsOsSyncTest() override = default;
 };
 
@@ -256,6 +256,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
   info.description = u"Test description";
   info.start_url = url;
   info.scope = url;
+  info.manifest_id = manifest_id;
   const web_app::AppId installed_app_id =
       apps_helper::InstallWebApp(GetProfile(0), info);
 
@@ -285,6 +286,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
   info.description = u"Test description";
   info.start_url = url;
   info.scope = url;
+  info.manifest_id = manifest_id;
   const web_app::AppId installed_app_id =
       apps_helper::InstallWebApp(GetProfile(0), info);
 

@@ -63,6 +63,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/proxy_server.h"
+#include "net/base/proxy_string_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -252,6 +253,12 @@ class CapturingMojoProxyResolverFactory
       public proxy_resolver::mojom::ProxyResolver {
  public:
   CapturingMojoProxyResolverFactory() {}
+
+  CapturingMojoProxyResolverFactory(const CapturingMojoProxyResolverFactory&) =
+      delete;
+  CapturingMojoProxyResolverFactory& operator=(
+      const CapturingMojoProxyResolverFactory&) = delete;
+
   ~CapturingMojoProxyResolverFactory() override {}
 
   mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
@@ -307,8 +314,6 @@ class CapturingMojoProxyResolverFactory
 
   GURL url_;
   net::NetworkIsolationKey network_isolation_key_;
-
-  DISALLOW_COPY_AND_ASSIGN(CapturingMojoProxyResolverFactory);
 };
 
 // ProxyLookupClient that drives proxy lookups and can wait for the responses to
@@ -316,6 +321,10 @@ class CapturingMojoProxyResolverFactory
 class TestProxyLookupClient : public mojom::ProxyLookupClient {
  public:
   TestProxyLookupClient() = default;
+
+  TestProxyLookupClient(const TestProxyLookupClient&) = delete;
+  TestProxyLookupClient& operator=(const TestProxyLookupClient&) = delete;
+
   ~TestProxyLookupClient() override = default;
 
   void StartLookUpProxyForURL(
@@ -362,8 +371,6 @@ class TestProxyLookupClient : public mojom::ProxyLookupClient {
   int32_t net_error_ = net::ERR_UNEXPECTED;
 
   base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestProxyLookupClient);
 };
 
 class MockP2PTrustedSocketManagerClient
@@ -4120,6 +4127,9 @@ class ConnectionListener
  public:
   ConnectionListener() = default;
 
+  ConnectionListener(const ConnectionListener&) = delete;
+  ConnectionListener& operator=(const ConnectionListener&) = delete;
+
   ~ConnectionListener() override = default;
 
   // Get called from the EmbeddedTestServer thread to be notified that
@@ -4225,8 +4235,6 @@ class ConnectionListener
   // before invoking |on_done_accepting_connections_|.
   size_t num_accepted_connections_needed_ = 0;
   base::OnceClosure on_done_accepting_connections_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConnectionListener);
 };
 
 TEST_F(NetworkContextTest, PreconnectOne) {
@@ -4995,8 +5003,8 @@ TEST_F(NetworkContextTest, ClearBadProxiesCache) {
   proxy_info.UseNamedProxy("http://foo1.com");
   proxy_resolution_service->ReportSuccess(proxy_info);
   std::vector<net::ProxyServer> proxies;
-  proxies.push_back(net::ProxyServer::FromURI("http://foo1.com",
-                                              net::ProxyServer::SCHEME_HTTP));
+  proxies.push_back(net::ProxyUriToProxyServer("http://foo1.com",
+                                               net::ProxyServer::SCHEME_HTTP));
   proxy_resolution_service->MarkProxiesAsBadUntil(
       proxy_info, base::TimeDelta::FromDays(1), proxies,
       net::NetLogWithSource());
@@ -5022,6 +5030,9 @@ class TestProxyErrorClient final : public mojom::ProxyErrorClient {
   };
 
   TestProxyErrorClient() = default;
+
+  TestProxyErrorClient(const TestProxyErrorClient&) = delete;
+  TestProxyErrorClient& operator=(const TestProxyErrorClient&) = delete;
 
   ~TestProxyErrorClient() override {}
 
@@ -5075,8 +5086,6 @@ class TestProxyErrorClient final : public mojom::ProxyErrorClient {
   bool has_received_mojo_pipe_error_ = false;
   std::vector<int> on_request_maybe_failed_calls_;
   std::vector<PacScriptError> on_pac_script_error_calls_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestProxyErrorClient);
 };
 
 // While in scope, all host resolutions will fail with ERR_NAME_NOT_RESOLVED,
@@ -5819,7 +5828,7 @@ class NetworkContextMockHostTest : public NetworkContextTest {
     // Remove slash from URL.
     base_url.pop_back();
     auto proxy_server =
-        net::ProxyServer::FromURI(base_url, net::ProxyServer::SCHEME_HTTP);
+        net::ProxyUriToProxyServer(base_url, net::ProxyServer::SCHEME_HTTP);
     EXPECT_TRUE(proxy_server.is_valid()) << base_url;
     return proxy_server;
   }
@@ -5848,7 +5857,8 @@ TEST_F(NetworkContextMockHostTest, MAYBE_CustomProxyUsesSpecifiedProxyList) {
 
   auto config = mojom::CustomProxyConfig::New();
   config->rules.ParseFromString(
-      "http=" + ConvertToProxyServer(proxy_test_server).ToURI());
+      "http=" +
+      net::ProxyServerToProxyUri(ConvertToProxyServer(proxy_test_server)));
   proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
   task_environment_.RunUntilIdle();
 

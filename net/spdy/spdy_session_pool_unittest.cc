@@ -17,6 +17,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
+#include "net/base/proxy_string_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/public/secure_dns_policy.h"
@@ -96,6 +97,11 @@ class SpdySessionRequestDelegate
     : public SpdySessionPool::SpdySessionRequest::Delegate {
  public:
   SpdySessionRequestDelegate() = default;
+
+  SpdySessionRequestDelegate(const SpdySessionRequestDelegate&) = delete;
+  SpdySessionRequestDelegate& operator=(const SpdySessionRequestDelegate&) =
+      delete;
+
   ~SpdySessionRequestDelegate() override = default;
 
   void OnSpdySessionAvailable(
@@ -112,8 +118,6 @@ class SpdySessionRequestDelegate
  private:
   bool callback_invoked_ = false;
   base::WeakPtr<SpdySession> spdy_session_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdySessionRequestDelegate);
 };
 
 // Attempts to set up an alias for |key| using an already existing session in
@@ -504,7 +508,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   // the IP list matches.
   SpdySessionKey proxy_key(
       test_hosts[1].key.host_port_pair(),
-      ProxyServer::FromPacString("HTTP http://proxy.foo.com/"),
+      PacResultElementToProxyServer("HTTP http://proxy.foo.com/"),
       PRIVACY_MODE_DISABLED, SpdySessionKey::IsProxySession::kFalse,
       SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   EXPECT_FALSE(TryCreateAliasedSpdySession(spdy_session_pool_, proxy_key,
@@ -1194,6 +1198,11 @@ TEST_F(SpdySessionPoolTest, IPConnectionPoolingWithWebSockets) {
 class TestOnRequestDeletedCallback {
  public:
   TestOnRequestDeletedCallback() = default;
+
+  TestOnRequestDeletedCallback(const TestOnRequestDeletedCallback&) = delete;
+  TestOnRequestDeletedCallback& operator=(const TestOnRequestDeletedCallback&) =
+      delete;
+
   ~TestOnRequestDeletedCallback() = default;
 
   base::RepeatingClosure Callback() {
@@ -1223,22 +1232,21 @@ class TestOnRequestDeletedCallback {
   base::RunLoop run_loop_;
 
   base::OnceClosure request_deleted_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestOnRequestDeletedCallback);
 };
 
 class TestRequestDelegate
     : public SpdySessionPool::SpdySessionRequest::Delegate {
  public:
   TestRequestDelegate() = default;
+
+  TestRequestDelegate(const TestRequestDelegate&) = delete;
+  TestRequestDelegate& operator=(const TestRequestDelegate&) = delete;
+
   ~TestRequestDelegate() override = default;
 
   // SpdySessionPool::SpdySessionRequest::Delegate implementation:
   void OnSpdySessionAvailable(
       base::WeakPtr<SpdySession> spdy_session) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestRequestDelegate);
 };
 
 TEST_F(SpdySessionPoolTest, RequestSessionWithNoSessions) {
@@ -1434,7 +1442,7 @@ TEST_F(SpdySessionPoolTest, SSLConfigForServerChanged) {
   for (size_t i = 0; i < num_tests; i++) {
     SpdySessionKey key(
         HostPortPair::FromURL(GURL(kSSLServerTests[i].url)),
-        ProxyServer::FromPacString(kSSLServerTests[i].proxy_pac_string),
+        PacResultElementToProxyServer(kSSLServerTests[i].proxy_pac_string),
         PRIVACY_MODE_DISABLED, SpdySessionKey::IsProxySession::kFalse,
         SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow);
     sessions.push_back(

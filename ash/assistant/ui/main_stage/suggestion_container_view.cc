@@ -46,6 +46,10 @@ constexpr base::TimeDelta kChipFadeOutDuration =
 // Appearance.
 constexpr int kPreferredHeightDip = 48;
 
+// Metrics.
+constexpr char kAssistantSuggestionChipHistogram[] =
+    "Ash.Assistant.AnimationSmoothness.SuggestionChip";
+
 }  // namespace
 
 // SuggestionChipAnimator -----------------------------------------------------
@@ -65,16 +69,14 @@ class SuggestionChipAnimator : public ElementAnimator {
     StartLayerAnimationSequence(
         layer()->GetAnimator(), CreateAnimateInAnimation(), observer,
         base::BindRepeating<void(const std::string&, int)>(
-            base::UmaHistogramPercentageObsoleteDoNotUse,
-            assistant::ui::kAssistantSuggestionChipHistogram));
+            base::UmaHistogramPercentage, kAssistantSuggestionChipHistogram));
   }
 
   void AnimateOut(ui::CallbackLayerAnimationObserver* observer) override {
     StartLayerAnimationSequence(
         layer()->GetAnimator(), CreateAnimateOutAnimation(), observer,
         base::BindRepeating<void(const std::string&, int)>(
-            base::UmaHistogramPercentageObsoleteDoNotUse,
-            assistant::ui::kAssistantSuggestionChipHistogram));
+            base::UmaHistogramPercentage, kAssistantSuggestionChipHistogram));
   }
 
   void FadeOut(ui::CallbackLayerAnimationObserver* observer) override {

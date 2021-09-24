@@ -5,7 +5,7 @@
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
-import {LockType, NetworkState, NetworkType, RoutineResult, RoutineType, StandardRoutineResult} from './diagnostics_types.js';
+import {LockType, NetworkState, NetworkType, RoutineProperties, RoutineResult, RoutineType, StandardRoutineResult} from './diagnostics_types.js';
 import {RoutineGroup} from './routine_group.js';
 
 /**
@@ -106,6 +106,16 @@ export function getLockType(lockType) {
   }
 }
 
+/**
+ * @param {!RoutineType} routine
+ * @param {boolean} blocking If a routine is blocking, the remaining routines
+ * will be skipped. For non-blocking routines, we'll continue running them
+ * and display a 'WARNING' badge to signal that a non-blocking routine failed.
+ * @return {!RoutineProperties}
+ */
+export function createRoutine(routine, blocking) {
+  return {routine, blocking};
+}
 
 /**
  * @param {!NetworkType} type
@@ -115,39 +125,42 @@ export function getLockType(lockType) {
 export function getRoutineGroups(type, isArcEnabled) {
   let localNetworkGroup = new RoutineGroup(
       [
-        RoutineType.kGatewayCanBePinged,
-        RoutineType.kLanConnectivity,
+        createRoutine(RoutineType.kGatewayCanBePinged, true),
+        createRoutine(RoutineType.kLanConnectivity, true),
       ],
       'localNetworkGroupLabel');
 
   let nameResolutionGroup = new RoutineGroup(
       [
-        RoutineType.kDnsResolverPresent,
-        RoutineType.kDnsResolution,
-        RoutineType.kDnsLatency,
+        createRoutine(RoutineType.kDnsResolverPresent, true),
+        createRoutine(RoutineType.kDnsResolution, true),
+        createRoutine(RoutineType.kDnsLatency, true),
       ],
       'nameResolutionGroupLabel');
 
   let wifiGroup = new RoutineGroup(
       [
-        RoutineType.kSignalStrength,
-        RoutineType.kCaptivePortal,
-        RoutineType.kHasSecureWiFiConnection,
+        createRoutine(RoutineType.kSignalStrength, false),
+        createRoutine(RoutineType.kCaptivePortal, false),
+        createRoutine(RoutineType.kHasSecureWiFiConnection, false),
       ],
       'wifiGroupLabel');
   let internetConnectivityGroup = new RoutineGroup(
       [
-        RoutineType.kHttpsFirewall,
-        RoutineType.kHttpFirewall,
-        RoutineType.kHttpsLatency,
+        createRoutine(RoutineType.kHttpsFirewall, true),
+        createRoutine(RoutineType.kHttpFirewall, true),
+        createRoutine(RoutineType.kHttpsLatency, true),
       ],
       'internetConnectivityGroupLabel');
 
   if (isArcEnabled) {
     // Add ARC routines to their corresponding groups.
-    nameResolutionGroup.routines.push(RoutineType.kArcDnsResolution);
-    internetConnectivityGroup.routines.push(RoutineType.kArcPing);
-    internetConnectivityGroup.routines.push(RoutineType.kArcHttp);
+    nameResolutionGroup.addRoutine(
+        (createRoutine(RoutineType.kArcDnsResolution, false)));
+    internetConnectivityGroup.addRoutine(
+        (createRoutine(RoutineType.kArcPing, false)));
+    internetConnectivityGroup.addRoutine(
+        (createRoutine(RoutineType.kArcHttp, false)));
   }
 
   let groupsToAdd = type === NetworkType.kWiFi ?
@@ -200,4 +213,71 @@ export function isNavEnabled() {
  */
 export function formatMacAddress(macAddress) {
   return `${loadTimeData.getString('macAddressLabel')}: ${macAddress}`;
+}
+
+/**
+ * Resolves a networking routine type to its corresponding localized failure
+ * message.
+ * @param {!RoutineType} routineType
+ * @return {string}
+ */
+export function getRoutineFailureMessage(routineType) {
+  switch (routineType) {
+    case RoutineType.kCaptivePortal:
+      return loadTimeData.getString('captivePortalFailedText');
+    case RoutineType.kDnsLatency:
+      return loadTimeData.getString('dnsLatencyFailedText');
+    case RoutineType.kDnsResolution:
+      return loadTimeData.getString('dnsResolutionFailedText');
+    case RoutineType.kDnsResolverPresent:
+      return loadTimeData.getString('dnsResolverPresentFailedText');
+    case RoutineType.kGatewayCanBePinged:
+      return loadTimeData.getString('gatewayCanBePingedFailedText');
+    case RoutineType.kHasSecureWiFiConnection:
+      return loadTimeData.getString('hasSecureWiFiConnectionFailedText');
+    case RoutineType.kHttpFirewall:
+      return loadTimeData.getString('httpFirewallFailedText');
+    case RoutineType.kHttpsFirewall:
+      return loadTimeData.getString('httpsFirewallFailedText');
+    case RoutineType.kHttpsLatency:
+      return loadTimeData.getString('httpsLatencyFailedText');
+    case RoutineType.kLanConnectivity:
+      return loadTimeData.getString('lanConnectivityFailedText');
+    case RoutineType.kSignalStrength:
+      return loadTimeData.getString('signalStrengthFailedText');
+    case RoutineType.kArcHttp:
+      return loadTimeData.getString('arcHttpFailedText');
+    case RoutineType.kArcPing:
+      return loadTimeData.getString('arcPingFailedText');
+    case RoutineType.kArcDnsResolution:
+      return loadTimeData.getString('arcDnsResolutionFailedText');
+    case RoutineType.kBatteryCharge:
+    case RoutineType.kBatteryDischarge:
+    case RoutineType.kCpuCache:
+    case RoutineType.kCpuStress:
+    case RoutineType.kCpuFloatingPoint:
+    case RoutineType.kCpuPrime:
+    case RoutineType.kMemory:
+      assertNotReached();
+      return '';
+    default:
+      // Values should always be found in the enum.
+      assertNotReached();
+      return '';
+  }
+}
+
+/**
+ * @param {!NetworkState} state
+ * @return {boolean}
+ */
+export function isConnectedOrOnline(state) {
+  switch (state) {
+    case NetworkState.kOnline:
+    case NetworkState.kConnected:
+    case NetworkState.kConnecting:
+      return true;
+    default:
+      return false;
+  }
 }

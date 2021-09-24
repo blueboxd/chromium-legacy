@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/browser_context_keyed_service_factories.h"
 
+#include "chrome/browser/ash/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/ash/app_restore/full_restore_service_factory.h"
 #include "chrome/browser/ash/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/ash/authpolicy/authpolicy_credentials_manager.h"
@@ -16,6 +17,8 @@
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/kerberos/kerberos_credentials_manager_factory.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service_factory.h"
+#include "chrome/browser/ash/nearby/nearby_connections_dependencies_provider_factory.h"
+#include "chrome/browser/ash/nearby/nearby_process_manager_factory.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_engagement_metrics_service.h"
 #include "chrome/browser/ash/policy/core/user_cloud_policy_token_forwarder_factory.h"
@@ -27,7 +30,6 @@
 #include "chrome/browser/ash/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/ash/smb_client/smb_service_factory.h"
 #include "chrome/browser/ash/web_applications/crosh_loader_factory.h"
-#include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
@@ -35,8 +37,6 @@
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/printing_metrics/print_job_finished_event_dispatcher.h"
 #include "chrome/browser/chromeos/fileapi/file_change_service_factory.h"
-#include "chrome/browser/chromeos/nearby/nearby_connections_dependencies_provider_factory.h"
-#include "chrome/browser/chromeos/nearby/nearby_process_manager_factory.h"
 #include "chrome/browser/chromeos/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_service_factory.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/user_private_token_kpm_service_factory.h"

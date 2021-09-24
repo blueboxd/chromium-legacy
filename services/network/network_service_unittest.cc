@@ -920,11 +920,17 @@ class NetworkServiceTestWithService : public testing::Test {
  public:
   NetworkServiceTestWithService()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
+
+  NetworkServiceTestWithService(const NetworkServiceTestWithService&) = delete;
+  NetworkServiceTestWithService& operator=(
+      const NetworkServiceTestWithService&) = delete;
+
   ~NetworkServiceTestWithService() override {}
 
   void SetUp() override {
     test_server_.AddDefaultHandlers(base::FilePath(kServicesTestData));
     ASSERT_TRUE(test_server_.Start());
+    scoped_features_.InitAndEnableFeature(net::features::kFirstPartySets);
     service_ = NetworkService::CreateForTesting();
     service_->Bind(network_service_.BindNewPipeAndPassReceiver());
   }
@@ -989,7 +995,7 @@ class NetworkServiceTestWithService : public testing::Test {
   mojo::Remote<mojom::NetworkContext> network_context_;
   mojo::Remote<mojom::URLLoader> loader_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceTestWithService);
+  base::test::ScopedFeatureList scoped_features_;
 };
 
 // Verifies that loading a URL through the network service's mojo interface
@@ -1169,6 +1175,18 @@ TEST_F(NetworkServiceTestWithService, GetNetworkList) {
   run_loop.Run();
 }
 
+TEST_F(NetworkServiceTestWithService,
+       SetPersistedFirstPartySetsAndGetCurrentSets) {
+  base::RunLoop run_loop;
+  network_service_->SetPersistedFirstPartySetsAndGetCurrentSets(
+      "", base::BindLambdaForTesting([&](const std::string& got) {
+        EXPECT_EQ(got, "{}");
+        run_loop.Quit();
+      }));
+  network_service_->SetFirstPartySets("");
+  run_loop.Run();
+}
+
 class TestNetworkChangeManagerClient
     : public mojom::NetworkChangeManagerClient {
  public:
@@ -1183,6 +1201,11 @@ class TestNetworkChangeManagerClient
     receiver_.Bind(client_remote.InitWithNewPipeAndPassReceiver());
     manager_remote->RequestNotifications(std::move(client_remote));
   }
+
+  TestNetworkChangeManagerClient(const TestNetworkChangeManagerClient&) =
+      delete;
+  TestNetworkChangeManagerClient& operator=(
+      const TestNetworkChangeManagerClient&) = delete;
 
   ~TestNetworkChangeManagerClient() override {}
 
@@ -1209,8 +1232,6 @@ class TestNetworkChangeManagerClient
   base::RunLoop run_loop_;
   mojom::ConnectionType connection_type_;
   mojo::Receiver<mojom::NetworkChangeManagerClient> receiver_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TestNetworkChangeManagerClient);
 };
 
 class NetworkChangeTest : public testing::Test {
@@ -1255,6 +1276,11 @@ class NetworkServiceNetworkChangeTest : public testing::Test {
     service_->Bind(network_service_.BindNewPipeAndPassReceiver());
   }
 
+  NetworkServiceNetworkChangeTest(const NetworkServiceNetworkChangeTest&) =
+      delete;
+  NetworkServiceNetworkChangeTest& operator=(
+      const NetworkServiceNetworkChangeTest&) = delete;
+
   ~NetworkServiceNetworkChangeTest() override {}
 
   mojom::NetworkService* service() { return network_service_.get(); }
@@ -1264,8 +1290,6 @@ class NetworkServiceNetworkChangeTest : public testing::Test {
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   mojo::Remote<mojom::NetworkService> network_service_;
   std::unique_ptr<NetworkService> service_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkChangeTest);
 };
 
 TEST_F(NetworkServiceNetworkChangeTest, MAYBE_NetworkChangeManagerRequest) {
@@ -1287,6 +1311,12 @@ class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
   NetworkServiceNetworkDelegateTest()
       : NetworkServiceTest(
             base::test::TaskEnvironment::TimeSource::SYSTEM_TIME) {}
+
+  NetworkServiceNetworkDelegateTest(const NetworkServiceNetworkDelegateTest&) =
+      delete;
+  NetworkServiceNetworkDelegateTest& operator=(
+      const NetworkServiceNetworkDelegateTest&) = delete;
+
   ~NetworkServiceNetworkDelegateTest() override = default;
 
   void CreateNetworkContext() {
@@ -1381,8 +1411,6 @@ class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
   std::unique_ptr<TestURLLoaderClient> client_;
   mojo::Remote<mojom::NetworkContext> network_context_;
   mojo::Remote<mojom::URLLoader> loader_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkDelegateTest);
 };
 
 class ClearSiteDataAuthCertObserver : public TestURLLoaderNetworkObserver {

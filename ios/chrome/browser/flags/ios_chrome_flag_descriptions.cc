@@ -103,11 +103,6 @@ const char kDefaultPromoNonModalName[] = "Default Browser Non-Modal Promo";
 const char kDefaultPromoNonModalDescription[] =
     "When enabled non-modal default browser promos can be triggered.";
 
-const char kDefaultPromoTailoredName[] =
-    "Default Browser Tailored Fullscreen Promo";
-const char kDefaultPromoTailoredDescription[] =
-    "When enabled the selected tailored fullscreen promo can be triggered.";
-
 const char kUseDefaultUserAgentInWebClientName[] =
     "[Refactoring] Let the client choose default mode";
 const char kUseDefaultUserAgentInWebClientDescription[] =
@@ -324,6 +319,9 @@ const char kMICEWebSignInDescription[] = "Enables MICE web sign-in.";
 const char kModernTabStripName[] = "Modern TabStrip";
 const char kModernTabStripDescription[] =
     "When enabled, the newly implemented tabstrip can be tested.";
+
+const char kNewOverflowMenuName[] = "New Overflow Menu";
+const char kNewOverflowMenuDescription[] = "Enables the new overflow menu";
 
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";

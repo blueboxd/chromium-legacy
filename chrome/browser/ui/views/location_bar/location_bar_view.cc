@@ -79,6 +79,7 @@
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/omnibox/browser/location_bar_model.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
@@ -162,7 +163,7 @@ LocationBarView::LocationBarView(Browser* browser,
                                  Delegate* delegate,
                                  bool is_popup_mode)
     : AnimationDelegateViews(this),
-      ChromeOmniboxEditController(command_updater),
+      ChromeOmniboxEditController(browser, profile, command_updater),
       browser_(browser),
       profile_(profile),
       delegate_(delegate),
@@ -340,8 +341,7 @@ void LocationBarView::Init() {
   }
   if (browser_) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    if (base::FeatureList::IsEnabled(features::kChromeOSSharingHub) &&
-        base::FeatureList::IsEnabled(features::kSharesheet)) {
+    if (base::FeatureList::IsEnabled(features::kChromeOSSharingHub)) {
       params.types_enabled.push_back(PageActionIconType::kSharingHub);
     }
 #else
@@ -1416,7 +1416,7 @@ bool LocationBarView::ShowPageInfoDialog() {
   DCHECK(GetWidget());
   views::BubbleDialogDelegateView* bubble =
       PageInfoBubbleView::CreatePageInfoBubble(
-          this, gfx::Rect(), GetWidget()->GetNativeWindow(), profile_, contents,
+          this, gfx::Rect(), GetWidget()->GetNativeWindow(), contents,
           entry->GetVirtualURL(),
           base::BindOnce(&LocationBarView::OnPageInfoBubbleClosed,
                          weak_factory_.GetWeakPtr()));

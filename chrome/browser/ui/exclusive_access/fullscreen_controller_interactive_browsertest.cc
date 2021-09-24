@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -196,9 +197,15 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(false));
 }
 
+// Test is flaky on Lacros: https://crbug.com/1250091
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_BrowserFullscreenExit DISABLED_BrowserFullscreenExit
+#else
+#define MAYBE_BrowserFullscreenExit BrowserFullscreenExit
+#endif
 // Tests Fullscreen entered in Browser, then Tab mode, then exited via Browser.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       BrowserFullscreenExit) {
+                       MAYBE_BrowserFullscreenExit) {
   // Enter browser fullscreen.
   ASSERT_NO_FATAL_FAILURE(ToggleBrowserFullscreen(true));
 
@@ -211,9 +218,16 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_FALSE(browser()->window()->IsFullscreen());
 }
 
+// Test is flaky on Lacros: https://crbug.com/1250092
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_BrowserFullscreenAfterTabFSExit \
+  DISABLED_BrowserFullscreenAfterTabFSExit
+#else
+#define MAYBE_BrowserFullscreenAfterTabFSExit BrowserFullscreenAfterTabFSExit
+#endif
 // Tests Browser Fullscreen remains active after Tab mode entered and exited.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       BrowserFullscreenAfterTabFSExit) {
+                       MAYBE_BrowserFullscreenAfterTabFSExit) {
   // Enter browser fullscreen.
   ASSERT_NO_FATAL_FAILURE(ToggleBrowserFullscreen(true));
 
@@ -300,8 +314,8 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_FALSE(IsWindowFullscreenForTabOrPending());
 }
 
-// TODO(crbug.com/1230771) Flaky on Linux-ozone
-#if defined(OS_LINUX) && defined(USE_OZONE)
+// TODO(crbug.com/1230771) Flaky on Linux-ozone and Lacros
+#if (defined(OS_LINUX) && defined(USE_OZONE)) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_TabEntersPresentationModeFromWindowed \
   DISABLED_TabEntersPresentationModeFromWindowed
 #else
@@ -930,6 +944,49 @@ IN_PROC_BROWSER_TEST_F(ExperimentalFullscreenControllerInteractiveTest,
   EXPECT_EQ(original_bounds, browser()->window()->GetBounds());
 }
 
+// TODO(crbug.com/1034772): Disabled on Windows, where views::FullscreenHandler
+// implements fullscreen by directly obtaining MONITORINFO, ignoring the mocked
+// display::Screen configuration used in this test. Disabled on Mac and Linux,
+// where the window server's async handling of the fullscreen window state may
+// transition the window into fullscreen on the actual (non-mocked) display
+// bounds before or after the window bounds checks, yielding flaky results.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#define MAYBE_SwapShowsBubble DISABLED_SwapShowsBubble
+#else
+#define MAYBE_SwapShowsBubble SwapShowsBubble
+#endif
+// Test requesting fullscreen on the current display and then swapping displays.
+IN_PROC_BROWSER_TEST_F(ExperimentalFullscreenControllerInteractiveTest,
+                       MAYBE_SwapShowsBubble) {
+  SetUpTestScreenAndWindowPlacementTab();
+
+  // Execute JS to request fullscreen on the current display (on the left).
+  RequestContentFullscreen();
+  EXPECT_EQ(gfx::Rect(0, 0, 800, 800), browser()->window()->GetBounds());
+
+  // Explicitly check for, and destroy, the exclusive access bubble.
+  EXPECT_TRUE(IsExclusiveAccessBubbleDisplayed());
+  base::RunLoop run_loop;
+  ExclusiveAccessBubbleHideCallback callback = base::BindLambdaForTesting(
+      [&run_loop](ExclusiveAccessBubbleHideReason) { run_loop.Quit(); });
+  browser()
+      ->exclusive_access_manager()
+      ->context()
+      ->UpdateExclusiveAccessExitBubbleContent(
+          browser()->exclusive_access_manager()->GetExclusiveAccessBubbleURL(),
+          EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, std::move(callback),
+          /*force_update=*/false);
+  run_loop.Run();
+  EXPECT_FALSE(IsExclusiveAccessBubbleDisplayed());
+
+  // Execute JS to request fullscreen on the other display (on the right).
+  RequestContentFullscreenOnScreen(1);
+  EXPECT_EQ(gfx::Rect(800, 0, 800, 800), browser()->window()->GetBounds());
+
+  // Ensure the exclusive access bubble is re-shown on fullscreen display swap.
+  EXPECT_TRUE(IsExclusiveAccessBubbleDisplayed());
+}
+
 // TODO(crbug.com/1134731): Disabled on Windows, where RenderWidgetHostViewAura
 // blindly casts display::Screen::GetScreen() to display::win::ScreenWin*.
 // TODO(crbug.com/1183791): Disabled on Mac due to flaky ObserverList crashes.
@@ -954,8 +1011,7 @@ IN_PROC_BROWSER_TEST_F(ExperimentalFullscreenControllerInteractiveTest,
       };
     })();
   )";
-  EXPECT_TRUE(ExecJs(tab, request_fullscreen_script,
-                     content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  EXPECT_TRUE(ExecJs(tab, request_fullscreen_script));
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   WaitForUserActivationExpiry();
 
@@ -980,25 +1036,29 @@ IN_PROC_BROWSER_TEST_F(ExperimentalFullscreenControllerInteractiveTest,
 #if defined(OS_WIN)
 #define MAYBE_FullscreenOnPermissionGrant DISABLED_FullscreenOnPermissionGrant
 #else
-// TODO(crbug.com/1246649): flakes on other bots.
-#define MAYBE_FullscreenOnPermissionGrant DISABLED_FullscreenOnPermissionGrant
+#define MAYBE_FullscreenOnPermissionGrant FullscreenOnPermissionGrant
 #endif
-// Test requesting fullscreen using the permission grant's transient affordance.
+// Test requesting fullscreen using the permission grant's transient activation.
 IN_PROC_BROWSER_TEST_F(ExperimentalFullscreenControllerInteractiveTest,
                        MAYBE_FullscreenOnPermissionGrant) {
-  SetUpTestScreenAndWindowPlacementTab();
+  EXPECT_TRUE(embedded_test_server()->Start());
+  const GURL url(embedded_test_server()->GetURL("/simple.html"));
+  AddTabAtIndex(1, url, PAGE_TRANSITION_TYPED);
+  auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
-  // Request and auto-accept the Window Placement permission, this should grant
-  // a transient affordance that can be used to request fullscreen.
+  permissions::PermissionRequestManager* permission_request_manager =
+      permissions::PermissionRequestManager::FromWebContents(tab);
+
+  // Request the Window Placement permission and accept the prompt after user
+  // activation expires; accepting should grant a new transient activation
+  // signal that can be used to request fullscreen, without another gesture.
+  ExecuteScriptAsync(tab, "getScreens()");
+  WaitForUserActivationExpiry();
+  ASSERT_TRUE(permission_request_manager->IsRequestInProgress());
+  permission_request_manager->Accept();
   const std::string request_fullscreen_from_prompt_script = R"(
     (async () => {
-      if (navigator.userActivation.isActive)
-        return false;
-      window.screensInterface = await window.getScreens();
-      if (!navigator.userActivation.isActive || !!document.fullscreenElement)
-        return false;
-      const options = { screen: window.screensInterface.screens[1] };
-      await document.body.requestFullscreen(options);
+      await document.body.requestFullscreen();
       return !!document.fullscreenElement;
     })();
   )";

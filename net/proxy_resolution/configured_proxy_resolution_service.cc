@@ -26,6 +26,8 @@
 #include "net/base/net_info_source_list.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/proxy_delegate.h"
+#include "net/base/proxy_server.h"
+#include "net/base/proxy_string_util.h"
 #include "net/base/url_util.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
@@ -415,6 +417,9 @@ class ConfiguredProxyResolutionService::InitProxyResolver {
         next_state_(State::kNone),
         quick_check_enabled_(true) {}
 
+  InitProxyResolver(const InitProxyResolver&) = delete;
+  InitProxyResolver& operator=(const InitProxyResolver&) = delete;
+
   // Note that the destruction of PacFileDecider will automatically cancel
   // any outstanding work.
   ~InitProxyResolver() = default;
@@ -597,8 +602,6 @@ class ConfiguredProxyResolutionService::InitProxyResolver {
   CompletionOnceCallback callback_;
   State next_state_;
   bool quick_check_enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(InitProxyResolver);
 };
 
 // ConfiguredProxyResolutionService::PacFileDeciderPoller
@@ -1179,7 +1182,7 @@ void ConfiguredProxyResolutionService::ReportSuccess(const ProxyInfo& result) {
       proxy_retry_info_[iter.first] = iter.second;
       if (proxy_delegate_) {
         const ProxyServer& bad_proxy =
-            ProxyServer::FromURI(iter.first, ProxyServer::SCHEME_HTTP);
+            ProxyUriToProxyServer(iter.first, ProxyServer::SCHEME_HTTP);
         const ProxyRetryInfo& proxy_retry_info = iter.second;
         proxy_delegate_->OnFallback(bad_proxy, proxy_retry_info.net_error);
       }

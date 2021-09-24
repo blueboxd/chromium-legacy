@@ -32,6 +32,10 @@ class CastExtensionSystem : public ExtensionSystem,
                             public ExtensionRegistrar::Delegate {
  public:
   explicit CastExtensionSystem(content::BrowserContext* browser_context);
+
+  CastExtensionSystem(const CastExtensionSystem&) = delete;
+  CastExtensionSystem& operator=(const CastExtensionSystem&) = delete;
+
   ~CastExtensionSystem() override;
 
   // Loads an unpacked extension from a directory. Returns the extension on
@@ -74,6 +78,7 @@ class CastExtensionSystem : public ExtensionSystem,
   UserScriptManager* user_script_manager() override;
   StateStore* state_store() override;
   StateStore* rules_store() override;
+  StateStore* dynamic_user_scripts_store() override;
   scoped_refptr<value_store::ValueStoreFactory> store_factory() override;
   InfoMap* info_map() override;
   QuotaService* quota_service() override;
@@ -136,8 +141,6 @@ class CastExtensionSystem : public ExtensionSystem,
   base::OneShotEvent ready_;
 
   base::WeakPtrFactory<CastExtensionSystem> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastExtensionSystem);
 };
 
 }  // namespace extensions

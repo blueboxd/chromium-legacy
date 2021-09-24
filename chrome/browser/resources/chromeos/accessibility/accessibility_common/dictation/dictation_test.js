@@ -34,8 +34,8 @@ DictationE2ETest = class extends E2ETestBase {
         '_ext_ime_egfdjlfmgnehecnclamagfafdccgfndpdictation';
 
     this.commandStrings = [
-      'delete', 'move left', 'move right', 'copy', 'paste', 'cut', 'undo',
-      'redo'
+      'delete', 'move left', 'move right', 'move up', 'move down', 'copy',
+      'paste', 'cut', 'undo', 'redo', 'select all', 'unselect all', 'new line'
     ];
 
     this.lastSetTimeoutCallback = null;
@@ -297,15 +297,30 @@ SYNC_TEST_F(
     'DictationE2ETest', 'InterimResultsDependOnChromeVoxEnabled',
     async function() {
       await this.waitForDictationModule();
-      assertEquals(true, mockSpeechRecognition.interimResults());
+      await this.toggleDictationAndStartListening(4);
+
+      // Interim results shown in composition.
+      mockSpeechRecognition.callOnResult('one', false);
+      this.assertImeCompositionParameters('one', 4);
+      this.mockInputIme.clearLastParameters();
+
       // Toggle ChromeVox on.
       await this.setPref(Dictation.SPOKEN_FEEDBACK_PREF, true);
       await this.getPref(Dictation.SPOKEN_FEEDBACK_PREF);
-      assertEquals(false, mockSpeechRecognition.interimResults());
+
+      // Composition is not changed.
+      mockSpeechRecognition.callOnResult('two', false);
+      assertFalse(!!this.mockInputIme.getLastCompositionParameters());
+
       // Toggle ChromeVox off.
       await this.setPref(Dictation.SPOKEN_FEEDBACK_PREF, false);
       await this.getPref(Dictation.SPOKEN_FEEDBACK_PREF);
-      assertEquals(true, mockSpeechRecognition.interimResults());
+
+      // Interim results impact the composition again.
+      mockSpeechRecognition.callOnResult('three', false);
+      this.assertImeCompositionParameters('three', 4);
+      this.mockInputIme.clearLastParameters();
+
     });
 
 SYNC_TEST_F(
@@ -551,20 +566,23 @@ SYNC_TEST_F(
       await this.toggleDictationAndStartListening(8);
       for (const command of this.commandStrings) {
         mockSpeechRecognition.callOnResult(command, false);
-        this.assertImeCompositionParameters(command, 8);
+        // Nothing is added to composition text when commands UI is enabled.
+        assertFalse(!!this.mockInputIme.getLastCompositionParameters());
+        // TODO(crbug.com/1252037): Check UI shows correct command info.
 
-        // On final result, composition is cleared, nothing is committed
-        // (instead, an action is taken).
         mockSpeechRecognition.callOnResult(command, true);
-        assertFalse(!!this.mockInputIme.getLastCommittedParameters());
-        // TODO(crbug.com/1247299): Check that some action was taken. This will
-        // probably need to be done with full integration testing, which will be
-        // easiest after changing to the SpeechRecognitionPrivate API.
+        if (command === 'new line') {
+          this.assertImeCommitParameters('\n', 8);
+        } else {
+          // On final result, composition is cleared, nothing is committed
+          // (instead, an action is taken).
+          assertFalse(!!this.mockInputIme.getLastCommittedParameters());
+        }
 
         // Try a command to "type delete", etc.
         mockSpeechRecognition.callOnResult('type ' + command, true);
         // The command should be entered but not the word "type".
-        this.mockInputIme.getLastCommittedParameters(command, 8);
+        this.assertImeCommitParameters(command, 8);
 
         this.mockInputIme.clearLastParameters();
       }

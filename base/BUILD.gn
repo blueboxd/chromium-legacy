@@ -1606,6 +1606,8 @@ component("base") {
     }
     if (current_cpu == "arm") {
       sources += [
+        "profiler/chrome_unwind_info_android.cc",
+        "profiler/chrome_unwind_info_android.h",
         "profiler/chrome_unwind_table_android.cc",
         "profiler/chrome_unwind_table_android.h",
         "profiler/chrome_unwinder_android.cc",
@@ -1736,7 +1738,7 @@ component("base") {
       "//third_party/fuchsia-sdk/sdk/pkg/fidl_cpp",
       "//third_party/fuchsia-sdk/sdk/pkg/sync",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
-      "//third_party/fuchsia-sdk/sdk/pkg/syslog",
+      "//third_party/fuchsia-sdk/sdk/pkg/syslog_structured_backend",
       "//third_party/fuchsia-sdk/sdk/pkg/vfs_cpp",
       "//third_party/fuchsia-sdk/sdk/pkg/zx",
     ]
@@ -1749,7 +1751,6 @@ component("base") {
       "//third_party/fuchsia-sdk/sdk/pkg/async-loop-default",
       "//third_party/fuchsia-sdk/sdk/pkg/fidl",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_inspect_cpp",
-      "//third_party/fuchsia-sdk/sdk/pkg/syslog",
       "//third_party/icu",
     ]
 
@@ -3413,6 +3414,7 @@ test("base_unittests") {
     }
     if (current_cpu == "arm") {
       sources += [
+        "profiler/chrome_unwind_info_android_unittest.cc",
         "profiler/chrome_unwind_table_android_unittest.cc",
         "profiler/chrome_unwinder_android_unittest.cc",
       ]

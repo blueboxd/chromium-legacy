@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -21,7 +22,9 @@ namespace content {
 class TestAggregationServiceImplTest : public testing::Test {
  public:
   TestAggregationServiceImplTest()
-      : impl_(std::make_unique<TestAggregationServiceImpl>()) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+        impl_(std::make_unique<TestAggregationServiceImpl>(
+            task_environment_.GetMockClock())) {}
 
  protected:
   base::test::TaskEnvironment task_environment_;
@@ -31,7 +34,7 @@ class TestAggregationServiceImplTest : public testing::Test {
 TEST_F(TestAggregationServiceImplTest, SetPublicKeys) {
   std::string json_string = R"(
         {
-            "version" : "v1",
+            "version" : "",
             "keys" : [
                 {
                     "id" : "abcd",
@@ -50,10 +53,10 @@ TEST_F(TestAggregationServiceImplTest, SetPublicKeys) {
 
   base::RunLoop run_loop;
   impl_->GetPublicKeys(
-      origin, base::BindLambdaForTesting([&](PublicKeysForOrigin keys) {
+      origin, base::BindLambdaForTesting([&](std::vector<PublicKey> keys) {
         EXPECT_TRUE(content::aggregation_service::PublicKeysEqual(
             {content::PublicKey(/*id=*/"abcd", /*key=*/kABCD1234AsBytes)},
-            keys.keys));
+            keys));
         run_loop.Quit();
       }));
   run_loop.Run();

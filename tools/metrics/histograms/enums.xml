@@ -3462,6 +3462,7 @@ Unknown properties are collapsed to zero. -->
   <int value="11" label="DBus Service (Plugin VM)"/>
   <int value="12" label="Notification (Plugin VM)"/>
   <int value="13" label="App Management main view (Borealis)"/>
+  <int value="14" label="Page info view"/>
 </enum>
 
 <enum name="AppManagementUserAction">
@@ -9076,6 +9077,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Error"/>
 </enum>
 
+<enum name="BooleanEscaped">
+  <int value="0" label="No Characters Escaped"/>
+  <int value="1" label="Escaped One or More Characters"/>
+</enum>
+
 <enum name="BooleanEverConnected">
   <int value="0" label="Never connected"/>
   <int value="1" label="Previously connected"/>
@@ -14194,6 +14200,7 @@ Called by update_net_error_codes.py.-->
   <int value="81" label="Formfill metadata"/>
   <int value="82" label="Federated identity active session"/>
   <int value="83" label="Auto-darken web content"/>
+  <int value="84" label="Request desktop site"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -19753,6 +19760,11 @@ Called by update_debug_scenarios.py.-->
   </obsolete>
   <int value="0" label="Grouping enabled"/>
   <int value="1" label="Grouping disabled"/>
+</enum>
+
+<enum name="DevToolsConsoleShowsCorsErrors">
+  <int value="0" label="CORS errors disabled"/>
+  <int value="1" label="CORS errors enabled"/>
 </enum>
 
 <enum name="DevToolsCssEditorOpened">
@@ -26383,6 +26395,11 @@ Called by update_document_policy_enum.py.-->
   <int value="894" label="DeviceRestrictedManagedGuestSessionEnabled"/>
   <int value="895" label="PrintPostScriptMode"/>
   <int value="896" label="PrintPdfAsImageDefault"/>
+  <int value="897" label="FullRestoreEnabled"/>
+  <int value="898" label="GhostWindowEnabled"/>
+  <int value="899" label="CloudUserPolicyOverridesCloudMachinePolicy"/>
+  <int value="900" label="ReportDeviceSecurityStatus"/>
+  <int value="901" label="EnableDeviceGranularReporting"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -29947,6 +29964,7 @@ Called by update_extension_permission.py.-->
   <int value="234" label="kChromeOSTelemetry"/>
   <int value="235" label="kSpeechRecognitionPrivate"/>
   <int value="236" label="kChromeOSDiagnostics"/>
+  <int value="237" label="kChromeOSTelemetrySerialNumber"/>
 </enum>
 
 <enum name="ExtensionPointEnableState">
@@ -40971,12 +40989,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 
 <enum name="HistoryClustersInitialState">
   <summary>
-    The intial state that describes how an interaction with the HistoryClusters,
-    or Journeys, UI was started.
+    The initial state that describes how an interaction with the
+    HistoryClusters, or Journeys, UI was started.
   </summary>
   <int value="0" label="Unknown"/>
   <int value="1" label="kDirectNavigation">
     The UI was reached via direct navigation, not through any dedicated surface.
+  </int>
+  <int value="2" label="kIndirectNavigation">
+    The UI was reached via indirect navigation, e.g. a link.
   </int>
 </enum>
 
@@ -46345,6 +46366,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="LinuxAudioIO">
+  <obsolete>
+    Deprecated 2021/09, as relevant UMA is deprecated.
+  </obsolete>
   <int value="0" label="PulseAudio"/>
   <int value="1" label="ALSA"/>
   <int value="2" label="Cras"/>
@@ -47323,6 +47347,7 @@ from previous Chrome versions.
   <int value="-2117048251" label="MediaApp:enabled"/>
   <int value="-2116440101" label="EnablePenetratingImageSelection:enabled"/>
   <int value="-2114831248" label="disable-new-ntp"/>
+  <int value="-2114756847" label="SideSearchClearCacheWhenClosed:disabled"/>
   <int value="-2113783491" label="ArcFilePickerExperiment:enabled"/>
   <int value="-2113705745"
       label="CrossOriginMediaPlaybackRequiresUserGesture:enabled"/>
@@ -47423,6 +47448,7 @@ from previous Chrome versions.
       label="KeepAliveRendererForKeepaliveRequests:enabled"/>
   <int value="-2037390759"
       label="IncognitoBrandConsistencyForAndroid:disabled"/>
+  <int value="-2036629516" label="SideSearchStatePerTab:enabled"/>
   <int value="-2036149591" label="FaviconsFromWebManifest:disabled"/>
   <int value="-2035126988" label="enabled-new-style-notification"/>
   <int value="-2033950090" label="AutofillNoLocalSaveOnUploadSuccess:disabled"/>
@@ -47625,6 +47651,7 @@ from previous Chrome versions.
       label="OmniboxKeywordSpaceTriggeringSetting:disabled"/>
   <int value="-1898386671" label="PasswordCheck:enabled"/>
   <int value="-1898229093" label="WebApkGenerator:enabled"/>
+  <int value="-1898129939" label="U2fPermissionPrompt:enabled"/>
   <int value="-1897800883" label="OpenscreenCastStreamingSession:enabled"/>
   <int value="-1896871201" label="CrossOriginOpenerPolicyReporting:enabled"/>
   <int value="-1896733769" label="CheckOfflineCapability:disabled"/>
@@ -47737,11 +47764,14 @@ from previous Chrome versions.
   <int value="-1827599944" label="QueryTilesLocalOrdering:enabled"/>
   <int value="-1826649921" label="ContextualSuggestionsButton:disabled"/>
   <int value="-1826309726" label="ArcCustomTabsExperiment:disabled"/>
+  <int value="-1824539611" label="U2fPermissionPrompt:disabled"/>
   <int value="-1823193038" label="QuietNotificationPrompts:disabled"/>
   <int value="-1823073826" label="TabGroupsSave:disabled"/>
   <int value="-1822825246" label="DragFromShelfToHomeOrOverview:enabled"/>
   <int value="-1821058653" label="enable-delay-agnostic-aec"/>
   <int value="-1818947212" label="OutOfBlinkCors:disabled"/>
+  <int value="-1818565030"
+      label="AutofillUseConsistentPopupSettingsIcons:disabled"/>
   <int value="-1817209284" label="PayWithGoogleV1:enabled"/>
   <int value="-1816066138" label="CastAllowAllIPs:enabled"/>
   <int value="-1813088913" label="CCTResizable90MaximumHeight:disabled"/>
@@ -47945,6 +47975,7 @@ from previous Chrome versions.
   <int value="-1644308778" label="WASAPIRawAudioCapture:disabled"/>
   <int value="-1643933608" label="SyncAutofillWalletOfferData:enabled"/>
   <int value="-1641832607" label="DragToPinTabs:enabled"/>
+  <int value="-1641384018" label="SideSearchClearCacheWhenClosed:enabled"/>
   <int value="-1640944841" label="HardwareSecureDecryption:disabled"/>
   <int value="-1639534120" label="VaapiVp9kSVCHWEncoding:enabled"/>
   <int value="-1639050182" label="NavigationPredictorRendererWarmup:enabled"/>
@@ -48057,6 +48088,7 @@ from previous Chrome versions.
   <int value="-1560729847" label="AutofillCacheQueryResponses:enabled"/>
   <int value="-1560650271" label="WasmCodeCache:disabled"/>
   <int value="-1559789642" label="RunAllFlashInAllowMode:enabled"/>
+  <int value="-1559292789" label="SideSearch:disabled"/>
   <int value="-1557747651" label="FractionalScrollOffsets:disabled"/>
   <int value="-1557527869" label="LoadingWithMojo:disabled"/>
   <int value="-1555510175" label="PasswordImport:enabled"/>
@@ -49032,6 +49064,7 @@ from previous Chrome versions.
   <int value="-825747847"
       label="AutofillEnableSupportForMoreStructureInAddresses:enabled"/>
   <int value="-825312041" label="CastStreamingAv1:enabled"/>
+  <int value="-824829316" label="UsbDeviceDefaultAttachToArcVm:enabled"/>
   <int value="-824199802" label="ContextualSearchSimplifiedServer:enabled"/>
   <int value="-823394398" label="TargetEmbeddingLookalikes:enabled"/>
   <int value="-823165021" label="MaterialDesignUserMenu:enabled"/>
@@ -49351,6 +49384,7 @@ from previous Chrome versions.
   <int value="-573570330" label="QuickAnswersTranslationCloudAPI:disabled"/>
   <int value="-572112724" label="DialogTouchBar:disabled"/>
   <int value="-572012175" label="AssistantEnableStereoAudioInput:disabled"/>
+  <int value="-571655232" label="SideSearch:enabled"/>
   <int value="-571236436" label="AppManagement:disabled"/>
   <int value="-570889908" label="CCTModuleDexLoading:enabled"/>
   <int value="-570572517" label="OmniboxActiveSearchEngines:enabled"/>
@@ -50066,8 +50100,10 @@ from previous Chrome versions.
   </int>
   <int value="1343197" label="UseSearchClickForRightClick:enabled"/>
   <int value="1558582" label="ResamplingInputEvents:enabled"/>
+  <int value="1618593" label="AutofillUseConsistentPopupSettingsIcons:enabled"/>
   <int value="2070488" label="EnablePasswordsAccountStorageSavingUi:disabled"/>
   <int value="3826348" label="DarkenWebsitesCheckboxInThemesSetting:disabled"/>
+  <int value="4277967" label="SideSearchStatePerTab:disabled"/>
   <int value="4588113" label="CacheOneGoogleBar:disabled"/>
   <int value="5654819" label="CrostiniGpuSupport:disabled"/>
   <int value="6041813" label="PermissionChipGestureSensitive:disabled"/>
@@ -51852,7 +51888,6 @@ from previous Chrome versions.
   <int value="1393500952" label="EnableVirtualKeyboardUkm:disabled"/>
   <int value="1393722373" label="SaveEditedPDFForm:disabled"/>
   <int value="1394896630" label="PrinterStatusDialog:enabled"/>
-  <int value="1394925480" label="SharesheetContentPreviews:enabled"/>
   <int value="1397053154" label="ContextualSearchLiteralSearchTap:enabled"/>
   <int value="1397069250" label="NetworkService:disabled"/>
   <int value="1398049903" label="WebUIDarkMode:disabled"/>
@@ -51899,6 +51934,7 @@ from previous Chrome versions.
   <int value="1429031731"
       label="CrossOriginEmbedderPolicyCredentialless:enabled"/>
   <int value="1429923065" label="enable-media-internals:enabled"/>
+  <int value="1430421070" label="UsbDeviceDefaultAttachToArcVm:disabled"/>
   <int value="1430924529" label="TranslateIntent:enabled"/>
   <int value="1431050645" label="PayWithGoogleV1:disabled"/>
   <int value="1431934725" label="OmniboxAutocompleteTitles:disabled"/>
@@ -52509,7 +52545,6 @@ from previous Chrome versions.
   <int value="1914347357" label="AutofillEnableVirtualCard:disabled"/>
   <int value="1915028326" label="BuiltInModuleKvStorage:disabled"/>
   <int value="1915178511" label="disable-blink-features"/>
-  <int value="1915956064" label="SharesheetContentPreviews:disabled"/>
   <int value="1916637435" label="TranslateSubFrames:enabled"/>
   <int value="1918984253"
       label="OmniboxUIExperimentBlueSearchLoopAndSearchQuery:disabled"/>
@@ -63990,6 +64025,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Unlock account-store to fill password"/>
   <int value="4" label="Unlock account-store to generate password"/>
   <int value="5" label="Re-Signin to unlock account-stored passwords"/>
+  <int value="6" label="WebAuthn credential"/>
 </enum>
 
 <enum name="PasswordDropdownState">
@@ -68223,6 +68259,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Server error"/>
 </enum>
 
+<enum name="PrivacySandboxAggregationServiceStorageSqlInitStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failed to open DB in memory"/>
+  <int value="2" label="Failed to open DB file"/>
+  <int value="3" label="Failed to create directory"/>
+  <int value="4" label="Failed to initialize schema"/>
+</enum>
+
 <enum name="PrivacySandboxReferrer">
   <int value="0" label="Privacy Settings"/>
   <int value="1" label="Cookie Settings Snackbar"/>
@@ -70004,6 +70048,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="203" label="QUIC_CONNECTION_ID_LIMIT_ERROR"/>
   <int value="204" label="QUIC_TOO_MANY_CONNECTION_ID_WAITING_TO_RETIRE"/>
   <int value="205" label="QUIC_HTTP_RECEIVE_SERVER_PUSH"/>
+  <int value="206" label="QUIC_INVALID_CHARACTER_IN_FIELD_VALUE"/>
 </enum>
 
 <enum name="QuicFailToSerializePacketLocation">
@@ -76078,8 +76123,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="SharedClipboard"/>
   <int value="5" label="SmsFetchRequest"/>
   <int value="6" label="RemoteCopy"/>
-  <int value="7" label="SignallingMessage"/>
-  <int value="8" label="IceCandidateMessage"/>
+  <int value="7" label="PeerConnectionOffer"/>
+  <int value="8" label="PeerConnectionIceCandidate"/>
+  <int value="9" label="DiscoveryRequest"/>
+  <int value="10" label="WebRTCSignalingFrame"/>
+  <int value="11" label="OptimizationGuidePushNotification"/>
 </enum>
 
 <enum name="SharingRemoteCopyHandleMessageResult">
@@ -78070,7 +78118,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="SourceForRefreshTokenOperation">
   <int value="0" label="Unknown"/>
   <int value="1" label="TokenService::LoadCredentials"/>
-  <int value="2" label="DeprecatedSupervisedUser::InitSync"/>
+  <int value="2" label="SupervisedUser::InitSync (obsolete)"/>
   <int value="3" label="InlineLoginHandler::Signin"/>
   <int value="4" label="PrimaryAccountManager::ClearPrimaryAccount"/>
   <int value="5" label="PrimaryAccountManager::LegacyPreDiceSigninFlow"/>
@@ -78086,7 +78134,10 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="15" label="DiceTurnOnSyncHelper::Abort"/>
   <int value="16" label="MachineLogon::CredentialProvider"/>
   <int value="17" label="TokenService::ExtractCredentials"/>
-  <int value="18" label="AccountReconcilor::RevokeTokensNotInCookies"/>
+  <int value="18"
+      label="AccountReconcilor::RevokeTokensNotInCookies (obsolete)">
+    Used for force migration to DICE. Removed in M96.
+  </int>
   <int value="19" label="LogoutTabHelper::DidFinishNavigation"/>
 </enum>
 
@@ -83555,6 +83606,7 @@ Full version information for the fingerprint enum values:
   <int value="22"
       label="Identical language translation, use source language Unknown"/>
   <int value="23" label="Disabled because Autofill Assistant is running."/>
+  <int value="24" label="Auto translation for predefined target language"/>
 </enum>
 
 <enum name="TranslateLanguage">
@@ -84488,6 +84540,29 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Upload was offered for newly-seen card"/>
 </enum>
 
+<enum name="URLHostEscapedChar">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Space"/>
+  <int value="2" label="Bang"/>
+  <int value="3" label="DoubleQuote"/>
+  <int value="4" label="Hash"/>
+  <int value="5" label="Dollar"/>
+  <int value="6" label="Ampersand"/>
+  <int value="7" label="SingleQuote"/>
+  <int value="8" label="LeftParen"/>
+  <int value="9" label="RightParen"/>
+  <int value="10" label="Asterisk"/>
+  <int value="11" label="Comma"/>
+  <int value="12" label="LeftAngle"/>
+  <int value="13" label="Equals"/>
+  <int value="14" label="RightAngle"/>
+  <int value="15" label="At"/>
+  <int value="16" label="BackTick"/>
+  <int value="17" label="LeftCurly"/>
+  <int value="18" label="Pipe"/>
+  <int value="19" label="RightCurly"/>
+</enum>
+
 <enum name="URLRequestAnnotationType">
 <!-- Not updated since 3/4/2018 as histogram is obsolete.-->
 
@@ -85414,6 +85489,7 @@ Full version information for the fingerprint enum values:
   <int value="6" label="Total probability overflow"/>
   <int value="7" label="Missing experiment entry for default experient"/>
   <int value="8" label="Missing study name"/>
+  <int value="9" label="Experiment probability overflow"/>
 </enum>
 
 <enum name="VariationsPermanentConsistencyCountryResult">
@@ -88610,6 +88686,7 @@ Called by update_scheduler_enums.py.-->
   <int value="24" label="Safety tip help opened"/>
   <int value="25" label="Chooser object deleted"/>
   <int value="26" label="Reset certificate decisions clicked"/>
+  <int value="27" label="Store info clicked"/>
 </enum>
 
 <enum name="WebSiteSettingsAllSitesAction">
@@ -89605,6 +89682,11 @@ Called by update_scheduler_enums.py.-->
   <int value="1" label="Not connected (Wake On WiFi enabled)"/>
   <int value="2" label="Connected (Wake On WiFi disabled)"/>
   <int value="3" label="Not connected (Wake On WiFi disabled)"/>
+</enum>
+
+<enum name="WiFiCQMNotificationType">
+  <int value="0" label="Packet loss"/>
+  <int value="1" label="Beacon loss"/>
 </enum>
 
 <enum name="WiFiPCIStatus">
@@ -90829,6 +90911,9 @@ Called by update_scheduler_enums.py.-->
 </enum>
 
 <enum name="WindowsServiceStatus">
+  <obsolete>
+    Removed in M96.
+  </obsolete>
   <int value="0" label="Unknown"/>
   <int value="1" label="Not Found"/>
   <int value="2" label="Found"/>

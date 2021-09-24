@@ -107,6 +107,7 @@ const char* const kKnownSettings[] = {
     kDeviceWiFiAllowed,
     kDeviceWilcoDtcAllowed,
     kDisplayRotationDefault,
+    kEnableDeviceGranularReporting,
     kExtensionCacheSize,
     kFeatureFlags,
     kHeartbeatEnabled,
@@ -136,6 +137,7 @@ const char* const kKnownSettings[] = {
     kReportDeviceNetworkInterfaces,
     kReportDeviceNetworkStatus,
     kReportDeviceSessionStatus,
+    kReportDeviceSecurityStatus,
     kReportDeviceTimezoneInfo,
     kReportDeviceGraphicsStatus,
     kReportDeviceMemoryInfo,
@@ -560,6 +562,11 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
   if (policy.has_device_reporting()) {
     const em::DeviceReportingProto& reporting_policy =
         policy.device_reporting();
+    if (reporting_policy.has_enable_granular_reporting()) {
+      new_values_cache->SetBoolean(
+          kEnableDeviceGranularReporting,
+          reporting_policy.enable_granular_reporting());
+    }
     if (reporting_policy.has_report_version_info()) {
       new_values_cache->SetBoolean(kReportDeviceVersionInfo,
                                    reporting_policy.report_version_info());
@@ -606,6 +613,10 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
     if (reporting_policy.has_report_session_status()) {
       new_values_cache->SetBoolean(kReportDeviceSessionStatus,
                                    reporting_policy.report_session_status());
+    }
+    if (reporting_policy.has_report_security_status()) {
+      new_values_cache->SetBoolean(kReportDeviceSecurityStatus,
+                                   reporting_policy.report_security_status());
     }
     if (reporting_policy.has_report_graphics_status()) {
       new_values_cache->SetBoolean(kReportDeviceGraphicsStatus,

@@ -149,6 +149,12 @@ std::vector<TestParams> GetTestParams() {
 class TestConnectionMigrationSocketFactory : public MockClientSocketFactory {
  public:
   TestConnectionMigrationSocketFactory() : next_source_host_num_(1u) {}
+
+  TestConnectionMigrationSocketFactory(
+      const TestConnectionMigrationSocketFactory&) = delete;
+  TestConnectionMigrationSocketFactory& operator=(
+      const TestConnectionMigrationSocketFactory&) = delete;
+
   ~TestConnectionMigrationSocketFactory() override = default;
 
   std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
@@ -164,8 +170,6 @@ class TestConnectionMigrationSocketFactory : public MockClientSocketFactory {
 
  private:
   uint8_t next_source_host_num_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestConnectionMigrationSocketFactory);
 };
 
 // TestPortMigrationSocketFactory will vend sockets with incremental port
@@ -173,6 +177,12 @@ class TestConnectionMigrationSocketFactory : public MockClientSocketFactory {
 class TestPortMigrationSocketFactory : public MockClientSocketFactory {
  public:
   TestPortMigrationSocketFactory() : next_source_port_num_(1u) {}
+
+  TestPortMigrationSocketFactory(const TestPortMigrationSocketFactory&) =
+      delete;
+  TestPortMigrationSocketFactory& operator=(
+      const TestPortMigrationSocketFactory&) = delete;
+
   ~TestPortMigrationSocketFactory() override = default;
 
   std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
@@ -188,8 +198,6 @@ class TestPortMigrationSocketFactory : public MockClientSocketFactory {
 
  private:
   uint16_t next_source_port_num_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPortMigrationSocketFactory);
 };
 
 class QuicStreamFactoryTestBase : public WithTaskEnvironment {
@@ -234,7 +242,6 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
         quic_params_(context_.params()) {
     FLAGS_quic_enable_http3_grease_randomness = false;
     FLAGS_quic_enable_chaos_protection = false;
-    FLAGS_quic_reloadable_flag_quic_ack_cid_frames = true;
     quic_params_->headers_include_h2_stream_dependency =
         client_headers_include_h2_stream_dependency;
     context_.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));

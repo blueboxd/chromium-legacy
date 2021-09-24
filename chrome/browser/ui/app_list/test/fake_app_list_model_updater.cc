@@ -54,18 +54,6 @@ void FakeAppListModelUpdater::RemoveUninstalledItem(const std::string& id) {
   RemoveItem(id);
 }
 
-void FakeAppListModelUpdater::MoveItemToFolder(const std::string& id,
-                                               const std::string& folder_id) {
-  size_t index;
-  if (FindItemIndexForTest(id, &index)) {
-    ChromeAppListItem* item = items_[index].get();
-    ChromeAppListItem::TestApi test_api(item);
-    test_api.SetFolderId(folder_id);
-    for (AppListModelUpdaterObserver& observer : observers_)
-      observer.OnAppListItemUpdated(item);
-  }
-}
-
 void FakeAppListModelUpdater::SetItemIcon(const std::string& id,
                                           const gfx::ImageSkia& icon) {
   ++update_image_count_;
@@ -73,6 +61,14 @@ void FakeAppListModelUpdater::SetItemIcon(const std::string& id,
       !icon_updated_callback_.is_null()) {
     std::move(icon_updated_callback_).Run();
   }
+}
+
+void FakeAppListModelUpdater::SetItemFolderId(const std::string& id,
+                                              const std::string& folder_id) {
+  ChromeAppListItem* item = FindItem(id);
+  item->SetFolderId(folder_id);
+  for (AppListModelUpdaterObserver& observer : observers_)
+    observer.OnAppListItemUpdated(item);
 }
 
 void FakeAppListModelUpdater::SetSearchEngineIsGoogle(bool is_google) {
@@ -223,7 +219,7 @@ void FakeAppListModelUpdater::UpdateAppItemFromSyncItem(
   if (update_folder && chrome_item->folder_id() != sync_item->parent_id) {
     VLOG(2) << " Moving Item To Folder: " << sync_item->parent_id;
     // This updates the folder in both chrome and ash:
-    MoveItemToFolder(chrome_item->id(), sync_item->parent_id);
+    SetItemFolderId(chrome_item->id(), sync_item->parent_id);
   }
 }
 

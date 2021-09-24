@@ -14,7 +14,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/android_sms/fake_android_sms_app_manager.h"
+#include "chrome/browser/ash/android_sms/fake_android_sms_app_manager.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #endif
 
@@ -58,9 +58,8 @@ TEST_F(PushMessagingNotificationManagerTest, IsTabVisibleViewSource) {
 TEST_F(PushMessagingNotificationManagerTest,
        SkipEnforceUserVisibleOnlyRequirementsForAndroidMessages) {
   GURL app_url("https://example.com/test/");
-  chromeos::android_sms::FakeAndroidSmsAppManager*
-      fake_android_sms_app_manager =
-          new chromeos::android_sms::FakeAndroidSmsAppManager();
+  auto* fake_android_sms_app_manager =
+      new ash::android_sms::FakeAndroidSmsAppManager();
   fake_android_sms_app_manager->SetInstalledAppUrl(app_url);
 
   chromeos::multidevice_setup::FakeMultiDeviceSetupClient*

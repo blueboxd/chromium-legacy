@@ -130,6 +130,9 @@ extern const char kEnableSignedExchangeSubresourcePrefetchDescription[];
 extern const char kEnableSignedExchangePrefetchCacheForNavigationsName[];
 extern const char kEnableSignedExchangePrefetchCacheForNavigationsDescription[];
 
+extern const char kU2FPermissionPromptName[];
+extern const char kU2FPermissionPromptDescription[];
+
 extern const char kU2FSecurityKeyAPIName[];
 extern const char kU2FSecurityKeyAPIDescription[];
 
@@ -232,6 +235,9 @@ extern const char kAutofillSaveAndFillVPADescription[];
 
 extern const char kAutofillSuggestVirtualCardsOnIncompleteFormName[];
 extern const char kAutofillSuggestVirtualCardsOnIncompleteFormDescription[];
+
+extern const char kAutofillUseConsistentPopupSettingsIconsName[];
+extern const char kAutofillUseConsistentPopupSettingsIconsDescription[];
 
 extern const char kAutofillUseImprovedLabelDisambiguationName[];
 extern const char kAutofillUseImprovedLabelDisambiguationDescription[];
@@ -452,13 +458,6 @@ extern const char kDesktopPWAsAdditionalWindowingControlsDescription[];
 
 extern const char kDesktopPWAsAppIconShortcutsMenuUIName[];
 extern const char kDesktopPWAsAppIconShortcutsMenuUIDescription[];
-
-extern const char kDesktopPWAsAttentionBadgingCrOSName[];
-extern const char kDesktopPWAsAttentionBadgingCrOSDescription[];
-extern const char kDesktopPWAsAttentionBadgingCrOSApiAndNotifications[];
-extern const char kDesktopPWAsAttentionBadgingCrOSApiOverridesNotifications[];
-extern const char kDesktopPWAsAttentionBadgingCrOSApiOnly[];
-extern const char kDesktopPWAsAttentionBadgingCrOSNotificationsOnly[];
 
 extern const char kDesktopPWAsPrefixAppNameInWindowTitleName[];
 extern const char kDesktopPWAsPrefixAppNameInWindowTitleDescription[];
@@ -2341,6 +2340,9 @@ extern const char kArcRtVcpuDualCoreDesc[];
 extern const char kArcRtVcpuQuadCoreName[];
 extern const char kArcRtVcpuQuadCoreDesc[];
 
+extern const char kArcUsbDeviceDefaultAttachToVmName[];
+extern const char kArcUsbDeviceDefaultAttachToVmDescription[];
+
 extern const char kArcUseHighMemoryDalvikProfileName[];
 extern const char kArcUseHighMemoryDalvikProfileDesc[];
 
@@ -2880,9 +2882,6 @@ extern const char kSchedulerConfigurationPerformance[];
 extern const char kSelectToSpeakNavigationControlName[];
 extern const char kSelectToSpeakNavigationControlDescription[];
 
-extern const char kSharesheetName[];
-extern const char kSharesheetDescription[];
-
 extern const char kChromeOSSharingHubName[];
 extern const char kChromeOSSharingHubDescription[];
 
@@ -3108,6 +3107,17 @@ extern const char kPaintPreviewDemoDescription[];
 extern const char kPaintPreviewStartupName[];
 extern const char kPaintPreviewStartupDescription[];
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+extern const char kSideSearchName[];
+extern const char kSideSearchDescription[];
+
+extern const char kSideSearchClearCacheWhenClosedName[];
+extern const char kSideSearchClearCacheWhenClosedDescription[];
+
+extern const char kSideSearchStatePerTabName[];
+extern const char kSideSearchStatePerTabDescription[];
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 extern const char kWebUITabStripName[];

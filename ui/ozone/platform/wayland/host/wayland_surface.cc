@@ -339,6 +339,14 @@ void WaylandSurface::SetOpacity(const float opacity) {
   }
 }
 
+void WaylandSurface::SetBlending(const bool use_blending) {
+  if (blending()) {
+    zcr_blending_v1_set_blending(
+        blending(), use_blending ? ZCR_BLENDING_V1_BLENDING_EQUATION_PREMULT
+                                 : ZCR_BLENDING_V1_BLENDING_EQUATION_NONE);
+  }
+}
+
 void WaylandSurface::SetViewportDestination(const gfx::Size& dest_size_px) {
   if (dest_size_px == gfx::ScaleToRoundedSize(display_size_dip_, buffer_scale_))
     return;
@@ -427,6 +435,11 @@ void WaylandSurface::RemoveEnteredOutput(uint32_t output_id) {
 
   if (root_window_)
     root_window_->OnEnteredOutputIdRemoved();
+}
+
+void WaylandSurface::SetOverlayPriority(
+    gfx::OverlayPriorityHint priority_hint) {
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 // static

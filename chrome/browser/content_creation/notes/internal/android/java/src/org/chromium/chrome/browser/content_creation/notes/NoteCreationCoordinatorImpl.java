@@ -77,11 +77,11 @@ public class NoteCreationCoordinatorImpl implements NoteCreationCoordinator, Top
         mMediator = new NoteCreationMediator(mListModel, new GoogleFontService(mActivity),
                 noteService, new ImageService(imageFetcher));
 
-        String urlDomain =
-                UrlFormatter.formatUrlForDisplayOmitSchemeOmitTrivialSubdomains(mShareUrl);
+        String urlDomain = UrlFormatter.formatUrlForDisplayOmitSchemePathAndTrivialSubdomains(
+                new GURL(mShareUrl));
         mDialog = new NoteCreationDialog();
         mDialog.initDialog(this::onViewCreated, urlDomain, title, selectedText,
-                noteService.isPublishAvailable());
+                noteService.isPublishAvailable(), this::executeAction);
     }
 
     @Override

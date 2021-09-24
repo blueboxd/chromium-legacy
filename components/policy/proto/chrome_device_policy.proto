@@ -151,11 +151,16 @@ message DeviceReportingProto {
   optional bool report_audio_status = 28 [default = true];
   optional bool report_network_configuration = 29 [default = true];
   optional bool report_network_status = 30 [default = true];
+  optional bool report_security_status = 31 [default = false];
 
   // Frequency to report device status, default to 3 hours.
   // If changed, the default value has to be updated in
   // chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.cc.
   optional int64 device_status_frequency = 9 [default = 10800000];
+
+  // This is a internal flag that will be used to control whether enable
+  // granular device reporting is enabled
+  optional bool enable_granular_reporting = 32 [default = true];
 }
 
 message EphemeralUsersEnabledProto {

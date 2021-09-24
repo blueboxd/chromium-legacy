@@ -254,6 +254,10 @@ class ConsoleSession : public DesktopSessionWin {
     DaemonProcess* daemon_process,
     int id,
     WtsTerminalMonitor* monitor);
+
+  ConsoleSession(const ConsoleSession&) = delete;
+  ConsoleSession& operator=(const ConsoleSession&) = delete;
+
   ~ConsoleSession() override;
 
  protected:
@@ -265,8 +269,6 @@ class ConsoleSession : public DesktopSessionWin {
 
  private:
   std::unique_ptr<SasInjector> sas_injector_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConsoleSession);
 };
 
 // DesktopSession implementation which attaches to virtual RDP console.
@@ -282,6 +284,10 @@ class RdpSession : public DesktopSessionWin {
     DaemonProcess* daemon_process,
     int id,
     WtsTerminalMonitor* monitor);
+
+  RdpSession(const RdpSession&) = delete;
+  RdpSession& operator=(const RdpSession&) = delete;
+
   ~RdpSession() override;
 
   // Performs the part of initialization that can fail.
@@ -304,6 +310,10 @@ class RdpSession : public DesktopSessionWin {
   class EventHandler : public IRdpDesktopSessionEventHandler {
    public:
     explicit EventHandler(base::WeakPtr<RdpSession> desktop_session);
+
+    EventHandler(const EventHandler&) = delete;
+    EventHandler& operator=(const EventHandler&) = delete;
+
     virtual ~EventHandler();
 
     // IUnknown interface.
@@ -323,8 +333,6 @@ class RdpSession : public DesktopSessionWin {
 
     // This class must be used on a single thread.
     base::ThreadChecker thread_checker_;
-
-    DISALLOW_COPY_AND_ASSIGN(EventHandler);
   };
 
   // Examines the system settings required to establish an RDP session.
@@ -344,8 +352,6 @@ class RdpSession : public DesktopSessionWin {
   std::string terminal_id_;
 
   base::WeakPtrFactory<RdpSession> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RdpSession);
 };
 
 ConsoleSession::ConsoleSession(
@@ -713,21 +719,10 @@ void DesktopSessionWin::OnChannelConnected(int32_t peer_pid) {
 bool DesktopSessionWin::OnMessageReceived(const IPC::Message& message) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(DesktopSessionWin, message)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopDaemonMsg_DesktopAttached,
-                        OnDesktopSessionAgentAttached)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopDaemonMsg_InjectSas,
-                        InjectSas)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
+  LOG(ERROR) << "Received unexpected IPC type: " << message.type();
+  CrashDesktopProcess(FROM_HERE);
 
-  if (!handled) {
-    LOG(ERROR) << "Received unexpected IPC type: " << message.type();
-    CrashDesktopProcess(FROM_HERE);
-  }
-
-  return handled;
+  return false;
 }
 
 void DesktopSessionWin::OnPermanentError(int exit_code) {
@@ -737,6 +732,26 @@ void DesktopSessionWin::OnPermanentError(int exit_code) {
 }
 
 void DesktopSessionWin::OnWorkerProcessStopped() {}
+
+void DesktopSessionWin::OnAssociatedInterfaceRequest(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  if (interface_name == mojom::DesktopSessionRequestHandler::Name_) {
+    if (desktop_session_request_handler_.is_bound()) {
+      LOG(ERROR) << "Receiver already bound for associated interface: "
+                 << mojom::DesktopSessionRequestHandler::Name_;
+      CrashDesktopProcess(FROM_HERE);
+    }
+
+    mojo::PendingAssociatedReceiver<mojom::DesktopSessionRequestHandler>
+        pending_receiver(std::move(handle));
+    desktop_session_request_handler_.Bind(std::move(pending_receiver));
+  } else {
+    LOG(ERROR) << "Unknown associated interface requested: " << interface_name
+               << ", crashing the desktop process";
+    CrashDesktopProcess(FROM_HERE);
+  }
+}
 
 void DesktopSessionWin::OnSessionAttached(uint32_t session_id) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
@@ -794,6 +809,7 @@ void DesktopSessionWin::OnSessionDetached() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   launcher_.reset();
+  desktop_session_request_handler_.reset();
   session_id_ = UINT32_MAX;
 
   if (monitoring_notifications_) {
@@ -805,12 +821,22 @@ void DesktopSessionWin::OnSessionDetached() {
   }
 }
 
-void DesktopSessionWin::OnDesktopSessionAgentAttached(
-      const IPC::ChannelHandle& desktop_pipe) {
-  if (!daemon_process()->OnDesktopSessionAgentAttached(id(), session_id_,
-                                                       desktop_pipe)) {
+void DesktopSessionWin::ConnectDesktopChannel(
+    mojo::ScopedMessagePipeHandle desktop_pipe) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  if (!daemon_process()->OnDesktopSessionAgentAttached(
+          id(), session_id_, desktop_pipe.release())) {
     CrashDesktopProcess(FROM_HERE);
   }
+}
+
+void DesktopSessionWin::InjectSecureAttentionSequence() {
+  InjectSas();
+}
+
+void DesktopSessionWin::CrashNetworkProcess() {
+  daemon_process()->CrashNetworkProcess(FROM_HERE);
 }
 
 void DesktopSessionWin::CrashDesktopProcess(const base::Location& location) {

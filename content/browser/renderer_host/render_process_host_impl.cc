@@ -1326,19 +1326,6 @@ bool PrepareToAddNewPluginExceptions(int process_id) {
   return true;  // success
 }
 
-void AddAllowedRequestInitiatorForPluginOnUIThread(
-    int process_id,
-    const url::Origin& allowed_request_initiator) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!PrepareToAddNewPluginExceptions(process_id))
-    return;
-
-  GetPluginExceptionsForNetworkService()[process_id]
-      .allowed_request_initiators.insert(allowed_request_initiator);
-  GetNetworkService()->AddAllowedRequestInitiatorForPlugin(
-      process_id, allowed_request_initiator);
-}
-
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 static constexpr size_t kUnknownPlatformProcessLimit = 0;
 
@@ -1736,13 +1723,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   if (!GetBrowserContext()->IsOffTheRecord() &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache)) {
-    if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
-      CacheShaderInfo(GetID(), storage_partition_impl_->GetPath());
-    } else {
-      GetIOThreadTaskRunner({})->PostTask(
-          FROM_HERE, base::BindOnce(&CacheShaderInfo, GetID(),
-                                    storage_partition_impl_->GetPath()));
-    }
+    CacheShaderInfo(GetID(), storage_partition_impl_->GetPath());
   }
 
   // This instance of PushMessagingManager is only used from clients
@@ -1759,12 +1740,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   const int id = GetID();
   const uint64_t tracing_id =
       ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(id);
-  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
-                         ? GetUIThreadTaskRunner({})
-                         : GetIOThreadTaskRunner({});
   gpu_client_.reset(
       new viz::GpuClient(std::make_unique<BrowserGpuClientDelegate>(), id,
-                         tracing_id, task_runner));
+                         tracing_id, GetUIThreadTaskRunner({})));
 }
 
 // static
@@ -1849,23 +1827,11 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache)) {
-    if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
-      RemoveShaderInfo(GetID());
-    } else {
-      GetIOThreadTaskRunner({})->PostTask(
-          FROM_HERE, base::BindOnce(&RemoveShaderInfo, GetID()));
-    }
+    RemoveShaderInfo(GetID());
   }
 
   if (cleanup_network_service_plugin_exceptions_upon_destruction_)
     RemoveNetworkServicePluginExceptions(GetID());
-
-
-  // Manually delete here in order to avoid DeleteOnIOThread trait when
-  // kProcessHostOnUI is enabled.
-  DCHECK(gpu_client_);
-  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI))
-    delete gpu_client_.release();
 
   // "Cleanup in progress"
   TRACE_EVENT_END("shutdown", perfetto::Track::FromPointer(this),
@@ -2347,13 +2313,15 @@ bool RenderProcessHostImpl::IsProcessShutdownDelayedForTesting() {
 void RenderProcessHostImpl::AddAllowedRequestInitiatorForPlugin(
     int process_id,
     const url::Origin& allowed_request_initiator) {
-  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
-                          ? BrowserThread::UI
-                          : BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&AddAllowedRequestInitiatorForPluginOnUIThread,
-                                process_id, allowed_request_initiator));
+  if (!PrepareToAddNewPluginExceptions(process_id))
+    return;
+
+  GetPluginExceptionsForNetworkService()[process_id]
+      .allowed_request_initiators.insert(allowed_request_initiator);
+  GetNetworkService()->AddAllowedRequestInitiatorForPlugin(
+      process_id, allowed_request_initiator);
 }
 
 void RenderProcessHostImpl::
@@ -2426,6 +2394,8 @@ void RenderProcessHostImpl::WriteIntoTrace(
                                      FieldMetadata_BrowserContext>());
   }
 
+  // Pid() can be called only on valid process, so we should check for this
+  // before accessing it.
   // TODO(ssid): Consider moving this to ChildProcessLauncher proto field.
   if (child_process_launcher_) {
     const base::Process& process = child_process_launcher_->GetProcess();
@@ -2551,17 +2521,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&FileSystemManagerImpl::BindReceiver,
                           base::Unretained(file_system_manager_impl_.get())));
 
-  // |gpu_client_| outlives the registry, because its destruction is posted to
-  // IO thread from the destructor of |this|.
-  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
-    AddUIThreadInterface(
-        registry.get(),
-        base::BindRepeating(&viz::GpuClient::Add,
-                            base::Unretained(gpu_client_.get())));
-  } else {
-    registry->AddInterface(base::BindRepeating(
-        &viz::GpuClient::Add, base::Unretained(gpu_client_.get())));
-  }
+  AddUIThreadInterface(
+      registry.get(), base::BindRepeating(&viz::GpuClient::Add,
+                                          base::Unretained(gpu_client_.get())));
 
   registry->AddInterface(
       base::BindRepeating(&GpuDataManagerImpl::BindReceiver));

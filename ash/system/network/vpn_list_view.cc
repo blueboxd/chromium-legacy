@@ -162,6 +162,9 @@ class VPNListProviderEntry : public views::View {
     tri_view->AddView(TriView::Container::END, add_vpn_button);
   }
 
+  VPNListProviderEntry(const VPNListProviderEntry&) = delete;
+  VPNListProviderEntry& operator=(const VPNListProviderEntry&) = delete;
+
   // views::View:
   const char* GetClassName() const override { return "VPNListProviderEntry"; }
 
@@ -200,8 +203,6 @@ class VPNListProviderEntry : public views::View {
   }
 
   VpnProviderPtr vpn_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(VPNListProviderEntry);
 };
 
 // A list entry that represents a network. If the network is currently
@@ -431,7 +432,8 @@ void VPNListView::AddProviderAndNetworks(VpnProviderPtr vpn_provider,
                                          const NetworkStateList& networks) {
   // Add a visual separator, unless this is the topmost entry in the list.
   if (!list_empty_) {
-    scroll_content()->AddChildView(CreateListSubHeaderSeparator());
+    scroll_content()->AddChildView(
+        TrayPopupUtils::CreateListSubHeaderSeparator());
   }
   std::string vpn_name =
       vpn_provider->type == VpnType::kOpenVPN

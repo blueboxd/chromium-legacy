@@ -12,10 +12,6 @@
 #include "chromecast/common/cast_content_client.h"
 #include "content/public/app/content_main_delegate.h"
 
-namespace base {
-class FieldTrialList;
-}  // namespace base
-
 namespace content {
 class BrowserMainRunner;
 }  // namespace content
@@ -35,6 +31,10 @@ class CastContentUtilityClient;
 class CastMainDelegate : public content::ContentMainDelegate {
  public:
   CastMainDelegate();
+
+  CastMainDelegate(const CastMainDelegate&) = delete;
+  CastMainDelegate& operator=(const CastMainDelegate&) = delete;
+
   ~CastMainDelegate() override;
 
   // content::ContentMainDelegate implementation:
@@ -68,15 +68,7 @@ class CastMainDelegate : public content::ContentMainDelegate {
   std::unique_ptr<content::BrowserMainRunner> browser_runner_;
 #endif  // defined(OS_ANDROID)
 
-  // |field_trial_list_| is a singleton-like that needs to live for as long as
-  // anything uses it. It is accessible through |FieldTrialList| static methods,
-  // but gives no warning if those methods are called without some instance
-  // existing somewhere.
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
-
   std::unique_ptr<CastFeatureListCreator> cast_feature_list_creator_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastMainDelegate);
 };
 
 }  // namespace shell

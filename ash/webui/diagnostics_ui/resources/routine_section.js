@@ -335,6 +335,7 @@ Polymer({
         TestSuiteStatus.kCompleted;
     this.routineStartTimeMs_ = -1;
     this.runTestsButtonText = loadTimeData.getString('runAgainButtonText');
+    this.getResultListElem_().resetIgnoreStatusUpdatesFlag();
     this.cleanUp_();
     if (status === ExecutionProgress.kCancelled) {
       this.badgeText_ = loadTimeData.getString('testStoppedBadgeText');
@@ -351,6 +352,10 @@ Polymer({
    * @private
    */
   handleRunningRoutineStatus_(status, resultListElem) {
+    if (this.ignoreRoutineStatusUpdates) {
+      return;
+    }
+
     if (status.result && status.result.powerResult) {
       this.powerRoutineResult_ = status.result.powerResult;
     }
@@ -599,6 +604,7 @@ Polymer({
     this.currentTestName_ = '';
     this.executionStatus_ = ExecutionProgress.kNotStarted;
     this.$.collapse.hide();
+    this.ignoreRoutineStatusUpdates = false;
   },
 
   /**

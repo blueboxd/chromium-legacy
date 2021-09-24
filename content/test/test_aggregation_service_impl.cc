@@ -10,13 +10,16 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/thread_pool.h"
+#include "base/time/clock.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "content/browser/aggregation_service/aggregatable_report_sender.h"
-#include "content/browser/aggregation_service/aggregation_service_storage.h"
+#include "content/browser/aggregation_service/aggregation_service_storage_sql.h"
 #include "content/browser/aggregation_service/public_key.h"
 #include "content/browser/aggregation_service/public_key_parsing_utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -25,11 +28,15 @@
 
 namespace content {
 
-TestAggregationServiceImpl::TestAggregationServiceImpl()
-    : storage_(base::SequenceBound<AggregationServiceStorage>(
-          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}))),
-      sender_(std::make_unique<AggregatableReportSender>(
-          /*storage_partition=*/nullptr)) {}
+TestAggregationServiceImpl::TestAggregationServiceImpl(const base::Clock* clock)
+    : clock_(*clock),
+      storage_(base::SequenceBound<AggregationServiceStorageSql>(
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}),
+          /*run_in_memory=*/true,
+          /*path_to_database=*/base::FilePath(),
+          clock)) {
+  DCHECK(clock);
+}
 
 TestAggregationServiceImpl::~TestAggregationServiceImpl() = default;
 
@@ -53,10 +60,11 @@ void TestAggregationServiceImpl::SetPublicKeys(
     return;
   }
 
-  content::PublicKeysForOrigin keys(
-      origin, content::aggregation_service::GetPublicKeys(*value_ptr));
+  PublicKeyset keyset(aggregation_service::GetPublicKeys(*value_ptr),
+                      /*fetch_time=*/clock_.Now(),
+                      /*expiry_time=*/base::Time::Max());
   storage_.AsyncCall(&AggregationServiceKeyStorage::SetPublicKeys)
-      .WithArgs(std::move(keys))
+      .WithArgs(origin, std::move(keyset))
       .Then(base::BindOnce(std::move(callback), true));
 }
 
@@ -82,7 +90,7 @@ void TestAggregationServiceImpl::SendReport(
 
 void TestAggregationServiceImpl::GetPublicKeys(
     const url::Origin& origin,
-    base::OnceCallback<void(PublicKeysForOrigin)> callback) const {
+    base::OnceCallback<void(std::vector<PublicKey>)> callback) const {
   storage_.AsyncCall(&AggregationServiceKeyStorage::GetPublicKeys)
       .WithArgs(origin)
       .Then(std::move(callback));

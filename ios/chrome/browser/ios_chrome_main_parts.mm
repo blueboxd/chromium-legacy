@@ -6,7 +6,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/base_switches.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -367,11 +366,8 @@ void IOSChromeMainParts::SetupFieldTrials() {
 
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization.
-  // TODO(crbug.com/1249496): Remove |field_trial_list_| data member.
-  DCHECK(!field_trial_list_);
   application_context_->GetMetricsServicesManager()
       ->InstantiateFieldTrialList();
-  field_trial_list_.reset(base::FieldTrialList::GetInstance());
 
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
 
@@ -381,14 +377,8 @@ void IOSChromeMainParts::SetupFieldTrials() {
   std::vector<std::string> variation_ids =
       RegisterAllFeatureVariationParameters(&flags_storage, feature_list.get());
 
-  // On iOS, GPU benchmarking is not supported. So, pass in a dummy value for
-  // the name of the switch that enables gpu benchmarking.
-  // TODO(crbug.com/988603): This should also set up extra switch-dependent
-  // feature overrides.
   application_context_->GetVariationsService()->SetupFieldTrials(
-      "dummy-enable-gpu-benchmarking", switches::kEnableFeatures,
-      switches::kDisableFeatures, variation_ids,
-      std::vector<base::FeatureList::FeatureOverrideInfo>(),
+      variation_ids, std::vector<base::FeatureList::FeatureOverrideInfo>(),
       std::move(feature_list), &ios_field_trials_);
 }
 

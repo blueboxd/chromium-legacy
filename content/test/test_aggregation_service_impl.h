@@ -6,12 +6,17 @@
 #define CONTENT_TEST_TEST_AGGREGATION_SERVICE_IMPL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/threading/sequence_bound.h"
 #include "content/browser/aggregation_service/aggregatable_report_manager.h"
 #include "content/browser/aggregation_service/aggregation_service_key_storage.h"
 #include "content/public/test/test_aggregation_service.h"
+
+namespace base {
+class Clock;
+}  // namespace base
 
 namespace url {
 class Origin;
@@ -21,13 +26,15 @@ namespace content {
 
 class AggregatableReportSender;
 
-struct PublicKeysForOrigin;
+struct PublicKey;
 
 // Implementation class of a test aggregation service.
 class TestAggregationServiceImpl : public AggregatableReportManager,
                                    public TestAggregationService {
  public:
-  TestAggregationServiceImpl();
+  // `clock` must be a non-null pointer to TestAggregationServiceImpl that is
+  // valid as long as this object.
+  explicit TestAggregationServiceImpl(const base::Clock* clock);
   TestAggregationServiceImpl(const TestAggregationServiceImpl& other) = delete;
   TestAggregationServiceImpl& operator=(
       const TestAggregationServiceImpl& other) = delete;
@@ -49,9 +56,11 @@ class TestAggregationServiceImpl : public AggregatableReportManager,
 
   void GetPublicKeys(
       const url::Origin& origin,
-      base::OnceCallback<void(PublicKeysForOrigin)> callback) const;
+      base::OnceCallback<void(std::vector<PublicKey>)> callback) const;
 
  private:
+  const base::Clock& clock_;
+
   base::SequenceBound<AggregationServiceKeyStorage> storage_;
   std::unique_ptr<AggregatableReportSender> sender_;
 };

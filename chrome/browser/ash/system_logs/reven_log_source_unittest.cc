@@ -28,10 +28,6 @@ namespace {
 namespace healthd = ::chromeos::cros_healthd::mojom;
 constexpr char kRevenLogKey[] = "CLOUDREADY_HARDWARE_INFO";
 
-constexpr char kBluetoothAdapterNameKey[] = "bluetooth_adapter_name";
-constexpr char kBluetoothAdapterNameVal[] = "BlueZ 5.54";
-constexpr char kPoweredKey[] = "powered";
-
 constexpr char kCpuNameKey[] = "cpu_name";
 constexpr char kCpuNameVal[] = "Intel(R) Core(TM) i5-10210U CPU @ 1.60GHz";
 
@@ -41,27 +37,6 @@ constexpr char kAvailableMemoryKey[] = "available_memory_kib";
 constexpr int kTotalMemory = 2048;
 constexpr int kFreeMemory = 1024;
 constexpr int kAvailableMemory = 512;
-
-void SetBluetoothAdapterInfo(healthd::TelemetryInfoPtr& telemetry_info,
-                             bool powered) {
-  auto adapter_info = healthd::BluetoothAdapterInfo::New();
-  adapter_info->name = kBluetoothAdapterNameVal;
-  adapter_info->powered = powered;
-
-  std::vector<healthd::BluetoothAdapterInfoPtr> adapters;
-  adapters.push_back(std::move(adapter_info));
-
-  telemetry_info->bluetooth_result =
-      healthd::BluetoothResult::NewBluetoothAdapterInfo(std::move(adapters));
-}
-
-void SetBluetoothAdapterInfoWithProbeError(
-    healthd::TelemetryInfoPtr& telemetry_info) {
-  auto probe_error =
-      healthd::ProbeError::New(healthd::ErrorType::kFileReadError, "");
-  telemetry_info->bluetooth_result =
-      healthd::BluetoothResult::NewError(std::move(probe_error));
-}
 
 void SetCpuInfo(healthd::TelemetryInfoPtr& telemetry_info) {
   auto cpu_info = healthd::CpuInfo::New();
@@ -176,6 +151,29 @@ void SetPciWirelessDevices(healthd::TelemetryInfoPtr& telemetry_info) {
       healthd::BusResult::NewBusDevices(std::move(bus_devices));
 }
 
+void SetPciBluetoothDevices(healthd::TelemetryInfoPtr& telemetry_info) {
+  std::vector<healthd::BusDevicePtr> bus_devices;
+  bus_devices.push_back(CreatePciDevice(
+      healthd::BusDeviceClass::kBluetoothAdapter, "intel", "bluetooth_product1",
+      "bluetooth_driver1", 0x12ab, 0x34cd));
+  bus_devices.push_back(
+      CreatePciDevice(healthd::BusDeviceClass::kBluetoothAdapter, "broadcom",
+                      "bluetooth_product2", "", 0x56ab, 0x78cd));
+
+  telemetry_info->bus_result =
+      healthd::BusResult::NewBusDevices(std::move(bus_devices));
+}
+
+void SetPciDisplayDevices(healthd::TelemetryInfoPtr& telemetry_info) {
+  std::vector<healthd::BusDevicePtr> bus_devices;
+  bus_devices.push_back(
+      CreatePciDevice(healthd::BusDeviceClass::kDisplayController, "intel",
+                      "945GM", "driver1", 0x12ab, 0x34cd));
+
+  telemetry_info->bus_result =
+      healthd::BusResult::NewBusDevices(std::move(bus_devices));
+}
+
 healthd::BusDevicePtr CreateUsbDevice(healthd::BusDeviceClass device_class,
                                       const std::string& vendor_name,
                                       const std::string& product_name,
@@ -225,6 +223,61 @@ void SetUsbWirelessDevices(healthd::TelemetryInfoPtr& telemetry_info) {
       healthd::BusResult::NewBusDevices(std::move(bus_devices));
 }
 
+void SetUsbBluetoothDevices(healthd::TelemetryInfoPtr& telemetry_info) {
+  std::vector<healthd::BusDevicePtr> bus_devices;
+  bus_devices.push_back(CreateUsbDevice(
+      healthd::BusDeviceClass::kBluetoothAdapter, "intel", "bluetooth_product1",
+      "bluetooth_driver1", 0x12ab, 0x34cd));
+  bus_devices.push_back(
+      CreateUsbDevice(healthd::BusDeviceClass::kBluetoothAdapter, "broadcom",
+                      "bluetooth_product2", "", 0x56ab, 0x78cd));
+
+  telemetry_info->bus_result =
+      healthd::BusResult::NewBusDevices(std::move(bus_devices));
+}
+
+void SetUsbDisplayDevices(healthd::TelemetryInfoPtr& telemetry_info) {
+  std::vector<healthd::BusDevicePtr> bus_devices;
+  bus_devices.push_back(
+      CreateUsbDevice(healthd::BusDeviceClass::kDisplayController, "intel",
+                      "product1", "driver1", 0x12ab, 0x34cd));
+  telemetry_info->bus_result =
+      healthd::BusResult::NewBusDevices(std::move(bus_devices));
+}
+
+void SetTpmInfo(healthd::TelemetryInfoPtr& telemetry_info,
+                const std::string& did_vid,
+                uint32_t family,
+                bool is_owned,
+                bool is_allowed) {
+  auto version = healthd::TpmVersion::New();
+  version->family = family;
+  version->manufacturer = 1129467731;
+  version->spec_level = 116;
+
+  auto status = healthd::TpmStatus::New();
+  status->owned = is_owned;
+
+  auto dictionary_attack = healthd::TpmDictionaryAttack::New();
+  auto attestation = healthd::TpmAttestation::New();
+
+  auto supported_features = healthd::TpmSupportedFeatures::New();
+  supported_features->is_allowed = is_allowed;
+
+  healthd::TpmInfoPtr tpm_info = healthd::TpmInfo::New();
+  if (did_vid != "")
+    tpm_info->did_vid = absl::optional<std::string>(did_vid);
+
+  tpm_info->version = std::move(version);
+  tpm_info->status = std::move(status);
+  tpm_info->dictionary_attack = std::move(dictionary_attack);
+  tpm_info->attestation = std::move(attestation);
+  tpm_info->supported_features = std::move(supported_features);
+
+  telemetry_info->tpm_result =
+      healthd::TpmResult::NewTpmInfo(std::move(tpm_info));
+}
+
 }  // namespace
 
 class RevenLogSourceTest : public ::testing::Test {
@@ -256,6 +309,14 @@ class RevenLogSourceTest : public ::testing::Test {
     return result;
   }
 
+  void VerifyOutputContains(std::unique_ptr<SystemLogsResponse> response,
+                            const std::string& expected_output) {
+    ASSERT_NE(response, nullptr);
+    const auto revenlog_iter = response->find(kRevenLogKey);
+    ASSERT_NE(revenlog_iter, response->end());
+    EXPECT_THAT(revenlog_iter->second, HasSubstr(expected_output));
+  }
+
   void VerifyBiosBootMode(healthd::BootMode boot_mode,
                           const std::string& expected) {
     auto info = healthd::TelemetryInfo::New();
@@ -274,60 +335,40 @@ class RevenLogSourceTest : public ::testing::Test {
     EXPECT_THAT(revenlog_iter->second, HasSubstr(expected));
   }
 
+  void VerifyTpmInfo(uint32_t version,
+                     const std::string& expected_version,
+                     const std::string& did_vid,
+                     const std::string& expected_did_vid,
+                     bool is_owned,
+                     bool is_allowed) {
+    auto info = healthd::TelemetryInfo::New();
+    SetTpmInfo(info, did_vid, version, is_owned, is_allowed);
+    ash::cros_healthd::FakeCrosHealthdClient::Get()
+        ->SetProbeTelemetryInfoResponseForTesting(info);
+
+    std::unique_ptr<SystemLogsResponse> response = Fetch();
+    ASSERT_NE(response, nullptr);
+    const auto revenlog_iter = response->find(kRevenLogKey);
+    ASSERT_NE(revenlog_iter, response->end());
+
+    EXPECT_THAT(revenlog_iter->second, HasSubstr("tpm_info:"));
+    EXPECT_THAT(revenlog_iter->second, HasSubstr(expected_version));
+    EXPECT_THAT(revenlog_iter->second, HasSubstr("\n  spec_level: 116"));
+    EXPECT_THAT(revenlog_iter->second,
+                HasSubstr("\n  manufacturer: 1129467731"));
+    EXPECT_THAT(
+        revenlog_iter->second,
+        HasSubstr(is_owned ? "\n  tpm_owned: true" : "\n  tpm_owned: false"));
+    EXPECT_THAT(revenlog_iter->second,
+                HasSubstr(is_allowed ? "\n  tpm_allow_listed: true"
+                                     : "\n  tpm_allow_listed: false"));
+  }
+
  protected:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<RevenLogSource> source_;
 };
-
-TEST_F(RevenLogSourceTest, FetchBluetoothAdapterInfoSuccessPowerOn) {
-  auto info = healthd::TelemetryInfo::New();
-  SetBluetoothAdapterInfo(info, /* powered = */ true);
-  ash::cros_healthd::FakeCrosHealthdClient::Get()
-      ->SetProbeTelemetryInfoResponseForTesting(info);
-
-  std::unique_ptr<SystemLogsResponse> response = Fetch();
-  ASSERT_NE(response, nullptr);
-  const auto revenlog_iter = response->find(kRevenLogKey);
-  ASSERT_NE(revenlog_iter, response->end());
-
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("bluetooth_adapter_name: BlueZ 5.54"));
-  EXPECT_THAT(revenlog_iter->second, HasSubstr("powered: on"));
-}
-
-TEST_F(RevenLogSourceTest, FetchBluetoothAdapterInfoSuccessPowerOff) {
-  auto info = healthd::TelemetryInfo::New();
-  SetBluetoothAdapterInfo(info, /* powered = */ false);
-  ash::cros_healthd::FakeCrosHealthdClient::Get()
-      ->SetProbeTelemetryInfoResponseForTesting(info);
-
-  std::unique_ptr<SystemLogsResponse> response = Fetch();
-  ASSERT_NE(response, nullptr);
-  const auto revenlog_iter = response->find(kRevenLogKey);
-  ASSERT_NE(revenlog_iter, response->end());
-
-  EXPECT_THAT(revenlog_iter->second, HasSubstr("bluetoothinfo:\n"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  bluetooth_adapter_name: BlueZ 5.54"));
-  EXPECT_THAT(revenlog_iter->second, HasSubstr("\n  powered: off"));
-}
-
-TEST_F(RevenLogSourceTest, FetchBluetoothAdapterInfoFailure) {
-  auto info = healthd::TelemetryInfo::New();
-  SetBluetoothAdapterInfoWithProbeError(info);
-  ash::cros_healthd::FakeCrosHealthdClient::Get()
-      ->SetProbeTelemetryInfoResponseForTesting(info);
-
-  std::unique_ptr<SystemLogsResponse> response = Fetch();
-  ASSERT_NE(response, nullptr);
-  const auto revenlog_iter = response->find(kRevenLogKey);
-  ASSERT_NE(revenlog_iter, response->end());
-
-  EXPECT_EQ(revenlog_iter->second.find(kBluetoothAdapterNameKey),
-            std::string::npos);
-  EXPECT_EQ(revenlog_iter->second.find(kPoweredKey), std::string::npos);
-}
 
 TEST_F(RevenLogSourceTest, FetchCpuInfoSuccess) {
   auto info = healthd::TelemetryInfo::New();
@@ -366,16 +407,11 @@ TEST_F(RevenLogSourceTest, FetchMemoryInfoSuccess) {
   ash::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetProbeTelemetryInfoResponseForTesting(info);
 
-  std::unique_ptr<SystemLogsResponse> response = Fetch();
-  ASSERT_NE(response, nullptr);
-  const auto revenlog_iter = response->find(kRevenLogKey);
-  ASSERT_NE(revenlog_iter, response->end());
-
-  EXPECT_THAT(revenlog_iter->second, HasSubstr("meminfo:\n"));
-  EXPECT_THAT(revenlog_iter->second, HasSubstr("\n  total_memory_kib: 2048"));
-  EXPECT_THAT(revenlog_iter->second, HasSubstr("\n  free_memory_kib: 1024"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  available_memory_kib: 512"));
+  std::string expected_output = R"(meminfo:
+  total_memory_kib: 2048
+  free_memory_kib: 1024
+  available_memory_kib: 512)";
+  VerifyOutputContains(Fetch(), expected_output);
 }
 
 TEST_F(RevenLogSourceTest, FetchMemoryInfoFailure) {
@@ -460,29 +496,36 @@ TEST_F(RevenLogSourceTest, PciEthernetDevices) {
   ash::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetProbeTelemetryInfoResponseForTesting(info);
 
-  std::unique_ptr<SystemLogsResponse> response = Fetch();
-  ASSERT_NE(response, nullptr);
-  const auto revenlog_iter = response->find(kRevenLogKey);
-  ASSERT_NE(revenlog_iter, response->end());
+  std::string expected_output = R"(ethernet_adapter_info:
+  ethernet_adapter_name: intel product1
+  ethernet_adapter_id: 12ab:34cd
+  ethernet_adapter_bus: pci
+  ethernet_adapter_driver: driver1
 
-  EXPECT_THAT(revenlog_iter->second, HasSubstr("ethernet_adapter_info:"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_name: intel product1"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_id: 12ab:34cd"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_bus: pci"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_driver: driver1"));
+  ethernet_adapter_name: broadcom product2
+  ethernet_adapter_id: 56ab:78cd
+  ethernet_adapter_bus: pci
+  ethernet_adapter_driver: )";
+  VerifyOutputContains(Fetch(), expected_output);
+}
 
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_name: broadcom product2"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_id: 56ab:78cd"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_bus: pci"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_driver: \n"));
+TEST_F(RevenLogSourceTest, PciBluetoothDevices) {
+  auto info = healthd::TelemetryInfo::New();
+  SetPciBluetoothDevices(info);
+  ash::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetProbeTelemetryInfoResponseForTesting(info);
+
+  std::string expected_output = R"(bluetooth_adapter_info:
+  bluetooth_adapter_name: intel bluetooth_product1
+  bluetooth_adapter_id: 12ab:34cd
+  bluetooth_adapter_bus: pci
+  bluetooth_adapter_driver: bluetooth_driver1
+
+  bluetooth_adapter_name: broadcom bluetooth_product2
+  bluetooth_adapter_id: 56ab:78cd
+  bluetooth_adapter_bus: pci
+  bluetooth_adapter_driver: )";
+  VerifyOutputContains(Fetch(), expected_output);
 }
 
 TEST_F(RevenLogSourceTest, PciWirelessDevices) {
@@ -491,30 +534,31 @@ TEST_F(RevenLogSourceTest, PciWirelessDevices) {
   ash::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetProbeTelemetryInfoResponseForTesting(info);
 
-  std::unique_ptr<SystemLogsResponse> response = Fetch();
-  ASSERT_NE(response, nullptr);
-  const auto revenlog_iter = response->find(kRevenLogKey);
-  ASSERT_NE(revenlog_iter, response->end());
+  std::string expected_output = R"(wireless_adapter_info:
+  wireless_adapter_name: intel wireless_product1
+  wireless_adapter_id: 12ab:34cd
+  wireless_adapter_bus: pci
+  wireless_adapter_driver: wireless_driver1
 
-  EXPECT_THAT(revenlog_iter->second, HasSubstr("wireless_adapter_info:"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  wireless_adapter_name: intel wireless_product1"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  wireless_adapter_id: 56ab:78cd"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  wireless_adapter_bus: pci"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  wireless_adapter_driver: wireless_driver1"));
+  wireless_adapter_name: broadcom wireless_product2
+  wireless_adapter_id: 56ab:78cd
+  wireless_adapter_bus: pci
+  wireless_adapter_driver: )";
+  VerifyOutputContains(Fetch(), expected_output);
+}
 
-  EXPECT_THAT(
-      revenlog_iter->second,
-      HasSubstr("\n  wireless_adapter_name: broadcom wireless_product2"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  wireless_adapter_id: 56ab:78cd"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  wireless_adapter_bus: pci"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  wireless_adapter_driver: \n"));
+TEST_F(RevenLogSourceTest, PciGpuInfo) {
+  auto info = healthd::TelemetryInfo::New();
+  SetPciDisplayDevices(info);
+  ash::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetProbeTelemetryInfoResponseForTesting(info);
+
+  std::string expected_output = R"(gpu_info:
+  gpu_name: intel 945GM
+  gpu_id: 12ab:34cd
+  gpu_bus: pci
+  gpu_driver: driver1)";
+  VerifyOutputContains(Fetch(), expected_output);
 }
 
 TEST_F(RevenLogSourceTest, UsbEthernetDevices) {
@@ -523,29 +567,17 @@ TEST_F(RevenLogSourceTest, UsbEthernetDevices) {
   ash::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetProbeTelemetryInfoResponseForTesting(info);
 
-  std::unique_ptr<SystemLogsResponse> response = Fetch();
-  ASSERT_NE(response, nullptr);
-  const auto revenlog_iter = response->find(kRevenLogKey);
-  ASSERT_NE(revenlog_iter, response->end());
+  std::string expected_output = R"(ethernet_adapter_info:
+  ethernet_adapter_name: intel product1
+  ethernet_adapter_id: 12ab:34cd
+  ethernet_adapter_bus: usb
+  ethernet_adapter_driver: driver1
 
-  EXPECT_THAT(revenlog_iter->second, HasSubstr("ethernet_adapter_info:"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_name: intel product1"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_id: 12ab:34cd"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_bus: usb"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_driver: driver1"));
-
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_name: broadcom product2"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_id: 56ab:78cd"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_bus: usb"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  ethernet_adapter_driver: \n"));
+  ethernet_adapter_name: broadcom product2
+  ethernet_adapter_id: 56ab:78cd
+  ethernet_adapter_bus: usb
+  ethernet_adapter_driver: )";
+  VerifyOutputContains(Fetch(), expected_output);
 }
 
 TEST_F(RevenLogSourceTest, UsbWirelessDevices) {
@@ -554,30 +586,72 @@ TEST_F(RevenLogSourceTest, UsbWirelessDevices) {
   ash::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetProbeTelemetryInfoResponseForTesting(info);
 
-  std::unique_ptr<SystemLogsResponse> response = Fetch();
-  ASSERT_NE(response, nullptr);
-  const auto revenlog_iter = response->find(kRevenLogKey);
-  ASSERT_NE(revenlog_iter, response->end());
+  std::string expected_output = R"(wireless_adapter_info:
+  wireless_adapter_name: intel wireless_product1
+  wireless_adapter_id: 12ab:34cd
+  wireless_adapter_bus: usb
+  wireless_adapter_driver: wireless_driver1
 
-  EXPECT_THAT(revenlog_iter->second, HasSubstr("wireless_adapter_info:"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  wireless_adapter_name: intel wireless_product1"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  wireless_adapter_id: 12ab:34cd"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  wireless_adapter_bus: usb"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  wireless_adapter_driver: wireless_driver1"));
+  wireless_adapter_name: broadcom wireless_product2
+  wireless_adapter_id: 56ab:78cd
+  wireless_adapter_bus: usb
+  wireless_adapter_driver: )";
+  VerifyOutputContains(Fetch(), expected_output);
+}
 
-  EXPECT_THAT(
-      revenlog_iter->second,
-      HasSubstr("\n  wireless_adapter_name: broadcom wireless_product2"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  wireless_adapter_id: 56ab:78cd"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  wireless_adapter_bus: usb"));
-  EXPECT_THAT(revenlog_iter->second,
-              HasSubstr("\n  wireless_adapter_driver: \n"));
+TEST_F(RevenLogSourceTest, UsbBluetoothDevices) {
+  auto info = healthd::TelemetryInfo::New();
+  SetUsbBluetoothDevices(info);
+  ash::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetProbeTelemetryInfoResponseForTesting(info);
+
+  std::string expected_output = R"(bluetooth_adapter_info:
+  bluetooth_adapter_name: intel bluetooth_product1
+  bluetooth_adapter_id: 12ab:34cd
+  bluetooth_adapter_bus: usb
+  bluetooth_adapter_driver: bluetooth_driver1
+
+  bluetooth_adapter_name: broadcom bluetooth_product2
+  bluetooth_adapter_id: 56ab:78cd
+  bluetooth_adapter_bus: usb
+  bluetooth_adapter_driver: )";
+  VerifyOutputContains(Fetch(), expected_output);
+}
+
+TEST_F(RevenLogSourceTest, UsbGpuInfo) {
+  auto info = healthd::TelemetryInfo::New();
+  SetUsbDisplayDevices(info);
+  ash::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetProbeTelemetryInfoResponseForTesting(info);
+
+  std::string expected_output = R"(gpu_info:
+  gpu_name: intel product1
+  gpu_id: 12ab:34cd
+  gpu_bus: usb
+  gpu_driver: driver1)";
+  VerifyOutputContains(Fetch(), expected_output);
+}
+
+TEST_F(RevenLogSourceTest, TpmInfoVersion_1_2WithDidVid_Owned_Allowed) {
+  VerifyTpmInfo(0x312e3200, "\n  tpm_version: 1.2", "286536196",
+                "\n  did_vid: 286536196", true, true);
+}
+
+TEST_F(RevenLogSourceTest, TpmInfoVersion_2_0WithoutDidVid_Owned_NotAllowed) {
+  VerifyTpmInfo(0x322e3000, "\n  tpm_version: 2.0", "", "\n  did_vid: \n", true,
+                false);
+}
+
+TEST_F(RevenLogSourceTest,
+       TpmInfoVersionUnknownWithoutDidVid_Allowed_NotOwned) {
+  VerifyTpmInfo(0xaaaaaaaa, "\n  tpm_version: unknown", "", "\n  did_vid: \n",
+                false, true);
+}
+
+TEST_F(RevenLogSourceTest,
+       TpmInfoVersionUnknownWithoutDidVid_NotAllowed_NotOwned) {
+  VerifyTpmInfo(0xaaaaaaaa, "\n  tpm_version: unknown", "", "\n  did_vid: \n",
+                false, false);
 }
 
 }  // namespace system_logs

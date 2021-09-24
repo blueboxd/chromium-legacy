@@ -18,7 +18,6 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/chrome_paths.h"
-#include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
@@ -32,16 +31,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-
-void PostStoreMetricsClientInfo(const metrics::ClientInfo& client_info) {}
-
-std::unique_ptr<metrics::ClientInfo> LoadMetricsClientInfo() {
-  return nullptr;
-}
-
-}  // namespace
 
 class IOSChromeMetricsServicesManagerClient::IOSChromeEnabledStateProvider
     : public metrics::EnabledStateProvider {
@@ -99,8 +88,7 @@ IOSChromeMetricsServicesManagerClient::GetMetricsStateManager() {
     base::PathService::Get(ios::DIR_USER_DATA, &user_data_dir);
     metrics_state_manager_ = metrics::MetricsStateManager::Create(
         local_state_, enabled_state_provider_.get(), std::wstring(),
-        user_data_dir, base::BindRepeating(&PostStoreMetricsClientInfo),
-        base::BindRepeating(&LoadMetricsClientInfo));
+        user_data_dir);
   }
   return metrics_state_manager_.get();
 }

@@ -85,6 +85,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/mojom/enterprise_reporting.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -732,12 +733,14 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       const policy::DeviceStatusCollector::CrosHealthdDataFetcher&
           cros_healthd_data_fetcher,
       bool report_system_info,
-      bool report_vpd_info) {
+      bool report_vpd_info,
+      bool report_storage_status) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     cros_healthd_data_fetcher.Run(
         CrosHealthdCollectionMode::kFull,
         base::BindOnce(&DeviceStatusCollectorState::OnCrosHealthdDataReceived,
-                       this, report_system_info, report_vpd_info));
+                       this, report_system_info, report_vpd_info,
+                       report_storage_status));
   }
 
   void FetchEMMCLifeTime(
@@ -824,6 +827,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
     em::TpmStatusInfo* const tpm_status_proto =
         response_params_.device_status->mutable_tpm_status_info();
 
+    LOG(WARNING) << "tpm_status_struct.attestation_prepared: "
+                 << tpm_status_struct.attestation_prepared;
     tpm_status_proto->set_enabled(tpm_status_struct.enabled);
     tpm_status_proto->set_owned(tpm_status_struct.owned);
     tpm_status_proto->set_tpm_initialized(tpm_status_struct.initialized);
@@ -841,32 +846,19 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         tpm_status_struct.dictionary_attack_lockout_seconds_remaining);
     tpm_status_proto->set_boot_lockbox_finalized(
         tpm_status_struct.boot_lockbox_finalized);
+    SetDeviceStatusReported();
   }
 
   // Stores the contents of |probe_result| and |samples| to |response_params_|.
   void OnCrosHealthdDataReceived(
       bool report_system_info,
       bool report_vpd_info,
+      bool report_storage_status,
       chromeos::cros_healthd::mojom::TelemetryInfoPtr probe_result,
       const base::circular_deque<std::unique_ptr<SampledData>>& samples) {
     namespace cros_healthd = chromeos::cros_healthd::mojom;
     // Make sure we edit the state on the right thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    // Only one of OnCrosHealthdDataReceived or OnCPUTempInfoReceived should be
-    // called.
-    DCHECK_EQ(response_params_.device_status->cpu_temp_infos_size(), 0);
-
-    // Store CPU measurement samples.
-    for (const std::unique_ptr<SampledData>& sample_data : samples) {
-      for (auto kv : sample_data->cpu_samples) {
-        response_params_.device_status->mutable_cpu_temp_infos()->Add(
-            std::move(kv.second));
-      }
-    }
-    if (!response_params_.device_status->mutable_cpu_temp_infos()->empty()) {
-      SetDeviceStatusReported();
-    }
 
     if (probe_result.is_null()) {
       return;
@@ -1376,7 +1368,7 @@ class DeviceStatusCollectorState : public StatusCollectorState {
     // Process StatefulPartition result.
     const auto& stateful_partition_result =
         probe_result->stateful_partition_result;
-    if (!stateful_partition_result.is_null()) {
+    if (!stateful_partition_result.is_null() && report_storage_status) {
       switch (stateful_partition_result->which()) {
         case cros_healthd::StatefulPartitionResult::Tag::ERROR: {
           LOG(ERROR) << "cros_healthd: Error getting Stateful Partition info: "
@@ -1558,9 +1550,12 @@ DeviceStatusCollector::DeviceStatusCollector(
 
   idle_poll_timer_.Start(FROM_HERE, kIdlePollInterval, this,
                          &DeviceStatusCollector::CheckIdleState);
-  resource_usage_sampling_timer_.Start(
+  cpu_usage_sampling_timer_.Start(
       FROM_HERE, TimeDelta::FromSeconds(kResourceUsageSampleIntervalSeconds),
-      this, &DeviceStatusCollector::SampleResourceUsage);
+      this, &DeviceStatusCollector::SampleCpuUsage);
+  memory_usage_sampling_timer_.Start(
+      FROM_HERE, TimeDelta::FromSeconds(kResourceUsageSampleIntervalSeconds),
+      this, &DeviceStatusCollector::SampleMemoryUsage);
 
   // Watch for changes to the individual policies that control what the status
   // reports contain.
@@ -1572,12 +1567,14 @@ DeviceStatusCollector::DeviceStatusCollector(
       chromeos::kReportDeviceActivityTimes, callback);
   boot_mode_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportDeviceBootMode, callback);
-  network_interfaces_subscription_ = cros_settings_->AddSettingsObserver(
-      chromeos::kReportDeviceNetworkInterfaces, callback);
+  audio_status_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceAudioStatus, callback);
+  network_configuration_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceNetworkConfiguration, callback);
+  network_status_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceNetworkStatus, callback);
   users_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportDeviceUsers, callback);
-  hardware_status_subscription_ = cros_settings_->AddSettingsObserver(
-      chromeos::kReportDeviceHardwareStatus, callback);
   session_status_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportDeviceSessionStatus, callback);
   os_update_status_subscription_ = cros_settings_->AddSettingsObserver(
@@ -1586,6 +1583,8 @@ DeviceStatusCollector::DeviceStatusCollector(
       chromeos::kReportRunningKioskApp, callback);
   power_status_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportDevicePowerStatus, callback);
+  security_status_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceSecurityStatus, callback);
   storage_status_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportDeviceStorageStatus, callback);
   board_status_subscription_ = cros_settings_->AddSettingsObserver(
@@ -1695,8 +1694,13 @@ void DeviceStatusCollector::UpdateReportingSettings() {
     return;
   }
 
+  // if either of these are set from false to true, gather an initial sample.
+  bool already_reporting_cpu_info = report_cpu_info_;
+  bool already_reporting_memory_info = report_memory_info_;
+
   // Keep the default values in sync with DeviceReportingProto in
   // components/policy/proto/chrome_device_policy.proto.
+  // TODO(b/195030842): Refactor how reporting policy variables are set.
   if (!cros_settings_->GetBoolean(chromeos::kReportDeviceVersionInfo,
                                   &report_version_info_)) {
     report_version_info_ = true;
@@ -1704,6 +1708,10 @@ void DeviceStatusCollector::UpdateReportingSettings() {
   if (!cros_settings_->GetBoolean(chromeos::kReportDeviceActivityTimes,
                                   &report_activity_times_)) {
     report_activity_times_ = true;
+  }
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceAudioStatus,
+                                  &report_audio_status_)) {
+    report_audio_status_ = true;
   }
   if (!cros_settings_->GetBoolean(chromeos::kReportDeviceBootMode,
                                   &report_boot_mode_)) {
@@ -1713,18 +1721,17 @@ void DeviceStatusCollector::UpdateReportingSettings() {
                                   &report_kiosk_session_status_)) {
     report_kiosk_session_status_ = true;
   }
-  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceNetworkInterfaces,
-                                  &report_network_interfaces_)) {
-    report_network_interfaces_ = true;
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceNetworkConfiguration,
+                                  &report_network_configuration_)) {
+    report_network_configuration_ = true;
+  }
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceNetworkStatus,
+                                  &report_network_status_)) {
+    report_network_status_ = true;
   }
   if (!cros_settings_->GetBoolean(chromeos::kReportDeviceUsers,
                                   &report_users_)) {
     report_users_ = true;
-  }
-  const bool already_reporting_hardware_status = report_hardware_status_;
-  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceHardwareStatus,
-                                  &report_hardware_status_)) {
-    report_hardware_status_ = true;
   }
   if (!cros_settings_->GetBoolean(chromeos::kReportDevicePowerStatus,
                                   &report_power_status_)) {
@@ -1788,15 +1795,6 @@ void DeviceStatusCollector::UpdateReportingSettings() {
                                   &stat_reporting_pref_)) {
     stat_reporting_pref_ = false;
   }
-
-  if (!report_hardware_status_) {
-    ClearCachedResourceUsage();
-  } else if (!already_reporting_hardware_status) {
-    // Turning on hardware status reporting - fetch an initial sample
-    // immediately instead of waiting for the sampling timer to fire.
-    SampleResourceUsage();
-  }
-
   // Os update status and running kiosk app reporting are disabled by default.
   if (!cros_settings_->GetBoolean(chromeos::kReportOsUpdateStatus,
                                   &report_os_update_status_)) {
@@ -1806,10 +1804,34 @@ void DeviceStatusCollector::UpdateReportingSettings() {
                                   &report_running_kiosk_app_)) {
     report_running_kiosk_app_ = false;
   }
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceSecurityStatus,
+                                  &report_security_status_)) {
+    report_security_status_ = false;
+  }
+
+  // Take initial samples.
+  if (!already_reporting_cpu_info && report_cpu_info_) {
+    SampleCpuUsage();
+  }
+  if (!already_reporting_memory_info && report_memory_info_) {
+    SampleMemoryUsage();
+  }
+
+  // Clear caches for any info no longer being collected.
+  if (!report_memory_info_) {
+    ClearCachedMemoryUsage();
+  }
+  if (!report_cpu_info_) {
+    ClearCachedCpuUsage();
+  }
 }
 
-void DeviceStatusCollector::ClearCachedResourceUsage() {
-  resource_usage_.clear();
+void DeviceStatusCollector::ClearCachedMemoryUsage() {
+  memory_usage_.clear();
+}
+
+void DeviceStatusCollector::ClearCachedCpuUsage() {
+  cpu_usage_.clear();
   last_cpu_active_ = 0;
   last_cpu_idle_ = 0;
 }
@@ -1850,13 +1872,29 @@ void DeviceStatusCollector::PowerChanged(
     std::move(power_status_callback_).Run(prop);
 }
 
-void DeviceStatusCollector::SampleResourceUsage() {
+void DeviceStatusCollector::SampleMemoryUsage() {
   // Results must be written in the creation thread since that's where they
   // are read from in the Get*StatusAsync methods.
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // If hardware reporting has been disabled, do nothing here.
-  if (!report_hardware_status_)
+  if (!report_memory_info_)
+    return;
+
+  MemoryUsage usage = {base::SysInfo::AmountOfAvailablePhysicalMemory(),
+                       base::Time::Now()};
+  memory_usage_.push_back(usage);
+
+  if (memory_usage_.size() > kMaxResourceUsageSamples)
+    memory_usage_.pop_front();
+}
+
+void DeviceStatusCollector::SampleCpuUsage() {
+  // Results must be written in the creation thread since that's where they
+  // are read from in the Get*StatusAsync methods.
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // If report cpu info has been disabled, do nothing here.
+  if (!report_cpu_info_)
     return;
 
   // Call out to the blocking pool to sample CPU stats.
@@ -1915,31 +1953,23 @@ void DeviceStatusCollector::ReceiveCPUStatistics(const std::string& stats) {
   // implementation.
   const base::Time timestamp = base::Time::Now();
 
-  ResourceUsage usage = {cpu_usage_percent,
-                         base::SysInfo::AmountOfAvailablePhysicalMemory(),
-                         timestamp};
-
-  resource_usage_.push_back(usage);
+  CpuUsage usage = {cpu_usage_percent, timestamp};
+  cpu_usage_.push_back(usage);
 
   // If our cache of samples is full, throw out old samples to make room for new
   // sample.
-  if (resource_usage_.size() > kMaxResourceUsageSamples)
-    resource_usage_.pop_front();
+  if (cpu_usage_.size() > kMaxResourceUsageSamples)
+    cpu_usage_.pop_front();
 
   std::unique_ptr<SampledData> sample = std::make_unique<SampledData>();
   sample->timestamp = timestamp;
 
-  if (report_power_status_) {
-    cros_healthd_data_fetcher_.Run(CrosHealthdCollectionMode::kBattery,
-                                   base::DoNothing());
-  } else {
-    base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(&InvokeCpuTempFetcher, cpu_temp_fetcher_),
-        base::BindOnce(&DeviceStatusCollector::ReceiveCPUTemperature,
-                       weak_factory_.GetWeakPtr(), std::move(sample),
-                       SamplingCallback()));
-  }
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&InvokeCpuTempFetcher, cpu_temp_fetcher_),
+      base::BindOnce(&DeviceStatusCollector::ReceiveCPUTemperature,
+                     weak_factory_.GetWeakPtr(), std::move(sample),
+                     SamplingCallback()));
 }
 
 void DeviceStatusCollector::SampleProbeData(
@@ -2016,12 +2046,6 @@ void DeviceStatusCollector::SampleDischargeRate(
     }
   }
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&InvokeCpuTempFetcher, cpu_temp_fetcher_),
-      base::BindOnce(&DeviceStatusCollector::ReceiveCPUTemperature,
-                     weak_factory_.GetWeakPtr(), std::move(sample),
-                     std::move(callback)));
 }
 
 void DeviceStatusCollector::ReceiveCPUTemperature(
@@ -2248,9 +2272,8 @@ bool DeviceStatusCollector::GetWriteProtectSwitch(
   return true;
 }
 
-bool DeviceStatusCollector::GetNetworkInterfaces(
+bool DeviceStatusCollector::GetNetworkConfiguration(
     em::DeviceStatusReportRequest* status) {
-  // Maps shill device type strings to proto enum constants.
   static const struct {
     const char* type_string;
     em::NetworkInterface::NetworkDeviceType type_constant;
@@ -2267,27 +2290,6 @@ bool DeviceStatusCollector::GetNetworkInterfaces(
           shill::kTypeCellular,
           em::NetworkInterface::TYPE_CELLULAR,
       },
-  };
-
-  // Maps shill device connection status to proto enum constants.
-  static const struct {
-    const char* state_string;
-    em::NetworkState::ConnectionState state_constant;
-  } kConnectionStateMap[] = {
-      {shill::kStateIdle, em::NetworkState::IDLE},
-      {shill::kStateCarrier, em::NetworkState::CARRIER},
-      {shill::kStateAssociation, em::NetworkState::ASSOCIATION},
-      {shill::kStateConfiguration, em::NetworkState::CONFIGURATION},
-      {shill::kStateReady, em::NetworkState::READY},
-      {shill::kStatePortal, em::NetworkState::PORTAL},
-      {shill::kStateNoConnectivity, em::NetworkState::PORTAL},
-      {shill::kStateRedirectFound, em::NetworkState::PORTAL},
-      {shill::kStatePortalSuspected, em::NetworkState::PORTAL},
-      {shill::kStateOffline, em::NetworkState::OFFLINE},
-      {shill::kStateOnline, em::NetworkState::ONLINE},
-      {shill::kStateDisconnect, em::NetworkState::DISCONNECT},
-      {shill::kStateFailure, em::NetworkState::FAILURE},
-      {shill::kStateActivationFailure, em::NetworkState::ACTIVATION_FAILURE},
   };
 
   chromeos::NetworkStateHandler::DeviceStateList device_list;
@@ -2322,6 +2324,36 @@ bool DeviceStatusCollector::GetNetworkInterfaces(
       interface->set_device_path((*device)->path());
     anything_reported = true;
   }
+
+  return anything_reported;
+}
+
+bool DeviceStatusCollector::GetNetworkStatus(
+    em::DeviceStatusReportRequest* status) {
+  // Maps shill device connection status to proto enum constants.
+  static const struct {
+    const char* state_string;
+    em::NetworkState::ConnectionState state_constant;
+  } kConnectionStateMap[] = {
+      {shill::kStateIdle, em::NetworkState::IDLE},
+      {shill::kStateCarrier, em::NetworkState::CARRIER},
+      {shill::kStateAssociation, em::NetworkState::ASSOCIATION},
+      {shill::kStateConfiguration, em::NetworkState::CONFIGURATION},
+      {shill::kStateReady, em::NetworkState::READY},
+      {shill::kStatePortal, em::NetworkState::PORTAL},
+      {shill::kStateNoConnectivity, em::NetworkState::PORTAL},
+      {shill::kStateRedirectFound, em::NetworkState::PORTAL},
+      {shill::kStatePortalSuspected, em::NetworkState::PORTAL},
+      {shill::kStateOffline, em::NetworkState::OFFLINE},
+      {shill::kStateOnline, em::NetworkState::ONLINE},
+      {shill::kStateDisconnect, em::NetworkState::DISCONNECT},
+      {shill::kStateFailure, em::NetworkState::FAILURE},
+      {shill::kStateActivationFailure, em::NetworkState::ACTIVATION_FAILURE},
+  };
+
+  bool anything_reported = false;
+  chromeos::NetworkStateHandler* network_state_handler =
+      chromeos::NetworkHandler::Get()->network_state_handler();
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   const user_manager::User* const primary_user = user_manager->GetPrimaryUser();
@@ -2407,67 +2439,46 @@ bool DeviceStatusCollector::GetUsers(em::DeviceStatusReportRequest* status) {
   return anything_reported;
 }
 
-bool DeviceStatusCollector::GetHardwareStatus(
-    scoped_refptr<DeviceStatusCollectorState> state) {
-  em::DeviceStatusReportRequest* status =
-      state->response_params().device_status.get();
-
-  // Sample disk volume info in a background thread.
-  state->SampleVolumeInfo(volume_info_fetcher_);
-
-  // Add CPU utilization and free RAM. Note that these stats are sampled in
-  // regular intervals. Unlike CPU temp and volume info these are not one-time
-  // sampled values, hence the difference in logic.
-  status->set_system_ram_total(base::SysInfo::AmountOfPhysicalMemory());
-  status->clear_cpu_utilization_infos();
-  status->clear_system_ram_free_infos();
-
-  // TODO(anqing): remove these two cleanup operations after fields
-  // 'system_ram_free_samples' and 'cpu_utilization_pct_samples' are deprecated.
+bool DeviceStatusCollector::GetMemoryInfo(
+    em::DeviceStatusReportRequest* status) {
+  // TODO(b/193808197): remove this and below references after the field
+  // 'system_ram_free_samples' is deprecated.
   status->clear_system_ram_free_samples();
-  status->clear_cpu_utilization_pct_samples();
+  status->clear_system_ram_free_infos();
+  status->set_system_ram_total(base::SysInfo::AmountOfPhysicalMemory());
 
-  for (const ResourceUsage& usage : resource_usage_) {
-    const int64_t usage_timestamp = usage.timestamp.ToJavaTime();
-
-    em::CpuUtilizationInfo* cpu_utilization_info =
-        status->add_cpu_utilization_infos();
-    cpu_utilization_info->set_cpu_utilization_pct(usage.cpu_usage_percent);
-    cpu_utilization_info->set_timestamp(usage_timestamp);
-
+  for (const MemoryUsage& usage : memory_usage_) {
     em::SystemFreeRamInfo* system_ram_free_info =
         status->add_system_ram_free_infos();
     system_ram_free_info->set_size_in_bytes(usage.bytes_of_ram_free);
-    system_ram_free_info->set_timestamp(usage_timestamp);
-
-    // TODO(anqing): remove these two assignment operations after fields
-    // 'system_ram_free_samples' and 'cpu_utilization_pct_samples' are
-    // deprecated.
-    status->add_cpu_utilization_pct_samples(usage.cpu_usage_percent);
+    system_ram_free_info->set_timestamp(usage.timestamp.ToJavaTime());
     status->add_system_ram_free_samples(usage.bytes_of_ram_free);
   }
 
-  // Get the current device sound volume level.
-  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
-  status->set_sound_volume(audio_handler->GetOutputVolumePercent());
+  return true;
+}
 
-  // Fetch TPM status information on a background thread.
-  state->FetchTpmStatus(tpm_status_fetcher_);
+bool DeviceStatusCollector::GetCPUInfo(em::DeviceStatusReportRequest* status) {
+  // TODO(b/193808197): remove this and below references after the field
+  // 'cpu_utilization_pct_samples' is deprecated.
+  status->clear_cpu_utilization_pct_samples();
+  status->clear_cpu_utilization_infos();
 
-  // clear
-  status->clear_cpu_temp_infos();
-
-  if (report_storage_status_)
-    state->FetchEMMCLifeTime(emmc_lifetime_fetcher_);
-
-  if (!ShouldFetchCrosHealthdData()) {
-    // Sample CPU temperature in a background thread.
-    state->SampleCPUTempInfo(cpu_temp_fetcher_);
+  for (const CpuUsage& usage : cpu_usage_) {
+    em::CpuUtilizationInfo* cpu_utilization_info =
+        status->add_cpu_utilization_infos();
+    cpu_utilization_info->set_cpu_utilization_pct(usage.cpu_usage_percent);
+    cpu_utilization_info->set_timestamp(usage.timestamp.ToJavaTime());
+    status->add_cpu_utilization_pct_samples(usage.cpu_usage_percent);
   }
 
-  // Fetch Stateful Partition Information on a background thread.
-  state->FetchStatefulPartitionInfo(stateful_partition_info_fetcher_);
+  return true;
+}
 
+bool DeviceStatusCollector::GetAudioStatus(
+    em::DeviceStatusReportRequest* status) {
+  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
+  status->set_sound_volume(audio_handler->GetOutputVolumePercent());
   return true;
 }
 
@@ -2620,12 +2631,15 @@ void DeviceStatusCollector::GetStatusAsync(StatusCollectorCallback response) {
   // Gather session status (might queue some async queries)
   GetSessionStatus(state);
 
-  // If there are no outstanding async queries, e.g. from GetHardwareStatus(),
+  // If there are no outstanding async queries, e.g. from FetchCrosHealthddata,
   // the destructor of |state| calls |response|. If there are async queries, the
   // queries hold references to |state|, so that |state| is only destroyed when
   // the last async query has finished.
 }
 
+// GetDeviceStatus must make the call state->SetDeviceStatusReported() to send
+// data to the server. Asynchronous calls to get metrics do this down their
+// call stack, typically in OnXDataReceived.
 void DeviceStatusCollector::GetDeviceStatus(
     scoped_refptr<DeviceStatusCollectorState> state) {
   em::DeviceStatusReportRequest* status =
@@ -2634,6 +2648,9 @@ void DeviceStatusCollector::GetDeviceStatus(
 
   if (report_activity_times_)
     anything_reported |= GetActivityTimes(status);
+
+  if (report_audio_status_)
+    anything_reported |= GetAudioStatus(status);
 
   if (report_version_info_)
     anything_reported |= GetVersionInfo(status);
@@ -2647,16 +2664,14 @@ void DeviceStatusCollector::GetDeviceStatus(
     }
   }
 
-  if (report_network_interfaces_)
-    anything_reported |= GetNetworkInterfaces(status);
+  if (report_network_configuration_)
+    anything_reported |= GetNetworkConfiguration(status);
+
+  if (report_network_status_)
+    anything_reported |= GetNetworkStatus(status);
 
   if (report_users_)
     anything_reported |= GetUsers(status);
-
-  if (report_hardware_status_) {
-    anything_reported |= GetHardwareStatus(state);
-    anything_reported |= GetWriteProtectSwitch(status);
-  }
 
   if (report_os_update_status_)
     anything_reported |= GetOsUpdateStatus(status);
@@ -2664,17 +2679,36 @@ void DeviceStatusCollector::GetDeviceStatus(
   if (report_running_kiosk_app_)
     anything_reported |= GetRunningKioskApp(status);
 
+  if (report_memory_info_)
+    anything_reported |= GetMemoryInfo(status);
+
+  if (report_cpu_info_) {
+    state->SampleCPUTempInfo(cpu_temp_fetcher_);
+    anything_reported |= GetCPUInfo(status);
+  }
+
+  if (report_security_status_) {
+    state->FetchTpmStatus(tpm_status_fetcher_);
+  }
+
+  if (report_system_info_) {
+    anything_reported |= GetWriteProtectSwitch(status);
+  }
+
   // Mark if any of the above functions reported data so that the response is
   // sent.
   if (anything_reported)
     state->SetDeviceStatusReported();
 
-  // The below calls gather data asynchronously. Because they are asynchronous
-  // they cannot set anything_reported. Instead They will call
-  // SetDeviceStatusReported if data is collected.
   if (ShouldFetchCrosHealthdData())
     state->FetchCrosHealthdData(cros_healthd_data_fetcher_, report_system_info_,
-                                report_vpd_info_);
+                                report_vpd_info_, report_storage_status_);
+
+  if (report_storage_status_) {
+    state->FetchStatefulPartitionInfo(stateful_partition_info_fetcher_);
+    state->SampleVolumeInfo(volume_info_fetcher_);
+    state->FetchEMMCLifeTime(emmc_lifetime_fetcher_);
+  }
 
   if (report_graphics_status_)
     GetGraphicsStatus(state);
@@ -2838,7 +2872,7 @@ void DeviceStatusCollector::OnSubmittedSuccessfully() {
   app_info_generator_.OnReportedSuccessfully(last_requested_);
 }
 
-bool DeviceStatusCollector::ShouldReportActivityTimes() const {
+bool DeviceStatusCollector::IsReportingActivityTimes() const {
   // This function is used for checking if a message about activity reporting
   // should be displayed to a user in the transparency panel. User activity for
   // a current user is reported only if the user is managed by the same
@@ -2849,25 +2883,29 @@ bool DeviceStatusCollector::ShouldReportActivityTimes() const {
   std::string user_email = GetUserForActivityReporting();
   return !user_email.empty() && !IsDeviceLocalAccountUser(user_email, NULL);
 }
-bool DeviceStatusCollector::ShouldReportNetworkInterfaces() const {
-  return report_network_interfaces_;
+// TODO(b/192252043): Remove this once management ui has been refactored.
+bool DeviceStatusCollector::IsReportingNetworkData() const {
+  return report_network_configuration_ || report_network_status_;
 }
-bool DeviceStatusCollector::ShouldReportUsers() const {
+bool DeviceStatusCollector::IsReportingHardwareData() const {
+  return report_power_status_ || report_storage_status_ ||
+         report_board_status_ || report_memory_info_ || report_cpu_info_ ||
+         report_backlight_info_ || report_bluetooth_info_ || report_fan_info_ ||
+         report_vpd_info_ || report_system_info_;
+}
+bool DeviceStatusCollector::IsReportingUsers() const {
   // For more details, see comment in
-  // DeviceStatusCollector::ShouldReportActivityTimes() function.
+  // DeviceStatusCollector::IsReportingActivityTimes() function.
   if (!report_users_) {
     return false;
   }
   std::string user_email = GetUserForActivityReporting();
   return !user_email.empty() && !IsDeviceLocalAccountUser(user_email, NULL);
 }
-bool DeviceStatusCollector::ShouldReportHardwareStatus() const {
-  return report_hardware_status_;
-}
-bool DeviceStatusCollector::ShouldReportCrashReportInfo() const {
+bool DeviceStatusCollector::IsReportingCrashReportInfo() const {
   return report_crash_report_info_ && stat_reporting_pref_;
 }
-bool DeviceStatusCollector::ShouldReportAppInfoAndActivity() const {
+bool DeviceStatusCollector::IsReportingAppInfoAndActivity() const {
   return report_app_info_;
 }
 

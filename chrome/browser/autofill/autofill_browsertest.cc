@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -613,7 +614,10 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
 // Accessibility Tests //
 class AutofillAccessibilityTest : public AutofillTest {
  protected:
-  AutofillAccessibilityTest() {}
+  AutofillAccessibilityTest() {
+    command_line_.GetProcessCommandLine()->AppendSwitchASCII(
+        "vmodule", "accessibility_notification_waiter=1");
+  }
 
   // Returns true if kAutofillAvailable state is present AND  kAutoComplete
   // string attribute is missing; only one should be set at any given time.
@@ -636,23 +640,24 @@ class AutofillAccessibilityTest : public AutofillTest {
     }
     return false;
   }
+
+ private:
+  base::test::ScopedCommandLine command_line_;
 };
 
 // Test that autofill available state is correctly set on accessibility node.
-// crbug.com/1162484
+// Test is flaky: https://crbug.com/1239099
 IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest, DISABLED_TestAutofillState) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
 
-  // Navigate to url.
+  // Navigate to url and wait for accessibility notification.
   GURL url =
       embedded_test_server()->GetURL("/autofill/duplicate_profiles_test.html");
   NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  ui_test_utils::NavigateToURL(&params);
-
-  // Wait for accessibility notification.
+  params.disposition = WindowOpenDisposition::CURRENT_TAB;
   content::AccessibilityNotificationWaiter layout_waiter_one(
       web_contents(), ui::kAXModeComplete, ax::mojom::Event::kLoadComplete);
+  ui_test_utils::NavigateToURL(&params);
   layout_waiter_one.WaitForNotification();
 
   // Focus target form field.
@@ -690,9 +695,9 @@ IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest, DISABLED_TestAutofillState) {
   ASSERT_EQ(1u, personal_data_manager()->GetProfiles().size());
 
   // Reload page.
-  ui_test_utils::NavigateToURL(&params);
   content::AccessibilityNotificationWaiter layout_waiter_two(
       web_contents(), ui::kAXModeComplete, ax::mojom::Event::kLoadComplete);
+  ui_test_utils::NavigateToURL(&params);
   layout_waiter_two.WaitForNotification();
 
   // Focus target form field.
@@ -713,24 +718,18 @@ IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest, DISABLED_TestAutofillState) {
 // Test that autocomplete available string attribute is correctly set on
 // accessibility node. Test autocomplete in this file since it uses the same
 // infrastructure as autofill.
-// TODO(crbug.com/1240687): Flaky on Linux.
-#if defined(OS_LINUX)
-#define MAYBE_TestAutocompleteState DISABLED_TestAutocompleteState
-#else
-#define MAYBE_TestAutocompleteState TestAutocompleteState
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest, MAYBE_TestAutocompleteState) {
+// Test is flaky: http://crbug.com/1239099
+IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest,
+                       DISABLED_TestAutocompleteState) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
-  // Navigate to url.
+  // Navigate to url and wait for accessibility notification
   GURL url =
       embedded_test_server()->GetURL("/autofill/duplicate_profiles_test.html");
   NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  ui_test_utils::NavigateToURL(&params);
-
-  // Wait for accessibility notification.
+  params.disposition = WindowOpenDisposition::CURRENT_TAB;
   content::AccessibilityNotificationWaiter layout_waiter_one(
       web_contents(), ui::kAXModeComplete, ax::mojom::Event::kLoadComplete);
+  ui_test_utils::NavigateToURL(&params);
   layout_waiter_one.WaitForNotification();
 
   // Focus target form field.
@@ -764,9 +763,9 @@ IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest, MAYBE_TestAutocompleteState) {
   ASSERT_EQ(0u, personal_data_manager()->GetProfiles().size());
 
   // Reload page.
-  ui_test_utils::NavigateToURL(&params);
   content::AccessibilityNotificationWaiter layout_waiter_two(
       web_contents(), ui::kAXModeComplete, ax::mojom::Event::kLoadComplete);
+  ui_test_utils::NavigateToURL(&params);
   layout_waiter_two.WaitForNotification();
 
   // Focus target form field.

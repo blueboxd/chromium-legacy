@@ -72,6 +72,16 @@ extern const base::Feature kAppShimNewCloseBehavior;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kAsyncDns;
 
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAutofillAddressSurvey;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAutofillCardSurvey;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAutofillPasswordSurvey;
+#endif
+
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kBackgroundModeAllowRestart;
@@ -156,14 +166,6 @@ extern const base::Feature kDefaultPinnedAppsUpdate2021Q2;
 #if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_LINUX)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsAppIconShortcutsMenuUI;
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kDesktopPWAsAttentionBadgingCrOS;
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::FeatureParam<std::string>
-    kDesktopPWAsAttentionBadgingCrOSParam;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -563,9 +565,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSecurityKeyAttestationPrompt;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kSharesheet;
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kChromeOSSharingHub;
 #endif

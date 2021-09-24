@@ -121,7 +121,7 @@ class DragDropController;
 class EventClientImpl;
 class EventRewriterControllerImpl;
 class EventTransformationHandler;
-class FullRestoreController;
+class WindowRestoreController;
 class FocusCycler;
 class FrameThrottlingController;
 class FullscreenMagnifierController;
@@ -223,6 +223,9 @@ class ASH_EXPORT Shell : public SessionObserver,
                          public ::wm::ActivationChangeObserver {
  public:
   typedef std::vector<RootWindowController*> RootWindowControllerList;
+
+  Shell(const Shell&) = delete;
+  Shell& operator=(const Shell&) = delete;
 
   // Creates the single Shell instance.
   static Shell* CreateInstance(ShellInitParams init_params);
@@ -722,7 +725,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<DisplaySpeakerController> display_speaker_controller_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
   std::unique_ptr<FocusCycler> focus_cycler_;
-  std::unique_ptr<FullRestoreController> full_restore_controller_;
+  std::unique_ptr<WindowRestoreController> window_restore_controller_;
   std::unique_ptr<HoldingSpaceController> holding_space_controller_;
   std::unique_ptr<ImeControllerImpl> ime_controller_;
   std::unique_ptr<chromeos::ImmersiveContext> immersive_context_;
@@ -901,8 +904,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   base::ObserverList<ShellObserver>::Unchecked shell_observers_;
 
   base::WeakPtrFactory<Shell> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Shell);
 };
 
 }  // namespace ash

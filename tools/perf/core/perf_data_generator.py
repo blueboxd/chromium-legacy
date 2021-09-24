@@ -358,36 +358,57 @@ BUILDERS = {
                 'name': 'resource_sizes_monochrome_minimal_apks',
                 'isolate': 'resource_sizes_monochrome_minimal_apks',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
             {
                 'name': 'resource_sizes_monochrome_public_minimal_apks',
                 'isolate': 'resource_sizes_monochrome_public_minimal_apks',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
             {
                 'name': 'resource_sizes_chrome_modern_minimal_apks',
                 'isolate': 'resource_sizes_chrome_modern_minimal_apks',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
             {
                 'name': 'resource_sizes_chrome_modern_public_minimal_apks',
                 'isolate': 'resource_sizes_chrome_modern_public_minimal_apks',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
             {
                 'name': 'resource_sizes_trichrome_google',
                 'isolate': 'resource_sizes_trichrome_google',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
             {
                 'name': 'resource_sizes_system_webview_bundle',
                 'isolate': 'resource_sizes_system_webview_bundle',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
             {
                 'name': 'resource_sizes_system_webview_google_bundle',
                 'isolate': 'resource_sizes_system_webview_google_bundle',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
         ],
         'dimension': {
@@ -418,41 +439,65 @@ BUILDERS = {
                 'name': 'resource_sizes_monochrome_minimal_apks',
                 'isolate': 'resource_sizes_monochrome_minimal_apks',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
             {
                 'name': 'resource_sizes_monochrome_public_minimal_apks',
                 'isolate': 'resource_sizes_monochrome_public_minimal_apks',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
             {
                 'name': 'resource_sizes_chrome_modern_minimal_apks',
                 'isolate': 'resource_sizes_chrome_modern_minimal_apks',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
             {
                 'name': 'resource_sizes_chrome_modern_public_minimal_apks',
                 'isolate': 'resource_sizes_chrome_modern_public_minimal_apks',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
             {
                 'name': 'resource_sizes_trichrome',
                 'isolate': 'resource_sizes_trichrome',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
             {
                 'name': 'resource_sizes_trichrome_google',
                 'isolate': 'resource_sizes_trichrome_google',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
             {
                 'name': 'resource_sizes_system_webview_bundle',
                 'isolate': 'resource_sizes_system_webview_bundle',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
             {
                 'name': 'resource_sizes_system_webview_google_bundle',
                 'isolate': 'resource_sizes_system_webview_google_bundle',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
         ],
         'dimension': {
@@ -469,6 +514,9 @@ BUILDERS = {
             'name': 'chrome_sizes',
             'isolate': 'chrome_sizes',
             'type': TEST_TYPES.GENERIC,
+            'resultdb': {
+                'has_native_resultdb_integration': True,
+            },
         }],
         'dimension': {
             'cpu': 'x86-64',
@@ -487,6 +535,9 @@ BUILDERS = {
             'name': 'chrome_sizes',
             'isolate': 'chrome_sizes',
             'type': TEST_TYPES.GENERIC,
+            'resultdb': {
+                'has_native_resultdb_integration': True,
+            },
         }],
         'dimension': {
             'cpu': 'x86-64',
@@ -502,6 +553,9 @@ BUILDERS = {
             'name': 'chrome_sizes',
             'isolate': 'chrome_sizes',
             'type': TEST_TYPES.GENERIC,
+            'resultdb': {
+                'has_native_resultdb_integration': True,
+            },
         }],
         'dimension': {
             'cpu': 'x86',
@@ -517,6 +571,9 @@ BUILDERS = {
             'name': 'chrome_sizes',
             'isolate': 'chrome_sizes',
             'type': TEST_TYPES.GENERIC,
+            'resultdb': {
+                'has_native_resultdb_integration': True,
+            },
         }],
         'dimension': {
             'cpu': 'x86',
@@ -532,6 +589,9 @@ BUILDERS = {
             'name': 'chrome_sizes',
             'isolate': 'chrome_sizes',
             'type': TEST_TYPES.GENERIC,
+            'resultdb': {
+                'has_native_resultdb_integration': True,
+            },
         }],
         'dimension': {
             'cpu': 'x86-64',
@@ -954,6 +1014,9 @@ BUILDERS = {
                 'name': 'resource_sizes_chromecast',
                 'isolate': 'resource_sizes_chromecast',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
         ],
         'dimension': {
@@ -971,6 +1034,9 @@ BUILDERS = {
                 'name': 'resource_sizes_lacros_chrome',
                 'isolate': 'resource_sizes_lacros_chrome',
                 'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
             },
         ],
         'dimension': {
@@ -1491,9 +1557,14 @@ def generate_performance_test(tester_config, test, builder_name):
     ]
   }
 
-  # Enable Result DB on all perf test bots. Builders with names including
-  # "builder-perf" are used for compiling only, and do not run perf tests.
-  if 'builder-perf' not in builder_name:
+  if test.get('resultdb'):
+    result['resultdb'] = test['resultdb'].copy()
+  elif 'builder-perf' not in builder_name:
+    # Enable Result DB on all perf test bots. Builders with names including
+    # "builder-perf" are used for compiling only, and do not run perf tests.
+    # TODO(crbug.com/1135718): Replace the following line by specifying either
+    # "result_format" for GTests, or "has_native_resultdb_integration" for all
+    # other tests.
     result['resultdb'] = {'enable': True}
 
   # For now we either get shards from the number of devices specified

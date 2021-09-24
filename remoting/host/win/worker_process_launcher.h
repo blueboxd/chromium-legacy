@@ -24,6 +24,10 @@ class Location;
 class TimeDelta;
 } // namespace base
 
+namespace mojo {
+class ScopedInterfaceEndpointHandle;
+}
+
 namespace IPC {
 class Message;
 } // namespace IPC
@@ -63,6 +67,10 @@ class WorkerProcessLauncher : public base::win::ObjectWatcher::Delegate {
   // |ipc_handler| must outlive this object.
   WorkerProcessLauncher(std::unique_ptr<Delegate> launcher_delegate,
                         WorkerProcessIpcDelegate* ipc_handler);
+
+  WorkerProcessLauncher(const WorkerProcessLauncher&) = delete;
+  WorkerProcessLauncher& operator=(const WorkerProcessLauncher&) = delete;
+
   ~WorkerProcessLauncher() override;
 
   // Asks the worker process to crash and generate a dump, and closes the IPC
@@ -93,6 +101,8 @@ class WorkerProcessLauncher : public base::win::ObjectWatcher::Delegate {
   bool OnMessageReceived(const IPC::Message& message);
   void OnChannelConnected(int32_t peer_pid);
   void OnChannelError();
+  void OnAssociatedInterfaceRequest(const std::string& interface_name,
+                                    mojo::ScopedInterfaceEndpointHandle handle);
 
  private:
   friend class WorkerProcessLauncherTest;
@@ -131,7 +141,8 @@ class WorkerProcessLauncher : public base::win::ObjectWatcher::Delegate {
   // code is used to determine whether the process has to be restarted.
   DWORD exit_code_;
 
-  // True if IPC messages should be passed to |ipc_handler_|.
+  // Indicates whether the worker process has been launched, after which IPC
+  // messages and events should be passed to the |ipc_handler_| delegate.
   bool ipc_enabled_;
 
   // The timer used to delay termination of the worker process when an IPC error
@@ -159,8 +170,6 @@ class WorkerProcessLauncher : public base::win::ObjectWatcher::Delegate {
   base::win::ScopedHandle worker_process_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(WorkerProcessLauncher);
 };
 
 }  // namespace remoting

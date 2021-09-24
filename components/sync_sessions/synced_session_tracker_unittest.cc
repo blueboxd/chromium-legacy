@@ -63,7 +63,7 @@ MATCHER_P(HasSessionTag, expected_tag, "") {
 class SyncedSessionTrackerTest : public testing::Test {
  public:
   SyncedSessionTrackerTest() : tracker_(&sessions_client_) {}
-  ~SyncedSessionTrackerTest() override {}
+  ~SyncedSessionTrackerTest() override = default;
 
   TabNodePool* GetLocalTabNodePool() {
     return &tracker_.LookupTrackedSession(tracker_.local_session_tag_)
@@ -289,7 +289,7 @@ TEST_F(SyncedSessionTrackerTest, LookupSessionTab) {
 }
 
 TEST_F(SyncedSessionTrackerTest, Complex) {
-  std::vector<sessions::SessionTab *> tabs1, tabs2;
+  std::vector<sessions::SessionTab*> tabs1, tabs2;
   sessions::SessionTab* temp_tab;
   ASSERT_TRUE(tracker_.Empty());
   ASSERT_EQ(0U, tracker_.num_synced_sessions());

@@ -16,6 +16,12 @@ class FakeAndroidSmsAppHelperDelegate
     : virtual public AndroidSmsAppHelperDelegate {
  public:
   FakeAndroidSmsAppHelperDelegate();
+
+  FakeAndroidSmsAppHelperDelegate(const FakeAndroidSmsAppHelperDelegate&) =
+      delete;
+  FakeAndroidSmsAppHelperDelegate& operator=(
+      const FakeAndroidSmsAppHelperDelegate&) = delete;
+
   ~FakeAndroidSmsAppHelperDelegate() override;
 
   bool has_installed_app() const { return has_installed_app_; }
@@ -55,12 +61,17 @@ class FakeAndroidSmsAppHelperDelegate
   bool is_default_to_persist_cookie_set_ = false;
   bool has_app_been_manually_uninstalled_ = false;
   bool is_app_registry_ready_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAndroidSmsAppHelperDelegate);
 };
 
 }  // namespace multidevice_setup
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace ash {
+namespace multidevice_setup {
+using ::chromeos::multidevice_setup::FakeAndroidSmsAppHelperDelegate;
+}
+}  // namespace ash
 
 #endif  // CHROMEOS_SERVICES_MULTIDEVICE_SETUP_PUBLIC_CPP_FAKE_ANDROID_SMS_APP_HELPER_DELEGATE_H_

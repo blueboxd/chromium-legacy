@@ -82,6 +82,8 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceChannelDowngradeBehavior[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kEnableDeviceGranularReporting[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceVersionInfo[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceActivityTimes[];
@@ -111,6 +113,8 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceUsers[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceHardwareStatus[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kReportDeviceSecurityStatus[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceSessionStatus[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceGraphicsStatus[];
@@ -128,6 +132,9 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceSystemInfo[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDevicePrintJobs[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceLoginLogout[];
+
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char* const kDeviceReportingSettings[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kHeartbeatEnabled[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kHeartbeatFrequency[];
@@ -379,6 +386,7 @@ using ::chromeos::kDeviceWebBasedAttestationAllowedUrls;
 using ::chromeos::kDeviceWiFiAllowed;
 using ::chromeos::kDeviceWilcoDtcAllowed;
 using ::chromeos::kDisplayRotationDefault;
+using ::chromeos::kEnableDeviceGranularReporting;
 using ::chromeos::kExtensionCacheSize;
 using ::chromeos::kFeatureFlags;
 using ::chromeos::kHeartbeatEnabled;
@@ -411,6 +419,7 @@ using ::chromeos::kReportDeviceNetworkInterfaces;
 using ::chromeos::kReportDeviceNetworkStatus;
 using ::chromeos::kReportDevicePowerStatus;
 using ::chromeos::kReportDevicePrintJobs;
+using ::chromeos::kReportDeviceSecurityStatus;
 using ::chromeos::kReportDeviceSessionStatus;
 using ::chromeos::kReportDeviceStorageStatus;
 using ::chromeos::kReportDeviceSystemInfo;

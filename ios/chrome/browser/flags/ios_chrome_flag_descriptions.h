@@ -92,11 +92,6 @@ extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
-// Title and description for the flag to show tailored fullscreen default
-// browser promos.
-extern const char kDefaultPromoTailoredName[];
-extern const char kDefaultPromoTailoredDescription[];
-
 // Title and description for the flag to show non modal default browser promos.
 extern const char kDefaultPromoNonModalName[];
 extern const char kDefaultPromoNonModalDescription[];
@@ -279,6 +274,10 @@ extern const char kMICEWebSignInDescription[];
 // implemented tabstrip.
 extern const char kModernTabStripName[];
 extern const char kModernTabStripDescription[];
+
+// Title and description for the flag to enable the new overflow menu.
+extern const char kNewOverflowMenuName[];
+extern const char kNewOverflowMenuDescription[];
 
 // Title and description for the flag to change the max number of autocomplete
 // matches in the omnibox popup.

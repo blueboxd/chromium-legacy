@@ -4,19 +4,28 @@
 
 #include "chrome/browser/chromeos/extensions/telemetry/api/base_telemetry_extension_browser_test.h"
 
+#include <memory>
 #include <string>
+#include <utility>
 
+#include "base/callback.h"
+#include "base/files/file_path.h"
+#include "base/location.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/extensions/telemetry/api/fake_hardware_info_delegate.h"
+#include "chrome/browser/chromeos/extensions/telemetry/api/hardware_info_delegate.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
+#include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 
-namespace {
-
-constexpr char kManifest[] = R"(
+// static
+const char BaseTelemetryExtensionBrowserTest::kManifestFile[] = R"(
       {
         // Sample telemetry extension public key. Currently, this is the only
         // allowed extension to declare "chromeos_system_extension" key.
@@ -30,15 +39,19 @@ constexpr char kManifest[] = R"(
           "service_worker": "sw.js"
         },
         "permissions": [ "os.diagnostics", "os.telemetry" ],
+        "optional_permissions": [ "os.telemetry.serial_number" ],
         "externally_connectable": {
-          "ids": [
-            "*"
+          "matches": [
+            "http://www.google.com/*"
           ]
-        }
+        },
+        "options_page": "options.html"
       }
     )";
 
-}  // namespace
+// static
+const char BaseTelemetryExtensionBrowserTest::kPwaPageUrlString[] =
+    "http://www.google.com";
 
 BaseTelemetryExtensionBrowserTest::BaseTelemetryExtensionBrowserTest() =
     default;
@@ -48,61 +61,42 @@ BaseTelemetryExtensionBrowserTest::~BaseTelemetryExtensionBrowserTest() =
 void BaseTelemetryExtensionBrowserTest::SetUpOnMainThread() {
   extensions::ExtensionBrowserTest::SetUpOnMainThread();
 
-  // Make sure that current user is not a device owner.
+  // Make sure that current user is a device owner.
   auto* const user_manager =
       static_cast<FakeChromeUserManager*>(user_manager::UserManager::Get());
-  const AccountId regular_user = AccountId::FromUserEmail("regular@gmail.com");
-  user_manager->AddUser(regular_user);
-  user_manager->SetOwnerId(regular_user);
-}
+  user_manager->SetOwnerId(
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
 
-const extensions::Extension*
-BaseTelemetryExtensionBrowserTest::LoadExtensionWithManifestAndServiceWorker(
-    extensions::TestExtensionDir& test_dir,
-    const std::string& manifest_content,
-    const std::string& service_worker_content) {
-  test_dir.WriteManifest(manifest_content);
-  test_dir.WriteFile(FILE_PATH_LITERAL("sw.js"), service_worker_content);
+  // Make sure device OEM is allowlisted.
+  hardware_info_delegate_factory_ =
+      std::make_unique<FakeHardwareInfoDelegate::Factory>("HP\n");
+  HardwareInfoDelegate::Factory::SetForTesting(
+      hardware_info_delegate_factory_.get());
 
-  return LoadExtension(test_dir.UnpackedPath());
-}
-
-const extensions::Extension*
-BaseTelemetryExtensionBrowserTest::LoadExtensionWithServiceWorker(
-    extensions::TestExtensionDir& test_dir,
-    const std::string& service_worker_content) {
-  return LoadExtensionWithManifestAndServiceWorker(test_dir, kManifest,
-                                                   service_worker_content);
+  if (should_open_pwa_ui_) {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    // Make sure PWA UI is open.
+    pwa_page_rfh_ =
+        ui_test_utils::NavigateToURL(browser(), GURL(kPwaPageUrlString));
+    ASSERT_TRUE(pwa_page_rfh_);
+  }
 }
 
 void BaseTelemetryExtensionBrowserTest::CreateExtensionAndRunServiceWorker(
     const std::string& service_worker_content) {
   // Must outlive the extension.
   extensions::TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifestFile);
+  test_dir.WriteFile(FILE_PATH_LITERAL("sw.js"), service_worker_content);
+  test_dir.WriteFile(FILE_PATH_LITERAL("options.html"), "");
 
   // Must be initialised before loading extension.
   extensions::ResultCatcher result_catcher;
 
-  const auto* extension = LoadExtensionWithManifestAndServiceWorker(
-      test_dir, kManifest, service_worker_content);
+  const auto* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
 
   EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
-}
-
-BaseTelemetryExtensionApiAllowedBrowserTest::
-    BaseTelemetryExtensionApiAllowedBrowserTest() = default;
-BaseTelemetryExtensionApiAllowedBrowserTest::
-    ~BaseTelemetryExtensionApiAllowedBrowserTest() = default;
-
-void BaseTelemetryExtensionApiAllowedBrowserTest::SetUpOnMainThread() {
-  BaseTelemetryExtensionBrowserTest::SetUpOnMainThread();
-
-  // Make sure that current user is a device owner.
-  auto* const user_manager =
-      static_cast<FakeChromeUserManager*>(user_manager::UserManager::Get());
-  user_manager->SetOwnerId(
-      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
 }
 
 }  // namespace chromeos

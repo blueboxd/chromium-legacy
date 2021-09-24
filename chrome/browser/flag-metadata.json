@@ -263,6 +263,12 @@
     "expiry_milestone": 95
   },
   {
+    "name": "arc-usb-device-attach-to-vm-experiment",
+    "owners": [ "lgcheng" ],
+    // Used on ChromeOS to temperorily attach unclaimed USB device to ARCVM
+    "expiry_milestone": 98
+  },
+  {
     "name": "arc-use-high-memory-dalvik-profile",
     "owners": [ "khmel" ],
     "expiry_milestone": 92
@@ -355,12 +361,12 @@
   {
     "name": "autofill-address-save-prompt",
     "owners": [ "mamir", "koerber" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
       "name": "autofill-address-verification-in-save-prompt",
       "owners": [ "mamir", "koerber" ],
-      "expiry_milestone": 97
+      "expiry_milestone": 102
   },
   {
     "name": "autofill-always-return-cloud-tokenized-card",
@@ -503,6 +509,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "autofill-use-consistent-popup-settings-icons",
+    "owners": [ "koerber", "mamir" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "autofill-use-improved-label-disambiguation",
     "owners": [ "autofill-squad-muc@google.com" ],
     "expiry_milestone": 98
@@ -569,8 +580,8 @@
   },
   {
     "name": "bookmark-bottom-sheet",
-    "owners": [ "xingliu" ],
-    "expiry_milestone": 95
+    "owners": [ "wylieb" ],
+    "expiry_milestone": 98
   },
   {
     "name": "bookmarks-refresh",
@@ -780,7 +791,7 @@
   {
     "name": "composite-after-paint",
     "owners": [ "pdr", "wangxianzhu" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 97
   },
   {
     "name": "compositor-threaded-scrollbar-scrolling",
@@ -1786,11 +1797,6 @@
     "expiry_milestone": 98
   },
   {
-    "name": "enable-desktop-pwas-attention-badging-cros",
-    "owners": [ "loubrett@google.com", "chromeos-web-apps-platform-syd@google.com" ],
-    "expiry_milestone": 93
-  },
-  {
     "name": "enable-desktop-pwas-elided-extensions-menu",
     "owners": [ "cmp@chromium.org", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 96
@@ -2696,7 +2702,7 @@
   {
     "name": "enable-tab-grid-layout",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 98
   },
   {
     "name": "enable-tab-groups",
@@ -2706,7 +2712,7 @@
   {
     "name": "enable-tab-groups-continuation",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 98
   },
   {
     "name": "enable-tab-groups-ui-improvements",
@@ -3986,6 +3992,11 @@
     "expiry_milestone": 93
   },
   {
+    "name": "new-overflow-menu",
+    "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 99
+  },
+  {
     "name": "new-shortcut-mapping",
     "owners": [ "zentaro@google.com", "jimmyxgong@google.com", "cros-peripherals@google.com"],
     "expiry_milestone": 98
@@ -4681,8 +4692,8 @@
   },
   {
     "name": "read-later",
-    "owners": [ "chrome-desktop-ui-sea@google.com", "corising" ],
-    "expiry_milestone": 94
+    "owners": [ "chrome-desktop-ui-sea@google.com", "corising", "wylieb", "chrome-collections@google.com" ],
+    "expiry_milestone": 98
   },
   {
     "name": "read-later-new-badge-promo",
@@ -4691,8 +4702,8 @@
   },
   {
     "name": "read-later-reminder-notification",
-    "owners": [ "xingliu" ],
-    "expiry_milestone": 94
+    "owners": [ "wylieb" ],
+    "expiry_milestone": 98
   },
   {
     "name": "reader-mode-heuristics",
@@ -5180,6 +5191,21 @@
     "expiry_milestone" : 96
   },
   {
+    "name" : "side-search",
+    "owners": [ "chrome-cros@google.com", "tluk" ],
+    "expiry_milestone" : 100
+  },
+  {
+    "name" : "side-search-clear-cache-when-closed",
+    "owners": [ "chrome-cros@google.com", "tluk" ],
+    "expiry_milestone" : 100
+  },
+  {
+    "name" : "side-search-state-per-tab",
+    "owners": [ "chrome-cros@google.com", "tluk" ],
+    "expiry_milestone" : 100
+  },
+  {
     "name": "simplify-sign-out-ios",
     "owners": [ "jlebel", "msarda", "fernandex" ],
     "expiry_milestone": 95
@@ -5464,6 +5490,11 @@
     "name": "turn-off-streaming-media-caching-on-battery",
     "owners": [ "wicarr@microsoft.com", "cassew@google.com" ],
     "expiry_milestone": 91
+  },
+  {
+    "name": "u2f-permission-prompt",
+    "owners": [ "//device/fido/OWNERS" ],
+    "expiry_milestone": 104
   },
   {
     "name": "u2f-security-key-api",

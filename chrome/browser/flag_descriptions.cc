@@ -183,6 +183,15 @@ const char kEnableSignedExchangePrefetchCacheForNavigationsDescription[] =
     "a blob and the verification process of the signed exchange is skipped for "
     "the succeeding navigation.";
 
+const char kU2FPermissionPromptName[] =
+    "Enable a permission prompt for the U2F Security Key API";
+const char kU2FPermissionPromptDescription[] =
+    "Show a permission prompt when making requests to the legacy U2F Security "
+    "Key API (CryptoToken). The U2F Security "
+    "Key API has been deprecated and will be removed soon. For more "
+    "information, refer to the deprecation announcement at "
+    "https://groups.google.com/a/chromium.org/g/blink-dev/c/xHC3AtU_65A";
+
 const char kU2FSecurityKeyAPIName[] = "Enable the U2F Security Key API";
 const char kU2FSecurityKeyAPIDescription[] =
     "Enable the legacy U2F Security Key API (CryptoToken). The U2F Security "
@@ -385,6 +394,12 @@ const char kAutofillProfileServerValidationDescription[] =
 const char kAutofillPruneSuggestionsName[] = "Autofill Prune Suggestions";
 const char kAutofillPruneSuggestionsDescription[] =
     "Further limits the number of suggestions in the Autofill dropdown.";
+
+const char kAutofillUseConsistentPopupSettingsIconsName[] =
+    "Consistent Autofill settings icon";
+const char kAutofillUseConsistentPopupSettingsIconsDescription[] =
+    "If enabled, all Autofill data types including addresses, credit cards and "
+    "passwords will use a consistent icon in the popup settings footer.";
 
 const char kAutofillSaveAndFillVPAName[] =
     "Offer save and autofill of UPI/VPA values";
@@ -766,18 +781,6 @@ const char kDesktopPWAsAppIconShortcutsMenuUIName[] =
     "Desktop PWAs app icon shortcuts menu UI";
 const char kDesktopPWAsAppIconShortcutsMenuUIDescription[] =
     "Show web app shortcuts in the shelf context menu";
-
-const char kDesktopPWAsAttentionBadgingCrOSName[] =
-    "Desktop PWAs Attention Badging";
-const char kDesktopPWAsAttentionBadgingCrOSDescription[] =
-    "Enable attention badging for PWA icons in the shelf and launcher.";
-const char kDesktopPWAsAttentionBadgingCrOSApiAndNotifications[] =
-    "for Badging API and notifications";
-const char kDesktopPWAsAttentionBadgingCrOSApiOverridesNotifications[] =
-    "for Badging API, or notifications for apps not using Badging API";
-const char kDesktopPWAsAttentionBadgingCrOSApiOnly[] = "for Badging API only";
-const char kDesktopPWAsAttentionBadgingCrOSNotificationsOnly[] =
-    "for notifications only";
 
 const char kDesktopPWAsRemoveStatusBarName[] = "Desktop PWAs remove status bar";
 const char kDesktopPWAsRemoveStatusBarDescription[] =
@@ -4096,6 +4099,11 @@ const char kArcRtVcpuQuadCoreDesc[] =
     "Enable ARC real time vcpu on a device with 3+ logical cores online to "
     "reduce media playback glitch.";
 
+const char kArcUsbDeviceDefaultAttachToVmName[] =
+    "Attach unclaimed USB devices to ARCVM";
+const char kArcUsbDeviceDefaultAttachToVmDescription[] =
+    "When ARCVM is enabled, always attach unclaimed USB devices to ARCVM";
+
 const char kArcUseHighMemoryDalvikProfileName[] =
     "Enable ARC high-memory dalvik profile";
 const char kArcUseHighMemoryDalvikProfileDesc[] =
@@ -5003,9 +5011,6 @@ const char kSelectToSpeakNavigationControlName[] =
 const char kSelectToSpeakNavigationControlDescription[] =
     "Enables enhanced Select-to-speak navigation features.";
 
-const char kSharesheetName[] = "Sharesheet";
-const char kSharesheetDescription[] = "Chrome OS sharesheet.";
-
 const char kChromeOSSharingHubName[] = "Chrome OS Sharing Hub";
 const char kChromeOSSharingHubDescription[] =
     "Enables the Sharing Hub (share sheet) on ChromeOS via the Omnibox.";
@@ -5360,6 +5365,22 @@ const char kPaintPreviewStartupDescription[] =
     "the tab to be restored on startup, the paint preview will be shown "
     "instead.";
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+const char kSideSearchName[] = "Side search";
+const char kSideSearchDescription[] =
+    "Enables an easily accessible way to access your most recent Google search "
+    "results page embedded in a browser side panel";
+
+const char kSideSearchClearCacheWhenClosedName[] =
+    "Side search clear cache when closed";
+const char kSideSearchClearCacheWhenClosedDescription[] =
+    "Clears the side search cache when the side panel is closed.";
+
+const char kSideSearchStatePerTabName[] = "Side search state per tab";
+const char kSideSearchStatePerTabDescription[] =
+    "Enables a per-tab toggled state for the side search side panel";
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 const char kWebUITabStripName[] = "WebUI tab strip";

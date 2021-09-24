@@ -7,16 +7,16 @@ import("//tools/polymer/html_to_js.gni")
 
 html_to_js("web_components") {
   js_files = [
-    "advanced_options_settings.js",
-    "advanced_settings_dialog.js",
-    "advanced_settings_item.js",
+    "advanced_options_settings.ts",
+    "advanced_settings_dialog.ts",
+    "advanced_settings_item.ts",
     "app.js",
     "button_strip.js",
     "color_settings.js",
     "copies_settings.js",
-    "destination_dialog_css.js",
-    "destination_list_item.js",
-    "destination_list.js",
+    "destination_dialog_css.ts",
+    "destination_list_item.ts",
+    "destination_list.ts",
     "destination_select_css.js",
     "destination_settings.js",
     "dpi_settings.js",
@@ -35,7 +35,7 @@ html_to_js("web_components") {
     "pages_per_sheet_settings.js",
     "pages_settings.js",
     "preview_area.js",
-    "print_preview_search_box.js",
+    "print_preview_search_box.ts",
     "print_preview_shared_css.js",
     "print_preview_vars_css.js",
     "scaling_settings.js",
@@ -46,15 +46,15 @@ html_to_js("web_components") {
   ]
   if (is_chromeos) {
     js_files += [
-      "destination_dialog_cros.js",
+      "destination_dialog_cros.ts",
       "destination_dropdown_cros.js",
       "destination_select_cros.js",
       "pin_settings.js",
-      "provisional_destination_resolver.js",
+      "provisional_destination_resolver.ts",
     ]
   } else {
     js_files += [
-      "destination_dialog.js",
+      "destination_dialog.ts",
       "destination_select.js",
     ]
   }

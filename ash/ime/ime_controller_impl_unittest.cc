@@ -74,6 +74,10 @@ class TestImeControllerObserver : public ImeControllerImpl::Observer {
  public:
   TestImeControllerObserver() = default;
 
+  TestImeControllerObserver(const TestImeControllerObserver&) = delete;
+  TestImeControllerObserver& operator=(const TestImeControllerObserver&) =
+      delete;
+
   // IMEController::Observer:
   void OnCapsLockChanged(bool enabled) override { ++caps_lock_count_; }
   void OnKeyboardLayoutNameChanged(const std::string& layout_name) override {
@@ -87,8 +91,6 @@ class TestImeControllerObserver : public ImeControllerImpl::Observer {
  private:
   int caps_lock_count_ = 0;
   std::string last_keyboard_layout_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestImeControllerObserver);
 };
 
 using ImeControllerImplTest = AshTestBase;
@@ -247,7 +249,7 @@ TEST_F(ImeControllerImplTest, SwitchImeWithAccelerator) {
   EXPECT_FALSE(controller->CanSwitchImeWithAccelerator(wide_half_2));
 
   // Install both a test IME and Japanese IMEs.
-  using chromeos::extension_ime_util::GetInputMethodIDByEngineID;
+  using extension_ime_util::GetInputMethodIDByEngineID;
   const std::string nacl_mozc_jp = GetInputMethodIDByEngineID("nacl_mozc_jp");
   const std::string xkb_jp_jpn = GetInputMethodIDByEngineID("xkb:jp::jpn");
   RefreshImes("ime1", {"ime1", nacl_mozc_jp, xkb_jp_jpn});
@@ -384,6 +386,21 @@ TEST_F(ImeControllerImplTest, MirroringChanged) {
 
   UpdateDisplay("500x500,500x500");
   EXPECT_TRUE(client.is_mirroring_);
+}
+
+TEST_F(ImeControllerImplTest, MeetMirroringChanged) {
+  ImeControllerImpl* controller = Shell::Get()->ime_controller();
+  TestImeControllerClient client;
+  controller->SetClient(&client);
+
+  EXPECT_FALSE(client.is_casting_);
+
+  Shell::Get()->system_tray_notifier()->NotifyScreenCaptureStart(
+      base::DoNothing(), base::DoNothing(), u"");
+  EXPECT_TRUE(client.is_casting_);
+
+  Shell::Get()->system_tray_notifier()->NotifyScreenCaptureStop();
+  EXPECT_FALSE(client.is_casting_);
 }
 
 }  // namespace

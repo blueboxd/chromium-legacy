@@ -63,7 +63,7 @@ class LocalSessionWriteBatch : public LocalSessionEventHandlerImpl::WriteBatch {
     DCHECK(processor_->IsTrackingMetadata());
   }
 
-  ~LocalSessionWriteBatch() override {}
+  ~LocalSessionWriteBatch() override = default;
 
   // WriteBatch implementation.
   void Delete(int tab_node_id) override {
@@ -338,11 +338,9 @@ void SessionSyncBridge::OnSyncStarting(
   }
 
   // Open the store and read state from disk if it exists.
-  SessionStore::Open(
-      request.cache_guid,
-      sessions_client_,
-      base::BindOnce(&SessionSyncBridge::OnStoreInitialized,
-                     weak_ptr_factory_.GetWeakPtr()));
+  SessionStore::Open(request.cache_guid, sessions_client_,
+                     base::BindOnce(&SessionSyncBridge::OnStoreInitialized,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SessionSyncBridge::OnStoreInitialized(
@@ -456,8 +454,8 @@ void SessionSyncBridge::ReportError(const syncer::ModelError& error) {
   change_processor()->ReportError(error);
 }
 
-SessionSyncBridge::SyncingState::SyncingState() {}
+SessionSyncBridge::SyncingState::SyncingState() = default;
 
-SessionSyncBridge::SyncingState::~SyncingState() {}
+SessionSyncBridge::SyncingState::~SyncingState() = default;
 
 }  // namespace sync_sessions

@@ -6,8 +6,10 @@
 
 #include "ash/webui/diagnostics_ui/backend/log_test_helpers.h"
 #include "ash/webui/diagnostics_ui/mojom/network_health_provider.mojom.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
@@ -61,13 +63,28 @@ mojom::NetworkPtr CreateCellularNetworkPtr(const std::string& guid,
                              mac_address, mojom::IPConfigProperties::New());
 }
 
+// Splits `line` on '-' ignoring the first part which is the date, and verifies
+// that the second half of the line equals `expected_message`.
+void ExpectCorrectLogLine(const std::string& expected_message,
+                          const std::string& line) {
+  const std::vector<std::string> event_parts = GetLogLineContents(line);
+  EXPECT_EQ(2u, event_parts.size());
+  EXPECT_EQ(expected_message, event_parts[1]);
+}
+
 }  // namespace
 
 class NetworkingLogTest : public testing::Test {
  public:
-  NetworkingLogTest() = default;
+  NetworkingLogTest() { EXPECT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
   ~NetworkingLogTest() override = default;
+
+ protected:
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+
+  base::ScopedTempDir temp_dir_;
 };
 
 TEST_F(NetworkingLogTest, DetailedLogContentsWiFi) {
@@ -93,17 +110,18 @@ TEST_F(NetworkingLogTest, DetailedLogContentsWiFi) {
       expected_ip_address, std::move(expected_name_servers), expected_guid,
       expected_name, expected_mac_address, mojom::SecurityType::kWepPsk);
 
-  NetworkingLog log;
+  NetworkingLog log(temp_dir_.GetPath());
 
   log.UpdateNetworkList({expected_guid}, expected_guid);
   log.UpdateNetworkState(test_info.Clone());
+  task_environment_.RunUntilIdle();
 
-  const std::string log_as_string = log.GetContents();
+  const std::string log_as_string = log.GetNetworkInfo();
   const std::vector<std::string> log_lines = GetLogLines(log_as_string);
 
   // Expect one title line and 14 content lines.
   EXPECT_EQ(15u, log_lines.size());
-  EXPECT_EQ("--- Networking Info ---", log_lines[0]);
+  EXPECT_EQ("--- Network Info ---", log_lines[0]);
   EXPECT_EQ("Name: " + expected_name, log_lines[1]);
   EXPECT_EQ("Type: WiFi", log_lines[2]);
   EXPECT_EQ("State: Online", log_lines[3]);
@@ -122,6 +140,16 @@ TEST_F(NetworkingLogTest, DetailedLogContentsWiFi) {
   EXPECT_EQ("Name Servers: " + name_server1 + ", " + name_server2,
             log_lines[13]);
   EXPECT_EQ("Subnet Mask: " + expected_subnet_mask, log_lines[14]);
+
+  // Expect one title and one event for adding the network.
+  const std::string events_log = log.GetNetworkEvents();
+  const std::vector<std::string> events_lines = GetLogLines(events_log);
+  EXPECT_EQ(2u, events_lines.size());
+  EXPECT_EQ("--- Network Events ---", events_lines[0]);
+
+  const std::string expected_line =
+      "WiFi network [" + expected_mac_address + "] started in state Online";
+  ExpectCorrectLogLine(expected_line, events_lines[1]);
 }
 
 TEST_F(NetworkingLogTest, DetailedLogContentsEthernet) {
@@ -134,23 +162,34 @@ TEST_F(NetworkingLogTest, DetailedLogContentsEthernet) {
       expected_guid, expected_name, expected_mac_address,
       mojom::AuthenticationType::k8021x);
 
-  NetworkingLog log;
+  NetworkingLog log(temp_dir_.GetPath());
 
   log.UpdateNetworkList({expected_guid}, expected_guid);
   log.UpdateNetworkState(test_info.Clone());
+  task_environment_.RunUntilIdle();
 
-  const std::string log_as_string = log.GetContents();
+  const std::string log_as_string = log.GetNetworkInfo();
   const std::vector<std::string> log_lines = GetLogLines(log_as_string);
 
   // Expect one title line and 10 content lines.
   EXPECT_EQ(11u, log_lines.size());
-  EXPECT_EQ("--- Networking Info ---", log_lines[0]);
+  EXPECT_EQ("--- Network Info ---", log_lines[0]);
   EXPECT_EQ("Name: " + expected_name, log_lines[1]);
   EXPECT_EQ("Type: Ethernet", log_lines[2]);
   EXPECT_EQ("State: Online", log_lines[3]);
   EXPECT_EQ("Active: True", log_lines[4]);
   EXPECT_EQ("MAC Address: " + expected_mac_address, log_lines[5]);
   EXPECT_EQ("Authentication: " + expected_authentication, log_lines[6]);
+
+  // Expect one title and one event for adding the network.
+  const std::string events_log = log.GetNetworkEvents();
+  const std::vector<std::string> events_lines = GetLogLines(events_log);
+  EXPECT_EQ(2u, events_lines.size());
+  EXPECT_EQ("--- Network Events ---", events_lines[0]);
+
+  const std::string expected_line =
+      "Ethernet network [" + expected_mac_address + "] started in state Online";
+  ExpectCorrectLogLine(expected_line, events_lines[1]);
 }
 
 // TODO(michaelcheco): Update test when Cellular type properties are added.
@@ -161,22 +200,182 @@ TEST_F(NetworkingLogTest, DetailedLogContentsCellular) {
   mojom::NetworkPtr test_info = CreateCellularNetworkPtr(
       expected_guid, expected_name, expected_mac_address);
 
-  NetworkingLog log;
+  NetworkingLog log(temp_dir_.GetPath());
 
   log.UpdateNetworkList({expected_guid}, expected_guid);
   log.UpdateNetworkState(test_info.Clone());
+  task_environment_.RunUntilIdle();
 
-  const std::string log_as_string = log.GetContents();
+  const std::string log_as_string = log.GetNetworkInfo();
   const std::vector<std::string> log_lines = GetLogLines(log_as_string);
 
   // Expect one title line and 9 content lines.
   EXPECT_EQ(10u, log_lines.size());
-  EXPECT_EQ("--- Networking Info ---", log_lines[0]);
+  EXPECT_EQ("--- Network Info ---", log_lines[0]);
   EXPECT_EQ("Name: " + expected_name, log_lines[1]);
   EXPECT_EQ("Type: Cellular", log_lines[2]);
   EXPECT_EQ("State: Online", log_lines[3]);
   EXPECT_EQ("Active: True", log_lines[4]);
   EXPECT_EQ("MAC Address: " + expected_mac_address, log_lines[5]);
+
+  // Expect one title and one event for adding the network.
+  const std::string events_log = log.GetNetworkEvents();
+  const std::vector<std::string> events_lines = GetLogLines(events_log);
+  EXPECT_EQ(2u, events_lines.size());
+  EXPECT_EQ("--- Network Events ---", events_lines[0]);
+
+  const std::string expected_line =
+      "Cellular network [" + expected_mac_address + "] started in state Online";
+  ExpectCorrectLogLine(expected_line, events_lines[1]);
+}
+
+TEST_F(NetworkingLogTest, NetworkEvents) {
+  const std::string expected_guid = "guid";
+  const std::string expected_name = "name";
+  const std::string expected_mac_address = "84:C5:A6:30:3F:31";
+
+  mojom::NetworkPtr test_info = CreateEthernetNetworkPtr(
+      expected_guid, expected_name, expected_mac_address,
+      mojom::AuthenticationType::k8021x);
+
+  NetworkingLog log(temp_dir_.GetPath());
+
+  // Add the network.
+  log.UpdateNetworkList({expected_guid}, expected_guid);
+  log.UpdateNetworkState(test_info.Clone());
+
+  // Change the state of the network from Online to Disabled.
+  mojom::NetworkPtr new_state = test_info.Clone();
+  new_state->state = mojom::NetworkState::kDisabled;
+  log.UpdateNetworkState(std::move(new_state));
+
+  // Remove the network.
+  log.UpdateNetworkList({}, "expected_guid");
+
+  // Make sure all the updates are committed.
+  task_environment_.RunUntilIdle();
+
+  // Split the log for verification.
+  const std::string events_log = log.GetNetworkEvents();
+  const std::vector<std::string> events_lines = GetLogLines(events_log);
+  EXPECT_EQ(4u, events_lines.size());
+
+  // Verify section header.
+  size_t upto_line = 0;
+  EXPECT_EQ("--- Network Events ---", events_lines[upto_line++]);
+
+  // Verify add event.
+  std::string expected_line =
+      "Ethernet network [" + expected_mac_address + "] started in state Online";
+  ExpectCorrectLogLine(expected_line, events_lines[upto_line++]);
+
+  // Verify state change event.
+  expected_line = "Ethernet network [" + expected_mac_address +
+                  "] changed state from Online to Disabled";
+  ExpectCorrectLogLine(expected_line, events_lines[upto_line++]);
+
+  // Verify remove event.
+  expected_line = "Ethernet network [" + expected_mac_address + "] removed";
+  ExpectCorrectLogLine(expected_line, events_lines[upto_line++]);
+}
+
+TEST_F(NetworkingLogTest, WiFiNetworkEvents) {
+  const uint32_t expected_signal_strength = 99;
+  const uint16_t expected_frequency = 5785;
+  const std::string expected_ssid = "ssid";
+  const std::string expected_bssid = "bssid";
+  const std::string expected_bssid_roamed = "bssid_roamed";
+  const std::string expected_subnet_mask = "128.0.0.0";
+  const std::string expected_gateway = "192.0.0.1";
+  const std::string expected_ip_address = "192.168.1.1";
+  const std::string expected_security_type = "WEP";
+  const std::string name_server1 = "192.168.1.100";
+  const std::string name_server2 = "192.168.1.101";
+
+  std::vector<std::string> expected_name_servers = {name_server1, name_server2};
+  const std::string expected_guid = "guid";
+  const std::string expected_name = "name";
+  const std::string expected_mac_address = "84:C5:A6:30:3F:31";
+
+  mojom::NetworkPtr test_info = CreateWiFiNetworkPtr(
+      expected_signal_strength, expected_frequency, expected_ssid,
+      expected_bssid, /*routing_prefix=*/1, expected_gateway,
+      expected_ip_address, std::move(expected_name_servers), expected_guid,
+      expected_name, expected_mac_address, mojom::SecurityType::kWepPsk);
+
+  NetworkingLog log(temp_dir_.GetPath());
+
+  // Add the network.
+  log.UpdateNetworkList({expected_guid}, expected_guid);
+  log.UpdateNetworkState(test_info.Clone());
+
+  // Leave the WiFi network.
+  mojom::NetworkPtr new_state = test_info.Clone();
+  new_state->state = mojom::NetworkState::kNotConnected;
+  new_state->type_properties->get_wifi()->ssid = "";
+  log.UpdateNetworkState(std::move(new_state));
+
+  // Rejoin the WiFi network.
+  new_state = test_info.Clone();
+  new_state->state = mojom::NetworkState::kOnline;
+  new_state->type_properties->get_wifi()->ssid = expected_ssid;
+  log.UpdateNetworkState(std::move(new_state));
+
+  // Roam to a new access point.
+  new_state = test_info.Clone();
+  new_state->state = mojom::NetworkState::kOnline;
+  new_state->type_properties->get_wifi()->bssid = expected_bssid_roamed;
+  log.UpdateNetworkState(std::move(new_state));
+
+  // Remove the network.
+  log.UpdateNetworkList({}, "expected_guid");
+
+  // Make sure all the updates are committed.
+  task_environment_.RunUntilIdle();
+
+  // Split the log for verification.
+  const std::string events_log = log.GetNetworkEvents();
+  const std::vector<std::string> events_lines = GetLogLines(events_log);
+  EXPECT_EQ(8u, events_lines.size());
+
+  // Verify section header.
+  size_t upto_line = 0;
+  EXPECT_EQ("--- Network Events ---", events_lines[upto_line++]);
+
+  // Verify add event.
+  std::string expected_line =
+      "WiFi network [" + expected_mac_address + "] started in state Online";
+  ExpectCorrectLogLine(expected_line, events_lines[upto_line++]);
+
+  // Verify network leave event.
+  expected_line = "WiFi network [" + expected_mac_address + "] left SSID '" +
+                  expected_ssid + "'";
+  ExpectCorrectLogLine(expected_line, events_lines[upto_line++]);
+
+  // Verify state change event.
+  expected_line = "WiFi network [" + expected_mac_address +
+                  "] changed state from Online to Not Connected";
+  ExpectCorrectLogLine(expected_line, events_lines[upto_line++]);
+
+  // Verify network join event.
+  expected_line = "WiFi network [" + expected_mac_address + "] joined SSID '" +
+                  expected_ssid + "' on access point [" + expected_bssid + "]";
+  ExpectCorrectLogLine(expected_line, events_lines[upto_line++]);
+
+  // Verify state change event.
+  expected_line = "WiFi network [" + expected_mac_address +
+                  "] changed state from Not Connected to Online";
+  ExpectCorrectLogLine(expected_line, events_lines[upto_line++]);
+
+  // Verify access point roam event.
+  expected_line = "WiFi network [" + expected_mac_address + "] on SSID '" +
+                  expected_ssid + "' roamed from access point [" +
+                  expected_bssid + "] to [" + expected_bssid_roamed + "]";
+  ExpectCorrectLogLine(expected_line, events_lines[upto_line++]);
+
+  // Verify remove event.
+  expected_line = "WiFi network [" + expected_mac_address + "] removed";
+  ExpectCorrectLogLine(expected_line, events_lines[upto_line++]);
 }
 
 }  // namespace diagnostics

@@ -12,6 +12,7 @@ import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-annou
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {RoutineResult, RoutineType, StandardRoutineResult} from './diagnostics_types.js';
+import {getRoutineFailureMessage} from './diagnostics_utils.js';
 import {RoutineGroup} from './routine_group.js';
 import {ExecutionProgress, ResultStatusItem} from './routine_list_executor.js';
 import {BadgeType} from './text_badge.js';
@@ -73,37 +74,6 @@ export function getRoutineType(routineType) {
 }
 
 /**
- * Maps routine to help doc URL
- * @param {!RoutineType} routineType
- * @return {string} url to help docs
- */
-export function lookupLinkForRoutine(routineType) {
-  let url = '';
-  // TODO(ashleydp): Get actual routine links.
-  switch (routineType) {
-    case RoutineType.kCaptivePortal:
-    case RoutineType.kDnsLatency:
-    case RoutineType.kDnsResolution:
-    case RoutineType.kDnsResolverPresent:
-    case RoutineType.kGatewayCanBePinged:
-    case RoutineType.kHasSecureWiFiConnection:
-    case RoutineType.kHttpFirewall:
-    case RoutineType.kHttpsFirewall:
-    case RoutineType.kHttpsLatency:
-    case RoutineType.kLanConnectivity:
-    case RoutineType.kSignalStrength:
-    case RoutineType.kArcHttp:
-    case RoutineType.kArcPing:
-    case RoutineType.kArcDnsResolution:
-      url = '#'
-      break;
-    default:
-      break;
-  }
-  return url;
-}
-
-/**
  * @param {!RoutineResult} result
  * @return {?StandardRoutineResult}
  */
@@ -146,12 +116,6 @@ Polymer({
     routineType_: {
       type: String,
       computed: 'getRunningRoutineString_(item.*)',
-    },
-
-    /** @protected */
-    routineLink_: {
-      type: String,
-      computed: 'getRoutineLink_(item.*)',
     },
 
     /** @protected {!BadgeType} */
@@ -206,16 +170,6 @@ Polymer({
   },
 
   /**
-   * Get routine's help/info link from lookup function
-   * @return {string}
-   * @private
-   */
-  getRoutineLink_() {
-    // TODO(michaelcheco): Use |lookupLinkForRoutine| to get correct links.
-    return this.usingRoutineGroups ? '#' : '';
-  },
-
-  /**
    * @private
    */
   entryStatusChanged_() {
@@ -236,6 +190,15 @@ Polymer({
         break;
       case ExecutionProgress.kCompleted:
         this.testCompleted_ = true;
+        // Prevent warning state from being overridden.
+        if (this.item.inWarningState) {
+          this.setBadgeTypeAndText_(
+              BadgeType.WARNING,
+              loadTimeData.getString('testWarningBadgeText'));
+          this.announceRoutineStatus_();
+          return;
+        }
+
         const testPassed = this.usingRoutineGroups ?
             !this.item.failedTest :
             (this.item.result &&
@@ -245,6 +208,16 @@ Polymer({
         const badgeText = loadTimeData.getString(
             testPassed ? 'testSucceededBadgeText' : 'testFailedBadgeText');
         this.setBadgeTypeAndText_(badgeType, badgeText);
+        this.announceRoutineStatus_();
+        break;
+      case ExecutionProgress.kSkipped:
+        this.setBadgeTypeAndText_(
+            BadgeType.SKIPPED, loadTimeData.getString('testSkippedBadgeText'));
+        this.announceRoutineStatus_();
+        break;
+      case ExecutionProgress.kWarning:
+        this.setBadgeTypeAndText_(
+            BadgeType.WARNING, loadTimeData.getString('testWarningBadgeText'));
         this.announceRoutineStatus_();
         break;
       default:
@@ -288,6 +261,9 @@ Polymer({
       case BadgeType.ERROR:
         lineColor = 'red';
         break;
+      case BadgeType.WARNING:
+        lineColor = 'yellow';
+        break;
       case BadgeType.STOPPED:
       case BadgeType.QUEUED:
         return '';
@@ -312,6 +288,6 @@ Polymer({
       return '';
     }
 
-    return loadTimeData.getStringF('routineFailedText', this.item.failedTest);
+    return getRoutineFailureMessage(this.item.failedTest);
   },
 });

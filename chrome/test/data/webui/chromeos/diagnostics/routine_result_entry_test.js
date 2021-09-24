@@ -99,14 +99,14 @@ export function routineResultEntryTestSuite() {
   }
 
   /**
-   * Returns the span wrapping the link icon.
+   * Returns the span wrapping the failure reason text.
    * @return {!HTMLSpanElement}
    */
-  function getRoutineLinkContainer() {
-    const routineLinkContainer = /** @type{!HTMLSpanElement} */ (
-        routineResultEntryElement.$$('.routineLinkContainer'));
-    assertTrue(!!routineLinkContainer);
-    return routineLinkContainer;
+  function getFailedTestContainer() {
+    const failedTestContainer = /** @type {!HTMLSpanElement} */ (
+        routineResultEntryElement.$$('#failedTestText'));
+    assertTrue(!!failedTestContainer);
+    return failedTestContainer;
   }
 
   test('ElementRendered', () => {
@@ -233,26 +233,16 @@ export function routineResultEntryTestSuite() {
     });
   });
 
-  test('RoutineHasNoLinkTest', () => {
-    const item = createCompletedStatus(
-        RoutineType.kBatteryCharge,
-        /** @type {!RoutineResult} */ ({
-          simpleResult: StandardRoutineResult.kTestPassed
-        }));
-
-    return initializeEntryWithItem(item).then(() => {
-      // Span should be hidden
-      assertFalse(isVisible(getRoutineLinkContainer()));
-    });
-  });
-
-  test('RoutineHasLinkTest', () => {
+  test('NetworkRoutineHasCorrectFailureMessage', () => {
     const item = new RoutineGroup(
         [RoutineType.kLanConnectivity], 'lanConnectivityRoutineText');
-
+    item.failedTest = RoutineType.kLanConnectivity;
     return initializeEntryWithItem(item, true).then(() => {
       // Span should not be hidden
-      assertTrue(isVisible(getRoutineLinkContainer()));
+      assertTrue(isVisible(getFailedTestContainer()));
+      dx_utils.assertElementContainsText(
+          getFailedTestContainer(),
+          loadTimeData.getString('lanConnectivityFailedText'));
     });
   });
 }

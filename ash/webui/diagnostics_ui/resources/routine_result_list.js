@@ -10,7 +10,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {RoutineType} from './diagnostics_types.js';
 import {RoutineGroup} from './routine_group.js';
-import {ResultStatusItem} from './routine_list_executor.js'
+import {ExecutionProgress, ResultStatusItem} from './routine_list_executor.js'
 
 /**
  * @fileoverview
@@ -42,6 +42,15 @@ Polymer({
 
     /** @type {boolean} */
     usingRoutineGroups: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Only used with routine groups.
+     * @type {boolean}
+     */
+    ignoreRoutineStatusUpdates: {
       type: Boolean,
       value: false,
     },
@@ -96,11 +105,23 @@ Polymer({
    * @param {!ResultStatusItem} status
    */
   onStatusUpdate(status) {
+    if (this.ignoreRoutineStatusUpdates) {
+      return;
+    }
+
     assert(this.results_.length > 0);
     this.results_.forEach((result, idx) => {
       if (this.usingRoutineGroups && result.routines.includes(status.routine)) {
         result.setStatus(status);
+        const shouldUpdateRoutineUI = result.hasBlockingFailure();
+        this.hideVerticalLines = shouldUpdateRoutineUI;
         this.updateRoutineStatus_(idx, result.clone());
+        // Whether we should skip the remaining routines (true when a blocking
+        // routine fails) or not.
+        if (shouldUpdateRoutineUI) {
+          this.ignoreRoutineStatusUpdates = true;
+          this.updateRoutineUIAfterFailure();
+        }
         return;
       }
 
@@ -119,6 +140,27 @@ Polymer({
   shouldHideVerticalLines_({value}) {
     return this.hideVerticalLines ||
         value === this.results_[this.results_.length - 1];
+  },
+
+  /**
+   * When a test in a routine group fails, we stop sending status updates to the
+   * UI and display 'SKIPPED' for the remaining routine groups.
+   */
+  updateRoutineUIAfterFailure() {
+    assert(this.usingRoutineGroups);
+    this.results_.forEach((routineGroup, i) => {
+      if (routineGroup.progress === ExecutionProgress.kNotStarted) {
+        routineGroup.progress = ExecutionProgress.kSkipped;
+        this.updateRoutineStatus_(i, routineGroup.clone());
+      }
+    })
+  },
+
+  /**
+   * Called from 'routine-section' after all routines have finished running.
+   */
+  resetIgnoreStatusUpdatesFlag() {
+    this.ignoreRoutineStatusUpdates = false;
   },
 
   /** @override */

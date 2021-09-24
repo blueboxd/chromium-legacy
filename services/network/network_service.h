@@ -82,6 +82,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
                      mojo::NullReceiver(),
                  bool delay_initialization_until_set_client = false);
 
+  NetworkService(const NetworkService&) = delete;
+  NetworkService& operator=(const NetworkService&) = delete;
+
   ~NetworkService() override;
 
   // Call to inform the NetworkService that OSCrypt::SetConfig() has already
@@ -204,6 +207,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void BindTestInterface(
       mojo::PendingReceiver<mojom::NetworkServiceTest> receiver) override;
   void SetFirstPartySets(const std::string& raw_sets) override;
+  void SetPersistedFirstPartySetsAndGetCurrentSets(
+      const std::string& persisted_sets,
+      mojom::NetworkService::SetPersistedFirstPartySetsAndGetCurrentSetsCallback
+          callback) override;
   void SetExplicitlyAllowedPorts(const std::vector<uint16_t>& ports) override;
 
   // Returns an HttpAuthHandlerFactory for the given NetworkContext.
@@ -388,8 +395,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // that renderer process (the renderer will proxy requests from PPAPI - such
   // requests should have their initiator origin within the set stored here).
   std::map<int, std::set<url::Origin>> plugin_origins_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkService);
 };
 
 }  // namespace network

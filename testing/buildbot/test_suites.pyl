@@ -1005,6 +1005,7 @@
 
     'chromium_gtests_for_linux_only': {
       'gtk_unittests': {},
+      'ozone_x11_unittests': {},
       'x11_unittests': {},
     },
 
@@ -1710,6 +1711,11 @@
         ],
       },
       'content_browsertests': {},
+      'unit_tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.unit_tests.filter',
+        ],
+      },
     },
 
     'fuchsia_gpu_telemetry_tests': {
@@ -3947,9 +3953,7 @@
         ],
         'win64_args': [ '--target=Release_x64' ],
         'mac_args': [
-          # These tests run on 10.14, but web_tests [ Mac ] expectations don't
-          # work correctly yet under 10.14. Pretend it's 10.13.
-          '--platform=mac-mac10.13'
+          '--platform=mac-mac11.5'
         ],
         'linux_args': [
           '--no-xvfb',
@@ -3982,9 +3986,7 @@
         ],
         'win64_args': [ '--target=Release_x64' ],
         'mac_args': [
-          # These tests run on 10.14, but web_tests [ Mac ] expectations don't
-          # work correctly yet under 10.14. Pretend it's 10.13.
-          '--platform=mac-mac10.13'
+          '--platform=mac-mac11.5'
         ],
         'linux_args': [
           '--no-xvfb',
@@ -4021,9 +4023,7 @@
         ],
         'win64_args': [ '--target=Release_x64' ],
         'mac_args': [
-          # These tests run on 10.14, but web_tests [ Mac ] expectations don't
-          # work correctly yet under 10.14. Pretend it's 10.13.
-          '--platform=mac-mac10.13'
+          '--platform=mac-mac11.5'
         ],
         'linux_args': [
           '--no-xvfb',

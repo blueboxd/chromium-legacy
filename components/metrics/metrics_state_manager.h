@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -47,6 +48,12 @@ enum class EntropyProviderType {
   kDefault = 0,  // Use CreateDefaultEntropyProvider().
   kLow = 1,      // Use CreateLowEntropyProvider().
 };
+
+// Used to assess the reliability of field trial data by sending artificial
+// non-uniform data. This feature's parameter controls the mu value of a log
+// normal distribution.
+const base::Feature kNonUniformityValidationFeature{
+    "NonUniformityValidation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Responsible for managing MetricsService state prefs, specifically the UMA
 // client id and low entropy source. Code outside the metrics directory should
@@ -106,14 +113,17 @@ class MetricsStateManager final {
     return startup_visibility_ == StartupVisibility::kForeground;
   }
 
-  // Instantiates the FieldTrialList. Uses |entropy_provider_type| to determine
-  // the type of EntropyProvider to use for one-time randomization. See
-  // CreateLowEntropyProvider() and CreateDefaultEntropyProvider() for more
-  // details.
+  // Instantiates the FieldTrialList. Uses |enable_gpu_benchmarking_switch| to
+  // set up the FieldTrialList for benchmarking runs. Uses
+  // |entropy_provider_type| to determine the type of EntropyProvider to use for
+  // one-time randomization. See CreateLowEntropyProvider() and
+  // CreateDefaultEntropyProvider() for more details.
   //
   // Side effect: Initializes |clean_exit_beacon_|.
-  void InstantiateFieldTrialList(EntropyProviderType entropy_provider_type =
-                                     EntropyProviderType::kDefault);
+  void InstantiateFieldTrialList(
+      const char* enable_gpu_benchmarking_switch = nullptr,
+      EntropyProviderType entropy_provider_type =
+          EntropyProviderType::kDefault);
 
   // Signals whether the session has shutdown cleanly if |update_beacon| is
   // true. Passing `false` for |has_session_shutdown_cleanly| means that Chrome
@@ -174,22 +184,23 @@ class MetricsStateManager final {
   //
   // |startup_visibility| denotes whether this session is expected to come to
   // the foreground.
-  //
-  // TODO(crbug/1249196): Make the callbacks optional.
   static std::unique_ptr<MetricsStateManager> Create(
       PrefService* local_state,
       EnabledStateProvider* enabled_state_provider,
       const std::wstring& backup_registry_key,
       const base::FilePath& user_data_dir,
+      StartupVisibility startup_visibility = StartupVisibility::kUnknown,
       StoreClientInfoCallback store_client_info = StoreClientInfoCallback(),
-      LoadClientInfoCallback load_client_info = LoadClientInfoCallback(),
-      StartupVisibility startup_visibility = StartupVisibility::kUnknown);
+      LoadClientInfoCallback load_client_info = LoadClientInfoCallback());
 
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, CheckProviderResetIds);
+  FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, CheckProviderLogNormal);
+  FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest,
+                           CheckProviderLogNormalWithParams);
   FRIEND_TEST_ALL_PREFIXES(
       MetricsStateManagerTest,
       CheckProviderResetIds_PreviousIdOnlyReportInResetSession);
@@ -243,9 +254,14 @@ class MetricsStateManager final {
                       EnabledStateProvider* enabled_state_provider,
                       const std::wstring& backup_registry_key,
                       const base::FilePath& user_data_dir,
+                      StartupVisibility startup_visibility,
                       StoreClientInfoCallback store_client_info,
-                      LoadClientInfoCallback load_client_info,
-                      StartupVisibility startup_visibility);
+                      LoadClientInfoCallback load_client_info);
+
+  // Returns a MetricsStateManagerProvider instance and sets its
+  // |log_normal_metric_state_.gen| with the provided random seed.
+  std::unique_ptr<MetricsProvider> GetProviderAndSetRandomSeedForTesting(
+      int64_t seed);
 
   // Backs up the current client info via |store_client_info_|.
   void BackUpCurrentClientInfo();

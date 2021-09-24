@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/overlay_priority_hint.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 
@@ -120,6 +121,10 @@ class WaylandSurface {
   // See: alpha-compositing-unstable-v1.xml
   void SetOpacity(const float opacity);
 
+  // Sets the blending equation of the wl_surface using
+  // zcr_blending_v1_set_blending. See: alpha-compositing-unstable-v1.xml
+  void SetBlending(const bool use_blending);
+
   // Set the destination size of the associated wl_surface according to
   // |dest_size_px|, which should be in physical pixels.
   // Note this method sends corresponding wayland requests immediately because
@@ -133,6 +138,9 @@ class WaylandSurface {
   // When display is removed, the WaylandOutput from `entered_outputs_` should
   // be removed.
   void RemoveEnteredOutput(uint32_t id);
+
+  // Sets the priority hint for the overlay that is committed via this surface.
+  void SetOverlayPriority(gfx::OverlayPriorityHint priority_hint);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WaylandWindowTest,

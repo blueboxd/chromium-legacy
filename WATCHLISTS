@@ -919,6 +919,9 @@
     'devtools': {
       'filepath': 'devtools',
     },
+    'diagnostics_mojo': {
+      'filepath': 'chromeos/services/cros_healthd/public/mojom/',
+    },
     'diagnostics_ui': {
       'filepath': 'ash/webui/diagnostics_ui/',
     },
@@ -1318,9 +1321,9 @@
     },
     'multidevice': {
       'filepath': 'ash/multi_device_setup/'\
-                  '|chrome/browser/chromeos/cryptauth/'\
-                  '|chrome/browser/chromeos/device_sync/'\
-                  '|chrome/browser/chromeos/multidevice_setup/'\
+                  '|chrome/browser/ash/cryptauth/'\
+                  '|chrome/browser/ash/device_sync/'\
+                  '|chrome/browser/ash/multidevice_setup/'\
                   '|chrome/browser/chromeos/secure_channel/'\
                   '|chrome/browser/resources/chromeos/multidevice_setup/'\
                   '|chrome/browser/resources/settings/multidevice_page/'\
@@ -2464,6 +2467,10 @@
                        'mattreynolds+watch@chromium.org',
                        'odejesush+watch@chromium.org'],
     'devtools': ['devtools-reviews@chromium.org'],
+    'diagnostics_mojo': ['ashleydp+watch-diagnostics_mojo@google.com',
+                         'gavindodd+watch-diagnostics_mojo@google.com',
+                         'michaelcheco+watch-diagnostics_mojo@google.com',
+                         'zentaro+watch-diagnostics_mojo@chromium.org'],
     'diagnostics_ui': ['gavinwill+diagnostics-watch@chromium.org',
                        'michaelcheco+diagnostics-watch@google.com',
                        'zentaro+diagnostics-watch@chromium.org',

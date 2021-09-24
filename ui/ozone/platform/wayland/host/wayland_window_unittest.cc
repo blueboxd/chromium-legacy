@@ -13,8 +13,10 @@
 #include <xdg-shell-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
+#include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/nix/xdg_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,6 +31,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/overlay_priority_hint.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/transform.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
@@ -321,6 +324,11 @@ TEST_P(WaylandWindowTest, UpdateVisualSizeConfiguresWaylandWindow) {
 // some sides of insets divides by 2 with remainder.
 TEST_P(WaylandWindowTest, SetDecorationInsets) {
   const auto kNormalBounds = gfx::Rect{0, 0, 956, 556};
+  const auto kHiDpiScale = 2;
+  const auto kHiDpiBounds = gfx::ScaleToRoundedRect(kNormalBounds, kHiDpiScale);
+
+  window_->SetBounds(kNormalBounds);
+
   uint32_t serial = 0;
   auto state = InitializeWlArrayWithActivatedState();
 
@@ -335,10 +343,7 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
 
   Sync();
 
-  // window_->set_update_visual_size_immediately(false);
-  window_->SetBounds(kNormalBounds);
-  // auto* mock_surface = server_.GetObject<wl::MockSurface>(
-  //     window_->root_surface()->GetSurfaceId());
+  // Set insets for normal DPI.
   const gfx::Insets kDecorationInsets = {24, 28, 32, 28};
   auto bounds_with_insets = kNormalBounds;
   bounds_with_insets.Inset(kDecorationInsets);
@@ -348,6 +353,10 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
                                 bounds_with_insets.width(),
                                 bounds_with_insets.height()));
   window_->SetDecorationInsets(kDecorationInsets);
+  // Setting the decoration insets does not trigger the immediate update of the
+  // window geometry.  Emulate updating the visual size (sending the frame
+  // update) for that.
+  window_->UpdateVisualSize(kNormalBounds.size());
 
   Sync();
 
@@ -361,10 +370,9 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
 
   Sync();
 
-  // Change scale. WaylandToplevelWindow should still configure pending bounds
-  // correctly.
-  EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(1);
-  output->SetScale(2);
+  // Change scale.  This is the only time when we expect the bounds to change.
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kHiDpiBounds))).Times(1);
+  output->SetScale(kHiDpiScale);
   output->Flush();
 
   Sync();
@@ -376,6 +384,10 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
                                 bounds_with_insets.width(),
                                 bounds_with_insets.height()));
   window_->SetDecorationInsets(kDecorationInsets_2x);
+  // Setting the decoration insets does not trigger the immediate update of the
+  // window geometry.  Emulate updating the visual size (sending the frame
+  // update) for that.
+  window_->UpdateVisualSize(kHiDpiBounds.size());
 
   Sync();
 
@@ -2800,7 +2812,16 @@ TEST_P(WaylandWindowTest, CreatesPopupOnTouchDownSerial) {
   test_popup = GetTestXdgPopupByWindow(popup.get());
   ASSERT_TRUE(test_popup);
 
-  EXPECT_EQ(test_popup->grab_serial(), touch_down_serial);
+  uint32_t expected_serial = touch_down_serial;
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto env = base::Environment::Create();
+  if (base::nix::GetDesktopEnvironment(env.get()) ==
+      base::nix::DESKTOP_ENVIRONMENT_GNOME) {
+    // We do not grab with touch events on gnome shell.
+    expected_serial = 0u;
+  }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
+  EXPECT_EQ(test_popup->grab_serial(), expected_serial);
 }
 
 // Tests nested menu windows get the topmost window in the stack of windows
@@ -2944,7 +2965,7 @@ TEST_P(WaylandWindowTest, OneWaylandSubsurface) {
   EXPECT_TRUE(mock_surface_subsurface);
   wayland_subsurface->ConfigureAndShowSurface(
       gfx::OVERLAY_TRANSFORM_NONE, subsurface_bounds, 1 /*buffer_scale*/, true,
-      nullptr, nullptr);
+      nullptr, nullptr, gfx::OverlayPriorityHint::kNone);
   connection_->ScheduleFlush();
 
   Sync();

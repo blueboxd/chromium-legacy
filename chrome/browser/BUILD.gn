@@ -714,6 +714,7 @@ static_library("browser") {
     "media/webrtc/capture_policy_utils.h",
     "media/webrtc/chrome_camera_pan_tilt_zoom_permission_context_delegate.cc",
     "media/webrtc/chrome_camera_pan_tilt_zoom_permission_context_delegate.h",
+    "media/webrtc/desktop_media_list.cc",
     "media/webrtc/desktop_media_list.h",
     "media/webrtc/desktop_media_list_base.cc",
     "media/webrtc/desktop_media_list_base.h",
@@ -1043,6 +1044,8 @@ static_library("browser") {
     "password_manager/bulk_leak_check_service_factory.h",
     "password_manager/chrome_password_manager_client.cc",
     "password_manager/chrome_password_manager_client.h",
+    "password_manager/chrome_webauthn_credentials_delegate.cc",
+    "password_manager/chrome_webauthn_credentials_delegate.h",
     "password_manager/credentials_cleaner_runner_factory.cc",
     "password_manager/credentials_cleaner_runner_factory.h",
     "password_manager/field_info_manager_factory.cc",
@@ -2403,6 +2406,7 @@ static_library("browser") {
     ]
     deps += [
       "//ash/components/audio",
+      "//ash/components/device_activity:device_activity",
       "//ash/components/quick_answers/public/cpp:prefs",
       "//ash/constants",
       "//ash/webui/diagnostics_ui",
@@ -2736,7 +2740,6 @@ static_library("browser") {
       "android/favicon_helper.h",
       "android/feature_engagement/tracker_factory_android.cc",
       "android/feed/feed_process_scope_dependency_provider.cc",
-      "android/feed/feed_surface_scope_dependency_provider.cc",
       "android/feed/v2/background_refresh_task.cc",
       "android/feed/v2/background_refresh_task.h",
       "android/feed/v2/feed_image_fetch_client.cc",
@@ -4590,6 +4593,8 @@ static_library("browser") {
       "nearby_sharing/fast_initiation/fast_initiation_advertiser.h",
       "nearby_sharing/fast_initiation/fast_initiation_scanner.cc",
       "nearby_sharing/fast_initiation/fast_initiation_scanner.h",
+      "nearby_sharing/fast_initiation/fast_initiation_scanner_feature_usage_metrics.cc",
+      "nearby_sharing/fast_initiation/fast_initiation_scanner_feature_usage_metrics.h",
       "nearby_sharing/incoming_frames_reader.cc",
       "nearby_sharing/incoming_frames_reader.h",
       "nearby_sharing/incoming_share_target_info.cc",
@@ -4985,10 +4990,10 @@ static_library("browser") {
       "lacros/metrics_reporting_observer.cc",
       "lacros/metrics_reporting_observer.h",
       "lacros/net/network_settings_translation.h",
-      "lacros/net/proxy_config_service_lacros.cc",
-      "lacros/net/proxy_config_service_lacros.h",
       "lacros/net/network_settings_translation_crosapi.cc",
       "lacros/net/network_settings_translation_net_proxy.cc",
+      "lacros/net/proxy_config_service_lacros.cc",
+      "lacros/net/proxy_config_service_lacros.h",
       "lacros/prefs_ash_observer.cc",
       "lacros/prefs_ash_observer.h",
       "lacros/snap_controller_lacros.cc",
@@ -5487,6 +5492,7 @@ static_library("browser") {
     ]
     deps += [
       "//chrome/browser/enterprise/connectors/device_trust/attestation/common",
+      "//chrome/browser/enterprise/connectors/device_trust/attestation/common:types",
       "//chrome/browser/enterprise/connectors/device_trust/signals",
       "//chrome/browser/enterprise/connectors/device_trust/signals/decorators/common",
       "//components/enterprise/common/proto:device_trust_report_event_proto",
@@ -5683,8 +5689,7 @@ static_library("browser") {
     ]
   }
 
-  if ((is_win || is_linux || is_chromeos) && is_chrome_branded) {
-    # TODO(crbug/1229334): Add Mac support for Lens Region Search feature.
+  if (!is_android && is_chrome_branded) {
     deps += [ "//chrome/browser/lens/region_search" ]
   }
 

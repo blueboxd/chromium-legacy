@@ -224,13 +224,9 @@
 #endif
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chrome/browser/lens/region_search/lens_region_search_controller.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-#endif
-
-#if (defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)) && \
-    BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#include "chrome/browser/lens/region_search/lens_region_search_controller.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -615,6 +611,18 @@ absl::optional<web_app::SystemAppType> GetLinkSystemAppType(Profile* profile,
 bool ShouldUseShareMenu() {
   return base::FeatureList::IsEnabled(share::kShareMenu);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS) ||    \
+        BUILDFLAG(GOOGLE_CHROME_BRANDING)
+ui::MenuSourceType GetMenuSourceType(int event_flags) {
+  if (event_flags & ui::EF_LEFT_MOUSE_BUTTON)
+    return ui::MENU_SOURCE_MOUSE;
+  else if (event_flags & ui::EF_FROM_TOUCH)
+    return ui::MENU_SOURCE_TOUCH;
+  else
+    return ui::MENU_SOURCE_KEYBOARD;
+}
+#endif
 
 }  // namespace
 
@@ -1359,8 +1367,10 @@ void RenderViewContextMenu::AppendLinkItems() {
                                      : share::ShareSubmenuModel::Context::LINK;
       GURL url =
           params_.has_image_contents ? params_.src_url : params_.link_url;
+      std::u16string text =
+          params_.has_image_contents ? u"" : params_.link_text;
       share_submenu_model_ = std::make_unique<share::ShareSubmenuModel>(
-          GetBrowser(), CreateDataEndpoint(true), context, url);
+          GetBrowser(), CreateDataEndpoint(true), context, url, text);
       if (share_submenu_model_->GetItemCount() > 0) {
         menu_model_.AddSubMenuWithStringId(IDC_CONTENT_CONTEXT_SHARING_SUBMENU,
                                            IDS_SHARE_MENU_TITLE,
@@ -1528,7 +1538,7 @@ void RenderViewContextMenu::AppendImageItems() {
   if (ShouldUseShareMenu() && !share_submenu_model_) {
     share_submenu_model_ = std::make_unique<share::ShareSubmenuModel>(
         GetBrowser(), CreateDataEndpoint(true),
-        share::ShareSubmenuModel::Context::IMAGE, params_.src_url);
+        share::ShareSubmenuModel::Context::IMAGE, params_.src_url, u"");
     if (share_submenu_model_->GetItemCount() > 0) {
       menu_model_.AddSubMenuWithStringId(IDC_CONTENT_CONTEXT_SHARING_SUBMENU,
                                          IDS_SHARE_MENU_TITLE,
@@ -1649,8 +1659,7 @@ void RenderViewContextMenu::AppendPageItems() {
                                   IDS_CONTENT_CONTEXT_SAVEPAGEAS);
   menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
   AppendMediaRouterItem();
-#if (defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)) && \
-    BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (IsLensRegionSearchEnabled()) {
     AppendLensRegionSearchItem();
   }
@@ -1660,7 +1669,8 @@ void RenderViewContextMenu::AppendPageItems() {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     share_submenu_model_ = std::make_unique<share::ShareSubmenuModel>(
         GetBrowser(), CreateDataEndpoint(true),
-        share::ShareSubmenuModel::Context::PAGE, params_.page_url);
+        share::ShareSubmenuModel::Context::PAGE, params_.page_url,
+        source_web_contents_->GetTitle());
     if (share_submenu_model_->GetItemCount() > 0) {
       menu_model_.AddSubMenuWithStringId(IDC_CONTENT_CONTEXT_SHARING_SUBMENU,
                                          IDS_SHARE_MENU_TITLE,
@@ -2517,7 +2527,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH:
-      ExecLensRegionSearch();
+      ExecLensRegionSearch(event_flags);
       break;
 
     case IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB:
@@ -2751,13 +2761,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       anchor_point_in_screen.Offset(params_.x, params_.y);
 
       // Calculate the menu source type from `event_flags`.
-      ui::MenuSourceType source_type;
-      if (event_flags & ui::EF_LEFT_MOUSE_BUTTON)
-        source_type = ui::MENU_SOURCE_MOUSE;
-      else if (event_flags & ui::EF_FROM_TOUCH)
-        source_type = ui::MENU_SOURCE_TOUCH;
-      else
-        source_type = ui::MENU_SOURCE_KEYBOARD;
+      ui::MenuSourceType source_type = GetMenuSourceType(event_flags);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       ash::ClipboardHistoryController::Get()->ShowMenu(
@@ -3311,14 +3315,15 @@ void RenderViewContextMenu::ExecSearchLensForImage() {
       lens::features::kEnableSidePanelForLensImageSearch.Get());
 }
 
-void RenderViewContextMenu::ExecLensRegionSearch() {
-#if (defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)) && \
-    BUILDFLAG(GOOGLE_CHROME_BRANDING)
+void RenderViewContextMenu::ExecLensRegionSearch(int event_flags) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (!lens_region_search_controller_)
     lens_region_search_controller_ =
         std::make_unique<lens::LensRegionSearchController>(source_web_contents_,
                                                            GetBrowser());
-  lens_region_search_controller_->Start();
+  bool use_fullscreen_capture =
+      GetMenuSourceType(event_flags) == ui::MENU_SOURCE_KEYBOARD;
+  lens_region_search_controller_->Start(use_fullscreen_capture);
 #endif
 }
 

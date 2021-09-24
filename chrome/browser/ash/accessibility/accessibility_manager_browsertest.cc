@@ -36,6 +36,7 @@
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
+#include "extensions/browser/extension_host_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/accessibility_features.h"
@@ -46,20 +47,18 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/message_center/message_center.h"
 
-namespace extension_ime_util = chromeos::extension_ime_util;
-using chromeos::input_method::InputMethodDescriptors;
-using chromeos::input_method::InputMethodManager;
-using chromeos::input_method::InputMethodUtil;
-using content::BrowserThread;
-using extensions::api::braille_display_private::BrailleObserver;
-using extensions::api::braille_display_private::DisplayState;
-using extensions::api::braille_display_private::KeyEvent;
-using extensions::api::braille_display_private::MockBrailleController;
-using testing::WithParamInterface;
-
 namespace ash {
 
 namespace {
+
+using ::content::BrowserThread;
+using ::extensions::api::braille_display_private::BrailleObserver;
+using ::extensions::api::braille_display_private::DisplayState;
+using ::extensions::api::braille_display_private::KeyEvent;
+using ::extensions::api::braille_display_private::MockBrailleController;
+using input_method::InputMethodDescriptors;
+using input_method::InputMethodManager;
+using ::testing::WithParamInterface;
 
 // Use a real domain to avoid policy loading problems.
 constexpr char kTestUserName[] = "owner@gmail.com";
@@ -727,8 +726,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ChromeVoxPanel) {
   // Switch profiles. The panel shouldn't be created if ChromeVox is off.
   PostSwitchChromeVoxProfile();
   ASSERT_FALSE(IsChromeVoxPanelActive());
+
+  extensions::ExtensionHostTestHelper host_helper(
+      AccessibilityManager::Get()->profile(),
+      extension_misc::kChromeVoxExtensionId);
   SetSpokenFeedbackEnabled(true);
-  WaitForExtensionLoad(extension_misc::kChromeVoxExtensionId);
+  host_helper.WaitForExtensionHostCompletedFirstLoad();
+
   ASSERT_TRUE(IsSpokenFeedbackEnabled());
   ASSERT_TRUE(IsChromeVoxPanelActive());
   // Switch profiles. The panel should not be recreated.

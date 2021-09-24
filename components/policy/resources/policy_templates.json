@@ -939,6 +939,7 @@
       'caption': '''User and device reporting''',
       'desc': '''Controls what kind of user and device information is reported.''',
       'policies': [
+        'EnableDeviceGranularReporting',
         'ReportDeviceVersionInfo',
         'ReportDeviceBootMode',
         'ReportDeviceUsers',
@@ -959,6 +960,7 @@
         'ReportDeviceMemoryInfo',
         'ReportDeviceBacklightInfo',
         'ReportDevicePowerStatus',
+        'ReportDeviceSecurityStatus',
         'ReportDeviceStorageStatus',
         'ReportDeviceAppInfo',
         'ReportDeviceBluetoothInfo',
@@ -10064,6 +10066,36 @@
       If this policy is not set, automatic clean-up uses the default built-in strategy. Currently, it is the 'RemoveLRUIfDormant' strategy.'''
     },
     {
+      'name': 'EnableDeviceGranularReporting',
+      'owners': ['cros-reporting-team@google.com', 'tylergarrett@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:96-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow granular reporting controls',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow granular reporting controls',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 901,
+      'caption': '''Enable granular reporting controls''',
+      'tags': ['admin-sharing'],
+      'desc': '''Setting the policy to enabled or leaving it unset allows for the device to recieve granular reporting controls.
+      Setting the policy to Disabled means enrolled devices won't receive granular reporting controls.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
       'name': 'ReportDeviceVersionInfo',
       'owners': ['cros-reporting-team@google.com', 'lbaraz@chromium.org'],
       'type': 'main',
@@ -10179,7 +10211,7 @@
       'owners': ['tylergarrett@google.com', 'cros-reporting-team@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:96-'],
       'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
@@ -10231,7 +10263,7 @@
       'owners': ['tylergarrett@google.com', 'cros-reporting-team@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:96-'],
       'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
@@ -10316,6 +10348,37 @@
       'desc': '''Setting the policy to Enabled or leaving it unset has enrolled devices report the active kiosk session information such as application ID and version.
 
       Setting the policy to Disabled means enrolled devices don't report kiosk session information.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
+      'name': 'ReportDeviceSecurityStatus',
+      'owners': ['cros-reporting-team@google.com', 'tylergarrett@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:96-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Report security status',
+        },
+        {
+          'value': False,
+          'caption': 'Do not report security status',
+        },
+      ],
+      'example_value': False,
+      'default': False,
+      'id': 900,
+      'caption': '''Report device security status''',
+      'tags': ['admin-sharing'],
+      'desc': '''Setting the policy to enabled or leaving it unset has enrolled devices report device TPM security status.
+
+      Setting the policy to Disabled means enrolled devices don't record or report TPM security status.''',
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
@@ -18673,6 +18736,41 @@
       This mandatory policy affects machine scope cloud policies.''',
     },
     {
+      'name': 'CloudUserPolicyOverridesCloudMachinePolicy',
+      'owners': ['igorruvinov@chromium.org', 'zmin@chromium.org', 'pastarmovj@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:96-'],
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow user cloud policies to override machine cloud policies.',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent user cloud policies from overriding machine cloud policies.',
+        },
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+        'platform_only': True,
+        'metapolicy_type': 'precedence',
+      },
+      'example_value': False,
+      'default': False,
+      'id': 899,
+      'caption': '''Allow user cloud policies to override <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph> policies.''',
+      'tags': [],
+      'desc': '''Setting the policy to Enabled allows policies associated with a <ph name="GOOGLE_WORKSPACE_PRODUCT_NAME">Google Workspace</ph> account to take precedence if they conflict with <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph> policies.
+
+      Only policies originating from secure users can be merged. A secure user is affiliated with the organization that manages their browser using <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. All other user-level policies will have default precedence.
+
+      The policy can be combined with <ph name="POLICY_CLOUDPOLICYOVERRIDESPLATFORMPOLICY">CloudPolicyOverridesPlatformPolicy</ph>. If both policies are enabled, user cloud policies will also take precedence over conflicting platform policies.
+
+      Leaving the policy unset or setting it to disabled causes user-level cloud policies to have default priority.''',
+    },
+    {
       'name': 'PromptForDownloadLocation',
       'owners': ['macourteau@chromium.org', 'zmin@chromium.org'],
       'type': 'main',
@@ -19153,7 +19251,7 @@
       'owners': ['khorimoto@google.com', 'cros-connectivity@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:97-'],
       'device_only': True,
       'features': {
         'can_be_mandatory': True,
@@ -27764,6 +27862,64 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       If this policy is disabled or unset, Chrome Apps may not be allowed to run, depending on the status of the deprecation rollout.
       In either case, Chrome Apps that are force installed by policy will continue to be allowed.''',
     },
+    {
+      'name': 'FullRestoreEnabled',
+      'owners': ['nancylingwang@chromium.org', 'sammiequon@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:96-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the full restore feature.',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the full restore feature.',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 897,
+      'caption': '''Enable the full restore feature''',
+      'tags': [],
+      'desc': '''Setting the policy to enable the full restore feature.
+      If this policy is true, apps and app windows will be restored or not restored after a crash or reboot based on the restore app setting.
+      If this policy is false, only browser windows are automatcially launched.'''
+    },
+    {
+      'name': 'GhostWindowEnabled',
+      'owners': ['nancylingwang@chromium.org', 'sstan@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:96-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the ghost window feature.',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the ghost window feature.',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 898,
+      'caption': '''Enable the ghost window feature''',
+      'tags': [],
+      'desc': '''Setting the policy to enable the ghost window feature.
+      If this policy is true, ARC ghost windows will be created before ARC boots after a crash or reboot based on the restore app setting.
+      If this policy is false, there is no ghost window created before ARC boots. Arc apps are restored after ARC boots'''
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.
@@ -28132,6 +28288,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'AttestationForContentProtectionEnabled': 'attestation_settings.content_protection_enabled',
     'SystemTimezone': 'system_timezone.timezone',
     'SystemTimezoneAutomaticDetection': 'system_timezone.timezone_detection_type',
+    'EnableDeviceGranularReporting': 'device_reporting.enable_granular_reporting',
     'ReportDeviceActivityTimes': 'device_reporting.report_activity_times',
     'ReportDeviceAudioStatus': 'device_reporting.report_audio_status',
     'ReportDeviceBootMode': 'device_reporting.report_boot_mode',
@@ -28141,6 +28298,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'ReportDeviceNetworkStatus': 'device_reporting.report_network_status',
     'ReportDeviceUsers': 'device_reporting.report_users',
     'ReportDeviceHardwareStatus': 'device_reporting.report_hardware_status',
+    'ReportDeviceSecurityStatus': 'device_reporting.report_security_status',
     'ReportDeviceSessionStatus': 'device_reporting.report_session_status',
     'ReportDeviceGraphicsStatus': 'device_reporting.report_graphics_status',
     'ReportDeviceCrashReportInfo': 'device_reporting.report_crash_report_info',
@@ -28592,6 +28750,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       'name': 'UserAndDeviceReporting',
       'caption': '''User and device reporting''',
       'policies': [
+        'EnableDeviceGranularReporting',
         'ReportDeviceVersionInfo',
         'ReportDeviceBootMode',
         'ReportDeviceUsers',
@@ -28612,6 +28771,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'ReportDeviceMemoryInfo',
         'ReportDeviceBacklightInfo',
         'ReportDevicePowerStatus',
+        'ReportDeviceSecurityStatus',
         'ReportDeviceStorageStatus',
         'ReportDeviceAppInfo',
         'ReportDeviceBluetoothInfo',
@@ -28723,6 +28883,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 896,
+  'highest_id_currently_used': 901,
   'highest_atomic_group_id_currently_used': 41
 }

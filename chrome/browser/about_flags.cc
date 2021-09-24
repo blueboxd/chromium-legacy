@@ -35,8 +35,8 @@
 #include "cc/base/features.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/apps/app_discovery_service/app_discovery_features.h"
+#include "chrome/browser/ash/android_sms/android_sms_switches.h"
 #include "chrome/browser/browser_features.h"
-#include "chrome/browser/chromeos/android_sms/android_sms_switches.h"
 #include "chrome/browser/commerce/commerce_feature_list.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/lite_video/lite_video_switches.h"
@@ -765,41 +765,6 @@ const FeatureEntry::Choice kForceTextDirectionChoices[] = {
 };
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-const FeatureEntry::FeatureParam
-    kDesktopPWAsAttentionBadgingCrOSApiAndNotifications[] = {
-        {"badge-source",
-         switches::kDesktopPWAsAttentionBadgingCrOSApiAndNotifications}};
-const FeatureEntry::FeatureParam
-    kDesktopPWAsAttentionBadgingCrOSApiOverridesNotifications[] = {
-        {"badge-source",
-         switches::kDesktopPWAsAttentionBadgingCrOSApiOverridesNotifications}};
-const FeatureEntry::FeatureParam kDesktopPWAsAttentionBadgingCrOSApiOnly[] = {
-    {"badge-source", switches::kDesktopPWAsAttentionBadgingCrOSApiOnly}};
-const FeatureEntry::FeatureParam
-    kDesktopPWAsAttentionBadgingCrOSNotificationsOnly[] = {
-        {"badge-source",
-         switches::kDesktopPWAsAttentionBadgingCrOSNotificationsOnly}};
-
-const FeatureEntry::FeatureVariation
-    kDesktopPWAsAttentionBadgingCrOSVariations[] = {
-        {flag_descriptions::kDesktopPWAsAttentionBadgingCrOSApiAndNotifications,
-         kDesktopPWAsAttentionBadgingCrOSApiAndNotifications,
-         base::size(kDesktopPWAsAttentionBadgingCrOSApiAndNotifications),
-         nullptr},
-        {flag_descriptions::
-             kDesktopPWAsAttentionBadgingCrOSApiOverridesNotifications,
-         kDesktopPWAsAttentionBadgingCrOSApiOverridesNotifications,
-         base::size(kDesktopPWAsAttentionBadgingCrOSApiOverridesNotifications),
-         nullptr},
-        {flag_descriptions::kDesktopPWAsAttentionBadgingCrOSApiOnly,
-         kDesktopPWAsAttentionBadgingCrOSApiOnly,
-         base::size(kDesktopPWAsAttentionBadgingCrOSApiOnly), nullptr},
-        {flag_descriptions::kDesktopPWAsAttentionBadgingCrOSNotificationsOnly,
-         kDesktopPWAsAttentionBadgingCrOSNotificationsOnly,
-         base::size(kDesktopPWAsAttentionBadgingCrOSNotificationsOnly),
-         nullptr},
-};
-
 const FeatureEntry::Choice kSchedulerConfigurationChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kSchedulerConfigurationConservative,
@@ -2933,6 +2898,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillTypeSpecificPopupWidthName,
      flag_descriptions::kAutofillTypeSpecificPopupWidthDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillTypeSpecificPopupWidth)},
+    {"autofill-use-consistent-popup-settings-icons",
+     flag_descriptions::kAutofillUseConsistentPopupSettingsIconsName,
+     flag_descriptions::kAutofillUseConsistentPopupSettingsIconsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUseConsistentPopupSettingsIcons)},
     {"smooth-scrolling", flag_descriptions::kSmoothScrollingName,
      flag_descriptions::kSmoothScrollingDescription,
      // Mac has a separate implementation with its own setting to disable.
@@ -3679,14 +3650,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          web_app::kAllowDefaultWebAppMigrationForChromeOsManagedUsers)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-desktop-pwas-attention-badging-cros",
-     flag_descriptions::kDesktopPWAsAttentionBadgingCrOSName,
-     flag_descriptions::kDesktopPWAsAttentionBadgingCrOSDescription, kOsCrOS,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kDesktopPWAsAttentionBadgingCrOS,
-                                    kDesktopPWAsAttentionBadgingCrOSVariations,
-                                    "DesktopPWAsAttentionBadgingCrOS")},
-#endif
     {"enable-desktop-pwas-prefix-app-name-in-window-title",
      flag_descriptions::kDesktopPWAsPrefixAppNameInWindowTitleName,
      flag_descriptions::kDesktopPWAsPrefixAppNameInWindowTitleDescription,
@@ -4298,6 +4261,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"arc-rt-vcpu-quad-core", flag_descriptions::kArcRtVcpuQuadCoreName,
      flag_descriptions::kArcRtVcpuQuadCoreDesc, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kRtVcpuQuadCore)},
+    {"arc-usb-device-attach-to-vm-experiment",
+     flag_descriptions::kArcUsbDeviceDefaultAttachToVmName,
+     flag_descriptions::kArcUsbDeviceDefaultAttachToVmDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kUsbDeviceDefaultAttachToArcVm)},
     {kArcUseHighMemoryDalvikProfileInternalName,
      flag_descriptions::kArcUseHighMemoryDalvikProfileName,
      flag_descriptions::kArcUseHighMemoryDalvikProfileDesc, kOsCrOS,
@@ -6681,10 +6648,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableOffersInDownstream)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-sharesheet", flag_descriptions::kSharesheetName,
-     flag_descriptions::kSharesheetDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kSharesheet)},
-
     {"chromeos-sharing-hub", flag_descriptions::kChromeOSSharingHubName,
      flag_descriptions::kChromeOSSharingHubDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kChromeOSSharingHub)},
@@ -7722,6 +7685,25 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableOfferNotificationForPromoCodes)},
+
+    {"u2f-permission-prompt", flag_descriptions::kU2FPermissionPromptName,
+     flag_descriptions::kU2FPermissionPromptDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(device::kU2fPermissionPrompt)},
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+    {"side-search", flag_descriptions::kSideSearchName,
+     flag_descriptions::kSideSearchDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSideSearch)},
+
+    {"side-search-clear-cache-when-closed",
+     flag_descriptions::kSideSearchClearCacheWhenClosedName,
+     flag_descriptions::kSideSearchClearCacheWhenClosedDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSideSearchClearCacheWhenClosed)},
+
+    {"side-search-state-per-tab", flag_descriptions::kSideSearchStatePerTabName,
+     flag_descriptions::kSideSearchStatePerTabDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSideSearchStatePerTab)},
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

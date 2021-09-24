@@ -25,6 +25,7 @@
 #include "net/base/network_isolation_key.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
+#include "net/base/proxy_string_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
@@ -417,10 +418,10 @@ TEST_F(ConfiguredProxyResolutionServiceTest, OnResolveProxyCallbackAddProxy) {
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback.callback(), &request, log.bound());
   EXPECT_THAT(rv, IsOk());
-  EXPECT_EQ("badproxy:8080", info.proxy_server().ToURI());
+  EXPECT_EQ("badproxy:8080", ProxyServerToProxyUri(info.proxy_server()));
 
   EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
-  EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy1:8080", ProxyServerToProxyUri(info.proxy_server()));
 
   service.ReportSuccess(info);
 
@@ -514,6 +515,10 @@ template <typename T>
 class DeletingCallback : public TestCompletionCallbackBase {
  public:
   explicit DeletingCallback(std::unique_ptr<T>* deletee);
+
+  DeletingCallback(const DeletingCallback&) = delete;
+  DeletingCallback& operator=(const DeletingCallback&) = delete;
+
   ~DeletingCallback() override;
 
   CompletionOnceCallback callback() {
@@ -528,8 +533,6 @@ class DeletingCallback : public TestCompletionCallbackBase {
   }
 
   std::unique_ptr<T>* deletee_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeletingCallback);
 };
 
 template <typename T>
@@ -904,7 +907,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PAC) {
 
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foopy:80", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy:80", ProxyServerToProxyUri(info.proxy_server()));
 
   EXPECT_FALSE(info.proxy_resolve_start_time().is_null());
   EXPECT_FALSE(info.proxy_resolve_end_time().is_null());
@@ -997,7 +1000,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PAC_FailoverWithoutDirect) {
 
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foopy:8080", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy:8080", ProxyServerToProxyUri(info.proxy_server()));
 
   EXPECT_FALSE(info.proxy_resolve_start_time().is_null());
   EXPECT_FALSE(info.proxy_resolve_end_time().is_null());
@@ -1110,7 +1113,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PAC_FailoverAfterDirect) {
   // Fallback 1.
   EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foobar:10", info.proxy_server().ToURI());
+  EXPECT_EQ("foobar:10", ProxyServerToProxyUri(info.proxy_server()));
 
   // Fallback 2.
   EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
@@ -1119,7 +1122,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PAC_FailoverAfterDirect) {
   // Fallback 3.
   EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foobar:20", info.proxy_server().ToURI());
+  EXPECT_EQ("foobar:20", ProxyServerToProxyUri(info.proxy_server()));
 
   // Fallback 4 -- Nothing to fall back to!
   EXPECT_FALSE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
@@ -1228,7 +1231,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyResolverFails) {
 
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foopy_valid:8080", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy_valid:8080", ProxyServerToProxyUri(info.proxy_server()));
 }
 
 TEST_F(ConfiguredProxyResolutionServiceTest,
@@ -1301,7 +1304,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foopy_valid:8080", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy_valid:8080", ProxyServerToProxyUri(info.proxy_server()));
 }
 
 TEST_F(ConfiguredProxyResolutionServiceTest,
@@ -1374,7 +1377,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foopy_valid:8080", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy_valid:8080", ProxyServerToProxyUri(info.proxy_server()));
 }
 
 TEST_F(ConfiguredProxyResolutionServiceTest,
@@ -1543,7 +1546,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foopy_valid:8080", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy_valid:8080", ProxyServerToProxyUri(info.proxy_server()));
 }
 
 TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback) {
@@ -1587,7 +1590,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback) {
   // The first item is valid.
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy1:8080", ProxyServerToProxyUri(info.proxy_server()));
 
   EXPECT_FALSE(info.proxy_resolve_start_time().is_null());
   EXPECT_FALSE(info.proxy_resolve_end_time().is_null());
@@ -1603,13 +1606,13 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback) {
   EXPECT_EQ(proxy_resolve_end_time, info.proxy_resolve_end_time());
 
   // The second proxy should be specified.
-  EXPECT_EQ("foopy2:9090", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy2:9090", ProxyServerToProxyUri(info.proxy_server()));
   // Report back that the second proxy worked.  This will globally mark the
   // first proxy as bad.
   TestProxyFallbackProxyDelegate test_delegate;
   service.SetProxyDelegate(&test_delegate);
   service.ReportSuccess(info);
-  EXPECT_EQ("foopy1:8080", test_delegate.proxy_server().ToURI());
+  EXPECT_EQ("foopy1:8080", ProxyServerToProxyUri(test_delegate.proxy_server()));
   EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED,
             test_delegate.last_proxy_fallback_net_error());
   service.SetProxyDelegate(nullptr);
@@ -1630,7 +1633,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback) {
 
   EXPECT_THAT(callback3.WaitForResult(), IsOk());
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foopy3:7070", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy3:7070", ProxyServerToProxyUri(info.proxy_server()));
 
   // Proxy times should have been updated, so get them again.
   EXPECT_LE(proxy_resolve_end_time, info.proxy_resolve_start_time());
@@ -1642,13 +1645,13 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback) {
 
   // We fake another error. It should now try the third one.
   EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
-  EXPECT_EQ("foopy2:9090", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy2:9090", ProxyServerToProxyUri(info.proxy_server()));
 
   // We fake another error. At this point we have tried all of the
   // proxy servers we thought were valid; next we try the proxy server
   // that was in our bad proxies map (foopy1:8080).
   EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
-  EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy1:8080", ProxyServerToProxyUri(info.proxy_server()));
 
   // Fake another error, the last proxy is gone, the list should now be empty,
   // so there is nothing left to try.
@@ -1678,7 +1681,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback) {
   // ... therefore, we should see the second proxy first.
   EXPECT_THAT(callback7.WaitForResult(), IsOk());
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foopy3:7070", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy3:7070", ProxyServerToProxyUri(info.proxy_server()));
 
   EXPECT_LE(proxy_resolve_end_time, info.proxy_resolve_start_time());
   EXPECT_FALSE(info.proxy_resolve_start_time().is_null());
@@ -1726,13 +1729,13 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallbackToDirect) {
   // Get the first result.
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy1:8080", ProxyServerToProxyUri(info.proxy_server()));
 
   // Fake an error on the proxy.
   EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
 
   // Now we get back the second proxy.
-  EXPECT_EQ("foopy2:9090", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy2:9090", ProxyServerToProxyUri(info.proxy_server()));
 
   // Fake an error on this proxy as well.
   EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
@@ -1790,14 +1793,14 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback_BadConfig) {
   // The first item is valid.
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy1:8080", ProxyServerToProxyUri(info.proxy_server()));
 
   // Fake a proxy error.
   EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
 
   // The first proxy is ignored, and the second one is selected.
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foopy2:9090", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy2:9090", ProxyServerToProxyUri(info.proxy_server()));
 
   // Persist foopy1's failure to |service|'s cache of bad proxies, so it will
   // be considered by subsequent calls to ResolveProxy().
@@ -1844,7 +1847,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback_BadConfig) {
   // list by the earlier ReportSuccess().
   EXPECT_THAT(callback3.WaitForResult(), IsOk());
   EXPECT_FALSE(info3.is_direct());
-  EXPECT_EQ("foopy2:9090", info3.proxy_server().ToURI());
+  EXPECT_EQ("foopy2:9090", ProxyServerToProxyUri(info3.proxy_server()));
   EXPECT_EQ(2u, info3.proxy_list().size());
 
   EXPECT_FALSE(info.proxy_resolve_start_time().is_null());
@@ -1895,14 +1898,14 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback_BadConfigMandatory) {
   // The first item is valid.
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy1:8080", ProxyServerToProxyUri(info.proxy_server()));
 
   // Fake a proxy error.
   EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
 
   // The first proxy is ignored, and the second one is selected.
   EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foopy2:9090", info.proxy_server().ToURI());
+  EXPECT_EQ("foopy2:9090", ProxyServerToProxyUri(info.proxy_server()));
 
   // Persist foopy1's failure to |service|'s cache of bad proxies, so it will
   // be considered by subsequent calls to ResolveProxy().
@@ -1952,7 +1955,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback_BadConfigMandatory) {
   // list by the earlier ReportSuccess().
   EXPECT_THAT(callback4.WaitForResult(), IsOk());
   EXPECT_FALSE(info3.is_direct());
-  EXPECT_EQ("foopy2:9090", info3.proxy_server().ToURI());
+  EXPECT_EQ("foopy2:9090", ProxyServerToProxyUri(info3.proxy_server()));
   EXPECT_EQ(2u, info3.proxy_list().size());
 }
 
@@ -1988,7 +1991,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyBypassList) {
                             &info[1], callback[1].callback(), &request2,
                             NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
-  EXPECT_EQ("foopy1:8080", info[1].proxy_server().ToURI());
+  EXPECT_EQ("foopy1:8080", ProxyServerToProxyUri(info[1].proxy_server()));
 }
 
 TEST_F(ConfiguredProxyResolutionServiceTest, MarkProxiesAsBadTests) {
@@ -2043,7 +2046,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PerProtocolProxyTests) {
         callback.callback(), &request, NetLogWithSource());
     EXPECT_THAT(rv, IsOk());
     EXPECT_FALSE(info.is_direct());
-    EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
+    EXPECT_EQ("foopy1:8080", ProxyServerToProxyUri(info.proxy_server()));
   }
   {
     ConfiguredProxyResolutionService service(
@@ -2057,7 +2060,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PerProtocolProxyTests) {
         callback.callback(), &request, NetLogWithSource());
     EXPECT_THAT(rv, IsOk());
     EXPECT_TRUE(info.is_direct());
-    EXPECT_EQ("direct://", info.proxy_server().ToURI());
+    EXPECT_EQ("direct://", ProxyServerToProxyUri(info.proxy_server()));
   }
   {
     ConfiguredProxyResolutionService service(
@@ -2071,7 +2074,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PerProtocolProxyTests) {
         callback.callback(), &request, NetLogWithSource());
     EXPECT_THAT(rv, IsOk());
     EXPECT_FALSE(info.is_direct());
-    EXPECT_EQ("foopy2:8080", info.proxy_server().ToURI());
+    EXPECT_EQ("foopy2:8080", ProxyServerToProxyUri(info.proxy_server()));
   }
   {
     config.proxy_rules().ParseFromString("foopy1:8080");
@@ -2086,7 +2089,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PerProtocolProxyTests) {
         callback.callback(), &request, NetLogWithSource());
     EXPECT_THAT(rv, IsOk());
     EXPECT_FALSE(info.is_direct());
-    EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
+    EXPECT_EQ("foopy1:8080", ProxyServerToProxyUri(info.proxy_server()));
   }
 }
 
@@ -2170,7 +2173,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, DefaultProxyFallbackToSOCKS) {
         callback.callback(), &request, NetLogWithSource());
     EXPECT_THAT(rv, IsOk());
     EXPECT_FALSE(info.is_direct());
-    EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
+    EXPECT_EQ("foopy1:8080", ProxyServerToProxyUri(info.proxy_server()));
   }
   {
     ConfiguredProxyResolutionService service(
@@ -2184,7 +2187,8 @@ TEST_F(ConfiguredProxyResolutionServiceTest, DefaultProxyFallbackToSOCKS) {
         callback.callback(), &request, NetLogWithSource());
     EXPECT_THAT(rv, IsOk());
     EXPECT_FALSE(info.is_direct());
-    EXPECT_EQ("socks4://foopy2:1080", info.proxy_server().ToURI());
+    EXPECT_EQ("socks4://foopy2:1080",
+              ProxyServerToProxyUri(info.proxy_server()));
   }
   {
     ConfiguredProxyResolutionService service(
@@ -2198,7 +2202,8 @@ TEST_F(ConfiguredProxyResolutionServiceTest, DefaultProxyFallbackToSOCKS) {
         callback.callback(), &request, NetLogWithSource());
     EXPECT_THAT(rv, IsOk());
     EXPECT_FALSE(info.is_direct());
-    EXPECT_EQ("socks4://foopy2:1080", info.proxy_server().ToURI());
+    EXPECT_EQ("socks4://foopy2:1080",
+              ProxyServerToProxyUri(info.proxy_server()));
   }
   {
     ConfiguredProxyResolutionService service(
@@ -2212,7 +2217,8 @@ TEST_F(ConfiguredProxyResolutionServiceTest, DefaultProxyFallbackToSOCKS) {
         callback.callback(), &request, NetLogWithSource());
     EXPECT_THAT(rv, IsOk());
     EXPECT_FALSE(info.is_direct());
-    EXPECT_EQ("socks4://foopy2:1080", info.proxy_server().ToURI());
+    EXPECT_EQ("socks4://foopy2:1080",
+              ProxyServerToProxyUri(info.proxy_server()));
   }
 }
 
@@ -2282,13 +2288,13 @@ TEST_F(ConfiguredProxyResolutionServiceTest, CancelInProgressRequest) {
   jobs[url1]->CompleteNow(OK);
 
   EXPECT_EQ(OK, callback1.WaitForResult());
-  EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
+  EXPECT_EQ("request1:80", ProxyServerToProxyUri(info1.proxy_server()));
 
   EXPECT_FALSE(callback2.have_result());  // Cancelled.
   GetCancelledJobsForURLs(resolver, url2);
 
   EXPECT_THAT(callback3.WaitForResult(), IsOk());
-  EXPECT_EQ("request3:80", info3.proxy_server().ToURI());
+  EXPECT_EQ("request3:80", ProxyServerToProxyUri(info3.proxy_server()));
 }
 
 // Test the initial PAC download for resolver that expects bytes.
@@ -2381,19 +2387,19 @@ TEST_F(ConfiguredProxyResolutionServiceTest, InitialPACScriptDownload) {
   // ProxyResolver::GetProxyForURL() to take a std::unique_ptr<Request>* rather
   // than a RequestHandle* (patchset #11 id:200001 of
   // https://codereview.chromium.org/1439053002/ )
-  EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
+  EXPECT_EQ("request1:80", ProxyServerToProxyUri(info1.proxy_server()));
   EXPECT_FALSE(info1.proxy_resolve_start_time().is_null());
   EXPECT_FALSE(info1.proxy_resolve_end_time().is_null());
   EXPECT_LE(info1.proxy_resolve_start_time(), info1.proxy_resolve_end_time());
 
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
-  EXPECT_EQ("request2:80", info2.proxy_server().ToURI());
+  EXPECT_EQ("request2:80", ProxyServerToProxyUri(info2.proxy_server()));
   EXPECT_FALSE(info2.proxy_resolve_start_time().is_null());
   EXPECT_FALSE(info2.proxy_resolve_end_time().is_null());
   EXPECT_LE(info2.proxy_resolve_start_time(), info2.proxy_resolve_end_time());
 
   EXPECT_THAT(callback3.WaitForResult(), IsOk());
-  EXPECT_EQ("request3:80", info3.proxy_server().ToURI());
+  EXPECT_EQ("request3:80", ProxyServerToProxyUri(info3.proxy_server()));
   EXPECT_FALSE(info3.proxy_resolve_start_time().is_null());
   EXPECT_FALSE(info3.proxy_resolve_end_time().is_null());
   EXPECT_LE(info3.proxy_resolve_start_time(), info3.proxy_resolve_end_time());
@@ -2539,7 +2545,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, CancelWhilePACFetching) {
   resolver.pending_jobs()[0]->CompleteNow(OK);
 
   EXPECT_THAT(callback3.WaitForResult(), IsOk());
-  EXPECT_EQ("request3:80", info3.proxy_server().ToURI());
+  EXPECT_EQ("request3:80", ProxyServerToProxyUri(info3.proxy_server()));
 
   EXPECT_TRUE(resolver.cancelled_jobs().empty());
 
@@ -2637,13 +2643,13 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
   // ProxyResolver::GetProxyForURL() to take a std::unique_ptr<Request>* rather
   // than a RequestHandle* (patchset #11 id:200001 of
   // https://codereview.chromium.org/1439053002/ )
-  EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
+  EXPECT_EQ("request1:80", ProxyServerToProxyUri(info1.proxy_server()));
   EXPECT_FALSE(info1.proxy_resolve_start_time().is_null());
   EXPECT_FALSE(info1.proxy_resolve_end_time().is_null());
   EXPECT_LE(info1.proxy_resolve_start_time(), info1.proxy_resolve_end_time());
 
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
-  EXPECT_EQ("request2:80", info2.proxy_server().ToURI());
+  EXPECT_EQ("request2:80", ProxyServerToProxyUri(info2.proxy_server()));
   EXPECT_FALSE(info2.proxy_resolve_start_time().is_null());
   EXPECT_FALSE(info2.proxy_resolve_end_time().is_null());
   EXPECT_LE(info2.proxy_resolve_start_time(), info2.proxy_resolve_end_time());
@@ -2726,10 +2732,10 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
   // ProxyResolver::GetProxyForURL() to take a std::unique_ptr<Request>* rather
   // than a RequestHandle* (patchset #11 id:200001 of
   // https://codereview.chromium.org/1439053002/ )
-  EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
+  EXPECT_EQ("request1:80", ProxyServerToProxyUri(info1.proxy_server()));
 
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
-  EXPECT_EQ("request2:80", info2.proxy_server().ToURI());
+  EXPECT_EQ("request2:80", ProxyServerToProxyUri(info2.proxy_server()));
 }
 
 // Test that if all of auto-detect, a custom PAC script, and manual settings
@@ -2790,10 +2796,10 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
   // Verify that jobs ran as expected -- they should have fallen back to
   // the manual proxy configuration for HTTP urls.
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
-  EXPECT_EQ("foopy:80", info1.proxy_server().ToURI());
+  EXPECT_EQ("foopy:80", ProxyServerToProxyUri(info1.proxy_server()));
 
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
-  EXPECT_EQ("foopy:80", info2.proxy_server().ToURI());
+  EXPECT_EQ("foopy:80", ProxyServerToProxyUri(info2.proxy_server()));
 }
 
 // Test that the bypass rules are NOT applied when using autodetect.
@@ -2847,7 +2853,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, BypassDoesntApplyToPac) {
 
   // Verify that request ran as expected.
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
-  EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
+  EXPECT_EQ("request1:80", ProxyServerToProxyUri(info1.proxy_server()));
 
   // Start another request, it should pickup the bypass item.
   ProxyInfo info2;
@@ -2866,7 +2872,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, BypassDoesntApplyToPac) {
   resolver.pending_jobs()[0]->CompleteNow(OK);
 
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
-  EXPECT_EQ("request2:80", info2.proxy_server().ToURI());
+  EXPECT_EQ("request2:80", ProxyServerToProxyUri(info2.proxy_server()));
 }
 
 // Delete the ConfiguredProxyResolutionService while InitProxyResolver has an
@@ -2973,7 +2979,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, UpdateConfigFromPACToDirect) {
 
   // Verify that request ran as expected.
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
-  EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
+  EXPECT_EQ("request1:80", ProxyServerToProxyUri(info1.proxy_server()));
 
   // Force the ConfiguredProxyResolutionService to pull down a new proxy
   // configuration. (Even though the configuration isn't old/bad).
@@ -3053,7 +3059,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, NetworkChangeTriggersPacRefetch) {
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
-  EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
+  EXPECT_EQ("request1:80", ProxyServerToProxyUri(info1.proxy_server()));
 
   // Now simluate a change in the network. The ProxyConfigService is still
   // going to return the same PAC URL as before, but this URL needs to be
@@ -3097,7 +3103,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, NetworkChangeTriggersPacRefetch) {
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
-  EXPECT_EQ("request2:80", info2.proxy_server().ToURI());
+  EXPECT_EQ("request2:80", ProxyServerToProxyUri(info2.proxy_server()));
 
   // Check that the expected events were output to the log stream. In particular
   // PROXY_CONFIG_CHANGED should have only been emitted once (for the initial
@@ -3218,7 +3224,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PACScriptRefetchAfterFailure) {
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
-  EXPECT_EQ("request2:80", info2.proxy_server().ToURI());
+  EXPECT_EQ("request2:80", ProxyServerToProxyUri(info2.proxy_server()));
 }
 
 // This test verifies that the PAC script specified by the settings is
@@ -3284,7 +3290,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
-  EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
+  EXPECT_EQ("request1:80", ProxyServerToProxyUri(info1.proxy_server()));
 
   // At this point we have initialized the proxy service using a PAC script.
   //
@@ -3335,7 +3341,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
-  EXPECT_EQ("request2:80", info2.proxy_server().ToURI());
+  EXPECT_EQ("request2:80", ProxyServerToProxyUri(info2.proxy_server()));
 }
 
 // This test verifies that the PAC script specified by the settings is
@@ -3401,7 +3407,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
-  EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
+  EXPECT_EQ("request1:80", ProxyServerToProxyUri(info1.proxy_server()));
 
   // At this point we have initialized the proxy service using a PAC script.
   //
@@ -3449,7 +3455,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
-  EXPECT_EQ("request2:80", info2.proxy_server().ToURI());
+  EXPECT_EQ("request2:80", ProxyServerToProxyUri(info2.proxy_server()));
 }
 
 // This test verifies that the PAC script specified by the settings is
@@ -3514,7 +3520,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PACScriptRefetchAfterSuccess) {
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
-  EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
+  EXPECT_EQ("request1:80", ProxyServerToProxyUri(info1.proxy_server()));
 
   // At this point we have initialized the proxy service using a PAC script.
   //
@@ -3689,7 +3695,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PACScriptRefetchAfterActivity) {
 
   // Wait for completion callback, and verify that the request ran as expected.
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
-  EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
+  EXPECT_EQ("request1:80", ProxyServerToProxyUri(info1.proxy_server()));
 
   // At this point we have initialized the proxy service using a PAC script.
   // Our PAC poller is set to update ONLY in response to network activity,
@@ -3715,7 +3721,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PACScriptRefetchAfterActivity) {
   resolver.pending_jobs()[0]->CompleteNow(OK);
 
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
-  EXPECT_EQ("request2:80", info2.proxy_server().ToURI());
+  EXPECT_EQ("request2:80", ProxyServerToProxyUri(info2.proxy_server()));
 
   // In response to getting that resolve request, the poller should have
   // started the next poll, and made it as far as to request the download.
@@ -4174,7 +4180,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
       GURL("http://www.example.com"), std::string(), NetworkIsolationKey(),
       &info1, callback1.callback(), &request1, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
-  EXPECT_EQ("foopy1:8080", info1.proxy_server().ToURI());
+  EXPECT_EQ("foopy1:8080", ProxyServerToProxyUri(info1.proxy_server()));
 
   // Test that localhost and link-local URLs bypass the proxy (independent of
   // the URL scheme).
@@ -4241,7 +4247,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ImplicitlyBypassWithPac) {
 
   // Verify that request ran as expected.
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
-  EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
+  EXPECT_EQ("request1:80", ProxyServerToProxyUri(info1.proxy_server()));
 
   // Test that localhost and link-local URLs bypass the use of PAC script
   // (independent of the URL scheme).

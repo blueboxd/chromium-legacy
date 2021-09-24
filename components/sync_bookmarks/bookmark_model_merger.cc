@@ -421,8 +421,9 @@ BookmarkModelMerger::RemoteTreeNode::~RemoteTreeNode() = default;
 
 BookmarkModelMerger::RemoteTreeNode::RemoteTreeNode(
     BookmarkModelMerger::RemoteTreeNode&&) = default;
-BookmarkModelMerger::RemoteTreeNode& BookmarkModelMerger::RemoteTreeNode::
-operator=(BookmarkModelMerger::RemoteTreeNode&&) = default;
+BookmarkModelMerger::RemoteTreeNode&
+BookmarkModelMerger::RemoteTreeNode::operator=(
+    BookmarkModelMerger::RemoteTreeNode&&) = default;
 
 void BookmarkModelMerger::RemoteTreeNode::EmplaceSelfAndDescendantsByGUID(
     std::unordered_map<base::GUID, const RemoteTreeNode*, base::GUIDHash>*
@@ -537,7 +538,7 @@ BookmarkModelMerger::BookmarkModelMerger(
       "Sync.BookmarkModelMerger.ReachableInputUpdates", num_updates_in_forest);
 }
 
-BookmarkModelMerger::~BookmarkModelMerger() {}
+BookmarkModelMerger::~BookmarkModelMerger() = default;
 
 void BookmarkModelMerger::Merge() {
   TRACE_EVENT0("sync", "BookmarkModelMerger::Merge");

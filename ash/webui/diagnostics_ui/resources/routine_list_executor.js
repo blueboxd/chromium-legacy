@@ -16,6 +16,8 @@ export let ExecutionProgress = {
   kRunning: 1,
   kCompleted: 2,
   kCancelled: 3,
+  kSkipped: 4,
+  kWarning: 5,
 };
 
 /**

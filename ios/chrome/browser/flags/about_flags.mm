@@ -71,6 +71,7 @@
 #import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
+#import "ios/chrome/browser/ui/popup_menu/public/feature_flags.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
@@ -210,21 +211,6 @@ const FeatureEntry::FeatureVariation
          kDefaultBrowserFullscreenPromoExperimentRemindMeLater,
          base::size(kDefaultBrowserFullscreenPromoExperimentRemindMeLater),
          nullptr}};
-
-const FeatureEntry::FeatureParam kDefaultPromoTailoredIOS[] = {
-    {kDefaultPromoTailoredVariantIOSParam, "true"}};
-const FeatureEntry::FeatureParam kDefaultPromoTailoredSafe[] = {
-    {kDefaultPromoTailoredVariantSafeParam, "true"}};
-const FeatureEntry::FeatureParam kDefaultPromoTailoredTabs[] = {
-    {kDefaultPromoTailoredVariantTabsParam, "true"}};
-const FeatureEntry::FeatureVariation kDefaultPromoTailoredVariations[] = {
-    {"Built for iOS", kDefaultPromoTailoredIOS,
-     base::size(kDefaultPromoTailoredIOS), nullptr},
-    {"Stay Safe With Google Chrome", kDefaultPromoTailoredSafe,
-     base::size(kDefaultPromoTailoredSafe), nullptr},
-    {"All Your Tabs In One Browser", kDefaultPromoTailoredTabs,
-     base::size(kDefaultPromoTailoredTabs), nullptr},
-};
 
 const FeatureEntry::FeatureParam
     kDefaultPromoNonModalShortTimeoutWithInstructions[] = {
@@ -662,12 +648,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          kDefaultPromoNonModal,
          kDefaultPromoNonModalVariations,
          "IOSDefaultBrowserNonModalPromoExperiment")},
-    {"default-browser-promo-tailored",
-     flag_descriptions::kDefaultPromoTailoredName,
-     flag_descriptions::kDefaultPromoTailoredDescription, flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kDefaultPromoTailored,
-                                    kDefaultPromoTailoredVariations,
-                                    "DefaultPromoTailored")},
     {"autofill-parse-merchant-promo-code-fields",
      flag_descriptions::kAutofillParseMerchantPromoCodeFieldsName,
      flag_descriptions::kAutofillParseMerchantPromoCodeFieldsDescription,
@@ -777,7 +757,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfManageDevicesLinkDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfManageDevicesLink)},
-};
+    {
+        "new-overflow-menu",
+        flag_descriptions::kNewOverflowMenuName,
+        flag_descriptions::kNewOverflowMenuDescription,
+        flags_ui::kOsIos,
+        FEATURE_VALUE_TYPE(kNewOverflowMenu),
+    }};
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
   return false;

@@ -85,14 +85,12 @@ gfx::Image CreateGrayscaleImage(gfx::Size size, uint8_t greyscale_value) {
 
 class MockObserver : public DesktopMediaListObserver {
  public:
-  MOCK_METHOD2(OnSourceAdded, void(DesktopMediaList* list, int index));
-  MOCK_METHOD2(OnSourceRemoved, void(DesktopMediaList* list, int index));
-  MOCK_METHOD3(OnSourceMoved,
-               void(DesktopMediaList* list, int old_index, int new_index));
-  MOCK_METHOD2(OnSourceNameChanged, void(DesktopMediaList* list, int index));
-  MOCK_METHOD2(OnSourceThumbnailChanged,
-               void(DesktopMediaList* list, int index));
-  MOCK_METHOD1(OnAllSourcesFound, void(DesktopMediaList* list));
+  MOCK_METHOD1(OnSourceAdded, void(int index));
+  MOCK_METHOD1(OnSourceRemoved, void(int index));
+  MOCK_METHOD2(OnSourceMoved, void(int old_index, int new_index));
+  MOCK_METHOD1(OnSourceNameChanged, void(int index));
+  MOCK_METHOD1(OnSourceThumbnailChanged, void(int index));
+  MOCK_METHOD1(OnSourcePreviewChanged, void(size_t index));
 
   void VerifyAndClearExpectations() {
     testing::Mock::VerifyAndClearExpectations(this);
@@ -242,6 +240,8 @@ class TabDesktopMediaListTest : public testing::Test {
   }
 
   void TearDown() override {
+    list_.reset();
+
     // TODO(erikchen): Tearing down the TabStripModel should just delete all its
     // owned WebContents. Then |manually_added_web_contents_| won't be
     // necessary. https://crbug.com/832879.
@@ -284,15 +284,15 @@ class TabDesktopMediaListTest : public testing::Test {
       testing::InSequence dummy;
 
       for (int i = 0; i < kDefaultSourceCount; i++) {
-        EXPECT_CALL(observer_, OnSourceAdded(list_.get(), i))
+        EXPECT_CALL(observer_, OnSourceAdded(i))
             .WillOnce(CheckListSize(list_.get(), i + 1));
       }
 
       for (int i = 0; i < kDefaultSourceCount - 1; i++) {
-        EXPECT_CALL(observer_, OnSourceThumbnailChanged(
-                                   list_.get(), kDefaultSourceCount - 1 - i));
+        EXPECT_CALL(observer_,
+                    OnSourceThumbnailChanged(kDefaultSourceCount - 1 - i));
       }
-      EXPECT_CALL(observer_, OnSourceThumbnailChanged(list_.get(), 0))
+      EXPECT_CALL(observer_, OnSourceThumbnailChanged(0))
           .WillOnce(QuitMessageLoop());
     }
 
@@ -338,14 +338,12 @@ TEST_F(TabDesktopMediaListTest, AddTab) {
 
   AddWebcontents(10);
 
-  EXPECT_CALL(observer_, OnSourceAdded(list_.get(), 0))
+  EXPECT_CALL(observer_, OnSourceAdded(0))
       .WillOnce(CheckListSize(list_.get(), kDefaultSourceCount + 1));
-  EXPECT_CALL(observer_, OnSourceThumbnailChanged(list_.get(), 0))
+  EXPECT_CALL(observer_, OnSourceThumbnailChanged(0))
       .WillOnce(QuitMessageLoop());
 
   base::RunLoop().Run();
-
-  list_.reset();
 }
 
 TEST_F(TabDesktopMediaListTest, AddAppWindow) {
@@ -357,14 +355,12 @@ TEST_F(TabDesktopMediaListTest, AddAppWindow) {
   // Note that unlike adding a tab, our AppWindow that we add is only
   // initialized enough to show up in the list; it doesn't have a favicon driver
   // which would be needed to extract the favicon from it.
-  EXPECT_CALL(observer_, OnSourceAdded(list_.get(), 0))
+  EXPECT_CALL(observer_, OnSourceAdded(0))
       .WillOnce(
           testing::DoAll(CheckListSize(list_.get(), kDefaultSourceCount + 1),
                          base::test::RunClosure(loop.QuitClosure())));
 
   loop.Run();
-
-  list_.reset();
 }
 
 TEST_F(TabDesktopMediaListTest, RemoveTab) {
@@ -376,14 +372,12 @@ TEST_F(TabDesktopMediaListTest, RemoveTab) {
       tab_strip_model->DetachWebContentsAtForInsertion(kDefaultSourceCount - 1);
   base::Erase(manually_added_web_contents_, released_web_contents.get());
 
-  EXPECT_CALL(observer_, OnSourceRemoved(list_.get(), 0))
+  EXPECT_CALL(observer_, OnSourceRemoved(0))
       .WillOnce(
           testing::DoAll(CheckListSize(list_.get(), kDefaultSourceCount - 1),
                          QuitMessageLoop()));
 
   base::RunLoop().Run();
-
-  list_.reset();
 }
 
 TEST_F(TabDesktopMediaListTest, MoveTab) {
@@ -403,13 +397,11 @@ TEST_F(TabDesktopMediaListTest, MoveTab) {
   WebContentsTester::For(contents0)->SetLastActiveTime(t1);
   WebContentsTester::For(contents1)->SetLastActiveTime(t0);
 
-  EXPECT_CALL(observer_, OnSourceMoved(list_.get(), 1, 0))
+  EXPECT_CALL(observer_, OnSourceMoved(1, 0))
       .WillOnce(testing::DoAll(CheckListSize(list_.get(), kDefaultSourceCount),
                                QuitMessageLoop()));
 
   base::RunLoop().Run();
-
-  list_.reset();
 }
 
 TEST_F(TabDesktopMediaListTest, UpdateTitle) {
@@ -425,14 +417,11 @@ TEST_F(TabDesktopMediaListTest, UpdateTitle) {
   contents->UpdateTitleForEntry(controller.GetLastCommittedEntry(),
                                 u"New test tab");
 
-  EXPECT_CALL(observer_, OnSourceNameChanged(list_.get(), 0))
-      .WillOnce(QuitMessageLoop());
+  EXPECT_CALL(observer_, OnSourceNameChanged(0)).WillOnce(QuitMessageLoop());
 
   base::RunLoop().Run();
 
   EXPECT_EQ(list_->GetSource(0).name, u"New test tab");
-
-  list_.reset();
 }
 
 TEST_F(TabDesktopMediaListTest, UpdateThumbnail) {
@@ -450,10 +439,28 @@ TEST_F(TabDesktopMediaListTest, UpdateThumbnail) {
   contents->GetController().GetLastCommittedEntry()->GetFavicon() =
       favicon_info;
 
-  EXPECT_CALL(observer_, OnSourceThumbnailChanged(list_.get(), 0))
+  EXPECT_CALL(observer_, OnSourceThumbnailChanged(0))
       .WillOnce(QuitMessageLoop());
 
   base::RunLoop().Run();
+}
 
-  list_.reset();
+// Test that a source which is set as the one being previewed is marked as being
+// visibly captured, so that it is still painted even when hidden.
+TEST_F(TabDesktopMediaListTest, SetPreviewMarksTabAsVisiblyCaptured) {
+  InitializeAndVerify();
+
+  TabStripModel* tab_strip_model = browser_->tab_strip_model();
+  ASSERT_TRUE(tab_strip_model);
+  WebContents* contents =
+      tab_strip_model->GetWebContentsAt(kDefaultSourceCount - 1);
+  ASSERT_TRUE(contents);
+
+  list_->SetPreviewedSource(list_->GetSource(0).id);
+
+  EXPECT_TRUE(contents->IsBeingVisiblyCaptured());
+
+  EXPECT_CALL(observer_, OnSourcePreviewChanged(0)).WillOnce(QuitMessageLoop());
+
+  base::RunLoop().Run();
 }

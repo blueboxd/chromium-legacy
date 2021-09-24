@@ -147,7 +147,6 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/persistent_desks_bar_controller.h"
 #include "ash/wm/event_client_impl.h"
-#include "ash/wm/full_restore/full_restore_controller.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_event_handler.h"
 #include "ash/wm/immersive_context_ash.h"
 #include "ash/wm/lock_state_controller.h"
@@ -168,6 +167,7 @@
 #include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_restore/window_restore_controller.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_shadow_controller_delegate.h"
 #include "ash/wm/workspace_controller.h"
@@ -584,10 +584,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate)
     tray_bluetooth_helper_ = std::make_unique<TrayBluetoothHelperLegacy>();
   }
 
-  if (base::FeatureList::IsEnabled(features::kFastPair)) {
-    quick_pair_mediator_ = quick_pair::Mediator::Factory::Create();
-  }
-
   PowerStatus::Initialize();
 
   session_controller_->AddObserver(this);
@@ -661,7 +657,7 @@ Shell::~Shell() {
   keyboard_controller_->DestroyVirtualKeyboard();
 
   // Depends on |tablet_mode_controller_|.
-  full_restore_controller_.reset();
+  window_restore_controller_.reset();
   shelf_controller_->Shutdown();
   shelf_config_->Shutdown();
 
@@ -1021,6 +1017,12 @@ void Shell::Init(
   // display manager was properly initialized.
   privacy_screen_controller_ = std::make_unique<PrivacyScreenController>();
 
+  // Fast Pair depends on the display manager, so initialize it after
+  // display manager was properly initialized.
+  if (base::FeatureList::IsEnabled(features::kFastPair)) {
+    quick_pair_mediator_ = quick_pair::Mediator::Factory::Create();
+  }
+
   // The WindowModalityController needs to be at the front of the input event
   // pretarget handler list to ensure that it processes input events when modal
   // windows are active.
@@ -1241,10 +1243,10 @@ void Shell::Init(
   // WindowTreeHostManager to host the keyboard window.
   keyboard_controller_->CreateVirtualKeyboard(std::move(keyboard_ui_factory));
 
-  // Create full restore controller after WindowTreeHostManager::InitHosts()
+  // Create window restore controller after WindowTreeHostManager::InitHosts()
   // since it may need to add observers to root windows.
   if (full_restore::features::IsFullRestoreEnabled())
-    full_restore_controller_ = std::make_unique<FullRestoreController>();
+    window_restore_controller_ = std::make_unique<WindowRestoreController>();
 
   cursor_manager_->HideCursor();  // Hide the mouse cursor on startup.
   cursor_manager_->SetCursor(ui::mojom::CursorType::kPointer);

@@ -21,6 +21,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/typed_macros.h"
+#include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
@@ -764,6 +767,9 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
                                  const std::u16string& pasted_text,
                                  size_t index,
                                  base::TimeTicks match_selection_timestamp) {
+  TRACE_EVENT("omnibox", "OmniboxEditModel::OpenMatch", "match", match,
+              "disposition", disposition, "altenate_nav_url", alternate_nav_url,
+              "pasted_text", pasted_text);
   const base::TimeTicks& now(base::TimeTicks::Now());
   base::TimeDelta elapsed_time_since_user_first_modified_omnibox(
       now - time_user_first_modified_omnibox_);
@@ -789,13 +795,6 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   // clear why this happens.
   alternate_input.set_current_url(client_->GetURL());
   alternate_input.set_current_title(client_->GetTitle());
-  std::unique_ptr<OmniboxNavigationObserver> observer(
-      client_->CreateOmniboxNavigationObserver(
-          input_text, match,
-          VerbatimMatchForInput(
-              autocomplete_controller()->history_url_provider(),
-              autocomplete_controller()->autocomplete_provider_client(),
-              alternate_input, alternate_nav_url, false)));
 
   base::TimeDelta elapsed_time_since_last_change_to_default_match(
       now - autocomplete_controller()->last_time_default_match_changed());
@@ -876,8 +875,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       // keyword mode.
 
       // Don't increment usage count for extension keywords.
-      if (client_->ProcessExtensionKeyword(template_url, match, disposition,
-                                           observer.get())) {
+      if (client_->ProcessExtensionKeyword(input_text, template_url, match,
+                                           disposition)) {
         if (disposition != WindowOpenDisposition::NEW_BACKGROUND_TAB)
           view_->RevertAll();
         return;
@@ -946,11 +945,11 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
         ui::PageTransitionFromInt(match.transition |
                                   ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
         match.type, match_selection_timestamp,
-        input_.added_default_scheme_to_typed_url());
-
-    // The observer should have been synchronously notified of a pending load.
-    if (observer && observer->HasSeenPendingLoad())
-      ignore_result(observer.release());  // The observer will delete itself.
+        input_.added_default_scheme_to_typed_url(), input_text, match,
+        VerbatimMatchForInput(
+            autocomplete_controller()->history_url_provider(),
+            autocomplete_controller()->autocomplete_provider_client(),
+            alternate_input, alternate_nav_url, false));
   }
 
   BookmarkModel* bookmark_model = client_->GetBookmarkModel();
@@ -1601,10 +1600,6 @@ void OmniboxEditModel::SetAccessibilityLabel(const AutocompleteMatch& match) {
   view_->SetAccessibilityLabel(view_->GetText(), match, true);
 }
 
-bool OmniboxEditModel::PopupIsOpen() const {
-  return popup_model() && popup_model()->IsOpen();
-}
-
 void OmniboxEditModel::InternalSetUserText(const std::u16string& text) {
   user_text_ = text;
   original_user_text_with_keyword_.clear();
@@ -1744,6 +1739,59 @@ gfx::Image OmniboxEditModel::GetMatchIcon(const AutocompleteMatch& match,
   return client()->GetSizedIcon(vector_icon_type, vector_icon_color);
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
+bool OmniboxEditModel::PopupIsOpen() const {
+  return popup_model() && popup_model()->IsOpen();
+}
+
+OmniboxPopupSelection OmniboxEditModel::PopupStepSelection(
+    OmniboxPopupSelection::Direction direction,
+    OmniboxPopupSelection::Step step) {
+  DCHECK(popup_model());
+  return popup_model()->StepSelection(direction, step);
+}
+
+OmniboxPopupSelection OmniboxEditModel::GetPopupSelection() const {
+  DCHECK(popup_model());
+  return popup_model()->selection();
+}
+
+void OmniboxEditModel::SetPopupSelection(OmniboxPopupSelection new_selection,
+                                         bool reset_to_default,
+                                         bool force_update_ui) {
+  DCHECK(popup_model());
+  popup_model()->SetSelection(new_selection, reset_to_default, force_update_ui);
+}
+
+OmniboxPopupSelection OmniboxEditModel::StepPopupSelection(
+    OmniboxPopupSelection::Direction direction,
+    OmniboxPopupSelection::Step step) {
+  DCHECK(popup_model());
+  return popup_model()->StepSelection(direction, step);
+}
+
+bool OmniboxEditModel::TriggerPopupSelectionAction(
+    OmniboxPopupSelection selection,
+    base::TimeTicks timestamp,
+    WindowOpenDisposition disposition) {
+  DCHECK(popup_model());
+  return popup_model()->TriggerSelectionAction(selection, timestamp,
+                                               disposition);
+}
+
+void OmniboxEditModel::TryDeletingPopupLine(size_t line) {
+  DCHECK(popup_model());
+  return popup_model()->TryDeletingLine(line);
+}
+
+std::u16string OmniboxEditModel::GetPopupAccessibilityLabelForCurrentSelection(
+    const std::u16string& match_text,
+    bool include_positional_info,
+    int* label_prefix_length) {
+  DCHECK(popup_model());
+  return popup_model()->GetAccessibilityLabelForCurrentSelection(
+      match_text, include_positional_info, label_prefix_length);
+}
 
 PrefService* OmniboxEditModel::GetPrefService() const {
   return autocomplete_controller()->autocomplete_provider_client()->GetPrefs();

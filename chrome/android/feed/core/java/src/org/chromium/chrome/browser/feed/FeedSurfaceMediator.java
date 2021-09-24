@@ -209,8 +209,14 @@ public class FeedSurfaceMediator
                 mSigninPromoController.setUpSyncPromoView(mProfileDataCache,
                         mCoordinator.getSigninPromoView().findViewById(
                                 R.id.signin_promo_view_container),
-                        null);
+                        this::onDismissPromo);
             }
+        }
+
+        @Override
+        public void onDismissPromo() {
+            super.onDismissPromo();
+            mCoordinator.updateHeaderViews(false, null);
         }
     }
 
@@ -885,13 +891,17 @@ public class FeedSurfaceMediator
                         R.id.ntp_feed_header_menu_item_activity, iconId));
                 itemList.add(buildMenuListItem(R.string.ntp_manage_interests,
                         R.id.ntp_feed_header_menu_item_interest, iconId));
+                if (FeedServiceBridge.isAutoplayEnabled()) {
+                    itemList.add(buildMenuListItem(R.string.ntp_manage_autoplay,
+                            R.id.ntp_feed_header_menu_item_autoplay, iconId));
+                }
+                if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2_HEARTS)) {
+                    itemList.add(buildMenuListItem(R.string.ntp_manage_reactions,
+                            R.id.ntp_feed_header_menu_item_reactions, iconId));
+                }
             }
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2_HEARTS)) {
-                itemList.add(buildMenuListItem(R.string.ntp_manage_reactions,
-                        R.id.ntp_feed_header_menu_item_reactions, iconId));
-            }
-        }
-        if (FeedServiceBridge.isAutoplayEnabled()) {
+        } else if (FeedServiceBridge.isAutoplayEnabled()) {
+            // Show manage autoplay if not signed in.
             itemList.add(buildMenuListItem(
                     R.string.ntp_manage_autoplay, R.id.ntp_feed_header_menu_item_autoplay, iconId));
         }

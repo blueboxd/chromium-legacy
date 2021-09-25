@@ -136,9 +136,6 @@ extern const char kU2FPermissionPromptDescription[];
 extern const char kU2FSecurityKeyAPIName[];
 extern const char kU2FSecurityKeyAPIDescription[];
 
-extern const char kUseLookalikesForNavigationSuggestionsName[];
-extern const char kUseLookalikesForNavigationSuggestionsDescription[];
-
 extern const char kUseStorkSmdsServerAddressName[];
 extern const char kUseStorkSmdsServerAddressDescription[];
 
@@ -628,6 +625,9 @@ extern const char kDownloadProgressMessageDescription[];
 extern const char kEnableFencedFramesName[];
 extern const char kEnableFencedFramesDescription[];
 
+extern const char kEnableFirmwareUpdaterAppName[];
+extern const char kEnableFirmwareUpdaterAppDescription[];
+
 extern const char kEnableGamepadButtonAxisEventsName[];
 extern const char kEnableGamepadButtonAxisEventsDescription[];
 
@@ -697,8 +697,8 @@ extern const char kEnableUseZoomForDsfChoiceDefault[];
 extern const char kEnableUseZoomForDsfChoiceEnabled[];
 extern const char kEnableUseZoomForDsfChoiceDisabled[];
 
-extern const char kEnableWebAuthenticationAssertionTransportName[];
-extern const char kEnableWebAuthenticationAssertionTransportDescription[];
+extern const char kEnableWebAuthenticationAuthenticatorAttachmentName[];
+extern const char kEnableWebAuthenticationAuthenticatorAttachmentDescription[];
 
 extern const char kEnableWebAuthenticationCableV2SupportName[];
 extern const char kEnableWebAuthenticationCableV2SupportDescription[];
@@ -970,12 +970,6 @@ extern const char kDestroyProfileOnBrowserCloseDescription[];
 extern const char kNewUsbBackendName[];
 extern const char kNewUsbBackendDescription[];
 
-extern const char kNewTabstripAnimationName[];
-extern const char kNewTabstripAnimationDescription[];
-
-extern const char kNotificationIndicatorName[];
-extern const char kNotificationIndicatorDescription[];
-
 extern const char kNotificationsRevampName[];
 extern const char kNotificationsRevampDescription[];
 
@@ -1156,6 +1150,9 @@ extern const char kPdfUnseasonedDescription[];
 
 extern const char kPdfXfaFormsName[];
 extern const char kPdfXfaFormsDescription[];
+
+extern const char kBookmarksImprovedSaveFlowName[];
+extern const char kBookmarksImprovedSaveFlowDescription[];
 
 extern const char kBookmarksRefreshName[];
 extern const char kBookmarksRefreshDescription[];
@@ -1592,6 +1589,9 @@ extern const char kWebrtcSrtpAesGcmDescription[];
 extern const char kWebrtcUseMinMaxVEADimensionsName[];
 extern const char kWebrtcUseMinMaxVEADimensionsDescription[];
 
+extern const char kWebUsbDeviceDetectionName[];
+extern const char kWebUsbDeviceDetectionDescription[];
+
 extern const char kWebXrForceRuntimeName[];
 extern const char kWebXrForceRuntimeDescription[];
 
@@ -1721,9 +1721,6 @@ extern const char kChromeShareLongScreenshotDescription[];
 extern const char kChromeShareScreenshotName[];
 extern const char kChromeShareScreenshotDescription[];
 
-extern const char kChromeSharingHubName[];
-extern const char kChromeSharingHubDescription[];
-
 extern const char kChromeSharingHubLaunchAdjacentName[];
 extern const char kChromeSharingHubLaunchAdjacentDescription[];
 
@@ -1735,9 +1732,6 @@ extern const char kCloseTabSuggestionsDescription[];
 
 extern const char kCriticalPersistedTabDataName[];
 extern const char kCriticalPersistedTabDataDescription[];
-
-extern const char kContextMenuPerformanceInfoAndRemoteHintFetchingName[];
-extern const char kContextMenuPerformanceInfoAndRemoteHintFetchingDescription[];
 
 extern const char kContextualSearchDebugName[];
 extern const char kContextualSearchDebugDescription[];
@@ -2405,6 +2399,9 @@ extern const char kCellularUseAttachApnDescription[];
 
 extern const char kCellularUseExternalEuiccName[];
 extern const char kCellularUseExternalEuiccDescription[];
+
+extern const char kComponentUpdaterTestRequestName[];
+extern const char kComponentUpdaterTestRequestDescription[];
 
 extern const char kContextualNudgesName[];
 extern const char kContextualNudgesDescription[];

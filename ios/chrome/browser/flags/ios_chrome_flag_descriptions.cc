@@ -99,10 +99,6 @@ const char kDcheckIsFatalDescription[] =
     "rather than crashing. If enabled, DCHECKs will crash the calling process.";
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
-const char kDefaultPromoNonModalName[] = "Default Browser Non-Modal Promo";
-const char kDefaultPromoNonModalDescription[] =
-    "When enabled non-modal default browser promos can be triggered.";
-
 const char kUseDefaultUserAgentInWebClientName[] =
     "[Refactoring] Let the client choose default mode";
 const char kUseDefaultUserAgentInWebClientDescription[] =
@@ -197,6 +193,10 @@ const char kEnableFullPageScreenshotName[] = "Enable fullpage screenshots";
 const char kEnableFullPageScreenshotDescription[] =
     "Enables the option of capturing an entire webpage as a PDF when a "
     "screenshot is taken.";
+
+const char kEnableLongMessageDurationName[] = "Enable long message duration";
+const char kEnableLongMessageDurationDescription[] =
+    "Enables a long duration when an overlay message is shown.";
 
 const char kEnableManualPasswordGenerationName[] =
     "Enable manual password generation.";
@@ -368,11 +368,6 @@ const char kReadingListMessagesName[] = "Enables Reading List Messages";
 const char kReadingListMessagesDescription[] =
     "When enabled, a Messages prompt may be presented to allow the user to "
     "save the current page to Reading List";
-
-const char kRefactoredNTPName[] = "Enables refactored new tab page";
-const char kRefactoredNTPDescription[] =
-    "When enabled, the new tab page is replaced with the refactored version, "
-    "which changes the ownership and containment of views.";
 
 const char kRestoreGaiaCookiesOnUserActionName[] =
     "Restore GAIA cookies on user action";

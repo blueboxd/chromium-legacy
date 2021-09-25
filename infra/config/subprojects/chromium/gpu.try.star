@@ -254,8 +254,8 @@ gpu_mac_builder(
 )
 
 gpu_mac_builder(
-    name = "gpu-fyi-try-mac-arm64-apple-dtk-rel",
-    pool = "luci.chromium.gpu.mac.arm64.apple.dtk.try",
+    name = "gpu-fyi-try-mac-arm64-apple-m1-rel",
+    pool = "luci.chromium.gpu.mac.arm64.apple.m1.try",
 )
 
 gpu_mac_builder(

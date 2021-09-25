@@ -412,6 +412,17 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // https://crbug.com/1148542 are known.
   virtual std::string GetKeepAliveDurations() const = 0;
 
+  // Returns the number of active Shutdown-Delay requests.
+  // For debugging only. TODO(wjmaclean): Remove once the causes behind
+  // https://crbug.com/1148542 are known.
+  virtual size_t GetShutdownDelayRefCount() const = 0;
+  // Diagnostic code for https://crbug/1148542. This will be removed prior to
+  // resolving that issue. They're included to allow MockRenderProcessHost to
+  // override them, and should not be called from outside of content/.
+  virtual void IncrementRfhCount() = 0;
+  virtual void DecrementRfhCount() = 0;
+  virtual int GetRfhCount() const = 0;
+
   // "Worker ref count" is similar to "Keep alive ref count", but is specific to
   // workers since they do not have pre-defined timeouts. Also affected by
   // DisableRefCounts() in the same manner as for

@@ -72,7 +72,7 @@ external/wpt/fetch/metadata/favicon.https.sub.html [ Skip ]
 
 crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Pass Skip Timeout ]
 
-# The following tests need to remove the assumption that user activation isvirtual/text-antialias/firstline/capitalize-transform.html
+# The following tests need to remove the assumption that user activation is
 # available in child/sibling frames.  This assumption doesn't hold with User
 # Activation v2 (UAv2).
 crbug.com/906791 external/wpt/fullscreen/api/element-ready-check-allowed-cross-origin-manual.sub.html [ Timeout ]
@@ -330,9 +330,6 @@ crbug.com/791941 virtual/gpu-rasterization/images/color-profile-border-fade.html
 crbug.com/1098369 fast/canvas/OffscreenCanvas-copyImage.html [ Failure Pass ]
 
 crbug.com/1106590 virtual/gpu/fast/canvas/canvas-path-non-invertible-transform.html [ Crash Pass ]
-
-crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform-2.html [ Crash Pass ]
-crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform.html [ Crash Pass ]
 
 crbug.com/1237275 fast/canvas/layers-lonebeginlayer.html [ Failure Pass ]
 crbug.com/1237275 fast/canvas/layers-unmatched-beginlayer.html [ Failure Pass ]
@@ -784,8 +781,6 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ 
 
 #### external/wpt/css/css-sizing
 crbug.com/1251788 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-002.html [ Failure ]
-crbug.com/1166834 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-025.html [ Failure ]
-crbug.com/1166834 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-026.html [ Failure ]
 crbug.com/970201 external/wpt/css/css-sizing/slice-intrinsic-size.html [ Failure ]
 crbug.com/970201 external/wpt/css/css-sizing/clone-intrinsic-size.html [ Failure ]
 
@@ -2023,6 +2018,13 @@ crbug.com/1223681 virtual/plz-dedicated-worker/external/wpt/service-workers/serv
 # crbug.com/1218723 This test fails when SplitCacheByNetworkIsolationKey is enabled.
 crbug.com/1218723 http/tests/devtools/network/network-prefetch.js [ Failure ]
 
+# We've removed the existing console warning and replaced it with error message
+# tooltips in the HTTP request cookies view. We intend to also add a DevTools
+# Issue that makes it easier for developers to notice that a large cookie has
+# been rejected. Once that occurs, modify this test to look for the DevTools
+# Issue being created and then re-enable it.
+crbug.com/1252463 http/tests/devtools/network/warning-for-long-cookie.js [ Failure ]
+
 # No support for WPT print-reftests:
 crbug.com/1090628 external/wpt/infrastructure/reftest/reftest_match-print.html [ Failure ]
 crbug.com/1090628 external/wpt/infrastructure/reftest/reftest_match_fail-print.html [ Failure ]
@@ -2847,6 +2849,8 @@ crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/worker-interception.https.html [ Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-start-delay.https.html [ Failure ]
+crbug.com/626703 [ Mac10.15 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-start-delay.https.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/html/semantics/forms/the-selectmenu-element/selectmenu-parts-structure.tentative.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/semantics/forms/the-selectmenu-element/selectmenu-parts-structure.tentative.html [ Timeout ]
 crbug.com/626703 [ Linux ] virtual/synchronous_html_parser/external/wpt/html/semantics/forms/the-selectmenu-element/selectmenu-parts-structure.tentative.html [ Timeout ]
@@ -5201,6 +5205,7 @@ crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transf
 crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/3d-rendering-context-and-fixpos.html [ Failure ]
 crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/3d-rendering-context-and-inline.html [ Failure ]
 crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform3d-sorting-004.html [ Failure ]
+crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform-table-008.html [ Failure ]
 
 # 3d-point-mapping-2 tests incorrect (pre-TransformInterop) behavior,
 # but we should keep testing that until TransformInterop is shipped.
@@ -6262,10 +6267,10 @@ external/wpt/css/css-transforms/transform-background-001.html [ Failure ]
 external/wpt/css/css-transforms/transform-background-002.html [ Failure ]
 external/wpt/css/css-transforms/transform-background-007.html [ Failure ]
 external/wpt/css/css-transforms/transform-background-008.html [ Failure ]
-external/wpt/css/css-transforms/transform-fixed-bg-001.html [ Failure ]
 external/wpt/css/css-transforms/transform-fixed-bg-002.html [ Failure ]
 external/wpt/css/css-transforms/transform-fixed-bg-003.html [ Failure ]
 external/wpt/css/css-transforms/transform-fixed-bg-004.html [ Failure ]
+external/wpt/css/css-transforms/transform-fixed-bg-005.html [ Failure ]
 external/wpt/css/css-transforms/transform-fixed-bg-006.html [ Failure ]
 external/wpt/css/css-transforms/transform-fixed-bg-007.html [ Failure ]
 external/wpt/css/css-transforms/transform-image-001.html [ Failure ]
@@ -6281,24 +6286,13 @@ external/wpt/css/css-transforms/transform-origin/svg-origin-length-pt-002.html [
 external/wpt/css/css-transforms/transform-origin/svg-origin-length-pt-003.html [ Failure ]
 external/wpt/css/css-transforms/transform-origin/svg-origin-length-pt-004.html [ Failure ]
 external/wpt/css/css-transforms/transform-origin/svg-origin-length-pt-005.html [ Failure ]
-external/wpt/css/css-transforms/transform-origin/svg-origin-relative-length-030.html [ Failure ]
-external/wpt/css/css-transforms/transform-origin/svg-origin-relative-length-036.html [ Failure ]
-external/wpt/css/css-transforms/transform-origin/svg-origin-relative-length-044.html [ Failure ]
-external/wpt/css/css-transforms/transform-origin/svg-origin-relative-length-046.html [ Failure ]
 external/wpt/css/css-transforms/transform-percent-008.html [ Failure ]
-external/wpt/css/css-transforms/transform-rotate-006.html [ Failure ]
 external/wpt/css/css-transforms/transform-rotate-007.html [ Failure ]
-external/wpt/css/css-transforms/transform-scale-001.html [ Failure ]
-external/wpt/css/css-transforms/transform-scale-002.html [ Failure ]
-external/wpt/css/css-transforms/transform-scaley-001.html [ Failure ]
 crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform-table-006.html [ Failure ]
 crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform-table-007.html [ Failure ]
-external/wpt/css/css-transforms/transform-table-008.html [ Failure ]
-external/wpt/css/css-transforms/transform-translatex-006.html [ Failure ]
 external/wpt/css/css-transforms/transforms-rotate-degree-45.html [ Failure ]
 external/wpt/css/css-transforms/ttwf-transform-skewx-001.html [ Failure ]
 external/wpt/css/css-transforms/ttwf-transform-skewy-001.html [ Failure ]
-external/wpt/css/css-transforms/ttwf-transform-translatex-001.html [ Failure ]
 # Started failing after rolling new version of check-layout-th.js
 css3/flexbox/perpendicular-writing-modes-inside-flex-item.html [ Failure ]
 
@@ -6659,7 +6653,13 @@ crbug.com/1238130 external/wpt/animation-worklet/worklet-animation-with-scroll-t
 
 # Sheriff 2021-07-29
 crbug.com/626703 http/tests/security/cross-frame-access-put.html [ Failure Pass ]
-crbug.com/626703 virtual/threaded/external/wpt/animation-worklet/worklet-animation-start-delay.https.html [ Failure Pass ]
+crbug.com/626703 [ Fuchsia ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-start-delay.https.html [ Failure Pass ]
+crbug.com/626703 [ Mac10.12 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-start-delay.https.html [ Failure Pass ]
+crbug.com/626703 [ Mac10.13 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-start-delay.https.html [ Failure Pass ]
+crbug.com/626703 [ Mac10.14 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-start-delay.https.html [ Failure Pass ]
+crbug.com/626703 [ Mac11-arm64 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-start-delay.https.html [ Failure Pass ]
+crbug.com/626703 [ Mac11.0 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-start-delay.https.html [ Failure Pass ]
+crbug.com/626703 [ Win ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-start-delay.https.html [ Failure Pass ]
 crbug.com/626703 virtual/oopr-canvas2d/fast/canvas/canvas-composite-canvas.html [ Failure Pass ]
 
 # Sheriff 2021-07-30

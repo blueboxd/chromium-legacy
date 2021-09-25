@@ -802,6 +802,7 @@
     'remove_from': [
       'linux-archive-dbg',
       'linux-archive-rel',
+      'linux-archive-tagged',
       'mac-archive-dbg',
       'mac-archive-rel',
       'mac-arm64-archive-dbg',
@@ -1753,7 +1754,7 @@
           '$$MAGIC_SUBSTITUTION_GPUExpectedDeviceId': None,
         },
       },
-      'Mac FYI arm64 Release (Apple DTK)': {
+      'Mac FYI Release (Apple M1)': {
         'args': {
           # The GPU information is not yet exposed in swarming, so we can't
           # explicitly request it and have the JSON generation handle this

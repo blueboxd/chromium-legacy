@@ -92,10 +92,6 @@ extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
-// Title and description for the flag to show non modal default browser promos.
-extern const char kDefaultPromoNonModalName[];
-extern const char kDefaultPromoNonModalDescription[];
-
 // Title and description for the flag to have the web client choosing the
 // default user agent.
 extern const char kUseDefaultUserAgentInWebClientName[];
@@ -174,6 +170,10 @@ extern const char kEnableFREUIModuleIOSDescription[];
 // Title and description for the flag to enable fullpage screenshots.
 extern const char kEnableFullPageScreenshotName[];
 extern const char kEnableFullPageScreenshotDescription[];
+
+// Title and description for the flag to enable long message duration.
+extern const char kEnableLongMessageDurationName[];
+extern const char kEnableLongMessageDurationDescription[];
 
 // Title and description for the flag to enable UI that allows the user to
 // create a strong password even if the field wasn't parsed as a new password
@@ -316,10 +316,6 @@ extern const char kPasswordReuseDetectionDescription[];
 // Title and description for the flag to enable the Reading List Messages.
 extern const char kReadingListMessagesName[];
 extern const char kReadingListMessagesDescription[];
-
-// Title and description for the flag that enables the refactored new tab page.
-extern const char kRefactoredNTPName[];
-extern const char kRefactoredNTPDescription[];
 
 // Title and description for the flag that makes Safe Browsing available.
 extern const char kSafeBrowsingAvailableName[];

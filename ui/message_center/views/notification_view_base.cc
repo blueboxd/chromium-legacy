@@ -77,22 +77,15 @@ namespace message_center {
 namespace {
 
 // Dimensions.
-constexpr gfx::Insets kContentRowPadding(0, 12, 16, 12);
 constexpr gfx::Insets kActionsRowPadding(8, 8, 8, 8);
 constexpr int kActionsRowHorizontalSpacing = 8;
 constexpr gfx::Insets kStatusTextPadding(4, 0, 0, 0);
 constexpr gfx::Size kActionButtonMinSize(0, 32);
-// TODO(tetsui): Move |kIconViewSize| to public/cpp/message_center_constants.h
-// and merge with contradicting |kNotificationIconSize|.
-constexpr gfx::Size kIconViewSize(36, 36);
 constexpr gfx::Insets kLargeImageContainerPadding(0, 16, 16, 16);
 constexpr int kLargeImageMaxHeight = 218;
-constexpr gfx::Insets kLeftContentPadding(2, 4, 0, 4);
-constexpr gfx::Insets kLeftContentPaddingWithIcon(2, 4, 0, 12);
 constexpr gfx::Insets kSettingsRowPadding(8, 0, 0, 0);
 constexpr gfx::Insets kSettingsRadioButtonPadding(14, 18, 14, 18);
 constexpr gfx::Insets kSettingsButtonRowPadding(8);
-
 
 // Max number of lines for title_view_.
 constexpr int kMaxLinesForTitleView = 1;
@@ -103,16 +96,6 @@ constexpr int kMaxLinesForExpandedMessageView = 4;
 constexpr int kCompactTitleMessageViewSpacing = 12;
 
 constexpr int kProgressBarHeight = 4;
-
-constexpr int kMessageViewWidthWithIcon =
-    kNotificationWidth - kIconViewSize.width() -
-    kLeftContentPaddingWithIcon.left() - kLeftContentPaddingWithIcon.right() -
-    kContentRowPadding.left() - kContentRowPadding.right();
-
-constexpr int kMessageViewWidth =
-    kNotificationWidth - kLeftContentPadding.left() -
-    kLeftContentPadding.right() - kContentRowPadding.left() -
-    kContentRowPadding.right();
 
 // Character limit = pixels per line * line limit / min. pixels per character.
 constexpr size_t kMessageCharacterLimit =
@@ -323,7 +306,6 @@ BEGIN_METADATA(NotificationTextButton, views::MdTextButton)
 END_METADATA
 
 // NotificationInputContainer ////////////////////////////////////////////////
-
 
 // InlineSettingsRadioButton ///////////////////////////////////////////////////
 
@@ -665,7 +647,6 @@ std::unique_ptr<views::View> NotificationViewBase::CreateLeftContentView() {
   auto left_content = std::make_unique<views::View>();
   left_content->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
-  left_content->SetBorder(views::CreateEmptyBorder(kLeftContentPadding));
   left_content_ = left_content.get();
   return left_content;
 }
@@ -683,7 +664,7 @@ std::unique_ptr<views::View> NotificationViewBase::CreateContentRow() {
   auto content_row = std::make_unique<views::View>();
   auto* content_row_layout =
       content_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal, kContentRowPadding, 0));
+          views::BoxLayout::Orientation::kHorizontal));
   content_row_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
   content_row->SetID(kContentRow);
@@ -707,10 +688,6 @@ std::unique_ptr<views::View> NotificationViewBase::CreateImageContainerView() {
   image_container_view->SetLayoutManager(std::make_unique<views::FillLayout>());
   image_container_view->SetBorder(
       views::CreateEmptyBorder(kLargeImageContainerPadding));
-  int max_width = kNotificationWidth - kLargeImageContainerPadding.width() -
-                  GetInsets().width();
-  image_container_view->AddChildView(std::make_unique<LargeImageView>(
-      gfx::Size(max_width, kLargeImageMaxHeight)));
   image_container_view_ = image_container_view.get();
   return image_container_view;
 }
@@ -936,7 +913,7 @@ void NotificationViewBase::CreateOrUpdateIconView(
   }
 
   if (!icon_view_) {
-    icon_view_ = new ProportionalImageView(kIconViewSize);
+    icon_view_ = new ProportionalImageView(GetIconViewSize());
     right_content_->AddChildView(icon_view_);
   }
 
@@ -988,6 +965,7 @@ void NotificationViewBase::CreateOrUpdateImageView(
                     GetInsets().width();
     image_container_view_->AddChildView(std::make_unique<LargeImageView>(
         gfx::Size(max_width, kLargeImageMaxHeight)));
+    image_container_view_->SetVisible(true);
   }
 
   static_cast<LargeImageView*>(image_container_view_->children().front())
@@ -1005,8 +983,6 @@ void NotificationViewBase::CreateOrUpdateActionButtonViews(
     action_buttons_.clear();
     actions_row_->SetVisible(expanded_ && !buttons.empty());
   }
-
-  // DCHECK_EQ(this, actions_row_->parent());
 
   // Hide inline reply field if it doesn't exist anymore.
   if (inline_reply_->GetVisible()) {
@@ -1233,19 +1209,6 @@ void NotificationViewBase::UpdateViewForExpandedState(bool expanded) {
 
   bool has_icon = IsIconViewShown();
   right_content_->SetVisible(has_icon);
-  left_content_->SetBorder(views::CreateEmptyBorder(
-      has_icon ? kLeftContentPaddingWithIcon : kLeftContentPadding));
-
-  // TODO(tetsui): Workaround https://crbug.com/682266 by explicitly setting
-  // the width.
-  // Ideally, we should fix the original bug, but it seems there's no obvious
-  // solution for the bug according to https://crbug.com/678337#c7, we should
-  // ensure that the change won't break any of the users of BoxLayout class.
-  const int message_view_width =
-      (has_icon ? kMessageViewWidthWithIcon : kMessageViewWidth) -
-      GetInsets().width();
-  if (message_view_)
-    message_view_->SizeToFit(message_view_width);
 
   content_row_->InvalidateLayout();
 }

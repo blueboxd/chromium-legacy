@@ -19,6 +19,8 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_non_backed.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/platform/platform_event_source.h"
+#include "ui/events/platform/scoped_event_dispatcher.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
@@ -104,12 +106,12 @@ bool WaylandDataDragController::StartSession(const OSExchangeData& data,
   DCHECK_EQ(state_, State::kIdle);
   DCHECK(!origin_window_);
 
-  origin_window_ = source == DragEventSource::kTouch
-                       ? window_manager_->GetCurrentTouchFocusedWindow()
-                       : window_manager_->GetCurrentPointerFocusedWindow();
-  if (!origin_window_) {
-    LOG(ERROR) << "Failed to get focused window. drag_source="
-               << static_cast<int>(source);
+  WaylandWindow* origin_window =
+      source == DragEventSource::kTouch
+          ? window_manager_->GetCurrentTouchFocusedWindow()
+          : window_manager_->GetCurrentPointerFocusedWindow();
+  if (!origin_window) {
+    LOG(ERROR) << "Failed to get focused window. source=" << source;
     return false;
   }
 
@@ -120,8 +122,7 @@ bool WaylandDataDragController::StartSession(const OSExchangeData& data,
   // causing hangs as observerd in crbug.com/1209269.
   auto serial = GetAndValidateSerialForDrag(source);
   if (!serial.has_value()) {
-    LOG(ERROR) << "Invalid state when trying to start drag. source="
-               << static_cast<int>(source);
+    LOG(ERROR) << "Invalid state when trying to start drag. source=" << source;
     return false;
   }
 
@@ -137,7 +138,7 @@ bool WaylandDataDragController::StartSession(const OSExchangeData& data,
     icon_surface_ = std::make_unique<WaylandSurface>(connection_, nullptr);
     if (icon_surface_->Initialize()) {
       // Corresponds to actual scale factor of the origin surface.
-      icon_surface_->SetSurfaceBufferScale(origin_window_->window_scale());
+      icon_surface_->SetSurfaceBufferScale(origin_window->window_scale());
     } else {
       LOG(ERROR) << "Failed to create drag icon surface.";
       icon_surface_.reset();
@@ -146,11 +147,16 @@ bool WaylandDataDragController::StartSession(const OSExchangeData& data,
 
   // Starts the wayland drag session setting |this| object as delegate.
   state_ = State::kStarted;
-  data_device_->StartDrag(*data_source_, *origin_window_, serial->value,
+  data_device_->StartDrag(*data_source_, *origin_window, serial->value,
                           icon_surface_ ? icon_surface_->surface() : nullptr,
                           this);
 
+  origin_window_ = origin_window;
   window_manager_->AddObserver(this);
+
+  // Monitor mouse events so that the session can be aborted if needed.
+  nested_dispatcher_ =
+      PlatformEventSource::GetInstance()->OverrideDispatcher(this);
   return true;
 }
 
@@ -285,6 +291,7 @@ void WaylandDataDragController::OnDataSourceFinish(bool completed) {
   data_offer_.reset();
   offered_exchange_data_provider_.reset();
   data_device_->ResetDragDelegate();
+  nested_dispatcher_.reset();
   state_ = State::kIdle;
 }
 
@@ -427,6 +434,27 @@ WaylandDataDragController::GetOfferedExchangeDataProvider() const {
   DCHECK(offered_exchange_data_provider_);
   return static_cast<const WaylandExchangeDataProvider*>(
       offered_exchange_data_provider_.get());
+}
+
+bool WaylandDataDragController::CanDispatchEvent(const PlatformEvent& event) {
+  return state_ != State::kIdle;
+}
+
+uint32_t WaylandDataDragController::DispatchEvent(const PlatformEvent& event) {
+  DCHECK_NE(state_, State::kIdle);
+
+  // Drag session start may be triggered asynchronously, eg: dragging web
+  // contents, which might lead to race conditions where mouse button release is
+  // processed at compositor-side, sent to the client and processed just after
+  // the start_drag request is issued. In such cases, the compositor may ignore
+  // the request, and protocol-wise there is no explicit mechanism for clients
+  // to be notified about it (eg: an error event), and the only way of detecting
+  // that, for now, is to monitor wl_pointer events here and abort the session
+  // if it comes in.
+  if (event->type() == ET_MOUSE_RELEASED)
+    OnDataSourceFinish(/*completed=*/false);
+
+  return POST_DISPATCH_PERFORM_DEFAULT;
 }
 
 }  // namespace ui

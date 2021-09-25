@@ -553,11 +553,6 @@ const base::Feature kPepper3DImageChromium{"Pepper3DImageChromium",
 const base::Feature kPepperCrossOriginRedirectRestriction{
     "PepperCrossOriginRedirectRestriction", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// All ProcessHost objects live on UI thread.
-// https://crbug.com/904556
-const base::Feature kProcessHostOnUI{"ProcessHostOnUI",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable in-browser script loading for a brand new service worker.
 const base::Feature kPlzServiceWorker{"PlzServiceWorker",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -959,8 +954,9 @@ const base::Feature kWebAuth{"WebAuthentication",
                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether WebAuthn assertion transport is enabled.
-const base::Feature kWebAuthAssertionTransport{
-    "WebAuthenticationAssertionTransport", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kWebAuthAuthenticatorAttachment{
+    "WebAuthenticationAuthenticatorAttachment",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether CTAP2 devices can communicate via the WebAuthentication API
 // using pairingless BLE protocol.

@@ -199,12 +199,6 @@ const char kU2FSecurityKeyAPIDescription[] =
     "information, refer to the deprecation announcement at "
     "https://groups.google.com/a/chromium.org/g/blink-dev/c/xHC3AtU_65A";
 
-const char kUseLookalikesForNavigationSuggestionsName[] =
-    "Use lookalike URL suggestions for navigation suggestions";
-const char kUseLookalikesForNavigationSuggestionsDescription[] =
-    "Use lookalike URL suggestions to suggest navigations to users who "
-    "face domain not found error.";
-
 const char kUseStorkSmdsServerAddressName[] = "Use Stork SM-DS address";
 const char kUseStorkSmdsServerAddressDescription[] =
     "Use the Stork SM-DS address to fetch pending eSIM profiles managed by the "
@@ -927,6 +921,11 @@ const char kEnableFencedFramesDescription[] =
     "embedding an isolated top-level page. See "
     "https://github.com/shivanigithub/fenced-frame";
 
+const char kEnableFirmwareUpdaterAppName[] = "Enable firmware updater app";
+const char kEnableFirmwareUpdaterAppDescription[] =
+    "Enable the firmware updater SWA, allowing users to update firmware "
+    "on supported peripherals.";
+
 const char kEnableGamepadButtonAxisEventsName[] =
     "Gamepad Button and Axis Events";
 const char kEnableGamepadButtonAxisEventsDescription[] =
@@ -1220,11 +1219,11 @@ const char kEnableSubresourceRedirectName[] =
 const char kEnableSubresourceRedirectDescription[] =
     "Allow subresource compression for data savings";
 
-const char kEnableWebAuthenticationAssertionTransportName[] =
-    "Web Authentication Assertion Transport support";
-const char kEnableWebAuthenticationAssertionTransportDescription[] =
-    "Enable Web Authentication to provide the Assertion Transport value on "
-    "authentication success.";
+const char kEnableWebAuthenticationAuthenticatorAttachmentName[] =
+    "Web Authentication Authenticator Attachment support";
+const char kEnableWebAuthenticationAuthenticatorAttachmentDescription[] =
+    "Enable Web Authentication to provide the Authenticator Attachment type "
+    "used on both authentication and registration success.";
 
 const char kEnableWebAuthenticationCableV2SupportName[] =
     "Web Authentication caBLE v2 support";
@@ -1686,15 +1685,6 @@ const char kNewUsbBackendName[] = "Enable new USB backend";
 const char kNewUsbBackendDescription[] =
     "Enables the new experimental USB backend for macOS";
 
-const char kNewTabstripAnimationName[] = "New tabstrip animations";
-const char kNewTabstripAnimationDescription[] =
-    "New implementation of tabstrip animations.";
-
-const char kNotificationIndicatorName[] = "Notification Indicators";
-const char kNotificationIndicatorDescription[] =
-    "Enable notification indicators, which appear on shelf app icons and "
-    "launcher apps when a notification is active.";
-
 const char kNotificationsRevampName[] = "Notifications Revamp";
 const char kNotificationsRevampDescription[] =
     "Enable notification UI revamp and grouped web notifications.";
@@ -2103,10 +2093,13 @@ const char kPointerLockOptionsDescription[] =
     "to true, pointer movements wil not be affected by the underlying platform "
     "modications such as mouse accelaration.";
 
-const char kBookmarksRefreshName[] =
-    "Enables the a visual refresh for bookmarks";
+const char kBookmarksImprovedSaveFlowName[] = "Improved bookmarks save flow";
+const char kBookmarksImprovedSaveFlowDescription[] =
+    "Enabled an improved save flow for bookmarks.";
+
+const char kBookmarksRefreshName[] = "Bookmarks visual refresh";
 const char kBookmarksRefreshDescription[] =
-    "Changes the bookmark list visuals.";
+    "Enalbed a visual refresh for bookmarks.";
 
 const char kPrerender2Name[] = "Prerender2";
 const char kPrerender2Description[] =
@@ -2816,6 +2809,13 @@ const char kWebrtcUseMinMaxVEADimensionsDescription[] =
     "When enabled, WebRTC will only use the Video Encode Accelerator for "
     "video resolutions inside those published as supported.";
 
+const char kWebUsbDeviceDetectionName[] =
+    "Automatic detection of WebUSB-compatible devices";
+const char kWebUsbDeviceDetectionDescription[] =
+    "When enabled, the user will be notified when a device which advertises "
+    "support for WebUSB is connected. Disable if problems with USB devices are "
+    "observed when the browser is running.";
+
 const char kWebXrForceRuntimeName[] = "Force WebXr Runtime";
 const char kWebXrForceRuntimeDescription[] =
     "Force the browser to use a particular runtime, even if it would not "
@@ -3028,10 +3028,6 @@ const char kChromeShareScreenshotName[] = "Chrome Share Screenshots";
 const char kChromeShareScreenshotDescription[] =
     "Enables UI to edit and share screenshots";
 
-const char kChromeSharingHubName[] = "Chrome Sharing Hub";
-const char kChromeSharingHubDescription[] =
-    "Enables the Chrome Sharing Hub/custom share sheet for Android.";
-
 const char kChromeSharingHubLaunchAdjacentName[] =
     "Launch new share hub actions in adjacent window";
 const char kChromeSharingHubLaunchAdjacentDescription[] =
@@ -3054,13 +3050,6 @@ const char kCriticalPersistedTabDataName[] = "Enable CriticalPersistedTabData";
 const char kCriticalPersistedTabDataDescription[] =
     "A new method of persisting Tab data across restarts has been devised "
     "and implemented. This actives the new approach.";
-
-const char kContextMenuPerformanceInfoAndRemoteHintFetchingName[] =
-    "Context menu performance info and remote hint fetching";
-const char kContextMenuPerformanceInfoAndRemoteHintFetchingDescription[] =
-    "Enables showing link performance information in the context menu and "
-    "allows communicating with Google servers to fetch performance information "
-    "for the main frame URL.";
 
 const char kContextualSearchDebugName[] = "Contextual Search debug";
 const char kContextualSearchDebugDescription[] =
@@ -4220,6 +4209,13 @@ const char kCellularUseExternalEuiccName[] = "Use external Euicc";
 const char kCellularUseExternalEuiccDescription[] =
     "When enabled Cellular Setup and Settings UI will use the first available "
     "external Euicc.";
+
+const char kComponentUpdaterTestRequestName[] =
+    "Enable the component updater check 'test-request' parameter";
+const char kComponentUpdaterTestRequestDescription[] =
+    "Enables the 'test-request' parameter for component updater check requests."
+    " Overrides any other component updater check request parameters that may "
+    "have been specified.";
 
 const char kContextualNudgesName[] =
     "Contextual nudges for user gesture education";

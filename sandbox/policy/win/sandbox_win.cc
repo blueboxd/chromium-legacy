@@ -305,7 +305,7 @@ std::wstring PrependWindowsSessionPath(const wchar_t* object) {
 // Checks if the sandbox can be let to run without a job object assigned.
 // Returns true if the job object has to be applied to the sandbox and false
 // otherwise.
-bool ShouldSetJobLevel(const base::CommandLine& cmd_line) {
+bool ShouldSetJobLevel(bool allow_no_sandbox_job) {
   // Windows 8 allows nested jobs so we don't need to check if we are in other
   // job.
   if (base::win::GetVersion() >= base::win::Version::WIN8)
@@ -337,7 +337,7 @@ bool ShouldSetJobLevel(const base::CommandLine& cmd_line) {
     // TODO(pastarmovj): Even though the number are low, this flag is still
     // necessary in some limited set of cases. Remove it once Windows 7 is no
     // longer supported together with the rest of the checks in this function.
-    return !cmd_line.HasSwitch(switches::kAllowNoSandboxJob);
+    return !allow_no_sandbox_job;
   }
 
   // Allow running without the sandbox in this case. This slightly reduces the
@@ -433,7 +433,7 @@ void LogLaunchWarning(ResultCode last_warning, DWORD last_error) {
   base::UmaHistogramSparse("Process.Sandbox.Launch.Warning", last_error);
 }
 
-ResultCode AddPolicyForSandboxedProcess(TargetPolicy* policy) {
+ResultCode AddDefaultPolicyForSandboxedProcess(TargetPolicy* policy) {
   ResultCode result = sandbox::SBOX_ALL_OK;
 
   // Win8+ adds a device DeviceApi that we don't need.
@@ -767,7 +767,7 @@ ResultCode SetupAppContainerProfile(AppContainer* container,
 // a Policy or TargetProcess. This supports both kNoSandbox and the --no-sandbox
 // command line flag.
 ResultCode LaunchWithoutSandbox(
-    base::CommandLine* cmd_line,
+    const base::CommandLine& cmd_line,
     const base::HandlesToInheritVector& handles_to_inherit,
     SandboxDelegate* delegate,
     base::Process* process) {
@@ -799,15 +799,28 @@ ResultCode LaunchWithoutSandbox(
   // are not. When --no-sandbox is specified we disable CET for all children.
   // Otherwise we are here because the sandbox type is kNoSandbox, and allow
   // the process delegate to indicate if it is compatible with CET.
-  if (cmd_line->HasSwitch(switches::kNoSandbox) ||
+  if (cmd_line.HasSwitch(switches::kNoSandbox) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoSandbox)) {
     options.disable_cetcompat = true;
   } else if (!delegate->CetCompatible()) {
     options.disable_cetcompat = true;
   }
 
-  *process = base::LaunchProcess(*cmd_line, options);
+  *process = base::LaunchProcess(cmd_line, options);
   return SBOX_ALL_OK;
+}
+
+bool IsUnsandboxedProcess(
+    SandboxType sandbox_type,
+    const base::CommandLine& cmd_line,
+    const base::CommandLine& launcher_process_command_line) {
+  if (IsUnsandboxedSandboxType(sandbox_type))
+    return true;
+  if (cmd_line.HasSwitch(switches::kNoSandbox))
+    return true;
+  if (launcher_process_command_line.HasSwitch(switches::kNoSandbox))
+    return true;
+  return false;
 }
 
 }  // namespace
@@ -817,7 +830,7 @@ ResultCode SandboxWin::SetJobLevel(const base::CommandLine& cmd_line,
                                    JobLevel job_level,
                                    uint32_t ui_exceptions,
                                    TargetPolicy* policy) {
-  if (!ShouldSetJobLevel(cmd_line))
+  if (!ShouldSetJobLevel(policy->GetAllowNoSandboxJob()))
     return policy->SetJobLevel(JOB_NONE, 0);
 
   ResultCode ret = policy->SetJobLevel(job_level, ui_exceptions);
@@ -977,31 +990,27 @@ bool SandboxWin::InitTargetServices(TargetServices* target_services) {
 }
 
 // static
-ResultCode SandboxWin::StartSandboxedProcess(
-    base::CommandLine* cmd_line,
+ResultCode SandboxWin::GeneratePolicyForSandboxedProcess(
+    const base::CommandLine& cmd_line,
     const std::string& process_type,
     const base::HandlesToInheritVector& handles_to_inherit,
     SandboxDelegate* delegate,
-    base::Process* process) {
+    const scoped_refptr<TargetPolicy>& policy) {
   const base::CommandLine& launcher_process_command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  // Propagate the --allow-no-job flag if present.
-  if (launcher_process_command_line.HasSwitch(switches::kAllowNoSandboxJob) &&
-      !cmd_line->HasSwitch(switches::kAllowNoSandboxJob)) {
-    cmd_line->AppendSwitch(switches::kAllowNoSandboxJob);
-  }
-
   SandboxType sandbox_type = delegate->GetSandboxType();
-  // --no-sandbox and kNoSandbox are launched without creating a Policy.
-  if (IsUnsandboxedSandboxType(sandbox_type) ||
-      cmd_line->HasSwitch(switches::kNoSandbox) ||
-      launcher_process_command_line.HasSwitch(switches::kNoSandbox)) {
-    return LaunchWithoutSandbox(cmd_line, handles_to_inherit, delegate,
-                                process);
+  // --no-sandbox and kNoSandbox are launched without a policy.
+  if (IsUnsandboxedProcess(sandbox_type, cmd_line,
+                           launcher_process_command_line)) {
+    return ResultCode::SBOX_ERROR_UNSANDBOXED_PROCESS;
   }
 
-  scoped_refptr<TargetPolicy> policy = g_broker_services->CreatePolicy();
+  // Allow no sandbox job if the --allow-no-sandbox-job switch is present.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowNoSandboxJob)) {
+    policy->SetAllowNoSandboxJob();
+  }
 
   // Add any handles to be inherited to the policy.
   for (HANDLE handle : handles_to_inherit)
@@ -1040,7 +1049,7 @@ ResultCode SandboxWin::StartSandboxedProcess(
 
   // Post-startup mitigations.
   mitigations = MITIGATION_DLL_SEARCH_ORDER;
-  if (!cmd_line->HasSwitch(switches::kAllowThirdPartyModules) &&
+  if (!cmd_line.HasSwitch(switches::kAllowThirdPartyModules) &&
       sandbox_type != SandboxType::kSpeechRecognition) {
     mitigations |= MITIGATION_FORCE_MS_SIGNED_BINS;
   }
@@ -1055,12 +1064,12 @@ ResultCode SandboxWin::StartSandboxedProcess(
   if (result != SBOX_ALL_OK)
     return result;
 
-  result = SetJobLevel(*cmd_line, JOB_LOCKDOWN, 0, policy.get());
+  result = SetJobLevel(cmd_line, JOB_LOCKDOWN, 0, policy.get());
   if (result != SBOX_ALL_OK)
     return result;
 
   if (!delegate->DisableDefaultPolicy()) {
-    result = AddPolicyForSandboxedProcess(policy.get());
+    result = AddDefaultPolicyForSandboxedProcess(policy.get());
     if (result != SBOX_ALL_OK)
       return result;
   }
@@ -1088,9 +1097,9 @@ ResultCode SandboxWin::StartSandboxedProcess(
   }
 
   std::string appcontainer_id;
-  if (IsAppContainerEnabledForSandbox(*cmd_line, sandbox_type) &&
+  if (IsAppContainerEnabledForSandbox(cmd_line, sandbox_type) &&
       delegate->GetAppContainerId(&appcontainer_id)) {
-    result = AddAppContainerProfileToPolicy(*cmd_line, sandbox_type,
+    result = AddAppContainerProfileToPolicy(cmd_line, sandbox_type,
                                             appcontainer_id, policy.get());
     DCHECK(result == SBOX_ALL_OK);
     if (result != SBOX_ALL_OK)
@@ -1130,14 +1139,35 @@ ResultCode SandboxWin::StartSandboxedProcess(
   if (!delegate->PreSpawnTarget(policy.get()))
     return SBOX_ERROR_DELEGATE_PRE_SPAWN;
 
+  return result;
+}
+
+// static
+ResultCode SandboxWin::StartSandboxedProcess(
+    const base::CommandLine& cmd_line,
+    const std::string& process_type,
+    const base::HandlesToInheritVector& handles_to_inherit,
+    SandboxDelegate* delegate,
+    base::Process* process) {
+  scoped_refptr<TargetPolicy> policy = g_broker_services->CreatePolicy();
+  ResultCode result = GeneratePolicyForSandboxedProcess(
+      cmd_line, process_type, handles_to_inherit, delegate, policy);
+
+  if (ResultCode::SBOX_ERROR_UNSANDBOXED_PROCESS == result) {
+    return LaunchWithoutSandbox(cmd_line, handles_to_inherit, delegate,
+                                process);
+  }
+  if (SBOX_ALL_OK != result)
+    return result;
+
   TRACE_EVENT_BEGIN0("startup", "StartProcessWithAccess::LAUNCHPROCESS");
 
   PROCESS_INFORMATION temp_process_info = {};
   ResultCode last_warning = sandbox::SBOX_ALL_OK;
   DWORD last_error = ERROR_SUCCESS;
   result = g_broker_services->SpawnTarget(
-      cmd_line->GetProgram().value().c_str(),
-      cmd_line->GetCommandLineString().c_str(), policy, &last_warning,
+      cmd_line.GetProgram().value().c_str(),
+      cmd_line.GetCommandLineString().c_str(), policy, &last_warning,
       &last_error, &temp_process_info);
 
   base::win::ScopedProcessInformation target(temp_process_info);
@@ -1164,7 +1194,7 @@ ResultCode SandboxWin::StartSandboxedProcess(
       base::debug::GlobalActivityTracker::Get();
   if (tracker) {
     tracker->RecordProcessLaunch(target.process_id(),
-                                 cmd_line->GetCommandLineString());
+                                 cmd_line.GetCommandLineString());
   }
 
   if (SBOX_ALL_OK != last_warning)

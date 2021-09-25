@@ -533,11 +533,14 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIR_NEW_DEVICE" desc="The sub-header label for the button to pair a new device.">
         Pair new device
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_CURRENTLY_CONNECTED_DEVICES" desc="The sub-header label for currently connected devices in Bluetooth device list.">
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_CURRENTLY_CONNECTED_DEVICES" desc="The sub-header label for currently connected devices in the Bluetooth device list.">
         Currently connected
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_PREVIOUSLY_CONNECTED_DEVICES" desc="The sub-header label for previously connected devices in Bluetooth device list.">
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_PREVIOUSLY_CONNECTED_DEVICES" desc="The sub-header label for previously connected devices in the Bluetooth device list.">
         Previously connected
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_NO_DEVICE_CONNECTED" desc="The sub-header label for no devices connected in the Bluetooth device list.">
+        No device connected
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
@@ -3654,13 +3657,22 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_SCREEN_CAPTURE_LABEL_MICROPHONE" desc="The capture label message for toggling microphone recording, found in the settings menu.">
         Record microphone
       </message>
-      <message name="IDS_ASH_SCREEN_CAPTURE_LABEL_SAVE_TO" desc="The label of the save to menu group header in capture mode settings.">
+      <message name="IDS_ASH_SCREEN_CAPTURE_AUDIO_INPUT" desc="The label of the audio input menu group header in capture mode settings.">
+        Audio input
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_AUDIO_INPUT_OFF" desc="The label of the menu option button for no audio input.">
+        Off
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_AUDIO_INPUT_MICROPHONE" desc="The label of the menu option button for microphone audio input.">
+        Microphone
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_SAVE_TO" desc="The label of the save to menu group header in capture mode settings.">
         Save to
       </message>
-      <message name="IDS_ASH_SCREEN_CAPTURE_LABEL_SAVE_TO_DOWNLOADS" desc="The label of the menu option button to select the downloads folder.">
+      <message name="IDS_ASH_SCREEN_CAPTURE_SAVE_TO_DOWNLOADS" desc="The label of the menu option button to select the downloads folder.">
         Downloads
       </message>
-      <message name="IDS_ASH_SCREEN_CAPTURE_LABEL_SAVE_TO_SELECT_FOLDER" desc="The label of the menu item button for selecting a folder to store the captured images and videos.">
+      <message name="IDS_ASH_SCREEN_CAPTURE_SAVE_TO_SELECT_FOLDER" desc="The label of the menu item button for selecting a folder to store the captured images and videos.">
         Select folder...
       </message>
 

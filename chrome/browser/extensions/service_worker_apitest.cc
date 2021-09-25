@@ -101,6 +101,10 @@ class WebContentsLoadStopObserver : content::WebContentsObserver {
       : content::WebContentsObserver(web_contents),
         load_stop_observed_(false) {}
 
+  WebContentsLoadStopObserver(const WebContentsLoadStopObserver&) = delete;
+  WebContentsLoadStopObserver& operator=(const WebContentsLoadStopObserver&) =
+      delete;
+
   void WaitForLoadStop() {
     if (load_stop_observed_)
       return;
@@ -117,8 +121,6 @@ class WebContentsLoadStopObserver : content::WebContentsObserver {
 
   bool load_stop_observed_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsLoadStopObserver);
 };
 
 // Extension ID for tests that use
@@ -161,6 +163,10 @@ class ErrorObserver : public ErrorConsole::Observer {
 };
 
 class ServiceWorkerTest : public ExtensionApiTest {
+ public:
+  ServiceWorkerTest(const ServiceWorkerTest&) = delete;
+  ServiceWorkerTest& operator=(const ServiceWorkerTest&) = delete;
+
  protected:
   ServiceWorkerTest() = default;
   ~ServiceWorkerTest() override = default;
@@ -245,9 +251,6 @@ class ServiceWorkerTest : public ExtensionApiTest {
             ->GetServiceWorkerContext();
     return sw_context->CountExternalRequestsForTest(key);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerTest);
 };
 
 class ServiceWorkerBasedBackgroundTest : public ServiceWorkerTest {
@@ -300,23 +303,6 @@ class ServiceWorkerBasedBackgroundTest : public ServiceWorkerTest {
   }
 };
 
-// A specialization of ExtensionSettingsApiTest that pretends it's running
-// on version_info::Channel::UNKNOWN.
-class ServiceWorkerBasedBackgroundTrunkTest
-    : public ServiceWorkerBasedBackgroundTest {
- public:
-  ServiceWorkerBasedBackgroundTrunkTest() = default;
-  ~ServiceWorkerBasedBackgroundTrunkTest() override = default;
-  ServiceWorkerBasedBackgroundTrunkTest(
-      const ServiceWorkerBasedBackgroundTrunkTest& other) = delete;
-  ServiceWorkerBasedBackgroundTrunkTest& operator=(
-      const ServiceWorkerBasedBackgroundTrunkTest& other) = delete;
-
- private:
-  // TODO(crbug.com/1185226): Remove unknown channel when chrome.storage.session
-  // is released in stable.
-  ScopedCurrentChannel current_channel_{version_info::Channel::UNKNOWN};
-};
 
 class ServiceWorkerBasedBackgroundTestWithNotification
     : public ServiceWorkerBasedBackgroundTest {
@@ -549,22 +535,14 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, ChromeAppUndefined) {
 }
 
 // Tests chrome.storage APIs.
-// TODO(crbug.com/1185226): Change parent class to
-// `ServiceWorkerBasedBackgroundTest` when chrome.storage.session is released in
-// stable.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTrunkTest,
-                       StorageSetAndGet) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, StorageSetAndGet) {
   ASSERT_TRUE(
       RunExtensionTest("service_worker/worker_based_background/storage"))
       << message_;
 }
 
 // Tests chrome.storage APIs are only enabled with permission.
-// TODO(crbug.com/1185226): Change parent class to
-// `ServiceWorkerBasedBackgroundTest` when chrome.storage.session is released in
-// stable.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTrunkTest,
-                       StorageNoPermissions) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, StorageNoPermissions) {
   ASSERT_TRUE(RunExtensionTest(
       "service_worker/worker_based_background/storage_no_permissions"))
       << message_;

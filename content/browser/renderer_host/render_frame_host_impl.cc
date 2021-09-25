@@ -1415,7 +1415,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       GlobalRenderFrameHostId(GetProcess()->GetID(), routing_id_), this);
   g_token_frame_map.Get().insert(std::make_pair(frame_token_, this));
   site_instance_->AddObserver(this);
-  GetProcess()->AddObserver(this);
+  auto* process = GetProcess();
+  process->IncrementRfhCount();
+  process->AddObserver(this);
   GetSiteInstance()->IncrementActiveFrameCount();
 
   if (parent_) {
@@ -1547,8 +1549,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
 
   g_token_frame_map.Get().erase(frame_token_);
 
+  auto* process = GetProcess();
+  process->DecrementRfhCount();
   site_instance_->RemoveObserver(this);
-  GetProcess()->RemoveObserver(this);
+  process->RemoveObserver(this);
 
   const bool was_created = is_render_frame_created();
   render_frame_state_ = RenderFrameState::kDeleted;
@@ -5597,7 +5601,7 @@ void RenderFrameHostImpl::GoToEntryAtOffset(int32_t offset,
       frame_tree_->controller().GoToOffsetInSandboxedFrame(
           offset, GetFrameTreeNodeId());
     } else {
-      frame_tree_->controller().GoToOffset(offset);
+      frame_tree_->controller().GoToOffsetFromRenderer(offset);
     }
   }
 }
@@ -6182,9 +6186,16 @@ void RenderFrameHostImpl::ShowPopupMenu(
     bool right_aligned,
     bool allow_multiple_selection) {
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
+  // Do not open popups in an inactive document.
   if (!IsActive()) {
-    local_frame_host_receiver_.ReportBadMessage(
-        "RFHI: Attempt to show popup menu in an inactive document");
+    // Sending this message requires user activation, which is impossible
+    // for a prerendering document, so the renderer process should be
+    // terminated. See
+    // https://html.spec.whatwg.org/multipage/interaction.html#tracking-user-activation.
+    if (lifecycle_state() == LifecycleStateImpl::kPrerendering) {
+      bad_message::ReceivedBadMessage(
+          GetProcess(), bad_message::RFH_POPUP_REQUEST_WHILE_PRERENDERING);
+    }
     return;
   }
 
@@ -6873,13 +6884,16 @@ void RenderFrameHostImpl::CreateNewPopupWidget(
         blink_popup_widget_host,
     mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
     mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {
-  // Sending this message requires user activation, which is impossible
-  // for an inactive document, so the renderer process should be terminated.
-  // See
-  // https://html.spec.whatwg.org/multipage/interaction.html#tracking-user-activation.
+  // Do not open popups in an inactive document.
   if (!IsActive()) {
-    local_frame_host_receiver_.ReportBadMessage(
-        "RFHI: Create a popup widget in an inactive document");
+    // Sending this message requires user activation, which is impossible
+    // for a prerendering document, so the renderer process should be
+    // terminated. See
+    // https://html.spec.whatwg.org/multipage/interaction.html#tracking-user-activation.
+    if (lifecycle_state() == LifecycleStateImpl::kPrerendering) {
+      bad_message::ReceivedBadMessage(
+          GetProcess(), bad_message::RFH_POPUP_REQUEST_WHILE_PRERENDERING);
+    }
     return;
   }
 

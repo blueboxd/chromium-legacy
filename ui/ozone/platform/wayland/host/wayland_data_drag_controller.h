@@ -14,6 +14,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/base/dragdrop/os_exchange_data_provider.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device.h"
@@ -33,6 +34,7 @@ class TimeTicks;
 namespace ui {
 
 class OSExchangeData;
+class ScopedEventDispatcher;
 class WaylandConnection;
 class WaylandDataDeviceManager;
 class WaylandDataOffer;
@@ -69,7 +71,8 @@ class WaylandSurface;
 // receive anything at all.
 class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
                                   public WaylandDataSource::Delegate,
-                                  public WaylandWindowObserver {
+                                  public WaylandWindowObserver,
+                                  public PlatformEventDispatcher {
  public:
   enum class State {
     kIdle,          // Doing nothing special
@@ -102,6 +105,7 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
   FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest, ReceiveDrag);
   FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest, StartDrag);
   FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest, StartDragWithText);
+  FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest, AsyncNoopStartDrag);
   FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest,
                            StartDragWithWrongMimeType);
 
@@ -141,6 +145,10 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
 
   void SetOfferedExchangeDataProvider(const OSExchangeData& data);
   const WaylandExchangeDataProvider* GetOfferedExchangeDataProvider() const;
+
+  // PlatformEventDispatcher:
+  bool CanDispatchEvent(const PlatformEvent& event) override;
+  uint32_t DispatchEvent(const PlatformEvent& event) override;
 
   WaylandConnection* const connection_;
   WaylandDataDeviceManager* const data_device_manager_;
@@ -189,6 +197,8 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
   std::unique_ptr<WaylandSurface> icon_surface_;
   std::unique_ptr<WaylandShmBuffer> shm_buffer_;
   const SkBitmap* icon_bitmap_ = nullptr;
+
+  std::unique_ptr<ScopedEventDispatcher> nested_dispatcher_;
 
   base::WeakPtrFactory<WaylandDataDragController> weak_factory_{this};
 };

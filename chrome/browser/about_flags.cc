@@ -46,7 +46,6 @@
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/scheduler/public/features.h"
-#include "chrome/browser/performance_hints/performance_hints_features.h"
 #include "chrome/browser/performance_manager/policies/policy_features.h"
 #include "chrome/browser/permissions/abusive_origin_notifications_permission_revocation_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
@@ -82,6 +81,8 @@
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browsing_data/core/features.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
+#include "components/component_updater/component_updater_command_line_config_policy.h"
+#include "components/component_updater/component_updater_switches.h"
 #include "components/contextual_search/core/browser/public.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -3095,10 +3096,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDefaultCalculatorWebAppName,
      flag_descriptions::kDefaultCalculatorWebAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(web_app::kDefaultCalculatorWebApp)},
-    {"enable-notification-indicator",
-     flag_descriptions::kNotificationIndicatorName,
-     flag_descriptions::kNotificationIndicatorDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kNotificationIndicator)},
     {"enable-notifications-revamp", flag_descriptions::kNotificationsRevampName,
      flag_descriptions::kNotificationsRevampDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kNotificationsRefresh)},
@@ -3287,11 +3284,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"debug-packed-apps", flag_descriptions::kDebugPackedAppName,
      flag_descriptions::kDebugPackedAppDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kDebugPackedApps)},
-    {"use-lookalikes-for-navigation-suggestions",
-     flag_descriptions::kUseLookalikesForNavigationSuggestionsName,
-     flag_descriptions::kUseLookalikesForNavigationSuggestionsDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(net::features::kUseLookalikesForNavigationSuggestions)},
     {"username-first-flow", flag_descriptions::kUsernameFirstFlowName,
      flag_descriptions::kUsernameFirstFlowDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kUsernameFirstFlow)},
@@ -3323,6 +3315,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebBluetoothNewPermissionsBackendDescription,
      kOsAndroid | kOsDesktop,
      FEATURE_VALUE_TYPE(features::kWebBluetoothNewPermissionsBackend)},
+    {"enable-webusb-device-detection",
+     flag_descriptions::kWebUsbDeviceDetectionName,
+     flag_descriptions::kWebUsbDeviceDetectionDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kWebUsbDeviceDetection)},
 #if defined(USE_AURA)
     {"overscroll-history-navigation",
      flag_descriptions::kOverscrollHistoryNavigationName,
@@ -3476,9 +3472,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"chrome-share-screenshot", flag_descriptions::kChromeShareScreenshotName,
      flag_descriptions::kChromeShareScreenshotDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeShareScreenshot)},
-    {"chrome-sharing-hub", flag_descriptions::kChromeSharingHubName,
-     flag_descriptions::kChromeSharingHubDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kChromeSharingHub)},
     {"chrome-sharing-hub-launch-adjacent",
      flag_descriptions::kChromeSharingHubLaunchAdjacentName,
      flag_descriptions::kChromeSharingHubLaunchAdjacentDescription, kOsAndroid,
@@ -4795,10 +4788,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kTabGroupsSaveUIVariations,
                                     "TabGroupsSave")},
 
-    {"new-tabstrip-animation", flag_descriptions::kNewTabstripAnimationName,
-     flag_descriptions::kNewTabstripAnimationDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kNewTabstripAnimation)},
-
     {flag_descriptions::kScrollableTabStripFlagId,
      flag_descriptions::kScrollableTabStripName,
      flag_descriptions::kScrollableTabStripDescription,
@@ -5014,10 +5003,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNetworkLoggingToFileDescription, kOsAll,
      SINGLE_VALUE_TYPE(network::switches::kLogNetLog)},
 
-    {"enable-web-authentication-assertion-transport",
-     flag_descriptions::kEnableWebAuthenticationAssertionTransportName,
-     flag_descriptions::kEnableWebAuthenticationAssertionTransportDescription,
-     kOsAll, FEATURE_VALUE_TYPE(features::kWebAuthAssertionTransport)},
+    {"enable-web-authentication-authenticator-attachment",
+     flag_descriptions::kEnableWebAuthenticationAuthenticatorAttachmentName,
+     flag_descriptions::
+         kEnableWebAuthenticationAuthenticatorAttachmentDescription,
+     kOsAll, FEATURE_VALUE_TYPE(features::kWebAuthAuthenticatorAttachment)},
 
     {"enable-web-authentication-cable-v2-support",
      flag_descriptions::kEnableWebAuthenticationCableV2SupportName,
@@ -5754,6 +5744,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableShortcutCustomizationAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kShortcutCustomizationApp)},
 
+    {"enable-firmware-updater-app",
+     flag_descriptions::kEnableFirmwareUpdaterAppName,
+     flag_descriptions::kEnableFirmwareUpdaterAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kFirmwareUpdaterApp)},
+
     {"enhanced-network-voices", flag_descriptions::kEnhancedNetworkVoicesName,
      flag_descriptions::kEnhancedNetworkVoicesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kEnhancedNetworkVoices)},
@@ -6429,13 +6424,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kPasswordChangeFeatureVariations,
                                     "PasswordChangeFeatureVariations")},
 
-    {"context-menu-performance-info-and-remote-hints-fetching",
-     flag_descriptions::kContextMenuPerformanceInfoAndRemoteHintFetchingName,
-     flag_descriptions::
-         kContextMenuPerformanceInfoAndRemoteHintFetchingDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(optimization_guide::features::
-                            kContextMenuPerformanceInfoAndRemoteHintFetching)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
@@ -7643,6 +7631,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kCanvasOopRasterization)},
 
 #if defined(OS_ANDROID)
+    {"bookmarks-improved-save-flow",
+     flag_descriptions::kBookmarksImprovedSaveFlowName,
+     flag_descriptions::kBookmarksImprovedSaveFlowDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kBookmarksImprovedSaveFlow)},
+
     {"bookmarks-refresh", flag_descriptions::kBookmarksRefreshName,
      flag_descriptions::kBookmarksRefreshDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kBookmarksRefresh)},
@@ -7704,6 +7697,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSideSearchStatePerTabDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSideSearchStatePerTab)},
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"enable-component-updater-test-request",
+     flag_descriptions::kComponentUpdaterTestRequestName,
+     flag_descriptions::kComponentUpdaterTestRequestDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE_AND_VALUE(switches::kComponentUpdater,
+                                 component_updater::kSwitchTestRequestParam)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

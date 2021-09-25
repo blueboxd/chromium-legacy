@@ -1529,6 +1529,20 @@ ci.chromium_builder(
 )
 
 ci.chromium_builder(
+    name = "linux-archive-tagged",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+        short_name = "tag",
+    ),
+    cores = 32,
+    main_console_view = "main",
+    os = os.LINUX_BIONIC_REMOVE,
+    tree_closing = False,
+    schedule = "triggered",
+    triggered_by = [],
+)
+
+ci.chromium_builder(
     name = "linux-official",
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = False,
@@ -4926,14 +4940,6 @@ ci.gpu_fyi_linux_builder(
 )
 
 ci.gpu_fyi_mac_builder(
-    name = "Mac FYI arm64 Release (Apple DTK)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac",
-        short_name = "dtk",
-    ),
-)
-
-ci.gpu_fyi_mac_builder(
     name = "Mac FYI GPU ASAN Release",
     console_view_entry = consoles.console_view_entry(
         category = "Mac",
@@ -4954,6 +4960,14 @@ ci.gpu_fyi_mac_builder(
     console_view_entry = consoles.console_view_entry(
         category = "Mac|Builder",
         short_name = "dbg",
+    ),
+)
+
+ci.gpu_fyi_mac_builder(
+    name = "GPU FYI Mac arm64 Builder",
+    console_view_entry = consoles.console_view_entry(
+        category = "Mac|Builder",
+        short_name = "arm",
     ),
 )
 
@@ -5115,6 +5129,15 @@ ci.gpu_fyi_thin_tester(
     # See crbug.com/853307 for more context.
     execution_timeout = 12 * time.hour,
     triggered_by = ["GPU FYI Mac Builder"],
+)
+
+ci.gpu_fyi_thin_tester(
+    name = "Mac FYI Release (Apple M1)",
+    console_view_entry = consoles.console_view_entry(
+        category = "Mac|Apple",
+        short_name = "rel",
+    ),
+    triggered_by = ["GPU FYI Mac arm64 Builder"],
 )
 
 ci.gpu_fyi_thin_tester(

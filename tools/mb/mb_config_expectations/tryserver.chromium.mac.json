@@ -61,7 +61,7 @@
       "use_goma": true
     }
   },
-  "gpu-fyi-try-mac-arm64-apple-dtk-rel": {
+  "gpu-fyi-try-mac-arm64-apple-m1-rel": {
     "gn_args": {
       "blink_enable_generated_code_formatting": false,
       "build_angle_trace_perf_tests": true,

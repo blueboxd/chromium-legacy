@@ -231,11 +231,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'aeb5d4daed3ab8927c80db3904dc0f8c24169afa',
+  'skia_revision': '496b89cb74b389b0a1047919275033ef0630416e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '0c958868d79796808af29df2902e39870e412d90',
+  'v8_revision': '868556abbe8737b9dbf55273a4d03238ee66f3de',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -306,7 +306,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '10474d9f680fe879beb6bfcc21e9baade89d3845',
+  'devtools_frontend_revision': 'fdb326ff691d3e871b03c6a598cb7f662ad051fe',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1633,7 +1633,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'b0291fd966b55a5efc496772555b94842bde1085',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'b6a73b69233ce00df85bf173eca94b6fc5e35fd1',
+    Var('webrtc_git') + '/src.git' + '@' + '96168abfb74cd800f2e18e7dcca5bed72ef36e2d',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1691,7 +1691,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9ffa7a4a05e1d8d499c9f3b16c8e9da37ac57fb4',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@484fedba9fd811ac5f78d5819f904f35a387f1a7',
     'condition': 'checkout_src_internal',
   },
 
@@ -1710,7 +1710,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'd6i23O0euIf4Q8_opLtD2ixVDKSOjinVtVdZjH-1trsC',
+        'version': 'YACky8ppLFM0FXPDau15wHt9xmw-BVM8HKnMLz5HQXgC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1721,7 +1721,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'q7EI3XbKu_Tpmjk0tux1DEf-cn_wHHxhx27QLkdqBXUC',
+        'version': 'VGbkbIQy4l5j2gmve_60OzV-VQA2ZqWVEJDnpLrE7IoC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

@@ -34,15 +34,6 @@ class ServiceWorkerMetrics {
   };
 
   // Used for UMA. Append-only.
-  enum class StopStatus {
-    NORMAL,
-    DETACH_BY_REGISTRY,
-    TIMEOUT,
-    // Add new types here.
-    kMaxValue = TIMEOUT,
-  };
-
-  // Used for UMA. Append-only.
   // This class is used to indicate which event is fired/finished. Most events
   // have only one request that starts the event and one response that finishes
   // the event, but the fetch event has two responses, so there are two types of
@@ -173,9 +164,6 @@ class ServiceWorkerMetrics {
                                     StartSituation start_situation,
                                     EventType purpose);
 
-  // Records the result of trying to stop a worker.
-  static void RecordWorkerStopped(StopStatus status);
-
   // Records the time taken to successfully stop a worker.
   static void RecordStopWorkerTime(base::TimeDelta time);
 
@@ -210,10 +198,6 @@ class ServiceWorkerMetrics {
   static void RecordNavigationPreloadRequestHeaderSize(size_t size);
 
   static void RecordRuntime(base::TimeDelta time);
-
-  // Records the result of starting service worker for a navigation hint.
-  static void RecordStartServiceWorkerForNavigationHintResult(
-      StartServiceWorkerForNavigationHintResult result);
 
   // Records the reason a service worker was deemed to be offline capable. The
   // reason may be that the service worker responded with 2xx..., 3xx..., or the

@@ -38,6 +38,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill_assistant {
@@ -95,14 +96,14 @@ struct MockCollectUserDataOptions : public CollectUserDataOptions {
 
 class ControllerTest : public testing::Test {
  public:
-  ControllerTest() = default;
+  ControllerTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kAutofillAssistantChromeEntry);
+  }
 
   void SetUp() override {
     web_contents_ = content::WebContentsTester::CreateTestWebContents(
         &browser_context_, nullptr);
-
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kAutofillAssistantChromeEntry);
     auto web_controller = std::make_unique<NiceMock<MockWebController>>();
     mock_web_controller_ = web_controller.get();
     auto service = std::make_unique<NiceMock<MockService>>();
@@ -1780,39 +1781,6 @@ TEST_F(ControllerTest, PromptStateStopsOnGoBack) {
   content::NavigationSimulator::GoBack(web_contents());
 }
 
-TEST_F(ControllerTest, PromptStateStopsOnRendererInitiatedBack) {
-  SupportsScriptResponseProto script_response;
-  AddRunnableScript(&script_response, "runnable")
-      ->mutable_presentation()
-      ->set_autostart(true);
-  ActionsResponseProto runnable_script;
-  auto* prompt = runnable_script.add_actions()->mutable_prompt();
-  prompt->set_browse_mode(false);
-  prompt->add_choices()->mutable_chip()->set_text("continue");
-  SetupActionsForScript("runnable", runnable_script);
-  std::string response_str;
-  script_response.SerializeToString(&response_str);
-  EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(GURL("http://example.com/"), _, _))
-      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str));
-
-  Start("http://example.com/");
-  EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
-
-  SimulateNavigateToUrl(GURL("http://b.example.com/"));
-  EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
-
-  SimulateNavigateToUrl(GURL("http://c.example.com/"));
-  EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
-
-  // Go back, emulating a history navigation initiated from JS.
-  EXPECT_CALL(mock_client_, RecordDropOut(Metrics::DropOutReason::NAVIGATION));
-  SetLastCommittedUrl(GURL("http://b.example.com"));
-  content::NavigationSimulator::CreateHistoryNavigation(
-      -1, web_contents(), true /* is_renderer_initiated */)
-      ->Commit();
-}
-
 TEST_F(ControllerTest, UnexpectedNavigationDuringPromptAction_Tracking) {
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "runnable");
@@ -3346,6 +3314,55 @@ TEST_F(ControllerTest, UpdateChipVisibility) {
 
   EXPECT_CALL(mock_observer_, OnUserActionsChanged(_)).Times(0);
   controller_->OnInputTextFocusChanged(false);
+}
+
+class ControllerPrerenderTest : public ControllerTest {
+ public:
+  ControllerPrerenderTest() {
+    feature_list_.InitWithFeatures(
+        {blink::features::kPrerender2},
+        // Disable the memory requirement of Prerender2 so the test can run on
+        // any bot.
+        {blink::features::kPrerender2MemoryControls});
+  }
+
+  ~ControllerPrerenderTest() override = default;
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(ControllerPrerenderTest, SuccessfulNavigation) {
+  EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
+  EXPECT_FALSE(controller_->HasNavigationError());
+
+  NavigationStateChangeListener listener(controller_.get());
+  controller_->AddNavigationListener(&listener);
+
+  content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://initialurl.com"), web_contents()->GetMainFrame());
+
+  EXPECT_THAT(
+      listener.events,
+      ElementsAre(
+          NavigationState{/* navigating= */ true, /* has_errors= */ false},
+          NavigationState{/* navigating= */ false, /* has_errors= */ false}));
+
+  listener.events.clear();
+
+  // Start prerendering a page.
+  const GURL prerendering_url("http://initialurl.com?prerendering");
+  auto simulator = content::WebContentsTester::For(web_contents())
+                       ->AddPrerenderAndStartNavigation(prerendering_url);
+  EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
+  EXPECT_FALSE(controller_->HasNavigationError());
+
+  simulator->Commit();
+  EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
+  EXPECT_FALSE(controller_->HasNavigationError());
+
+  controller_->RemoveNavigationListener(&listener);
+
+  EXPECT_THAT(listener.events, IsEmpty());
 }
 
 }  // namespace autofill_assistant

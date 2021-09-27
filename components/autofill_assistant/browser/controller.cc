@@ -158,14 +158,10 @@ std::string Controller::GetEmailAddressForAccessTokenAccount() {
   return client_->GetEmailAddressForAccessTokenAccount();
 }
 
-std::string Controller::GetLocale() {
-  return client_->GetLocale();
-}
-
 std::string Controller::GetDisplayStringsLocale() {
   if (GetSettings().display_strings_locale.empty()) {
     // Fallback locale
-    return GetLocale();
+    return client_->GetLocale();
   }
   return GetSettings().display_strings_locale;
 }
@@ -2037,9 +2033,6 @@ void Controller::OnNavigationShutdownOrError(const GURL& url,
 
 void Controller::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
@@ -2056,12 +2049,8 @@ void Controller::DidStartNavigation(
     return;
   }
 
-  bool is_user_initiated_or_back_forward =
-      !navigation_handle->IsRendererInitiated() ||
-      navigation_handle->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK;
-
   if (state_ == AutofillAssistantState::STOPPED &&
-      is_user_initiated_or_back_forward &&
+      !navigation_handle->IsRendererInitiated() &&
       !navigation_handle->WasServerRedirect()) {
     if (can_recover_from_stopped_) {
       // Usually when in STOPPED (e.g. through |OnScriptError|) the
@@ -2089,24 +2078,23 @@ void Controller::DidStartNavigation(
   //  In the last two cases, autofill assistant might still give up later on if
   //  it discovers that the new page has no scripts.
   //
-  // Everything else, such as going back to a previous page (whether
-  // user-initiated or javascript-initiated), or refreshing the page is
-  // considered an end condition. If going back to a previous page is required,
-  // consider using the BROWSE state instead.
+  // Everything else, such as going back to a previous page, or refreshing the
+  // page is considered an end condition. If going back to a previous page is
+  // required, consider using the BROWSE state instead.
   if (state_ == AutofillAssistantState::PROMPT &&
       web_contents()->GetLastCommittedURL().is_valid() &&
       !navigation_handle->WasServerRedirect() &&
-      is_user_initiated_or_back_forward) {
+      !navigation_handle->IsRendererInitiated()) {
     OnNavigationShutdownOrError(navigation_handle->GetURL(),
                                 Metrics::DropOutReason::NAVIGATION);
     return;
   }
 
-  // When in RUNNING state, all renderer initiated navigation except
-  // back/forward is allowed, user initiated navigation will cause an error.
+  // When in RUNNING state, all renderer initiated navigation is allowed,
+  // user initiated navigation will cause an error.
   if (state_ == AutofillAssistantState::RUNNING &&
       !navigation_handle->WasServerRedirect() &&
-      is_user_initiated_or_back_forward) {
+      !navigation_handle->IsRendererInitiated()) {
     OnNavigationShutdownOrError(
         navigation_handle->GetURL(),
         Metrics::DropOutReason::NAVIGATION_WHILE_RUNNING);
@@ -2121,9 +2109,6 @@ void Controller::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   // TODO(b/159871774): Rethink how we handle navigation events. The early
   // return here may prevent us from updating |navigating_to_new_document_|.
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument() ||
       !navigation_handle->HasCommitted() || !IsNavigatingToNewDocument()) {

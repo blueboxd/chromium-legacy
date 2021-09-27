@@ -231,11 +231,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '496b89cb74b389b0a1047919275033ef0630416e',
+  'skia_revision': 'de1d7fb07f93b6119555f30b70db2568f5bf32a5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '868556abbe8737b9dbf55273a4d03238ee66f3de',
+  'v8_revision': '8923c05bbd6a3e7d2124691898fbd347d39cd7e9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -306,7 +306,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'fdb326ff691d3e871b03c6a598cb7f662ad051fe',
+  'devtools_frontend_revision': '9bae60435628d3f34790eedcc522e2dad22325cc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -390,11 +390,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libcxxabi_revision':    'c883cb129d0ed07c4ac457666f8d4ea4d7d3d565',
+  'libcxxabi_revision':    '50e90b8650bbc87d3b1d07dadb2381dc6dd1816e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libunwind_revision':    'a7e4ce09ec1b84245c0632006374084626afd268',
+  'libunwind_revision':    'a002c725cf03e16d3bc47dd9b7962aa22f7ee1d9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -413,7 +413,7 @@ vars = {
   'libcxx_revision':       '79a2e924d96e2fc1e4b937c42efd08898fa472d7',
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:de86ec4176235871a7cb335756987e41246dae4a',
+  'gn_version': 'git_revision:0153d369bbccc908f4da4993b1ba82728055926a',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -1021,12 +1021,12 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'ded3cad7cf8179fb859b1681c9655d3add6be677',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'e3a781a848551ae7bd5770b85fc00ed5ec21325f',
       'condition': 'checkout_linux',
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'f35d3508ebd8c98d6c3b6ebfebe4895b374dbc07',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '4a17839cda871dbf1171126fc3fed3c569c7a249',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1579,7 +1579,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/turbine',
-              'version': 'EIJ2nS3aoQlV-cKpmxr4hNR4E1Qs82brcidjG4A1I5QC',
+              'version': 'OxN4BOHObt6tbi4fpsSFeUAxSiaf2Cto-QlpFzGzC_IC',
           },
       ],
       'condition': 'checkout_android',
@@ -1633,7 +1633,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'b0291fd966b55a5efc496772555b94842bde1085',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '96168abfb74cd800f2e18e7dcca5bed72ef36e2d',
+    Var('webrtc_git') + '/src.git' + '@' + '29b4049abc5928d995b51f8614dfb27dc7e3359e',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1691,7 +1691,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@484fedba9fd811ac5f78d5819f904f35a387f1a7',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d3297d09026c81e6a221d007598ec8349257d8c3',
     'condition': 'checkout_src_internal',
   },
 

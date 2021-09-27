@@ -835,6 +835,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ServiceWorker.ScriptCachedMetadataSize" units="bytes"
     expires_after="2021-12-19">
+  <obsolete>
+    Removed September 2021.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -847,6 +850,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ServiceWorker.ScriptCachedMetadataTotalSize" units="bytes"
     expires_after="2021-05-18">
+  <obsolete>
+    Removed September 2021.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -859,6 +865,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ServiceWorker.ScriptCount" units="count"
     expires_after="2021-05-18">
+  <obsolete>
+    Removed September 2021.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -870,6 +879,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ServiceWorker.ScriptSize" units="bytes"
     expires_after="2021-05-18">
+  <obsolete>
+    Removed September 2021.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -881,6 +893,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ServiceWorker.ScriptTotalSize" units="bytes"
     expires_after="2021-05-18">
+  <obsolete>
+    Removed September 2021.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -892,6 +907,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ServiceWorker.SendStopWorker.Status"
     enum="ServiceWorkerStatusCode" expires_after="M85">
+  <obsolete>
+    Removed from the code in April 2017.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -906,6 +924,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ServiceWorker.StartForNavigationHint.Result"
     enum="ServiceWorkerStartForNavigationHintResult" expires_after="2021-02-16">
+  <obsolete>
+    Removed September 2021.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -928,6 +949,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ServiceWorker.StartTiming.BrowserThreadHopTime"
     units="microseconds" expires_after="M80">
+  <obsolete>
+    No longer emitted since ServiceWorkerOnUI shipped in September 2020 (M86):
+    https://crbug.com/824858
+  </obsolete>
   <owner>kinuko@chromium.org</owner>
   <summary>
     The sum of all the times spent posting tasks between the UI and IO threads
@@ -945,8 +970,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ServiceWorker.StartTiming.ClockConsistency"
-    enum="CrossProcessTimeDelta" expires_after="2020-07-30">
-  <owner>falken@chromium.org</owner>
+    enum="CrossProcessTimeDelta" expires_after="2022-09-01">
+  <owner>wanderview@chromium.org</owner>
+  <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
     Recorded on each successful service worker startup.
@@ -958,12 +984,15 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
     If the clocks and timing were inconsistent, ServiceWorker.StartTiming.*
     metrics (other than this one) are not recorded.
+
+    This histogram was expired between roughly 2021-07-30 and 2021-09-31.
   </summary>
 </histogram>
 
 <histogram name="ServiceWorker.StartTiming.Duration" units="ms"
-    expires_after="2021-07-30">
-  <owner>falken@chromium.org</owner>
+    expires_after="2022-09-01">
+  <owner>wanderview@chromium.org</owner>
+  <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
     The time taken to start a service worker that is already installed, from
@@ -972,13 +1001,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     if DevTools was ever attached to the Service Worker during startup. It does
     not include time, if any, waiting for the service worker to finish stopping
     before asking it to start, if that occurred.
+
+    This histogram was expired between roughly 2021-07-30 and 2021-09-31.
   </summary>
 </histogram>
 
 <histogram
     name="ServiceWorker.StartTiming.ReceivedStartWorkerToScriptEvaluationStart"
     units="ms" expires_after="2021-12-05">
-  <owner>falken@chromium.org</owner>
+  <owner>wanderview@chromium.org</owner>
+  <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
     The time taken from (a) the renderer receiving the start worker IPC message,
@@ -989,7 +1021,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ServiceWorker.StartTiming.ScriptEvaluationEndToEnd" units="ms"
     expires_after="2021-12-05">
-  <owner>falken@chromium.org</owner>
+  <owner>wanderview@chromium.org</owner>
+  <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
     The time taken from (a) initial JavaScript evaluation finishing on the
@@ -1002,7 +1035,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="ServiceWorker.StartTiming.ScriptEvaluationStartToScriptEvaluationEnd"
     units="ms" expires_after="2021-12-05">
-  <owner>falken@chromium.org</owner>
+  <owner>wanderview@chromium.org</owner>
+  <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
     The time taken from (a) initial JavaScript evaluation starting on the worker
@@ -1014,7 +1048,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="ServiceWorker.StartTiming.SentStartWorkerToReceivedStartWorker"
     units="ms" expires_after="2021-12-05">
-  <owner>falken@chromium.org</owner>
+  <owner>wanderview@chromium.org</owner>
+  <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
     The time taken from (a) the browser sending the start worker IPC message, to
@@ -1024,41 +1059,51 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ServiceWorker.StartTiming.StartToReceivedStartWorker"
-    units="ms" expires_after="2021-07-30">
-  <owner>falken@chromium.org</owner>
+    units="ms" expires_after="2022-09-01">
+  <owner>wanderview@chromium.org</owner>
+  <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
     The time taken from (a) the start of service worker startup, to (b) the
     renderer receiving the start worker IPC message. Recorded when
     ServiceWorker.StartTiming.Duration is recorded.
+
+    This histogram was expired between roughly 2021-07-30 and 2021-09-31.
   </summary>
 </histogram>
 
 <histogram name="ServiceWorker.StartTiming.StartToScriptEvaluationEnd"
-    units="ms" expires_after="2021-07-30">
-  <owner>falken@chromium.org</owner>
+    units="ms" expires_after="2022-09-01">
+  <owner>wanderview@chromium.org</owner>
+  <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
     The time taken from (a) the start of service worker startup, to (b) initial
     JavaScript evaluation finishing on the worker thread. Recorded when
     ServiceWorker.StartTiming.Duration is recorded.
+
+    This histogram was expired between roughly 2021-07-30 and 2021-09-31.
   </summary>
 </histogram>
 
 <histogram name="ServiceWorker.StartTiming.StartToScriptEvaluationStart"
-    units="ms" expires_after="2021-07-30">
-  <owner>falken@chromium.org</owner>
+    units="ms" expires_after="2022-09-01">
+  <owner>wanderview@chromium.org</owner>
+  <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
     The time taken from (a) the start of service worker startup, to (b) initial
     JavaScript evaluation starting on the worker thread. Recorded when
     ServiceWorker.StartTiming.Duration is recorded.
+
+    This histogram was expired between roughly 2021-07-30 and 2021-09-31.
   </summary>
 </histogram>
 
 <histogram name="ServiceWorker.StartTiming.StartToSentStartWorker" units="ms"
     expires_after="2021-12-05">
-  <owner>falken@chromium.org</owner>
+  <owner>wanderview@chromium.org</owner>
+  <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
     The time taken from (a) the start of service worker startup, to (b) the
@@ -1203,6 +1248,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ServiceWorker.WorkerForMessageFound" enum="Boolean"
     expires_after="M85">
+  <obsolete>
+    Removed from the code in March 2018.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -1215,6 +1263,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ServiceWorker.WorkerStopped" enum="ServiceWorkerStoppedStatus"
     expires_after="2021-08-09">
+  <obsolete>
+    Removed in September 2021.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>

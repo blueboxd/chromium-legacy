@@ -25,29 +25,22 @@ struct ObjectTraits;
 using GlobalObjectFactory = void (*)(ui::WaylandConnection* connection,
                                      wl_registry* registry,
                                      uint32_t name,
+                                     const std::string& interface,
                                      uint32_t version);
 
-// This template forces T to declare two static methods, Register() and
-// Instantiate().  The subclass must implement them as follows:
-//
-// void Register(ui::WaylandConnection* connection)
-// - must call connection->RegisterGlobalObjectFactory() and pass there the name
-//   of the Wayland interface and the address of the subclass's Instantiate()
-//   method.  The connection will use the name of the interface as a key to find
-//   and call the instantiation method when that interface is announced by the
-//   server.
+// This template forces T to declare a static Instantiate() method.  The
+// subclass must implement it as follows:
 //
 // void Instantiate(WaylandConnection* connection,
 //                  wl_registry* registry,
 //                  uint32_t name,
+//                  const std::string& interface,
 //                  uint32_t version)
 // - must bind the Wayland object and store it in the connection.
 template <typename T>
 class GlobalObjectRegistrar {
  public:
   GlobalObjectRegistrar() {
-    void (*Register)(ui::WaylandConnection*) = T::Register;
-    ALLOW_UNUSED_LOCAL(Register);
     GlobalObjectFactory Instantiate = T::Instantiate;
     ALLOW_UNUSED_LOCAL(Instantiate);
   }
@@ -109,6 +102,8 @@ DECLARE_WAYLAND_OBJECT_TRAITS(gtk_shell1)
 DECLARE_WAYLAND_OBJECT_TRAITS(gtk_surface1)
 DECLARE_WAYLAND_OBJECT_TRAITS(org_kde_kwin_idle)
 DECLARE_WAYLAND_OBJECT_TRAITS(org_kde_kwin_idle_timeout)
+DECLARE_WAYLAND_OBJECT_TRAITS(overlay_prioritizer)
+DECLARE_WAYLAND_OBJECT_TRAITS(overlay_prioritized_surface)
 DECLARE_WAYLAND_OBJECT_TRAITS(wl_buffer)
 DECLARE_WAYLAND_OBJECT_TRAITS(wl_callback)
 DECLARE_WAYLAND_OBJECT_TRAITS(wl_compositor)

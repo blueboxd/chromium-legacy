@@ -64,6 +64,11 @@ class HardwareDisplayPlaneManagerTest
  public:
   HardwareDisplayPlaneManagerTest() = default;
 
+  HardwareDisplayPlaneManagerTest(const HardwareDisplayPlaneManagerTest&) =
+      delete;
+  HardwareDisplayPlaneManagerTest& operator=(
+      const HardwareDisplayPlaneManagerTest&) = delete;
+
   void InitializeDrmState(size_t crtc_count, size_t planes_per_crtc);
 
   uint64_t GetObjectPropertyValue(uint32_t object_id,
@@ -101,9 +106,6 @@ class HardwareDisplayPlaneManagerTest
   std::map<uint32_t, std::string> property_names_;
 
   bool use_atomic_ = false;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManagerTest);
 };
 
 void HardwareDisplayPlaneManagerTest::SetUp() {
@@ -1175,12 +1177,9 @@ TEST_P(HardwareDisplayPlaneManagerTest, ForceOpaqueFormatsForAddFramebuffer) {
 
   // If DRM supports high-bitdepth formats with Alpha, there's no need for
   // opaque decaying. Note that we have to support all |kFourCCFormats|.
-  std::vector<drm_format_modifier> drm_format_modifiers;
-  drm_format_modifiers.push_back(
-      {/*formats=*/3, /*offset=*/0, /*pad=*/0, DRM_FORMAT_MOD_LINEAR});
   fake_drm_->SetPropertyBlob(ui::MockDrmDevice::AllocateInFormatsBlob(
       kInFormatsBlobPropId, {DRM_FORMAT_ARGB2101010, DRM_FORMAT_ABGR2101010},
-      {drm_format_modifiers}));
+      {}));
   fake_drm_->InitializeState(crtc_properties_, connector_properties_,
                              plane_properties_, property_names_, use_atomic_);
 
@@ -1240,6 +1239,11 @@ class HardwareDisplayPlaneManagerPlanesReadyTest : public testing::Test {
  protected:
   HardwareDisplayPlaneManagerPlanesReadyTest() = default;
 
+  HardwareDisplayPlaneManagerPlanesReadyTest(
+      const HardwareDisplayPlaneManagerPlanesReadyTest&) = delete;
+  HardwareDisplayPlaneManagerPlanesReadyTest& operator=(
+      const HardwareDisplayPlaneManagerPlanesReadyTest&) = delete;
+
   void SetUp() override {
     auto gbm_device = std::make_unique<ui::MockGbmDevice>();
     fake_drm_ = new ui::MockDrmDevice(std::move(gbm_device));
@@ -1289,9 +1293,6 @@ class HardwareDisplayPlaneManagerPlanesReadyTest : public testing::Test {
 
   ui::DrmOverlayPlaneList planes_without_fences_;
   ui::DrmOverlayPlaneList planes_with_fences_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManagerPlanesReadyTest);
 };
 
 void HardwareDisplayPlaneManagerPlanesReadyTest::RequestPlanesReady(

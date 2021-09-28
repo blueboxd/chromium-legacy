@@ -20,6 +20,9 @@ class AXPlatformNodeMac : public AXPlatformNodeBase {
  public:
   AXPlatformNodeMac();
 
+  AXPlatformNodeMac(const AXPlatformNodeMac&) = delete;
+  AXPlatformNodeMac& operator=(const AXPlatformNodeMac&) = delete;
+
   // AXPlatformNode.
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
@@ -31,6 +34,9 @@ class AXPlatformNodeMac : public AXPlatformNodeBase {
 
   AXPlatformNodeCocoa* GetNativeWrapper() const { return native_node_.get(); }
 
+  base::scoped_nsobject<AXPlatformNodeCocoa> ReleaseNativeWrapper() {
+    return std::move(native_node_);
+  }
   void SetNativeWrapper(AXPlatformNodeCocoa* native_node) {
     return native_node_.reset(native_node);
   }
@@ -44,8 +50,6 @@ class AXPlatformNodeMac : public AXPlatformNodeBase {
   ~AXPlatformNodeMac() override;
 
   base::scoped_nsobject<AXPlatformNodeCocoa> native_node_;
-
-  DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeMac);
 };
 
 // Convenience function to determine whether an internal object role should

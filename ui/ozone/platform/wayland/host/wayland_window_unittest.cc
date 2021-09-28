@@ -140,6 +140,9 @@ class WaylandWindowTest : public WaylandTest {
                           EF_LEFT_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
                           EF_LEFT_MOUSE_BUTTON) {}
 
+  WaylandWindowTest(const WaylandWindowTest&) = delete;
+  WaylandWindowTest& operator=(const WaylandWindowTest&) = delete;
+
   void SetUp() override {
     WaylandTest::SetUp();
 
@@ -279,9 +282,6 @@ class WaylandWindowTest : public WaylandTest {
   wl::MockXdgSurface* xdg_surface_;
 
   MouseEvent test_mouse_event_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WaylandWindowTest);
 };
 
 TEST_P(WaylandWindowTest, SetTitle) {
@@ -2989,8 +2989,8 @@ TEST_P(WaylandWindowTest, OneWaylandSubsurface) {
       wayland_subsurface->wayland_surface()->GetSurfaceId());
   EXPECT_TRUE(mock_surface_subsurface);
   wayland_subsurface->ConfigureAndShowSurface(
-      gfx::OVERLAY_TRANSFORM_NONE, subsurface_bounds, 1 /*buffer_scale*/, true,
-      nullptr, nullptr, gfx::OverlayPriorityHint::kNone);
+      subsurface_bounds, gfx::Rect(0, 0, 640, 480) /*parent_bounds_px*/,
+      1 /*buffer_scale*/, nullptr, nullptr);
   connection_->ScheduleFlush();
 
   Sync();

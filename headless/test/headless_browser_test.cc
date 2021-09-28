@@ -19,6 +19,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "gin/v8_initializer.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
@@ -81,6 +82,9 @@ class EvaluateHelper {
                                        base::Unretained(this)));
   }
 
+  EvaluateHelper(const EvaluateHelper&) = delete;
+  EvaluateHelper& operator=(const EvaluateHelper&) = delete;
+
   ~EvaluateHelper() {
     web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
   }
@@ -100,8 +104,6 @@ class EvaluateHelper {
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
 
   std::unique_ptr<runtime::EvaluateResult> result_;
-
-  DISALLOW_COPY_AND_ASSIGN(EvaluateHelper);
 };
 
 }  // namespace
@@ -165,6 +167,17 @@ void HeadlessBrowserTest::SetUpWithoutGPU() {
 HeadlessBrowserTest::~HeadlessBrowserTest() = default;
 
 void HeadlessBrowserTest::PreRunTestOnMainThread() {
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+#if defined(USE_V8_CONTEXT_SNAPSHOT)
+  constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
+      gin::V8Initializer::V8SnapshotFileType::kWithAdditionalContext;
+#else
+  constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
+      gin::V8Initializer::V8SnapshotFileType::kDefault;
+#endif  // USE_V8_CONTEXT_SNAPSHOT
+  gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
+#endif
+
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Pump startup related events.
   base::RunLoop().RunUntilIdle();

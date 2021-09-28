@@ -127,6 +127,9 @@ class DragDropView : public View {
  public:
   DragDropView() = default;
 
+  DragDropView(const DragDropView&) = delete;
+  DragDropView& operator=(const DragDropView&) = delete;
+
   void set_formats(int formats) { formats_ = formats; }
 
   // View:
@@ -150,13 +153,14 @@ class DragDropView : public View {
  private:
   // Drop formats accepted by this View object.
   int formats_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(DragDropView);
 };
 
 class DragDropClientMacTest : public WidgetTest {
  public:
   DragDropClientMacTest() : widget_(new Widget) {}
+
+  DragDropClientMacTest(const DragDropClientMacTest&) = delete;
+  DragDropClientMacTest& operator=(const DragDropClientMacTest&) = delete;
 
   DragDropClientMac* drag_drop_client() {
     return ns_window_host_->drag_drop_client();
@@ -214,9 +218,6 @@ class DragDropClientMacTest : public WidgetTest {
   NativeWidgetMacNSWindowHost* ns_window_host_ = nullptr;
   DragDropView* target_ = nullptr;
   base::scoped_nsobject<MockDraggingInfo> dragging_info_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DragDropClientMacTest);
 };
 
 // Tests if the drag and drop target receives the dropped data.
@@ -312,14 +313,14 @@ class DragDropCloseView : public DragDropView {
  public:
   DragDropCloseView() {}
 
+  DragDropCloseView(const DragDropCloseView&) = delete;
+  DragDropCloseView& operator=(const DragDropCloseView&) = delete;
+
   // View:
   DragOperation OnPerformDrop(const ui::DropTargetEvent& event) override {
     GetWidget()->CloseNow();
     return DragOperation::kMove;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DragDropCloseView);
 };
 
 // Tests that closing Widget on OnPerformDrop does not crash.

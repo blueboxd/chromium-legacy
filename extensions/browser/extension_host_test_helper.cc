@@ -24,10 +24,16 @@ ExtensionHostTestHelper::ExtensionHostTestHelper(
 
 ExtensionHostTestHelper::~ExtensionHostTestHelper() = default;
 
-void ExtensionHostTestHelper::OnExtensionHostCreated(
+void ExtensionHostTestHelper::OnExtensionHostRenderProcessReady(
     content::BrowserContext* browser_context,
     ExtensionHost* host) {
-  EventSeen(host, HostEvent::kCreated);
+  EventSeen(host, HostEvent::kRenderProcessReady);
+}
+
+void ExtensionHostTestHelper::OnExtensionHostDocumentElementAvailable(
+    content::BrowserContext* browser_context,
+    ExtensionHost* host) {
+  EventSeen(host, HostEvent::kDocumentElementAvailable);
 }
 
 void ExtensionHostTestHelper::OnExtensionHostCompletedFirstLoad(
@@ -69,6 +75,8 @@ ExtensionHost* ExtensionHostTestHelper::WaitFor(HostEvent event) {
 void ExtensionHostTestHelper::EventSeen(ExtensionHost* host, HostEvent event) {
   // Check if the host matches our restrictions.
   if (!extension_id_.empty() && host->extension_id() != extension_id_)
+    return;
+  if (restrict_to_type_ && host->extension_host_type() != restrict_to_type_)
     return;
 
   if (event == HostEvent::kDestroyed) {

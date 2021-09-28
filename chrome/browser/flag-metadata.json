@@ -36,7 +36,7 @@
   {
     "name": "accessible-pdf-form",
     "owners": [ "ankk@microsoft.com", "mohitb@microsoft.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "account-id-migration",
@@ -646,7 +646,9 @@
   {
     "name": "cellular-use-external-euicc",
     "owners": [ "azeemarshad", "khorimoto", "cros-connectivity@google.com" ],
-    "expiry_milestone": 95
+    // Never expires. This used in ChromeOS to switch to removable EUICC for
+    // all eSIM operations. This is useful for debugging with test SIM cards.
+    "expiry_milestone": -1
   },
   {
     "name": "check-offline-capability",
@@ -1124,10 +1126,10 @@
   },
   {
     "name": "disable-cancel-all-touches",
-    "owners": [ "chrome-knowledge-eng@google.com" ],
+    "owners": [ "chrome-knowledge-eng@google.com", "chromeos-touch-ml@google.com" ],
     // This flag is use to disable CancelAllTouches() function, which enable the
     // testing for implementation of canceling single touches.
-    "expiry_milestone": 86
+    "expiry_milestone": 104
   },
   {
     "name": "disable-explicit-dma-fences",
@@ -1340,12 +1342,7 @@
   {
     "name": "enable-accessibility-live-caption",
     "owners": [ "abigailbklein@google.com", "evliu@google.com", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 95
-  },
-  {
-    "name": "enable-accessibility-live-caption-soda",
-    "owners": [ "abigailbklein@google.com", "evliu@google.com", "robsc@chromium.org", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "enable-android-dark-search",
@@ -1566,7 +1563,7 @@
   {
     "name": "enable-critical-persisted-tab-data",
     "owners": [ "chrome-shopping@google.com" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 100
   },
   {
     "name": "enable-cros-action-recorder",
@@ -2032,7 +2029,7 @@
   {
     "name": "enable-holding-space-in-progress-downloads-integration",
     "owners": [ "//ash/public/cpp/holding_space/OWNERS" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 97
   },
   {
     "name": "enable-hostname-setting",
@@ -2435,8 +2432,8 @@
   },
   {
     "name": "enable-reader-mode",
-    "owners": [ "katie", "dmazzoni" ],
-    "expiry_milestone": 95
+    "owners": [ "katie", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 100
   },
   {
     "name": "enable-reader-mode-in-cct",
@@ -2726,12 +2723,12 @@
   {
     "name": "enable-vaapi-av1-decode-acceleration",
     "owners": [ "andrescj", "chromeos-gfx-video@google.com" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 100
   },
   {
     "name": "enable-vaapi-jpeg-image-decode-acceleration",
     "owners": [ "andrescj", "chromeos-gfx@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 100
   },
   {
     "name": "enable-vaapi-vp9-kSVC-encode-acceleration",
@@ -2741,7 +2738,7 @@
   {
     "name": "enable-vaapi-webp-image-decode-acceleration",
     "owners": [ "andrescj", "chromeos-gfx@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 100
   },
   {
     "name": "enable-virtual-keyboard",
@@ -3197,7 +3194,7 @@
   {
     "name": "forced-colors",
     "owners": [ "almaher@microsoft.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 99
   },
   {
     "name": "fractional-scroll-offsets",
@@ -4038,7 +4035,7 @@
   {
     "name": "omnibox-clobber-triggers-contextual-web-zero-suggest",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "omnibox-compact-suggestions",
@@ -4273,11 +4270,6 @@
     "name": "page-info-about-this-site",
     "owners": [ "eokoyomon", "dullweber", "olesiamarukhno" ],
     "expiry_milestone": 99
-  },
-  {
-    "name": "page-info-discoverability",
-    "owners": [ "eokoyomon", "dullweber" ],
-    "expiry_milestone": 95
   },
   {
     "name": "page-info-history",
@@ -5308,7 +5300,9 @@
   {
     "name": "translate-force-trigger-on-english",
     "owners": [ "megjablon", "cuianthony", "chrome-language@google.com" ],
-    "expiry_milestone": 95
+    // This flag is used to manually trigger a Finch controlled, India only
+    // feature.
+    "expiry_milestone": -1
   },
   {
     "name": "translate-intent",
@@ -5680,7 +5674,7 @@
   {
     "name": "webxr-incubations",
     "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 110
   },
   {
     "name": "webxr-runtime",

@@ -11,6 +11,7 @@
 #include "base/scoped_observation.h"
 #include "extensions/browser/extension_host_registry.h"
 #include "extensions/common/extension_id.h"
+#include "extensions/common/mojom/view_type.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
@@ -39,8 +40,13 @@ class ExtensionHostTestHelper : public ExtensionHostRegistry::Observer {
   ExtensionHostTestHelper& operator=(const ExtensionHostTestHelper&) = delete;
   ~ExtensionHostTestHelper() override;
 
-  // TODO(devlin): Add a restriction for type of ExtensionHost, e.g.
-  // background, popup, etc.
+  // Restricts this class to only observing ExtensionHosts of the specified
+  // `view_type`. Other extension hosts matching the event (even from the same
+  // extension and browser context) will be ignored. This allows tests to wait
+  // for, e.g., a background page or popup host event to happen.
+  void RestrictToType(mojom::ViewType view_type) {
+    restrict_to_type_ = view_type;
+  }
 
   // Waits for an ExtensionHost matching the restrictions (if any) to fire the
   // corresponding notification.
@@ -48,8 +54,11 @@ class ExtensionHostTestHelper : public ExtensionHostRegistry::Observer {
   // destroyed (which can happen if the host was closed before this method was
   // called or if the host is destroyed synchronously from creation), before
   // the run loop is quit.
-  ExtensionHost* WaitForExtensionHostCreated() {
-    return WaitFor(HostEvent::kCreated);
+  ExtensionHost* WaitForRenderProcessReady() {
+    return WaitFor(HostEvent::kRenderProcessReady);
+  }
+  ExtensionHost* WaitForDocumentElementAvailable() {
+    return WaitFor(HostEvent::kDocumentElementAvailable);
   }
   ExtensionHost* WaitForExtensionHostCompletedFirstLoad() {
     return WaitFor(HostEvent::kCompletedFirstLoad);
@@ -61,14 +70,19 @@ class ExtensionHostTestHelper : public ExtensionHostRegistry::Observer {
  private:
   // The different types of events this class can wait for.
   enum class HostEvent {
-    kCreated,
+    kRenderProcessReady,
+    kDocumentElementAvailable,
     kCompletedFirstLoad,
     kDestroyed,
   };
 
   // ExtensionHostRegistry::Observer:
-  void OnExtensionHostCreated(content::BrowserContext* browser_context,
-                              ExtensionHost* host) override;
+  void OnExtensionHostRenderProcessReady(
+      content::BrowserContext* browser_context,
+      ExtensionHost* host) override;
+  void OnExtensionHostDocumentElementAvailable(
+      content::BrowserContext* browser_context,
+      ExtensionHost* host) override;
   void OnExtensionHostCompletedFirstLoad(
       content::BrowserContext* browser_context,
       ExtensionHost* host) override;
@@ -94,6 +108,10 @@ class ExtensionHostTestHelper : public ExtensionHostRegistry::Observer {
   // The ID of the extension whose hosts this helper is watching, if it is
   // restricted to a given ID.
   const ExtensionId extension_id_;
+
+  // The specific type of host this helper is waiting on, if any (nullopt
+  // implies waiting on any kind of ExtensionHost).
+  absl::optional<mojom::ViewType> restrict_to_type_;
 
   // The set of all events this helper has seen and their corresponding
   // ExtensionHosts. ExtensionHosts are nulled out when they are destroyed, but

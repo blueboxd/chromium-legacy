@@ -64,6 +64,7 @@
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
 #include "chromeos/crosapi/mojom/geolocation.mojom.h"
 #include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
+#include "chromeos/crosapi/mojom/identity_manager.mojom.h"
 #include "chromeos/crosapi/mojom/image_writer.mojom.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
 #include "chromeos/crosapi/mojom/kiosk_session_service.mojom.h"
@@ -88,6 +89,7 @@
 #include "components/account_manager_core/account_manager_util.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/metrics_service.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -357,6 +359,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::FileManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::GeolocationService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::HoldingSpaceService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::IdentityManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::IdleService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ImageWriter>(),
     MakeInterfaceVersionEntry<crosapi::mojom::KeystoreService>(),
@@ -434,7 +437,7 @@ bool IsDataWipeRequiredInternal(base::Version data_version,
 }
 
 static_assert(
-    crosapi::mojom::Crosapi::Version_ == 50,
+    crosapi::mojom::Crosapi::Version_ == 51,
     "if you add a new crosapi, please add it to kInterfaceVersionEntries");
 static_assert(!HasDuplicatedUuid(),
               "Each Crosapi Mojom interface should have unique UUID.");
@@ -775,6 +778,13 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
   params->standalone_browser_is_primary = IsLacrosPrimaryBrowser();
   params->device_properties = GetDeviceProperties();
   params->device_settings = GetDeviceSettings();
+  // |metrics_service| could be nullptr in tests.
+  if (auto* metrics_service = g_browser_process->metrics_service()) {
+    // Send metrics service client id to Lacros if it's present.
+    std::string client_id = metrics_service->GetClientId();
+    if (!client_id.empty())
+      params->metrics_service_client_id = client_id;
+  }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kOndeviceHandwritingSwitch)) {

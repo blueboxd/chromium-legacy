@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/i18n/character_encoding.h"
@@ -152,6 +153,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/disallow_activation_reason.h"
+#include "content/public/browser/document_service_base_internal.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/permission_type.h"
@@ -1395,8 +1397,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       subframe_unload_timeout_(RenderViewHostImpl::kUnloadTimeout),
       media_device_id_salt_base_(
           BrowserContext::CreateRandomMediaDeviceIDSalt()),
-      document_associated_data_(
-          std::make_unique<DocumentAssociatedData>(*this)),
+      document_associated_data_(absl::in_place, *this),
       lifecycle_state_(lifecycle_state),
       inner_tree_main_frame_tree_node_id_(
           FrameTreeNode::kFrameTreeNodeInvalidId),
@@ -3092,16 +3093,17 @@ void RenderFrameHostImpl::RenderFrameCreated() {
   const RenderFrameState old_render_frame_state = render_frame_state_;
   render_frame_state_ = RenderFrameState::kCreated;
 
-  // Clear all the document-associated data for this RenderFrameHost when its
-  // RenderFrame is recreated after a crash. Note that the user data is
-  // intentionally not cleared at the time of crash. Please refer to
-  // https://crbug.com/1099237 for more details.
-  //
-  // Clearing of user data should be called before RenderFrameCreated to ensure:
-  // - a) new new state set in RenderFrameCreated doesn't get deleted.
-  // - b) the old state is not leaked to a new RenderFrameHost.
   if (old_render_frame_state == RenderFrameState::kDeleted) {
-    document_associated_data_ = std::make_unique<DocumentAssociatedData>(*this);
+    // Clear all the document-associated data for this RenderFrameHost when its
+    // RenderFrame is recreated after a crash. Note that the user data is
+    // intentionally not cleared at the time of crash. Please refer to
+    // https://crbug.com/1099237 for more details.
+    //
+    // Clearing of user data should be called before RenderFrameCreated to
+    // ensure:
+    // - a) the new state set in RenderFrameCreated doesn't get deleted.
+    // - b) the old state is not leaked to a new RenderFrameHost.
+    document_associated_data_.emplace(*this);
 
     // Dispatch update notification when a Page is recreated after a crash.
     if (is_main_frame()) {
@@ -4362,18 +4364,18 @@ void RenderFrameHostImpl::UndoCommitNavigation(RenderFrameProxyHost& proxy,
 }
 
 void RenderFrameHostImpl::MaybeDispatchDidFinishLoadOnPrerenderActivation() {
-  auto* document_data = document_associated_data_.get();
-
   // Don't dispatch notification if DidFinishLoad has not yet been invoked for
   // `rfh` i.e., when the url is nullopt.
-  if (!document_data->pending_did_finish_load_url_for_prerendering)
+  if (!document_associated_data_->pending_did_finish_load_url_for_prerendering)
     return;
 
   delegate_->OnDidFinishLoad(
-      this, *document_data->pending_did_finish_load_url_for_prerendering);
+      this,
+      *document_associated_data_->pending_did_finish_load_url_for_prerendering);
 
   // Set to nullopt to avoid calling DidFinishLoad twice.
-  document_data->pending_did_finish_load_url_for_prerendering.reset();
+  document_associated_data_->pending_did_finish_load_url_for_prerendering
+      .reset();
 }
 
 void RenderFrameHostImpl::MaybeDispatchDOMContentLoadedOnPrerenderActivation() {
@@ -5253,7 +5255,19 @@ void RenderFrameHostImpl::EnforceInsecureNavigationsSet(
   frame_tree_node()->SetInsecureNavigationsSet(set);
 }
 
-RenderFrameHostImpl* RenderFrameHostImpl::FindAndVerifyChild(
+void RenderFrameHostImpl::AddDocumentService(
+    DocumentServiceBaseInternal* document_service,
+    base::PassKey<DocumentServiceBaseInternal>) {
+  document_associated_data_->services.push_back(document_service);
+}
+
+void RenderFrameHostImpl::RemoveDocumentService(
+    DocumentServiceBaseInternal* document_service,
+    base::PassKey<DocumentServiceBaseInternal>) {
+  base::Erase(document_associated_data_->services, document_service);
+}
+
+FrameTreeNode* RenderFrameHostImpl::FindAndVerifyChild(
     int32_t child_frame_routing_id,
     bad_message::BadMessageReason reason) {
   auto child_frame_or_proxy = LookupRenderFrameHostOrProxy(
@@ -5261,7 +5275,7 @@ RenderFrameHostImpl* RenderFrameHostImpl::FindAndVerifyChild(
   return FindAndVerifyChildInternal(child_frame_or_proxy, reason);
 }
 
-RenderFrameHostImpl* RenderFrameHostImpl::FindAndVerifyChild(
+FrameTreeNode* RenderFrameHostImpl::FindAndVerifyChild(
     const blink::FrameToken& child_frame_token,
     bad_message::BadMessageReason reason) {
   auto child_frame_or_proxy =
@@ -5269,7 +5283,7 @@ RenderFrameHostImpl* RenderFrameHostImpl::FindAndVerifyChild(
   return FindAndVerifyChildInternal(child_frame_or_proxy, reason);
 }
 
-RenderFrameHostImpl* RenderFrameHostImpl::FindAndVerifyChildInternal(
+FrameTreeNode* RenderFrameHostImpl::FindAndVerifyChildInternal(
     RenderFrameHostOrProxy child_frame_or_proxy,
     bad_message::BadMessageReason reason) {
   // A race can result in |child| to be nullptr. Avoid killing the renderer in
@@ -5290,7 +5304,7 @@ RenderFrameHostImpl* RenderFrameHostImpl::FindAndVerifyChildInternal(
     bad_message::ReceivedBadMessage(GetProcess(), reason);
     return nullptr;
   }
-  return child_frame_or_proxy.GetCurrentFrameHost();
+  return child_frame_or_proxy.GetFrameTreeNode();
 }
 
 void RenderFrameHostImpl::UpdateTitle(
@@ -6284,14 +6298,14 @@ void RenderFrameHostImpl::DidChangeFrameOwnerProperties(
 
   bool has_display_none_property_changed =
       properties->is_display_none !=
-      child->frame_tree_node()->frame_owner_properties().is_display_none;
+      child->frame_owner_properties().is_display_none;
 
-  child->frame_tree_node()->set_frame_owner_properties(*properties);
+  child->set_frame_owner_properties(*properties);
 
-  child->frame_tree_node()->render_manager()->OnDidUpdateFrameOwnerProperties(
-      *properties);
+  child->render_manager()->OnDidUpdateFrameOwnerProperties(*properties);
   if (has_display_none_property_changed) {
-    delegate_->DidChangeDisplayState(child, properties->is_display_none);
+    delegate_->DidChangeDisplayState(child->current_frame_host(),
+                                     properties->is_display_none);
   }
 }
 
@@ -6317,8 +6331,8 @@ void RenderFrameHostImpl::DidChangeIframeAttributes(
   if (!child)
     return;
 
-  child->frame_tree_node()->set_csp_attribute(std::move(parsed_csp_attribute));
-  child->frame_tree_node()->set_anonymous(anonymous);
+  child->set_csp_attribute(std::move(parsed_csp_attribute));
+  child->set_anonymous(anonymous);
 }
 
 void RenderFrameHostImpl::DidChangeFramePolicy(
@@ -6327,21 +6341,23 @@ void RenderFrameHostImpl::DidChangeFramePolicy(
   // Ensure that a frame can only update sandbox flags or permissions policy for
   // its immediate children.  If this is not the case, the renderer is
   // considered malicious and is killed.
-  RenderFrameHostImpl* child = FindAndVerifyChild(
+  FrameTreeNode* child = FindAndVerifyChild(
       // TODO(iclelland): Rename this message
       child_frame_token, bad_message::RFH_SANDBOX_FLAGS);
   if (!child)
     return;
 
-  child->frame_tree_node()->SetPendingFramePolicy(frame_policy);
+  child->SetPendingFramePolicy(frame_policy);
 
   // Notify the RenderFrame if it lives in a different process from its parent.
   // The frame's proxies in other processes also need to learn about the updated
   // flags and policy, but these notifications are sent later in
   // RenderFrameHostManager::CommitPendingFramePolicy(), when the frame
   // navigates and the new policies take effect.
-  if (child->GetSiteInstance() != GetSiteInstance()) {
-    child->GetAssociatedLocalFrame()->DidUpdateFramePolicy(frame_policy);
+  if (child->current_frame_host()->GetSiteInstance() != GetSiteInstance()) {
+    child->current_frame_host()
+        ->GetAssociatedLocalFrame()
+        ->DidUpdateFramePolicy(frame_policy);
   }
 }
 
@@ -10378,8 +10394,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
       // RenderFrameHost commits before the navigation commits. This happens
       // when the current RenderFrameHost crashes before navigating to a new
       // URL.
-      document_associated_data_ =
-          std::make_unique<DocumentAssociatedData>(*this);
+      document_associated_data_.emplace(*this);
     }
 
     // Continue observing the events for the committed navigation.
@@ -12710,8 +12725,12 @@ RenderFrameHostImpl::DocumentAssociatedData::DocumentAssociatedData(
   reporting_source = base::UnguessableToken::Create();
 }
 
-RenderFrameHostImpl::DocumentAssociatedData::~DocumentAssociatedData() =
-    default;
+RenderFrameHostImpl::DocumentAssociatedData::~DocumentAssociatedData() {
+  while (!services.empty()) {
+    // DocumentServiceBaseInternal unregisters itself at destruction time.
+    delete services.back();
+  }
+}
 
 std::ostream& operator<<(std::ostream& o,
                          const RenderFrameHostImpl::LifecycleStateImpl& s) {

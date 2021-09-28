@@ -1570,7 +1570,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/media/webrtc/capture_handle_browsertest.cc",
       "../browser/media/webrtc/conditional_focus_browsertest.cc",
       "../browser/media/webrtc/media_stream_devices_controller_browsertest.cc",
-      "../browser/media/webrtc/media_stream_permission_browsertest.cc",
       "../browser/media/webrtc/test_stats_dictionary_unittest.cc",
       "../browser/media/webrtc/webrtc_apprtc_browsertest.cc",
       "../browser/media/webrtc/webrtc_browsertest.cc",
@@ -2606,6 +2605,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/extensions/printer_provider_apitest.cc",
         "../browser/extensions/process_management_browsertest.cc",
         "../browser/extensions/process_manager_browsertest.cc",
+        "../browser/extensions/process_util_browsertest.cc",
         "../browser/extensions/renderer_initialization_browsertest.cc",
         "../browser/extensions/sandboxed_pages_apitest.cc",
         "../browser/extensions/script_executor_browsertest.cc",
@@ -7761,6 +7761,7 @@ test("unit_tests") {
   if ((is_win || is_linux || is_chromeos) && is_chrome_branded) {
     sources += [
       "../browser/lens/region_search/lens_region_search_controller_unittest.cc",
+      "../browser/ui/views/lens/lens_side_panel_controller_unittest.cc",
     ]
     deps += [ "//chrome/browser/lens/region_search" ]
   }
@@ -8097,6 +8098,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/extensions/omnibox_focus_interactive_test.cc",
       "../browser/extensions/window_open_interactive_apitest.cc",
       "../browser/focus_ring_browsertest.cc",
+      "../browser/media/webrtc/media_stream_permission_interactive_uitest.cc",
       "../browser/media/webrtc/webrtc_mediadevices_interactive_uitest.cc",
       "../browser/mouse_events_interactive_uitest.cc",
       "../browser/notifications/platform_notification_service_interactive_uitest.cc",

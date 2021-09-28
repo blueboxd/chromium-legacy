@@ -52,11 +52,17 @@ class InputMethodManagerImpl : public InputMethodManager,
               Profile* profile,
               const InputMethodDescriptor* initial_input_method = nullptr);
 
+    Profile* const GetProfile() const;
+
     // Returns true if |input_method_id| is in |enabled_input_method_ids_|.
     bool InputMethodIsEnabled(const std::string& input_method_id) const;
 
     // TODO(nona): Support dynamical unloading.
     void LoadNecessaryComponentExtensions();
+
+    void SetMenuActivated(bool activated);
+
+    bool IsMenuActivated() const;
 
     // InputMethodManager::State overrides.
     scoped_refptr<InputMethodManager::State> Clone() const override;
@@ -108,12 +114,6 @@ class InputMethodManagerImpl : public InputMethodManager,
     // Reset the input view URL to the default url of the current input method.
     void ResetInputViewUrl();
 
-    // ------------------------- Data members.
-    Profile* const profile;
-
-    // True if the opt-in IME menu is activated.
-    bool menu_activated = false;
-
    protected:
     friend base::RefCounted<input_method::InputMethodManager::State>;
     ~StateImpl() override;
@@ -149,6 +149,8 @@ class InputMethodManagerImpl : public InputMethodManager,
     const InputMethodDescriptor* LookupInputMethod(
         const std::string& input_method_id);
 
+    Profile* const profile_;
+
     InputMethodManagerImpl* const manager_;
 
     std::string last_used_input_method_id_;
@@ -180,6 +182,9 @@ class InputMethodManagerImpl : public InputMethodManager,
     InputMethodManager::UIStyle ui_style_ =
         InputMethodManager::UIStyle::kNormal;
 
+    // True if the opt-in IME menu is activated.
+    bool menu_activated_ = false;
+
     // Do not forget to update StateImpl::Clone() when adding new data members!!
   };
 
@@ -190,6 +195,10 @@ class InputMethodManagerImpl : public InputMethodManager,
                          std::unique_ptr<ComponentExtensionIMEManagerDelegate>
                              component_extension_ime_manager_delegate,
                          bool enable_extension_loading);
+
+  InputMethodManagerImpl(const InputMethodManagerImpl&) = delete;
+  InputMethodManagerImpl& operator=(const InputMethodManagerImpl&) = delete;
+
   ~InputMethodManagerImpl() override;
 
   // InputMethodManager override:
@@ -334,8 +343,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   ImeServiceConnectorMap ime_service_connectors_;
 
   content::NotificationRegistrar notification_registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImpl);
 };
 
 }  // namespace input_method

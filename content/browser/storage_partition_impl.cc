@@ -1266,7 +1266,9 @@ void StoragePartitionImpl::Initialize(
   payment_app_context_ = new PaymentAppContextImpl();
   payment_app_context_->Init(service_worker_context_);
 
-  broadcast_channel_provider_ = std::make_unique<BroadcastChannelProvider>();
+  broadcast_channel_service_ = std::make_unique<BroadcastChannelService>();
+  broadcast_channel_provider_ =
+      std::make_unique<BroadcastChannelProvider>(weak_factory_.GetWeakPtr());
 
   bluetooth_allowed_devices_map_ =
       std::make_unique<BluetoothAllowedDevicesMap>();
@@ -1305,7 +1307,7 @@ void StoragePartitionImpl::Initialize(
         this, path, special_storage_policy_);
   }
 
-  if (base::FeatureList::IsEnabled(blink::features::kFledgeInterestGroups)) {
+  if (base::FeatureList::IsEnabled(blink::features::kInterestGroupStorage)) {
     interest_group_manager_ = std::make_unique<InterestGroupManager>(
         path, is_in_memory(), GetURLLoaderFactoryForBrowserProcess());
   }
@@ -1554,6 +1556,11 @@ BackgroundFetchContext* StoragePartitionImpl::GetBackgroundFetchContext() {
 PaymentAppContextImpl* StoragePartitionImpl::GetPaymentAppContext() {
   DCHECK(initialized_);
   return payment_app_context_.get();
+}
+
+BroadcastChannelService* StoragePartitionImpl::GetBroadcastChannelService() {
+  DCHECK(initialized_);
+  return broadcast_channel_service_.get();
 }
 
 BroadcastChannelProvider* StoragePartitionImpl::GetBroadcastChannelProvider() {

@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/no_destructor.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cart/cart_discount_fetcher.h"
@@ -22,6 +23,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace {
 const char kOauthName[] = "rbd";
@@ -138,6 +140,20 @@ void FetchDiscountWorker::ReadyToFetch(
                      weak_ptr_factory_.GetWeakPtr());
 
   cart_service_delegate_->RecordFetchTimestamp();
+  // If there is no partner merchant cart, don't fetch immediately; instead,
+  // post another delayed fetch.
+  bool has_partner_merchant = false;
+  for (auto pair : proto_pairs) {
+    if (cart_features::IsPartnerMerchant(
+            GURL(pair.second.merchant_cart_url()))) {
+      has_partner_merchant = true;
+      break;
+    }
+  }
+  if (!has_partner_merchant) {
+    Start(cart_features::kDiscountFetchDelayParam.Get());
+    return;
+  }
   backend_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(

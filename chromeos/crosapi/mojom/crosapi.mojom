@@ -23,6 +23,7 @@ import "chromeos/crosapi/mojom/field_trial.mojom";
 import "chromeos/crosapi/mojom/file_manager.mojom";
 import "chromeos/crosapi/mojom/geolocation.mojom";
 import "chromeos/crosapi/mojom/holding_space_service.mojom";
+import "chromeos/crosapi/mojom/identity_manager.mojom";
 import "chromeos/crosapi/mojom/idle_service.mojom";
 import "chromeos/crosapi/mojom/image_writer.mojom";
 import "chromeos/crosapi/mojom/keystore_service.mojom";
@@ -76,8 +77,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 51
-// Next method id: 55
+// Next version: 52
+// Next method id: 56
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -196,6 +197,11 @@ interface Crosapi {
   // Added in M92.
   [MinVersion=27]
   BindHoldingSpaceService@32(pending_receiver<HoldingSpaceService> receiver);
+
+  // Binds the IdentityManager interface for reading identity information.
+  // Added in M96.
+  [MinVersion=51]
+  BindIdentityManager@55(pending_receiver<IdentityManager> receiver);
 
   // Binds the IdleService interface for reading idle states.
   // Added in M90.
@@ -571,8 +577,8 @@ enum CreationResult {
 // If ash-chrome is newer than the browser, then some fields may not be
 // processed by the browser.
 //
-// Next version: 26
-// Next id: 26
+// Next version: 27
+// Next id: 27
 [Stable, RenamedFrom="crosapi.mojom.LacrosInitParams"]
 struct BrowserInitParams {
   // This is ash-chrome's version of the Crosapi interface. This is used by
@@ -730,6 +736,11 @@ struct BrowserInitParams {
   // The set of device settings Lacros needs to know about.
   [MinVersion=25]
   DeviceSettings? device_settings@25;
+
+  // Metrics service client id of ash chrome.
+  // Lacros needs to use the same client id as ash chrome.
+  [MinVersion=26]
+  string? metrics_service_client_id@26;
 };
 
 // BrowserService defines the APIs that live in a browser (such as

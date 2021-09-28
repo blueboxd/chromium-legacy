@@ -2403,10 +2403,6 @@ static_library("browser") {
       "apps/digital_goods/digital_goods_impl.h",
       "apps/digital_goods/util.cc",
       "apps/digital_goods/util.h",
-      "policy/messaging_layer/util/heartbeat_event.cc",
-      "policy/messaging_layer/util/heartbeat_event.h",
-      "policy/messaging_layer/util/heartbeat_event_factory.cc",
-      "policy/messaging_layer/util/heartbeat_event_factory.h",
     ]
     deps += [
       "//ash/components/audio",
@@ -2491,6 +2487,14 @@ static_library("browser") {
       deps += [ "//chromeos/services/libassistant/public/mojom" ]
     }
   }
+  if (is_chromeos) {
+    sources += [
+      "policy/messaging_layer/util/heartbeat_event.cc",
+      "policy/messaging_layer/util/heartbeat_event.h",
+      "policy/messaging_layer/util/heartbeat_event_factory.cc",
+      "policy/messaging_layer/util/heartbeat_event_factory.h",
+    ]
+  }
   if (is_linux || is_chromeos) {
     deps += [ "//chrome/browser/error_reporting" ]
   }
@@ -2518,6 +2522,10 @@ static_library("browser") {
       "performance_monitor/metric_evaluator_helper_posix.cc",
       "performance_monitor/metric_evaluator_helper_posix.h",
     ]
+  }
+
+  if (is_win || is_mac || is_linux || is_chromeos_ash) {
+    deps += [ "//chrome/browser/ui/webui/connectors_internals:mojo_bindings" ]
   }
 
   if (is_android) {
@@ -3304,6 +3312,7 @@ static_library("browser") {
       "//chrome/browser/commerce/merchant_viewer:merchant_signal_db_content_proto",
       "//chrome/browser/commerce/merchant_viewer:merchant_viewer_data_manager",
       "//chrome/browser/commerce/merchant_viewer/android:jni_headers",
+      "//chrome/browser/commerce/price_tracking/proto:notifications_proto",
       "//chrome/browser/commerce/subscriptions:commerce_subscription_db",
       "//chrome/browser/commerce/subscriptions:commerce_subscription_db_content_proto",
       "//chrome/browser/commerce/subscriptions/android:jni_headers",
@@ -3515,6 +3524,8 @@ static_library("browser") {
       "apps/app_discovery_service/test_fetcher.h",
       "apps/app_service/app_icon_factory.cc",
       "apps/app_service/app_icon_factory.h",
+      "apps/app_service/app_icon_loading.cc",
+      "apps/app_service/app_icon_loading.h",
       "apps/app_service/app_icon_source.cc",
       "apps/app_service/app_icon_source.h",
       "apps/app_service/app_launch_params.cc",
@@ -3588,6 +3599,7 @@ static_library("browser") {
       "cart/cart_discount_link_fetcher.h",
       "cart/cart_discount_metric_collector.cc",
       "cart/cart_discount_metric_collector.h",
+      "cart/cart_features.cc",
       "cart/cart_features.h",
       "cart/cart_handler.cc",
       "cart/cart_handler.h",
@@ -4833,7 +4845,6 @@ static_library("browser") {
       "//components/arc/enterprise",
       "//components/arc/mojom",
       "//components/desks_storage",
-      "//components/metrics/structured",
       "//components/metrics/structured:neutrino_logging",
       "//components/metrics/structured:neutrino_logging_util",
       "//components/services/app_service/public/cpp:instance_update",
@@ -4974,6 +4985,8 @@ static_library("browser") {
       "lacros/feedback_util.h",
       "lacros/field_trial_observer.cc",
       "lacros/field_trial_observer.h",
+      "lacros/identity_manager_lacros.cc",
+      "lacros/identity_manager_lacros.h",
       "lacros/immersive_context_lacros.cc",
       "lacros/immersive_context_lacros.h",
       "lacros/lacros_butter_bar.cc",
@@ -5062,6 +5075,7 @@ static_library("browser") {
       "platform_keys/platform_keys.h",
     ]
     deps += [
+      "//chrome/browser/metrics/structured",
       "//chrome/browser/ui/webui/settings/chromeos/constants:mojom",
       "//chromeos/components/cdm_factory_daemon:cdm_factory_daemon_browser",
       "//chromeos/crosapi/cpp",

@@ -352,7 +352,7 @@ CHAR_LIMIT guidelines:
         For more settings that relate to privacy, security, and data collection, see <ph name="BEGIN_LINK">&lt;link&gt;</ph>Google services<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
       <message name="IDS_USAGE_AND_CRASH_REPORTS_TITLE" desc="Title for a preference that enables sending usage statistics and crash reports.">
-        Help improve Chrome's features and performance
+        Help improve Chrome\u2019s features and performance
       </message>
       <message name="IDS_USAGE_AND_CRASH_REPORTS_SUMMARY" desc="Description for 'Help improve Chrome's features and performance' preference.">
         Automatically sends usage statistics and crash reports to Google
@@ -5080,7 +5080,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Choose an account to sign up for <ph name="SITE_NAME">%1$s<ex>rp.example</ex></ph>
       </message>
       <message name="IDS_ACCOUNT_SELECTION_DATA_SHARING_CONSENT" desc="The consent text shown to the user before sign up." translateable="false">
-        To sign up, <ph name="PROVIDER_NAME">%1$s<ex>provider.example</ex></ph> will share your name, email, address, and profile picture with the site.
+        To sign up, <ph name="PROVIDER_NAME">%1$s<ex>provider.example</ex></ph> will share your name, email, address, and profile picture with the site. See <ph name="BEGIN_LINK1">&lt;link1&gt;</ph>Privacy Policy<ph name="END_LINK1">&lt;/link1&gt;</ph> and <ph name="BEGIN_LINK2">&lt;link2&gt;</ph>Terms of service<ph name="END_LINK2">&lt;/link2&gt;</ph>.
       </message>
 
       <message name="IDS_ACCOUNT_SELECTION_CONTINUE" desc="Title of the button that continues filling with the only available set of credentials." translateable="false">
@@ -5131,6 +5131,18 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_SETTINGS_HTTPS_FIRST_MODE_SUMMARY" desc="Secondary, continued explanation of HTTPS-First Mode in settings.">
         Upgrade navigations to HTTPS and warn you before loading sites that don’t support it
+      </message>
+
+      <!-- Auto-darken web content -->
+      <!-- TODO(https://crbug.com/1248571): Update the placeholders. -->
+      <message name="IDS_AUTO_DARK_MESSAGE_TITLE" translateable="false" desc="Message shown that informs the user auto darkening of website contents has been enabled.">
+        Auto Dark web contents enabled
+      </message>
+      <message name="IDS_AUTO_DARK_MESSAGE_DESCRIPTION" translateable="false" desc="Description shown that informs the user on how to disable auto darkening of website contents.">
+        This can be disabled per-site in the 3-dot menu or globally in theme settings
+      </message>
+      <message name="IDS_AUTO_DARK_MESSAGE_BUTTON" translateable="false" desc="The label for the button to enter theme settings.">
+        Open theme settings
       </message>
     </messages>
   </release>

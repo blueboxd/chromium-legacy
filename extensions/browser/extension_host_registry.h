@@ -27,11 +27,13 @@ class ExtensionHostRegistry : public KeyedService {
  public:
   class Observer : public base::CheckedObserver {
    public:
-    // Called when a new ExtensionHost is created and the associated
-    // RenderProcessHost is ready. The `browser_context` is the context
-    // associated with that host (which might be an incognito version of
+    // Called when the RenderProcessHost for an ExtensionHost is ready.
+    // In practice, this corresponds to "shortly after" the first render frame
+    // is created in the host.
+    // The `browser_context` is the context associated with that host (which
+    // might be an incognito version of
     // ExtensionHostRegistry::browser_context_).
-    virtual void OnExtensionHostCreated(
+    virtual void OnExtensionHostRenderProcessReady(
         content::BrowserContext* browser_context,
         ExtensionHost* host) {}
 
@@ -77,17 +79,24 @@ class ExtensionHostRegistry : public KeyedService {
   // Retrieves the factory instance for the ExtensionHostRegistry.
   static BrowserContextKeyedServiceFactory* GetFactory();
 
-  // Called when a new ExtensionHost is created, which starts tracking the host
-  // (in extension_hosts_) and notifies observers.
+  // Called when a new ExtensionHost is created, and starts tracking the host
+  // in `extension_hosts_`.
   void ExtensionHostCreated(ExtensionHost* extension_host);
-  // Called when an ExtensionHost is destroyed. Stops tracking the host and
-  // notifies observers.
-  void ExtensionHostDestroyed(ExtensionHost* extension_host);
+
+  // Called when an ExtensionHost's corresponding renderer process is ready, and
+  // and notifies observers.
+  void ExtensionHostRenderProcessReady(ExtensionHost* extension_host);
+
   // Called when an ExtensionHost completes its first load.
   void ExtensionHostCompletedFirstLoad(ExtensionHost* extension_host);
+
   // Called when an ExtensionHost has created a document element for its first
   // time.
   void ExtensionHostDocumentElementAvailable(ExtensionHost* extension_host);
+
+  // Called when an ExtensionHost is destroyed. Stops tracking the host and
+  // notifies observers.
+  void ExtensionHostDestroyed(ExtensionHost* extension_host);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

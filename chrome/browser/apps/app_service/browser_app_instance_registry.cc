@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
 #include "components/exo/shell_surface_util.h"
-#include "extensions/common/constants.h"
 
 namespace apps {
 
@@ -33,7 +32,7 @@ BrowserAppInstanceRegistry::~BrowserAppInstanceRegistry() = default;
 
 std::unique_ptr<BrowserAppInstanceRegistry> BrowserAppInstanceRegistry::Create(
     BrowserAppInstanceTracker* ash_instance_tracker) {
-  if (!base::FeatureList::IsEnabled(features::kBrowserAppInstanceTracking)) {
+  if (!features::IsBrowserAppInstanceTrackingEnabled()) {
     return nullptr;
   }
   return std::make_unique<BrowserAppInstanceRegistry>(*ash_instance_tracker);
@@ -51,6 +50,25 @@ BrowserAppInstanceRegistry::GetAppInstancesByAppId(
                          [&app_id](const BrowserAppInstance& instance) {
                            return instance.app_id == app_id;
                          });
+}
+
+const BrowserAppInstance* BrowserAppInstanceRegistry::GetAppInstanceById(
+    base::UnguessableToken id) const {
+  auto it = lacros_app_instances_.find(id);
+  if (it != lacros_app_instances_.end()) {
+    return it->second.get();
+  }
+  return ash_instance_tracker_.GetAppInstanceById(id);
+}
+
+const BrowserWindowInstance*
+BrowserAppInstanceRegistry::GetBrowserWindowInstanceById(
+    base::UnguessableToken id) const {
+  auto it = lacros_window_instances_.find(id);
+  if (it != lacros_window_instances_.end()) {
+    return it->second.get();
+  }
+  return ash_instance_tracker_.GetBrowserWindowInstanceById(id);
 }
 
 const BrowserAppInstance*
@@ -72,6 +90,25 @@ bool BrowserAppInstanceRegistry::IsAppRunning(const std::string& app_id) const {
                         [&app_id](const BrowserAppInstance& instance) {
                           return instance.app_id == app_id;
                         }) != nullptr;
+}
+
+bool BrowserAppInstanceRegistry::IsAshBrowserRunning() const {
+  return ash_instance_tracker_.IsBrowserRunning();
+}
+
+bool BrowserAppInstanceRegistry::IsLacrosBrowserRunning() const {
+  return lacros_window_instances_.size() > 0;
+}
+
+void BrowserAppInstanceRegistry::ActivateTabInstance(
+    const base::UnguessableToken& id) {
+  if (ash_instance_tracker_.GetAppInstanceById(id)) {
+    ash_instance_tracker_.ActivateTabInstance(id);
+    return;
+  }
+  if (controller_.is_bound()) {
+    controller_->ActivateTabInstance(id);
+  }
 }
 
 void BrowserAppInstanceRegistry::BindReceiver(
@@ -121,6 +158,20 @@ void BrowserAppInstanceRegistry::OnBrowserAppRemoved(
   for (auto& observer : observers_) {
     observer.OnBrowserAppRemoved(instance);
   }
+}
+
+void BrowserAppInstanceRegistry::RegisterController(
+    mojo::PendingRemote<crosapi::mojom::BrowserAppInstanceController>
+        controller) {
+  // At the moment only a single controller is supported.
+  // TODO(crbug.com/1174246): Support SxS lacros.
+  if (controller_.is_bound()) {
+    return;
+  }
+  controller_.Bind(std::move(controller));
+  controller_.set_disconnect_handler(
+      base::BindOnce(&BrowserAppInstanceRegistry::OnControllerDisconnected,
+                     base::Unretained(this)));
 }
 
 void BrowserAppInstanceRegistry::OnBrowserWindowAdded(
@@ -312,6 +363,10 @@ void BrowserAppInstanceRegistry::LacrosAppInstanceRemoved(
   for (auto& observer : observers_) {
     observer.OnBrowserAppRemoved(*instance);
   }
+}
+
+void BrowserAppInstanceRegistry::OnControllerDisconnected() {
+  controller_.reset();
 }
 
 }  // namespace apps

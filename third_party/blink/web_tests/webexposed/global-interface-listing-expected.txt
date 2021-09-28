@@ -5254,6 +5254,7 @@ interface MediaDevices : EventTarget
     method getDisplayMedia
     method getSupportedConstraints
     method getUserMedia
+    method produceCropId
     method setCaptureHandleConfig
     setter ondevicechange
 interface MediaElementAudioSourceNode : AudioNode
@@ -6256,6 +6257,7 @@ interface PerformanceEntry
 interface PerformanceEventTiming : PerformanceEntry
     attribute @@toStringTag
     getter cancelable
+    getter interactionId
     getter processingEnd
     getter processingStart
     getter target

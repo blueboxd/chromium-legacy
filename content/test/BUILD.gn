@@ -152,6 +152,8 @@ static_library("test_support") {
     "../public/test/fake_service_worker_context.h",
     "../public/test/fake_speech_recognition_manager.cc",
     "../public/test/fake_speech_recognition_manager.h",
+    "../public/test/fenced_frame_test_util.cc",
+    "../public/test/fenced_frame_test_util.h",
     "../public/test/find_test_utils.cc",
     "../public/test/find_test_utils.h",
     "../public/test/focus_changed_observer.cc",
@@ -415,6 +417,7 @@ static_library("test_support") {
     "//content/public/app",
     "//content/public/browser",
     "//content/public/common",
+    "//content/public/utility",
     "//ipc",
     "//media/mojo/clients",
     "//media/mojo/mojom",
@@ -1228,6 +1231,7 @@ test("content_browsertests") {
     "../browser/renderer_host/input/touchpad_pinch_browsertest.cc",
     "../browser/renderer_host/input/wheel_event_listener_browsertest.cc",
     "../browser/renderer_host/input/wheel_scroll_latching_browsertest.cc",
+    "../browser/renderer_host/isolated_app_throttle_browsertest.cc",
     "../browser/renderer_host/media/video_capture_browsertest.cc",
     "../browser/renderer_host/navigation_controller_impl_browsertest.cc",
     "../browser/renderer_host/navigation_handle_user_data_browsertest.cc",
@@ -2091,6 +2095,7 @@ test("content_unittests") {
     "../browser/renderer_host/input/touch_emulator_unittest.cc",
     "../browser/renderer_host/input/touchpad_pinch_event_queue_unittest.cc",
     "../browser/renderer_host/input/web_input_event_util_unittest.cc",
+    "../browser/renderer_host/isolated_app_throttle_unittest.cc",
     "../browser/renderer_host/media/audio_input_device_manager_unittest.cc",
     "../browser/renderer_host/media/audio_input_stream_handle_unittest.cc",
     "../browser/renderer_host/media/audio_output_authorization_handler_unittest.cc",
@@ -2348,7 +2353,7 @@ test("content_unittests") {
       "$root_out_dir/content_shell.pak",
       "data/",
       "//media/test/data/",
-      "//content/test/data/conversions/databases/",
+      "//content/test/data/attribution_reporting/databases/",
     ]
   }
 

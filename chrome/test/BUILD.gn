@@ -4978,6 +4978,8 @@ test("unit_tests") {
 
   if (!is_android) {
     sources += [
+      "../browser/apps/app_discovery_service/remote_url_search/remote_url_client_unittest.cc",
+      "../browser/apps/app_discovery_service/remote_url_search/remote_url_index_unittest.cc",
       "../browser/browsing_data/chrome_browsing_data_lifetime_manager_unittest.cc",
       "../browser/component_updater/soda_component_installer_unittest.cc",
       "../browser/component_updater/soda_language_pack_component_installer_unittest.cc",
@@ -5151,6 +5153,7 @@ test("unit_tests") {
     "//chrome/browser:permissions_proto",
     "//chrome/browser:theme_properties",
     "//chrome/browser/browsing_data:constants",
+    "//chrome/browser/commerce:feature_list",
     "//chrome/browser/commerce/shopping_list:unit_tests",
     "//chrome/browser/devtools",
     "//chrome/browser/media/router",
@@ -5598,7 +5601,6 @@ test("unit_tests") {
       "//chrome/browser:explore_sites_proto",
       "//chrome/browser:profile_token",
       "//chrome/browser:usage_stats_proto",
-      "//chrome/browser/commerce:feature_list",
       "//chrome/browser/commerce/merchant_viewer:merchant_viewer_data_manager",
       "//chrome/browser/continuous_search/internal:unit_tests",
       "//chrome/browser/flags:flags_android",
@@ -6500,7 +6502,7 @@ test("unit_tests") {
     deps += [ "//chrome/browser/error_reporting:unit_test" ]
   }
 
-  if (use_x11 || use_ozone) {
+  if (use_ozone) {
     deps += [ "//ui/events/devices:test_support" ]
   }
 
@@ -6950,7 +6952,7 @@ test("unit_tests") {
     if (is_chromeos_ash) {
       sources += [
         "../browser/ash/login/easy_unlock/easy_unlock_auth_attempt_unittest.cc",
-        "../browser/ash/login/easy_unlock/easy_unlock_notification_controller_chromeos_unittest.cc",
+        "../browser/ash/login/easy_unlock/easy_unlock_notification_controller_unittest.cc",
         "../browser/ash/login/easy_unlock/easy_unlock_service_regular_unittest.cc",
         "../browser/ash/login/easy_unlock/smartlock_state_handler_unittest.cc",
         "../browser/chromeos/extensions/extensions_permissions_tracker_unittest.cc",
@@ -7337,9 +7339,6 @@ test("unit_tests") {
     data_deps += [ "//testing/buildbot/filters:chromeos_filters" ]
     sources -=
         [ "../browser/policy/cloud/user_policy_signin_service_unittest.cc" ]
-  }
-  if (use_x11) {
-    deps += [ "//ui/events/devices" ]
   }
   if ((is_linux || is_chromeos) && use_aura) {
     deps += [ "//ui/aura:test_support" ]

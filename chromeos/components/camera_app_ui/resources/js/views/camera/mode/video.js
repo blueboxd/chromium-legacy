@@ -7,7 +7,6 @@ import {assert, assertInstanceof} from '../../../chrome_util.js';
 // eslint-disable-next-line no-unused-vars
 import {StreamConstraints} from '../../../device/stream_constraints.js';
 import {
-  CaptureStream,  // eslint-disable-line no-unused-vars
   StreamManager,
 } from '../../../device/stream_manager.js';
 import * as dom from '../../../dom.js';
@@ -207,37 +206,12 @@ export class VideoHandler {
 }
 
 /**
- * @enum {string}
+ * @enum {state.State}
  */
 const RecordType = {
-  NORMAL: 'normal',
-  GIF: 'gif',
+  NORMAL: state.State.RECORD_TYPE_NORMAL,
+  GIF: state.State.RECORD_TYPE_GIF,
 };
-
-const recordTypeValues = new Set(Object.values(RecordType));
-
-/**
- * @param {!HTMLInputElement} el
- * @return {!RecordType}
- */
-function getRecordTypeFromElement(el) {
-  const s = el.dataset['recordtype'];
-  assert(recordTypeValues.has(s), `No such recordtype: ${s}`);
-  return /** @type {!RecordType} */ (s);
-}
-
-/**
- * @param {!RecordType} type
- * @return {!HTMLInputElement}
- */
-function getElemetFromRecordType(type) {
-  return dom.get(`input[data-recordtype=${type}]`, HTMLInputElement);
-}
-
-/**
- * @type {!Array<!HTMLInputElement>}
- */
-const recordTypeInputs = [...recordTypeValues].map(getElemetFromRecordType);
 
 /**
  * Video mode capture controller.
@@ -278,7 +252,7 @@ export class Video extends ModeBase {
     this.handler_ = handler;
 
     /**
-     * @type {?CaptureStream}
+     * @type {?MediaStream}
      * @private
      */
     this.captureStream_ = null;
@@ -354,7 +328,8 @@ export class Video extends ModeBase {
   async clear() {
     await this.stopCapture();
     if (this.captureStream_ !== null) {
-      await this.captureStream_.close();
+      await StreamManager.getInstance().closeCaptureStream(this.captureStream_);
+      this.captureStream_ = null;
     }
   }
 
@@ -368,9 +343,8 @@ export class Video extends ModeBase {
         !state.get(state.State.ENABLE_GIF_RECORDING)) {
       return RecordType.NORMAL;
     }
-    const checkedEl = assertInstanceof(
-        recordTypeInputs.find(({checked}) => checked), HTMLInputElement);
-    return getRecordTypeFromElement(checkedEl);
+    return Object.values(RecordType).find((t) => state.get(t)) ||
+        RecordType.NORMAL;
   }
 
   /**
@@ -472,7 +446,7 @@ export class Video extends ModeBase {
    */
   getRecordingStream_() {
     if (this.captureStream_ !== null) {
-      return this.captureStream_.stream;
+      return this.captureStream_;
     }
     return this.stream_;
   }

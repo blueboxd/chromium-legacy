@@ -2871,22 +2871,6 @@
             ]
         }
     ],
-    "DirectActions": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "DirectActions",
-                    "enable_features": [
-                        "DirectActions"
-                    ]
-                }
-            ]
-        }
-    ],
     "DirectCompositionForceFullDamage": [
         {
             "platforms": [
@@ -6108,27 +6092,6 @@
                     },
                     "enable_features": [
                         "IsolatePrerenders"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PrivacySandboxHats": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "en_site_id": "K1QEL8XnT0ugnJ3q1cK0X9jod55x",
-                        "probability": "1.0"
-                    },
-                    "enable_features": [
-                        "HappinessTrackingSurveysForDesktopPrivacySandbox"
                     ]
                 }
             ]

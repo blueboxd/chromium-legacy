@@ -191,28 +191,28 @@ OmniboxResult::OmniboxResult(Profile* profile,
     match_.search_terms_args->request_source = TemplateURLRef::CROS_APP_LIST;
     autocomplete_controller_->SetMatchDestinationURL(&match_);
   }
-  set_id(match_.stripped_destination_url.spec());
   SetDisplayType(DisplayType::kList);
   SetResultType(ResultType::kOmnibox);
-  SetMetricsType(GetSearchResultType());
 
-  if (app_list_features::IsOmniboxRichEntitiesEnabled()) {
-    if (match_.answer.has_value()) {
-      SetOmniboxType(OmniboxType::kAnswer);
-    } else if (match_.type == AutocompleteMatchType::CALCULATOR) {
-      SetOmniboxType(OmniboxType::kCalculatorAnswer);
-    } else if (!match_.image_url.is_empty()) {
-      SetOmniboxType(OmniboxType::kRichImage);
-    }
-
-    // The stripped destination URL is no longer a unique identifier, so append
-    // it to the omnibox type.
-    const std::string id = base::JoinString(
-        {base::NumberToString(static_cast<int>(omnibox_type())),
-         match_.stripped_destination_url.spec()},
-        "-");
-    set_id(id);
+  // If the result is a rich entity, set its rich entity subtype.
+  if (match_.answer.has_value()) {
+    SetOmniboxType(OmniboxType::kAnswer);
+  } else if (match_.type == AutocompleteMatchType::CALCULATOR) {
+    SetOmniboxType(OmniboxType::kCalculatorAnswer);
+  } else if (!match_.image_url.is_empty()) {
+    SetOmniboxType(OmniboxType::kRichImage);
   }
+
+  // The stripped destination URL is appended to the omnibox type to ensure
+  // uniqueness.
+  const std::string id =
+      base::JoinString({base::NumberToString(static_cast<int>(omnibox_type())),
+                        match_.stripped_destination_url.spec()},
+                       "-");
+  set_id(id);
+
+  // MetricsType needs to be set after OmniboxType.
+  SetMetricsType(GetSearchResultType());
 
   // Derive relevance from omnibox relevance and normalize it to [0, 1].
   // The magic number 1500 is the highest score of an omnibox result.
@@ -275,13 +275,12 @@ void OmniboxResult::OnFetchComplete(const GURL& url, const SkBitmap* bitmap) {
 }
 
 ash::SearchResultType OmniboxResult::GetSearchResultType() const {
-  // Rich entity types take precedence.
-  if (omnibox_type() == OmniboxType::kAnswer ||
-      omnibox_type() == OmniboxType::kCalculatorAnswer) {
-    return ash::OMNIBOX_RICH_ENTITY_ANSWER;
+  // Answer results can have match types of SEARCH_WHAT_YOU_TYPED or
+  // SEARCH_SUGGEST, which can also be used for non-answer results. The answer
+  // type will take precedence for metrics.
+  if (omnibox_type() == OmniboxType::kAnswer) {
+    return ash::OMNIBOX_ANSWER;
   }
-  if (omnibox_type() == OmniboxType::kRichImage)
-    return ash::OMNIBOX_RICH_ENTITY_IMAGE_ENTITY;
 
   switch (match_.type) {
     case AutocompleteMatchType::URL_WHAT_YOU_TYPED:
@@ -307,10 +306,14 @@ ash::SearchResultType OmniboxResult::GetSearchResultType() const {
       return ash::OMNIBOX_SUGGEST_PERSONALIZED;
     case AutocompleteMatchType::BOOKMARK_TITLE:
       return ash::OMNIBOX_BOOKMARK;
+    // SEARCH_SUGGEST_ENTITY corresponds with OmniboxType::kRichImage.
     case AutocompleteMatchType::SEARCH_SUGGEST_ENTITY:
       return ash::OMNIBOX_SEARCH_SUGGEST_ENTITY;
     case AutocompleteMatchType::NAVSUGGEST:
       return ash::OMNIBOX_NAVSUGGEST;
+    // CALCULATOR corresponds with OmniboxType::kCalculator.
+    case AutocompleteMatchType::CALCULATOR:
+      return ash::OMNIBOX_CALCULATOR;
 
     case AutocompleteMatchType::HISTORY_KEYWORD:
     case AutocompleteMatchType::SEARCH_SUGGEST_TAIL:
@@ -318,7 +321,6 @@ ash::SearchResultType OmniboxResult::GetSearchResultType() const {
     case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
     case AutocompleteMatchType::CONTACT_DEPRECATED:
     case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED:
-    case AutocompleteMatchType::CALCULATOR:
     case AutocompleteMatchType::CLIPBOARD_URL:
     case AutocompleteMatchType::VOICE_SUGGEST:
     case AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED:
@@ -408,8 +410,7 @@ void OmniboxResult::UpdateIcon() {
 }
 
 void OmniboxResult::UpdateTitleAndDetails() {
-  if (app_list_features::IsOmniboxRichEntitiesEnabled() &&
-      match_.answer.has_value()) {
+  if (omnibox_type() == OmniboxType::kAnswer) {
     const auto& additional_text =
         GetAdditionalText(match_.answer->first_line());
     // TODO(crbug.com/1130372): Use placeholders or a l10n-friendly way to
@@ -427,9 +428,8 @@ void OmniboxResult::UpdateTitleAndDetails() {
                                  &title_tags);
     SetTitleTags(title_tags);
 
-    if (!app_list_features::IsOmniboxRichEntitiesEnabled() ||
-        match_.type == AutocompleteMatchType::CALCULATOR ||
-        match_.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
+    if (omnibox_type() == OmniboxType::kRichImage ||
+        omnibox_type() == OmniboxType::kCalculatorAnswer) {
       // Only set the details text for rich entity or calculator results. This
       // prevents default descriptions such as "Google Search" from being added.
       SetDetails(match_.description);

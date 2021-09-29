@@ -8,6 +8,7 @@
 
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/publishers/extension_apps_enable_flow.h"
 #include "chrome/browser/apps/app_service/publishers/extension_apps_util.h"
@@ -20,6 +21,9 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
@@ -179,7 +183,8 @@ void LacrosExtensionAppsController::Launch(
 
   apps::mojom::IntentPtr intent = apps::mojom::Intent::New();
   if (launch_params->intent) {
-    intent = std::move(launch_params->intent.value());
+    intent = apps_util::ConvertCrosapiToAppServiceIntent(launch_params->intent,
+                                                         profile);
   }
 
   extensions::LaunchContainer launch_container = extensions::GetLaunchContainer(
@@ -204,7 +209,20 @@ void LacrosExtensionAppsController::ExecuteContextMenuCommand(
 }
 
 void LacrosExtensionAppsController::StopApp(const std::string& app_id) {
-  NOTIMPLEMENTED();
+  // Find the extension.
+  Profile* profile = nullptr;
+  const extensions::Extension* extension = nullptr;
+  bool success =
+      lacros_extension_apps_utility::DemuxId(app_id, &profile, &extension);
+  if (!success)
+    return;
+
+  // Close all app windows.
+  for (extensions::AppWindow* app_window :
+       extensions::AppWindowRegistry::Get(profile)->GetAppWindowsForApp(
+           extension->id())) {
+    app_window->GetBaseWindow()->Close();
+  }
 }
 
 void LacrosExtensionAppsController::FinishedEnableFlow(

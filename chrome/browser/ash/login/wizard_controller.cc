@@ -100,6 +100,7 @@
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/multidevice_setup/multidevice_setup_client_factory.h"
+#include "chrome/browser/ash/net/delay_network_call.h"
 #include "chrome/browser/ash/net/rollback_network_config/rollback_network_config_service.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
@@ -112,7 +113,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -1227,7 +1227,7 @@ void WizardController::OnWelcomeScreenExit(WelcomeScreen::Result result) {
     case WelcomeScreen::Result::ENABLE_DEBUGGING:
       ShowEnableDebuggingScreen();
       return;
-    case WelcomeScreen::Result::START_OS_INSTALL:
+    case WelcomeScreen::Result::NEXT_OS_INSTALL:
       ShowOsTrialScreen();
       return;
     case WelcomeScreen::Result::NEXT:
@@ -1239,32 +1239,37 @@ void WizardController::OnWelcomeScreenExit(WelcomeScreen::Result result) {
 void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
   OnScreenExit(NetworkScreenView::kScreenId,
                NetworkScreen::GetResultString(result));
-  if (result == NetworkScreen::Result::BACK) {
-    if (demo_setup_controller_) {
+
+  switch (result) {
+    case NetworkScreen::Result::CONNECTED_REGULAR:
+      DCHECK(!demo_setup_controller_);
+      ShowEulaScreen();
+      break;
+    case NetworkScreen::Result::CONNECTED_DEMO:
+      DCHECK(demo_setup_controller_);
+      demo_setup_controller_->set_demo_config(
+          DemoSession::DemoModeConfig::kOnline);
+      ShowEulaScreen();
+      break;
+    case NetworkScreen::Result::OFFLINE_DEMO_SETUP:
+      DCHECK(demo_setup_controller_);
+      demo_setup_controller_->set_demo_config(
+          DemoSession::DemoModeConfig::kOffline);
+      ShowEulaScreen();
+      break;
+    case NetworkScreen::Result::BACK_DEMO:
+      DCHECK(demo_setup_controller_);
       ShowDemoModePreferencesScreen();
-    } else {
+      break;
+    case NetworkScreen::Result::BACK_REGULAR:
+      DCHECK(!demo_setup_controller_);
       ShowWelcomeScreen();
-    }
-    return;
+      break;
+    case NetworkScreen::Result::BACK_OS_INSTALL:
+      DCHECK(!demo_setup_controller_);
+      ShowOsTrialScreen();
+      break;
   }
-
-  // Update the demo setup config for demo setup flow.
-  if (demo_setup_controller_) {
-    switch (result) {
-      case NetworkScreen::Result::CONNECTED:
-        demo_setup_controller_->set_demo_config(
-            DemoSession::DemoModeConfig::kOnline);
-        break;
-      case NetworkScreen::Result::OFFLINE_DEMO_SETUP:
-        demo_setup_controller_->set_demo_config(
-            DemoSession::DemoModeConfig::kOffline);
-        break;
-      case NetworkScreen::Result::BACK:
-        NOTREACHED();
-    }
-  }
-
-  ShowEulaScreen();
 }
 
 void WizardController::OnEulaScreenExit(EulaScreen::Result result) {

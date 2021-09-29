@@ -2842,6 +2842,7 @@ crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/worker-interception.https.html [ Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-sizing/parsing/min-height-invalid.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/no-alloc-direct-call/external/wpt/html/canvas/element/manual/wide-gamut-canvas/canvas-display-p3-drawImage-ImageBitmap-Blob.html [ Failure Timeout ]
 crbug.com/626703 [ Linux ] virtual/plz-dedicated-worker/external/wpt/xhr/event-loadstart-upload.any.worker.html [ Crash ]
 crbug.com/626703 [ Mac10.15 ] virtual/plz-dedicated-worker/external/wpt/xhr/event-loadstart-upload.any.worker.html [ Crash ]
@@ -5122,6 +5123,11 @@ crbug.com/1033852 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/fetch/api/i
 crbug.com/1034374 http/tests/devtools/tracing/timeline-worker-events.js [ Failure Pass ]
 crbug.com/1034513 [ Win7 ] virtual/stable/fast/dom/Window/window-resize-contents.html [ Failure Pass ]
 
+# Temporary suppression to allow https://crrev.com/c/3193535
+crbug.com/1254259 http/tests/devtools/sources/debugger-async/async-await/async-callstack-async-await1.js [ Skip ]
+crbug.com/1254259 http/tests/devtools/sources/debugger-async/async-await/async-callstack-async-await2.js [ Skip ]
+crbug.com/1254259 http/tests/devtools/sources/debugger-async/async-await/async-callstack-async-await3.js [ Skip ]
+
 # Assertion errors need to be fixed
 crbug.com/1034492 http/tests/devtools/unit/filtered-item-selection-dialog-filtering.js [ Failure Pass ]
 crbug.com/1034492 http/tests/devtools/unit/filtered-list-widget-providers.js [ Failure Pass ]
@@ -6892,6 +6898,38 @@ crbug.com/1249176 [ Mac11-arm64 ] external/wpt/layout-instability/recent-input.h
 crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/performance/perf-metrics.js [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/event-timing/event-retarget.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/mimesniff/media/media-sniff.window.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/audio-decoder.crossOriginIsolated.https.any.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/audio-decoder.crossOriginIsolated.https.any.worker.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/audioDecoder-codec-specific.https.any.html?adts_aac [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/audioDecoder-codec-specific.https.any.html?mp4_aac [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/video-decoder.crossOriginIsolated.https.any.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/video-decoder.crossOriginIsolated.https.any.worker.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h264_annexb [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h264_avc [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webrtc/RTCRtpTransceiver-setCodecPreferences.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webrtc/protocol/rtp-demuxing.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webrtc/protocol/video-codecs.https.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webrtc/simulcast/h264.https.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webrtc/simulcast/vp8.https.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] fast/mediarecorder/MediaRecorder-ignores-oversize-frames-h264.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] virtual/prerender/wpt_internal/prerender/restriction-encrypted-media.https.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/video-codecs.https.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] wpt_internal/webcodecs/annexb_decoding.https.any.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] wpt_internal/webcodecs/annexb_decoding.https.any.worker.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] wpt_internal/webcodecs/avc_encoder_config.https.any.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] wpt_internal/webcodecs/avc_encoder_config.https.any.worker.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] wpt_internal/webcodecs/basic_video_encoding.https.any.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] wpt_internal/webcodecs/basic_video_encoding.https.any.worker.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] wpt_internal/webcodecs/temporal_svc.https.any.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] wpt_internal/webcodecs/temporal_svc.https.any.worker.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] virtual/synchronous_html_parser/http/tests/inspector-protocol/network/request-interception.js [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/simulcast/h264.https.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/audioDecoder-codec-specific.https.any.worker.html?adts_aac [ Pass Timeout ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/audioDecoder-codec-specific.https.any.worker.html?mp4_aac [ Pass Timeout ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h264_annexb [ Pass Timeout ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h264_avc [ Pass Timeout ]
+crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/12-55.html [ Failure Pass ]
 
 # Sheriff 2021-09-16
 crbug.com/1250457 [ Win7 ] http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-3.js [ Failure ]

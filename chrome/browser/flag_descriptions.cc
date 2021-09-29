@@ -743,6 +743,10 @@ const char kEnablePreconnectToSearchName[] =
 const char kEnablePreconnectToSearchDescription[] =
     "Enables the feature that preconnects to the user's default search engine.";
 
+const char kEnableRawDrawName[] = "Enable raw draw";
+const char kEnableRawDrawDescription[] =
+    "When enabled, web content will be rastered on output surface directly.";
+
 const char kEnableRemovingAllThirdPartyCookiesName[] =
     "Enable removing SameSite=None cookies";
 const char kEnableRemovingAllThirdPartyCookiesDescription[] =
@@ -3942,10 +3946,6 @@ const char kMetalName[] = "Metal";
 const char kMetalDescription[] =
     "Use Metal instead of OpenGL for rasterization (if out-of-process "
     "rasterization is enabled) and display (if the Skia renderer is enabled)";
-
-const char kScreenTimeName[] = "Screen Time";
-const char kScreenTimeDescription[] =
-    "Integrate with the macOS Screen Time system.";
 
 const char kUseAngleDescriptionMac[] =
     "Choose the graphics backend for ANGLE. The OpenGL backend is soon to be "

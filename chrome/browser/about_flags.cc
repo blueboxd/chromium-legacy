@@ -241,7 +241,6 @@
 
 #if defined(OS_MAC)
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/cocoa/screentime/screentime_features.h"
 #endif  // OS_MAC
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -6235,9 +6234,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"metal", flag_descriptions::kMetalName,
      flag_descriptions::kMetalDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kMetal)},
-    {"screentime", flag_descriptions::kScreenTimeName,
-     flag_descriptions::kScreenTimeDescription, kOsMac,
-     FEATURE_VALUE_TYPE(screentime::kScreenTime)},
 #endif
 
     {"enable-de-jelly", flag_descriptions::kEnableDeJellyName,
@@ -7671,6 +7667,10 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE_AND_VALUE(switches::kComponentUpdater,
                                  component_updater::kSwitchTestRequestParam)},
 #endif
+
+    {"enable-raw-draw", flag_descriptions::kEnableRawDrawName,
+     flag_descriptions::kEnableRawDrawDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kRawDraw)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

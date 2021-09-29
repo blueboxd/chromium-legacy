@@ -41,7 +41,7 @@
   {
     "name": "account-id-migration",
     "owners": [ "msarda" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 100
   },
   {
     "name": "account-management-flows-v2",
@@ -2436,6 +2436,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "enable-raw-draw",
+    "owners": [ "penghuang" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "enable-reader-mode",
     "owners": [ "katie", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 100
@@ -4412,17 +4417,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "privacy-sandbox-settings-2",
-    "owners": [
-      "andzaytsev",
-      "harrisonsean",
-      "sauski",
-      "rainhard",
-      "msramek",
-      "chrome-friendly-settings@google.com"],
-    "expiry_milestone": 94
-  },
-  {
     "name": "productivity-launcher",
     "owners": [ "cros-system-ui-eng@google.com" ],
     "expiry_milestone": 100
@@ -4742,11 +4736,6 @@
     "expiry_milestone": 92
   },
   {
-    "name": "screentime",
-    "owners": [ "ellyjones", "chrome-mac-dev@google.com" ],
-    "expiry_milestone": 94
-  },
-  {
     "name": "scroll-capture",
     "owners": [ "ckitagawa", "fredmello", "yashard" ],
     "expiry_milestone": 100
@@ -5018,11 +5007,6 @@
     "name" : "side-search-state-per-tab",
     "owners": [ "chrome-cros@google.com", "tluk" ],
     "expiry_milestone" : 100
-  },
-  {
-    "name": "simplify-sign-out-ios",
-    "owners": [ "jlebel", "msarda", "fernandex" ],
-    "expiry_milestone": 95
   },
   {
     "name": "single-touch-select",
@@ -5406,11 +5390,6 @@
     "owners": [ "azeemarshad", "khorimoto", "jonmann" ],
     // This flag is required for QA and dogfood testing.
     "expiry_milestone": -1
-  },
-  {
-    "name": "use-multilogin-endpoint",
-    "owners": [ "droger", "msarda" ],
-    "expiry_milestone": 92
   },
   {
     "name": "use-passthrough-command-decoder",

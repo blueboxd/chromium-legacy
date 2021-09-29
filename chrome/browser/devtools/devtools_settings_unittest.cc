@@ -22,18 +22,151 @@ class DevToolsSettingsTest : public testing::Test {
 TEST_F(DevToolsSettingsTest, BasicApiTest) {
   DevToolsSettings settings(&profile_);
 
+  settings.Register("setting_a", {RegisterOptions::SyncMode::kSync});
+  settings.Register("setting_b", {RegisterOptions::SyncMode::kDontSync});
+
   settings.Set("setting_a", "foo");
   settings.Set("setting_b", "bar");
 
-  const auto* prefs = settings.Get();
-  EXPECT_EQ(*prefs->FindStringKey("setting_a"), "foo");
-  EXPECT_EQ(*prefs->FindStringKey("setting_b"), "bar");
+  base::Value prefs = settings.Get();
+  EXPECT_EQ(*prefs.FindStringKey("setting_a"), "foo");
+  EXPECT_EQ(*prefs.FindStringKey("setting_b"), "bar");
 
   settings.Remove("setting_a");
   prefs = settings.Get();
-  EXPECT_EQ(prefs->FindStringKey("setting_a"), nullptr);
+  EXPECT_EQ(prefs.FindStringKey("setting_a"), nullptr);
 
   settings.Clear();
   prefs = settings.Get();
-  EXPECT_EQ(prefs->DictSize(), static_cast<size_t>(0));
+  // kSyncDevToolsPreferenceFrontendName is always reported.
+  EXPECT_EQ(prefs.DictSize(), static_cast<size_t>(1));
+  EXPECT_EQ(prefs.FindStringKey("setting_b"), nullptr);
+}
+
+TEST_F(DevToolsSettingsTest, CanMoveUnsyncedSettingToBeingSynced) {
+  {
+    DevToolsSettings settings(&profile_);
+    settings.Register("setting", {RegisterOptions::SyncMode::kSync});
+    settings.Set("setting", "value");
+  }
+
+  // Simulate a new session by creating a new `DevToolsSettings` instance.
+  DevToolsSettings settings(&profile_);
+  settings.Register("setting", {RegisterOptions::SyncMode::kDontSync});
+
+  base::Value prefs = settings.Get();
+  EXPECT_EQ(*prefs.FindStringKey("setting"), "value");
+
+  settings.Set("setting", "new_value");
+  prefs = settings.Get();
+  EXPECT_EQ(*prefs.FindStringKey("setting"), "new_value");
+
+  settings.Remove("setting");
+  prefs = settings.Get();
+  EXPECT_EQ(prefs.FindStringKey("setting"), nullptr);
+}
+
+TEST_F(DevToolsSettingsTest, CanMoveSyncedSettingToBeingUnsynced) {
+  {
+    DevToolsSettings settings(&profile_);
+    settings.Register("setting", {RegisterOptions::SyncMode::kDontSync});
+    settings.Set("setting", "value");
+  }
+
+  // Simulate a new session by creating a new `DevToolsSettings` instance.
+  DevToolsSettings settings(&profile_);
+  settings.Register("setting", {RegisterOptions::SyncMode::kSync});
+
+  base::Value prefs = settings.Get();
+  EXPECT_EQ(*prefs.FindStringKey("setting"), "value");
+
+  settings.Set("setting", "new_value");
+  prefs = settings.Get();
+  EXPECT_EQ(*prefs.FindStringKey("setting"), "new_value");
+
+  settings.Remove("setting");
+  prefs = settings.Get();
+  EXPECT_EQ(prefs.FindStringKey("setting"), nullptr);
+}
+
+TEST_F(DevToolsSettingsTest, MovingUnsycnedToSyncedDoesNotOverwrite) {
+  // 1) Register an unsynced setting
+  {
+    DevToolsSettings settings(&profile_);
+    settings.Register("setting", {RegisterOptions::SyncMode::kDontSync});
+    settings.Set("setting", "unsynced value");
+  }
+
+  // 2) Simulate the update to synced plus setting of a new value on a
+  //    different device.
+  // TODO(crbug.com/1245541): This test must only work with the sync enabled
+  // dictionary once the toggle setting is implemented.
+  {
+    DictionaryPrefUpdate update(profile_.GetPrefs(),
+                                prefs::kDevToolsSyncedPreferencesSyncDisabled);
+    update.Get()->SetKey("setting", base::Value("overwritten synced value"));
+  }
+
+  // 3) Move the setting from unsynced to synced on this device but expect the
+  //    already synced value to be honored.
+  DevToolsSettings settings(&profile_);
+  settings.Register("setting", {RegisterOptions::SyncMode::kSync});
+
+  base::Value prefs = settings.Get();
+  EXPECT_EQ(*prefs.FindStringKey("setting"), "overwritten synced value");
+}
+
+TEST_F(DevToolsSettingsTest, Set_SetsTheUnderlyingTogglePreference) {
+  DevToolsSettings settings(&profile_);
+  settings.Register(DevToolsSettings::kSyncDevToolsPreferencesFrontendName,
+                    {RegisterOptions::SyncMode::kSync});
+
+  settings.Set(DevToolsSettings::kSyncDevToolsPreferencesFrontendName, "true");
+  EXPECT_TRUE(profile_.GetPrefs()->GetBoolean(prefs::kDevToolsSyncPreferences));
+
+  settings.Set(DevToolsSettings::kSyncDevToolsPreferencesFrontendName, "false");
+  EXPECT_FALSE(
+      profile_.GetPrefs()->GetBoolean(prefs::kDevToolsSyncPreferences));
+}
+
+TEST_F(DevToolsSettingsTest, Get_GetsTheUnderlyingTogglePreference) {
+  DevToolsSettings settings(&profile_);
+  settings.Register(DevToolsSettings::kSyncDevToolsPreferencesFrontendName,
+                    {RegisterOptions::SyncMode::kSync});
+
+  profile_.GetPrefs()->SetBoolean(prefs::kDevToolsSyncPreferences, true);
+  auto prefs = settings.Get();
+  EXPECT_EQ(
+      prefs.FindBoolKey(DevToolsSettings::kSyncDevToolsPreferencesFrontendName),
+      true);
+
+  profile_.GetPrefs()->SetBoolean(prefs::kDevToolsSyncPreferences, false);
+  prefs = settings.Get();
+  EXPECT_EQ(
+      prefs.FindBoolKey(DevToolsSettings::kSyncDevToolsPreferencesFrontendName),
+      false);
+}
+
+TEST_F(DevToolsSettingsTest, Remove_ResetsUnderlyingTogglePreference) {
+  DevToolsSettings settings(&profile_);
+  settings.Register(DevToolsSettings::kSyncDevToolsPreferencesFrontendName,
+                    {RegisterOptions::SyncMode::kSync});
+  settings.Set(DevToolsSettings::kSyncDevToolsPreferencesFrontendName, "true");
+
+  settings.Remove(DevToolsSettings::kSyncDevToolsPreferencesFrontendName);
+
+  EXPECT_EQ(profile_.GetPrefs()->GetBoolean(prefs::kDevToolsSyncPreferences),
+            DevToolsSettings::kSyncDevToolsPreferencesDefault);
+}
+
+TEST_F(DevToolsSettingsTest, Clear_ResetsUnderlyingTogglePreference) {
+  DevToolsSettings settings(&profile_);
+  settings.Register(DevToolsSettings::kSyncDevToolsPreferencesFrontendName,
+                    {RegisterOptions::SyncMode::kSync});
+  settings.Set(DevToolsSettings::kSyncDevToolsPreferencesFrontendName, "true");
+
+  settings.Clear();
+
+  EXPECT_EQ(profile_.GetPrefs()->GetBoolean(prefs::kDevToolsSyncPreferences),
+            DevToolsSettings::kSyncDevToolsPreferencesDefault);
 }

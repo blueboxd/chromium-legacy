@@ -520,23 +520,16 @@ struct BASE_EXPORT PartitionRoot {
   }
 
   static PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
-  GetDirectMapMetadataAndGuardPagesSize(bool brp_enabled) {
+  GetDirectMapMetadataAndGuardPagesSize() {
     // Because we need to fake a direct-map region to look like a super page, we
-    // need to allocate a bunch of system pages more around the payload:
-    // - The first few system pages are the partition page in which the super
-    // page metadata is stored.
-    // - We add a trailing guard page (one system page will suffice).
-#if !defined(PA_HAS_64_BITS_POINTERS) && BUILDFLAG(USE_BACKUP_REF_PTR)
-    // On 32-bit systems, we need PartitionPageSize() guard pages at both the
-    // beginning and the end of each direct-map allocated memory. This is needed
-    // for the BRP pool bitmap which excludes guard pages and operates at
-    // PartitionPageSize() granularity. This is to match the behavior of normal
-    // buckets allocations.
-    return PartitionPageSize() +
-           (brp_enabled ? PartitionPageSize() : SystemPageSize());
-#else
-    return PartitionPageSize() + SystemPageSize();
-#endif
+    // need to allocate more pages around the payload:
+    // - The first partition page is a combination of metadata and guard region.
+    // - We also add a trailing guard page. In most cases, a system page would
+    //   suffice. But on 32-bit systems when BRP is on, we need a partition page
+    //   to match granularity of the BRP pool bitmap. For cosistency, we'll use
+    //   a partition page everywhere, which is cheap as it's uncommitted address
+    //   space anyway.
+    return 2 * PartitionPageSize();
   }
 
   static PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
@@ -549,91 +542,41 @@ struct BASE_EXPORT PartitionRoot {
   }
 
   static ALWAYS_INLINE size_t
-  GetDirectMapReservationSize(size_t padded_raw_size, bool brp_enabled) {
+  GetDirectMapReservationSize(size_t padded_raw_size) {
     // Caller must check that the size is not above the MaxDirectMapped()
     // limit before calling. This also guards against integer overflow in the
     // calculation here.
     PA_DCHECK(padded_raw_size <= MaxDirectMapped());
     return bits::AlignUp(
-        padded_raw_size + GetDirectMapMetadataAndGuardPagesSize(brp_enabled),
+        padded_raw_size + GetDirectMapMetadataAndGuardPagesSize(),
         DirectMapAllocationGranularity());
   }
 
-// PartitionRefCount contains a cookie if slow checks are enabled or
-// DCHECK_IS_ON(), which makes it 8B in size. On 32-bit architectures it fills
-// the entire smallest slot, which is also 8B there.
-#if (BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS) || DCHECK_IS_ON()) && \
-    !defined(PA_HAS_64_BITS_POINTERS)
-#define PA_REF_COUNT_FILLS_ENTIRE_SMALLEST_SLOT 1
-#endif
-
   ALWAYS_INLINE size_t AdjustSize0IfNeeded(size_t size) const {
-#if BUILDFLAG(USE_BACKUP_REF_PTR) &&               \
-    (!BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT) || \
-     defined(PA_REF_COUNT_FILLS_ENTIRE_SMALLEST_SLOT))
-    // The minimum slot size is base::kAlignment. If |requested_size| is 0 and
-    // there are extras only before the allocation (which must be at least
-    // kAlignment), then these extras will fill the slot, leading to returning a
-    // pointer to the next slot. This is a problem, because e.g. FreeNoHooks()
-    // or ReallocFlags() call SlotSpan::FromSlotInnerPtr(ptr) prior to
-    // subtracting extras, thus getting a wrong, possibly non-existent, slot
-    // span. Fake the size to be 1 in order to counteract it.
+    // There are known cases where allowing size 0 would lead to problems:
+    // 1. If extras are present only before allocation (e.g. BRP ref-count), the
+    //    extras will fill the entire kAlignment-sized slot, leading to
+    //    returning a pointer to the next slot. FreeNoHooks() and ReallocFlags()
+    //    call SlotSpan::FromSlotInnerPtr(ptr) prior to subtracting extras, thus
+    //    potentially getting a wrong slot span.
+    // 2. If we put BRP ref-count in the previous slot, that slot may be free.
+    //    In this case, the slot needs to fit both, a free-list entry and a
+    //    ref-count. If sizeof(PartitionRefCount) is 8, it fills the entire
+    //    smallest slot on 32-bit systems (kSmallestBucket is 8), thus not
+    //    leaving space for the free-list entry.
+    // 3. On macOS and iOS, PartitionGetSizeEstimate() is used for two purposes:
+    //    as a zone dispatcher and as an underlying implementation of
+    //    malloc_size(3). As a zone dispatcher, zero has a special meaning of
+    //    "doesn't belong to this zone". When extras fill out the entire slot,
+    //    the usable size is 0, thus confusing the zone dispatcher.
     //
-    // Having any extras after the allocation nullifies the issue, so no need
-    // for this adjustment in the PUT_REF_COUNT_IN_PREVIOUS_SLOT case. Same for
-    // DCHECK_IS_ON(), but we prefer not to change codepaths between Release and
-    // Debug.
-    //
-    // In theory, this can be further refined using run-time checks. No need for
-    // this adjustment if |!extras_offset || (extras_size - extras_offset)|, but
-    // we prefer not to add more checks, as this function may be called on hot
-    // paths.
-    //
-    // We use this technique in another situation. When putting refcount in the
-    // previous slot, the previous slot may be free. In this case, the slot
-    // needs to fit both, a free-list entry and a ref-count. If
-    // sizeof(PartitionRefCount) is 8, it fills the entire smallest slot on
-    // 32-bit systems (kSmallestBucket is 8). Adjusting the request size from 0
-    // to 1 guarantees that we'll never allocate the smallest slot.
-    //
-    // Deliberately don't check for |brp_enabled|, because cost of patching up
-    // 0->1 unnecessarily is negligible, but cost of checking |brp_enabled| may
-    // not be.
+    // To save ourselves a branch on this hot path, we could eliminate this
+    // check at compile time for cases not listed above. The #if statement would
+    // be rather complex. Then there is also the fear of the unknown. The
+    // existing cases were discovered through obscure, painful-to-debug crashes.
+    // Better save ourselves trouble with not-yet-discovered cases.
     if (UNLIKELY(size == 0))
       return 1;
-#else
-    PA_DCHECK(!extras_offset || (extras_size - extras_offset));
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
-    constexpr size_t kRefCountSize = sizeof(internal::PartitionRefCount);
-#else
-    constexpr size_t kRefCountSize = 0;
-#endif
-    static_assert(
-        sizeof(internal::EncodedPartitionFreelistEntry) + kRefCountSize <=
-            kSmallestBucket,
-        "Ref-count and free-list entry must fit in the smallest slot");
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR) &&
-        // (!BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT) ||
-        // defined(PA_REF_COUNT_FILLS_ENTIRE_SMALLEST_SLOT))
-
-#if defined(OS_APPLE) && DCHECK_IS_ON()
-    // On macOS and iOS, malloc zone's `size` function is used for two purposes;
-    // as a zone dispatcher and as an underlying implementation of
-    // malloc_size(3).  As a zone dispatcher, `size` function must not return
-    // zero as long as the given pointer belongs to this zone.  At the same
-    // time, the return value of `size` function is used as the result of
-    // malloc_size(3), so we have to actually allocate at least that size of
-    // memory.
-    //
-    // When DCHECK_IS_ON() and the requested size is zero, extras occupy the
-    // allocated memory entirely and the size of user data will be zero.  In
-    // order to avoid an allocation of zero bytes of user data, always allocate
-    // at least 1 byte memory.  When DCHECK is off, there is no extras and
-    // there is no case of zero bytes of user data.
-    if (UNLIKELY(size == 0))
-      return 1;
-#endif  // defined(OS_APPLE) && DCHECK_IS_ON()
-
     return size;
   }
 
@@ -1101,8 +1044,8 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
   //
   // Layout inside the slot:
   //  <-extras->                  <-extras->
-  //  <---------utilized_slot_size--------->
-  //           <----usable_size--->
+  //  <-------GetUtilizedSlotSize()-------->
+  //           <-GetUsableSize()-->
   //  |[refcnt]|...data...|[empty]|[cookie]|[unused]|
   //           ^
   //          ptr
@@ -1110,12 +1053,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
   // Note: ref-count and cookie can be 0-sized.
   //
   // For more context, see the other "Layout inside the slot" comment below.
-#if EXPENSIVE_DCHECKS_ARE_ON() || defined(PA_ZERO_RANDOMLY_ON_FREE)
-  const size_t utilized_slot_size = slot_span->GetUtilizedSlotSize();
-#endif
-#if BUILDFLAG(USE_BACKUP_REF_PTR) || DCHECK_IS_ON()
-  const size_t usable_size = slot_span->GetUsableSize(this);
-#endif
+
   void* slot_start = AdjustPointerForExtrasSubtract(ptr);
 
 #if DCHECK_IS_ON()
@@ -1123,7 +1061,8 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
     // Verify the cookie after the allocated region.
     // If this assert fires, you probably corrupted memory.
     char* char_ptr = static_cast<char*>(ptr);
-    internal::PartitionCookieCheckValue(char_ptr + usable_size);
+    internal::PartitionCookieCheckValue(char_ptr +
+                                        slot_span->GetUsableSize(this));
   }
 #endif
 
@@ -1146,7 +1085,8 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
     // immediately. Otherwise, defer the operation and zap the memory to turn
     // potential use-after-free issues into unexploitable crashes.
     if (UNLIKELY(!ref_count->IsAliveWithNoKnownRefs()))
-      internal::SecureMemset(ptr, kQuarantinedByte, usable_size);
+      internal::SecureMemset(ptr, kQuarantinedByte,
+                             slot_span->GetUsableSize(this));
 
     if (UNLIKELY(!(ref_count->ReleaseFromAllocator()))) {
       total_size_of_brp_quarantined_bytes.fetch_add(
@@ -1161,7 +1101,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
   // memset() can be really expensive.
 #if EXPENSIVE_DCHECKS_ARE_ON()
   memset(slot_start, kFreedByte,
-         utilized_slot_size
+         slot_span->GetUtilizedSlotSize()
 #if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
              - sizeof(internal::PartitionRefCount)
 #endif
@@ -1172,7 +1112,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
   if (UNLIKELY(internal::RandomPeriod()) &&
       !IsDirectMappedBucket(slot_span->bucket)) {
     internal::SecureMemset(slot_start, 0,
-                           utilized_slot_size
+                           slot_span->GetUtilizedSlotSize()
 #if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
                                - sizeof(internal::PartitionRefCount)
 #endif

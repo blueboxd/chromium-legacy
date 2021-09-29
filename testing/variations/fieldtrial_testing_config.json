@@ -1092,6 +1092,29 @@
             ]
         }
     ],
+    "AutofillRendererFormCacheMemoryLeak": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "NewFormExtraction_20210815",
+                    "enable_features": [
+                        "AutofillUseNewFormExtraction",
+                        "AutofillUseOnlyFormRendererIDForOldDuplicateFormRemoval"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillServerTypeTakesPrecedence": [
         {
             "platforms": [
@@ -1181,27 +1204,6 @@
                     "disable_features": [
                         "AutofillCardSurvey",
                         "AutofillPasswordSurvey"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillUseOnlyFormRendererIDForOldDuplicateFormRemoval": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillUseOnlyFormRendererIDForOldDuplicateFormRemoval"
                     ]
                 }
             ]
@@ -3222,7 +3224,28 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "EnableSuggestedFiles"
+                        "EnableSuggestedFiles",
+                        "LauncherItemSuggest"
+                    ]
+                },
+                {
+                    "name": "Quick_Access",
+                    "params": {
+                        "model_name": "quick_access"
+                    },
+                    "enable_features": [
+                        "EnableSuggestedFiles",
+                        "LauncherItemSuggest"
+                    ]
+                },
+                {
+                    "name": "Future_Access",
+                    "params": {
+                        "model_name": "future_access"
+                    },
+                    "enable_features": [
+                        "EnableSuggestedFiles",
+                        "LauncherItemSuggest"
                     ]
                 }
             ]
@@ -3984,24 +4007,6 @@
             ]
         }
     ],
-    "IOSRequestDesktopByDefault": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "DesktopEverywhere",
-                    "enable_features": [
-                        "UseDefaultUserAgentInWebClient"
-                    ],
-                    "disable_features": [
-                        "MobileGoogleSRP"
-                    ]
-                }
-            ]
-        }
-    ],
     "IOSRestoreGaiaCookiesOnUserAction": [
         {
             "platforms": [
@@ -4087,6 +4092,21 @@
                     "name": "Disabled",
                     "disable_features": [
                         "UseUserDefaultsForExitedCleanlyBeaconEnabler"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSUserAgentInWebClient": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UseDefaultUserAgentInWebClient"
                     ]
                 }
             ]
@@ -7052,6 +7072,27 @@
             ]
         }
     ],
+    "SendTabToSelfWhenSignedIn": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SendTabToSelfManageDevicesLink",
+                        "SendTabToSelfWhenSignedIn"
+                    ]
+                }
+            ]
+        }
+    ],
     "ServiceManagerForBackgroundPrefetch": [
         {
             "platforms": [
@@ -7409,6 +7450,26 @@
                     },
                     "enable_features": [
                         "SyncInstanceIDTokenTTL"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SyncLoadDataUrlFonts": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncLoadDataUrlFonts"
                     ]
                 }
             ]
@@ -8832,38 +8893,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WebRtcDistinctWorkerThread"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WebRtcHybridAgc": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "ios",
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "adjacent_speech_frames_threshold": "12",
-                        "avx2_allowed": "true",
-                        "dry_run": "false",
-                        "max_gain_change_db_per_second": "3",
-                        "max_output_noise_level_dbfs": "-50",
-                        "neon_allowed": "true",
-                        "sse2_allowed": "true",
-                        "vad_reset_period_ms": "1500"
-                    },
-                    "enable_features": [
-                        "WebRtcHybridAgc"
                     ]
                 }
             ]

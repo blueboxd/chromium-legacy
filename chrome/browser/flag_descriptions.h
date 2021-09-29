@@ -441,6 +441,9 @@ extern const char kEnableNavigationPredictorDescription[];
 extern const char kEnablePreconnectToSearchName[];
 extern const char kEnablePreconnectToSearchDescription[];
 
+extern const char kEnableRawDrawName[];
+extern const char kEnableRawDrawDescription[];
+
 extern const char kEnableRemovingAllThirdPartyCookiesName[];
 extern const char kEnableRemovingAllThirdPartyCookiesDescription[];
 
@@ -2247,9 +2250,6 @@ extern const char kMacSyscallSandboxDescription[];
 
 extern const char kMetalName[];
 extern const char kMetalDescription[];
-
-extern const char kScreenTimeName[];
-extern const char kScreenTimeDescription[];
 
 extern const char kUseAngleDescriptionMac[];
 extern const char kUseAngleMetal[];

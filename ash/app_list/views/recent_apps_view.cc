@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
@@ -176,6 +177,7 @@ RecentAppsView::RecentAppsView(Delegate* delegate,
           views::kFlexBehaviorKey,
           views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
                                    views::MaximumFlexSizeRule::kPreferred));
+      item_views_.push_back(item_view);
 
       // Add a empty-space view used to evenly distribute app list item views
       // within the available space.
@@ -195,9 +197,22 @@ RecentAppsView::RecentAppsView(Delegate* delegate,
 
 RecentAppsView::~RecentAppsView() = default;
 
+int RecentAppsView::GetItemViewCount() const {
+  return item_views_.size();
+}
+
+AppListItemView* RecentAppsView::GetItemViewAt(int index) const {
+  if (static_cast<int>(item_views_.size()) <= index)
+    return nullptr;
+  return item_views_[index];
+}
+
 void RecentAppsView::DisableFocusForShowingActiveFolder(bool disabled) {
   for (views::View* child : children())
     child->SetEnabled(!disabled);
+
+  // Prevent items from being accessed by ChromeVox.
+  SetViewIgnoredForAccessibility(this, disabled);
 }
 
 bool RecentAppsView::OnKeyPressed(const ui::KeyEvent& event) {

@@ -5,8 +5,10 @@
 #include "pdf/pdf_view_web_plugin.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
+#include "base/strings/string_piece.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
@@ -18,6 +20,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/input/web_pointer_properties.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
@@ -29,6 +33,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
@@ -80,6 +86,20 @@ MATCHER(SearchStringResultEq, "") {
   PDFEngine::Client::SearchStringResult l = std::get<0>(arg);
   PDFEngine::Client::SearchStringResult r = std::get<1>(arg);
   return l.start_index == r.start_index && l.length == r.length;
+}
+
+MATCHER_P(IsExpectedImeKeyEvent, expected_text, "") {
+  if (arg.GetType() != blink::WebInputEvent::Type::kChar)
+    return false;
+
+  const auto& event = static_cast<const blink::WebKeyboardEvent&>(arg);
+  return event.GetModifiers() == blink::WebInputEvent::kNoModifiers &&
+         event.windows_key_code == expected_text[0] &&
+         event.native_key_code == expected_text[0] &&
+         event.dom_code == static_cast<int>(ui::DomCode::NONE) &&
+         event.dom_key == ui::DomKey::NONE && !event.is_system_key &&
+         !event.is_browser_shortcut && event.text == expected_text &&
+         event.unmodified_text == expected_text;
 }
 
 // Generates the expected `SkBitmap` with `paint_color` filled in the expected
@@ -253,7 +273,7 @@ class PdfViewWebPluginTest : public PdfViewWebPluginWithoutInitializeTest {
     auto wrapper =
         std::make_unique<NiceMock<FakeContainerWrapper>>(plugin_.get());
     wrapper_ptr_ = wrapper.get();
-    auto engine = std::make_unique<TestPDFiumEngine>(plugin_.get());
+    auto engine = CreateEngine();
     engine_ptr_ = engine.get();
     EXPECT_TRUE(
         plugin_->InitializeForTesting(std::move(wrapper), std::move(engine)));
@@ -263,6 +283,11 @@ class PdfViewWebPluginTest : public PdfViewWebPluginWithoutInitializeTest {
     wrapper_ptr_ = nullptr;
 
     PdfViewWebPluginWithoutInitializeTest::TearDown();
+  }
+
+  // Allow derived test classes to create their own custom TestPDFiumEngine.
+  virtual std::unique_ptr<TestPDFiumEngine> CreateEngine() {
+    return std::make_unique<TestPDFiumEngine>(plugin_.get());
   }
 
   void UpdatePluginGeometry(float device_scale, const gfx::Rect& window_rect) {
@@ -479,7 +504,45 @@ INSTANTIATE_TEST_SUITE_P(All,
                          PdfViewWebPluginTestUseZoomForDSF,
                          testing::Bool());
 
-TEST_F(PdfViewWebPluginTest, HandleInputEventWithUseZoomForDSFEnabled) {
+class PdfViewWebPluginMouseEventsTest : public PdfViewWebPluginTest {
+ public:
+  class TestPDFiumEngineForMouseEvents : public TestPDFiumEngine {
+   public:
+    explicit TestPDFiumEngineForMouseEvents(PDFEngine::Client* client)
+        : TestPDFiumEngine(client) {}
+
+    // TestPDFiumEngine:
+    bool HandleInputEvent(const blink::WebInputEvent& event) override {
+      // Since blink::WebInputEvent is an abstract class, we cannot use equal
+      // matcher to verify its value. Here we test with blink::WebMouseEvent
+      // specifically.
+      if (!blink::WebInputEvent::IsMouseEventType(event.GetType()))
+        return false;
+
+      scaled_mouse_event_ = std::make_unique<blink::WebMouseEvent>();
+      *scaled_mouse_event_ = static_cast<const blink::WebMouseEvent&>(event);
+      return true;
+    }
+
+    const blink::WebMouseEvent* GetScaledMouseEvent() const {
+      return scaled_mouse_event_.get();
+    }
+
+   private:
+    std::unique_ptr<blink::WebMouseEvent> scaled_mouse_event_;
+  };
+
+  std::unique_ptr<TestPDFiumEngine> CreateEngine() override {
+    return std::make_unique<TestPDFiumEngineForMouseEvents>(plugin_.get());
+  }
+
+  TestPDFiumEngineForMouseEvents* engine() {
+    return static_cast<TestPDFiumEngineForMouseEvents*>(engine_ptr_);
+  }
+};
+
+TEST_F(PdfViewWebPluginMouseEventsTest,
+       HandleInputEventWithUseZoomForDSFEnabled) {
   // Test when using zoom for DSF is enabled.
   EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
       .WillRepeatedly(Return(true));
@@ -492,12 +555,13 @@ TEST_F(PdfViewWebPluginTest, HandleInputEventWithUseZoomForDSFEnabled) {
                                     ui::LatencyInfo()),
       &dummy_cursor);
 
-  ASSERT_TRUE(engine_ptr_->GetScaledMouseEvent());
-  EXPECT_EQ(gfx::PointF(-10.0f, 0.0f),
-            engine_ptr_->GetScaledMouseEvent()->PositionInWidget());
+  const blink::WebMouseEvent* event = engine()->GetScaledMouseEvent();
+  ASSERT_TRUE(event);
+  EXPECT_EQ(gfx::PointF(-10.0f, 0.0f), event->PositionInWidget());
 }
 
-TEST_F(PdfViewWebPluginTest, HandleInputEventWithUseZoomForDSFDisabled) {
+TEST_F(PdfViewWebPluginMouseEventsTest,
+       HandleInputEventWithUseZoomForDSFDisabled) {
   // Test when using zoom for DSF is disabled.
   EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
       .WillRepeatedly(Return(false));
@@ -510,9 +574,109 @@ TEST_F(PdfViewWebPluginTest, HandleInputEventWithUseZoomForDSFDisabled) {
                                     ui::LatencyInfo()),
       &dummy_cursor);
 
-  ASSERT_TRUE(engine_ptr_->GetScaledMouseEvent());
-  EXPECT_EQ(gfx::PointF(-20.0f, 0.0f),
-            engine_ptr_->GetScaledMouseEvent()->PositionInWidget());
+  const blink::WebMouseEvent* event = engine()->GetScaledMouseEvent();
+  ASSERT_TRUE(event);
+  EXPECT_EQ(gfx::PointF(-20.0f, 0.0f), event->PositionInWidget());
+}
+
+class PdfViewWebPluginImeTest : public PdfViewWebPluginTest {
+ public:
+  class TestPDFiumEngineForIme : public TestPDFiumEngine {
+   public:
+    explicit TestPDFiumEngineForIme(PDFEngine::Client* client)
+        : TestPDFiumEngine(client) {}
+
+    // TestPDFiumEngine:
+    MOCK_METHOD(bool,
+                HandleInputEvent,
+                (const blink::WebInputEvent&),
+                (override));
+  };
+
+  std::unique_ptr<TestPDFiumEngine> CreateEngine() override {
+    return std::make_unique<TestPDFiumEngineForIme>(plugin_.get());
+  }
+
+  TestPDFiumEngineForIme* engine() {
+    return static_cast<TestPDFiumEngineForIme*>(engine_ptr_);
+  }
+
+  void TestImeSetCompositionForPlugin(const blink::WebString& text) {
+    EXPECT_CALL(*engine(), HandleInputEvent).Times(0);
+    plugin_->ImeSetCompositionForPlugin(text, std::vector<ui::ImeTextSpan>(),
+                                        gfx::Range(),
+                                        /*selection_start=*/0,
+                                        /*selection_end=*/0);
+  }
+
+  void TestImeFinishComposingTextForPlugin(
+      const blink::WebString& expected_text) {
+    InSequence sequence;
+    std::u16string expected_text16 = expected_text.Utf16();
+    if (expected_text16.size()) {
+      for (const auto& c : expected_text16) {
+        base::StringPiece16 expected_key(&c, 1);
+        EXPECT_CALL(*engine(),
+                    HandleInputEvent(IsExpectedImeKeyEvent(expected_key)))
+            .WillOnce(Return(true));
+      }
+    } else {
+      EXPECT_CALL(*engine(), HandleInputEvent).Times(0);
+    }
+    plugin_->ImeFinishComposingTextForPlugin(false);
+  }
+
+  void TestImeCommitTextForPlugin(const blink::WebString& text) {
+    InSequence sequence;
+    std::u16string expected_text16 = text.Utf16();
+    if (expected_text16.size()) {
+      for (const auto& c : expected_text16) {
+        base::StringPiece16 event(&c, 1);
+        EXPECT_CALL(*engine(), HandleInputEvent(IsExpectedImeKeyEvent(event)))
+            .WillOnce(Return(true));
+      }
+    } else {
+      EXPECT_CALL(*engine(), HandleInputEvent).Times(0);
+    }
+    plugin_->ImeCommitTextForPlugin(text, std::vector<ui::ImeTextSpan>(),
+                                    gfx::Range(),
+                                    /*relative_cursor_pos=*/0);
+  }
+};
+
+TEST_F(PdfViewWebPluginImeTest, ImeSetCompositionAndFinishAscii) {
+  const blink::WebString text = blink::WebString::FromASCII("input");
+  TestImeSetCompositionForPlugin(text);
+  TestImeFinishComposingTextForPlugin(text);
+}
+
+TEST_F(PdfViewWebPluginImeTest, ImeSetCompositionAndFinishUnicode) {
+  const blink::WebString text = blink::WebString::FromUTF16(u"你好");
+  TestImeSetCompositionForPlugin(text);
+  TestImeFinishComposingTextForPlugin(text);
+  // Calling ImeFinishComposingTextForPlugin() again is a no-op.
+  TestImeFinishComposingTextForPlugin("");
+}
+
+TEST_F(PdfViewWebPluginImeTest, ImeSetCompositionAndFinishEmpty) {
+  const blink::WebString text;
+  TestImeSetCompositionForPlugin(text);
+  TestImeFinishComposingTextForPlugin(text);
+}
+
+TEST_F(PdfViewWebPluginImeTest, ImeCommitTextForPluginAscii) {
+  const blink::WebString text = blink::WebString::FromASCII("a b");
+  TestImeCommitTextForPlugin(text);
+}
+
+TEST_F(PdfViewWebPluginImeTest, ImeCommitTextForPluginUnicode) {
+  const blink::WebString text = blink::WebString::FromUTF16(u"さようなら");
+  TestImeCommitTextForPlugin(text);
+}
+
+TEST_F(PdfViewWebPluginImeTest, ImeCommitTextForPluginEmpty) {
+  const blink::WebString text;
+  TestImeCommitTextForPlugin(text);
 }
 
 TEST_F(PdfViewWebPluginTest, ChangeTextSelection) {
@@ -623,6 +787,30 @@ TEST_F(PdfViewWebPluginTest, UpdateFocus) {
   plugin_->UpdateFocus(/*focused=*/false, blink::mojom::FocusType::kNone);
   checkpoint.Call(4);
   plugin_->UpdateFocus(/*focused=*/true, blink::mojom::FocusType::kNone);
+}
+
+TEST_F(PdfViewWebPluginTest, ShouldDispatchImeEventsToPlugin) {
+  ASSERT_TRUE(plugin_->ShouldDispatchImeEventsToPlugin());
+}
+
+TEST_F(PdfViewWebPluginTest, CaretChangeUseZoomForDSFEnabled) {
+  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*engine_ptr_, ZoomUpdated(2.0f));
+  UpdatePluginGeometry(
+      /*device_scale=*/2.0f, /*window_rect=*/gfx::Rect(12, 24, 36, 48));
+  plugin_->CaretChanged(gfx::Rect(10, 20, 30, 40));
+  EXPECT_EQ(gfx::Rect(28, 20, 30, 40), plugin_->GetPluginCaretBounds());
+}
+
+TEST_F(PdfViewWebPluginTest, CaretChangeUseZoomForDSFDisabled) {
+  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*engine_ptr_, ZoomUpdated(2.0f));
+  UpdatePluginGeometry(
+      /*device_scale=*/2.0f, /*window_rect=*/gfx::Rect(12, 24, 36, 48));
+  plugin_->CaretChanged(gfx::Rect(10, 20, 30, 40));
+  EXPECT_EQ(gfx::Rect(23, 10, 15, 20), plugin_->GetPluginCaretBounds());
 }
 
 }  // namespace chrome_pdf

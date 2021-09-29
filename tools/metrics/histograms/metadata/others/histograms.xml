@@ -3519,7 +3519,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContextMenu.LensSupportStatus" enum="LensSupportStatus"
-    expires_after="2022-01-23">
+    expires_after="2022-03-27">
   <owner>benwgold@google.com</owner>
   <owner>lens-chrome@google.com</owner>
   <summary>
@@ -3976,6 +3976,33 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records the time between a conversion and its reporting. This is emitted
     whenever a conversion report is sent.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.UniqueReportingOriginsPerPage.Conversions"
+    units="origins" expires_after="M96">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the number of unique reporting origins for registered conversions on
+    a given top-level page load. Recorded when the page navigates away or is
+    otherwise closed. Only recorded for non-off-the-record profiles (OTR
+    profiles have the feature disabled).
+  </summary>
+</histogram>
+
+<histogram name="Conversions.UniqueReportingOriginsPerPage.Impressions"
+    units="origins" expires_after="M96">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the number of unique reporting origins for registered event
+    impressions and navigation impressions attempted on a given top-level page
+    load. Recorded when the page navigates away or is otherwise closed. Only
+    recorded for non-off-the-record profiles (OTR profiles have the feature
+    disabled).
   </summary>
 </histogram>
 
@@ -4477,8 +4504,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="DemoMode.ActiveApp" enum="DemoModeApp"
-    expires_after="2021-12-05">
+<histogram name="DemoMode.ActiveApp" enum="DemoModeApp" expires_after="M109">
   <owner>drcrash@chromium.org</owner>
   <owner>cros-demo-mode-eng@google.com</owner>
   <summary>
@@ -4487,8 +4513,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="DemoMode.AppLaunched" enum="DemoModeApp"
-    expires_after="2021-12-05">
+<histogram name="DemoMode.AppLaunched" enum="DemoModeApp" expires_after="M109">
   <owner>drcrash@chromium.org</owner>
   <owner>cros-demo-mode-eng@google.com</owner>
   <summary>
@@ -4499,7 +4524,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="DemoMode.AppLaunchSource" enum="DemoModeAppLaunchSource"
-    expires_after="2021-08-09">
+    expires_after="M109">
   <owner>drcrash@chromium.org</owner>
   <owner>cros-demo-mode-eng@google.com</owner>
   <summary>
@@ -4508,7 +4533,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="DemoMode.DwellTime" units="seconds" expires_after="2021-12-05">
+<histogram name="DemoMode.DwellTime" units="seconds" expires_after="M109">
   <owner>drcrash@chromium.org</owner>
   <owner>cros-demo-mode-eng@google.com</owner>
   <summary>
@@ -4520,7 +4545,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="DemoMode.IdleLogoutWarningEvent"
-    enum="DemoModeIdleLogoutWarningEvent" expires_after="2021-08-09">
+    enum="DemoModeIdleLogoutWarningEvent" expires_after="M109">
   <owner>drcrash@chromium.org</owner>
   <owner>cros-demo-mode-eng@google.com</owner>
   <summary>
@@ -4532,7 +4557,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="DemoMode.ResourcesRemoval.Reason"
-    enum="DemoModeResourcesRemovalReason" expires_after="M96">
+    enum="DemoModeResourcesRemovalReason" expires_after="M109">
   <owner>drcrash@chromium.org</owner>
   <owner>cros-demo-mode-eng@google.com</owner>
   <summary>
@@ -4544,7 +4569,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="DemoMode.ResourcesRemoval.Result"
-    enum="DemoModeResourcesRemovalResult" expires_after="M96">
+    enum="DemoModeResourcesRemovalResult" expires_after="M109">
   <owner>drcrash@chromium.org</owner>
   <owner>cros-demo-mode-eng@google.com</owner>
   <summary>
@@ -4558,8 +4583,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="DemoMode.SessionLength" units="minutes"
-    expires_after="2021-12-05">
+<histogram name="DemoMode.SessionLength" units="minutes" expires_after="M109">
   <owner>drcrash@chromium.org</owner>
   <owner>cros-demo-mode-eng@google.com</owner>
   <summary>
@@ -4573,7 +4597,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="DemoMode.Setup.DownloadDuration" units="minutes"
-    expires_after="2021-08-09">
+    expires_after="M109">
   <owner>drcrash@chromium.org</owner>
   <owner>cros-demo-mode-eng@google.com</owner>
   <summary>
@@ -4583,7 +4607,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="DemoMode.Setup.EnrollDuration" units="minutes"
-    expires_after="2021-12-05">
+    expires_after="M109">
   <owner>drcrash@chromium.org</owner>
   <owner>cros-demo-mode-eng@google.com</owner>
   <summary>
@@ -4593,7 +4617,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="DemoMode.Setup.LoadingDuration" units="minutes"
-    expires_after="2021-08-09">
+    expires_after="M109">
   <owner>drcrash@chromium.org</owner>
   <owner>cros-demo-mode-eng@google.com</owner>
   <summary>
@@ -4604,8 +4628,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="DemoMode.Setup.NumRetries" units="units"
-    expires_after="2021-08-09">
+<histogram name="DemoMode.Setup.NumRetries" units="units" expires_after="M109">
   <owner>drcrash@chromium.org</owner>
   <owner>cros-demo-mode-eng@google.com</owner>
   <summary>
@@ -4616,7 +4639,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="DemoMode.UniqueAppsLaunched" units="units"
-    expires_after="2021-08-09">
+    expires_after="M109">
   <owner>drcrash@chromium.org</owner>
   <owner>cros-demo-mode-eng@google.com</owner>
   <summary>
@@ -7237,7 +7260,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Graphics.Smoothness.PercentDroppedFrames" units="%"
-    expires_after="2021-09-30">
+    expires_after="2022-09-30">
   <owner>sadrul@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -7319,7 +7342,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Graphics.Smoothness.PercentMissedDeadlineFrames"
-    units="%" expires_after="2021-09-30">
+    units="%" expires_after="2022-09-30">
   <owner>sadrul@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -7338,7 +7361,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Graphics.Smoothness.PercentMissedDeadlineFrames.AllAnimations"
-    units="%" expires_after="2021-09-30">
+    units="%" expires_after="2022-09-30">
   <owner>sadrul@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -7358,7 +7381,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Graphics.Smoothness.PercentMissedDeadlineFrames.AllInteractions"
-    units="%" expires_after="2021-09-30">
+    units="%" expires_after="2022-09-30">
   <owner>sadrul@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -7377,7 +7400,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Graphics.Smoothness.PercentMissedDeadlineFrames.AllSequences"
-    units="%" expires_after="2021-09-30">
+    units="%" expires_after="2022-09-30">
   <owner>sadrul@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -7429,7 +7452,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Graphics.Smoothness.PerSession.MaxPercentDroppedFrames_1sWindow"
-    units="%" expires_after="2022-01-23">
+    units="%" expires_after="2022-03-27">
   <owner>sadrul@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -11842,7 +11865,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PaintHolding.CommitTrigger2" enum="PaintHoldingCommitTrigger2"
-    expires_after="2022-01-23">
+    expires_after="2022-03-27">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -12387,7 +12410,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="PerformanceMonitor.ResourceCoalition.EnergyImpact"
+<histogram
+    name="PerformanceMonitor.ResourceCoalition.EnergyImpact{UsageScenario}"
     units="centi-EnergyImpact" expires_after="2021-11-30">
   <owner>siggi@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
@@ -12403,6 +12427,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Chrome processes no matter how short-lived, as well as XPC services running
     on Chrome's behalf.
   </summary>
+<!-- Usage scenario variant defined in tools/metrics/histograms/metadata/power/histograms.xml  -->
+
+  <token key="UsageScenario" variants="UsageScenario"/>
 </histogram>
 
 <histogram name="PerformanceMonitor.ResourceCoalition.GPUTime"
@@ -13765,7 +13792,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ReadingList.BookmarkBarState.On{Frequency}AddToReadingList"
-    enum="BookmarkBarState" expires_after="M96">
+    enum="BookmarkBarState" expires_after="2022-02-20">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -13933,7 +13960,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ReadingList.{ReadStatus}.Count.{Variation}" units="count"
-    expires_after="M96">
+    expires_after="2022-02-20">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -14664,7 +14691,7 @@ Safe Browsing lookups, which is critical for security. -->
 </histogram>
 
 <histogram name="SB2.RemoteCall.Result" enum="SB2RemoteCallResult"
-    expires_after="2022-01-23">
+    expires_after="2022-03-27">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>

@@ -2018,13 +2018,6 @@ crbug.com/1223681 virtual/plz-dedicated-worker/external/wpt/service-workers/serv
 # crbug.com/1218723 This test fails when SplitCacheByNetworkIsolationKey is enabled.
 crbug.com/1218723 http/tests/devtools/network/network-prefetch.js [ Failure ]
 
-# We've removed the existing console warning and replaced it with error message
-# tooltips in the HTTP request cookies view. We intend to also add a DevTools
-# Issue that makes it easier for developers to notice that a large cookie has
-# been rejected. Once that occurs, modify this test to look for the DevTools
-# Issue being created and then re-enable it.
-crbug.com/1252463 http/tests/devtools/network/warning-for-long-cookie.js [ Failure ]
-
 # No support for WPT print-reftests:
 crbug.com/1090628 external/wpt/infrastructure/reftest/reftest_match-print.html [ Failure ]
 crbug.com/1090628 external/wpt/infrastructure/reftest/reftest_match_fail-print.html [ Failure ]
@@ -2849,11 +2842,10 @@ crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/worker-interception.https.html [ Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.15 ] virtual/no-alloc-direct-call/external/wpt/html/canvas/element/manual/wide-gamut-canvas/canvas-display-p3-drawImage-ImageBitmap-Blob.html [ Failure Timeout ]
+crbug.com/626703 [ Linux ] virtual/plz-dedicated-worker/external/wpt/xhr/event-loadstart-upload.any.worker.html [ Crash ]
+crbug.com/626703 [ Mac10.15 ] virtual/plz-dedicated-worker/external/wpt/xhr/event-loadstart-upload.any.worker.html [ Crash ]
 crbug.com/626703 external/wpt/css/css-ui/input-security-none-sensitive-text-input.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/html/semantics/forms/the-selectmenu-element/selectmenu-parts-structure.tentative.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/html/semantics/forms/the-selectmenu-element/selectmenu-parts-structure.tentative.html [ Timeout ]
-crbug.com/626703 [ Linux ] virtual/synchronous_html_parser/external/wpt/html/semantics/forms/the-selectmenu-element/selectmenu-parts-structure.tentative.html [ Timeout ]
-crbug.com/626703 [ Mac ] virtual/synchronous_html_parser/external/wpt/html/semantics/forms/the-selectmenu-element/selectmenu-parts-structure.tentative.html [ Timeout ]
 crbug.com/626703 [ Linux ] virtual/coep-for-shared-worker/external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/coep-for-shared-worker/external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Skip Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-flexbox/dynamic-isize-change-002.html [ Crash ]
@@ -3528,6 +3520,13 @@ crbug.com/626703 [ Mac10.12 ] virtual/plz-dedicated-worker/external/wpt/service-
 crbug.com/626703 [ Mac10.12 ] virtual/plz-dedicated-worker/external/wpt/service-workers/idlharness.https.any.worker.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] virtual/portals/external/wpt/portals/idlharness.window.html [ Failure ]
 
+# selectmenu timeouts
+crbug.com/1253971 [ Linux ] external/wpt/html/semantics/forms/the-selectmenu-element/selectmenu-parts-structure.tentative.html [ Timeout ]
+crbug.com/1253971 [ Mac ] external/wpt/html/semantics/forms/the-selectmenu-element/selectmenu-parts-structure.tentative.html [ Timeout ]
+crbug.com/1253971 [ Linux ] virtual/synchronous_html_parser/external/wpt/html/semantics/forms/the-selectmenu-element/selectmenu-parts-structure.tentative.html [ Timeout ]
+crbug.com/1253971 [ Mac ] virtual/synchronous_html_parser/external/wpt/html/semantics/forms/the-selectmenu-element/selectmenu-parts-structure.tentative.html [ Timeout ]
+
+
 ### See crbug.com/891427 comment near the top of this file:
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins-2.html [ Failure ]
 crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-004.svg [ Failure ]
@@ -4134,9 +4133,6 @@ crbug.com/1157857 virtual/percent-based-scrolling/max-percent-delta-cross-origin
 
 crbug.com/683800 [ Debug Win7 ] external/wpt/selection/* [ Failure Pass ]
 
-# Importing 'fetch' tests from WPT.
-crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Pass Timeout ]
-
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.https.html [ Failure Timeout ]
 
 # Test timing out when SharedArrayBuffer is disabled by default.
@@ -4192,6 +4188,7 @@ crbug.com/722943 [ Win ] media/audio-repaint.html [ Crash ]
 
 # Sheriff failures 2018-08-15
 crbug.com/874837 [ Win ] ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure Pass ]
+crbug.com/874837 [ Linux ] ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure Pass ]
 crbug.com/874931 virtual/threaded-prefer-compositing/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Crash Failure Pass ]
 crbug.com/875003 [ Win ] editing/caret/caret-is-hidden-when-no-focus.html [ Failure Pass ]
 
@@ -5287,7 +5284,6 @@ crbug.com/476553 virtual/scroll-unification/fast/events/hit-test-counts.html [ C
 crbug.com/476553 virtual/scroll-unification/fast/events/mouse-cursor-change.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/fast/events/platform-wheelevent-paging-xy-in-scrolling-div.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/fast/events/remove-child-onscroll.html [ Crash Failure Pass Timeout ]
-crbug.com/476553 virtual/scroll-unification/fast/events/scrollbar-double-click.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/fast/events/touch/touch-latched-scroll-node-removed.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/focus-selectionchange-on-tap.html [ Crash Failure Pass Timeout ]
@@ -5303,10 +5299,8 @@ crbug.com/476553 virtual/scroll-unification/fast/forms/suggestion-picker/datetim
 crbug.com/476553 virtual/scroll-unification/fast/scrolling/resize-corner-tracking-touch.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/fast/scrolling/subpixel-overflow-mouse-drag.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/http/tests/misc/destroy-middle-click-locked-target-crash.html [ Crash Failure Pass Skip Timeout ]
-crbug.com/476553 virtual/scroll-unification/http/tests/misc/lock-renderer-for-middle-click-autoscroll.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/http/tests/misc/scroll-cross-origin-iframes.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/http/tests/misc/scroll-cross-origin-iframes-scrollbar.html [ Crash Failure Pass Timeout ]
-crbug.com/476553 virtual/scroll-unification/ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/plugins/gesture-events-scrolled.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/plugins/gesture-events.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/plugins/mouse-click-iframe-to-plugin.html [ Crash Failure Pass Timeout ]
@@ -5314,7 +5308,6 @@ crbug.com/476553 virtual/scroll-unification/plugins/sequential-focus.html [ Cras
 crbug.com/476553 virtual/scroll-unification/plugins/transformed-events.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/scrollbars/listbox-scrollbar-combinations.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification-layout_ng_block_frag/fast/forms/fieldset/fieldset-legend-change.html [ Crash Failure Pass Timeout ]
-crbug.com/476553 virtual/scroll-unification-overlay-scrollbar/plugin-overlay-scrollbar-mouse-capture.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification-percent-based-scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-deleted-scrollbar.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification-percent-based-scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Crash Failure Pass Skip Timeout ]
 crbug.com/476553 virtual/scroll-unification-prefer_compositing_to_lcd_text/scrollbars/auto-scrollbar-fades-out.html [ Crash Failure Pass Timeout ]
@@ -5330,6 +5323,9 @@ crbug.com/476553 virtual/scroll-unification-synchronous_html_parser/external/wpt
 crbug.com/476553 virtual/scroll-unification-synchronous_html_parser/external/wpt/dom/events/scrolling/scrollend-event-for-user-scroll.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification-wheel-event-regions/fast/events/platform-wheelevent-paging-xy-in-scrolling-div.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification-wheel-event-regions/fast/events/wheel/wheel-latched-scroll-node-removed.html [ Crash Failure Pass Timeout ]
+
+crbug.com/1253630 [ Win ] virtual/scroll-unification-overlay-scrollbar/plugin-overlay-scrollbar-mouse-capture.html [ Failure Pass ]
+crbug.com/1098383 [ Mac ] fast/events/scrollbar-double-click.html [ Failure Pass ]
 
 # Sheriff 2020-02-07
 
@@ -6879,23 +6875,23 @@ crbug.com/1249176 [ Mac11-arm64 ] virtual/scroll-unification/plugins/multiple-pl
 crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/color-profile-animate.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] fast/layers/clip-rects-transformed-2.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Failure Timeout ]
-crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/timeline/page-frames.js [ Pass Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/timeline/user-timing.js [ Pass Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] virtual/file-system-access-access-handle-incognito/external/wpt/file-system-access/sandboxed_FileSystemFileHandle-create-sync-access-handle-dedicated-worker.https.tentative.window.html [ Pass Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] http/tests/devtools/tracing/frame-model-instrumentation.js [ Pass Failure ]
+crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/timeline/page-frames.js [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/timeline/user-timing.js [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] virtual/file-system-access-access-handle-incognito/external/wpt/file-system-access/sandboxed_FileSystemFileHandle-create-sync-access-handle-dedicated-worker.https.tentative.window.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] http/tests/devtools/tracing/frame-model-instrumentation.js [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/layout-fonts/lang-fallback.js [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/css/css-position/fixed-z-index-blend.html [ Failure Pass ]
-crbug.com/1249176 [ Mac11-arm64 ] http/tests/devtools/profiler/live-line-level-heap-profile.js [ Pass Timeout Skip ]
-crbug.com/1249176 [ Mac11-arm64 ] images/color-profile-background-image-space.html [ Pass Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] http/tests/devtools/tracing/timeline-paint/update-layer-tree.js [ Pass Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/color-profile-clip.html [ Pass Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/page/set-font-families.js [ Pass Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] wpt_internal/mediastream/mediastreamtrackprocessor-transfer-to-worker.html [ Pass Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] http/tests/text-autosizing/wide-iframe.html [ Pass Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] external/wpt/layout-instability/recent-input.html [ Pass Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Pass Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/performance/perf-metrics.js [ Pass Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] external/wpt/event-timing/event-retarget.html [ Pass Failure ]
+crbug.com/1249176 [ Mac11-arm64 ] http/tests/devtools/profiler/live-line-level-heap-profile.js [ Pass Skip Timeout ]
+crbug.com/1249176 [ Mac11-arm64 ] images/color-profile-background-image-space.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] http/tests/devtools/tracing/timeline-paint/update-layer-tree.js [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/color-profile-clip.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/page/set-font-families.js [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] wpt_internal/mediastream/mediastreamtrackprocessor-transfer-to-worker.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] http/tests/text-autosizing/wide-iframe.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/layout-instability/recent-input.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/performance/perf-metrics.js [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/event-timing/event-retarget.html [ Failure Pass ]
 
 # Sheriff 2021-09-16
 crbug.com/1250457 [ Win7 ] http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-3.js [ Failure ]
@@ -6980,3 +6976,6 @@ crbug.com/1233826 external/wpt/animation-worklet/worklet-animation-local-time-af
 crbug.com/1233826 virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-after-duration.https.html [ Skip ]
 crbug.com/930462 external/wpt/animation-worklet/worklet-animation-pause-resume.https.html [ Skip ]
 crbug.com/930462 virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-resume.https.html [ Skip ]
+
+# Sheriff 2021-09-29
+crbug.com/1254163 [ Mac ] virtual/scroll-unification/ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure ]

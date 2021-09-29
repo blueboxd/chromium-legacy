@@ -1250,8 +1250,8 @@
   },
   {
     "name": "double-buffer-compositing",
-    "owners": [ "chromeos-gfx@google.com" ],
-    "expiry_milestone": 88
+    "owners": [ "hob", "chromeos-gfx@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "double-tap-to-zoom-in-tablet-mode",
@@ -2489,11 +2489,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "enable-safe-browsing-per-profile-network-contexts",
-    "owners": [ "drubery" ],
-    "expiry_milestone": 95
-  },
-  {
     "name": "enable-save-data",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // This flag is used for frequent manual testing and should not be removed.
@@ -3115,17 +3110,17 @@
   },
   {
     "name": "font-access",
-    "owners": [ "cmp", "oyiptong" ],
+    "owners": [ "cmp", "pwnall" ],
     "expiry_milestone": 96
   },
   {
     "name": "font-access-chooser",
-    "owners": [ "oyiptong" ],
+    "owners": [ "pwnall" ],
     "expiry_milestone": 96
   },
   {
     "name": "font-access-persistent",
-    "owners": [ "oyiptong" ],
+    "owners": [ "pwnall" ],
     "expiry_milestone": 96
   },
   {
@@ -3695,11 +3690,6 @@
     "expiry_milestone": 105
   },
   {
-    "name": "memories-debug",
-    "owners": [ "manukh", "chrome-memories@google.com", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 105
-  },
-  {
     "name": "messages-for-android-ads-blocked",
     "owners": [ "pavely", "aishwaryarj" ],
     "expiry_milestone": 99
@@ -3869,11 +3859,6 @@
     "expiry_milestone": 98
   },
   {
-    "name": "nearby-sharing",
-    "owners": [ "danlee@google.com", "chromeos-cross-device-eng@google.com" ],
-    "expiry_milestone": 95
-  },
-  {
     "name": "nearby-sharing-arc",
     "owners": [ "phshah", "alanding", "cros-sharesheet@google.com", "arc-app-dev@google.com" ],
     "expiry_milestone": 98
@@ -3882,16 +3867,6 @@
     "name": "nearby-sharing-background-scanning",
     "owners": [ "hansenmichael@google.com", "cvandermerwe@google.com", "chromeos-cross-device-eng@google.com" ],
     "expiry_milestone": 98
-  },
-  {
-    "name": "nearby-sharing-device-contacts",
-    "owners": [ "danlee@google.com", "chromeos-cross-device-eng@google.com" ],
-    "expiry_milestone": 95
-  },
-  {
-    "name": "nearby-sharing-webrtc",
-    "owners": [ "danlee@google.com", "chromeos-cross-device-eng@google.com" ],
-    "expiry_milestone": 95
   },
   {
     "name": "new-canvas-2d-api",
@@ -4188,11 +4163,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "omnibox-rich-entities-in-launcher",
-    "owners": ["jiameng", "thanhdng", "wrong"],
-    "expiry_milestone": 95
-  },
-  {
     "name": "omnibox-spare-renderer",
     "owners": [ "instant-nav@google.com" ],
     "expiry_milestone": 92
@@ -4270,6 +4240,11 @@
     "name": "overscroll-history-navigation",
     "owners": [ "mohsen", "jinsukkim" ],
     "expiry_milestone": 105
+  },
+  {
+    "name": "page-content-annotations",
+    "owners": [ "sophiechang", "mcrouse", "chrome-intelligence-core@google.com"],
+    "expiry_milestone": 100
   },
   {
     "name": "page-info-about-this-site",
@@ -4690,14 +4665,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "safe-browsing-client-side-detection-android",
-    "owners": [
-      "bdea",
-      "chrome-safebrowsing-core@google.com"
-    ],
-    "expiry_milestone": 93
-  },
-  {
     "name": "safe-browsing-enhanced-protection-promo-android",
     "owners": [ "bdea", "chrome-safebrowsing-core@google.com" ],
     "expiry_milestone": 100
@@ -4874,11 +4841,6 @@
   {
     "name": "settings-landing-page-redesign",
     "owners": [ "dpapad@chromium.org", "johntlee@chromium.org" ],
-    "expiry_milestone": 95
-  },
-  {
-    "name": "settings-refresh",
-    "owners": [ "gambard", "bling-flags@google.com" ],
     "expiry_milestone": 95
   },
   {

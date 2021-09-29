@@ -270,7 +270,7 @@ TEST_F(AppServiceProxyPreferredAppsTest, UpdatedOnUninstall) {
     std::vector<mojom::AppPtr> apps;
     mojom::AppPtr app = PublisherBase::MakeApp(
         mojom::AppType::kWeb, kTestAppId, mojom::Readiness::kReady, "Test App",
-        mojom::InstallSource::kUser);
+        mojom::InstallReason::kUser);
     app->intent_filters.push_back(
         apps_util::CreateIntentFilterForUrlScope(kTestUrl));
     apps.push_back(std::move(app));
@@ -282,7 +282,7 @@ TEST_F(AppServiceProxyPreferredAppsTest, UpdatedOnUninstall) {
 
     absl::optional<std::string> preferred_app =
         proxy()->PreferredApps().FindPreferredAppForUrl(kTestUrl);
-    ASSERT_EQ(preferred_app, kTestAppId);
+    ASSERT_EQ(kTestAppId, preferred_app);
   }
 
   // Updating the app should not change its preferred app status.
@@ -300,7 +300,7 @@ TEST_F(AppServiceProxyPreferredAppsTest, UpdatedOnUninstall) {
 
     absl::optional<std::string> preferred_app =
         proxy()->PreferredApps().FindPreferredAppForUrl(kTestUrl);
-    ASSERT_EQ(preferred_app, kTestAppId);
+    ASSERT_EQ(kTestAppId, preferred_app);
   }
 
   // Uninstalling the app should remove it from the preferred app list.
@@ -316,8 +316,9 @@ TEST_F(AppServiceProxyPreferredAppsTest, UpdatedOnUninstall) {
                     /*should_notify_initialized=*/false);
     proxy()->FlushMojoCallsForTesting();
 
-    // TODO(crbug.com/1247944): Once removals are synced back to
-    // AppServiceProxy, check that the app is no longer preferred.
+    absl::optional<std::string> preferred_app =
+        proxy()->PreferredApps().FindPreferredAppForUrl(kTestUrl);
+    ASSERT_EQ(absl::nullopt, preferred_app);
   }
 }
 
@@ -334,7 +335,7 @@ TEST_F(AppServiceProxyPreferredAppsTest, SetPreferredApp) {
   std::vector<mojom::AppPtr> apps;
   mojom::AppPtr app1 = PublisherBase::MakeApp(
       mojom::AppType::kWeb, kTestAppId1, mojom::Readiness::kReady, "Test App",
-      mojom::InstallSource::kUser);
+      mojom::InstallReason::kUser);
   app1->intent_filters.push_back(url_filter_1.Clone());
   app1->intent_filters.push_back(url_filter_2.Clone());
   app1->intent_filters.push_back(send_filter.Clone());
@@ -342,7 +343,7 @@ TEST_F(AppServiceProxyPreferredAppsTest, SetPreferredApp) {
 
   mojom::AppPtr app2 = PublisherBase::MakeApp(
       mojom::AppType::kWeb, kTestAppId2, mojom::Readiness::kReady, "Test App",
-      mojom::InstallSource::kUser);
+      mojom::InstallReason::kUser);
   app2->intent_filters.push_back(url_filter_1.Clone());
   apps.push_back(std::move(app2));
 

@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/views/app_list_a11y_announcer.h"
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
@@ -40,6 +41,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
@@ -112,13 +114,16 @@ class SortButton : public views::ImageButton {
   // views::View:
   void OnThemeChanged() override {
     views::View::OnThemeChanged();
-    AshColorProvider::Get()->DecorateIconButton(
-        /*button=*/this,
-        is_alphabetical_ ? kOverflowShelfLeftIcon : kOverflowShelfRightIcon,
-        /*toggled=*/false, GetPreferredSize().width());
+    auto* color_provider = AshColorProvider::Get();
+    const SkColor icon_color = color_provider->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kButtonIconColor);
+    SetImage(views::Button::STATE_NORMAL,
+             gfx::CreateVectorIcon(is_alphabetical_ ? kOverflowShelfLeftIcon
+                                                    : kOverflowShelfRightIcon,
+                                   GetPreferredSize().width(), icon_color));
 
     auto* inkdrop_host = views::InkDrop::Get(this);
-    AshColorProvider::Get()->DecorateInkDrop(
+    color_provider->DecorateInkDrop(
         inkdrop_host, AshColorProvider::kConfigBaseColor |
                           AshColorProvider::kConfigHighlightOpacity |
                           AshColorProvider::kConfigHighlightOpacity);
@@ -969,9 +974,7 @@ void AppsContainerView::DisableFocusForShowingActiveFolder(bool disabled) {
 
   // Ignore the page switcher in accessibility tree so that buttons inside it
   // will not be accessed by ChromeVox.
-  page_switcher_->GetViewAccessibility().OverrideIsIgnored(disabled);
-  page_switcher_->GetViewAccessibility().NotifyAccessibilityEvent(
-      ax::mojom::Event::kTreeChanged);
+  SetViewIgnoredForAccessibility(page_switcher_, disabled);
 }
 
 int AppsContainerView::GetExpectedSuggestionChipY(float progress) {

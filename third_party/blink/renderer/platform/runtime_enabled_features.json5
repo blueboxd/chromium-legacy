@@ -809,10 +809,6 @@
       status: "stable",
     },
     {
-      name: "DeclarativeShadowDOM",
-      status: "stable",
-    },
-    {
       name: "DecodeJpeg420ImagesToYUV",
       status: "stable",
     },
@@ -1124,7 +1120,7 @@
     },
     {
       name: "FractionalLineHeight",
-      status: "stable",
+      status: "experimental",
     },
     {
       name: "FractionalScrollOffsets",

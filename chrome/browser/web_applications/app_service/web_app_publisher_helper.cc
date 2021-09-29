@@ -25,6 +25,7 @@
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
@@ -37,6 +38,8 @@
 #include "content/public/browser/clear_site_data_utils.h"
 #include "third_party/blink/public/mojom/manifest/capture_links.mojom.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -75,7 +78,7 @@ const ContentSettingsType kSupportedPermissionTypes[] = {
     ContentSettingsType::NOTIFICATIONS,
 };
 
-apps::mojom::InstallSource GetHighestPriorityInstallSource(
+apps::mojom::InstallReason GetHighestPriorityInstallReason(
     const WebApp* web_app) {
   // TODO(crbug.com/1189949): Introduce kOem as a new Source::Type value
   // immediately below web_app::Source::kSystem, so that this custom behavior
@@ -84,21 +87,56 @@ apps::mojom::InstallSource GetHighestPriorityInstallSource(
     auto& chromeos_data = web_app->chromeos_data().value();
     if (chromeos_data.oem_installed) {
       DCHECK(!web_app->IsSystemApp());
-      return apps::mojom::InstallSource::kOem;
+      return apps::mojom::InstallReason::kOem;
     }
   }
 
   switch (web_app->GetHighestPrioritySource()) {
     case Source::kSystem:
-      return apps::mojom::InstallSource::kSystem;
+      return apps::mojom::InstallReason::kSystem;
     case Source::kPolicy:
-      return apps::mojom::InstallSource::kPolicy;
+      return apps::mojom::InstallReason::kPolicy;
     case Source::kWebAppStore:
-      return apps::mojom::InstallSource::kUser;
+      return apps::mojom::InstallReason::kUser;
     case Source::kSync:
-      return apps::mojom::InstallSource::kSync;
+      return apps::mojom::InstallReason::kSync;
     case Source::kDefault:
-      return apps::mojom::InstallSource::kDefault;
+      return apps::mojom::InstallReason::kDefault;
+  }
+}
+
+apps::mojom::InstallSource GetInstallSource(PrefService* prefs,
+                                            const AppId& app_id) {
+  auto install_source = web_app::GetWebAppInstallSource(prefs, app_id);
+  if (!install_source.has_value()) {
+    return apps::mojom::InstallSource::kUnknown;
+  }
+
+  switch (static_cast<webapps::WebappInstallSource>(install_source.value())) {
+    case webapps::WebappInstallSource::MENU_BROWSER_TAB:
+    case webapps::WebappInstallSource::MENU_CUSTOM_TAB:
+    case webapps::WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB:
+    case webapps::WebappInstallSource::AUTOMATIC_PROMPT_CUSTOM_TAB:
+    case webapps::WebappInstallSource::API_BROWSER_TAB:
+    case webapps::WebappInstallSource::API_CUSTOM_TAB:
+    case webapps::WebappInstallSource::DEVTOOLS:
+    case webapps::WebappInstallSource::MANAGEMENT_API:
+    case webapps::WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB:
+    case webapps::WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB:
+    case webapps::WebappInstallSource::EXTERNAL_POLICY:
+    case webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON:
+    case webapps::WebappInstallSource::MENU_CREATE_SHORTCUT:
+      return apps::mojom::InstallSource::kBrowser;
+    case webapps::WebappInstallSource::ARC:
+      return apps::mojom::InstallSource::kPlayStore;
+    case webapps::WebappInstallSource::INTERNAL_DEFAULT:
+    case webapps::WebappInstallSource::EXTERNAL_DEFAULT:
+    case webapps::WebappInstallSource::SYSTEM_DEFAULT:
+      return apps::mojom::InstallSource::kSystem;
+    case webapps::WebappInstallSource::SYNC:
+      return apps::mojom::InstallSource::kSync;
+    case webapps::WebappInstallSource::COUNT:
+      return apps::mojom::InstallSource::kUnknown;
   }
 }
 
@@ -262,13 +300,17 @@ apps::mojom::AppPtr WebAppPublisherHelper::ConvertWebApp(
       is_disabled ? apps::mojom::Readiness::kDisabledByPolicy
                   : apps::mojom::Readiness::kReady;
 
-  apps::mojom::AppPtr app = apps::PublisherBase::MakeApp(
-      app_type(), web_app->app_id(), readiness, web_app->name(),
-      GetHighestPriorityInstallSource(web_app));
+  auto install_reason = GetHighestPriorityInstallReason(web_app);
+  apps::mojom::AppPtr app =
+      apps::PublisherBase::MakeApp(app_type(), web_app->app_id(), readiness,
+                                   web_app->name(), install_reason);
+
+  app->install_source =
+      GetInstallSource(profile()->GetPrefs(), web_app->app_id());
 
   // For system web apps (only), the install source is |kSystem|.
   DCHECK_EQ(web_app->IsSystemApp(),
-            app->install_source == apps::mojom::InstallSource::kSystem);
+            app->install_reason == apps::mojom::InstallReason::kSystem);
 
   app->description = web_app->description();
   app->additional_search_terms = web_app->additional_search_terms();
@@ -495,7 +537,9 @@ content::WebContents* WebAppPublisherHelper::Launch(
 
   apps::AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
       web_app->app_id(), event_flags, apps::GetAppLaunchSource(launch_source),
-      window_info ? window_info->display_id : display::kInvalidDisplayId,
+      window_info
+          ? window_info->display_id
+          : display::Screen::GetScreen()->GetDisplayForNewWindows().id(),
       /*fallback_container=*/
       ConvertDisplayModeToAppLaunchContainer(display_mode));
 
@@ -511,7 +555,7 @@ content::WebContents* WebAppPublisherHelper::LaunchAppWithFiles(
   DisplayMode display_mode = registrar().GetAppEffectiveDisplayMode(app_id);
   apps::AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
       app_id, event_flags, apps::GetAppLaunchSource(launch_source),
-      display::kDefaultDisplayId,
+      display::Screen::GetScreen()->GetDisplayForNewWindows().id(),
       /*fallback_container=*/
       ConvertDisplayModeToAppLaunchContainer(display_mode));
   if (file_paths) {

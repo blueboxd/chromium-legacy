@@ -40,6 +40,10 @@ struct App {
   array<Permission> permissions;
 
   // Whether the app was installed by sync, policy or as a default app.
+  InstallReason install_reason;
+
+  // Where the app was installed from, e.g. from play sstore, from chrome web
+  // store, etc.
   InstallSource install_source;
 
   // Whether the app is an extensions::Extensions where is_platform_app()
@@ -132,7 +136,7 @@ enum Readiness {
 // enums.xml.
 // Note the enumeration is used in UMA histogram so entries should not be
 // re-ordered or removed. New entries should be added at the bottom.
-enum InstallSource {
+enum InstallReason {
   kUnknown = 0,
   kSystem,     // Installed with the system and is considered a part of the OS.
   kPolicy,     // Installed by policy.
@@ -140,6 +144,16 @@ enum InstallSource {
   kDefault,    // Preinstalled by default, but is not considered a system app.
   kSync,       // Installed by sync.
   kUser,       // Installed by user action.
+};
+
+// Where the app was installed from.
+enum InstallSource {
+  kUnknown = 0,
+  kSystem,          // Installed as part of Chrome OS.
+  kSync,            // Installed from sync.
+  kPlayStore,       // Installed from Play store.
+  kChromeWebStore,  // Installed from Chrome web store.
+  kBrowser,         // Installed from browser.
 };
 
 // What caused the app to be uninstalled.

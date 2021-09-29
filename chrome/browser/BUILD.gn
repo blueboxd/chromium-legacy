@@ -1974,6 +1974,7 @@ static_library("browser") {
     "//chrome/browser/thumbnail",
     "//chrome/browser/touch_to_fill",
     "//chrome/browser/ui",
+    "//chrome/browser/ui/color:mixers",
     "//chrome/browser/ui/webui/app_management:mojo_bindings",
     "//chrome/browser/ui/webui/app_service_internals:mojo_bindings",
     "//chrome/browser/ui/webui/bluetooth_internals",
@@ -4148,6 +4149,8 @@ static_library("browser") {
       "sessions/closed_tab_cache_service.h",
       "sessions/closed_tab_cache_service_factory.cc",
       "sessions/closed_tab_cache_service_factory.h",
+      "share/share_metrics.cc",
+      "share/share_metrics.h",
       "share/share_submenu_model.cc",
       "share/share_submenu_model.h",
       "sharesheet/sharesheet_controller.h",
@@ -5842,6 +5845,10 @@ static_library("browser") {
       "media/protected_media_identifier_permission_context.cc",
       "media/protected_media_identifier_permission_context.h",
     ]
+  }
+
+  if (is_chromeos_lacros) {
+    deps += [ "//chromeos/ui/base" ]
   }
 
   if (is_posix && !is_mac) {

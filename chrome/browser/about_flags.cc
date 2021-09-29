@@ -970,6 +970,18 @@ const FeatureEntry::FeatureVariation kMemoriesVariations[] = {
      base::size(kMemoryVariationRemote), nullptr},
 };
 
+const FeatureEntry::FeatureParam kPageContentAnnotationsParams[] = {
+    {"extract_related_searches", "true"},
+    {"max_size_for_text_dump_in_bytes", "5120"},
+    {"models_to_execute",
+     "OPTIMIZATION_TARGET_PAGE_TOPICS,OPTIMIZATION_TARGET_PAGE_ENTITIES"},
+    {"write_to_history_service", "true"},
+};
+const FeatureEntry::FeatureVariation kPageContentAnnotationsVariations[] = {
+    {"All Annotations and Persistence", kPageContentAnnotationsParams,
+     base::size(kPageContentAnnotationsParams), nullptr},
+};
+
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) || \
     defined(OS_WIN)
 const FeatureEntry::FeatureParam kOmniboxDocumentProviderServerScoring[] = {
@@ -2562,13 +2574,6 @@ const FeatureEntry::FeatureVariation kSubresourceRedirectVariations[] = {
     {"robots.txt allowed image compression in non logged-in pages",
      kSubresourceRedirectLoginRobotsBasedCompression,
      base::size(kSubresourceRedirectLoginRobotsBasedCompression), nullptr}};
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-const FeatureEntry::FeatureVariation
-    kOmniboxRichEntitiesInLauncherVariations[] = {
-        {"with linked Suggest experiment", {}, 0, "t4461027"},
-};
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const FeatureEntry::FeatureParam kCategoricalSearch_Unranked[] = {
@@ -4659,14 +4664,17 @@ const FeatureEntry kFeatureEntries[] = {
                                     "OmniboxBundledExperimentV1")},
 
     {"memories", flag_descriptions::kMemoriesName,
-     flag_descriptions::kMemoriesDescription, kOsAll,
+     flag_descriptions::kMemoriesDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(history_clusters::kMemories,
                                     kMemoriesVariations,
                                     "Memories")},
 
-    {"memories-debug", flag_descriptions::kMemoriesDebugName,
-     flag_descriptions::kMemoriesDebugDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(history_clusters::kDebug)},
+    {"page-content-annotations", flag_descriptions::kPageContentAnnotationsName,
+     flag_descriptions::kPageContentAnnotationsDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         optimization_guide::features::kPageContentAnnotations,
+         kPageContentAnnotationsVariations,
+         "PageContentAnnotations")},
 
     {"search-prefetch", flag_descriptions::kEnableSearchPrefetchName,
      flag_descriptions::kEnableSearchPrefetchDescription, kOsAll,
@@ -5862,12 +5870,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kSearchHistoryLink)},
 
 #if defined(OS_ANDROID)
-    {"safe-browsing-client-side-detection-android",
-     flag_descriptions::kSafeBrowsingClientSideDetectionAndroidName,
-     flag_descriptions::kSafeBrowsingClientSideDetectionAndroidDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(safe_browsing::kClientSideDetectionForAndroid)},
-
     {"safe-browsing-enhanced-protection-promo-android",
      flag_descriptions::kEnhancedProtectionPromoAndroidName,
      flag_descriptions::kEnhancedProtectionPromoAndroidDescription, kOsAndroid,
@@ -6515,9 +6517,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"nearby-keep-alive-fix", flag_descriptions::kNearbyKeepAliveFixName,
      flag_descriptions::kNearbyKeepAliveFixDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kNearbyKeepAliveFix)},
-    {"nearby-sharing", flag_descriptions::kNearbySharingName,
-     flag_descriptions::kNearbySharingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kNearbySharing)},
     {"nearby-sharing-arc", flag_descriptions::kNearbySharingArcName,
      flag_descriptions::kNearbySharingArcDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kEnableArcNearbyShare)},
@@ -6525,13 +6524,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNearbySharingBackgroundScanningName,
      flag_descriptions::kNearbySharingBackgroundScanningDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kNearbySharingBackgroundScanning)},
-    {"nearby-sharing-device-contacts",
-     flag_descriptions::kNearbySharingDeviceContactsName,
-     flag_descriptions::kNearbySharingDeviceContactsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kNearbySharingDeviceContacts)},
-    {"nearby-sharing-webrtc", flag_descriptions::kNearbySharingWebRtcName,
-     flag_descriptions::kNearbySharingWebRtcDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kNearbySharingWebRtc)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"align-font-display-auto-lcp",
@@ -6871,16 +6863,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-oop-print-drivers", flag_descriptions::kEnableOopPrintDriversName,
      flag_descriptions::kEnableOopPrintDriversDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(printing::features::kEnableOopPrintDrivers)},
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"omnibox-rich-entities-in-launcher",
-     flag_descriptions::kOmniboxRichEntitiesInLauncherName,
-     flag_descriptions::kOmniboxRichEntitiesInLauncherDescription, kOsCrOS,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         app_list_features::kEnableOmniboxRichEntities,
-         kOmniboxRichEntitiesInLauncherVariations,
-         "OmniboxRichEntitiesInLauncher")},
 #endif
 
     {"enable-browsing-data-lifetime-manager",
@@ -7569,12 +7551,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShareContextMenuDescription, kOsAll,
      FEATURE_VALUE_TYPE(share::kShareMenu)},
 #endif
-
-    {"enable-safe-browsing-per-profile-network-contexts",
-     flag_descriptions::kSafeBrowsingPerProfileNetworkContextsName,
-     flag_descriptions::kSafeBrowsingPerProfileNetworkContextsDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(safe_browsing::kSafeBrowsingSeparateNetworkContexts)},
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     {"multi-profile-account-consistency",

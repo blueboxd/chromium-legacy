@@ -919,9 +919,6 @@ extern const char kMediaSessionWebRTCDescription[];
 extern const char kMemoriesName[];
 extern const char kMemoriesDescription[];
 
-extern const char kMemoriesDebugName[];
-extern const char kMemoriesDebugDescription[];
-
 extern const char kMetricsSettingsAndroidName[];
 extern const char kMetricsSettingsAndroidDescription[];
 
@@ -1032,9 +1029,6 @@ extern const char kOmniboxRichAutocompletionPreferUrlsOverPrefixesDescription[];
 extern const char kOmniboxRichAutocompletionPromisingName[];
 extern const char kOmniboxRichAutocompletionPromisingDescription[];
 
-extern const char kOmniboxRichEntitiesInLauncherName[];
-extern const char kOmniboxRichEntitiesInLauncherDescription[];
-
 extern const char kOmniboxOnFocusSuggestionsContextualWebAllowSRPName[];
 extern const char kOmniboxOnFocusSuggestionsContextualWebAllowSRPDescription[];
 
@@ -1120,6 +1114,9 @@ extern const char kOverrideSimilarLanguagesForHrefTranslateDescription[];
 
 extern const char kOverscrollHistoryNavigationName[];
 extern const char kOverscrollHistoryNavigationDescription[];
+
+extern const char kPageContentAnnotationsName[];
+extern const char kPageContentAnnotationsDescription[];
 
 extern const char kPageInfoAboutThisSiteName[];
 extern const char kPageInfoAboutThisSiteDescription[];
@@ -2811,20 +2808,11 @@ extern const char kMultilingualTypingDescription[];
 extern const char kNearbyKeepAliveFixName[];
 extern const char kNearbyKeepAliveFixDescription[];
 
-extern const char kNearbySharingName[];
-extern const char kNearbySharingDescription[];
-
 extern const char kNearbySharingArcName[];
 extern const char kNearbySharingArcDescription[];
 
 extern const char kNearbySharingBackgroundScanningName[];
 extern const char kNearbySharingBackgroundScanningDescription[];
-
-extern const char kNearbySharingDeviceContactsName[];
-extern const char kNearbySharingDeviceContactsDescription[];
-
-extern const char kNearbySharingWebRtcName[];
-extern const char kNearbySharingWebRtcDescription[];
 
 extern const char kPerformantSplitViewResizing[];
 extern const char kPerformantSplitViewResizingDescription[];

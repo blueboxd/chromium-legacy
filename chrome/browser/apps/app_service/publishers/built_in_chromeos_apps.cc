@@ -35,7 +35,9 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
       apps::mojom::AppType::kBuiltIn, internal_app.app_id,
       apps::mojom::Readiness::kReady,
       l10n_util::GetStringUTF8(internal_app.name_string_resource_id),
-      apps::mojom::InstallSource::kSystem);
+      apps::mojom::InstallReason::kSystem);
+
+  app->install_source = apps::mojom::InstallSource::kSystem;
 
   if (internal_app.searchable_string_resource_id != 0) {
     app->additional_search_terms.push_back(

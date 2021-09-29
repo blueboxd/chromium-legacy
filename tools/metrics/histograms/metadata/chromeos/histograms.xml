@@ -57,6 +57,10 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     <owner>hansenmichael@google.com</owner>
     <owner>nearby-share-chromeos-eng@google.com</owner>
   </variant>
+  <variant name="SmartLock" summary="Smart Lock">
+    <owner>hansberry@chromium.org</owner>
+    <owner>chromeos-cross-device-eng@google.com</owner>
+  </variant>
   <variant name="StylusDetachedFromDockSession"
       summary="Time spent from stylus being undocked, to being re-docked">
     <owner>kenalba@google.com</owner>
@@ -401,7 +405,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.CWP.UploadPerf" units="reports"
-    expires_after="2022-01-23">
+    expires_after="2022-03-27">
   <owner>aalexand@google.com</owner>
   <owner>gmx@chromium.org</owner>
   <summary>

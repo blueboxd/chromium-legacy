@@ -588,12 +588,10 @@
 #include "chrome/browser/ui/side_search/side_search_utils.h"
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
-#if defined(_WINDOWS_)
-// This source file doesn't need windows.h and its associated namespace
-// pollution. Try to avoid windows.h in header files used by source files such
-// as this one. See brucedawson@chromium.org for assistance.
-#error Avoid new windows.h dependencies here. See accompanying source comment.
-#endif
+// This should be after all other #includes.
+#if defined(_WINDOWS_)  // Detect whether windows.h was included.
+#include "base/win/windows_h_disallowed.h"
+#endif  // defined(_WINDOWS_)
 
 using base::FileDescriptor;
 using blink::mojom::EffectiveConnectionType;
@@ -2176,6 +2174,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     for (size_t i = 0; i < extra_parts_.size(); ++i) {
       extra_parts_[i]->AppendExtraRendererCommandLineSwitches(command_line,
                                                               process, profile);
+    }
+
+    // This passes the preference set by an enterprise policy on to a blink
+    // switch so that we know whether to allow third-party context WebSQL.
+    if (g_browser_process->local_state()->GetBoolean(
+            policy::policy_prefs::kWebSQLInThirdPartyContextEnabled)) {
+      command_line->AppendSwitch(
+          blink::switches::kWebSQLInThirdPartyContextEnabled);
     }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

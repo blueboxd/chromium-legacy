@@ -1603,11 +1603,7 @@ const char kMediaSessionWebRTCDescription[] =
     "Adds new actions into Media Session for video conferencing.";
 
 const char kMemoriesName[] = "Memories";
-const char kMemoriesDescription[] = "Enables chrome://history/journeys.";
-
-const char kMemoriesDebugName[] = "Memories Debug";
-const char kMemoriesDebugDescription[] =
-    "Shows visit metadata in chrome://history to debug history clustering.";
+const char kMemoriesDescription[] = "Enables the history clusters UI.";
 
 const char kMetricsSettingsAndroidName[] = "Metrics Settings on Android";
 const char kMetricsSettingsAndroidDescription[] =
@@ -1824,11 +1820,6 @@ const char kOmniboxRichAutocompletionPromisingDescription[] =
     "Allow autocompletion for titles and non-prefixes; see Omnibox Rich "
     "Autocompletion.";
 
-const char kOmniboxRichEntitiesInLauncherName[] =
-    "Omnibox rich entities in the launcher";
-const char kOmniboxRichEntitiesInLauncherDescription[] =
-    "Enable rich entity formatting for Omnibox results in the launcher.";
-
 const char kOmniboxOnFocusSuggestionsContextualWebAllowSRPName[] =
     "Allow Omnibox contextual web on-focus suggestions on the SRP";
 const char kOmniboxOnFocusSuggestionsContextualWebAllowSRPDescription[] =
@@ -1986,6 +1977,10 @@ const char kOverscrollHistoryNavigationDescription[] =
 const char kOverviewButtonName[] = "Overview button at the status area";
 const char kOverviewButtonDescription[] =
     "If enabled, always show the overview button at the status area.";
+
+const char kPageContentAnnotationsName[] = "Page content annotations";
+const char kPageContentAnnotationsDescription[] =
+    "Enables page content to be annotated on-device.";
 
 const char kPageInfoAboutThisSiteName[] =
     "'About this site' section in page info";
@@ -4893,10 +4888,6 @@ const char kNearbyKeepAliveFixDescription[] =
     "makes Nearby Connections WebRTC KeepAlive less chatty to help with "
     "battery life.";
 
-const char kNearbySharingName[] = "Nearby Sharing";
-const char kNearbySharingDescription[] =
-    "Enables Nearby Sharing for sharing content between devices.";
-
 const char kNearbySharingArcName[] = "ARC Nearby Sharing";
 const char kNearbySharingArcDescription[] =
     "Enables Nearby Sharing from ARC apps.";
@@ -4907,15 +4898,6 @@ const char kNearbySharingBackgroundScanningDescription[] =
     "Enables background scanning for Nearby Share, allowing devices to "
     "persistently scan and present a notification when a nearby device is "
     "attempting to share.";
-
-const char kNearbySharingDeviceContactsName[] =
-    "Nearby Sharing Device Contacts";
-const char kNearbySharingDeviceContactsDescription[] =
-    "Enables use of device contacts in Nearby Share.";
-
-const char kNearbySharingWebRtcName[] = "Nearby Sharing WebRTC";
-const char kNearbySharingWebRtcDescription[] =
-    "Enables use of WebRTC in Nearby Share.";
 
 const char kPerformantSplitViewResizing[] = "Performant Split View Resizing";
 const char kPerformantSplitViewResizingDescription[] =

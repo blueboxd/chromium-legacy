@@ -1149,6 +1149,10 @@
                     },
                     "enable_features": [
                         "AutofillCardSurvey"
+                    ],
+                    "disable_features": [
+                        "AutofillAddressSurvey",
+                        "AutofillPasswordSurvey"
                     ]
                 },
                 {
@@ -1159,6 +1163,10 @@
                     },
                     "enable_features": [
                         "AutofillPasswordSurvey"
+                    ],
+                    "disable_features": [
+                        "AutofillAddressSurvey",
+                        "AutofillCardSurvey"
                     ]
                 },
                 {
@@ -1169,6 +1177,10 @@
                     },
                     "enable_features": [
                         "AutofillAddressSurvey"
+                    ],
+                    "disable_features": [
+                        "AutofillCardSurvey",
+                        "AutofillPasswordSurvey"
                     ]
                 }
             ]
@@ -2610,6 +2622,7 @@
     "DefaultPassthroughCommandDecoder": [
         {
             "platforms": [
+                "android",
                 "linux",
                 "mac"
             ],
@@ -4186,27 +4199,6 @@
             ]
         }
     ],
-    "InhibitBlobMemoryControllerMemoryPressureResponse": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20200720",
-                    "enable_features": [
-                        "InhibitBlobMemoryControllerMemoryPressureResponse"
-                    ]
-                }
-            ]
-        }
-    ],
     "InstalledAppsInCbd": [
         {
             "platforms": [
@@ -4757,6 +4749,22 @@
             ]
         }
     ],
+    "MoreFrequentUmaUploads": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MoreFrequentUmaUploads"
+                    ]
+                }
+            ]
+        }
+    ],
     "MultipleBlinkIsolates": [
         {
             "platforms": [
@@ -4789,6 +4797,43 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MuteNotificationSnoozeAction"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MyChromeEverywhere": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillCreditCardUploadFeedback",
+                        "AutofillEnableToolbarStatusChip"
+                    ]
+                }
+            ]
+        }
+    ],
+    "NavigationPredictor": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_Logistic_Precision_15_M79_20191029",
+                    "params": {
+                        "random_anchor_sampling_period": "100"
+                    },
+                    "enable_features": [
+                        "NavigationPredictor"
                     ]
                 }
             ]
@@ -6873,6 +6918,21 @@
             ]
         }
     ],
+    "SafeBrowsingPasswordProtectionForSignedInUsers": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingPasswordProtectionForSignedInUsers"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingPasswordProtectionRequestWithToken": [
         {
             "platforms": [
@@ -7002,21 +7062,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ServiceManagerForBackgroundPrefetch"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SettingsRefresh": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SettingsRefresh"
                     ]
                 }
             ]
@@ -7204,25 +7249,6 @@
                     },
                     "enable_features": [
                         "SharingHubLinkToggle"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SmoothnessModeForAnimatedScrolls": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SmoothnessModeForAnimatedScrolls"
                     ]
                 }
             ]
@@ -8360,7 +8386,8 @@
                         "enable_share": "true",
                         "experiment_tag": "",
                         "fetch_frequency": "15",
-                        "use_animated_gif_url": "true"
+                        "use_animated_gif_url": "true",
+                        "use_animated_gif_url_for_summary_card": "false"
                     },
                     "enable_features": [
                         "VideoTutorials"
@@ -8710,25 +8737,6 @@
             ]
         }
     ],
-    "WebRTC-VP8-Postproc-Config": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "android",
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled-8,30,60"
-                }
-            ]
-        }
-    ],
     "WebRTC-VP8ConferenceTemporalLayers": [
         {
             "platforms": [
@@ -8744,25 +8752,6 @@
             "experiments": [
                 {
                     "name": "2_V1"
-                }
-            ]
-        }
-    ],
-    "WebRTC-VP9-PerformanceFlags": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "android",
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "use_per_layer_speed,min_pixel_count:0|129600,base_layer_speed:5|7,high_layer_speed:8|8,deblock_mode:1|0,_V3"
                 }
             ]
         }

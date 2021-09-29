@@ -4952,6 +4952,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Media.VideoRotation" enum="VideoRotation" expires_after="M79">
+  <obsolete>
+    Went untouched since M79. Removed as of 11/21.
+  </obsolete>
   <owner>dalecurtis@chromium.org</owner>
   <summary>Metadata rotation in mp4 videos. Emitted during demuxing.</summary>
 </histogram>
@@ -5190,7 +5193,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MediaRouter.Cast.Channel.ConnectResult" enum="BooleanSuccess"
-    expires_after="2021-11-07">
+    expires_after="2022-02-01">
   <owner>mfoltz@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>
   <summary>
@@ -5211,7 +5214,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MediaRouter.Cast.Discovery.CachedSinksAvailableCount"
-    units="devices" expires_after="2021-11-07">
+    units="devices" expires_after="2022-02-01">
   <owner>btolsch@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>
   <summary>
@@ -5231,7 +5234,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MediaRouter.Cast.Discovery.KnownDevicesCount" units="devices"
-    expires_after="2021-11-07">
+    expires_after="2022-02-01">
   <owner>mfoltz@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>
   <summary>

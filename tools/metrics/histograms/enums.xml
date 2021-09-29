@@ -1797,6 +1797,13 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="NEON support"/>
 </enum>
 
+<enum name="AndroidAutoDarkModeSettingsChangeSource">
+  <summary>See Android.DarkTheme.AutoDarkMode.SettingsChangeSource.*</summary>
+  <int value="0" label="Theme settings"/>
+  <int value="1" label="Site settings global"/>
+  <int value="2" label="App menu"/>
+</enum>
+
 <enum name="AndroidComponentLoaderLoadStatus">
   <int value="0" label="Component loaded"/>
   <int value="1" label="Failed to connect to ComponentsProviderService"/>
@@ -2359,6 +2366,12 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Undo Pressed"/>
   <int value="3" label="Undos Dismissed (Timeout) (Deprecated)"/>
   <int value="4" label="Undos Dismissed (Action) (Deprecated)"/>
+</enum>
+
+<enum name="AndroidThemeSettingsEntry">
+  <summary>See Android.DarkTheme.ThemeSettingsEntry.</summary>
+  <int value="0" label="Settings"/>
+  <int value="1" label="Auto dark mode message"/>
 </enum>
 
 <enum name="AndroidWebViewActualUiThread">
@@ -9794,6 +9807,11 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BooleanProfileSignedIn">
   <int value="0" label="Profile was not Signed In"/>
   <int value="1" label="Profile was Signed In"/>
+</enum>
+
+<enum name="BooleanQueried">
+  <int value="0" label="Not Queried"/>
+  <int value="1" label="Queried"/>
 </enum>
 
 <enum name="BooleanRaced">
@@ -26422,6 +26440,7 @@ Called by update_document_policy_enum.py.-->
   <int value="899" label="CloudUserPolicyOverridesCloudMachinePolicy"/>
   <int value="900" label="ReportDeviceSecurityStatus"/>
   <int value="901" label="EnableDeviceGranularReporting"/>
+  <int value="902" label="WebSQLInThirdPartyContextEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -29364,6 +29383,7 @@ Called by update_extension_histograms.py.-->
   <int value="1590" label="SPEECHRECOGNITIONPRIVATE_START"/>
   <int value="1591" label="SPEECHRECOGNITIONPRIVATE_STOP"/>
   <int value="1592" label="FILEMANAGERPRIVATEINTERNAL_STARTIOTASK"/>
+  <int value="1593" label="WALLPAPERPRIVATE_ISSWAENABLED"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -47813,6 +47833,7 @@ from previous Chrome versions.
   <int value="-1817209284" label="PayWithGoogleV1:enabled"/>
   <int value="-1816066138" label="CastAllowAllIPs:enabled"/>
   <int value="-1813088913" label="CCTResizable90MaximumHeight:disabled"/>
+  <int value="-1813070975" label="PageContentAnnotations:disabled"/>
   <int value="-1812579951" label="ContentSuggestionsCategoryRanker:enabled"/>
   <int value="-1811949013" label="SameSiteByDefaultCookies:disabled"/>
   <int value="-1811394154" label="disable-webrtc-hw-vp8-encoding"/>
@@ -52411,6 +52432,7 @@ from previous Chrome versions.
   <int value="1782210532" label="PerNavigationMojoInterface:disabled"/>
   <int value="1783293530" label="disallow-autofill-sync-credential"/>
   <int value="1783837132" label="enable-threaded-gpu-rasterization"/>
+  <int value="1783967606" label="PageContentAnnotations:enabled"/>
   <int value="1785093465" label="enable-document-passive-event-listeners"/>
   <int value="1785274337"
       label="AutofillEnableOfferNotificationCrossTabTracking:disabled"/>
@@ -56826,6 +56848,7 @@ Called by update_use_counter_css.py.-->
   <int value="11" label="Connection lost"/>
   <int value="12" label="Nearby process crash"/>
   <int value="13" label="Nearby process Mojo dependency disconnection"/>
+  <int value="14" label="Received file paylad that wasn't registered"/>
 </enum>
 
 <enum name="MultiDeviceNearbyMessageAction">
@@ -76065,6 +76088,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="ShareSourceDesktop">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="OMNIBOX_SHARING_HUB"/>
+  <int value="2" label="WEB_CONTEXT_MENU"/>
 </enum>
 
 <enum name="ShareTargetUpdateResult">
@@ -76235,6 +76259,17 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Screenshot Shared"/>
   <int value="2" label="Screenshot Saved"/>
   <int value="3" label="Screenshot Deleted"/>
+</enum>
+
+<enum name="SharingScrollCaptureBitmapGenerationStatus">
+<!--
+  SharingScrollCaptureBitmapGenerationStatus must be kept in sync with BitmapGenerationStatus defined
+  in /chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/scroll_capture/ScrollCaptureCallbackImpl.java
+-->
+
+  <int value="0" label="Capture Completed"/>
+  <int value="1" label="Insufficient Memory"/>
+  <int value="2" label="General Generation Error"/>
 </enum>
 
 <enum name="SharingSendMessageResult">

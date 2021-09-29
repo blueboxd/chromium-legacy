@@ -1338,40 +1338,41 @@ void ArcApps::LoadPlayStoreIcon(apps::mojom::IconType icon_type,
                        is_placeholder_icon, icon_effects, std::move(callback));
 }
 
-apps::mojom::InstallSource GetInstallSource(
+apps::mojom::InstallReason GetInstallReason(
     const ArcAppListPrefs* prefs,
     const std::string& app_id,
     const ArcAppListPrefs::AppInfo& app_info) {
   // Sticky represents apps that cannot be uninstalled and are installed by the
   // system.
   if (app_info.sticky) {
-    return apps::mojom::InstallSource::kSystem;
+    return apps::mojom::InstallReason::kSystem;
   }
 
   if (prefs->IsOem(app_id)) {
-    return apps::mojom::InstallSource::kOem;
+    return apps::mojom::InstallReason::kOem;
   }
 
   if (prefs->IsDefault(app_id)) {
-    return apps::mojom::InstallSource::kDefault;
+    return apps::mojom::InstallReason::kDefault;
   }
 
   if (prefs->IsControlledByPolicy(app_info.package_name)) {
-    return apps::mojom::InstallSource::kPolicy;
+    return apps::mojom::InstallReason::kPolicy;
   }
 
-  return apps::mojom::InstallSource::kUser;
+  return apps::mojom::InstallReason::kUser;
 }
 
 apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
                                      const std::string& app_id,
                                      const ArcAppListPrefs::AppInfo& app_info,
                                      bool update_icon) {
+  auto install_reason = GetInstallReason(prefs, app_id, app_info);
   apps::mojom::AppPtr app = PublisherBase::MakeApp(
       apps::mojom::AppType::kArc, app_id,
       app_info.suspended ? apps::mojom::Readiness::kDisabledByPolicy
                          : apps::mojom::Readiness::kReady,
-      app_info.name, GetInstallSource(prefs, app_id, app_info));
+      app_info.name, install_reason);
 
   app->publisher_id = app_info.package_name;
 
@@ -1386,6 +1387,9 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
 
   app->last_launch_time = app_info.last_launch_time;
   app->install_time = app_info.install_time;
+  app->install_source = install_reason == apps::mojom::InstallReason::kSystem
+                            ? apps::mojom::InstallSource::kSystem
+                            : apps::mojom::InstallSource::kPlayStore;
 
   auto show = ShouldShow(app_info) ? apps::mojom::OptionalBool::kTrue
                                    : apps::mojom::OptionalBool::kFalse;

@@ -10,9 +10,6 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"  // for FALLTHROUGH;
-#include "base/debug/alias.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
@@ -150,6 +147,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
            const GURL& url,
            const net::SiteForCookies& site_for_cookies,
            const url::Origin& top_frame_origin,
+           const absl::optional<net::CookiePartitionKey>& cookie_partition_key,
            net::CookieOptions options,
            mojo::PendingRemote<mojom::CookieChangeListener> mojo_listener)
       : cookie_store_(cookie_store),
@@ -162,13 +160,14 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
     // TODO(pwnall): add a constructor w/options to net::CookieChangeDispatcher.
     cookie_store_subscription_ =
         cookie_store->GetChangeDispatcher().AddCallbackForUrl(
-            url, base::BindRepeating(
-                     &Listener::OnCookieChange,
-                     // Safe because net::CookieChangeDispatcher guarantees that
-                     // the callback will stop being called immediately after we
-                     // remove the subscription, and the cookie store lives on
-                     // the same thread as we do.
-                     base::Unretained(this)));
+            url, cookie_partition_key,
+            base::BindRepeating(
+                &Listener::OnCookieChange,
+                // Safe because net::CookieChangeDispatcher guarantees that
+                // the callback will stop being called immediately after we
+                // remove the subscription, and the cookie store lives on
+                // the same thread as we do.
+                base::Unretained(this)));
   }
 
   Listener(const Listener&) = delete;
@@ -299,9 +298,7 @@ void RestrictedCookieManager::GetAllForUrl(
   net_options.set_return_excluded_cookies();
 
   cookie_store_->GetCookieListWithOptionsAsync(
-      url, net_options,
-      net::CookiePartitionKey::FromNetworkIsolationKey(
-          isolation_info_.network_isolation_key()),
+      url, net_options, CookiePartitionKey(),
       base::BindOnce(&RestrictedCookieManager::CookieListToGetAllForUrlCallback,
                      weak_ptr_factory_.GetWeakPtr(), url, site_for_cookies,
                      top_frame_origin, net_options, std::move(options),
@@ -501,8 +498,8 @@ void RestrictedCookieManager::AddChangeListener(
       role_, url, site_for_cookies, isolation_info_, cookie_settings(),
       cookie_store_->cookie_access_delegate());
   auto listener = std::make_unique<Listener>(
-      cookie_store_, this, url, site_for_cookies, top_frame_origin, net_options,
-      std::move(mojo_listener));
+      cookie_store_, this, url, site_for_cookies, top_frame_origin,
+      CookiePartitionKey(), net_options, std::move(mojo_listener));
 
   listener->mojo_listener().set_disconnect_handler(
       base::BindOnce(&RestrictedCookieManager::RemoveChangeListener,
@@ -625,31 +622,6 @@ bool RestrictedCookieManager::ValidateAccessToCookiesAt(
                         site_for_cookies_ok);
   UMA_HISTOGRAM_BOOLEAN("Net.RestrictedCookieManager.TopFrameOriginOK",
                         top_frame_origin_ok);
-
-  if (!top_frame_origin_ok || !site_for_cookies_ok) {
-    base::debug::Alias(&top_frame_origin_ok);
-    base::debug::Alias(&site_for_cookies_ok);
-    static bool reported = false;
-    if (!reported) {
-      reported = true;
-      SCOPED_CRASH_KEY_STRING256("RCM", "rcm-site_for_cookies",
-                                 BoundSiteForCookies().ToDebugString());
-      SCOPED_CRASH_KEY_STRING256("RCM", "render-site_for_cookies",
-                                 site_for_cookies.ToDebugString());
-
-      SCOPED_CRASH_KEY_STRING256("RCM", "rcm-top_frame_origin",
-                                 BoundTopFrameOrigin().GetDebugString());
-      SCOPED_CRASH_KEY_STRING256("RCM", "render-top_frame_origin",
-                                 top_frame_origin.GetDebugString());
-
-      SCOPED_CRASH_KEY_STRING256("RCM", "rcm-origin", origin_.GetDebugString());
-      // Only origin here, since url is probably way too sensitive.
-      SCOPED_CRASH_KEY_STRING256("RCM", "render-origin",
-                                 url::Origin::Create(url).GetDebugString());
-      base::debug::DumpWithoutCrashing();
-    }
-    return false;
-  }
 
   // Don't allow setting cookies on other domains. See crbug.com/996786.
   if (cookie_being_set && !cookie_being_set->IsDomainMatch(url.host())) {

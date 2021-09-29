@@ -163,7 +163,6 @@ CONTENT_EXPORT extern const base::Feature kSecurePaymentConfirmationDebug;
 CONTENT_EXPORT extern const base::Feature
     kSendBeaconThrowForBlobWithNonSimpleType;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerPaymentApps;
-CONTENT_EXPORT extern const base::Feature kServiceWorkerPrefersUnusedProcess;
 CONTENT_EXPORT extern const base::Feature
     kServiceWorkerTerminationOnNoControllee;
 CONTENT_EXPORT extern const base::Feature kSharedArrayBuffer;
@@ -261,7 +260,6 @@ CONTENT_EXPORT extern const base::Feature kWebXrArModule;
 
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const base::Feature kAccessibilityPageZoom;
-CONTENT_EXPORT extern const base::Feature kAccessibilityPageZoomUpdatedUI;
 CONTENT_EXPORT extern const base::Feature
     kBackgroundMediaRendererHasModerateBinding;
 CONTENT_EXPORT extern const base::Feature kBindingManagementWaiveCpu;

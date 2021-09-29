@@ -102,9 +102,14 @@ class ProtocolHandlersElement extends ProtocolHandlersElementBase {
       protocols: Array,
 
       /**
-       * Array of approved app protocols and their handlers.
+       * Array of allowed app protocols and their handlers.
        */
-      appApprovedProtocols: Array,
+      appAllowedProtocols: Array,
+
+      /**
+       * Array of disallowed app protocols and their handlers.
+       */
+      appDisallowedProtocols: Array,
 
       /**
        * Used to determine if the apps title should be shown.
@@ -142,7 +147,8 @@ class ProtocolHandlersElement extends ProtocolHandlersElementBase {
   }
 
   protocols: Array<ProtocolEntry>;
-  appApprovedProtocols: Array<AppProtocolEntry>;
+  appAllowedProtocols: Array<AppProtocolEntry>;
+  appDisallowedProtocols: Array<AppProtocolEntry>;
   private showAppsProtocolHandlersTitle_: boolean;
   private actionMenuModel_: HandlerEntry|null;
   toggleOffLabel: string;
@@ -168,8 +174,11 @@ class ProtocolHandlersElement extends ProtocolHandlersElementBase {
 
     // Web App Observer
     this.addWebUIListener(
-        'setAppApprovedProtocolHandlers',
-        this.setAppApprovedProtocolHandlers_.bind(this));
+        'setAppAllowedProtocolHandlers',
+        this.setAppAllowedProtocolHandlers_.bind(this));
+    this.addWebUIListener(
+        'setAppDisallowedProtocolHandlers',
+        this.setAppDisallowedProtocolHandlers_.bind(this));
     this.browserProxy.observeAppProtocolHandlers();
   }
 
@@ -207,14 +216,33 @@ class ProtocolHandlersElement extends ProtocolHandlersElementBase {
   }
 
   /**
-   * Updates the list of approved app protocol handlers.
-   * @param appApprovedProtocols The new approved app protocol handler list.
+   * Updates the list of allowed app protocol handlers.
+   * @param appAllowedProtocols The new allowed app protocol handler list.
    */
-  private setAppApprovedProtocolHandlers_(appApprovedProtocols:
-                                              Array<AppProtocolEntry>) {
-    this.appApprovedProtocols = appApprovedProtocols;
+  private setAppAllowedProtocolHandlers_(appAllowedProtocols:
+                                             Array<AppProtocolEntry>) {
+    this.appAllowedProtocols = appAllowedProtocols;
+    this.updateShowAppsProtocolHandlersTitle_();
+  }
+
+  /**
+   * Updates the list of disallowed app protocol handlers.
+   * @param appDisallowedProtocols The new disallowed app protocol
+   *     handler list.
+   */
+  private setAppDisallowedProtocolHandlers_(appDisallowedProtocols:
+                                                Array<AppProtocolEntry>) {
+    this.appDisallowedProtocols = appDisallowedProtocols;
+    this.updateShowAppsProtocolHandlersTitle_();
+  }
+
+  /**
+   * Determines if the app header should be shown.
+   */
+  private updateShowAppsProtocolHandlersTitle_() {
     this.showAppsProtocolHandlersTitle_ =
-        (this.appApprovedProtocols && this.appApprovedProtocols.length > 0);
+        (this.appAllowedProtocols && this.appAllowedProtocols.length > 0) ||
+        (this.appDisallowedProtocols && this.appDisallowedProtocols.length > 0);
   }
 
   /**
@@ -252,11 +280,21 @@ class ProtocolHandlersElement extends ProtocolHandlersElementBase {
   }
 
   /**
-   * Handler for removing web app protocol handlers that were approved.
+   * Handler for removing web app protocol handlers that were allowed.
    */
-  private onRemoveAppApprovedHandlerButtonClick_(event: AppRepeaterEvent) {
+  private onRemoveAppAllowedHandlerButtonClick_(event: AppRepeaterEvent) {
     const item = event.model.item;
-    this.browserProxy.removeAppApprovedHandler(
+    this.browserProxy.removeAppAllowedHandler(
+        item.protocol, item.spec, item.app_id);
+  }
+
+  /**
+   * Handler for removing web app protocol handlers that were disallowed.
+   * @private
+   */
+  private onRemoveAppDisallowedHandlerButtonClick_(event: AppRepeaterEvent) {
+    const item = event.model.item;
+    this.browserProxy.removeAppDisallowedHandler(
         item.protocol, item.spec, item.app_id);
   }
 

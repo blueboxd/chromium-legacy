@@ -926,7 +926,7 @@ TEST_F(WebAppRegistrarTest, WindowControlsOverlay) {
   EXPECT_EQ(false, registrar().GetWindowControlsOverlayEnabled(app_id));
 }
 
-TEST_F(WebAppRegistrarTest, ApprovedLaunchProtocols) {
+TEST_F(WebAppRegistrarTest, AllowedLaunchProtocols) {
   controller().Init();
 
   auto web_app = test::CreateWebApp(GURL("https://example.com/path"));
@@ -939,54 +939,77 @@ TEST_F(WebAppRegistrarTest, ApprovedLaunchProtocols) {
   const std::string protocol_scheme2 = "test2";
   RegisterApp(std::move(web_app2));
 
-  // Test we can add and remove approved protocols.
+  // Test we can add and remove allowed protocols.
   EXPECT_EQ(false,
-            registrar().IsApprovedLaunchProtocol(app_id1, protocol_scheme1));
+            registrar().IsAllowedLaunchProtocol(app_id1, protocol_scheme1));
 
-  sync_bridge().AddApprovedLaunchProtocol(app_id1, protocol_scheme1);
+  sync_bridge().AddAllowedLaunchProtocol(app_id1, protocol_scheme1);
   EXPECT_EQ(true,
-            registrar().IsApprovedLaunchProtocol(app_id1, protocol_scheme1));
+            registrar().IsAllowedLaunchProtocol(app_id1, protocol_scheme1));
 
-  sync_bridge().RemoveApprovedLaunchProtocol(app_id1, protocol_scheme1);
+  sync_bridge().RemoveAllowedLaunchProtocol(app_id1, protocol_scheme1);
   EXPECT_EQ(false,
-            registrar().IsApprovedLaunchProtocol(app_id1, protocol_scheme1));
+            registrar().IsAllowedLaunchProtocol(app_id1, protocol_scheme1));
 
-  // Test that we can get approved protocols from multiple web apps.
-  sync_bridge().AddApprovedLaunchProtocol(app_id1, protocol_scheme1);
-  sync_bridge().AddApprovedLaunchProtocol(app_id2, protocol_scheme2);
+  // Test that we can get allowed protocols from multiple web apps.
+  sync_bridge().AddAllowedLaunchProtocol(app_id1, protocol_scheme1);
+  sync_bridge().AddAllowedLaunchProtocol(app_id2, protocol_scheme2);
 
   {
-    auto approved_protocols = registrar().GetAllApprovedLaunchProtocols();
-    EXPECT_TRUE(base::Contains(approved_protocols, protocol_scheme1));
-    EXPECT_TRUE(base::Contains(approved_protocols, protocol_scheme2));
+    auto allowed_protocols = registrar().GetAllAllowedLaunchProtocols();
+    EXPECT_TRUE(base::Contains(allowed_protocols, protocol_scheme1));
+    EXPECT_TRUE(base::Contains(allowed_protocols, protocol_scheme2));
 
-    sync_bridge().RemoveApprovedLaunchProtocol(app_id2, protocol_scheme2);
+    sync_bridge().RemoveAllowedLaunchProtocol(app_id2, protocol_scheme2);
   }
   {
-    auto approved_protocols = registrar().GetAllApprovedLaunchProtocols();
-    EXPECT_TRUE(base::Contains(approved_protocols, protocol_scheme1));
-    EXPECT_FALSE(base::Contains(approved_protocols, protocol_scheme2));
+    auto allowed_protocols = registrar().GetAllAllowedLaunchProtocols();
+    EXPECT_TRUE(base::Contains(allowed_protocols, protocol_scheme1));
+    EXPECT_FALSE(base::Contains(allowed_protocols, protocol_scheme2));
   }
 }
 
 TEST_F(WebAppRegistrarTest, DisallowedLaunchProtocols) {
   controller().Init();
 
-  auto web_app = test::CreateWebApp();
-  const AppId app_id = web_app->app_id();
+  auto web_app = test::CreateWebApp(GURL("https://example.com/path"));
+  const AppId app_id1 = web_app->app_id();
+  const std::string protocol_scheme1 = "test";
   RegisterApp(std::move(web_app));
-  const std::string protocol_scheme = "test";
 
+  auto web_app2 = test::CreateWebApp(GURL("https://example.com/path2"));
+  const AppId app_id2 = web_app2->app_id();
+  const std::string protocol_scheme2 = "test2";
+  RegisterApp(std::move(web_app2));
+
+  // Test we can add and remove diallowed protocols.
   EXPECT_EQ(false,
-            registrar().IsDisallowedLaunchProtocol(app_id, protocol_scheme));
+            registrar().IsDisallowedLaunchProtocol(app_id1, protocol_scheme1));
 
-  sync_bridge().AddDisallowedLaunchProtocol(app_id, protocol_scheme);
+  sync_bridge().AddDisallowedLaunchProtocol(app_id1, protocol_scheme1);
   EXPECT_EQ(true,
-            registrar().IsDisallowedLaunchProtocol(app_id, protocol_scheme));
+            registrar().IsDisallowedLaunchProtocol(app_id1, protocol_scheme1));
 
-  sync_bridge().RemoveDisallowedLaunchProtocol(app_id, protocol_scheme);
+  sync_bridge().RemoveDisallowedLaunchProtocol(app_id1, protocol_scheme1);
   EXPECT_EQ(false,
-            registrar().IsDisallowedLaunchProtocol(app_id, protocol_scheme));
+            registrar().IsDisallowedLaunchProtocol(app_id1, protocol_scheme1));
+
+  // Test that we can get disallowed protocols from multiple web apps.
+  sync_bridge().AddDisallowedLaunchProtocol(app_id1, protocol_scheme1);
+  sync_bridge().AddDisallowedLaunchProtocol(app_id2, protocol_scheme2);
+
+  {
+    auto disallowed_protocols = registrar().GetAllDisallowedLaunchProtocols();
+    EXPECT_TRUE(base::Contains(disallowed_protocols, protocol_scheme1));
+    EXPECT_TRUE(base::Contains(disallowed_protocols, protocol_scheme2));
+
+    sync_bridge().RemoveDisallowedLaunchProtocol(app_id2, protocol_scheme2);
+  }
+  {
+    auto disallowed_protocols = registrar().GetAllDisallowedLaunchProtocols();
+    EXPECT_TRUE(base::Contains(disallowed_protocols, protocol_scheme1));
+    EXPECT_FALSE(base::Contains(disallowed_protocols, protocol_scheme2));
+  }
 }
 
 }  // namespace web_app

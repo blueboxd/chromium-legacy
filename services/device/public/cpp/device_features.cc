@@ -17,6 +17,6 @@ const base::Feature kWinrtGeolocationImplementation{
 // Enables usage of the CoreLocation API for LocationProvider instead of
 // NetworkLocationProvider for macOS.
 const base::Feature kMacCoreLocationBackend{"MacCoreLocationBackend",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features

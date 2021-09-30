@@ -3902,13 +3902,26 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Conversions.ReportSendOutcome"
+    enum="ConversionReportSendOutcome" expires_after="2021-12-19">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the high level request status of a conversion report. Recorded once
+    per conversion report. For conversion report that has been retried, only the
+    last retry will be counted.
+  </summary>
+</histogram>
+
 <histogram name="Conversions.ReportStatus" enum="ConversionReportStatus"
     expires_after="2021-12-19">
   <owner>johnidel@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
   <summary>
     Records the high level request status of a conversion report. Recorded for
-    every conversion report sent.
+    every conversion report sent. For conversion report that has been retried,
+    every retry will be counted.
   </summary>
 </histogram>
 
@@ -13197,7 +13210,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Privacy.AccuracyTip.AccuracyTipInteraction"
-    enum="AccuracyTipInteraction" expires_after="M96">
+    enum="AccuracyTipInteraction" expires_after="M98">
   <owner>dullweber@chromium.org</owner>
   <owner>eokoyomon@chromium.org</owner>
   <summary>
@@ -13207,7 +13220,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Privacy.AccuracyTip.AccuracyTipTimeOpen" units="ms"
-    expires_after="M96">
+    expires_after="M98">
   <owner>dullweber@chromium.org</owner>
   <owner>eokoyomon@chromium.org</owner>
   <summary>
@@ -13217,7 +13230,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Privacy.AccuracyTip.NumDialogsShown" units="dialogs"
-    expires_after="M96">
+    expires_after="M98">
   <owner>dullweber@chromium.org</owner>
   <owner>eokoyomon@chromium.org</owner>
   <summary>
@@ -13227,7 +13240,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Privacy.AccuracyTip.PageStatus" enum="AccuracyTipStatus"
-    expires_after="M96">
+    expires_after="M98">
   <owner>dullweber@chromium.org</owner>
   <owner>eokoyomon@chromium.org</owner>
   <summary>The accuracy status of a page. Recorded on each page load.</summary>
@@ -18114,6 +18127,15 @@ should be kept until we use this API.  -->
   </summary>
 </histogram>
 
+<histogram name="Tracing.ViewHierarchyDump.DumpDuration" units="ms"
+    expires_after="2022-07-01">
+  <owner>khokhlov@google.com</owner>
+  <owner>tracing@chromium.org</owner>
+  <summary>
+    Records the time it takes to dump a full view hierarchy into the trace.
+  </summary>
+</histogram>
+
 <histogram name="TrustedWebActivity.ClearDataDialogOnClearAppDataAccepted"
     enum="Boolean" expires_after="M98">
   <owner>peconn@chromium.org</owner>
@@ -19542,7 +19564,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebsiteSettings.Discoverability.Action"
-    enum="WebsiteSettingsDiscoverabilityAction" expires_after="M96">
+    enum="WebsiteSettingsDiscoverabilityAction" expires_after="M98">
   <owner>eokoyomon@chromium.org</owner>
   <owner>dullweber@chromium.org</owner>
   <summary>
@@ -19551,7 +19573,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebsiteSettings.Discoverability.TimeToClickHighlight"
-    units="ms" expires_after="M96">
+    units="ms" expires_after="M98">
   <owner>eokoyomon@chromium.org</owner>
   <owner>dullweber@chromium.org</owner>
   <summary>

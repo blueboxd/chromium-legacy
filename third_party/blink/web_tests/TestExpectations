@@ -268,6 +268,8 @@ crbug.com/1093466 virtual/portals/wpt_internal/portals/* [ Pass ]
 
 # These tests require the experimental prerender feature.
 # See https://crbug.com/1126305.
+crbug.com/1126305 external/wpt/speculation-rules/prerender/* [ Skip ]
+crbug.com/1126305 virtual/prerender/external/wpt/speculation-rules/prerender/* [ Pass ]
 crbug.com/1126305 wpt_internal/prerender/* [ Skip ]
 crbug.com/1126305 virtual/prerender/wpt_internal/prerender/* [ Pass ]
 crbug.com/1126305 http/tests/inspector-protocol/prerender/* [ Skip ]
@@ -2754,6 +2756,7 @@ crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-paired-cascade-006.html [ Pass ]
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-styling-002.html [ Pass ]
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-styling-004.html [ Pass ]
+crbug.com/1254608 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/textpath-selection-011.html [ Failure ]
 
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Failure Skip Timeout ]
 
@@ -4019,7 +4022,6 @@ crbug.com/764235 external/wpt/css/css-grid/alignment/grid-baseline-justify-001.h
 crbug.com/618969 external/wpt/css/css-grid/subgrid/* [ Skip ]
 
 ### Tests failing with SVGTextNG enabled:
-crbug.com/1179585 external/wpt/css/css-pseudo/textpath-selection-011.html [ Failure ]
 crbug.com/1179585 svg/custom/visibility-collapse.html [ Failure ]
 
 crbug.com/1236992 svg/dom/SVGListPropertyTearOff-gccrash.html [ Failure Pass ]
@@ -6759,9 +6761,6 @@ crbug.com/1229701 [ Linux ] http/tests/inspector-protocol/network/disable-cache-
 # WebRTC simulcast tests contineue to be flaky
 crbug.com/1230534 [ Win ] external/wpt/webrtc/simulcast/vp8.https.html [ Pass Skip Timeout ]
 crbug.com/1230534 [ Win ] external/wpt/webrtc/simulcast/h264.https.html [ Pass Skip Timeout ]
-
-# Temporary disabling to allow landing https://crrev.com/c/3175289
-crbug.com/1146422 http/tests/devtools/profiler/agents-disabled-check.js [ Failure Pass ]
 
 # Following tests fail on mac11-arm64
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/svg/extensibility/foreignObject/foreign-object-scale-scroll.html [ Failure ]

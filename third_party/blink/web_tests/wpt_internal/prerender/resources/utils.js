@@ -1,4 +1,7 @@
-const STORE_URL = '/wpt_internal/prerender/resources/key-value-store.py';
+// TODO(https://crbug.com/1253158): Remove this file and instead use
+// /speculation-rules/prerender/resources/utils.js.
+
+const STORE_URL = '/speculation-rules/prerender/resources/key-value-store.py';
 
 // Starts prerendering for `url`.
 function startPrerendering(url) {

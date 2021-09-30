@@ -119,8 +119,9 @@ preprocess_if_expr("preprocess") {
     "base_mixin.ts",
     "chrome_cleanup_page/chrome_cleanup_proxy.ts",
     "clear_browsing_data_dialog/clear_browsing_data_browser_proxy.ts",
-    "controls/pref_control_mixin.js",
-    "controls/settings_boolean_control_mixin.js",
+    "controls/cr_policy_pref_mixin.ts",
+    "controls/pref_control_mixin.ts",
+    "controls/settings_boolean_control_mixin.ts",
     "controls/settings_idle_load.ts",
     "downloads_page/downloads_browser_proxy.ts",
     "ensure_lazy_loaded.ts",
@@ -161,17 +162,6 @@ preprocess_if_expr("preprocess") {
     "site_settings/site_settings_mixin.ts",
     "site_settings/site_settings_prefs_browser_proxy.ts",
     "site_settings/website_usage_browser_proxy.ts",
-
-    # Files holding TypeScript types, necessary only during the migration. These
-    # files are purposefully *not* listed in the :build_ts target's |in_files|
-    # list, so that they don't end-up in the generated grd file.
-    # TODO(crbug.com/1234307): Delete these files once no longer necessary.
-    "controls/pref_control_mixin_ts.ts",
-    "controls/settings_boolean_control_mixin_ts.ts",
-    "controls/settings_checkbox_ts.ts",
-    "controls/settings_dropdown_menu_ts.ts",
-    "controls/settings_radio_group_ts.ts",
-    "controls/settings_toggle_button_ts.ts",
   ]
 
   if (is_chromeos_ash) {
@@ -240,16 +230,15 @@ preprocess_if_expr("preprocess_generated") {
     "clear_browsing_data_dialog/history_deletion_dialog.ts",
     "clear_browsing_data_dialog/installed_app_checkbox.ts",
     "clear_browsing_data_dialog/passwords_deletion_dialog.ts",
-    "controls/controlled_button.js",
-    "controls/controlled_radio_button.js",
-    "controls/extension_controlled_indicator.js",
-    "controls/password_prompt_dialog.js",
-    "controls/settings_checkbox.js",
-    "controls/settings_dropdown_menu.js",
-    "controls/settings_radio_group.js",
-    "controls/settings_slider.js",
-    "controls/settings_textarea.js",
-    "controls/settings_toggle_button.js",
+    "controls/controlled_button.ts",
+    "controls/controlled_radio_button.ts",
+    "controls/extension_controlled_indicator.ts",
+    "controls/settings_checkbox.ts",
+    "controls/settings_dropdown_menu.ts",
+    "controls/settings_radio_group.ts",
+    "controls/settings_slider.ts",
+    "controls/settings_textarea.ts",
+    "controls/settings_toggle_button.ts",
     "downloads_page/downloads_page.ts",
     "icons.ts",
     "settings_menu/settings_menu.ts",
@@ -360,7 +349,9 @@ preprocess_if_expr("preprocess_generated") {
     ]
   }
 
-  if (!is_chromeos_ash) {
+  if (is_chromeos_ash) {
+    in_files += [ "controls/password_prompt_dialog.ts" ]
+  } else {
     in_files += [
       "languages_page/add_languages_dialog.ts",
       "languages_page/languages_page.ts",
@@ -391,7 +382,6 @@ grit("resources") {
 group("closure_compile") {
   deps = [
     ":closure_compile_local",
-    "controls:closure_compile",
     "people_page:closure_compile",
     "prefs:closure_compile",
     "settings_page:closure_compile",
@@ -602,19 +592,19 @@ ts_library("build_ts") {
     "clear_browsing_data_dialog/history_deletion_dialog.ts",
     "clear_browsing_data_dialog/installed_app_checkbox.ts",
     "clear_browsing_data_dialog/passwords_deletion_dialog.ts",
-    "controls/controlled_button.js",
-    "controls/controlled_radio_button.js",
-    "controls/extension_controlled_indicator.js",
-    "controls/password_prompt_dialog.js",
-    "controls/pref_control_mixin.js",
-    "controls/settings_boolean_control_mixin.js",
-    "controls/settings_checkbox.js",
-    "controls/settings_dropdown_menu.js",
+    "controls/controlled_button.ts",
+    "controls/controlled_radio_button.ts",
+    "controls/cr_policy_pref_mixin.ts",
+    "controls/extension_controlled_indicator.ts",
+    "controls/pref_control_mixin.ts",
+    "controls/settings_boolean_control_mixin.ts",
+    "controls/settings_checkbox.ts",
+    "controls/settings_dropdown_menu.ts",
     "controls/settings_idle_load.ts",
-    "controls/settings_radio_group.js",
-    "controls/settings_slider.js",
-    "controls/settings_textarea.js",
-    "controls/settings_toggle_button.js",
+    "controls/settings_radio_group.ts",
+    "controls/settings_slider.ts",
+    "controls/settings_textarea.ts",
+    "controls/settings_toggle_button.ts",
     "downloads_page/downloads_browser_proxy.ts",
     "downloads_page/downloads_page.ts",
     "ensure_lazy_loaded.ts",
@@ -757,6 +747,7 @@ ts_library("build_ts") {
   if (is_chromeos_ash) {
     in_files += [
       "autofill_page/blocking_request_manager.ts",
+      "controls/password_prompt_dialog.ts",
       "people_page/account_manager_browser_proxy.js",
       "site_settings/android_info_browser_proxy.ts",
     ]
@@ -809,6 +800,10 @@ ts_library("build_ts") {
     "//tools/typescript/definitions/runtime.d.ts",
     "//tools/typescript/definitions/settings_private.d.ts",
   ]
+  if (is_chromeos_ash) {
+    definitions +=
+        [ "//tools/typescript/definitions/quick_unlock_private.d.ts" ]
+  }
 
   extra_deps = [
     ":preprocess",

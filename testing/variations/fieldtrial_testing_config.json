@@ -2641,7 +2641,6 @@
     "DefaultPassthroughCommandDecoder": [
         {
             "platforms": [
-                "android",
                 "linux",
                 "mac"
             ],
@@ -4053,21 +4052,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "IOSPersistCrashRestore"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IOSRestoreGaiaCookiesOnUserAction": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20210728",
-                    "enable_features": [
-                        "RestoreGAIACookiesOnUserAction"
                     ]
                 }
             ]
@@ -7512,7 +7496,8 @@
                 "chromeos",
                 "linux",
                 "mac",
-                "windows"
+                "windows",
+                "ios"
             ],
             "experiments": [
                 {
@@ -8767,26 +8752,6 @@
             ]
         }
     ],
-    "WebRTC-PreStreamDecoders": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "ios",
-                "android",
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "max:0,_V1"
-                }
-            ]
-        }
-    ],
     "WebRTC-TaskQueuePacer": [
         {
             "platforms": [
@@ -8859,26 +8824,6 @@
             "experiments": [
                 {
                     "name": "Enabled"
-                }
-            ]
-        }
-    ],
-    "WebRTC-ZeroPlayoutDelay": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "ios",
-                "android",
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "min_pacing:8ms,max_decode_queue_size:8,_V2"
                 }
             ]
         }

@@ -52,16 +52,16 @@
   },
   'LACROS_VERSION_SKEW_CANARY': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v96.0.4656.0/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v96.0.4658.0/test_ash_chrome',
       '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
     ],
-    'identifier': 'Lacros version skew testing ash 96.0.4656.0',
+    'identifier': 'Lacros version skew testing ash 96.0.4658.0',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v96.0.4656.0',
-          'revision': 'version:96.0.4656.0',
+          'location': 'lacros_version_skew_tests_v96.0.4658.0',
+          'revision': 'version:96.0.4658.0',
         },
       ],
     },
@@ -387,7 +387,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M95',
-          'revision': 'version:95.0.4638.32',
+          'revision': 'version:95.0.4638.33',
         }
       ],
     },
@@ -411,7 +411,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M94',
-          'revision': 'version:94.0.4606.69',
+          'revision': 'version:94.0.4606.70',
         }
       ],
     },
@@ -459,7 +459,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M95',
-          'revision': 'version:95.0.4638.32',
+          'revision': 'version:95.0.4638.33',
         }
       ],
     },
@@ -483,7 +483,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M94',
-          'revision': 'version:94.0.4606.69',
+          'revision': 'version:94.0.4606.70',
         }
       ],
     },
@@ -531,7 +531,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M95',
-          'revision': 'version:95.0.4638.32',
+          'revision': 'version:95.0.4638.33',
         }
       ],
     },
@@ -555,7 +555,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M94',
-          'revision': 'version:94.0.4606.69',
+          'revision': 'version:94.0.4606.70',
         }
       ],
     },

@@ -14859,6 +14859,12 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Failed"/>
 </enum>
 
+<enum name="ConversionReportSendOutcome">
+  <int value="0" label="Sent"/>
+  <int value="1" label="Failed due to error"/>
+  <int value="2" label="Dropped due to embedder disabling the API"/>
+</enum>
+
 <enum name="ConversionReportStatus">
   <int value="0" label="OK"/>
   <int value="1" label="Internal network error"/>
@@ -27719,6 +27725,7 @@ Called by update_extension_histograms.py.-->
   <int value="480" label="WEB_AUTHENTICATION_PROXY_ON_ISUVPAA_REQUEST"/>
   <int value="481" label="SPEECH_RECOGNITION_PRIVATE_ON_STOP"/>
   <int value="482" label="SPEECH_RECOGNITION_PRIVATE_ON_RESULT"/>
+  <int value="483" label="SPEECH_RECOGNITION_PRIVATE_ON_ERROR"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -52497,7 +52504,6 @@ from previous Chrome versions.
   <int value="1814671708" label="disable-password-manager-reauthentication"/>
   <int value="1816174635" label="RequestUnbufferedDispatch:enabled"/>
   <int value="1816723085" label="SchemefulSameSite:enabled"/>
-  <int value="1816816375" label="MediaAppHandlesAudio:disabled"/>
   <int value="1816843861" label="ServiceWorkerServicification:enabled"/>
   <int value="1817312143" label="num-raster-threads"/>
   <int value="1817420759" label="CpuAffinityRestrictToLittleCores:disabled"/>
@@ -52645,7 +52651,6 @@ from previous Chrome versions.
   <int value="1925627218" label="FullscreenToolbarReveal:disabled"/>
   <int value="1926524951" label="SystemWebApps:disabled"/>
   <int value="1927218315" label="ShelfNewUi:disabled"/>
-  <int value="1927254377" label="MediaAppHandlesAudio:enabled"/>
   <int value="1927259098" label="TranslateLanguageByULP:enabled"/>
   <int value="1927374573" label="EnterpriseRealtimeExtensionRequest:enabled"/>
   <int value="1928944156" label="ReadLaterNewBadgePromo:disabled"/>
@@ -56381,9 +56386,9 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="FRE started"/>
   <int value="1" label="Welcome shown"/>
   <int value="2" label="Data saver shown"/>
-  <int value="3" label="Sign in shown"/>
-  <int value="4" label="FRE completed w/ user signed in"/>
-  <int value="5" label="FRE completed w/ user not signed in"/>
+  <int value="3" label="Sync consent shown"/>
+  <int value="4" label="FRE completed w/ user signed in and sync"/>
+  <int value="5" label="FRE completed w/ user not signed in and sync"/>
   <int value="6" label="Search engine choice dialog shown"/>
 </enum>
 
@@ -59907,6 +59912,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="same-origin violation"/>
   <int value="2" label="same-origin violation with COEP involvement"/>
   <int value="3" label="same-site violation"/>
+</enum>
+
+<enum name="NetworkServiceCorsPreflightMethodAllowed">
+  <int value="0" label="Both Disallowed"/>
+  <int value="1" label="Only normalized_method allowed"/>
+  <int value="2" label="Only method allowed"/>
+  <int value="3" label="Both Allowed"/>
 </enum>
 
 <enum name="NetworkServiceError">
@@ -75079,6 +75091,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="Opened"/>
   <int value="3" label="TimedOut"/>
   <int value="4" label="Sent"/>
+  <int value="5" label="DismissReasonUnknown"/>
 </enum>
 
 <enum name="SendTabToSelfNotifyLocalDevice">

@@ -666,11 +666,6 @@
     "expiry_milestone": 107
   },
   {
-    "name": "chrome-share-highlights-android",
-    "owners": [ "gayane", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 92
-  },
-  {
     "name": "chrome-share-long-screenshot",
     "owners": [ "skare", "chrome-sharing-eng@google.com" ],
     "expiry_milestone": 96
@@ -1884,7 +1879,7 @@
   {
     "name": "enable-experimental-kernel-vm-support",
     "owners": [ "zwisler" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 98
   },
   {
     "name": "enable-experimental-web-platform-features",
@@ -3644,11 +3639,6 @@
     "expiry_milestone": 103
   },
   {
-    "name": "media-app-handles-audio",
-    "owners": [ "//ash/webui/media_app_ui/OWNERS" ],
-    "expiry_milestone": 99
-  },
-  {
     "name": "media-app-handles-pdf",
     "owners": [ "//ash/webui/media_app_ui/OWNERS" ],
     "expiry_milestone": 96
@@ -4704,7 +4694,7 @@
   {
     "name": "sanitizer-api",
     "owners": [ "//third_party/blink/renderer/modules/sanitizer_api/OWNERS" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "scan-app-media-link",

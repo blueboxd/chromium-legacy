@@ -36,6 +36,10 @@ GeolocationManagerImpl::GeolocationManagerImpl()
   delegate_.reset([[GeolocationManagerDelegate alloc]
       initWithManager:weak_ptr_factory_.GetWeakPtr()]);
   location_manager_.get().delegate = delegate_;
+  if (!@available(macOS 10.10, *)) {
+    [location_manager_ startUpdatingLocation];
+    [location_manager_ stopUpdatingLocation];
+  }
 }
 
 GeolocationManagerImpl::~GeolocationManagerImpl() = default;

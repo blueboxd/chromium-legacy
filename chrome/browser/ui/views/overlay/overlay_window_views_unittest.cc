@@ -258,10 +258,10 @@ TEST_F(OverlayWindowViewsTest, UpdateMaximumSize) {
   EXPECT_EQ(gfx::Size(4000, 4000), overlay_window().GetMaximumSize());
 
   // If the maximum size decreases then we should shrink to fit.
-  SetDisplayWorkArea({0, 0, 1000, 1000});
+  SetDisplayWorkArea({0, 0, 1000, 2000});
   overlay_window().OnNativeWidgetMove();
-  EXPECT_EQ(gfx::Size(500, 500), overlay_window().GetBounds().size());
-  EXPECT_EQ(gfx::Size(500, 500), overlay_window().GetMaximumSize());
+  EXPECT_EQ(gfx::Size(500, 800), overlay_window().GetBounds().size());
+  EXPECT_EQ(gfx::Size(500, 1000), overlay_window().GetMaximumSize());
 }
 
 TEST_F(OverlayWindowViewsTest, IgnoreInvalidMaximumSize) {
@@ -369,3 +369,9 @@ TEST_F(OverlayWindowViewsTest, NoMouseExitWithinWindowBounds) {
 }
 
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
+
+TEST_F(OverlayWindowViewsTest, ShowControlsOnFocus) {
+  EXPECT_FALSE(overlay_window().AreControlsVisible());
+  overlay_window().OnNativeFocus();
+  EXPECT_TRUE(overlay_window().AreControlsVisible());
+}

@@ -352,8 +352,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kInterestCohortAPIOriginTrial;
 
 BLINK_COMMON_EXPORT extern const base::Feature kInterestCohortFeaturePolicy;
 
-BLINK_COMMON_EXPORT extern const base::Feature kTextFragmentColorChange;
-
 BLINK_COMMON_EXPORT extern const base::Feature kDisableDocumentDomainByDefault;
 
 BLINK_COMMON_EXPORT extern const base::Feature kScopeMemoryCachePerContext;
@@ -455,6 +453,12 @@ extern const base::Feature kPersistentQuotaIsTemporaryQuota;
 //  - HTTP RTT estimate.
 BLINK_COMMON_EXPORT extern const base::Feature
     kDelayLowPriorityRequestsAccordingToNetworkState;
+
+// When enabled, this turns off an LCP calculation optimization that's ignoring
+// initially invisible images, and resulting in LCP correctness issues. See
+// https://crbug.com/1249622
+BLINK_COMMON_EXPORT extern const base::Feature
+    kIncludeInitiallyInvisibleImagesInLCP;
 
 // Number of the requests that can be handled in the tight mode.
 BLINK_COMMON_EXPORT

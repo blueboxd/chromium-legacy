@@ -78,6 +78,9 @@ extern const char kAllowSyncXHRInPageDismissalDescription[];
 extern const char kAnimatedImageResumeName[];
 extern const char kAnimatedImageResumeDescription[];
 
+extern const char kArcAllowDataRetentionName[];
+extern const char kArcAllowDataRetentionDescription[];
+
 extern const char kAriaElementReflectionName[];
 extern const char kAriaElementReflectionDescription[];
 
@@ -892,6 +895,12 @@ extern const char kJavascriptHarmonyDescription[];
 extern const char kJavascriptHarmonyShippingName[];
 extern const char kJavascriptHarmonyShippingDescription[];
 
+extern const char kJourneysName[];
+extern const char kJourneysDescription[];
+
+extern const char kJourneysOmniboxActionName[];
+extern const char kJourneysOmniboxActionDescription[];
+
 extern const char kLegacyTLSEnforcedName[];
 extern const char kLegacyTLSEnforcedDescription[];
 
@@ -918,9 +927,6 @@ extern const char kMediaRouterCastAllowAllIPsDescription[];
 
 extern const char kMediaSessionWebRTCName[];
 extern const char kMediaSessionWebRTCDescription[];
-
-extern const char kMemoriesName[];
-extern const char kMemoriesDescription[];
 
 extern const char kMetricsSettingsAndroidName[];
 extern const char kMetricsSettingsAndroidDescription[];
@@ -1447,9 +1453,6 @@ extern const char kTabOutlinesInLowContrastThemesDescription[];
 extern const char kTabRestoreSubMenusName[];
 extern const char kTabRestoreSubMenusDescription[];
 
-extern const char kTextFragmentColorChangeName[];
-extern const char kTextFragmentColorChangeDescription[];
-
 extern const char kTFLiteLanguageDetectionName[];
 extern const char kTFLiteLanguageDetectionDescription[];
 
@@ -1540,6 +1543,9 @@ extern const char kWebBundlesDescription[];
 
 extern const char kWebIdName[];
 extern const char kWebIdDescription[];
+
+extern const char kWebMidiName[];
+extern const char kWebMidiDescription[];
 
 extern const char kWebOtpBackendName[];
 extern const char kWebOtpBackendDescription[];
@@ -2636,9 +2642,6 @@ extern const char kExperimentalAccessibilityDictationCommandsDescription[];
 
 extern const char kExperimentalAccessibilitySwitchAccessTextName[];
 extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
-
-extern const char kSwitchAccessPointScanningName[];
-extern const char kSwitchAccessPointScanningDescription[];
 
 extern const char kExperimentalAccessibilitySwitchAccessSetupGuideName[];
 extern const char kExperimentalAccessibilitySwitchAccessSetupGuideDescription[];

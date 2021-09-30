@@ -878,11 +878,6 @@ const base::Feature kInterestCohortAPIOriginTrial{
 const base::Feature kInterestCohortFeaturePolicy{
     "InterestCohortFeaturePolicy", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Changes the default background color of the Text Fragment from
-// bright yellow rgb(255, 255, 0) to light purple rgb(233, 210, 253)
-const base::Feature kTextFragmentColorChange{"TextFragmentColorChange",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kDisableDocumentDomainByDefault{
     "DisableDocumentDomainByDefault", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1021,6 +1016,9 @@ const base::Feature kPersistentQuotaIsTemporaryQuota{
 const base::Feature kDelayLowPriorityRequestsAccordingToNetworkState{
     "DelayLowPriorityRequestsAccordingToNetworkState",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kIncludeInitiallyInvisibleImagesInLCP{
+    "IncludeInitiallyInvisibleImagesInLCP", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::FeatureParam<int> kMaxNumOfThrottleableRequestsInTightMode{
     &kDelayLowPriorityRequestsAccordingToNetworkState,

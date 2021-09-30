@@ -863,6 +863,16 @@ ci.android_builder(
     notifies = ["cronet"],
 )
 
+ci.android_fyi_builder(
+    name = "android-cronet-x86-dbg-pie-tests",
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|test",
+        short_name = "p",
+    ),
+    notifies = ["cronet"],
+    triggered_by = ["android-cronet-x86-dbg"],
+)
+
 ci.android_builder(
     name = "android-cronet-x86-dbg-10-tests",
     console_view_entry = consoles.console_view_entry(
@@ -1639,6 +1649,20 @@ ci.chromium_builder(
     cores = 32,
     main_console_view = "main",
     os = os.WINDOWS_DEFAULT,
+)
+
+ci.chromium_builder(
+    name = "win-archive-tagged",
+    console_view_entry = consoles.console_view_entry(
+        category = "win|tag",
+        short_name = "64",
+    ),
+    cores = 32,
+    main_console_view = "main",
+    os = os.WINDOWS_DEFAULT,
+    tree_closing = False,
+    schedule = "triggered",
+    triggered_by = [],
 )
 
 ci.chromium_builder(
@@ -4158,7 +4182,6 @@ ci.fyi_mac_builder(
 
 ci.fyi_mac_builder(
     name = "mac-arm64-on-arm64-rel-reclient",
-    builderless = True,
 
     # same with mac-arm64-on-arm64-rel
     cores = None,  # crbug.com/1245114

@@ -70,6 +70,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/ui/wm/features.h"
 #include "components/assist_ranker/predictor_config_definitions.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -936,37 +937,6 @@ const FeatureEntry::Choice kMemlogSamplingRateChoices[] = {
     {flag_descriptions::kMemlogSamplingRate5MB,
      heap_profiling::kMemlogSamplingRate,
      heap_profiling::kMemlogSamplingRate5MB},
-};
-
-const FeatureEntry::FeatureParam kMemoryVariationOnDevice[] = {
-    {"MemoriesMaxVisitsToCluster", "1000"}};
-const FeatureEntry::FeatureParam kMemoryVariationExperimentA[] = {
-    {"MemoriesExperimentName", "A"},
-    {"MemoriesMaxVisitsToCluster", "200"},
-    {"MemoriesOnDeviceClusteringBackend", "false"}};
-const FeatureEntry::FeatureParam kMemoryVariationExperimentB[] = {
-    {"MemoriesExperimentName", "B"},
-    {"MemoriesMaxVisitsToCluster", "200"},
-    {"MemoriesOnDeviceClusteringBackend", "false"}};
-const FeatureEntry::FeatureParam kMemoryVariationExperimentC[] = {
-    {"MemoriesExperimentName", "C"},
-    {"MemoriesMaxVisitsToCluster", "200"},
-    {"MemoriesOnDeviceClusteringBackend", "false"}};
-const FeatureEntry::FeatureParam kMemoryVariationRemote[] = {
-    {"MemoriesMaxVisitsToCluster", "10000"},
-    {"MemoriesOnDeviceClusteringBackend", "false"}};
-
-const FeatureEntry::FeatureVariation kMemoriesVariations[] = {
-    {"Limit 1000, On-Device", kMemoryVariationOnDevice,
-     base::size(kMemoryVariationOnDevice), nullptr},
-    {"Limit 200, Remote Exp. A", kMemoryVariationExperimentA,
-     base::size(kMemoryVariationExperimentA), nullptr},
-    {"Limit 200, Remote Exp. B", kMemoryVariationExperimentB,
-     base::size(kMemoryVariationExperimentB), nullptr},
-    {"Limit 200, Remote Exp. C", kMemoryVariationExperimentC,
-     base::size(kMemoryVariationExperimentC), nullptr},
-    {"Limit 10k, Remote", kMemoryVariationRemote,
-     base::size(kMemoryVariationRemote), nullptr},
 };
 
 const FeatureEntry::FeatureParam kPageContentAnnotationsParams[] = {
@@ -3013,7 +2983,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kDarkLightMode)},
     {"vertical-snap", flag_descriptions::kVerticalSnapName,
      flag_descriptions::kVerticalSnapDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kVerticalSnapState)},
+     FEATURE_VALUE_TYPE(chromeos::wm::features::kVerticalSnap)},
     {"ash-bento-bar", flag_descriptions::kBentoBarName,
      flag_descriptions::kBentoBarDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kBentoBar)},
@@ -4161,10 +4131,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilitySwitchAccessText)},
-    {"enable-switch-access-point-scanning",
-     flag_descriptions::kSwitchAccessPointScanningName,
-     flag_descriptions::kSwitchAccessPointScanningDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kEnableSwitchAccessPointScanning)},
     {"enable-experimental-accessibility-switch-access-setup-guide",
      flag_descriptions::kExperimentalAccessibilitySwitchAccessSetupGuideName,
      flag_descriptions::
@@ -4220,6 +4186,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFillOnAccountSelectDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelect)},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"arc-allow-data-retention", flag_descriptions::kArcAllowDataRetentionName,
+     flag_descriptions::kArcAllowDataRetentionDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kArcAllowDataRetention)},
     {"arc-custom-tabs-experiment",
      flag_descriptions::kArcCustomTabsExperimentName,
      flag_descriptions::kArcCustomTabsExperimentDescription, kOsCrOS,
@@ -4662,11 +4631,14 @@ const FeatureEntry kFeatureEntries[] = {
                                     kOmniboxDynamicMaxAutocompleteVariations,
                                     "OmniboxBundledExperimentV1")},
 
-    {"memories", flag_descriptions::kMemoriesName,
-     flag_descriptions::kMemoriesDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(history_clusters::kMemories,
-                                    kMemoriesVariations,
-                                    "Memories")},
+    {"history-journeys", flag_descriptions::kJourneysName,
+     flag_descriptions::kJourneysDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(history_clusters::kJourneys)},
+
+    {"history-journeys-omnibox-action",
+     flag_descriptions::kJourneysOmniboxActionName,
+     flag_descriptions::kJourneysOmniboxActionDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(history_clusters::kOmniboxAction)},
 
     {"page-content-annotations", flag_descriptions::kPageContentAnnotationsName,
      flag_descriptions::kPageContentAnnotationsDescription, kOsDesktop,
@@ -7069,11 +7041,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(webapps::features::kPwaInstallUseBottomSheet)},
 #endif
 
-    {"text-fragment-color-change",
-     flag_descriptions::kTextFragmentColorChangeName,
-     flag_descriptions::kTextFragmentColorChangeDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kTextFragmentColorChange)},
-
 #if defined(OS_WIN)
     {"raw-audio-capture", flag_descriptions::kRawAudioCaptureName,
      flag_descriptions::kRawAudioCaptureDescription, kOsWin,
@@ -7671,6 +7638,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-raw-draw", flag_descriptions::kEnableRawDrawName,
      flag_descriptions::kEnableRawDrawDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kRawDraw)},
+
+    {"web-midi", flag_descriptions::kWebMidiName,
+     flag_descriptions::kWebMidiDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWebMidi)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

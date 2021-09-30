@@ -3576,7 +3576,6 @@ static_library("browser") {
       "apps/intent_helper/intent_picker_auto_display_service.h",
       "apps/intent_helper/intent_picker_auto_display_service_factory.cc",
       "apps/intent_helper/intent_picker_auto_display_service_factory.h",
-      "apps/intent_helper/intent_picker_constants.cc",
       "apps/intent_helper/intent_picker_constants.h",
       "apps/intent_helper/intent_picker_helpers.cc",
       "apps/intent_helper/intent_picker_helpers.h",
@@ -4367,6 +4366,7 @@ static_library("browser") {
       "//chrome/app/theme:chrome_unscaled_resources_grit",
       "//chrome/app/vector_icons",
       "//chrome/browser/cart:mojo_bindings",
+      "//chrome/browser/enterprise/signals:utils",
       "//chrome/browser/policy:path_parser",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
       "//chrome/browser/resource_coordinator:intervention_policy_database_proto",
@@ -5054,7 +5054,6 @@ static_library("browser") {
       "//chromeos/crosapi/mojom",
       "//chromeos/lacros",
       "//chromeos/ui/frame",
-      "//chromeos/ui/wm",
       "//ui/platform_window",
     ]
   }
@@ -5092,6 +5091,7 @@ static_library("browser") {
       "//chromeos/crosapi/cpp",
       "//chromeos/crosapi/mojom",
       "//chromeos/dbus/constants",
+      "//chromeos/ui/wm",
     ]
   }
 

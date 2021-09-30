@@ -995,6 +995,11 @@ void OverlayWindowViews::SetSurfaceId(const viz::SurfaceId& surface_id) {
       true /* stretch_content_to_fill_bounds */);
 }
 
+void OverlayWindowViews::OnNativeFocus() {
+  UpdateControlsVisibility(true);
+  views::Widget::OnNativeFocus();
+}
+
 void OverlayWindowViews::OnNativeBlur() {
   // Controls should be hidden when there is no more focus on the window. This
   // is used for tabbing and touch interactions. For mouse interactions, the
@@ -1272,7 +1277,16 @@ void OverlayWindowViews::UpdateMaxSize(const gfx::Rect& work_area) {
   if (work_area.IsEmpty())
     return;
 
-  max_size_ = gfx::Size(work_area.width() / 2, work_area.height() / 2);
+  const auto new_max_size =
+      gfx::Size(work_area.width() / 2, work_area.height() / 2);
+  // Make sure we only run the logic to update the current size if the maximum
+  // size actually changes. Running it unconditionally means also running it
+  // when DPI <-> pixel computations introduce off-by-1 errors, which leads to
+  // incorrect window sizing/positioning.
+  if (new_max_size == max_size_)
+    return;
+
+  max_size_ = new_max_size;
 
   if (!native_widget())
     return;
@@ -1285,7 +1299,9 @@ void OverlayWindowViews::UpdateMaxSize(const gfx::Rect& work_area) {
     return;
   }
 
-  SetSize(max_size_);
+  gfx::Size clamped_size = GetBounds().size();
+  clamped_size.SetToMin(max_size_);
+  SetSize(clamped_size);
 }
 
 void OverlayWindowViews::TogglePlayPause() {

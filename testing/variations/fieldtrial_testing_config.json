@@ -2023,6 +2023,22 @@
             ]
         }
     ],
+    "ClientSideDetectionDocumentScanning": [
+        {
+            "platforms": [
+                "linux",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ClientSideDetectionDocumentScanning"
+                    ]
+                }
+            ]
+        }
+    ],
     "ClientSideDetectionReferrerChain": [
         {
             "platforms": [
@@ -2141,9 +2157,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20210721",
+                    "name": "Enabled_20210929",
                     "params": {
-                        "delete_all_merchants_on_clear_history": "true"
+                        "delete_all_merchants_on_clear_history": "true",
+                        "trust_signals_message_delay_ms": "20000"
                     },
                     "enable_features": [
                         "CommerceMerchantViewer"
@@ -3200,6 +3217,21 @@
             ]
         }
     ],
+    "EnableDuplicateDownloadDialog": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableDuplicateDownloadDialog"
+                    ]
+                }
+            ]
+        }
+    ],
     "EnableManualPasswordGenerationIOS": [
         {
             "platforms": [
@@ -3864,6 +3896,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "HelpAppSearchServiceIntegration"
+                    ]
+                }
+            ]
+        }
+    ],
+    "HistoryClusters": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "JourneysPersistContextAnnotationsInHistoryDb"
                     ]
                 }
             ]
@@ -4570,26 +4621,6 @@
                         "EncryptedReportingPipeline",
                         "MeetDevicesCloudLogger",
                         "MeetDevicesMojoServices"
-                    ]
-                }
-            ]
-        }
-    ],
-    "MemoriesHistoryClusters": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MemoriesPersistContextAnnotationsInHistoryDb"
                     ]
                 }
             ]
@@ -7427,29 +7458,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SurfaceSyncThrottling"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SyncInstanceIDTokenTTL": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "time_to_live_seconds": "1209600"
-                    },
-                    "enable_features": [
-                        "SyncInstanceIDTokenTTL"
                     ]
                 }
             ]

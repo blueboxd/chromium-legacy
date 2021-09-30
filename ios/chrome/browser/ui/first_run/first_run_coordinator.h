@@ -9,8 +9,6 @@
 
 @class ScreenProvider;
 
-@protocol SyncPresenter;
-
 // The delegate for the FirstRunCoordinator.
 @protocol FirstRunCoordinatorDelegate <NSObject>
 
@@ -27,12 +25,10 @@
 @interface FirstRunCoordinator : ChromeCoordinator
 
 // Initiate the coordinator.
-// |syncPresenter| helps present sync related UI.
+// |browser| used for authentication. It must not be off the record (incognito).
 // |screenProvider| helps decide which screen to show.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser
-                               mainBrowser:(Browser*)mainBrowser
-                             syncPresenter:(id<SyncPresenter>)presenter
                             screenProvider:(ScreenProvider*)screenProvider
     NS_DESIGNATED_INITIALIZER;
 

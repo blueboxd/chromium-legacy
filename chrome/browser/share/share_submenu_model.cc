@@ -62,7 +62,7 @@ std::u16string FormatURLForClipboard(const GURL& url) {
 
 const base::Feature kShareMenu{
     "ShareMenu",
-    base::FEATURE_ENABLED_BY_DEFAULT,
+    base::FEATURE_DISABLED_BY_DEFAULT,
 };
 
 ShareSubmenuModel::ShareSubmenuModel(
@@ -139,8 +139,8 @@ void ShareSubmenuModel::AddGenerateQRCodeItem() {
                           IDS_CONTEXT_MENU_GENERATE_QR_CODE_PAGE);
       break;
     case Context::LINK:
-      // TODO(https://crbug.com/1252129): Support this mode, which will require
-      // a new string.
+      AddItemWithStringId(IDC_CONTENT_CONTEXT_GENERATE_QR_CODE,
+                          IDS_CONTEXT_MENU_GENERATE_QR_CODE_LINK);
       break;
     default:
       break;
@@ -203,6 +203,9 @@ void ShareSubmenuModel::GenerateQRCode() {
   if (context_ == Context::IMAGE) {
     base::RecordAction(base::UserMetricsAction(
         "SharingQRCode.DialogLaunched.ContextMenuImage"));
+  } else if (context_ == Context::LINK) {
+    base::RecordAction(base::UserMetricsAction(
+        "SharingQRCode.DialogLaunched.ContextMenuLink"));
   } else {
     base::RecordAction(base::UserMetricsAction(
         "SharingQRCode.DialogLaunched.ContextMenuPage"));

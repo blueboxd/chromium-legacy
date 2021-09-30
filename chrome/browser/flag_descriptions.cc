@@ -80,6 +80,11 @@ const char kAnimatedImageResumeDescription[] =
     "Resumes animated images from the last frame drawn rather than attempt "
     "to catch up to the frame that should be drawn based on current time.";
 
+const char kArcAllowDataRetentionName[] =
+    "Allow to keep ARC data during ARC turn-off.";
+const char kArcAllowDataRetentionDescription[] =
+    "Allow to not remove ARC data during ARC turn-off.";
+
 const char kAriaElementReflectionName[] = "Enable ARIA element reflection";
 const char kAriaElementReflectionDescription[] =
     "Enable setting ARIA relationship attributes that reference other elements "
@@ -1558,6 +1563,13 @@ const char kJavascriptHarmonyShippingDescription[] =
     "conflict with the latest JavaScript features. This flag allows disabling "
     "support of those features for compatibility with such pages.";
 
+const char kJourneysName[] = "History Journeys";
+const char kJourneysDescription[] = "Enables the History Journeys UI.";
+
+const char kJourneysOmniboxActionName[] = "History Journeys Omnibox Action";
+const char kJourneysOmniboxActionDescription[] =
+    "Enables the History Journeys Omnibox Action.";
+
 const char kLegacyTLSEnforcedName[] =
     "Enforce deprecation of legacy TLS versions";
 const char kLegacyTLSEnforcedDescription[] =
@@ -1605,9 +1617,6 @@ const char kMediaRouterCastAllowAllIPsDescription[] =
 const char kMediaSessionWebRTCName[] = "Enable WebRTC actions in Media Session";
 const char kMediaSessionWebRTCDescription[] =
     "Adds new actions into Media Session for video conferencing.";
-
-const char kMemoriesName[] = "Memories";
-const char kMemoriesDescription[] = "Enables the history clusters UI.";
 
 const char kMetricsSettingsAndroidName[] = "Metrics Settings on Android";
 const char kMetricsSettingsAndroidDescription[] =
@@ -2534,11 +2543,6 @@ const char kTabRestoreSubMenusDescription[] =
     "Show app menu history sub menus for the contents of recently closed tab "
     "groups and windows.";
 
-const char kTextFragmentColorChangeName[] = "Text Fragment color change";
-const char kTextFragmentColorChangeDescription[] =
-    "Changes the Text Fragment background color"
-    "away from the default yellow.";
-
 const char kTFLiteLanguageDetectionName[] = "TFLite-based Language Detection";
 const char kTFLiteLanguageDetectionDescription[] =
     "Uses TFLite for language detection in place of CLD3";
@@ -2728,6 +2732,11 @@ const char kWebIdName[] = "WebID";
 const char kWebIdDescription[] =
     "Enables WebID HTTP filtering and JavaScript "
     "API to intermediate federated identity requests.";
+
+const char kWebMidiName[] = "Web MIDI";
+const char kWebMidiDescription[] =
+    "Enables the implementation of the Web MIDI API. When disabled the "
+    "interface will still be exposed by Blink.";
 
 const char kWebOtpBackendName[] = "Web OTP";
 const char kWebOtpBackendDescription[] =
@@ -4613,12 +4622,6 @@ const char kExperimentalAccessibilitySwitchAccessTextName[] =
 const char kExperimentalAccessibilitySwitchAccessTextDescription[] =
     "Enable experimental or in-progress Switch Access features for improved "
     "text input";
-
-const char kSwitchAccessPointScanningName[] =
-    "Enable point scanning with Switch Access.";
-const char kSwitchAccessPointScanningDescription[] =
-    "Enable an in-process feature to select points onscreen with Switch "
-    "Access.";
 
 const char kExperimentalAccessibilitySwitchAccessSetupGuideName[] =
     "Enable setup guide for Switch Access.";

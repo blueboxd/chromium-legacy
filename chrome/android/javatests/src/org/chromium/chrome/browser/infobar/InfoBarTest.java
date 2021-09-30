@@ -26,6 +26,7 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -56,6 +57,7 @@ import org.chromium.url.GURL;
 
 import java.net.HttpURLConnection;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /** Tests for the InfoBars. */
@@ -247,7 +249,7 @@ public class InfoBarTest {
     @Test
     @MediumTest
     @Feature({"Browser", "Main"})
-    public void testInfoBarForPopUp() throws TimeoutException {
+    public void testInfoBarForPopUp() throws TimeoutException, ExecutionException {
         sActivityTestRule.loadUrl(sTestServer.getURL(POPUP_PAGE));
         mListener.addInfoBarAnimationFinished("InfoBar not added");
 
@@ -255,9 +257,10 @@ public class InfoBarTest {
         Assert.assertEquals("Wrong infobar count", 1, infoBars.size());
         Assert.assertTrue(InfoBarUtil.hasPrimaryButton(infoBars.get(0)));
         Assert.assertFalse(InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
-        InfoBarUtil.clickPrimaryButton(infoBars.get(0));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> InfoBarUtil.clickPrimaryButton(infoBars.get(0)));
+        InfoBarUtil.waitUntilNoInfoBarsExist(sActivityTestRule.getInfoBars());
         mListener.removeInfoBarAnimationFinished("InfoBar not removed.");
-        Assert.assertEquals("Wrong infobar count", 0, infoBars.size());
 
         // A second load should open a popup and should not show the infobar.
         int tabCount = sActivityTestRule.tabsCount(false);
@@ -353,6 +356,7 @@ public class InfoBarTest {
     @MediumTest
     @CommandLineFlags.Add("force-fieldtrials=DataCompressionProxyPromoVisibility/Enabled")
     @Feature({"Browser", "Main"})
+    @DisabledTest(message = "crbug.com/1254028")
     public void testDataReductionPromoInfoBarDismissed() {
         GURL gurl = new GURL("http://google.com");
         TestThreadUtils.runOnUiThreadBlocking(() -> {

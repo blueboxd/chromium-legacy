@@ -179,6 +179,11 @@
     "expiry_milestone": 99
   },
   {
+    "name": "arc-allow-data-retention",
+    "owners": [ "yaohuali" ],
+    "expiry_milestone": 104
+  },
+  {
     "name": "arc-custom-tabs-experiment",
     "owners": [ "hashimoto", "dominickn" ],
     "expiry_milestone": 95
@@ -2549,7 +2554,7 @@
   {
     "name": "enable-skia-renderer",
     "owners": [ "backer", "kylechar", "penghuang" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 100
   },
   {
     "name": "enable-start-surface",
@@ -3331,6 +3336,16 @@
     "expiry_milestone": 94
   },
   {
+    "name": "history-journeys",
+    "owners": [ "tommycli", "chrome-memories@google.com", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 105
+  },
+  {
+    "name": "history-journeys-omnibox-action",
+    "owners": [ "tommycli", "chrome-memories@google.com", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 105
+  },
+  {
     "name": "homepage-promo-card",
     "owners": [ "wenyufu", "clank-app-team@google.com" ],
     "expiry_milestone": 90
@@ -3389,8 +3404,8 @@
   },
   {
     "name": "incognito-brand-consistency-for-desktop",
-    "owners": [ "roagarwal", "rhalavati", "chrome-incognito@google.com" ],
-    "expiry_milestone": 95
+    "owners": [ "roagarwal", "chrome-incognito@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "incognito-brand-consistency-for-ios",
@@ -3414,7 +3429,7 @@
   },
   {
     "name": "incognito-reauthentication-for-android",
-    "owners": [ "roagarwal", "rhalavati", "chrome-incognito@google.com" ],
+    "owners": [ "roagarwal", "chrome-incognito@google.com" ],
     "expiry_milestone": 100
   },
   {
@@ -3424,8 +3439,8 @@
   },
   {
     "name": "inherit-native-theme-from-parent-widget",
-    "owners": [ "roagarwal", "rhalavati", "chrome-incognito@google.com" ],
-    "expiry_milestone": 95
+    "owners": [ "roagarwal", "chrome-incognito@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "installed-apps-in-cbd",
@@ -3688,11 +3703,6 @@
     // capture a memlog without disturbing the situation under test by
     // restarting to apply a switch. It should not be removed.
     "expiry_milestone": -1
-  },
-  {
-    "name": "memories",
-    "owners": [ "tommycli", "chrome-memories@google.com", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 105
   },
   {
     "name": "messages-for-android-ads-blocked",
@@ -5184,11 +5194,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "text-fragment-color-change",
-    "owners": [ "cheickcisse@google.com" ],
-    "expiry_milestone": 94
-  },
-  {
     "name": "theme-refactor-android",
     "owners": [ "sinansahin@google.com", "twellington", "clank-app-team@google.com" ],
     "expiry_milestone": 100
@@ -5381,6 +5386,11 @@
     "expiry_milestone": 99
   },
   {
+    "name": "use-lens-to-search-for-image",
+    "owners": [ "bernsteine", "hujasonx" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "use-lookalikes-for-navigation-suggestions",
     "owners": [ "jdeblasio", "meacer" ],
     "expiry_milestone": 86
@@ -5535,6 +5545,11 @@
   {
     "name": "web-feed-sort",
     "owners": ["//chrome/android/feed/OWNERS", "feed@chromium.org" ],
+    "expiry_milestone": 100
+  },
+  {
+    "name": "web-midi",
+    "owners": [ "reillyg", "deviceapi-team@google.com" ],
     "expiry_milestone": 100
   },
   {

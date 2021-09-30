@@ -10,12 +10,11 @@ import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Annotation, URLVisit} from './history_clusters.mojom-webui.js';
-import {MetricsProxy, VisitAction, VisitType} from './metrics_proxy.js';
-import {OpenWindowProxy} from './open_window_proxy.js';
+import {MetricsProxyImpl, VisitAction, VisitType} from './metrics_proxy.js';
+import {OpenWindowProxyImpl} from './open_window_proxy.js';
 
 /**
  * @fileoverview This file provides a custom element displaying a visit to a
@@ -106,13 +105,25 @@ class VisitRowElement extends PolymerElement {
   // Event handlers
   //============================================================================
 
+  private onKeydown_(e: KeyboardEvent) {
+    // To be consistent with <history-list>, only handle Enter, and not Space.
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    // To record metrics.
+    this.onAuxClick_();
+
+    OpenWindowProxyImpl.getInstance().open(this.visit.normalizedUrl.url);
+  }
+
   private onActionMenuButtonClick_(event: MouseEvent) {
     this.$.actionMenu.get().showAt(this.$.actionMenuButton);
     event.preventDefault();  // Prevent default browser action (navigation).
   }
 
   private onAuxClick_() {
-    MetricsProxy.getInstance().recordVisitAction(
+    MetricsProxyImpl.getInstance().recordVisitAction(
         VisitAction.CLICKED, this.index, this.getVisitType_());
 
     // Notify the parent <history-cluster> element of this event.
@@ -123,16 +134,17 @@ class VisitRowElement extends PolymerElement {
   }
 
   private onClick_(event: MouseEvent) {
-    // Ignore previousely handled events.
+    // Ignore previously handled events.
     if (event.defaultPrevented) {
       return;
     }
 
     event.preventDefault();  // Prevent default browser action (navigation).
 
+    // To record metrics.
     this.onAuxClick_();
 
-    OpenWindowProxy.getInstance().open(this.visit.normalizedUrl.url);
+    OpenWindowProxyImpl.getInstance().open(this.visit.normalizedUrl.url);
   }
 
   private onRemoveAllButtonClick_() {
@@ -154,7 +166,7 @@ class VisitRowElement extends PolymerElement {
 
     this.$.actionMenu.get().close();
 
-    MetricsProxy.getInstance().recordVisitAction(
+    MetricsProxyImpl.getInstance().recordVisitAction(
         VisitAction.DELETED, this.index, this.getVisitType_());
   }
 

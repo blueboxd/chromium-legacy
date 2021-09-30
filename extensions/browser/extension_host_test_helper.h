@@ -44,9 +44,10 @@ class ExtensionHostTestHelper : public ExtensionHostRegistry::Observer {
   // `view_type`. Other extension hosts matching the event (even from the same
   // extension and browser context) will be ignored. This allows tests to wait
   // for, e.g., a background page or popup host event to happen.
-  void RestrictToType(mojom::ViewType view_type) {
-    restrict_to_type_ = view_type;
-  }
+  void RestrictToType(mojom::ViewType view_type);
+
+  // Restricts this class to only observing the specified `host`.
+  void RestrictToHost(const ExtensionHost* host);
 
   // Waits for an ExtensionHost matching the restrictions (if any) to fire the
   // corresponding notification.
@@ -105,6 +106,9 @@ class ExtensionHostTestHelper : public ExtensionHostRegistry::Observer {
   // A closure to quit an active run loop, if we're waiting on a given event.
   base::OnceClosure quit_loop_;
 
+  // The associated browser context.
+  content::BrowserContext* const browser_context_;
+
   // The ID of the extension whose hosts this helper is watching, if it is
   // restricted to a given ID.
   const ExtensionId extension_id_;
@@ -112,6 +116,10 @@ class ExtensionHostTestHelper : public ExtensionHostRegistry::Observer {
   // The specific type of host this helper is waiting on, if any (nullopt
   // implies waiting on any kind of ExtensionHost).
   absl::optional<mojom::ViewType> restrict_to_type_;
+
+  // The specific host this helper is waiting on, if any (null implies
+  // waiting on any host).
+  const ExtensionHost* restrict_to_host_ = nullptr;
 
   // The set of all events this helper has seen and their corresponding
   // ExtensionHosts. ExtensionHosts are nulled out when they are destroyed, but

@@ -60,9 +60,15 @@ extern const char kElasticOverscrollTypeTransform[];
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kApplyNativeOcclusionToCompositor;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kCalculateNativeWinOcclusion;
+extern const char kApplyNativeOcclusionToCompositorType[];
 COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kEvictRootSurfaceWhenHidden;
+extern const char kApplyNativeOcclusionToCompositorTypeApplyOnly[];
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const char kApplyNativeOcclusionToCompositorTypeApplyAndEvict[];
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const char kApplyNativeOcclusionToCompositorTypeEvictOnly[];
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kCalculateNativeWinOcclusion;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kInputPaneOnScreenKeyboard;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
@@ -70,6 +76,10 @@ extern const base::Feature kPointerEventsForTouch;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kScreenPowerListenerForNativeWinOcclusion;
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kTSFImeSupport;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kWin11StyleMenus;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const char kWin11StyleMenuAllWindowsVersionsName[];
 
 // Returns true if the system should use WM_POINTER events for touch events.
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUsingWMPointerForTouch();

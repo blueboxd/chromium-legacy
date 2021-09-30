@@ -28,6 +28,11 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 const base::Feature kAccountManagementFlowsV2{"AccountManagementFlowsV2",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Adjusts portrait mode split view to avoid the input field in the bottom
+// window being occluded by the virtual keyboard.
+const base::Feature kAdjustSplitViewForVK{"AdjustSplitViewForVK",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the UI to support Ambient EQ if the device supports it.
 // See https://crbug.com/1021193 for more details.
 const base::Feature kAllowAmbientEQ{"AllowAmbientEQ",
@@ -1120,12 +1125,6 @@ const base::Feature kUseWallpaperStagingUrl{"UseWallpaperStagingUrl",
 const base::Feature kUserActivityPrediction{"UserActivityPrediction",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables vertical snap state for clamshell mode. This allows users to snap
-// top and bottom when the screen is in portrait orientation, while snap left
-// and right when the screen is in landscape orientation.
-const base::Feature kVerticalSnapState{"VerticalSnapState",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable the Virtual Keyboard API.
 const base::Feature kVirtualKeyboardApi{"VirtualKeyboardApi",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1226,6 +1225,10 @@ bool DoWindowsFollowCursor() {
 
 bool IsAccountManagementFlowsV2Enabled() {
   return base::FeatureList::IsEnabled(kAccountManagementFlowsV2);
+}
+
+bool IsAdjustSplitViewForVKEnabled() {
+  return base::FeatureList::IsEnabled(kAdjustSplitViewForVK);
 }
 
 bool IsAllowAmbientEQEnabled() {
@@ -1676,10 +1679,6 @@ bool IsUseStorkSmdsServerAddressEnabled() {
   return base::FeatureList::IsEnabled(kUseStorkSmdsServerAddress);
 }
 
-bool IsVerticalSnapStateEnabled() {
-  return base::FeatureList::IsEnabled(kVerticalSnapState);
-}
-
 bool IsWallpaperWebUIEnabled() {
   return base::FeatureList::IsEnabled(kWallpaperWebUI);
 }
@@ -1715,11 +1714,6 @@ bool ShouldUseBrowserSyncConsent() {
   // UseBrowserSyncConsent requires SyncConsentOptional.
   return base::FeatureList::IsEnabled(kSyncConsentOptional) &&
          base::FeatureList::IsEnabled(kUseBrowserSyncConsent);
-}
-
-bool ShouldUseQuickAnswersTextAnnotator() {
-  // The text classifier is only available on ChromeOS.
-  return base::SysInfo::IsRunningOnChromeOS();
 }
 
 bool ShouldUseV1DeviceSync() {

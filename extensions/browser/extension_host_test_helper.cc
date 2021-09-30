@@ -4,6 +4,7 @@
 
 #include "extensions/browser/extension_host_test_helper.h"
 
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "extensions/browser/extension_host.h"
@@ -17,12 +18,27 @@ ExtensionHostTestHelper::ExtensionHostTestHelper(
 ExtensionHostTestHelper::ExtensionHostTestHelper(
     content::BrowserContext* browser_context,
     ExtensionId extension_id)
-    : extension_id_(std::move(extension_id)) {
+    : browser_context_(browser_context),
+      extension_id_(std::move(extension_id)) {
   host_registry_observation_.Observe(
       ExtensionHostRegistry::Get(browser_context));
 }
 
 ExtensionHostTestHelper::~ExtensionHostTestHelper() = default;
+
+void ExtensionHostTestHelper::RestrictToType(mojom::ViewType type) {
+  // Restricting to both a specific host and a type is either redundant (if
+  // the types match) or contradictory (if they don't). Don't allow it.
+  DCHECK(!restrict_to_host_) << "Can't restrict to both a host and view type.";
+  restrict_to_type_ = type;
+}
+
+void ExtensionHostTestHelper::RestrictToHost(const ExtensionHost* host) {
+  // Restricting to both a specific host and a type is either redundant (if
+  // the types match) or contradictory (if they don't). Don't allow it.
+  DCHECK(!restrict_to_type_) << "Can't restrict to both a host and view type.";
+  restrict_to_host_ = host;
+}
 
 void ExtensionHostTestHelper::OnExtensionHostRenderProcessReady(
     content::BrowserContext* browser_context,
@@ -74,9 +90,17 @@ ExtensionHost* ExtensionHostTestHelper::WaitFor(HostEvent event) {
 
 void ExtensionHostTestHelper::EventSeen(ExtensionHost* host, HostEvent event) {
   // Check if the host matches our restrictions.
+  // Note: We have to check the browser context explicitly because the
+  // ExtensionHostRegistry is shared between on- and off-the-record profiles,
+  // so the `host`'s browser context may not be the same as the one associated
+  // with this object in the case of split mode extensions.
+  if (host->browser_context() != browser_context_)
+    return;
   if (!extension_id_.empty() && host->extension_id() != extension_id_)
     return;
   if (restrict_to_type_ && host->extension_host_type() != restrict_to_type_)
+    return;
+  if (restrict_to_host_ && host != restrict_to_host_)
     return;
 
   if (event == HostEvent::kDestroyed) {

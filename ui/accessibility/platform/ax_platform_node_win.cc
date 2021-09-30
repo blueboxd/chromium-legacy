@@ -4939,19 +4939,22 @@ HRESULT AXPlatformNodeWin::GetAnnotationTypesAttribute(
     const absl::optional<int>& end_offset,
     base::win::VariantVector* result) {
   base::win::VariantVector variant_vector;
-
   MarkerTypeRangeResult grammar_result = MarkerTypeRangeResult::kNone;
   MarkerTypeRangeResult spelling_result = MarkerTypeRangeResult::kNone;
+  MarkerTypeRangeResult highlight_result = MarkerTypeRangeResult::kNone;
 
   if (IsText() || IsAtomicTextField()) {
     grammar_result = GetMarkerTypeFromRange(start_offset, end_offset,
                                             ax::mojom::MarkerType::kGrammar);
     spelling_result = GetMarkerTypeFromRange(start_offset, end_offset,
                                              ax::mojom::MarkerType::kSpelling);
+    highlight_result = GetMarkerTypeFromRange(
+        start_offset, end_offset, ax::mojom::MarkerType::kHighlight);
   }
 
   if (grammar_result == MarkerTypeRangeResult::kMixed ||
-      spelling_result == MarkerTypeRangeResult::kMixed) {
+      spelling_result == MarkerTypeRangeResult::kMixed ||
+      highlight_result == MarkerTypeRangeResult::kMixed) {
     Microsoft::WRL::ComPtr<IUnknown> mixed_attribute_value;
     HRESULT hr = ::UiaGetReservedMixedAttributeValue(&mixed_attribute_value);
     if (SUCCEEDED(hr))
@@ -4963,6 +4966,8 @@ HRESULT AXPlatformNodeWin::GetAnnotationTypesAttribute(
     result->Insert<VT_I4>(AnnotationType_SpellingError);
   if (grammar_result == MarkerTypeRangeResult::kMatch)
     result->Insert<VT_I4>(AnnotationType_GrammarError);
+  if (highlight_result == MarkerTypeRangeResult::kMatch)
+    result->Insert<VT_I4>(AnnotationType_Highlighted);
 
   return S_OK;
 }
@@ -7237,8 +7242,8 @@ AXPlatformNodeWin* AXPlatformNodeWin::ComputeUIALabeledBy() {
 
   // This property only accepts static text elements to be returned. Find the
   // first static text used to label this node.
-  for (int32_t id : GetData().GetIntListAttribute(
-           ax::mojom::IntListAttribute::kLabelledbyIds)) {
+  for (int32_t id :
+       GetIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds)) {
     auto* node_win =
         static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(id));
     if (!node_win)
@@ -8225,6 +8230,11 @@ void AXPlatformNodeWin::SanitizeTextAttributeValue(const std::string& input,
 
 void AXPlatformNodeWin::NotifyAPIObserverForPatternRequest(
     PATTERNID pattern_id) const {
+  // Non-web content is always enabled, if a client isn't looking for web
+  // content, don't enable.
+  if (!GetDelegate() || !GetDelegate()->IsWebContent())
+    return;
+
   bool probable_advanced_client_detected = false;
   bool text_pattern_support_needed = false;
   switch (pattern_id) {
@@ -8250,8 +8260,14 @@ void AXPlatformNodeWin::NotifyAPIObserverForPatternRequest(
       observer.OnTextPatternRequested();
   }
 }
+
 void AXPlatformNodeWin::NotifyAPIObserverForPropertyRequest(
     PROPERTYID property_id) const {
+  // Non-web content is always enabled, if a client isn't looking for web
+  // content, don't enable.
+  if (!GetDelegate() || !GetDelegate()->IsWebContent())
+    return;
+
   bool probable_advanced_client_detected = false;
   bool probable_screen_reader_detected = false;
   bool uiautomation_id_requested = false;

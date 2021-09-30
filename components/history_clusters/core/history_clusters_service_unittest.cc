@@ -94,7 +94,7 @@ class HistoryClustersServiceTest : public testing::Test {
             base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME),
         run_loop_quit_(run_loop_.QuitClosure()) {
     scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-    scoped_feature_list_->InitAndEnableFeature(kMemories);
+    scoped_feature_list_->InitAndEnableFeature(kJourneys);
 
     CHECK(history_dir_.CreateUniqueTempDir());
     history_service_ =
@@ -350,13 +350,6 @@ TEST_F(HistoryClustersServiceTest, UnflattenDuplicatesUnitTest) {
   // Collapse 1, 2, 3 into visit 4. Visits 1 and 2 have related searches.
   // Visit 3 had omnibox_url_copied == true.
   ASSERT_EQ(raw_visits[3].annotated_visit.visit_row.visit_id, 4);
-  raw_visits[0].annotated_visit.content_annotations.related_searches.push_back(
-      "abc");
-  raw_visits[0].annotated_visit.content_annotations.related_searches.push_back(
-      "xyz");
-  raw_visits[1].annotated_visit.content_annotations.related_searches.push_back(
-      "abc");
-  raw_visits[2].annotated_visit.context_annotations.omnibox_url_copied = true;
   raw_visits[3].duplicate_visit_ids = {1, 2, 3};
 
   // Collapse 7 into visit 6.
@@ -370,18 +363,8 @@ TEST_F(HistoryClustersServiceTest, UnflattenDuplicatesUnitTest) {
   auto& visits = clusters[0].visits;
   ASSERT_EQ(visits.size(), 4u);
 
-  // Visit 4 should have 1, 2, and 3 as duplicates, and also have
-  // omnibox_url_copied == true, (context annotations are collapsed into the
-  // canonical visit), as well as de-duplicated related searches.
+  // Visit 4 should have 1, 2, and 3 as duplicates.
   EXPECT_EQ(visits[0].annotated_visit.visit_row.visit_id, 4);
-  EXPECT_TRUE(visits[0].annotated_visit.context_annotations.omnibox_url_copied);
-  ASSERT_EQ(
-      visits[0].annotated_visit.content_annotations.related_searches.size(),
-      2u);
-  EXPECT_EQ(visits[0].annotated_visit.content_annotations.related_searches[0],
-            "abc");
-  EXPECT_EQ(visits[0].annotated_visit.content_annotations.related_searches[1],
-            "xyz");
   ASSERT_EQ(visits[0].duplicate_visits.size(), 3u);
   EXPECT_EQ(visits[0].duplicate_visits[0].annotated_visit.visit_row.visit_id,
             1);
@@ -669,7 +652,7 @@ TEST_F(HistoryClustersServiceTest,
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       /*enabled_features=*/{}, /*disabled_features=*/{
-          kMemories,
+          kJourneys,
           kPersistContextAnnotationsInHistoryDb,
       });
 

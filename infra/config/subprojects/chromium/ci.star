@@ -864,6 +864,16 @@ ci.android_builder(
 )
 
 ci.android_fyi_builder(
+    name = "android-cronet-x86-dbg-oreo-tests",
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|test",
+        short_name = "o",
+    ),
+    notifies = ["cronet"],
+    triggered_by = ["android-cronet-x86-dbg"],
+)
+
+ci.android_fyi_builder(
     name = "android-cronet-x86-dbg-pie-tests",
     console_view_entry = consoles.console_view_entry(
         category = "cronet|test",
@@ -878,6 +888,16 @@ ci.android_builder(
     console_view_entry = consoles.console_view_entry(
         category = "cronet|test",
         short_name = "10",
+    ),
+    notifies = ["cronet"],
+    triggered_by = ["android-cronet-x86-dbg"],
+)
+
+ci.android_fyi_builder(
+    name = "android-cronet-x86-dbg-11-tests",
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|test",
+        short_name = "11",
     ),
     notifies = ["cronet"],
     triggered_by = ["android-cronet-x86-dbg"],
@@ -1585,6 +1605,20 @@ ci.chromium_builder(
     ),
     main_console_view = "main",
     os = os.MAC_DEFAULT,
+)
+
+ci.chromium_builder(
+    name = "mac-archive-tagged",
+    console_view_entry = consoles.console_view_entry(
+        category = "mac",
+        short_name = "tag",
+    ),
+    main_console_view = "main",
+    os = os.MAC_DEFAULT,
+    tree_closing = False,
+    schedule = "triggered",
+    triggered_by = [],
+    execution_timeout = 7 * time.hour,
 )
 
 ci.chromium_builder(
@@ -5560,6 +5594,17 @@ ci.linux_builder(
 )
 
 ci.linux_builder(
+    name = "Linux Builder (Wayland)",
+    branch_selector = branches.STANDARD_MILESTONE,
+    console_view_entry = consoles.console_view_entry(
+        category = "release",
+        short_name = "bld-wl",
+    ),
+    cq_mirrors_console_view = "mirrors",
+    main_console_view = "main",
+)
+
+ci.linux_builder(
     name = "Linux Tests",
     branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
@@ -5582,6 +5627,19 @@ ci.linux_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
     triggered_by = ["ci/Linux Builder (dbg)"],
+)
+
+ci.linux_builder(
+    name = "Linux Tests (Wayland)",
+    branch_selector = branches.STANDARD_MILESTONE,
+    console_view_entry = consoles.console_view_entry(
+        category = "release",
+        short_name = "tst-wl",
+    ),
+    cq_mirrors_console_view = "mirrors",
+    goma_backend = None,
+    main_console_view = "main",
+    triggered_by = ["ci/Linux Builder (Wayland)"],
 )
 
 ci.linux_builder(

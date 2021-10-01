@@ -446,7 +446,7 @@
   {
     "name": "autofill-keyboard-accessory-view",
     "owners": [ "fhorschig@chromium.org" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 99
   },
   {
     "name": "autofill-parse-merchant-promo-code-fields",
@@ -1427,7 +1427,7 @@
   {
     "name": "enable-autofill-account-wallet-storage",
     "owners": [ "treib", "jsaul@google.com", "butter-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 97
   },
   {
     "name": "enable-autofill-credit-card-ablation-experiment",
@@ -1453,24 +1453,9 @@
     "expiry_milestone": 96
   },
   {
-    "name": "enable-autofill-infobar-account-indication-footer-for-single-account-users",
-    "owners": [ "mdjones", "treib"],
-    "expiry_milestone": 95
-  },
-  {
-    "name": "enable-autofill-infobar-account-indication-footer-for-sync-users",
-    "owners": [ "mdjones", "treib"],
-    "expiry_milestone": 95
-  },
-  {
     "name": "enable-autofill-manual-fallback",
     "owners": [ "fhorschig@chromium.org" ],
-    "expiry_milestone": 95
-  },
-  {
-    "name": "enable-autofill-password-account-indicator-footer",
-    "owners": [ "mdjones", "treib"],
-    "expiry_milestone": 95
+    "expiry_milestone": 99
   },
   {
     "name": "enable-autofill-refresh-style",
@@ -1480,7 +1465,7 @@
   {
     "name": "enable-autofill-save-card-info-bar-account-indication-footer",
     "owners": [ "mdjones", "treib"],
-    "expiry_milestone": 95
+    "expiry_milestone": 97
   },
   {
     "name": "enable-autofill-upi-vpa",
@@ -4568,7 +4553,7 @@
   {
     "name": "recover-from-never-save-android",
     "owners": [ "ioanap" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 99
   },
   {
     "name": "reduce-display-notifications",
@@ -5048,11 +5033,6 @@
     "expiry_milestone": 92
   },
   {
-    "name": "split-settings-sync",
-    "owners": [ "rsorokin", "cros-oac@google.com" ],
-    "expiry_milestone": 98
-  },
-  {
     "name": "start-surface",
     "owners": [ "gogerald", "bling-flags@google.com" ],
     "expiry_milestone": 94
@@ -5094,6 +5074,11 @@
     "name": "sync-autofill-wallet-offer-data",
     "owners": ["siyua", "treib"],
     "expiry_milestone": 100
+  },
+  {
+    "name": "sync-settings-categorization",
+    "owners": [ "bsazonov", "rsorokin", "cros-oac@google.com" ],
+    "expiry_milestone": 98
   },
   {
     "name": "sync-setup-friendly-settings",
@@ -5416,11 +5401,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "use-username-for-signin-notification-infobar-title",
-    "owners": [ "fernandex", "chrome-signin-team" ],
-    "expiry_milestone": 96
-  },
-  {
     "name": "use-wallpaper-staging-url",
     "owners": [ "cros-customization@google.com", "hsuregan", "khorimoto" ],
     // This flag is required for QA and dogfood testing.
@@ -5493,11 +5473,6 @@
   {
     "name": "wake-on-wifi-allowed",
     "owners": [ "yenlinlai", "chromeos-wifi-team" ],
-    "expiry_milestone": 95
-  },
-  {
-    "name": "wallet-requires-first-sync-setup",
-    "owners": [ "treib", "butter-team@google.com" ],
     "expiry_milestone": 95
   },
   {

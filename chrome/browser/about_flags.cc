@@ -5264,12 +5264,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSignedExchangeSubresourcePrefetchDescription,
      kOsAll, FEATURE_VALUE_TYPE(features::kSignedExchangeSubresourcePrefetch)},
 
-    {"enable-autofill-account-wallet-storage",
-     flag_descriptions::kEnableAutofillAccountWalletStorageName,
-     flag_descriptions::kEnableAutofillAccountWalletStorageDescription, kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillEnableAccountWalletStorage)},
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-zero-state-app-reinstall-suggestions",
      flag_descriptions::kEnableAppReinstallZeroStateName,
@@ -6250,9 +6244,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"split-settings-sync", flag_descriptions::kSplitSettingsSyncName,
-     flag_descriptions::kSplitSettingsSyncDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kSplitSettingsSync)},
+    {"sync-settings-categorization",
+     flag_descriptions::kSyncSettingsCategorizationName,
+     flag_descriptions::kSyncSettingsCategorizationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kSyncSettingsCategorization)},
     {"os-settings-app-notifications-page",
      flag_descriptions::kOsSettingsAppNotificationsPageName,
      flag_descriptions::kOsSettingsAppNotificationsPageDescription, kOsCrOS,
@@ -6826,15 +6821,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          browsing_data::features::kEnableBrowsingDataLifetimeManager)},
 
-#if defined(OS_ANDROID)
-    {"wallet-requires-first-sync-setup",
-     flag_descriptions::kWalletRequiresFirstSyncSetupCompleteName,
-     flag_descriptions::kWalletRequiresFirstSyncSetupCompleteDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kWalletRequiresFirstSyncSetupComplete)},
-#endif  // defined(OS_ANDROID)
-
     {"privacy-advisor", flag_descriptions::kPrivacyAdvisorName,
      flag_descriptions::kPrivacyAdvisorDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPrivacyAdvisor)},
@@ -6852,16 +6838,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-    {"enable-autofill-password-account-indicator-footer",
-     flag_descriptions::
-         kEnableAutofillPasswordInfoBarAccountIndicationFooterName,
-     flag_descriptions::
-         kEnableAutofillPasswordInfoBarAccountIndicationFooterDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         autofill::features::
-             kAutofillEnablePasswordInfoBarAccountIndicationFooter)},
-
     {"incognito-screenshot", flag_descriptions::kIncognitoScreenshotName,
      flag_descriptions::kIncognitoScreenshotDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kIncognitoScreenshot)},
@@ -6884,44 +6860,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kCheckOfflineCapability,
                                     kCheckOfflineCapabilityVariations,
                                     "CheckOfflineCapability")},
-#if defined(OS_ANDROID)
-    {"enable-autofill-save-card-info-bar-account-indication-footer",
-     flag_descriptions::
-         kEnableAutofillSaveCardInfoBarAccountIndicationFooterName,
-     flag_descriptions::
-         kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         autofill::features::
-             kAutofillEnableSaveCardInfoBarAccountIndicationFooter)},
-#endif
     {"detect-form-submission-on-form-clear",
      flag_descriptions::kDetectFormSubmissionOnFormClearName,
      flag_descriptions::kDetectFormSubmissionOnFormClearDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kDetectFormSubmissionOnFormClear)},
-
-#if defined(OS_ANDROID)
-    {"enable-autofill-infobar-account-indication-footer-for-single-account-"
-     "users",
-     flag_descriptions::
-         kEnableAutofillInfoBarAccountIndicationFooterForSingleAccountUsersName,
-     flag_descriptions::
-         kEnableAutofillInfoBarAccountIndicationFooterForSingleAccountUsersDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         autofill::features::
-             kAutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers)},
-    {"enable-autofill-infobar-account-indication-footer-for-sync-users",
-     flag_descriptions::
-         kEnableAutofillInfoBarAccountIndicationFooterForSyncUsersName,
-     flag_descriptions::
-         kEnableAutofillInfoBarAccountIndicationFooterForSyncUsersDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         autofill::features::
-             kAutofillEnableInfoBarAccountIndicationFooterForSyncUsers)},
-#endif
 
     {"permission-predictions", flag_descriptions::kPermissionPredictionsName,
      flag_descriptions::kPermissionPredictionsDescription, kOsAll,

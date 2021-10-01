@@ -509,11 +509,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kRestoreGaiaCookiesOnUserActionDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(signin::kRestoreGaiaCookiesOnUserAction)},
-    {"use-username-for-signin-notification-infobar-title",
-     flag_descriptions::kSigninNotificationInfobarUsernameInTitleName,
-     flag_descriptions::kSigninNotificationInfobarUsernameInTitleDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(signin::kSigninNotificationInfobarUsernameInTitle)},
     {"minutes-delay-to-restore-gaia-cookies-if-deleted",
      flag_descriptions::kDelayThresholdMinutesToUpdateGaiaCookieName,
      flag_descriptions::kDelayThresholdMinutesToUpdateGaiaCookieDescription,
@@ -727,7 +722,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"use-lens-to-search-for-image",
      flag_descriptions::kUseLensToSearchForImageName,
      flag_descriptions::kUseLensToSearchForImageDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kUseLensToSearchForImage)}};
+     FEATURE_VALUE_TYPE(kUseLensToSearchForImage)},
+    {"force-major-version-to-100",
+     flag_descriptions::kForceMajorVersion100InUserAgentName,
+     flag_descriptions::kForceMajorVersion100InUserAgentDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::kForceMajorVersion100InUserAgent)},
+};
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
   return false;

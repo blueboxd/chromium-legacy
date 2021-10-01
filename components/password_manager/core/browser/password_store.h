@@ -184,7 +184,7 @@ class PasswordStore : public PasswordStoreInterface {
   // instance of PasswordStoreImpl, this member is not used.
   //
   // The backend is injected via the public constructor, this member owns the
-  /// instance and deletes it by calling PasswordStoreBackend::Shutdown on it.
+  // instance and deletes it by calling PasswordStoreBackend::Shutdown on it.
   std::unique_ptr<PasswordStoreBackend> backend_deleter_ = nullptr;
 
   // TaskRunner for tasks that run on the main sequence (usually the UI thread).
@@ -202,16 +202,6 @@ class PasswordStore : public PasswordStoreInterface {
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStore);
 };
-
-// For testing only.
-#if defined(UNIT_TEST)
-inline std::ostream& operator<<(std::ostream& os,
-                                const PasswordFormDigest& digest) {
-  return os << "PasswordFormDigest(scheme: " << digest.scheme
-            << ", signon_realm: " << digest.signon_realm
-            << ", url: " << digest.url << ")";
-}
-#endif
 
 }  // namespace password_manager
 

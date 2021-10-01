@@ -62,11 +62,6 @@ extern const char kAutofillUseRendererIDsDescription[];
 extern const char kLogBreadcrumbsName[];
 extern const char kLogBreadcrumbsDescription[];
 
-// Title and description for the flag that controls the sign-in notification
-// infobar title.
-extern const char kSigninNotificationInfobarUsernameInTitleName[];
-extern const char kSigninNotificationInfobarUsernameInTitleDescription[];
-
 // Title and description for the flag that controls synthetic crash reports
 // generation for Unexplained Termination Events.
 extern const char kSyntheticCrashReportsForUteName[];
@@ -210,6 +205,11 @@ extern const char kForceDisableExtendedSyncPromosDescription[];
 // Title and description for the flag to trigger the startup sign-in promo.
 extern const char kForceStartupSigninPromoName[];
 extern const char kForceStartupSigninPromoDescription[];
+
+// Title and description for the flag to set the major version the UA string to
+// 100.
+extern const char kForceMajorVersion100InUserAgentName[];
+extern const char kForceMajorVersion100InUserAgentDescription[];
 
 // Title and description for the command line switch used to determine the
 // active fullscreen viewport adjustment mode.

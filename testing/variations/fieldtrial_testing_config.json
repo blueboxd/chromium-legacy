@@ -2026,22 +2026,6 @@
             ]
         }
     ],
-    "ClientSideDetectionDocumentScanning": [
-        {
-            "platforms": [
-                "linux",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ClientSideDetectionDocumentScanning"
-                    ]
-                }
-            ]
-        }
-    ],
     "ClientSideDetectionReferrerChain": [
         {
             "platforms": [
@@ -6409,6 +6393,22 @@
             ]
         }
     ],
+    "RadioThrottleOnWeakSignalAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ThrottleAllPreconnect",
+                    "enable_features": [
+                        "NoNavigationPreconnectOnWeakSignal",
+                        "NoPreconnectToSearchOnWeakSignal"
+                    ]
+                }
+            ]
+        }
+    ],
     "ReadLater": [
         {
             "platforms": [
@@ -8058,14 +8058,14 @@
             ],
             "experiments": [
                 {
-                    "name": "Disabled",
-                    "disable_features": [
+                    "name": "Enabled",
+                    "enable_features": [
                         "V8ConcurrentInlining"
                     ]
                 },
                 {
-                    "name": "Enabled",
-                    "enable_features": [
+                    "name": "Disabled",
+                    "disable_features": [
                         "V8ConcurrentInlining"
                     ]
                 }
@@ -8748,26 +8748,6 @@
             "experiments": [
                 {
                     "name": "Enabled"
-                }
-            ]
-        }
-    ],
-    "WebRTC-PreStreamDecoders": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "ios",
-                "android",
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "max:0,_V1"
                 }
             ]
         }

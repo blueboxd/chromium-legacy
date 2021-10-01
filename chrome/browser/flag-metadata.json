@@ -381,12 +381,12 @@
   {
     "name": "autofill-enable-offer-notification",
     "owners": [ "siyua", "jsaul@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 100
   },
   {
     "name": "autofill-enable-offer-notification-cross-tab-tracking",
     "owners": [ "siyua" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 100
   },
   {
     "name": "autofill-enable-offer-notification-for-promo-codes",
@@ -396,7 +396,7 @@
   {
     "name": "autofill-enable-offers-in-clank-keyboard-accessory",
     "owners": [ "siyua", "siashah@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "autofill-enable-offers-in-downstream",
@@ -431,7 +431,7 @@
   {
     "name": "autofill-fix-offer-in-incognito",
     "owners": [ "siyua" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 100
   },
   {
     "name": "autofill-highlight-only-changed-value-in-preview-mode",
@@ -830,7 +830,7 @@
   {
     "name": "contextual-search-force-caption",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS", "contextual-search-eng@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 99
   },
   {
     "name": "contextual-search-literal-search-tap",
@@ -840,7 +840,7 @@
   {
     "name": "contextual-search-longpress-resolve",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS", "contextual-search-eng@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 99
   },
   {
     "name": "contextual-search-ml-tap-suppression",
@@ -865,7 +865,7 @@
   {
     "name": "contextual-search-translations",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS", "contextual-search-eng@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 99
   },
   {
     "name": "contextual-search-twv-impl",
@@ -1290,8 +1290,8 @@
   },
   {
     "name": "draw-predicted-ink-point",
-    "owners": [ "mabian@microsoft.com" ],
-    "expiry_milestone": 95
+    "owners": [ "joalmei@microsoft.com" ],
+    "expiry_milestone": 98
   },
   {
     "name": "drive-fs-bidirectional-native-messaging",
@@ -1343,6 +1343,11 @@
     "name": "enable-accessibility-live-caption",
     "owners": [ "abigailbklein@google.com", "evliu@google.com", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "enable-accessibility-page-zoom",
+    "owners": [ "mschillaci@google.com", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 101
   },
   {
     "name": "enable-android-dark-search",
@@ -1712,6 +1717,11 @@
     "name": "enable-default-calculator-web-app",
     "owners": [ "zafzal@google.com", "calculator-eng@google.com" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "enable-desks-trackpad-swipe-improvements",
+    "owners": [ "fanafan", "sammiequon", "tclaiborne" ],
+    "expiry_milestone": 101
   },
   {
     "name": "enable-desktop-pwas-additional-windowing-controls",
@@ -2577,13 +2587,13 @@
     "expiry_milestone": 92
   },
   {
-    "name": "enable-suggested-drive-files",
-    "owners": [ "tby", "wrong" ],
+    "name": "enable-suggested-files",
+    "owners": [ "wrong", "tby" ],
     "expiry_milestone": 100
   },
   {
-    "name": "enable-suggested-files",
-    "owners": [ "wrong", "tby" ],
+    "name": "enable-suggested-local-files",
+    "owners": [ "tby", "wrong" ],
     "expiry_milestone": 100
   },
   {
@@ -3097,11 +3107,6 @@
     "name": "filling-across-affiliated-websites",
     "owners": [ "vsemeniuk", "vasilii" ],
     "expiry_milestone": 96
-  },
-  {
-    "name": "filling-passwords-from-any-origin",
-    "owners": [ "fhorschig", "redatawfik" ],
-    "expiry_milestone": 95
   },
   {
     "name": "focus-follows-cursor",
@@ -4023,11 +4028,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "omnibox-compact-suggestions",
-    "owners": [ "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 97
-  },
-  {
     "name": "omnibox-default-typed-navigations-to-https",
     "owners": ["meacer", "chrome-omnibox-team@google.com"],
     "expiry_milestone": 93
@@ -4593,27 +4593,27 @@
   {
     "name": "related-searches",
     "owners": [ "donnd", "related-searches-vteam@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 99
   },
   {
     "name": "related-searches-alternate-ux",
     "owners": [ "donnd", "related-searches-vteam@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 99
   },
   {
     "name": "related-searches-in-bar",
     "owners": [ "donnd", "related-searches-vteam@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 99
   },
   {
     "name": "related-searches-simplified-ux",
     "owners": [ "donnd", "related-searches-vteam@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 99
   },
   {
     "name": "related-searches-ui",
     "owners": [ "donnd", "related-searches-vteam@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 99
   },
   {
     "name": "release-notes-notification-all-channels",
@@ -5011,7 +5011,7 @@
   {
     "name": "single-touch-select",
     "owners": [ "donnd", "contextual-search-eng@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 99
   },
   {
     "_comment1": "Shipping some form of Site Isolation to Android is tracked",
@@ -5093,7 +5093,7 @@
   {
     "name": "sync-autofill-wallet-offer-data",
     "owners": ["siyua", "treib"],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "sync-setup-friendly-settings",
@@ -5650,6 +5650,11 @@
     "name": "win-10-tab-search-caption-button",
     "owners": [ "tluk@google.com", "chrome-cros@google.com" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "win11-style-menus",
+    "owners": [ "kylixrd", "robliao" ],
+    "expiry_milestone": 97
   },
   {
     "name": "wipe-data-on-child-account-signin",

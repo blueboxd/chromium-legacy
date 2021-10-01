@@ -166,12 +166,12 @@ struct CORE_EXPORT PaintLayerRareData final
   // If the layer paints into its own backings, this keeps track of the
   // backings.  It's nullptr if the layer is not composited or paints into
   // grouped backing.
-  Member<CompositedLayerMapping> composited_layer_mapping;
+  std::unique_ptr<CompositedLayerMapping> composited_layer_mapping;
 
   // If the layer paints into grouped backing (i.e. squashed), this points to
   // the grouped CompositedLayerMapping. It's null if the layer is not
   // composited or paints into its own backing.
-  Member<CompositedLayerMapping> grouped_mapping;
+  CompositedLayerMapping* grouped_mapping;
 
   Member<PaintLayerResourceInfo> resource_info;
 
@@ -1164,7 +1164,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
 
   bool KnownToClipSubtree() const;
 
-  void Trace(Visitor*) const override;
+  void Trace(Visitor*) const;
 
  private:
   PhysicalRect LocalBoundingBoxForCompositingOverlapTest() const;

@@ -1399,6 +1399,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSecurityKeyPermitAttestation,
     prefs::kSecurityKeyPermitAttestation,
     base::Value::Type::LIST },
+  { key::kU2fSecurityKeyApiEnabled,
+    extensions::pref_names::kU2fSecurityKeyApiEnabled,
+    base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1470,6 +1473,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kWebRtcIPHandling,
     prefs::kWebRTCIPHandlingPolicy,
     base::Value::Type::STRING },
+  { key::kPromptOnMultipleMatchingCertificates,
+    prefs::kPromptOnMultipleMatchingCertificates,
+    base::Value::Type::BOOLEAN },
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   { key::kPdfAnnotationsEnabled,

@@ -9,11 +9,14 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ssl/typed_navigation_upgrade_throttle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -30,11 +33,12 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
-#include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -132,6 +136,25 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
     }
   }
 
+  OmniboxView* omnibox() {
+    return browser()->window()->GetLocationBar()->GetOmniboxView();
+  }
+
+  void PressEnterAndWaitForNavigations(size_t num_expected_navigations) {
+    content::TestNavigationObserver navigation_observer(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        num_expected_navigations);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](const Browser* browser) {
+              EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
+                  browser, ui::VKEY_RETURN, false, false, false, false));
+            },
+            browser()));
+    navigation_observer.Wait();
+  }
+
  private:
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
@@ -161,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, PasteAndGoDoesNotLeavePopupOpen) {
   omnibox_view_views->ExecuteCommand(IDC_PASTE_AND_GO, ui::EF_NONE);
 
   // The popup should not be open.
-  EXPECT_FALSE(view->model()->popup_model()->IsOpen());
+  EXPECT_FALSE(view->model()->PopupIsOpen());
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, DoNotNavigateOnDrop) {
@@ -426,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag) {
 
   // Populate suggestions for the omnibox popup.
   AutocompleteController* autocomplete_controller =
-      omnibox_view->model()->popup_model()->autocomplete_controller();
+      omnibox_view->model()->autocomplete_controller();
   AutocompleteResult& results = autocomplete_controller->result_;
   ACMatches matches;
   AutocompleteMatch match(nullptr, 500, false,
@@ -444,8 +467,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag) {
       input, TemplateURLServiceFactory::GetForProfile(browser()->profile()));
 
   // The omnibox popup should open with suggestions displayed.
-  omnibox_view->model()->popup_model()->OnResultChanged();
-  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+  omnibox_view->model()->OnPopupResultChanged();
+  EXPECT_TRUE(omnibox_view->model()->PopupIsOpen());
 
   // The omnibox text should be selected.
   EXPECT_TRUE(omnibox_view->IsSelectAll());
@@ -456,14 +479,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag) {
                          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                          ui::EF_LEFT_MOUSE_BUTTON);
   omnibox_view_views->OnMousePressed(pressed);
-  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+  EXPECT_TRUE(omnibox_view->model()->PopupIsOpen());
 
   // Simulate a mouse drag of the omnibox text, and the omnibox should close.
   ui::MouseEvent dragged(ui::ET_MOUSE_DRAGGED, point, point,
                          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
   omnibox_view_views->OnMouseDragged(dragged);
 
-  EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
+  EXPECT_FALSE(omnibox_view->model()->PopupIsOpen());
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MaintainCursorAfterFocusCycle) {
@@ -472,7 +495,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MaintainCursorAfterFocusCycle) {
 
   // Populate suggestions for the omnibox popup.
   AutocompleteController* autocomplete_controller =
-      omnibox_view->model()->popup_model()->autocomplete_controller();
+      omnibox_view->model()->autocomplete_controller();
   AutocompleteResult& results = autocomplete_controller->result_;
   ACMatches matches;
   AutocompleteMatch match(nullptr, 500, false,
@@ -492,8 +515,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MaintainCursorAfterFocusCycle) {
       input, TemplateURLServiceFactory::GetForProfile(browser()->profile()));
 
   // The omnibox popup should open with suggestions displayed.
-  omnibox_view->model()->popup_model()->OnResultChanged();
-  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+  omnibox_view->model()->OnPopupResultChanged();
+  EXPECT_TRUE(omnibox_view->model()->PopupIsOpen());
 
   // TODO(krb): For some reason, we need to hit End twice to be registered.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_END, false,
@@ -507,7 +530,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MaintainCursorAfterFocusCycle) {
   omnibox_view->GetSelectionBounds(&prev_start, &end);
 
   chrome::FocusAppMenu(browser());
-  EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
+  EXPECT_FALSE(omnibox_view->model()->PopupIsOpen());
 
   // Re-focus.
   chrome::FocusLocationBar(browser());
@@ -583,7 +606,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FriendlyAccessibleLabel) {
 
   // Populate suggestions for the omnibox popup.
   AutocompleteController* autocomplete_controller =
-      omnibox_view->model()->popup_model()->autocomplete_controller();
+      omnibox_view->model()->autocomplete_controller();
   AutocompleteResult& results = autocomplete_controller->result_;
   ACMatches matches;
   matches.push_back(match);
@@ -595,8 +618,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FriendlyAccessibleLabel) {
 
   // The omnibox popup should open with suggestions displayed.
   chrome::FocusLocationBar(browser());
-  omnibox_view->model()->popup_model()->OnResultChanged();
-  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+  omnibox_view->model()->OnPopupResultChanged();
+  EXPECT_TRUE(omnibox_view->model()->PopupIsOpen());
   OmniboxViewViews* omnibox_view_views =
       static_cast<OmniboxViewViews*>(omnibox_view);
 
@@ -683,7 +706,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, AccessiblePopup) {
 
   // Populate suggestions for the omnibox popup.
   AutocompleteController* autocomplete_controller =
-      omnibox_view->model()->popup_model()->autocomplete_controller();
+      omnibox_view->model()->autocomplete_controller();
   AutocompleteResult& results = autocomplete_controller->result_;
   ACMatches matches;
   matches.push_back(match);
@@ -694,8 +717,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, AccessiblePopup) {
       input, TemplateURLServiceFactory::GetForProfile(browser()->profile()));
 
   // The omnibox popup should open with suggestions displayed.
-  omnibox_view->model()->popup_model()->OnResultChanged();
-  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+  omnibox_view->model()->OnPopupResultChanged();
+  EXPECT_TRUE(omnibox_view->model()->PopupIsOpen());
   ui::AXNodeData popup_node_data_2;
   popup_view->GetAccessibleNodeData(&popup_node_data_2);
   EXPECT_TRUE(popup_node_data_2.HasState(ax::mojom::State::kExpanded));
@@ -795,7 +818,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsUIATest, AccessibleOmnibox) {
   match.description = u"Example";
   match.allowed_to_be_default_match = true;
 
-  EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
+  EXPECT_FALSE(omnibox_view->model()->PopupIsOpen());
 
   HWND window_handle =
       browser()->window()->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
@@ -806,7 +829,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsUIATest, AccessibleOmnibox) {
 
   // Populate suggestions for the omnibox popup.
   AutocompleteController* autocomplete_controller =
-      omnibox_view->model()->popup_model()->autocomplete_controller();
+      omnibox_view->model()->autocomplete_controller();
   AutocompleteResult& results = autocomplete_controller->result_;
   ACMatches matches;
   matches.push_back(match);
@@ -817,18 +840,18 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsUIATest, AccessibleOmnibox) {
       input, TemplateURLServiceFactory::GetForProfile(browser()->profile()));
 
   // The omnibox popup should open with suggestions displayed.
-  omnibox_view->model()->popup_model()->OnResultChanged();
+  omnibox_view->model()->OnPopupResultChanged();
 
   // Wait for ControllerFor property changed event.
   open_waiter.Wait();
 
-  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+  EXPECT_TRUE(omnibox_view->model()->PopupIsOpen());
 
   UiaAccessibilityEventWaiter close_waiter(info);
   // Close the popup. Another property change event is expected.
   ClickBrowserWindowCenter();
   close_waiter.Wait();
-  EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
+  EXPECT_FALSE(omnibox_view->model()->PopupIsOpen());
 }
 
 namespace {
@@ -921,14 +944,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsIMETest, TextInputTypeInitRespectsIME) {
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MAYBE_HandleExternalProtocolURLs) {
   OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
-  OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
-  ASSERT_TRUE(popup_model);
   AutocompleteController* controller =
       omnibox_view->model()->autocomplete_controller();
   ASSERT_TRUE(controller);
 
-  auto set_text_and_perform_navigation = [this, omnibox_view, popup_model,
-                                          controller]() {
+  auto set_text_and_perform_navigation = [this, omnibox_view, controller]() {
     const char fake_protocol[] = "fake";
     const char16_t fake_url[] = u"fake://path";
 
@@ -939,7 +959,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MAYBE_HandleExternalProtocolURLs) {
     if (!controller->done())
       ui_test_utils::WaitForAutocompleteDone(browser());
     ASSERT_TRUE(controller->done());
-    ASSERT_TRUE(popup_model->IsOpen());
+    ASSERT_TRUE(omnibox_view->model()->PopupIsOpen());
 
     EXPECT_NE(ExternalProtocolHandler::BLOCK,
               ExternalProtocolHandler::GetBlockState(fake_protocol, nullptr,
@@ -994,4 +1014,60 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MAYBE_HandleExternalProtocolURLs) {
   set_text_and_perform_navigation();
 
 #endif  // !defined(OS_MAC) || defined(USE_AURA)
+}
+
+// Test that triggers a zero suggest autocomplete request by clicking on the
+// omnibox. These should never attempt an https upgrade or involve the typed
+// navigation upgrade throttle.
+// This is a regression test for https://crbug.com/1251065
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
+                       DefaultTypedNavigationsToHttps_ZeroSuggest_NoUpgrade) {
+  // Since the embedded test server only works for URLs with non-default ports,
+  // use a URLLoaderInterceptor to mimic port-free operation. This allows the
+  // rest of the test to operate as if all URLs are using the default ports.
+  content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](content::URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url.host() == "site-with-good-https.com") {
+          std::string headers =
+              "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\n";
+          std::string body = "<html><title>Success</title>Hello world</html>";
+          content::URLLoaderInterceptor::WriteResponse(headers, body,
+                                                       params->client.get());
+          return true;
+        }
+        // Not handled by us.
+        return false;
+      }));
+
+  base::HistogramTester histograms;
+  const GURL url("https://site-with-good-https.com");
+
+  // Type "https://site-with-good-https.com". This should load fine without
+  // hitting TypedNavigationUpgradeThrottle.
+  omnibox()->SetUserText(base::UTF8ToUTF16(url.spec()), true);
+  PressEnterAndWaitForNavigations(1);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(url, contents->GetLastCommittedURL());
+  EXPECT_FALSE(chrome_browser_interstitials::IsShowingInterstitial(contents));
+
+  histograms.ExpectTotalCount(TypedNavigationUpgradeThrottle::kHistogramName,
+                              0);
+  ui_test_utils::HistoryEnumerator enumerator(browser()->profile());
+  EXPECT_TRUE(base::Contains(enumerator.urls(), url));
+
+  // Now click the omnibox. This should trigger a zero suggest request with the
+  // text "site-with-good-https.com" despite the omnibox URL being
+  // https://site-with-good-https.com. Autocomplete input class shouldn't try
+  // to upgrade this request.
+  const gfx::Rect omnibox_bounds =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->GetViewByID(VIEW_ID_OMNIBOX)
+          ->GetBoundsInScreen();
+  const gfx::Point click_location = omnibox_bounds.CenterPoint();
+  ASSERT_NO_FATAL_FAILURE(
+      Click(ui_controls::LEFT, click_location, click_location));
+  PressEnterAndWaitForNavigations(1);
+  histograms.ExpectTotalCount(TypedNavigationUpgradeThrottle::kHistogramName,
+                              0);
 }

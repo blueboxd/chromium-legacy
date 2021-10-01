@@ -133,15 +133,13 @@ TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
     case blink::mojom::blink::AuthenticatorStatus::UNKNOWN_ERROR:
       return CredentialManagerError::UNKNOWN;
     case blink::mojom::blink::AuthenticatorStatus::PENDING_REQUEST:
-      return CredentialManagerError::PENDING_REQUEST;
+      return CredentialManagerError::PENDING_REQUEST_WEBAUTHN;
     case blink::mojom::blink::AuthenticatorStatus::INVALID_DOMAIN:
       return CredentialManagerError::INVALID_DOMAIN;
     case blink::mojom::blink::AuthenticatorStatus::INVALID_ICON_URL:
       return CredentialManagerError::INVALID_ICON_URL;
     case blink::mojom::blink::AuthenticatorStatus::CREDENTIAL_EXCLUDED:
       return CredentialManagerError::CREDENTIAL_EXCLUDED;
-    case blink::mojom::blink::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED:
-      return CredentialManagerError::CREDENTIAL_NOT_RECOGNIZED;
     case blink::mojom::blink::AuthenticatorStatus::NOT_IMPLEMENTED:
       return CredentialManagerError::NOT_IMPLEMENTED;
     case blink::mojom::blink::AuthenticatorStatus::NOT_FOCUSED:

@@ -684,6 +684,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="API.StorageAccess.AllowedRequests" enum="StorageAccessResult"
     expires_after="2020-11-27">
+  <obsolete>
+    Removed 2021/09.
+  </obsolete>
+  <owner>mkwst@chromium.org</owner>
+  <owner>brandm@microsoft.com</owner>
+  <summary>
+    Records if various requests to access storage are allowed or not and if the
+    Storage Access API unblocked the request or not. Recorded whenever a
+    decision to access storage like getting/setting cookies or opening an
+    indexeddb connection is made in CookieSettings.
+
+    This histogram erroneously recorded ALLOW when cookies were globally
+    blocked.
+  </summary>
+</histogram>
+
+<histogram name="API.StorageAccess.AllowedRequests2" enum="StorageAccessResult"
+    expires_after="2022-03-27">
   <owner>mkwst@chromium.org</owner>
   <owner>brandm@microsoft.com</owner>
   <summary>
@@ -2693,7 +2711,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromiumAndroidLinker.BrowserLoadTime" units="ms"
-    expires_after="M99">
+    expires_after="2022-10-01">
   <obsolete>
     Replaced by ChromiumAndroidLinker.BrowserLoadTime2 in 2021-07.
   </obsolete>
@@ -2705,7 +2723,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromiumAndroidLinker.RelroAvailableImmediately"
-    enum="BooleanRelroAvailableImmediately" expires_after="2021-07-07">
+    enum="BooleanRelroAvailableImmediately" expires_after="2022-10-01">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2716,7 +2734,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromiumAndroidLinker.RelroProvidedSuccessfully"
-    enum="BooleanSuccess" expires_after="2021-07-07">
+    enum="BooleanSuccess" expires_after="2022-10-01">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2732,7 +2750,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromiumAndroidLinker.RelroSharingStatus"
-    enum="RelroSharingStatus" expires_after="2021-05-06">
+    enum="RelroSharingStatus" expires_after="2022-10-01">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2743,7 +2761,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromiumAndroidLinker.RendererLoadTime" units="ms"
-    expires_after="M99">
+    expires_after="2022-10-01">
   <obsolete>
     Replaced by ChromiumAndroidLinker.ChildLoadTime2 in 2021-07.
   </obsolete>
@@ -2755,7 +2773,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromiumAndroidLinker.{ProcessType}LoadTime2" units="ms"
-    expires_after="2022-07-20">
+    expires_after="2022-10-01">
   <owner>pasko@chromium.org</owner>
   <owner>rsesek@chromium.org</owner>
   <summary>
@@ -12256,9 +12274,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="PerformanceMonitor.EnergyImpact.{ProcessName}{UsageScenario}"
-    units="ScaledUnits" expires_after="2021-10-30">
-  <owner>lgrey@chromium.org</owner>
-  <owner>markchang@chromium.org</owner>
+    units="ScaledUnits" expires_after="2022-10-30">
+  <owner>olivierli@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
   <summary>
     (Mac only) A synthetic power use estimate, as displayed in macOS Activity
     Monitor and the battery menu. This incorporates CPU utilization, idle
@@ -12293,9 +12311,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PerformanceMonitor.IdleWakeups.{ProcessName}{UsageScenario}"
-    units="WakeupsPerSecond" expires_after="2021-10-30">
-  <owner>lgrey@chromium.org</owner>
-  <owner>markchang@chromium.org</owner>
+    units="WakeupsPerSecond" expires_after="2022-10-30">
+  <owner>olivierli@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
   <summary>
     The average CPU idle wakeups per second, sampled every two minutes.
 
@@ -12314,9 +12332,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="PerformanceMonitor.PackageExitIdleWakeups.{ProcessName}{UsageScenario}"
-    units="WakeupsPerSecond" expires_after="2021-10-30">
-  <owner>lgrey@chromium.org</owner>
-  <owner>markchang@chromium.org</owner>
+    units="WakeupsPerSecond" expires_after="2022-10-30">
+  <owner>olivierli@chromium.org</owner>
+  <owner>catan-team@chromium.orgg</owner>
   <summary>
     (Mac only) The average package exit idle wakeups per second, sampled every
     two minutes. This is a subset of wakeups that indicate that the processor
@@ -14955,7 +14973,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SBMultipartUploader.FailedUploadDuration" units="s"
-    expires_after="M95">
+    expires_after="2022-09-29">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -14969,7 +14987,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SBMultipartUploader.NetworkRequestResponseCodeOrError"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="M95">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2022-09-29">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -14984,7 +15002,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SBMultipartUploader.RetriesNeeded" units="retries"
-    expires_after="M95">
+    expires_after="2022-09-29">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -14997,7 +15015,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SBMultipartUploader.SuccessfulUploadDuration" units="s"
-    expires_after="M95">
+    expires_after="2022-09-29">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -15010,7 +15028,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SBMultipartUploader.UploadSize" units="bytes"
-    expires_after="M95">
+    expires_after="2022-09-29">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -15024,7 +15042,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SBMultipartUploader.UploadSuccess" enum="BooleanSuccess"
-    expires_after="M95">
+    expires_after="2022-09-29">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>

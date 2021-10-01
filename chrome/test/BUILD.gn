@@ -52,6 +52,12 @@ import("//ui/views/features.gni")
 import("//ui/webui/webui_features.gni")
 import("//v8/gni/v8.gni")
 
+declare_args() {
+  # Add the new arg to allow perf waterfall to selectively run
+  # benchmarks in python 3.
+  use_py3_for_perf = false
+}
+
 assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
 if (is_android) {
@@ -3625,6 +3631,7 @@ if (!is_android && !is_fuchsia) {
         "//components/device_event_log",
         "//components/drive",
         "//components/exo:test_support",
+        "//components/live_caption:constants",
         "//components/metrics/structured",
         "//components/metrics/structured:structured_events",
         "//components/onc",
@@ -4220,7 +4227,11 @@ template("performance_test_suite_template_base") {
                            "data_deps",
                          ])
   script_test(target_name) {
-    run_under_python2 = true
+    if (use_py3_for_perf) {
+      run_under_python2 = false
+    } else {
+      run_under_python2 = true
+    }
     script = "//testing/scripts/run_performance_tests.py"
     if (is_chromeos_device) {
       if (defined(override_board)) {
@@ -4597,6 +4608,7 @@ test("unit_tests") {
     "../browser/policy/messaging_layer/upload/record_handler_impl_unittest.cc",
     "../browser/policy/messaging_layer/upload/record_upload_request_builder_unittest.cc",
     "../browser/policy/messaging_layer/upload/upload_client_unittest.cc",
+    "../browser/policy/messaging_layer/upload/upload_provider_unittest.cc",
     "../browser/policy/messaging_layer/util/report_queue_manual_test_context_unittest.cc",
     "../browser/policy/profile_policy_connector_unittest.cc",
     "../browser/policy/webusb_allow_devices_for_urls_policy_handler_unittest.cc",
@@ -5303,6 +5315,7 @@ test("unit_tests") {
     "//components/reporting/encryption:verification",
     "//components/reporting/storage:storage_uploader_interface",
     "//components/reporting/storage:test_support",
+    "//components/reporting/util:backoff_settings",
     "//components/reporting/util:shared_vector",
     "//components/reporting/util:status_macros",
     "//components/reporting/util:task_runner_context",
@@ -5312,7 +5325,6 @@ test("unit_tests") {
     "//components/safe_browsing:buildflags",
     "//components/safe_browsing/content/browser",
     "//components/safe_browsing/content/browser:client_side_detection",
-    "//components/safe_browsing/content/browser:client_side_model_loader",
     "//components/safe_browsing/content/browser/password_protection",
     "//components/safe_browsing/content/browser/password_protection:mock_password_protection",
     "//components/safe_browsing/content/browser/web_ui",
@@ -5582,6 +5594,7 @@ test("unit_tests") {
       "../browser/profiles/android/profile_resolver_unittest.cc",
       "../browser/reputation/safety_tip_message_delegate_unittest.cc",
       "../browser/sharing/click_to_call/click_to_call_message_handler_android_unittest.cc",
+      "../browser/sharing/optimization_guide/optimization_guide_message_handler_unittest.cc",
       "../browser/sharing/sms/sms_fetch_request_handler_unittest.cc",
       "../browser/touch_to_fill/touch_to_fill_controller_unittest.cc",
       "../browser/translate/translate_manager_render_view_host_android_unittest.cc",
@@ -7218,7 +7231,6 @@ test("unit_tests") {
     sources += [
       "../browser/metrics/plugin_metrics_provider_unittest.cc",
       "../browser/plugins/chrome_plugin_service_filter_unittest.cc",
-      "../browser/plugins/flash_temporary_permission_tracker_unittest.cc",
       "../browser/plugins/plugin_finder_unittest.cc",
       "../browser/plugins/plugin_info_host_impl_unittest.cc",
       "../browser/plugins/plugin_installer_unittest.cc",
@@ -7755,9 +7767,9 @@ test("unit_tests") {
     ]
   }
 
-  if ((is_win || is_linux || is_chromeos) && is_chrome_branded) {
+  if (!is_android && is_chrome_branded) {
     sources += [
-      "../browser/lens/region_search/lens_region_search_controller_unittest.cc",
+      "../browser/ui/views/lens/lens_region_search_controller_unittest.cc",
       "../browser/ui/views/lens/lens_side_panel_controller_unittest.cc",
     ]
     deps += [ "//chrome/browser/lens/region_search" ]

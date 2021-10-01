@@ -624,7 +624,15 @@ public class PaymentRequestService
     public void disconnectFromClientWithDebugMessage(String debugMessage, int reason) {
         Log.d(TAG, debugMessage);
         if (mClient != null) {
-            mClient.onError(reason, debugMessage);
+            boolean isSpc = PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
+                                    PaymentFeatureList.SECURE_PAYMENT_CONFIRMATION)
+                    && mSpec != null && mSpec.isSecurePaymentConfirmationRequested();
+            // Secure Payment Confirmation should make it indistinguishable
+            // to the merchant page as for whether the error is caused by
+            // user aborting or lack of credentials.
+            mClient.onError(isSpc ? PaymentErrorReason.NOT_ALLOWED_ERROR : reason,
+                    isSpc ? ErrorStrings.WEB_AUTHN_OPERATION_TIMED_OUT_OR_NOT_ALLOWED
+                          : debugMessage);
         }
         close();
         if (sNativeObserverForTest != null) {
@@ -1824,10 +1832,16 @@ public class PaymentRequestService
     @Override
     public void onInstrumentDetailsError(String errorMessage) {
         mInvokedPaymentApp = null;
-        if (mBrowserPaymentRequest == null) return;
-        mBrowserPaymentRequest.onInstrumentDetailsError(errorMessage);
         PaymentDetailsUpdateServiceHelper.getInstance().reset();
         if (sNativeObserverForTest != null) sNativeObserverForTest.onErrorDisplayed();
+        if (mBrowserPaymentRequest == null) return;
+        if (mBrowserPaymentRequest.hasSkippedAppSelector()) {
+            assert !TextUtils.isEmpty(errorMessage);
+            mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
+            disconnectFromClientWithDebugMessage(errorMessage, PaymentErrorReason.USER_CANCEL);
+        } else {
+            mBrowserPaymentRequest.showAppSelectorAfterPaymentAppInvokeFailed();
+        }
     }
 
     @VisibleForTesting

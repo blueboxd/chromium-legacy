@@ -1151,7 +1151,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SafeBrowsing.ReferrerAttributionResult"
-    enum="SafeBrowsingAttributionResultTypes" expires_after="2021-10-31">
+    enum="SafeBrowsingAttributionResultTypes" expires_after="2022-10-31">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -1163,6 +1163,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="SafeBrowsing.ReferrerHasInvalidTabID" enum="BooleanInvalid"
     expires_after="2021-10-25">
+  <obsolete>
+    Removed 09-2021 due to lack of use
+  </obsolete>
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -1173,7 +1176,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SafeBrowsing.ReferrerURLChainSize" units="units"
-    expires_after="2021-10-25">
+    expires_after="2022-10-25">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -2240,6 +2243,9 @@ failing to fetch the updates which puts users' security at risk. -->
 
 <histogram name="SafeBrowsingFCMService.IncomingMessageHasKey" enum="Boolean"
     expires_after="M95">
+  <obsolete>
+    Removed 09-2021 since all recorded values were True
+  </obsolete>
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -2267,6 +2273,9 @@ failing to fetch the updates which puts users' security at risk. -->
 
 <histogram name="SafeBrowsingFCMService.IncomingMessageParsedBase64"
     enum="BooleanSuccess" expires_after="M95">
+  <obsolete>
+    Removed 09-2021 since all recorded values were True
+  </obsolete>
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -2281,6 +2290,9 @@ failing to fetch the updates which puts users' security at risk. -->
 
 <histogram name="SafeBrowsingFCMService.IncomingMessageParsedProto"
     enum="BooleanSuccess" expires_after="M95">
+  <obsolete>
+    Removed 09-2021 since all recorded values were True
+  </obsolete>
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>

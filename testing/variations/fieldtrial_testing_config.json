@@ -89,22 +89,6 @@
             ]
         }
     ],
-    "AndroidAutofillQueryServerFieldTypes": [
-        {
-            "platforms": [
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AndroidAutofillQueryServerFieldTypes"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidBindingManagementWaiveCpu": [
         {
             "platforms": [
@@ -115,6 +99,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "BindingManagementWaiveCpu"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AndroidContextualSearchM95": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_With_Partial_Translate_20210930",
+                    "params": {
+                        "promo_card_max_shown": "3"
+                    },
+                    "enable_features": [
+                        "ContextualSearchNewSettings",
+                        "ContextualSearchTranslations"
                     ]
                 }
             ]
@@ -2400,21 +2403,6 @@
             ]
         }
     ],
-    "ContextualSearchTranslations": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Launch-candidate_20210915",
-                    "enable_features": [
-                        "ContextualSearchTranslations"
-                    ]
-                }
-            ]
-        }
-    ],
     "ContinuousSearchNavigation": [
         {
             "platforms": [
@@ -2466,24 +2454,6 @@
                         "CrOSHugepageRemapAndLockInZygote",
                         "CrOSLockMainProgramText",
                         "CrOSTuneMinFilelist"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CrOSSystemAECDeactivatedGroups": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "AecGroupIdsWithBrowserFallbackFromCrAS",
-                    "params": {
-                        "3": "true"
-                    },
-                    "enable_features": [
-                        "CrOSSystemAECDeactivatedGroups"
                     ]
                 }
             ]
@@ -4932,6 +4902,21 @@
             ]
         }
     ],
+    "NtpZPSForUnauthenticatedUsersAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "AndroidExperiments",
+                    "enable_features": [
+                        "OmniboxTrendingZeroPrefixSuggestionsOnNTP"
+                    ]
+                }
+            ]
+        }
+    ],
     "OfferUploadCreditCards": [
         {
             "platforms": [
@@ -5095,17 +5080,14 @@
                     "params": {
                         "OmniboxMaxURLMatches": "3",
                         "OmniboxMaxZeroSuggestMatches": "15",
-                        "UIMaxAutocompleteMatches": "8",
-                        "omnibox_compact_suggestions_variant": "semi-compact"
+                        "UIMaxAutocompleteMatches": "8"
                     },
                     "enable_features": [
                         "OmniboxAdaptiveSuggestionsCount",
-                        "OmniboxCompactSuggestions",
                         "OmniboxDynamicMaxAutocomplete",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
                         "OmniboxOnFocusSuggestionsContextualWebAllowSRP",
-                        "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
                         "OmniboxUIExperimentMaxAutocompleteMatches"
                     ]
                 }
@@ -7846,7 +7828,7 @@
                         "delta": "0.01"
                     },
                     "enable_features": [
-                        "NonUniformityValidation"
+                        "UMANonUniformityLogNormal"
                     ]
                 }
             ]
@@ -8748,6 +8730,44 @@
             "experiments": [
                 {
                     "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "WebRTC-DataChannel-Dcsctp": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "WebRTC-PreStreamDecoders": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "ios",
+                "android",
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "max:0,_V1"
                 }
             ]
         }

@@ -34,7 +34,6 @@ function loadCommonComponents() {
 // <include src="../multidevice_setup_first_run.js">
 // <include src="../screen_multidevice_setup.js">
 // <include src="../security_token_pin.js">
-// <include src="../screen_tpm_error.js">
 // <include src="../device_disabled.js">
 // <include src="../screen_wrong_hwid.js">
 // <include src="../family_link_notice.js">
@@ -44,6 +43,7 @@ function loadCommonComponents() {
 // <include src="../screen_error_message.js">
 // <include src="../managed_terms_of_service.js">
 // <include src="../consolidated_consent.js">
+// <include src="../guest_tos.js">
 
 // <include src="components_[OOBE].js">
 // <include src="components_[OS_INSTALL].js">

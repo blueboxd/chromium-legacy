@@ -1204,6 +1204,8 @@ static_library("browser") {
     "policy/messaging_layer/upload/record_upload_request_builder.h",
     "policy/messaging_layer/upload/upload_client.cc",
     "policy/messaging_layer/upload/upload_client.h",
+    "policy/messaging_layer/upload/upload_provider.cc",
+    "policy/messaging_layer/upload/upload_provider.h",
     "policy/messaging_layer/util/get_cloud_policy_client.cc",
     "policy/messaging_layer/util/get_cloud_policy_client.h",
     "policy/messaging_layer/util/report_queue_manual_test_context.cc",
@@ -1513,7 +1515,6 @@ static_library("browser") {
     "send_tab_to_self/send_tab_to_self_client_service_factory.h",
     "send_tab_to_self/send_tab_to_self_util.cc",
     "send_tab_to_self/send_tab_to_self_util.h",
-    "service_sandbox_type.h",
     "sessions/chrome_serialized_navigation_driver.cc",
     "sessions/chrome_serialized_navigation_driver.h",
     "sessions/chrome_tab_restore_service_client.cc",
@@ -2178,6 +2179,7 @@ static_library("browser") {
     "//components/reporting/storage:storage_module",
     "//components/reporting/storage:storage_uploader_interface",
     "//components/reporting/storage_selector",
+    "//components/reporting/util:backoff_settings",
     "//components/reporting/util:shared_queue",
     "//components/reporting/util:status",
     "//components/reporting/util:status_macros",
@@ -3254,6 +3256,8 @@ static_library("browser") {
       "sessions/session_restore_android.cc",
       "sharing/click_to_call/click_to_call_message_handler_android.cc",
       "sharing/click_to_call/click_to_call_message_handler_android.h",
+      "sharing/optimization_guide/optimization_guide_message_handler.cc",
+      "sharing/optimization_guide/optimization_guide_message_handler.h",
       "sharing/shared_clipboard/shared_clipboard_message_handler_android.cc",
       "sharing/shared_clipboard/shared_clipboard_message_handler_android.h",
       "sharing/sharing_service_proxy_android.cc",
@@ -3379,6 +3383,7 @@ static_library("browser") {
       "//components/content_creation/notes/core:prefs",
       "//components/content_creation/notes/core/server",
       "//components/content_creation/notes/core/templates",
+      "//components/content_creation/reactions/core:features",
       "//components/content_settings/android",
       "//components/crash/android:crash_android",
       "//components/device_reauth",
@@ -5531,6 +5536,11 @@ static_library("browser") {
   }
 
   if (is_chromeos_ash) {
+    sources += [
+      "enterprise/connectors/device_trust/signals/decorators/ash/ash_signals_decorator.cc",
+      "enterprise/connectors/device_trust/signals/decorators/ash/ash_signals_decorator.h",
+    ]
+
     deps += [
       "//chrome/browser/enterprise/connectors/device_trust/attestation/ash",
     ]
@@ -6608,10 +6618,6 @@ static_library("browser") {
       "plugins/chrome_content_browser_client_plugins_part.h",
       "plugins/chrome_plugin_service_filter.cc",
       "plugins/chrome_plugin_service_filter.h",
-      "plugins/flash_temporary_permission_tracker.cc",
-      "plugins/flash_temporary_permission_tracker.h",
-      "plugins/flash_temporary_permission_tracker_factory.cc",
-      "plugins/flash_temporary_permission_tracker_factory.h",
       "plugins/hung_plugin_infobar_delegate.cc",
       "plugins/hung_plugin_infobar_delegate.h",
       "plugins/plugin_finder.cc",

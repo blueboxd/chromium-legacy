@@ -651,9 +651,14 @@ static_library("ui") {
       "webui/connectors_internals/connectors_internals_page_handler.h",
       "webui/connectors_internals/connectors_internals_ui.cc",
       "webui/connectors_internals/connectors_internals_ui.h",
+      "webui/connectors_internals/zero_trust_utils.cc",
+      "webui/connectors_internals/zero_trust_utils.h",
     ]
 
-    deps += [ "//chrome/browser/ui/webui/connectors_internals:mojo_bindings" ]
+    deps += [
+      "//chrome/browser/enterprise/connectors/device_trust/attestation/common:types",
+      "//chrome/browser/ui/webui/connectors_internals:mojo_bindings",
+    ]
   }
 
   if (!is_fuchsia) {
@@ -1326,6 +1331,8 @@ static_library("ui") {
       "unload_controller.h",
       "user_education/active_tab_tracker.cc",
       "user_education/active_tab_tracker.h",
+      "user_education/feature_promo_bubble_params.cc",
+      "user_education/feature_promo_bubble_params.h",
       "user_education/feature_promo_controller.cc",
       "user_education/feature_promo_controller.h",
       "user_education/feature_promo_snooze_service.cc",
@@ -2475,6 +2482,8 @@ static_library("ui") {
       "webui/chromeos/login/gaia_screen_handler.h",
       "webui/chromeos/login/gesture_navigation_screen_handler.cc",
       "webui/chromeos/login/gesture_navigation_screen_handler.h",
+      "webui/chromeos/login/guest_tos_screen_handler.cc",
+      "webui/chromeos/login/guest_tos_screen_handler.h",
       "webui/chromeos/login/hid_detection_screen_handler.cc",
       "webui/chromeos/login/hid_detection_screen_handler.h",
       "webui/chromeos/login/js_calls_container.cc",
@@ -4521,8 +4530,6 @@ static_library("ui") {
       "views/user_education/feature_promo_bubble_owner.h",
       "views/user_education/feature_promo_bubble_owner_impl.cc",
       "views/user_education/feature_promo_bubble_owner_impl.h",
-      "views/user_education/feature_promo_bubble_params.cc",
-      "views/user_education/feature_promo_bubble_params.h",
       "views/user_education/feature_promo_bubble_view.cc",
       "views/user_education/feature_promo_bubble_view.h",
       "views/user_education/feature_promo_colors.cc",

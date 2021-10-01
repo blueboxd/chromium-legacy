@@ -29,7 +29,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/content/browser/client_side_detection_service.h"
-#include "components/safe_browsing/content/browser/client_side_model_loader.h"
 #include "components/safe_browsing/content/browser/client_side_phishing_model.h"
 #include "components/safe_browsing/content/browser/ui_manager.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-shared.h"
@@ -162,6 +161,10 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
             std::make_unique<ChromeSafeBrowsingBlockingPageFactory>(),
             GURL(chrome::kChromeUINewTabURL)) {}
 
+  MockSafeBrowsingUIManager(const MockSafeBrowsingUIManager&) = delete;
+  MockSafeBrowsingUIManager& operator=(const MockSafeBrowsingUIManager&) =
+      delete;
+
   MOCK_METHOD1(DisplayBlockingPage, void(const UnsafeResource& resource));
 
   // Helper function which calls OnBlockingPageComplete for this client
@@ -177,9 +180,6 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
 
  protected:
   ~MockSafeBrowsingUIManager() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingUIManager);
 };
 
 class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
@@ -189,14 +189,16 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
             content::GetUIThreadTaskRunner({}),
             content::GetIOThreadTaskRunner({})) {}
 
+  MockSafeBrowsingDatabaseManager(const MockSafeBrowsingDatabaseManager&) =
+      delete;
+  MockSafeBrowsingDatabaseManager& operator=(
+      const MockSafeBrowsingDatabaseManager&) = delete;
+
   MOCK_METHOD2(CheckCsdAllowlistUrl,
                AsyncMatch(const GURL&, SafeBrowsingDatabaseManager::Client*));
 
  protected:
   ~MockSafeBrowsingDatabaseManager() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
 };
 
 }  // namespace

@@ -1001,9 +1001,6 @@ extern const char kOmniboxAssistantVoiceSearchDescription[];
 extern const char kOmniboxClobberTriggersContextualWebZeroSuggestName[];
 extern const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[];
 
-extern const char kOmniboxCompactSuggestionsName[];
-extern const char kOmniboxCompactSuggestionsDescription[];
-
 extern const char kOmniboxDisableCGIParamMatchingName[];
 extern const char kOmniboxDisableCGIParamMatchingDescription[];
 
@@ -1657,6 +1654,9 @@ extern const char kForceMajorVersion100InUserAgentDescription[];
 
 #if defined(OS_ANDROID)
 
+extern const char kAccessibilityPageZoomName[];
+extern const char kAccessibilityPageZoomDescription[];
+
 extern const char kAddToHomescreenIPHName[];
 extern const char kAddToHomescreenIPHDescription[];
 
@@ -1804,9 +1804,6 @@ extern const char kFeedLoadingPlaceholderDescription[];
 
 extern const char kFeedStampName[];
 extern const char kFeedStampDescription[];
-
-extern const char kFillingPasswordsFromAnyOriginName[];
-extern const char kFillingPasswordsFromAnyOriginDescription[];
 
 extern const char kHomepagePromoCardName[];
 extern const char kHomepagePromoCardDescription[];
@@ -2234,6 +2231,8 @@ extern const char kUseXpsForPrintingFromPdfDescription[];
 extern const char kWin10TabSearchCaptionButtonName[];
 extern const char kWin10TabSearchCaptionButtonDescription[];
 
+extern const char kWin11StyleMenusName[];
+extern const char kWin11StyleMenusDescription[];
 #endif  // defined(OS_WIN)
 
 // Mac ------------------------------------------------------------------------
@@ -2300,9 +2299,6 @@ extern const char kAppDiscoveryForOobeDescription[];
 
 extern const char kAppDiscoveryRemoteUrlSearchName[];
 extern const char kAppDiscoveryRemoteUrlSearchDescription[];
-
-extern const char kAppListBubbleName[];
-extern const char kAppListBubbleDescription[];
 
 extern const char kAppServiceExternalProtocolName[];
 extern const char kAppServiceExternalProtocolDescription[];
@@ -2372,6 +2368,9 @@ extern const char kButtonARCNetworkDiagnosticsDescription[];
 
 extern const char kCalendarViewName[];
 extern const char kCalendarViewDescription[];
+
+extern const char kDesksTrackpadSwipeImprovementsName[];
+extern const char kDesksTrackpadSwipeImprovementsDescription[];
 
 extern const char kPreferConstantFrameRateName[];
 extern const char kPreferConstantFrameRateDescription[];
@@ -2613,8 +2612,8 @@ extern const char kEnableRevenLogSourceDescription[];
 extern const char kEnableSuggestedFilesName[];
 extern const char kEnableSuggestedFilesDescription[];
 
-extern const char kEnableSuggestedDriveFilesName[];
-extern const char kEnableSuggestedDriveFilesDescription[];
+extern const char kEnableSuggestedLocalFilesName[];
+extern const char kEnableSuggestedLocalFilesDescription[];
 
 extern const char kEnableWireGuardName[];
 extern const char kEnableWireGuardDescription[];
@@ -2822,6 +2821,9 @@ extern const char kPhoneHubCameraRollDescription[];
 
 extern const char kPhoneHubRecentAppsName[];
 extern const char kPhoneHubRecentAppsDescription[];
+
+extern const char kProductivityLauncherName[];
+extern const char kProductivityLauncherDescription[];
 
 extern const char kReduceDisplayNotificationsName[];
 extern const char kReduceDisplayNotificationsDescription[];

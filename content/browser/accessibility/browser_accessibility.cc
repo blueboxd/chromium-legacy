@@ -996,6 +996,11 @@ std::u16string BrowserAccessibility::GetHypertext() const {
   return std::u16string();
 }
 
+const std::map<int, int>&
+BrowserAccessibility::GetHypertextOffsetToHyperlinkChildIndex() const {
+  return node_->GetHypertextOffsetToHyperlinkChildIndex();
+}
+
 std::u16string BrowserAccessibility::GetInnerText() const {
   return base::UTF8ToUTF16(node()->GetInnerText());
 }
@@ -1896,10 +1901,6 @@ absl::optional<int32_t> BrowserAccessibility::CellIndexToId(
   if (!cell)
     return absl::nullopt;
   return cell->id();
-}
-
-bool BrowserAccessibility::IsCellOrHeaderOfAriaTable() const {
-  return node()->IsCellOrHeaderOfAriaTable();
 }
 
 bool BrowserAccessibility::IsCellOrHeaderOfAriaGrid() const {

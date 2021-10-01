@@ -498,6 +498,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   const std::string& GetName() const override;
   std::u16string GetHypertext() const override;
+  const std::map<int, int>& GetHypertextOffsetToHyperlinkChildIndex()
+      const override;
   bool SetHypertextSelection(int start_offset, int end_offset) override;
   std::u16string GetInnerText() const override;
   std::u16string GetValueForControl() const override;
@@ -564,8 +566,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   absl::optional<int32_t> GetCellId(int row_index,
                                     int col_index) const override;
   absl::optional<int32_t> CellIndexToId(int cell_index) const override;
-
-  bool IsCellOrHeaderOfAriaTable() const override;
   bool IsCellOrHeaderOfAriaGrid() const override;
 
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;

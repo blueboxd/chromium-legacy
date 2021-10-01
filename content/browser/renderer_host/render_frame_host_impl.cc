@@ -338,8 +338,11 @@ const void* const kRenderFrameHostAndroidKey = &kRenderFrameHostAndroidKey;
 
 // Causes RenderAccessibilityHost HandleAXEvents messages to be handled with
 // minimal copying of the data.
+//
+// TODO(nuskos): Once we've conducted a retroactive study of chrometto
+// improvements clean up this feature.
 const base::Feature kRenderAccessibilityHostAvoidCopying{
-    "RenderAccessibilityHostAvoidCopying", base::FEATURE_DISABLED_BY_DEFAULT};
+    "RenderAccessibilityHostAvoidCopying", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The next value to use for the accessibility reset token.
 int g_next_accessibility_reset_token = 1;
@@ -2107,15 +2110,6 @@ void RenderFrameHostImpl::GetCanonicalUrl(
   } else {
     std::move(callback).Run(absl::nullopt);
   }
-}
-
-bool RenderFrameHostImpl::IsErrorDocument() {
-  // This shouldn't be called before committing the document as this value is
-  // set during call to RenderFrameHostImpl::DidNavigate which happens after
-  // commit.
-  DCHECK_NE(lifecycle_state(), LifecycleStateImpl::kSpeculative);
-  DCHECK_NE(lifecycle_state(), LifecycleStateImpl::kPendingCommit);
-  return is_error_page_;
 }
 
 void RenderFrameHostImpl::GetSerializedHtmlWithLocalLinks(
@@ -5547,7 +5541,7 @@ void RenderFrameHostImpl::GoToEntryAtOffset(int32_t offset,
       frame_tree_->controller().GoToOffsetInSandboxedFrame(
           offset, GetFrameTreeNodeId());
     } else {
-      frame_tree_->controller().GoToOffset(offset);
+      frame_tree_->controller().GoToOffsetFromRenderer(offset);
     }
   }
 }
@@ -9624,7 +9618,7 @@ void RenderFrameHostImpl::CreateBucketManagerHost(
 
 void RenderFrameHostImpl::CreatePermissionService(
     mojo::PendingReceiver<blink::mojom::PermissionService> receiver) {
-  PermissionServiceContext::GetOrCreateForCurrentDocument(this)->CreateService(
+  PermissionServiceContext::GetForCurrentDocument(this)->CreateService(
       std::move(receiver));
 }
 
@@ -10485,8 +10479,6 @@ void RenderFrameHostImpl::DidCommitNewDocument(
 // struct.
 void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
     NavigationRequest* navigation_request) {
-  // It should be kept in sync with the check in
-  // NavigationRequest::DidCommitNavigation.
   is_error_page_ = navigation_request->DidEncounterError();
 
   SetCrossOriginOpenerPolicyReporter(

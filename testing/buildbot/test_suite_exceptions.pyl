@@ -1147,8 +1147,6 @@
       'CrWinAsan(dll)', # https://crbug.com/935598
       'android-lollipop-arm-rel', # crbug.com/1133002
       'android-marshmallow-arm64-rel', # http://crbug.com/1060245#c30: due to low utility and capacity.
-      'fuchsia-fyi-arm64-rel',  # https://crbug.com/1164534
-      'fuchsia-fyi-x64-rel',  # https://crbug.com/1164534
     ],
     'modifications': {
       'Cast Audio Linux': {
@@ -2222,6 +2220,12 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_10.net_unittests.filter',
         ],
       },
+      'android-cronet-x86-dbg-pie-tests': {
+        # crbug.com/1046060
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.net_unittests.filter',
+        ],
+      },
       'android-marshmallow-x86-rel-non-cq': {
         # crbug.com/1046060
         'args': [
@@ -2735,6 +2739,9 @@
   'system_webview_wpt': {
     'modifications': {
       'android-webview-pie-x86-wpt-fyi-rel': {
+        'args': [
+          '--log-wptreport',
+        ],
         'swarming': {
           'shards': 18,
         },
@@ -3139,8 +3146,6 @@
       # The Mac NVIDIA Retina bots don't have the capacity to run
       # this test suite on mac_optional_gpu_tests_rel.
       'Optional Mac Retina Release (NVIDIA)',
-      # Only run passthrough on Mac AMD due to capacity http://crbug.com/1236796
-      'Optional Mac Retina Release (AMD)',
     ],
     'modifications': {
       # This VM configuration is known to be significantly slower than other

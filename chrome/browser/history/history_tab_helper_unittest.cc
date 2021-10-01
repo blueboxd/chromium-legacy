@@ -54,6 +54,9 @@ class HistoryTabHelperTest : public ChromeRenderViewHostTestHarness {
  protected:
   HistoryTabHelperTest() = default;
 
+  HistoryTabHelperTest(const HistoryTabHelperTest&) = delete;
+  HistoryTabHelperTest& operator=(const HistoryTabHelperTest&) = delete;
+
   // ChromeRenderViewHostTestHarness:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -133,8 +136,6 @@ class HistoryTabHelperTest : public ChromeRenderViewHostTestHarness {
 #if defined(OS_ANDROID)
   TestFeedApi test_feed_api_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(HistoryTabHelperTest);
 };
 
 TEST_F(HistoryTabHelperTest, ShouldUpdateTitleInHistory) {
@@ -275,6 +276,24 @@ TEST_F(HistoryTabHelperTest, CreateAddPageArgsHasOpenerWebContentsFirstPage) {
 
   ASSERT_TRUE(args.opener.has_value());
   EXPECT_EQ(args.opener->url, GURL("https://opensnewtab.com/"));
+}
+
+TEST_F(HistoryTabHelperTest, CreateAddPageArgsSameDocNavigationUsesOpener) {
+  content::RenderFrameHostTester* main_rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  main_rfh_tester->InitializeRenderFrameIfNeeded();
+  content::RenderFrameHost* subframe = main_rfh_tester->AppendChild("subframe");
+  NiceMock<content::MockNavigationHandle> navigation_handle(
+      GURL("http://someurl.com"), subframe);
+  navigation_handle.set_redirect_chain({GURL("https://someurl.com")});
+  navigation_handle.set_previous_main_frame_url(GURL("http://previousurl.com"));
+  navigation_handle.set_is_same_document(true);
+  history::HistoryAddPageArgs args =
+      history_tab_helper()->CreateHistoryAddPageArgs(
+          GURL("http://someurl.com"), base::Time(), 1, &navigation_handle);
+
+  ASSERT_TRUE(args.opener.has_value());
+  EXPECT_EQ(args.opener->url, GURL("http://previousurl.com/"));
 }
 
 TEST_F(HistoryTabHelperTest,

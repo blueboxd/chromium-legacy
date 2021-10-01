@@ -1019,9 +1019,8 @@ bool GCMStoreImpl::Backend::LoadIncomingMessages(
             << data;
         expiration_time = 0LL;
       }
-      if (base::Time::Now() <
-          base::Time::FromDeltaSinceWindowsEpoch(
-              base::TimeDelta::FromMicroseconds(expiration_time))) {
+      if (base::Time::Now() < base::Time::FromDeltaSinceWindowsEpoch(
+                                  base::Microseconds(expiration_time))) {
         incoming_messages->push_back(std::move(persistent_id));
       } else {
         expired_incoming_messages.push_back(std::move(persistent_id));
@@ -1165,8 +1164,7 @@ bool GCMStoreImpl::Backend::LoadAccountMappingInfo(
                   account_mapping.account_id.IsEmail();
     base::UmaHistogramBoolean("GCM.RemoveAccountMappingWhenLoading", remove);
     if (remove) {
-      RemoveAccountMapping(account_mapping.account_id,
-                           base::DoNothing::Repeatedly<bool>());
+      RemoveAccountMapping(account_mapping.account_id, base::DoNothing());
     } else {
       account_mappings->push_back(account_mapping);
     }

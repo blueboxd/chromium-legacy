@@ -13928,6 +13928,38 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileBookmark.SaveFlow.ClosedWithoutEditAction">
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
+  <description>
+    Recorded when a user closes the save flow without editing the boookmark.
+  </description>
+</action>
+
+<action name="MobileBookmark.SaveFlow.EditBookmark">
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
+  <description>
+    Recorded when a user taps the edit bookmark button in the save flow.
+  </description>
+</action>
+
+<action name="MobileBookmark.SaveFlow.EditFolder">
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
+  <description>
+    Recorded when a user taps the edit folder button in the save flow.
+  </description>
+</action>
+
+<action name="MobileBookmark.SaveFlow.Show">
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
+  <description>
+    Recorded when a user saves a bookmark via the improved save flow.
+  </description>
+</action>
+
 <action name="MobileBookmarkManagerClose">
   <owner>twellington@google.com</owner>
   <owner>sczs@chromium.org</owner>
@@ -26358,6 +26390,18 @@ should be able to be added at any place in this file.
 <action name="StatusArea_LargeCursorEnabled">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="StatusArea_LiveCaptionDisabled">
+  <owner>abigailbklein@google.com</owner>
+  <description>
+    Ash system menu: Accessibility: Disable Live Caption
+  </description>
+</action>
+
+<action name="StatusArea_LiveCaptionEnabled">
+  <owner>abigailbklein@google.com</owner>
+  <description>Ash system menu: Accessibility: Enable Live Caption</description>
 </action>
 
 <action name="StatusArea_MagnifierDisabled">

@@ -777,16 +777,6 @@ const FeatureEntry::Choice kSchedulerConfigurationChoices[] = {
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kCompactSuggestions_SemicompactVariant[] = {
-    {"omnibox_compact_suggestions_variant", "semi-compact"}};
-
-const FeatureEntry::FeatureVariation kCompactSuggestionsVariations[] = {
-    {"- Semi-compact", kCompactSuggestions_SemicompactVariant,
-     base::size(kCompactSuggestions_SemicompactVariant), nullptr},
-};
-#endif  // OS_ANDROID
-
 const FeatureEntry::Choice kEnableUseZoomForDSFChoices[] = {
     {flag_descriptions::kEnableUseZoomForDsfChoiceDefault, "", ""},
     {flag_descriptions::kEnableUseZoomForDsfChoiceEnabled,
@@ -2639,6 +2629,16 @@ const FeatureEntry::Choice kDocumentTransitionSlowdownFactorChoices[] = {
     {"20", switches::kDocumentTransitionSlowdownFactor, "20"},
     {"50", switches::kDocumentTransitionSlowdownFactor, "50"}};
 
+#if defined(OS_WIN)
+const FeatureEntry::FeatureParam kWin11StyleMenusAllWindowsVersions[] = {
+    {features::kWin11StyleMenuAllWindowsVersionsName, "true"}};
+
+const FeatureEntry::FeatureVariation kWin11StyleMenusVariations[] = {
+    {" - All Windows Versions", kWin11StyleMenusAllWindowsVersions,
+     base::size(kWin11StyleMenusAllWindowsVersions), nullptr},
+};
+#endif  // defined(OS_WIN)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -3996,6 +3996,10 @@ const FeatureEntry kFeatureEntries[] = {
                                     "ForceDarkVariations")},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if defined(OS_ANDROID)
+    {"enable-accessibility-page-zoom",
+     flag_descriptions::kAccessibilityPageZoomName,
+     flag_descriptions::kAccessibilityPageZoomDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kAccessibilityPageZoom)},
     {"enable-android-layout-change-tab-reparenting",
      flag_descriptions::kAndroidLayoutChangeTabReparentingName,
      flag_descriptions::kAndroidLayoutChangeTabReparentingDescription,
@@ -4361,12 +4365,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kOmniboxAssistantVoiceSearch,
                                     kOmniboxAssistantVoiceSearchVariations,
                                     "OmniboxAssistantVoiceSearch")},
-    {"omnibox-compact-suggestions",
-     flag_descriptions::kOmniboxCompactSuggestionsName,
-     flag_descriptions::kOmniboxCompactSuggestionsDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kCompactSuggestions,
-                                    kCompactSuggestionsVariations,
-                                    "OmniboxCompactSuggestions")},
     {"omnibox-most-visited-tiles",
      flag_descriptions::kOmniboxMostVisitedTilesName,
      flag_descriptions::kOmniboxMostVisitedTilesDescription, kOsAndroid,
@@ -6099,10 +6097,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSuggestedFilesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableSuggestedFiles)},
 
-    {"enable-suggested-drive-files",
-     flag_descriptions::kEnableSuggestedDriveFilesName,
-     flag_descriptions::kEnableSuggestedDriveFilesDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableSuggestedDriveFiles)},
+    {"enable-suggested-local-files",
+     flag_descriptions::kEnableSuggestedLocalFilesName,
+     flag_descriptions::kEnableSuggestedLocalFilesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kEnableSuggestedLocalFiles)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"autofill-always-return-cloud-tokenized-card",
@@ -6558,9 +6556,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kClientStorageAccessContextAuditing)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"productivity-launcher", flag_descriptions::kAppListBubbleName,
-     flag_descriptions::kAppListBubbleDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kAppListBubble)},
+    {"productivity-launcher", flag_descriptions::kProductivityLauncherName,
+     flag_descriptions::kProductivityLauncherDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kProductivityLauncher)},
     {"enable-launcher-app-paging",
      flag_descriptions::kNewDragSpecInLauncherName,
      flag_descriptions::kNewDragSpecInLauncherDescription, kOsCrOS,
@@ -6634,14 +6632,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFrameThrottleFpsDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kFrameThrottleFpsChoices)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if defined(OS_ANDROID)
-    {"filling-passwords-from-any-origin",
-     flag_descriptions::kFillingPasswordsFromAnyOriginName,
-     flag_descriptions::kFillingPasswordsFromAnyOriginDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kFillingPasswordsFromAnyOrigin)},
-#endif  // OS_ANDROID
 
 #if defined(OS_WIN)
     {"enable-incognito-shortcut-on-desktop",
@@ -7639,6 +7629,21 @@ const FeatureEntry kFeatureEntries[] = {
     {"web-midi", flag_descriptions::kWebMidiName,
      flag_descriptions::kWebMidiDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebMidi)},
+
+#if defined(OS_WIN)
+    {"win11-style-menus", flag_descriptions::kWin11StyleMenusName,
+     flag_descriptions::kWin11StyleMenusDescription, kOsWin,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kWin11StyleMenus,
+                                    kWin11StyleMenusVariations,
+                                    "Win11StyleMenus")},
+#endif  // defined(OS_WIN)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"enable-desks-trackpad-swipe-improvements",
+     flag_descriptions::kDesksTrackpadSwipeImprovementsName,
+     flag_descriptions::kDesksTrackpadSwipeImprovementsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kEnableDesksTrackpadSwipeImprovements)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

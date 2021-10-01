@@ -1744,11 +1744,6 @@ const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[] =
     "Backspace), Chrome will request ZeroSuggest suggestions for the OTHER "
     "page classification (contextual web).";
 
-const char kOmniboxCompactSuggestionsName[] = "Omnibox: Compact suggestions";
-const char kOmniboxCompactSuggestionsDescription[] =
-    "Conserve the space for Omnibox Suggestions by slightly reducing their "
-    "size.";
-
 const char kOmniboxDisableCGIParamMatchingName[] =
     "Disable CGI Param Name Matching";
 const char kOmniboxDisableCGIParamMatchingDescription[] =
@@ -2910,6 +2905,11 @@ const char kForceMajorVersion100InUserAgentDescription[] =
 
 #if defined(OS_ANDROID)
 
+const char kAccessibilityPageZoomName[] = "Accessibility Page Zoom";
+const char kAccessibilityPageZoomDescription[] =
+    "Whether the UI and underlying code for page zoom should be enabled to"
+    " allow a user to increase/decrease the web contents zoom factor.";
+
 const char kAddToHomescreenIPHName[] = "Add to homescreen IPH";
 const char kAddToHomescreenIPHDescription[] =
     " Shows in-product-help messages educating users about add to homescreen "
@@ -3178,13 +3178,6 @@ const char kFeedLoadingPlaceholderDescription[] =
 
 const char kFeedStampName[] = "StAMP cards in the feed";
 const char kFeedStampDescription[] = "Enables StAMP cards in the feed.";
-
-const char kFillingPasswordsFromAnyOriginName[] =
-    "Filling passwords from any origin";
-const char kFillingPasswordsFromAnyOriginDescription[] =
-    "Enabling this flag adds a button to the password fallback sheet. The "
-    "button opens a different sheet that allows filling a password from any "
-    "origin.";
 
 const char kHomepagePromoCardName[] =
     "Enable homepage promo card on the New Tab Page";
@@ -3924,6 +3917,10 @@ const char kWin10TabSearchCaptionButtonDescription[] =
     "Move the Tab Search entrypoint besides the window caption buttons on "
     "Windows 10 platforms.";
 
+const char kWin11StyleMenusName[] = "Windows 11 Style Menus";
+const char kWin11StyleMenusDescription[] =
+    "Use Windows 11 style menus where possible.";
+
 #endif  // defined(OS_WIN)
 
 // Mac -------------------------------------------------------------------------
@@ -4026,12 +4023,6 @@ extern const char kAppDiscoveryRemoteUrlSearchName[] =
     "Remote URL app discovery results";
 extern const char kAppDiscoveryRemoteUrlSearchDescription[] =
     "Surface results from a URL in the app discovery service.";
-
-extern const char kAppListBubbleName[] =
-    "Productivity experiment: App Launcher";
-extern const char kAppListBubbleDescription[] =
-    "To evaluate an enhanced Launcher experience that aims to improve app "
-    "workflows by optimizing access to apps, app content, and app actions.";
 
 const char kAppServiceExternalProtocolName[] = "App Service External Protocol";
 const char kAppServiceExternalProtocolDescription[] =
@@ -4159,6 +4150,12 @@ const char kCalendarViewName[] =
 const char kCalendarViewDescription[] =
     "Show Monthly Calendar View with Google Calendar events to increase "
     "productivity by helping users view their schedules more quickly.";
+
+const char kDesksTrackpadSwipeImprovementsName[] =
+    "Experiment: Trackpad swiping to switch desks.";
+const char kDesksTrackpadSwipeImprovementsDescription[] =
+    "Adds some modifications to the four finger trackpad gesture which "
+    "switches desks.";
 
 const char kPreferConstantFrameRateName[] = "Prefer Constant Frame Rate";
 const char kPreferConstantFrameRateDescription[] =
@@ -4562,13 +4559,13 @@ const char kEnableRevenLogSourceDescription[] =
 
 const char kEnableSuggestedFilesName[] = "Enable Suggested Files";
 const char kEnableSuggestedFilesDescription[] =
-    "Enable the Suggested Files feature in Launcher, which will show local "
+    "Enable the Suggested Files feature in Launcher, which will show Drive "
     "file suggestions in the suggestion chips when the launcher is opened.";
 
-const char kEnableSuggestedDriveFilesName[] = "Enable Suggested Drive Files";
-const char kEnableSuggestedDriveFilesDescription[] =
-    "Enable the Suggested Drive Files feature in Launcher, which will show "
-    "Drive file suggestions in the suggestion chips when the launcher is "
+const char kEnableSuggestedLocalFilesName[] = "Enable Suggested Local Files";
+const char kEnableSuggestedLocalFilesDescription[] =
+    "Enable the Suggested local Files feature in Launcher, which will show "
+    "local file suggestions in the suggestion chips when the launcher is "
     "opened.";
 
 const char kEnableWireGuardName[] = "Enable WireGuard VPN";
@@ -4912,6 +4909,12 @@ const char kPhoneHubRecentAppsName[] = "Recent Apps in Phone Hub";
 const char kPhoneHubRecentAppsDescription[] =
     "Enables the Recent Apps feature in Phone Hub, which allows users to "
     "relaunch a recently streamed app.";
+
+const char kProductivityLauncherName[] =
+    "Productivity experiment: App Launcher";
+const char kProductivityLauncherDescription[] =
+    "To evaluate an enhanced Launcher experience that aims to improve app "
+    "workflows by optimizing access to apps, app content, and app actions.";
 
 const char kReduceDisplayNotificationsName[] = "Reduce display notifications";
 const char kReduceDisplayNotificationsDescription[] =

@@ -26452,6 +26452,10 @@ Called by update_document_policy_enum.py.-->
   <int value="900" label="ReportDeviceSecurityStatus"/>
   <int value="901" label="EnableDeviceGranularReporting"/>
   <int value="902" label="WebSQLInThirdPartyContextEnabled"/>
+  <int value="903" label="U2fSecurityKeyApiEnabled"/>
+  <int value="904"
+      label="DeviceLoginScreenPromptOnMultipleMatchingCertificates"/>
+  <int value="905" label="PromptOnMultipleMatchingCertificates"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -34725,6 +34729,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4053" label="V8Navigator_CreateAdRequest_Method"/>
   <int value="4054" label="V8Navigator_FinalizeAd_Method"/>
   <int value="4055" label="RegionCapture"/>
+  <int value="4056" label="AppHistory"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -48457,6 +48462,7 @@ from previous Chrome versions.
       label="disallow-autofill-sync-credential-for-reauth"/>
   <int value="-1349826793" label="ArcInputMethod:disabled"/>
   <int value="-1349532167" label="enable-wifi-credential-sync"/>
+  <int value="-1349146355" label="Win11StyleMenus:disabled"/>
   <int value="-1348040371" label="ScanAppStickySettings:disabled"/>
   <int value="-1346722635" label="gesture-selection"/>
   <int value="-1345931804" label="TabbedAppOverflowMenuIcons:disabled"/>
@@ -48536,6 +48542,8 @@ from previous Chrome versions.
   <int value="-1290053302"
       label="OfflinePagesInDownloadHomeOpenInCct:disabled"/>
   <int value="-1289678848" label="SystemDownloadManager:enabled"/>
+  <int value="-1289078823"
+      label="EnableDesksTrackpadSwipeImprovements:enabled"/>
   <int value="-1288130734" label="OpenVR:disabled"/>
   <int value="-1287511172"
       label="OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains:disabled"/>
@@ -48978,12 +48986,14 @@ from previous Chrome versions.
   <int value="-963683462" label="EnablePalmSuppression:enabled"/>
   <int value="-962030536" label="ChromeDuetLabeled:enabled"/>
   <int value="-960077963" label="EnableAuraTooltipsOnWindows:enabled"/>
+  <int value="-959173180" label="AccessibilityPageZoom:disabled"/>
   <int value="-958950214" label="AllowDisableMouseAcceleration:disabled"/>
   <int value="-958372962" label="LacrosSupport:enabled"/>
   <int value="-957200826" label="enable-spdy-proxy-auth"/>
   <int value="-956696029" label="scheduler-configuration"/>
   <int value="-955667686"
       label="AutofillSuppressCreditCardSaveForAssistant:enabled"/>
+  <int value="-954789862" label="ProductivityLauncher:enabled"/>
   <int value="-953215709" label="StorageAccessAPI:enabled"/>
   <int value="-952996862" label="ArcUseHighMemoryDalvikProfile:enabled"/>
   <int value="-952971446" label="WebAssemblyCodeProtection:disabled"/>
@@ -50391,6 +50401,7 @@ from previous Chrome versions.
   <int value="174759256" label="LockScreenMediaControls:enabled"/>
   <int value="174917935" label="ReengagementNotification:disabled"/>
   <int value="175254474" label="SpectreVariant2Mitigation:enabled"/>
+  <int value="176526479" label="AccessibilityPageZoom:enabled"/>
   <int value="176773784" label="EnableHardwareMirrorMode:disabled"/>
   <int value="178337215" label="enable-md-history"/>
   <int value="178693406" label="LockScreenMediaControls:disabled"/>
@@ -50415,6 +50426,7 @@ from previous Chrome versions.
   <int value="192320180" label="ignore-gpu-blocklist"/>
   <int value="192693676"
       label="QueryTilesRemoveTrendingAfterInactivity:disabled"/>
+  <int value="193865288" label="EnableSuggestedLocalFiles:enabled"/>
   <int value="194573877" label="MacViewsNativeDialogs:disabled"/>
   <int value="194895489" label="passive-listeners-default"/>
   <int value="195112080" label="DeskTemplateSync:enabled"/>
@@ -51047,6 +51059,7 @@ from previous Chrome versions.
   <int value="666871156" label="KaleidoscopeModule:enabled"/>
   <int value="667643314" label="LitePageServerPreviews:enabled"/>
   <int value="669097106" label="NtpRealboxMatchOmniboxTheme:disabled"/>
+  <int value="669958310" label="EnableSuggestedLocalFiles:disabled"/>
   <int value="672067370" label="InstallableAmbientBadgeMessage:enabled"/>
   <int value="673588373" label="OmniboxPedalSuggestions:disabled"/>
   <int value="674627327" label="MagnifierNewFocusFollowing:enabled"/>
@@ -51290,6 +51303,7 @@ from previous Chrome versions.
   <int value="859449217" label="MagnifierPanningImprovements:enabled"/>
   <int value="859495772"
       label="UsernameFirstFlowFallbackCrowdsourcing:disabled"/>
+  <int value="859913799" label="EnableDesksTrackpadSwipeImprovements:disabled"/>
   <int value="860336036" label="ChromeModernDesign:enabled"/>
   <int value="862453793" label="TranslateUI2016Q2:enabled"/>
   <int value="864024033" label="IsolatePrerendersMustProbeOrigin:enabled"/>
@@ -51681,6 +51695,7 @@ from previous Chrome versions.
   <int value="1177120582" label="InstallableInkDrop:disabled"/>
   <int value="1177174300" label="LayoutNGTable:disabled"/>
   <int value="1177628103" label="GaiaActionButtons:disabled"/>
+  <int value="1178640449" label="ProductivityLauncher:disabled"/>
   <int value="1179013979"
       label="OmniboxUIExperimentMaxAutocompleteMatches:enabled"/>
   <int value="1179407596" label="PreemptiveLinkToTextGeneration:enabled"/>
@@ -52805,6 +52820,7 @@ from previous Chrome versions.
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:enabled"/>
   <int value="2032880973" label="U2FSecurityKeyAPI:disabled"/>
   <int value="2034198538" label="TabHoverCards:enabled"/>
+  <int value="2035415906" label="Win11StyleMenus:enabled"/>
   <int value="2037562553" label="OmniboxBubbleUrlSuggestions:disabled"/>
   <int value="2037756154" label="enable-impl-side-painting"/>
   <int value="2038036881" label="NewShortcutMapping:enabled"/>
@@ -64915,6 +64931,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PasswordManagerOsPasswordStatus">
+  <obsolete>
+    Deprecated 09/2021.
+  </obsolete>
   <int value="0" label="Unknown"/>
   <int value="1" label="Unsupported platform"/>
   <int value="2" label="Password is blank"/>
@@ -77993,6 +78012,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="42" label="UMA_WEB_FEED_UNFOLLOW_FAILURE"/>
   <int value="43" label="UMA_LANGUAGE_SPLIT_RESTART"/>
   <int value="44" label="UMA_AUTOFILL_VIRTUAL_CARD_FILLED"/>
+  <int value="45" label="UMA_WINDOW_ERROR"/>
+  <int value="46" label="UMA_MODULE_INSTALL_FAILURE"/>
 </enum>
 
 <enum name="SnapshotItemId">
@@ -86244,6 +86265,7 @@ Full version information for the fingerprint enum values:
   <int value="6" label="Finishing"/>
   <int value="7" label="No WebContents"/>
   <int value="8" label="(Obsolete) No video"/>
+  <int value="9" label="App tasks"/>
 </enum>
 
 <enum name="VideoPersistenceControlsType">
@@ -86710,6 +86732,11 @@ others/histograms.xml -->
   <int value="3" label="Third Party (Android)"/>
   <int value="4" label="PPTP"/>
   <int value="5" label="WireGuard"/>
+</enum>
+
+<enum name="VPNL2TPIPsecTunnelGroupUsage">
+  <int value="0" label="Tunnel group is not used"/>
+  <int value="1" label="Tunnel group is used"/>
 </enum>
 
 <enum name="VPNRemoteAuthenticationType">

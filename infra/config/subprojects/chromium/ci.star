@@ -1536,6 +1536,7 @@ ci.chromium_builder(
 
 ci.chromium_builder(
     name = "linux-archive-tagged",
+    builderless = False,
     console_view_entry = consoles.console_view_entry(
         category = "linux",
         short_name = "tag",
@@ -1546,6 +1547,7 @@ ci.chromium_builder(
     tree_closing = False,
     schedule = "triggered",
     triggered_by = [],
+    execution_timeout = 7 * time.hour,
 )
 
 ci.chromium_builder(
@@ -1557,9 +1559,7 @@ ci.chromium_builder(
         short_name = "off",
     ),
     cores = 32,
-    # TODO: Change this back down to something reasonable once these builders
-    # have populated their cached by getting through the compile step
-    execution_timeout = 10 * time.hour,
+    execution_timeout = 7 * time.hour,
     main_console_view = "main",
     os = os.LINUX_BIONIC_REMOVE,
     tree_closing = False,
@@ -1663,6 +1663,7 @@ ci.chromium_builder(
     tree_closing = False,
     schedule = "triggered",
     triggered_by = [],
+    execution_timeout = 7 * time.hour,
 )
 
 ci.chromium_builder(
@@ -1716,6 +1717,7 @@ ci.chromium_builder(
     tree_closing = False,
     schedule = "triggered",
     triggered_by = [],
+    execution_timeout = 7 * time.hour,
 )
 
 ci.chromium_builder(

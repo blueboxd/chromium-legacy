@@ -28,9 +28,9 @@
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/desks/templates/desks_templates_grid_view.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
-#include "ash/wm/overview/desks_templates/desks_templates_grid_view.h"
 #include "ash/wm/overview/drop_target_view.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -802,6 +802,10 @@ void OverviewGrid::ShowDesksTemplatesGrid() {
   }
 
   desks_templates_grid_->Show();
+}
+
+bool OverviewGrid::IsShowingDesksTemplatesGrid() const {
+  return desks_templates_grid_ && desks_templates_grid_->IsVisible();
 }
 
 void OverviewGrid::OnSelectorItemDragEnded(bool snap) {

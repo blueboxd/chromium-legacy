@@ -11,9 +11,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "chrome/browser/ui/user_education/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
-#include "chrome/browser/ui/views/user_education/feature_promo_bubble_params.h"
 #include "chrome/test/data/grit/chrome_test_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/events/base_event_utils.h"
@@ -90,8 +90,8 @@ TEST_F(FeaturePromoBubbleViewTest, AutoDismissIfNoButtons) {
 }
 
 TEST_F(FeaturePromoBubbleViewTest, NoAutoDismissWithButtons) {
-  FeaturePromoBubbleView* bubble = FeaturePromoBubbleView::Create(
-      GetBubbleParams(base::DoNothing::Repeatedly()));
+  FeaturePromoBubbleView* bubble =
+      FeaturePromoBubbleView::Create(GetBubbleParams(base::DoNothing()));
   MockWidgetObserver dismiss_observer;
   EXPECT_CALL(dismiss_observer, OnWidgetClosing(testing::_)).Times(0);
   bubble->GetWidget()->AddObserver(&dismiss_observer);

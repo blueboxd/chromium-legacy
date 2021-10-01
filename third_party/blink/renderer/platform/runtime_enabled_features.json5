@@ -204,6 +204,7 @@
     },
     {
       name: "AppHistory",
+      origin_trial_feature_name: "AppHistory",
       status: "experimental",
     },
     {
@@ -412,6 +413,9 @@
     {
       name: "CompositeBGColorAnimation",
       status: "experimental",
+    },
+    {
+      name: "CompositeBoxShadowAnimation",
     },
     {
       name: "CompositeClipPathAnimation",

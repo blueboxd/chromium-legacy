@@ -61,8 +61,7 @@ class WebAppHandlerRegistrationUtilsWinTest : public testing::Test {
                    const std::wstring& app_name_extension,
                    const base::FilePath& profile_path) {
     base::FilePath web_app_path(
-        web_app::GetOsIntegrationResourcesDirectoryForApp(profile_path, app_id,
-                                                          GURL()));
+        GetOsIntegrationResourcesDirectoryForApp(profile_path, app_id, GURL()));
 
     absl::optional<base::FilePath> launcher_path =
         CreateAppLauncherFile(app_name, app_name_extension, web_app_path);
@@ -185,7 +184,7 @@ TEST_F(WebAppHandlerRegistrationUtilsWinTest,
 
   // Update installations external to profile 2 (i.e. profile1).
   CheckAndUpdateExternalInstallations(profile2->GetPath(), app_id(),
-                                      base::DoNothing::Once<bool>());
+                                      base::DoNothing());
   base::ThreadPoolInstance::Get()->FlushForTesting();
 
   // Test that the profile1 installation is updated with a profile-specific
@@ -206,7 +205,7 @@ TEST_F(WebAppHandlerRegistrationUtilsWinTest,
   Profile* profile2 =
       testing_profile_manager()->CreateTestingProfile("Profile 2");
   CheckAndUpdateExternalInstallations(profile2->GetPath(), app_id(),
-                                      base::DoNothing::Once<bool>());
+                                      base::DoNothing());
   base::ThreadPoolInstance::Get()->FlushForTesting();
 
   // Ensure that after updating from profile2 (which has no installation),
@@ -233,7 +232,7 @@ TEST_F(WebAppHandlerRegistrationUtilsWinTest,
   // in other profiles shouldn't change the original 2 installations since they
   // already have app-specific names.
   CheckAndUpdateExternalInstallations(profile3->GetPath(), app_id(),
-                                      base::DoNothing::Once<bool>());
+                                      base::DoNothing());
   base::ThreadPoolInstance::Get()->FlushForTesting();
 
   TestRegisteredApp(app_id(), app_name(), L" (Default)", profile1->GetPath());

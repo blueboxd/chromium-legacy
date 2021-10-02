@@ -46,9 +46,9 @@ SnapDirection GetSnapDirection(const views::FrameCaptionButton* to_hover) {
   if (to_hover) {
     switch (to_hover->GetIcon()) {
       case views::CAPTION_BUTTON_ICON_LEFT_SNAPPED:
-        return SnapDirection::kLeft;
+        return SnapDirection::kPrimary;
       case views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED:
-        return SnapDirection::kRight;
+        return SnapDirection::kSecondary;
       case views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE:
       case views::CAPTION_BUTTON_ICON_MINIMIZE:
       case views::CAPTION_BUTTON_ICON_CLOSE:
@@ -205,9 +205,8 @@ void FrameSizeButton::StartSetButtonsToSnapModeTimer(
     AnimateButtonsToSnapMode();
   } else {
     set_buttons_to_snap_mode_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(set_buttons_to_snap_mode_delay_ms_),
-        this, &FrameSizeButton::AnimateButtonsToSnapMode);
+        FROM_HERE, base::Milliseconds(set_buttons_to_snap_mode_delay_ms_), this,
+        &FrameSizeButton::AnimateButtonsToSnapMode);
   }
 }
 
@@ -290,9 +289,9 @@ bool FrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
   delegate_->CommitSnap(snap);
   delegate_->SetHoveredAndPressedButtons(nullptr, nullptr);
 
-  if (snap == SnapDirection::kLeft) {
+  if (snap == SnapDirection::kPrimary) {
     base::RecordAction(base::UserMetricsAction("MaxButton_MaxLeft"));
-  } else if (snap == SnapDirection::kRight) {
+  } else if (snap == SnapDirection::kSecondary) {
     base::RecordAction(base::UserMetricsAction("MaxButton_MaxRight"));
   } else {
     SetButtonsToNormalMode(FrameSizeButtonDelegate::Animate::kYes);

@@ -33,6 +33,11 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
             base::SequencedTaskRunnerHandle::Get(),
             base::SequencedTaskRunnerHandle::Get()) {}
 
+  MockSafeBrowsingDatabaseManager(const MockSafeBrowsingDatabaseManager&) =
+      delete;
+  MockSafeBrowsingDatabaseManager& operator=(
+      const MockSafeBrowsingDatabaseManager&) = delete;
+
   MOCK_METHOD1(CancelCheck, void(SafeBrowsingDatabaseManager::Client*));
 
   MOCK_METHOD2(CheckCsdAllowlistUrl,
@@ -43,9 +48,6 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
 
  protected:
   ~MockSafeBrowsingDatabaseManager() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
 };
 }  // namespace
 
@@ -115,11 +117,11 @@ TEST_F(AllowlistCheckerClientTest, TestCsdListAsyncTimeout) {
   MockBoolCallback callback;
   AllowlistCheckerClient::StartCheckCsdAllowlist(database_manager_, target_url_,
                                                  callback.Get());
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::Seconds(1));
   // No callback yet.
 
   EXPECT_CALL(callback, Run(true /* did_match_allowlist */));
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment_.FastForwardBy(base::Seconds(5));
 }
 
 }  // namespace safe_browsing

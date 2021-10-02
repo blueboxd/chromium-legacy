@@ -33,6 +33,9 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) SharedProtoDatabase
       base::OnceCallback<void(Enums::InitStatus,
                               SharedDBMetadataProto::MigrationStatus)>;
 
+  SharedProtoDatabase(const SharedProtoDatabase&) = delete;
+  SharedProtoDatabase& operator=(const SharedProtoDatabase&) = delete;
+
   // Always returns a SharedProtoDatabaseClient pointer, but that should ONLY
   // be used if the callback returns success.
   std::unique_ptr<SharedProtoDatabaseClient> GetClientForTesting(
@@ -191,11 +194,9 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) SharedProtoDatabase
   base::queue<std::unique_ptr<InitRequest>> outstanding_init_requests_;
   bool create_if_missing_ = false;
 
-  base::TimeDelta delete_obsolete_delay_ = base::TimeDelta::FromSeconds(120);
+  base::TimeDelta delete_obsolete_delay_ = base::Seconds(120);
   base::Lock delete_obsolete_delay_lock_;
   base::CancelableOnceClosure delete_obsolete_task_;
-
-  DISALLOW_COPY_AND_ASSIGN(SharedProtoDatabase);
 };
 
 }  // namespace leveldb_proto

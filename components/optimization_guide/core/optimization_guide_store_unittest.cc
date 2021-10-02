@@ -74,6 +74,10 @@ class OptimizationGuideStoreTest : public testing::Test {
 
   OptimizationGuideStoreTest() = default;
 
+  OptimizationGuideStoreTest(const OptimizationGuideStoreTest&) = delete;
+  OptimizationGuideStoreTest& operator=(const OptimizationGuideStoreTest&) =
+      delete;
+
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
   void TearDown() override { last_loaded_hint_.reset(); }
@@ -375,11 +379,10 @@ class OptimizationGuideStoreTest : public testing::Test {
     if (metadata_entry != db_store_.end()) {
       // The next update time should have same time up to the second as the
       // metadata entry is stored in seconds.
-      EXPECT_TRUE(
-          base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromSeconds(
-              metadata_entry->second.update_time_secs())) -
-              update_time <
-          base::TimeDelta::FromSeconds(1));
+      EXPECT_TRUE(base::Time::FromDeltaSinceWindowsEpoch(base::Seconds(
+                      metadata_entry->second.update_time_secs())) -
+                      update_time <
+                  base::Seconds(1));
     } else {
       FAIL() << "No fetched metadata found";
     }
@@ -394,11 +397,10 @@ class OptimizationGuideStoreTest : public testing::Test {
     if (metadata_entry != db_store_.end()) {
       // The next update time should have same time up to the second as the
       // metadata entry is stored in seconds.
-      EXPECT_TRUE(
-          base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromSeconds(
-              metadata_entry->second.update_time_secs())) -
-              update_time <
-          base::TimeDelta::FromSeconds(1));
+      EXPECT_TRUE(base::Time::FromDeltaSinceWindowsEpoch(base::Seconds(
+                      metadata_entry->second.update_time_secs())) -
+                      update_time <
+                  base::Seconds(1));
     } else {
       FAIL() << "No host model features metadata found";
     }
@@ -509,8 +511,6 @@ class OptimizationGuideStoreTest : public testing::Test {
   std::unique_ptr<std::vector<proto::HostModelFeatures>>
       last_loaded_all_host_model_features_;
   std::unique_ptr<proto::PredictionModel> last_loaded_prediction_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(OptimizationGuideStoreTest);
 };
 
 TEST_F(OptimizationGuideStoreTest, NoInitialization) {
@@ -1769,13 +1769,13 @@ TEST_F(OptimizationGuideStoreTest, FetchHintsPurgeExpiredFetchedHints) {
   fetched_hint1.set_key("domain2.org");
   fetched_hint1.set_key_representation(proto::HOST);
   fetched_hint1.mutable_max_cache_duration()->set_seconds(
-      base::TimeDelta::FromDays(7).InSeconds());
+      base::Days(7).InSeconds());
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
   proto::Hint fetched_hint2;
   fetched_hint2.set_key("domain3.org");
   fetched_hint2.set_key_representation(proto::HOST);
   fetched_hint2.mutable_max_cache_duration()->set_seconds(
-      base::TimeDelta::FromDays(7).InSeconds());
+      base::Days(7).InSeconds());
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
 
   UpdateFetchedHints(std::move(update_data));
@@ -1787,13 +1787,13 @@ TEST_F(OptimizationGuideStoreTest, FetchHintsPurgeExpiredFetchedHints) {
   fetched_hint1.set_key("domain4.org");
   fetched_hint1.set_key_representation(proto::HOST);
   fetched_hint1.mutable_max_cache_duration()->set_seconds(
-      base::TimeDelta::FromDays(-7).InSeconds());
+      base::Days(-7).InSeconds());
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
   proto::Hint fetched_hint4;
   fetched_hint2.set_key("domain5.org");
   fetched_hint2.set_key_representation(proto::HOST);
   fetched_hint2.mutable_max_cache_duration()->set_seconds(
-      base::TimeDelta::FromDays(-7).InSeconds());
+      base::Days(-7).InSeconds());
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
 
   UpdateFetchedHints(std::move(update_data));

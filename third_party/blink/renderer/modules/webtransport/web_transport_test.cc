@@ -716,12 +716,11 @@ TEST_F(WebTransportTest, SendDatagram) {
   EXPECT_TRUE(tester.Value().IsUndefined());
 }
 
+// TODO(yhirano): Move this to datagram_duplex_stream_test.cc.
 TEST_F(WebTransportTest, BackpressureForOutgoingDatagrams) {
   V8TestingScope scope;
-  auto* const options = MakeGarbageCollected<WebTransportOptions>();
-  options->setDatagramWritableHighWaterMark(3);
   auto* web_transport =
-      CreateAndConnectSuccessfully(scope, "https://example.com", options);
+      CreateAndConnectSuccessfully(scope, "https://example.com");
 
   EXPECT_CALL(*mock_web_transport_, SendDatagram(_, _))
       .Times(4)
@@ -731,6 +730,7 @@ TEST_F(WebTransportTest, BackpressureForOutgoingDatagrams) {
             std::move(callback).Run(true);
           }));
 
+  web_transport->datagrams()->setOutgoingHighWaterMark(3);
   auto* writable = web_transport->datagrams()->writable();
   auto* script_state = scope.GetScriptState();
   auto* writer = writable->getWriter(script_state, ASSERT_NO_EXCEPTION);
@@ -1161,7 +1161,7 @@ TEST_F(WebTransportTest, IncomingMaxAgeIsObeyed) {
 
   test::RunPendingTasks();
 
-  constexpr base::TimeDelta kMaxAge = base::TimeDelta::FromMicroseconds(1);
+  constexpr base::TimeDelta kMaxAge = base::Microseconds(1);
   web_transport->datagrams()->setIncomingMaxAge(kMaxAge.InMillisecondsF());
 
   test::RunDelayedTasks(kMaxAge);
@@ -1741,8 +1741,7 @@ TEST_F(WebTransportTest, SetDatagramWritableQueueExpirationDuration) {
       CreateAndConnectSuccessfully(scope, "https://example.com");
 
   constexpr double kDuration = 40;
-  constexpr base::TimeDelta kDurationDelta =
-      base::TimeDelta::FromMillisecondsD(kDuration);
+  constexpr base::TimeDelta kDurationDelta = base::Milliseconds(kDuration);
   EXPECT_CALL(*mock_web_transport_,
               SetOutgoingDatagramExpirationDuration(kDurationDelta));
 
@@ -1758,8 +1757,7 @@ TEST_F(WebTransportTest, SetOutgoingMaxAgeBeforeConnectComplete) {
   auto* web_transport = Create(scope, "https://example.com/", EmptyOptions());
 
   constexpr double kDuration = 1000;
-  constexpr base::TimeDelta kDurationDelta =
-      base::TimeDelta::FromMillisecondsD(kDuration);
+  constexpr base::TimeDelta kDurationDelta = base::Milliseconds(kDuration);
 
   web_transport->datagrams()->setOutgoingMaxAge(kDuration);
 

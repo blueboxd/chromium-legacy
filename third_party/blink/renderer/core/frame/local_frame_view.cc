@@ -4195,7 +4195,8 @@ void LocalFrameView::PaintContentsForTest(const CullRect& cull_rect) {
   } else {
     GraphicsLayer* graphics_layer =
         GetLayoutView()->Layer()->GraphicsLayerBacking();
-    graphics_layer->PaintForTesting(cull_rect.Rect(), PaintDebugInfoEnabled());
+    graphics_layer->PaintForTesting(IntRect(cull_rect.Rect()),
+                                    PaintDebugInfoEnabled());
   }
   Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
 }
@@ -4694,7 +4695,7 @@ void LocalFrameView::BeginLifecycleUpdates() {
   if (WillDoPaintHoldingForFCP()) {
     have_deferred_commits_ = true;
     chrome_client.StartDeferringCommits(
-        GetFrame(), base::TimeDelta::FromMilliseconds(kCommitDelayDefaultInMs),
+        GetFrame(), base::Milliseconds(kCommitDelayDefaultInMs),
         cc::PaintHoldingReason::kFirstContentfulPaint);
   }
 
@@ -5033,7 +5034,7 @@ void LocalFrameView::RunPaintBenchmark(int repeat_count,
   auto run_benchmark = [&](PaintBenchmarkMode mode) -> double {
     constexpr int kTimeCheckInterval = 1;
     constexpr int kWarmupRuns = 0;
-    constexpr base::TimeDelta kTimeLimit = base::TimeDelta::FromMilliseconds(1);
+    constexpr base::TimeDelta kTimeLimit = base::Milliseconds(1);
 
     base::TimeDelta min_time = base::TimeDelta::Max();
     for (int i = 0; i < repeat_count; i++) {

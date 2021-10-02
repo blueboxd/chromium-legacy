@@ -64,6 +64,9 @@ class SiteDataImpl : public base::RefCounted<SiteDataImpl> {
     virtual void OnSiteDataImplDestroyed(SiteDataImpl* impl) = 0;
   };
 
+  SiteDataImpl(const SiteDataImpl&) = delete;
+  SiteDataImpl& operator=(const SiteDataImpl&) = delete;
+
   // Must be called when a load event is received for this site, this can be
   // invoked several times if instances of this class are shared between
   // multiple tabs.
@@ -182,7 +185,7 @@ class SiteDataImpl : public base::RefCounted<SiteDataImpl> {
   // used to store TimeDelta values in the |SiteDataProto| protobuf.
   static base::TimeDelta InternalRepresentationToTimeDelta(
       ::google::protobuf::int64 value) {
-    return base::TimeDelta::FromSeconds(value);
+    return base::Seconds(value);
   }
   static int64_t TimeDeltaToInternalRepresentation(base::TimeDelta delta) {
     return delta.InSeconds();
@@ -310,8 +313,6 @@ class SiteDataImpl : public base::RefCounted<SiteDataImpl> {
 
   base::WeakPtrFactory<SiteDataImpl> weak_factory_
       GUARDED_BY_CONTEXT(sequence_checker_){this};
-
-  DISALLOW_COPY_AND_ASSIGN(SiteDataImpl);
 };
 
 }  // namespace internal

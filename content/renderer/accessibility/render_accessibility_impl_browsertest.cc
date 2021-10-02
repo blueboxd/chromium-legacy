@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "content/common/render_accessibility.mojom-test-utils.h"
 #include "content/common/render_accessibility.mojom.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/fake_pepper_plugin_instance.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/accessibility/ax_action_target_factory.h"
@@ -1250,8 +1249,6 @@ class AXImageAnnotatorTest : public RenderAccessibilityImplTest {
 
  protected:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kExperimentalAccessibilityLabels);
     RenderAccessibilityImplTest::SetUp();
     // TODO(nektar): Add the ability to test the AX action that labels images
     // only once.
@@ -1416,8 +1413,7 @@ class TimeDelayBlinkAXTreeSource : public BlinkAXTreeSource {
                      ui::AXNodeData* out_data) const override {
     BlinkAXTreeSource::SerializeNode(node, out_data);
     if (time_delay_ms_) {
-      task_environment_->FastForwardBy(
-          base::TimeDelta::FromMilliseconds(time_delay_ms_));
+      task_environment_->FastForwardBy(base::Milliseconds(time_delay_ms_));
       time_delay_ms_ = 0;
     }
   }
@@ -1494,7 +1490,7 @@ TEST_F(RenderAccessibilityImplUKMTest, TestFireUKMs) {
 
   // After 1000 seconds have passed, the next time we send an event we should
   // send URL-keyed metrics.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1000));
+  task_environment_.FastForwardBy(base::Seconds(1000));
   GetRenderAccessibilityImpl()->HandleAXEvent(
       ui::AXEvent(root_obj.AxID(), ax::mojom::Event::kChildrenChanged));
   SendPendingAccessibilityEvents();

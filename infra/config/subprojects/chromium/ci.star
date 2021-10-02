@@ -1614,6 +1614,7 @@ ci.chromium_builder(
         short_name = "tag",
     ),
     main_console_view = "main",
+    cores = 12,
     os = os.MAC_DEFAULT,
     tree_closing = False,
     schedule = "triggered",
@@ -1641,6 +1642,21 @@ ci.chromium_builder(
     main_console_view = "main",
     cores = 12,
     os = os.MAC_DEFAULT,
+)
+
+ci.chromium_builder(
+    name = "mac-arm64-archive-tagged",
+    console_view_entry = consoles.console_view_entry(
+        category = "mac|arm",
+        short_name = "tag",
+    ),
+    main_console_view = "main",
+    cores = 12,
+    os = os.MAC_DEFAULT,
+    tree_closing = False,
+    schedule = "triggered",
+    triggered_by = [],
+    execution_timeout = 7 * time.hour,
 )
 
 ci.chromium_builder(
@@ -4967,18 +4983,18 @@ ci.gpu_fyi_linux_builder(
 )
 
 ci.gpu_fyi_mac_builder(
-    name = "Mac FYI GPU ASAN Release",
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac",
-        short_name = "asn",
-    ),
-)
-
-ci.gpu_fyi_mac_builder(
     name = "GPU FYI Mac Builder",
     console_view_entry = consoles.console_view_entry(
         category = "Mac|Builder",
         short_name = "rel",
+    ),
+)
+
+ci.gpu_fyi_mac_builder(
+    name = "GPU FYI Mac Builder (asan)",
+    console_view_entry = consoles.console_view_entry(
+        category = "Mac|Builder",
+        short_name = "asn",
     ),
 )
 
@@ -5168,6 +5184,15 @@ ci.gpu_fyi_thin_tester(
 )
 
 ci.gpu_fyi_thin_tester(
+    name = "Mac FYI ASAN (Intel)",
+    console_view_entry = consoles.console_view_entry(
+        category = "Mac|Intel",
+        short_name = "asn",
+    ),
+    triggered_by = ["GPU FYI Mac Builder (asan)"],
+)
+
+ci.gpu_fyi_thin_tester(
     name = "Mac FYI Release (Intel)",
     console_view_entry = consoles.console_view_entry(
         category = "Mac|Intel",
@@ -5183,6 +5208,15 @@ ci.gpu_fyi_thin_tester(
         short_name = "uhd",
     ),
     triggered_by = ["GPU FYI Mac Builder"],
+)
+
+ci.gpu_fyi_thin_tester(
+    name = "Mac FYI Retina ASAN (AMD)",
+    console_view_entry = consoles.console_view_entry(
+        category = "Mac|AMD|Retina",
+        short_name = "asn",
+    ),
+    triggered_by = ["GPU FYI Mac Builder (asan)"],
 )
 
 ci.gpu_fyi_thin_tester(

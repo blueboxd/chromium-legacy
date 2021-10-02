@@ -148,7 +148,7 @@ class CommonNameMismatchRedirectObserver
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(CommonNameMismatchRedirectObserver)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(CommonNameMismatchRedirectObserver);
 
 void RecordUMA(SSLErrorHandler::UMAEvent event) {
   UMA_HISTOGRAM_ENUMERATION(kHistogram, event,
@@ -243,8 +243,7 @@ class ConfigSingleton {
 };
 
 ConfigSingleton::ConfigSingleton()
-    : interstitial_delay_(
-          base::TimeDelta::FromMilliseconds(kInterstitialDelayInMilliseconds)),
+    : interstitial_delay_(base::Milliseconds(kInterstitialDelayInMilliseconds)),
       os_captive_portal_status_for_testing_(OS_CAPTIVE_PORTAL_STATUS_NOT_SET),
       ssl_error_assistant_(std::make_unique<SSLErrorAssistant>()) {}
 
@@ -267,8 +266,7 @@ ConfigSingleton::on_blocking_page_shown_callback() const {
 }
 
 void ConfigSingleton::ResetForTesting() {
-  interstitial_delay_ =
-      base::TimeDelta::FromMilliseconds(kInterstitialDelayInMilliseconds);
+  interstitial_delay_ = base::Milliseconds(kInterstitialDelayInMilliseconds);
   timer_started_callback_ = nullptr;
   on_blocking_page_shown_callback_ =
       SSLErrorHandler::OnBlockingPageShownCallback();
@@ -980,9 +978,8 @@ void SSLErrorHandler::HandleCertDateInvalidErrorImpl(
     base::TimeTicks started_handling_error) {
   UMA_HISTOGRAM_CUSTOM_TIMES(
       "interstitial.ssl_error_handler.cert_date_error_delay",
-      base::TimeTicks::Now() - started_handling_error,
-      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(4),
-      50);
+      base::TimeTicks::Now() - started_handling_error, base::Milliseconds(1),
+      base::Seconds(4), 50);
 
   timer_.Stop();
   base::Clock* testing_clock = g_config.Pointer()->clock();
@@ -1015,4 +1012,4 @@ bool SSLErrorHandler::IsOnlyCertError(
          !net::IsCertStatusError(other_errors);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(SSLErrorHandler)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SSLErrorHandler);

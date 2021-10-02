@@ -28,6 +28,9 @@
 #include "components/prefs/pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
+namespace ash {
+namespace tether {
+
 namespace {
 
 constexpr int64_t kMetricFalsePositiveSeconds = 2;
@@ -635,8 +638,7 @@ bool TetherService::HandleFeatureStateMetricIfUninitialized() {
   // recorded. |kMetricFalsePositiveSeconds| is chosen such that it is long
   // enough that we can assume a false positive did not occur and that the
   // metric value is actually correct.
-  timer_->Start(FROM_HERE,
-                base::TimeDelta::FromSeconds(kMetricFalsePositiveSeconds),
+  timer_->Start(FROM_HERE, base::Seconds(kMetricFalsePositiveSeconds),
                 base::BindOnce(&TetherService::RecordTetherFeatureState,
                                weak_ptr_factory_.GetWeakPtr()));
 
@@ -657,3 +659,6 @@ void TetherService::SetTestDoubles(
   notification_presenter_ = std::move(notification_presenter);
   timer_ = std::move(timer);
 }
+
+}  // namespace tether
+}  // namespace ash

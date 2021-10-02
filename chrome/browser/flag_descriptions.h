@@ -87,6 +87,9 @@ extern const char kAriaElementReflectionDescription[];
 extern const char kCOLRV1FontsName[];
 extern const char kCOLRV1FontsDescription[];
 
+extern const char kCSSCascadeLayersName[];
+extern const char kCSSCascadeLayersDescription[];
+
 extern const char kCSSContainerQueriesName[];
 extern const char kCSSContainerQueriesDescription[];
 
@@ -727,9 +730,6 @@ extern const char kEnableWasmTieringDescription[];
 extern const char kEvDetailsInPageInfoName[];
 extern const char kEvDetailsInPageInfoDescription[];
 
-extern const char kExperimentalAccessibilityLabelsName[];
-extern const char kExperimentalAccessibilityLabelsDescription[];
-
 extern const char kExperimentalWebPlatformFeaturesName[];
 extern const char kExperimentalWebPlatformFeaturesDescription[];
 
@@ -1003,9 +1003,6 @@ extern const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[];
 
 extern const char kOmniboxDisableCGIParamMatchingName[];
 extern const char kOmniboxDisableCGIParamMatchingDescription[];
-
-extern const char kOmniboxDefaultTypedNavigationsToHttpsName[];
-extern const char kOmniboxDefaultTypedNavigationsToHttpsDescription[];
 
 extern const char kOmniboxDocumentProviderAsoName[];
 extern const char kOmniboxDocumentProviderAsoDescription[];
@@ -1642,6 +1639,9 @@ extern const char kUsePassthroughCommandDecoderDescription[];
 extern const char kExtensionWorkflowJustificationName[];
 extern const char kExtensionWorkflowJustificationDescription[];
 
+extern const char kEnterpriseReportingExtensionManifestVersionName[];
+extern const char kEnterpriseReportingExtensionManifestVersionDescription[];
+
 #if !defined(OS_ANDROID)
 extern const char kShareContextMenuName[];
 extern const char kShareContextMenuDescription[];
@@ -1723,9 +1723,6 @@ extern const char kContinuousSearchDescription[];
 
 extern const char kChromeShareLongScreenshotName[];
 extern const char kChromeShareLongScreenshotDescription[];
-
-extern const char kChromeShareScreenshotName[];
-extern const char kChromeShareScreenshotDescription[];
 
 extern const char kChromeSharingHubLaunchAdjacentName[];
 extern const char kChromeSharingHubLaunchAdjacentDescription[];

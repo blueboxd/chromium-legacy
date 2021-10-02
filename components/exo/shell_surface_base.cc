@@ -91,6 +91,9 @@ class ShellSurfaceWidget : public views::Widget {
  public:
   ShellSurfaceWidget() = default;
 
+  ShellSurfaceWidget(const ShellSurfaceWidget&) = delete;
+  ShellSurfaceWidget& operator=(const ShellSurfaceWidget&) = delete;
+
   // Overridden from views::Widget:
   void OnKeyEvent(ui::KeyEvent* event) override {
     if (GetFocusManager()->GetFocusedView() &&
@@ -103,9 +106,6 @@ class ShellSurfaceWidget : public views::Widget {
       event->SetHandled();
     }
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShellSurfaceWidget);
 };
 
 class CustomFrameView : public ash::NonClientFrameViewAsh {
@@ -479,24 +479,26 @@ void ShellSurfaceBase::SetUseImmersiveForFullscreen(bool value) {
     SetShellUseImmersiveForFullscreen(widget_->GetNativeWindow(), value);
 }
 
-void ShellSurfaceBase::ShowSnapPreviewToLeft() {
-  ShowSnapPreview(widget_->GetNativeWindow(), chromeos::SnapDirection::kLeft);
+void ShellSurfaceBase::ShowSnapPreviewToPrimary() {
+  ShowSnapPreview(widget_->GetNativeWindow(),
+                  chromeos::SnapDirection::kPrimary);
 }
 
-void ShellSurfaceBase::ShowSnapPreviewToRight() {
-  ShowSnapPreview(widget_->GetNativeWindow(), chromeos::SnapDirection::kRight);
+void ShellSurfaceBase::ShowSnapPreviewToSecondary() {
+  ShowSnapPreview(widget_->GetNativeWindow(),
+                  chromeos::SnapDirection::kSecondary);
 }
 
 void ShellSurfaceBase::HideSnapPreview() {
   ShowSnapPreview(widget_->GetNativeWindow(), chromeos::SnapDirection::kNone);
 }
 
-void ShellSurfaceBase::SetSnappedToLeft() {
-  CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kLeft);
+void ShellSurfaceBase::SetSnappedToPrimary() {
+  CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kPrimary);
 }
 
-void ShellSurfaceBase::SetSnappedToRight() {
-  CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kRight);
+void ShellSurfaceBase::SetSnappedToSecondary() {
+  CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kSecondary);
 }
 
 void ShellSurfaceBase::UnsetSnap() {

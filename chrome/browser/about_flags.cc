@@ -1217,24 +1217,6 @@ const FeatureEntry::FeatureVariation
         {"12 matches", kOmniboxUIMaxAutocompleteMatches12,
          base::size(kOmniboxUIMaxAutocompleteMatches12), nullptr}};
 
-const FeatureEntry::FeatureParam
-    kOmniboxDefaultTypedNavigationsToHttpsVariationsTimeout3s[] = {
-        {omnibox::kDefaultTypedNavigationsToHttpsTimeoutParam, "3s"}};
-const FeatureEntry::FeatureParam
-    kOmniboxDefaultTypedNavigationsToHttpsVariationsTimeout10s[] = {
-        {omnibox::kDefaultTypedNavigationsToHttpsTimeoutParam, "10s"}};
-const FeatureEntry::FeatureVariation
-    kOmniboxDefaultTypedNavigationsToHttpsVariations[] = {
-        {"3 second timeout",
-         kOmniboxDefaultTypedNavigationsToHttpsVariationsTimeout3s,
-         base::size(kOmniboxDefaultTypedNavigationsToHttpsVariationsTimeout3s),
-         nullptr},
-        {"10 second timeout",
-         kOmniboxDefaultTypedNavigationsToHttpsVariationsTimeout10s,
-         base::size(kOmniboxDefaultTypedNavigationsToHttpsVariationsTimeout10s),
-         nullptr},
-};
-
 const FeatureEntry::FeatureParam kOmniboxMaxURLMatches2[] = {
     {OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "2"}};
 const FeatureEntry::FeatureParam kOmniboxMaxURLMatches3[] = {
@@ -3443,9 +3425,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeShareLongScreenshotName,
      flag_descriptions::kChromeShareLongScreenshotDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeShareLongScreenshot)},
-    {"chrome-share-screenshot", flag_descriptions::kChromeShareScreenshotName,
-     flag_descriptions::kChromeShareScreenshotDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kChromeShareScreenshot)},
     {"chrome-sharing-hub-launch-adjacent",
      flag_descriptions::kChromeSharingHubLaunchAdjacentName,
      flag_descriptions::kChromeSharingHubLaunchAdjacentDescription, kOsAndroid,
@@ -4589,15 +4568,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"memlog-stack-mode", flag_descriptions::kMemlogStackModeName,
      flag_descriptions::kMemlogStackModeDescription, kOsAll,
      MULTI_VALUE_TYPE(kMemlogStackModeChoices)},
-
-    {"omnibox-default-typed-navigations-to-https",
-     flag_descriptions::kOmniboxDefaultTypedNavigationsToHttpsName,
-     flag_descriptions::kOmniboxDefaultTypedNavigationsToHttpsDescription,
-     kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         omnibox::kDefaultTypedNavigationsToHttps,
-         kOmniboxDefaultTypedNavigationsToHttpsVariations,
-         "OmniboxDefaultTypedNavigationsToHttps")},
 
     {"omnibox-max-zero-suggest-matches",
      flag_descriptions::kOmniboxMaxZeroSuggestMatchesName,
@@ -5759,6 +5729,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kEnterpriseReportingApiKeychainRecreation)},
 #endif  // defined(OS_MAC)
 
+    {"enterprise-reporting-extension-manifest-version",
+     flag_descriptions::kEnterpriseReportingExtensionManifestVersionName,
+     flag_descriptions::kEnterpriseReportingExtensionManifestVersionDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         features::kEnterpriseReportingExtensionManifestVersion)},
+
 #if !defined(OS_ANDROID)
     {"enterprise-realtime-extension-request",
      flag_descriptions::kEnterpriseRealtimeExtensionRequestName,
@@ -6904,11 +6881,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kContinuousSearchFeatureVariations,
                                     "ContinuousSearchNavigation")},
 
-    {"enable-experimental-accessibility-labels",
-     flag_descriptions::kExperimentalAccessibilityLabelsName,
-     flag_descriptions::kExperimentalAccessibilityLabelsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityLabels)},
-
     {"scroll-capture", flag_descriptions::kScrollCaptureName,
      flag_descriptions::kScrollCaptureDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kScrollCapture,
@@ -7587,6 +7559,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesksTrackpadSwipeImprovementsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnableDesksTrackpadSwipeImprovements)},
 #endif
+
+    {"enable-cascade-layers", flag_descriptions::kCSSCascadeLayersName,
+     flag_descriptions::kCSSCascadeLayersDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kCSSCascadeLayers)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

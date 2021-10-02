@@ -95,6 +95,10 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
   MockPasswordStoreConsumer() = default;
 
+  MockPasswordStoreConsumer(const MockPasswordStoreConsumer&) = delete;
+  MockPasswordStoreConsumer& operator=(const MockPasswordStoreConsumer&) =
+      delete;
+
   MOCK_METHOD1(OnGetPasswordStoreResultsConstRef,
                void(const std::vector<std::unique_ptr<PasswordForm>>&));
   MOCK_METHOD1(OnGetAllFieldInfo, void(const std::vector<FieldInfo>));
@@ -104,9 +108,6 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
       std::vector<std::unique_ptr<PasswordForm>> results) override {
     OnGetPasswordStoreResultsConstRef(results);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockPasswordStoreConsumer);
 };
 
 class MockPasswordStoreSigninNotifier : public PasswordStoreSigninNotifier {
@@ -199,6 +200,10 @@ PasswordFormData CreateTestPasswordFormDataByOrigin(const char* origin_url) {
 }  // namespace
 
 class PasswordStoreTest : public testing::Test {
+ public:
+  PasswordStoreTest(const PasswordStoreTest&) = delete;
+  PasswordStoreTest& operator=(const PasswordStoreTest&) = delete;
+
  protected:
   PasswordStoreTest() = default;
 
@@ -248,8 +253,6 @@ class PasswordStoreTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   TestingPrefServiceSimple pref_service_;
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordStoreTest);
 };
 
 absl::optional<PasswordHashData> GetPasswordFromPref(
@@ -1493,8 +1496,7 @@ TEST_F(PasswordStoreOriginTest,
   const GURL origin = GURL(origin_url);
   base::RepeatingCallback<bool(const GURL&)> filter =
       base::BindRepeating(&MatchesOrigin, origin);
-  base::Time time_after_creation_date =
-      form->date_created + base::TimeDelta::FromDays(1);
+  base::Time time_after_creation_date = form->date_created + base::Days(1);
   base::RunLoop run_loop;
   EXPECT_CALL(observer, OnLoginsChanged).Times(0);
   store()->RemoveLoginsByURLAndTime(filter, time_after_creation_date,
@@ -1511,7 +1513,7 @@ TEST_F(PasswordStoreTest, GetAllLoginsAsyncMetrics) {
   auto* mock_backend =
       static_cast<MockPasswordStoreBackend*>(store->GetBackendForTesting());
   store->Init(nullptr);
-  constexpr auto delta = base::TimeDelta::FromMilliseconds(123u);
+  constexpr auto delta = base::Milliseconds(123u);
 
   base::HistogramTester histogram_tester;
   EXPECT_CALL(*mock_backend, GetAllLoginsAsync(_))

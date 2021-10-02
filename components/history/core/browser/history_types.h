@@ -730,7 +730,7 @@ struct VisitContextAnnotations {
   // respond. Any duration that exceeds 30 days will be recorded as 30 days, so
   // in practice, if this duration indicates 30 days, it can be anything from 30
   // to the maximum duration that local history is stored.
-  base::TimeDelta duration_since_last_visit = base::TimeDelta::FromSeconds(-1);
+  base::TimeDelta duration_since_last_visit = base::Seconds(-1);
 
   // ---------------------------------------------------------------------------
   // The below metrics are all already recorded by UKM for non-memories reasons.
@@ -744,7 +744,7 @@ struct VisitContextAnnotations {
 
   // The total duration that this visit was in the foreground. Recorded as -1 if
   // not recorded.
-  base::TimeDelta total_foreground_duration = base::TimeDelta::FromSeconds(-1);
+  base::TimeDelta total_foreground_duration = base::Seconds(-1);
 };
 
 // A `VisitRow` along with its corresponding `URLRow`,
@@ -756,6 +756,7 @@ struct AnnotatedVisit {
                  VisitContextAnnotations context_annotations,
                  VisitContentAnnotations content_annotations,
                  VisitID referring_visit_of_redirect_chain_start,
+                 VisitID opener_visit_of_redirect_chain_start,
                  VisitSource visit);
   AnnotatedVisit(const AnnotatedVisit&);
   AnnotatedVisit& operator=(const AnnotatedVisit&);
@@ -772,6 +773,13 @@ struct AnnotatedVisit {
   // important because redirect visits are omitted from AnnotatedVisits, so
   // the uncollapsed referring visit could refer to an omitted visit.
   VisitID referring_visit_of_redirect_chain_start = 0;
+  // The `VisitRow::opener_visit` of the 1st visit in the redirect chain that
+  // includes this visit. If this visit is not part of a redirect chain or is
+  // the 1st visit in a redirect chain, then it will be
+  // `visit_row.opener_visit`. Using the collapsed opener visit is
+  // important because opener visits are omitted from AnnotatedVisits, so
+  // the uncollapsed opener visit could refer to an omitted visit.
+  VisitID opener_visit_of_redirect_chain_start = 0;
   VisitSource source;
 };
 

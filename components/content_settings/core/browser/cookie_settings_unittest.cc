@@ -47,6 +47,9 @@ class CookieSettingsObserver : public CookieSettings::Observer {
     scoped_observation_.Observe(settings);
   }
 
+  CookieSettingsObserver(const CookieSettingsObserver&) = delete;
+  CookieSettingsObserver& operator=(const CookieSettingsObserver&) = delete;
+
   void OnThirdPartyCookieBlockingChanged(
       bool block_third_party_cookies) override {
     ASSERT_EQ(block_third_party_cookies,
@@ -61,8 +64,6 @@ class CookieSettingsObserver : public CookieSettings::Observer {
   bool last_value_ = false;
   base::ScopedObservation<CookieSettings, CookieSettings::Observer>
       scoped_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CookieSettingsObserver);
 };
 
 class CookieSettingsTest : public testing::Test {
@@ -641,8 +642,7 @@ TEST_F(CookieSettingsTest, GetCookieSettingSAAExpiredGrant) {
       ContentSettingsPattern::FromURLNoWildcard(url),
       ContentSettingsPattern::FromURLNoWildcard(top_level_url),
       ContentSettingsType::STORAGE_ACCESS, CONTENT_SETTING_ALLOW,
-      {content_settings::GetConstraintExpiration(
-           base::TimeDelta::FromSeconds(100)),
+      {content_settings::GetConstraintExpiration(base::Seconds(100)),
        SessionModel::UserSession});
 
   // When requesting our setting for the url/top-level combination our
@@ -653,7 +653,7 @@ TEST_F(CookieSettingsTest, GetCookieSettingSAAExpiredGrant) {
 
   // If we fastforward past the expiration of our grant the result should be
   // CONTENT_SETTING_BLOCK now.
-  FastForwardTime(base::TimeDelta::FromSeconds(101));
+  FastForwardTime(base::Seconds(101));
   EXPECT_EQ(cookie_settings_->GetCookieSetting(url, top_level_url, nullptr),
             CONTENT_SETTING_BLOCK);
 }

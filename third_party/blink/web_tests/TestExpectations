@@ -1548,8 +1548,18 @@ crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-child-m
 crbug.com/1172333 external/wpt/css/css-pseudo/first-letter-digraph.html [ Failure ]
 crbug.com/1035708 wpt_internal/css/css-pseudo/spelling-error-color-003.html [ Failure ]
 crbug.com/1035708 wpt_internal/css/css-pseudo/spelling-error-color-dynamic-001.html [ Failure ]
+crbug.com/1035708 wpt_internal/css/css-pseudo/spelling-error-color-dynamic-002.html [ Failure ]
+crbug.com/1035708 wpt_internal/css/css-pseudo/spelling-error-color-dynamic-003.html [ Failure ]
+crbug.com/1035708 wpt_internal/css/css-pseudo/spelling-error-color-dynamic-004.html [ Failure ]
 crbug.com/1035708 wpt_internal/css/css-pseudo/grammar-error-color-003.html [ Failure ]
 crbug.com/1035708 wpt_internal/css/css-pseudo/grammar-error-color-dynamic-001.html [ Failure ]
+crbug.com/1035708 wpt_internal/css/css-pseudo/grammar-error-color-dynamic-002.html [ Failure ]
+crbug.com/1035708 wpt_internal/css/css-pseudo/grammar-error-color-dynamic-003.html [ Failure ]
+crbug.com/1035708 wpt_internal/css/css-pseudo/grammar-error-color-dynamic-004.html [ Failure ]
+crbug.com/1035708 external/wpt/css/css-pseudo/target-text-dynamic-001.html [ Failure ]
+crbug.com/1035708 external/wpt/css/css-pseudo/target-text-dynamic-002.html [ Failure ]
+crbug.com/1035708 external/wpt/css/css-pseudo/target-text-dynamic-003.html [ Failure ]
+crbug.com/1035708 external/wpt/css/css-pseudo/target-text-dynamic-004.html [ Failure ]
 
 crbug.com/1205953 external/wpt/css/css-will-change/will-change-fixpos-cb-position-1.html [ Failure ]
 crbug.com/1207788 external/wpt/css/css-will-change/will-change-stacking-context-mask-1.html [ Failure ]
@@ -2756,6 +2766,18 @@ crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-styling-002.html [ Pass ]
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-styling-004.html [ Pass ]
 crbug.com/1254608 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/textpath-selection-011.html [ Failure ]
+crbug.com/1179938 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/target-text-dynamic-001.html [ Failure ]
+crbug.com/1035708 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/target-text-dynamic-002.html [ Failure ]
+crbug.com/1179938 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/target-text-dynamic-003.html [ Failure ]
+crbug.com/1179938 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/target-text-dynamic-004.html [ Failure ]
+crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/grammar-error-color-dynamic-001.html [ Pass ]
+crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/grammar-error-color-dynamic-002.html [ Failure ]
+crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/grammar-error-color-dynamic-003.html [ Pass ]
+crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/grammar-error-color-dynamic-004.html [ Pass ]
+crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/spelling-error-color-dynamic-001.html [ Pass ]
+crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/spelling-error-color-dynamic-002.html [ Failure ]
+crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/spelling-error-color-dynamic-003.html [ Pass ]
+crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/spelling-error-color-dynamic-004.html [ Pass ]
 
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Failure Skip Timeout ]
 
@@ -5109,9 +5131,6 @@ crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ 
 crbug.com/1030258 http/tests/devtools/network/network-cookies-pane.js [ Failure Pass ]
 crbug.com/1041830 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile.js [ Failure Pass ]
 
-crbug.com/1192637 http/tests/devtools/tracing/frame-model.js [ Failure Pass ]
-crbug.com/1192637 http/tests/devtools/tracing/ui-devtools-not-generic-trace.js [ Failure Pass ]
-
 # Sheriff 2019-12-13
 crbug.com/1032451 [ Win7 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Failure Pass ]
 crbug.com/1033852 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/fetch/api/idlharness.any.sharedworker.html [ Failure ]
@@ -5468,7 +5487,7 @@ crbug.com/952717 [ Debug ] http/tests/xmlhttprequest/redirect-cross-origin-post.
 # Sheriff 2020-05-18
 crbug.com/1084256 [ Linux ] http/tests/misc/insert-iframe-into-xml-document-before-xsl-transform.html [ Failure Pass ]
 crbug.com/1084256 [ Mac ] http/tests/misc/insert-iframe-into-xml-document-before-xsl-transform.html [ Failure Pass ]
-crbug.com/1084276 [ Mac ] http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html [ Failure Crash Pass ]
+crbug.com/1084276 [ Mac ] http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html [ Crash Failure Pass ]
 
 # Disabled to prepare fixing the tests in V8
 crbug.com/v8/10556 external/wpt/wasm/jsapi/instance/constructor-caching.any.html [ Failure Pass ]
@@ -6509,6 +6528,7 @@ crbug.com/1197464 [ Mac ] virtual/scroll-unification/plugins/refcount-leaks.html
 
 # Sheriff 2021-06-30
 crbug.com/1216587 [ Win7 ] accessibility/scroll-window-sends-notification.html [ Failure Pass ]
+crbug.com/1216587 [ Mac11-arm64 ] accessibility/scroll-window-sends-notification.html [ Failure Pass ]
 
 # Sheriff 2021-07-01
 # Now also flakily timing-out.
@@ -6918,6 +6938,13 @@ crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/videoDecoder-codec-spec
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h264_avc [ Pass Timeout ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/12-55.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/color-profile-image-pseudo-content.html [ Failure Pass ]
+# mac-arm CI 10-01-2021
+crbug.com/1249176 [ Mac11-arm64 ] editing/text-iterator/beforematch-async.html [ Failure ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/event-timing/click-interactionid.html [ Timeout ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/html/webappapis/update-rendering/child-document-raf-order.html [ Failure ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/idle-detection/interceptor.https.html [ Pass Timeout ]
+crbug.com/1249176 [ Mac11-arm64 ] http/tests/security/opened-document-security-origin-resets-on-navigation.html [ Timeout ]
+crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/runtime/runtime-install-binding.js [ Failure Pass ]
 
 crbug.com/1249176 [ Mac11-arm64 ] editing/selection/find-in-text-control.html [ Crash ]
 crbug.com/1249176 [ Mac11-arm64 ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-min-max-attribute.html [ Crash ]
@@ -6931,18 +6958,18 @@ crbug.com/1249176 [ Mac11-arm64 ] paint/invalidation/selection/invalidation-rect
 crbug.com/1249176 [ Mac11-arm64 ] storage/indexeddb/intversion-revert-on-abort.html [ Crash ]
 crbug.com/1249176 [ Mac11-arm64 ] svg/animations/animate-setcurrenttime.html [ Crash ]
 
-crbug.com/1249176 [ Mac11-arm64 ] external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-011.html [ Failure Pass Crash ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-011.html [ Crash Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-018.html [ Failure Pass ]
-crbug.com/1249176 [ Mac11-arm64 ] external/wpt/xhr/send-no-response-event-loadend.htm [ Pass Crash ]
-crbug.com/1249176 [ Mac11-arm64 ] http/tests/inspector-protocol/network/blocked-cookie-same-site-strict.js [ Pass Crash ]
-crbug.com/1249176 [ Mac11-arm64 ] http/tests/inspector-protocol/network/xhr-post-replay-cors.js [ Pass Crash ]
-crbug.com/1249176 [ Mac11-arm64 ] http/tests/security/cross-origin-shared-worker-allowed.html [ Pass Crash ]
-crbug.com/1249176 [ Mac11-arm64 ] http/tests/security/cors-rfc1918/internal-to-internal-xhr.html [ Pass Crash ]
-crbug.com/1249176 [ Mac11-arm64 ] media/autoplay/webaudio-audio-context-init.html [ Pass Crash ]
-crbug.com/1249176 [ Mac11-arm64 ] media/picture-in-picture/v2/detached-iframe.html [ Pass Crash ]
-crbug.com/1249176 [ Mac11-arm64 ] virtual/composite-relative-keyframes/external/wpt/css/css-transforms/animation/transform-interpolation-005.html [ Pass Crash ]
-crbug.com/1249176 [ Mac11-arm64 ] virtual/no-auto-wpt-origin-isolation/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/2-iframes/parent-no-child1-yes-subdomain-child2-no-port.sub.https.html [ Pass Crash ]
-crbug.com/1249176 [ Mac11-arm64 ] virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/iframe-navigation/parent-no-1-no-same-2-yes-port.sub.https.html [ Pass Crash ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/xhr/send-no-response-event-loadend.htm [ Crash Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] http/tests/inspector-protocol/network/blocked-cookie-same-site-strict.js [ Crash Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] http/tests/inspector-protocol/network/xhr-post-replay-cors.js [ Crash Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] http/tests/security/cross-origin-shared-worker-allowed.html [ Crash Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] http/tests/security/cors-rfc1918/internal-to-internal-xhr.html [ Crash Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] media/autoplay/webaudio-audio-context-init.html [ Crash Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] media/picture-in-picture/v2/detached-iframe.html [ Crash Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] virtual/composite-relative-keyframes/external/wpt/css/css-transforms/animation/transform-interpolation-005.html [ Crash Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] virtual/no-auto-wpt-origin-isolation/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/2-iframes/parent-no-child1-yes-subdomain-child2-no-port.sub.https.html [ Crash Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/iframe-navigation/parent-no-1-no-same-2-yes-port.sub.https.html [ Crash Pass ]
 
 # Sheriff 2021-09-16
 crbug.com/1250457 [ Win7 ] http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-3.js [ Failure ]
@@ -7036,3 +7063,5 @@ crbug.com/1254163 [ Mac ] virtual/scroll-unification/ietestcenter/css3/bordersba
 # Sheriff 2021-10-01
 crbug.com/1255014 [ Linux ] virtual/scroll-unification-overlay-scrollbar/plugin-overlay-scrollbar-mouse-capture.html [ Failure Pass ]
 crbug.com/1254963 [ Win ] external/wpt/mathml/presentation-markup/mrow/inferred-mrow-stretchy.html [ Crash Pass ]
+crbug.com/1255210 external/wpt/requestidlecallback/callback-exception.html [ Pass Timeout ]
+crbug.com/1255221 http/tests/devtools/elements/styles-4/svg-style.js [ Failure Pass ]

@@ -118,9 +118,9 @@
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
+#include "third_party/blink/public/mojom/drag/drag.mojom.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
 #include "third_party/blink/public/mojom/input/touch_event.mojom.h"
-#include "third_party/blink/public/mojom/page/drag.mojom.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
@@ -164,8 +164,7 @@ namespace {
 
 // How long to wait for newly loaded content to send a compositor frame
 // before clearing previously displayed graphics.
-constexpr base::TimeDelta kNewContentRenderingDelay =
-    base::TimeDelta::FromSeconds(4);
+constexpr base::TimeDelta kNewContentRenderingDelay = base::Seconds(4);
 
 bool g_check_for_pending_visual_properties_ack = true;
 
@@ -590,7 +589,7 @@ void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
 
 // static
 const base::TimeDelta RenderWidgetHostImpl::kActivationNotificationExpireTime =
-    base::TimeDelta::FromMilliseconds(300);
+    base::Milliseconds(300);
 
 RenderProcessHost* RenderWidgetHostImpl::GetProcess() {
   return agent_scheduling_group_.GetProcess();
@@ -3307,7 +3306,7 @@ void RenderWidgetHostImpl::GotResponseToForceRedraw(int snapshot_id) {
       FROM_HERE,
       base::BindOnce(&RenderWidgetHostImpl::WindowSnapshotReachedScreen,
                      weak_factory_.GetWeakPtr(), snapshot_id),
-      base::TimeDelta::FromSecondsD(1. / 6));
+      base::Seconds(1. / 6));
 #else
   WindowSnapshotReachedScreen(snapshot_id);
 #endif

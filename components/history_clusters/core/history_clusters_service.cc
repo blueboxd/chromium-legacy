@@ -76,7 +76,7 @@ class GetAnnotatedVisitsToCluster : public history::HistoryDBTask {
     // Super simple method of pagination: one day a time, broken up at 4AM.
     // Get 4AM yesterday in the morning, and 4AM today in the afternoon.
     base::Time begin = end_time.is_null() ? base::Time::Now() : end_time;
-    begin -= base::TimeDelta::FromHours(12);
+    begin -= base::Hours(12);
     base::Time::Exploded exploded_begin;
     begin.LocalExplode(&exploded_begin);
     exploded_begin.hour = 4;
@@ -85,7 +85,7 @@ class GetAnnotatedVisitsToCluster : public history::HistoryDBTask {
     exploded_begin.millisecond = 0;
     // If for some reason this fails, fallback to 24 hours ago.
     if (!base::Time::FromLocalExploded(exploded_begin, &options_.begin_time))
-      options_.begin_time = end_time - base::TimeDelta::FromDays(1);
+      options_.begin_time = end_time - base::Days(1);
 
     // History Clusters wants a complete navigation graph and internally handles
     // de-duplication.
@@ -106,13 +106,13 @@ class GetAnnotatedVisitsToCluster : public history::HistoryDBTask {
                          std::back_inserter(annotated_visits_));
       // TODO(tommycli): Connect this to History's limit defined internally in
       //  components/history.
-      exhausted_history_ = (base::Time::Now() - options_.begin_time) >=
-                           base::TimeDelta::FromDays(90);
+      exhausted_history_ =
+          (base::Time::Now() - options_.begin_time) >= base::Days(90);
 
       // If we didn't get enough visits, ask for another day's worth from
       // History and call this method again when done.
       options_.end_time = options_.begin_time;
-      options_.begin_time = options_.end_time - base::TimeDelta::FromDays(1);
+      options_.begin_time = options_.end_time - base::Days(1);
     } while (!exhausted_history_ && annotated_visits_.size() < max_count_);
 
     // Now we have enough visits for clustering, add all incomplete visits
@@ -175,6 +175,7 @@ class GetAnnotatedVisitsToCluster : public history::HistoryDBTask {
            // TODO(tommycli): Add content annotations.
            {},
            first_redirect.referring_visit,
+           first_redirect.opener_visit,
            visit_source});
     }
 
@@ -359,7 +360,8 @@ std::string GetDebugJSONForVisits(
                           static_cast<int>(visit.visit_row.transition));
     debug_visit.SetIntKey("referringVisitId",
                           visit.referring_visit_of_redirect_chain_start);
-    debug_visit.SetIntKey("openerVisitId", visit.visit_row.opener_visit);
+    debug_visit.SetIntKey("openerVisitId",
+                          visit.opener_visit_of_redirect_chain_start);
     debug_visits_list.Append(std::move(debug_visit));
   }
 
@@ -560,8 +562,7 @@ bool HistoryClustersService::DoesQueryMatchAnyCluster(
     return false;
 
   // 2 hour threshold chosen arbitrarily for cache refresh time.
-  if ((base::Time::Now() - all_keywords_cache_timestamp_) >
-          base::TimeDelta::FromHours(2) &&
+  if ((base::Time::Now() - all_keywords_cache_timestamp_) > base::Hours(2) &&
       !cache_query_task_tracker_.HasTrackedTasks()) {
     // Update the timestamp right away, to prevent this from running again.
     // (The cache_query_task_tracker_ should also do this.)
@@ -704,18 +705,19 @@ void HistoryClustersService::OnGotHistoryVisits(
   NotifyDebugMessage("Calling backend_->GetClusters()");
   base::UmaHistogramCounts1000("History.Clusters.Backend.NumVisitsToCluster",
                                static_cast<int>(annotated_visits.size()));
-  // TODO(crbug/1243049) : Add timing metrics for the on-device clustering
-  // backend.
+
   backend_->GetClusters(
       base::BindOnce(&HistoryClustersService::OnGotClusters,
                      weak_ptr_factory_.GetWeakPtr(), query,
-                     continuation_end_time, std::move(callback)),
+                     continuation_end_time, base::TimeTicks::Now(),
+                     std::move(callback)),
       annotated_visits);
 }
 
 void HistoryClustersService::OnGotClusters(
     const std::string& query,
     base::Time continuation_end_time,
+    base::TimeTicks cluster_start_time,
     QueryClustersCallback callback,
     const std::vector<history::Cluster>& clusters) const {
   NotifyDebugMessage("HistoryClustersService::OnGotClusters()");
@@ -723,6 +725,9 @@ void HistoryClustersService::OnGotClusters(
   if (!continuation_end_time.is_null()) {
     result.continuation_end_time = continuation_end_time;
   }
+
+  base::UmaHistogramTimes("History.Clusters.Backend.GetClustersLatency",
+                          base::TimeTicks::Now() - cluster_start_time);
 
   auto filtered_raw_clusters = FilterClustersMatchingQuery(query, clusters);
   result.clusters = CollapseDuplicateVisits(filtered_raw_clusters);

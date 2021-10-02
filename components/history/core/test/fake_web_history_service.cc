@@ -52,6 +52,9 @@ class FakeWebHistoryService::FakeRequest : public WebHistoryService::Request {
               base::Time end,
               int max_count);
 
+  FakeRequest(const FakeRequest&) = delete;
+  FakeRequest& operator=(const FakeRequest&) = delete;
+
   // WebHistoryService::Request implementation.
   bool IsPending() override;
   int GetResponseCode() override;
@@ -73,8 +76,6 @@ class FakeWebHistoryService::FakeRequest : public WebHistoryService::Request {
   int max_count_;
   bool is_pending_;
   std::string response_body_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeRequest);
 };
 
 FakeWebHistoryService::FakeRequest::FakeRequest(
@@ -246,7 +247,7 @@ base::Time FakeWebHistoryService::GetTimeForKeyInQuery(
   int64_t us;
   if (!base::StringToInt64(value, &us))
      return base::Time();
-  return base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(us);
+  return base::Time::UnixEpoch() + base::Microseconds(us);
 }
 
 FakeWebHistoryService::Request* FakeWebHistoryService::CreateRequest(

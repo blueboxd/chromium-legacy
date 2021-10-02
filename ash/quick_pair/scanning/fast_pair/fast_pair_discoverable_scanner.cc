@@ -114,9 +114,10 @@ void FastPairDiscoverableScanner::OnDeviceMetadataRetrieved(
     return;
   }
 
+  auto& details = device_metadata->GetDetails();
   double trigger_distance;
-  if (device_metadata && device_metadata->device.trigger_distance() > 0) {
-    trigger_distance = device_metadata->device.trigger_distance();
+  if (details.trigger_distance() > 0) {
+    trigger_distance = details.trigger_distance();
   } else {
     NOTREACHED();
     trigger_distance = kDefaultRangeInMeters;
@@ -127,7 +128,7 @@ void FastPairDiscoverableScanner::OnDeviceMetadataRetrieved(
                   "trigger_distance="
                << trigger_distance;
 
-  int tx_power = device_metadata->device.ble_tx_power();
+  int tx_power = details.ble_tx_power();
 
   range_tracker_->Track(
       device, trigger_distance,
@@ -160,6 +161,8 @@ void FastPairDiscoverableScanner::OnDeviceLost(
 void FastPairDiscoverableScanner::NotifyDeviceFound(
     const std::string model_id,
     device::BluetoothDevice* bluetooth_device) {
+  QP_LOG(VERBOSE) << __func__ << ": Id: " << model_id;
+
   auto device = base::MakeRefCounted<Device>(
       model_id, bluetooth_device->GetAddress(), Protocol::kFastPair);
 

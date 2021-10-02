@@ -118,10 +118,9 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
     return notification_view_->title_row_->timestamp_in_collapsed_view_;
   }
   views::Label* message_view() { return notification_view_->message_view(); }
-  views::Label* collapsed_count_view() {
-    return notification_view_->collapsed_count_view_;
+  AshNotificationView::ExpandButton* expand_button() {
+    return notification_view_->expand_button_;
   }
-  views::View* expand_button() { return notification_view_->expand_button_; }
 
  private:
   std::unique_ptr<AshNotificationView> notification_view_;
@@ -184,25 +183,24 @@ TEST_F(AshNotificationViewTest, UpdatesTimestampOverTime) {
 
   EXPECT_TRUE(timestamp_in_collapsed_view()->GetVisible());
 
-  UpdateTimestamp(base::Time::Now() + base::TimeDelta::FromHours(3) +
-                  base::TimeDelta::FromMinutes(30));
+  UpdateTimestamp(base::Time::Now() + base::Hours(3) + base::Minutes(30));
   EXPECT_EQ(l10n_util::GetPluralStringFUTF16(
                 IDS_MESSAGE_NOTIFICATION_DURATION_HOURS_SHORTEST_FUTURE, 3),
             timestamp_in_collapsed_view()->GetText());
 
-  AdvanceClock(base::TimeDelta::FromHours(3));
+  AdvanceClock(base::Hours(3));
 
   EXPECT_EQ(l10n_util::GetPluralStringFUTF16(
                 IDS_MESSAGE_NOTIFICATION_DURATION_MINUTES_SHORTEST_FUTURE, 30),
             timestamp_in_collapsed_view()->GetText());
 
-  AdvanceClock(base::TimeDelta::FromMinutes(30));
+  AdvanceClock(base::Minutes(30));
 
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_MESSAGE_NOTIFICATION_NOW_STRING_SHORTEST),
       timestamp_in_collapsed_view()->GetText());
 
-  AdvanceClock(base::TimeDelta::FromDays(2));
+  AdvanceClock(base::Days(2));
 
   EXPECT_EQ(l10n_util::GetPluralStringFUTF16(
                 IDS_MESSAGE_NOTIFICATION_DURATION_DAYS_SHORTEST, 2),
@@ -241,7 +239,7 @@ TEST_F(AshNotificationViewTest, GroupedNotificationStartsCollapsed) {
   // Grouped notification should start collapsed.
   EXPECT_FALSE(notification_view()->IsExpanded());
   EXPECT_TRUE(header_row()->GetVisible());
-  EXPECT_FALSE(collapsed_count_view()->GetVisible());
+  EXPECT_TRUE(expand_button()->label_for_test()->GetVisible());
 }
 
 TEST_F(AshNotificationViewTest, GroupedNotificationCounterVisibility) {
@@ -257,7 +255,7 @@ TEST_F(AshNotificationViewTest, GroupedNotificationCounterVisibility) {
                                               /*newest_first=*/false);
   }
 
-  EXPECT_TRUE(collapsed_count_view()->GetVisible());
+  EXPECT_TRUE(expand_button()->label_for_test()->GetVisible());
 
   auto* child_view = GetFirstGroupedChildNotificationView();
   EXPECT_TRUE(
@@ -287,7 +285,7 @@ TEST_F(AshNotificationViewTest, GroupedNotificationExpandState) {
   // the child notifications should now have the main view visible instead of
   // the summary.
   notification_view()->SetExpanded(true);
-  EXPECT_FALSE(collapsed_count_view()->GetVisible());
+  EXPECT_FALSE(expand_button()->label_for_test()->GetVisible());
   EXPECT_FALSE(
       GetCollapsedSummaryViewForNotificationView(child_view)->GetVisible());
   EXPECT_TRUE(GetMainViewForNotificationView(child_view)->GetVisible());

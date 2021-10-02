@@ -114,7 +114,7 @@ bool CopyOwnerFromIdlToMojo(const ExecutionContext& execution_context,
         "owner '%s' for AuctionAdInterestGroup with name '%s' match frame "
         "origin '%s'.",
         input.owner().Utf8().c_str(), input.name().Utf8().c_str(),
-        owner->ToString().Utf8().c_str()));
+        execution_context.GetSecurityOrigin()->ToRawString().Utf8().c_str()));
     return false;
   }
 
@@ -431,8 +431,7 @@ void NavigatorAuction::joinAdInterestGroup(ScriptState* script_state,
                                            ExceptionState& exception_state) {
   const ExecutionContext* context = ExecutionContext::From(script_state);
   auto mojo_group = mojom::blink::InterestGroup::New();
-  mojo_group->expiry =
-      base::Time::Now() + base::TimeDelta::FromSecondsD(duration_seconds);
+  mojo_group->expiry = base::Time::Now() + base::Seconds(duration_seconds);
   if (!CopyOwnerFromIdlToMojo(*context, exception_state, *group, *mojo_group))
     return;
   mojo_group->name = group->name();

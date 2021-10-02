@@ -34,7 +34,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
-#include "third_party/blink/public/mojom/page/drag.mojom-forward.h"
+#include "third_party/blink/public/mojom/drag/drag.mojom-forward.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_constants.h"
@@ -63,7 +63,7 @@ bool IsRendererPasteAllowed(RenderFrameHost& render_frame_host) {
 //  - Scans that succeed will apply their verdicts without the risk that their
 //    associated IsPasteContentAllowedRequest is already too old.
 const base::TimeDelta ClipboardHostImpl::kIsPasteContentAllowedRequestTooOld =
-    base::TimeDelta::FromMinutes(5);
+    base::Minutes(5);
 
 ClipboardHostImpl::IsPasteContentAllowedRequest::
     IsPasteContentAllowedRequest() = default;
@@ -112,7 +112,7 @@ void ClipboardHostImpl::IsPasteContentAllowedRequest::InvokeCallbacks() {
 ClipboardHostImpl::ClipboardHostImpl(
     RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver)
-    : DocumentServiceBase(render_frame_host, std::move(receiver)) {
+    : DocumentService(render_frame_host, std::move(receiver)) {
   clipboard_writer_ = std::make_unique<ui::ScopedClipboardWriter>(
       ui::ClipboardBuffer::kCopyPaste,
       render_frame_host->GetBrowserContext()->IsOffTheRecord()
@@ -125,7 +125,7 @@ void ClipboardHostImpl::Create(
     RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver) {
   // The object is bound to the lifetime of |render_frame_host| and the mojo
-  // connection. See DocumentServiceBase for details.
+  // connection. See DocumentService for details.
   new ClipboardHostImpl(render_frame_host, std::move(receiver));
 }
 

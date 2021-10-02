@@ -1049,8 +1049,7 @@ bool DownloadItemImpl::TimeRemaining(base::TimeDelta* remaining) const {
   if (speed == 0)
     return false;
 
-  *remaining =
-      base::TimeDelta::FromSeconds((total_bytes_ - GetReceivedBytes()) / speed);
+  *remaining = base::Seconds((total_bytes_ - GetReceivedBytes()) / speed);
   return true;
 }
 
@@ -1187,7 +1186,7 @@ void DownloadItemImpl::OnContentCheckCompleted(DownloadDangerType danger_type,
 void DownloadItemImpl::OnAsyncScanningCompleted(
     DownloadDangerType danger_type) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(AllDataSaved());
+  DCHECK(AllDataSaved() || IsSavePackageDownload());
 
   DVLOG(20) << __func__ << "() danger_type=" << danger_type
             << " download=" << DebugString(true);

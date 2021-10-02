@@ -259,11 +259,8 @@ public class ChromeProvidedSharingOptionsProvider {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEBNOTES_STYLIZE)) {
             mOrderedFirstPartyOptions.add(createWebNotesStylizeFirstPartyOption());
         }
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_SCREENSHOT)) {
-            mOrderedFirstPartyOptions.add(createScreenshotFirstPartyOption());
-        }
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT) &&
-            ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_SCREENSHOT)) {
+        mOrderedFirstPartyOptions.add(createScreenshotFirstPartyOption());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT)) {
             mOrderedFirstPartyOptions.add(createLongScreenshotsFirstPartyOption());
         }
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.LIGHTWEIGHT_REACTIONS)) {
@@ -422,17 +419,23 @@ public class ChromeProvidedSharingOptionsProvider {
     }
 
     private FirstPartyOption createWebNotesStylizeFirstPartyOption() {
+        boolean showNewBadge = mFeatureEngagementTracker.isInitialized()
+                && mFeatureEngagementTracker.shouldTriggerHelpUI(
+                        FeatureConstants.SHARING_HUB_WEBNOTES_STYLIZE_FEATURE);
         String title = mTabProvider.get().getTitle();
         return new FirstPartyOptionBuilder(ContentType.HIGHLIGHTED_TEXT)
                 .setIcon(R.drawable.webnote, R.string.sharing_webnotes_create_card)
                 .setIconContentDescription(R.string.sharing_webnotes_accessibility_description)
                 .setFeatureNameForMetrics("SharingHubAndroid.WebnotesStylize")
                 .setOnClickCallback((view) -> {
+                    mFeatureEngagementTracker.notifyEvent(
+                            EventConstants.SHARING_HUB_WEBNOTES_STYLIZE_USED);
                     NoteCreationCoordinator coordinator = NoteCreationCoordinatorFactory.create(
                             mActivity, mTabProvider.get(), mUrl, title,
                             mShareParams.getRawText().trim(), mChromeOptionShareCallback);
                     coordinator.showDialog();
                 })
+                .setShowNewBadge(showNewBadge)
                 .build();
     }
 

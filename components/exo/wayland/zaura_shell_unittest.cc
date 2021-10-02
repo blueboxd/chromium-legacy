@@ -36,12 +36,15 @@ namespace wayland {
 
 namespace {
 
-constexpr auto kTransitionDuration = base::TimeDelta::FromSeconds(3);
+constexpr auto kTransitionDuration = base::Seconds(3);
 
 class TestAuraSurface : public AuraSurface {
  public:
   explicit TestAuraSurface(Surface* surface)
       : AuraSurface(surface, /*resource=*/nullptr) {}
+
+  TestAuraSurface(const TestAuraSurface&) = delete;
+  TestAuraSurface& operator=(const TestAuraSurface&) = delete;
 
   float last_sent_occlusion_fraction() const {
     return last_sent_occlusion_fraction_;
@@ -67,8 +70,6 @@ class TestAuraSurface : public AuraSurface {
   aura::Window::OcclusionState last_sent_occlusion_state_ =
       aura::Window::OcclusionState::UNKNOWN;
   int num_occlusion_updates_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAuraSurface);
 };
 
 class MockSurfaceDelegate : public SurfaceDelegate {
@@ -94,11 +95,11 @@ class MockSurfaceDelegate : public SurfaceDelegate {
   MOCK_METHOD(void, OnActivationRequested, (), (override));
   MOCK_METHOD(void, OnNewOutputAdded, (), (override));
   MOCK_METHOD(void, OnSetServerStartResize, (), (override));
-  MOCK_METHOD(void, ShowSnapPreviewToLeft, (), (override));
-  MOCK_METHOD(void, ShowSnapPreviewToRight, (), (override));
+  MOCK_METHOD(void, ShowSnapPreviewToPrimary, (), (override));
+  MOCK_METHOD(void, ShowSnapPreviewToSecondary, (), (override));
   MOCK_METHOD(void, HideSnapPreview, (), (override));
-  MOCK_METHOD(void, SetSnappedToRight, (), (override));
-  MOCK_METHOD(void, SetSnappedToLeft, (), (override));
+  MOCK_METHOD(void, SetSnappedToSecondary, (), (override));
+  MOCK_METHOD(void, SetSnappedToPrimary, (), (override));
   MOCK_METHOD(void, UnsetSnap, (), (override));
   MOCK_METHOD(void, SetCanGoBack, (), (override));
   MOCK_METHOD(void, UnsetCanGoBack, (), (override));

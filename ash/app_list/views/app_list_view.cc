@@ -82,8 +82,11 @@ namespace {
 // Default color for classic, unthemed app list.
 constexpr SkColor kAppListBackgroundColor = gfx::kGoogleGrey900;
 
-// The height of the half app list from the bottom of the screen.
-constexpr int kHalfAppListHeight = 545;
+// The height of the peeking app list, measured from the bottom of the screen.
+constexpr int kPeekingHeight = 284;
+
+// The height of the half app list, measured from the bottom of the screen.
+constexpr int kHalfHeight = 545;
 
 // The DIP distance from the bezel in which a gesture drag end results in a
 // closed app list.
@@ -975,10 +978,9 @@ void AppListView::UpdatePageResetTimer(bool app_list_visibility) {
     page_reset_timer_.Stop();
     return;
   }
-  page_reset_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMinutes(kAppListPageResetTimeLimitMinutes), this,
-      &AppListView::SelectInitialAppsPage);
+  page_reset_timer_.Start(FROM_HERE,
+                          base::Minutes(kAppListPageResetTimeLimitMinutes),
+                          this, &AppListView::SelectInitialAppsPage);
 
   if (skip_page_reset_timer_for_testing)
     page_reset_timer_.FireNow();
@@ -1150,23 +1152,7 @@ void AppListView::EndDrag(const gfx::PointF& location_in_root) {
       }
     }
   } else {
-    const int fullscreen_height = GetFullscreenStateHeight();
-    int app_list_height = 0;
-    switch (app_list_state_) {
-      case AppListViewState::kFullscreenAllApps:
-      case AppListViewState::kFullscreenSearch:
-        app_list_height = fullscreen_height;
-        break;
-      case AppListViewState::kHalf:
-        app_list_height = std::min(fullscreen_height, kHalfAppListHeight);
-        break;
-      case AppListViewState::kPeeking:
-        app_list_height = GetAppListConfig().peeking_app_list_height();
-        break;
-      case AppListViewState::kClosed:
-        NOTREACHED();
-        break;
-    }
+    int app_list_height = GetHeightForState(app_list_state_);
 
     const int app_list_threshold =
         app_list_height / kAppListThresholdDenominator;
@@ -1846,19 +1832,17 @@ base::TimeDelta AppListView::GetStateTransitionAnimationDuration(
   if (ShortAnimationsForTesting() || is_side_shelf_ ||
       (target_state == AppListViewState::kClosed &&
        delegate_->ShouldDismissImmediately())) {
-    return base::TimeDelta::FromMilliseconds(
-        kAppListAnimationDurationImmediateMs);
+    return base::Milliseconds(kAppListAnimationDurationImmediateMs);
   }
 
   if (is_fullscreen() || target_state == AppListViewState::kFullscreenAllApps ||
       target_state == AppListViewState::kFullscreenSearch) {
     // Animate over more time to or from a fullscreen state, to maintain a
     // similar speed.
-    return base::TimeDelta::FromMilliseconds(
-        kAppListAnimationDurationFromFullscreenMs);
+    return base::Milliseconds(kAppListAnimationDurationFromFullscreenMs);
   }
 
-  return base::TimeDelta::FromMilliseconds(kAppListAnimationDurationMs);
+  return base::Milliseconds(kAppListAnimationDurationMs);
 }
 
 void AppListView::StartAnimationForState(AppListViewState target_state) {
@@ -2144,9 +2128,8 @@ float AppListView::GetAppListTransitionProgress(int flags) const {
 
   const int fullscreen_height = GetFullscreenStateHeight();
   const int baseline_height = std::min(
-      fullscreen_height, (flags & kProgressFlagSearchResults)
-                             ? kHalfAppListHeight
-                             : GetAppListConfig().peeking_app_list_height());
+      fullscreen_height,
+      (flags & kProgressFlagSearchResults) ? kHalfHeight : kPeekingHeight);
 
   // If vertical space is limited, the baseline and fullscreen height might be
   // the same. To handle this case, if the height has reached the
@@ -2178,6 +2161,20 @@ float AppListView::GetAppListTransitionProgress(int flags) const {
   DCHECK_GT(fullscreen_height_above_baseline, 0);
   DCHECK_LE(current_height_above_baseline, fullscreen_height_above_baseline);
   return 1 + current_height_above_baseline / fullscreen_height_above_baseline;
+}
+
+int AppListView::GetHeightForState(AppListViewState state) const {
+  switch (app_list_state_) {
+    case AppListViewState::kFullscreenAllApps:
+    case AppListViewState::kFullscreenSearch:
+      return GetFullscreenStateHeight();
+    case AppListViewState::kHalf:
+      return std::min(GetFullscreenStateHeight(), kHalfHeight);
+    case AppListViewState::kPeeking:
+      return kPeekingHeight;
+    case AppListViewState::kClosed:
+      return 0;
+  }
 }
 
 int AppListView::GetFullscreenStateHeight() const {
@@ -2513,11 +2510,10 @@ int AppListView::GetPreferredWidgetYForState(AppListViewState state) const {
 
   switch (state) {
     case AppListViewState::kPeeking:
-      return display.bounds().height() -
-             GetAppListConfig().peeking_app_list_height();
+      return display.bounds().height() - kPeekingHeight;
     case AppListViewState::kHalf:
       return std::max(work_area_bounds.y() - display.bounds().y(),
-                      display.bounds().height() - kHalfAppListHeight);
+                      display.bounds().height() - kHalfHeight);
     case AppListViewState::kFullscreenAllApps:
     case AppListViewState::kFullscreenSearch:
       return fullscreen_height;

@@ -55,8 +55,7 @@ namespace {
 
 // The incoming max age to to be used when datagrams.incomingMaxAge is set to
 // null.
-constexpr base::TimeDelta kDefaultIncomingMaxAge =
-    base::TimeDelta::FromSeconds(60);
+constexpr base::TimeDelta kDefaultIncomingMaxAge = base::Seconds(60);
 
 // Creates a mojo DataPipe with the options we use for our stream data pipes. On
 // success, returns true. On failure, throws an exception and returns false.
@@ -162,6 +161,13 @@ class WebTransport::DatagramUnderlyingSink final : public UnderlyingSinkBase {
   ScriptPromise SendDatagram(base::span<const uint8_t> data) {
     auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
         web_transport_->script_state_);
+    // This resolver is for the return value of this function. When the
+    // WebTransport is closed, the stream (for datagrams) is errored and
+    // resolvers in `pending_datagrams_resolvers_` are released without
+    // neither resolved nor rejected. That's fine, because the WritableStream
+    // takes care of the case and reject all the pending promises when the
+    // stream is errored. So we call SuppressDetachCheck here.
+    resolver->SuppressDetachCheck();
     pending_datagrams_resolvers_.push_back(resolver);
 
     if (web_transport_->transport_remote_.is_bound()) {
@@ -399,7 +405,7 @@ class WebTransport::DatagramUnderlyingSource final
     bool max_age_is_default = false;
     base::TimeDelta max_age;
     if (optional_max_age.has_value()) {
-      max_age = base::TimeDelta::FromMillisecondsD(optional_max_age.value());
+      max_age = base::Milliseconds(optional_max_age.value());
     } else {
       max_age_is_default = true;
       max_age = kDefaultIncomingMaxAge;
@@ -441,8 +447,8 @@ class WebTransport::DatagramUnderlyingSource final
 
     // To reduce the number of wakeups, don't try to expire any more datagrams
     // for at least a second.
-    if (time_until_next_expiry < base::TimeDelta::FromSeconds(1)) {
-      time_until_next_expiry = base::TimeDelta::FromSeconds(1);
+    if (time_until_next_expiry < base::Seconds(1)) {
+      time_until_next_expiry = base::Seconds(1);
     }
 
     if (expiry_timer_.IsActive() &&
@@ -819,8 +825,7 @@ void WebTransport::close(const WebTransportCloseInfo* close_info) {
 }
 
 void WebTransport::setDatagramWritableQueueExpirationDuration(double duration) {
-  outgoing_datagram_expiration_duration_ =
-      base::TimeDelta::FromMillisecondsD(duration);
+  outgoing_datagram_expiration_duration_ = base::Milliseconds(duration);
   if (transport_remote_.is_bound()) {
     transport_remote_->SetOutgoingDatagramExpirationDuration(
         outgoing_datagram_expiration_duration_);
@@ -1104,10 +1109,6 @@ void WebTransport::Init(const String& url,
   probe::WebTransportCreated(execution_context, inspector_transport_id_, url_);
 
   int outgoing_datagrams_high_water_mark = 1;
-  if (options.hasDatagramWritableHighWaterMark()) {
-    outgoing_datagrams_high_water_mark =
-        options.datagramWritableHighWaterMark();
-  }
   datagrams_ = MakeGarbageCollected<DatagramDuplexStream>(
       this, outgoing_datagrams_high_water_mark);
 

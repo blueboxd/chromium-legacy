@@ -112,7 +112,7 @@ bool SuspiciousSiteTrigger::MaybeStartReport() {
       FROM_HERE,
       base::BindOnce(&SuspiciousSiteTrigger::ReportDelayTimerFired,
                      weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(finish_report_delay_ms_));
+      base::Milliseconds(finish_report_delay_ms_));
 
   UMA_HISTOGRAM_ENUMERATION(kSuspiciousSiteTriggerEventMetricName,
                             SuspiciousSiteTriggerEvent::REPORT_STARTED);
@@ -285,6 +285,6 @@ void SuspiciousSiteTrigger::SetTaskRunnerForTest(
   task_runner_ = task_runner;
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(SuspiciousSiteTrigger)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SuspiciousSiteTrigger);
 
 }  // namespace safe_browsing

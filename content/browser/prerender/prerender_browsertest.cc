@@ -126,7 +126,8 @@ class DocumentData : public RenderDocumentHostUserData<DocumentData> {
   }
 
  private:
-  explicit DocumentData(RenderFrameHost* render_frame_host) {}
+  explicit DocumentData(RenderFrameHost* render_frame_host)
+      : RenderDocumentHostUserData<DocumentData>(render_frame_host) {}
 
   friend class content::RenderDocumentHostUserData<DocumentData>;
 
@@ -135,7 +136,7 @@ class DocumentData : public RenderDocumentHostUserData<DocumentData> {
   RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
 };
 
-RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(DocumentData)
+RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(DocumentData);
 
 class PrerenderBrowserTest : public ContentBrowserTest {
  public:
@@ -3466,7 +3467,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   const GURL kPrerenderingUrl = GetUrl("/simple_page.html");
 
   web_contents_impl()->set_minimum_delay_between_loading_updates_for_testing(
-      base::TimeDelta::FromMilliseconds(0));
+      base::Milliseconds(0));
 
   // Navigate to an initial page.
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));

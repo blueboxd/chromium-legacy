@@ -66,6 +66,9 @@ class MockSuggestionsHandler
  public:
   MockSuggestionsHandler() {}
 
+  MockSuggestionsHandler(const MockSuggestionsHandler&) = delete;
+  MockSuggestionsHandler& operator=(const MockSuggestionsHandler&) = delete;
+
   MOCK_METHOD(void,
               OnSuggestionsReturned,
               (int query_id,
@@ -79,8 +82,6 @@ class MockSuggestionsHandler
 
  private:
   base::WeakPtrFactory<MockSuggestionsHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MockSuggestionsHandler);
 };
 }  // namespace
 
@@ -720,13 +721,11 @@ TEST_F(AutocompleteHistoryManagerTest,
 
   std::vector<AutofillEntry> expected_values = {
       GetAutofillEntry(test_name, test_value,
-                       AutofillClock::Now() - base::TimeDelta::FromDays(30),
-                       AutofillClock::Now() -
-                           base::TimeDelta::FromDays(days_since_last_use)),
+                       AutofillClock::Now() - base::Days(30),
+                       AutofillClock::Now() - base::Days(days_since_last_use)),
       GetAutofillEntry(test_name, other_test_value,
-                       AutofillClock::Now() - base::TimeDelta::FromDays(30),
-                       AutofillClock::Now() -
-                           base::TimeDelta::FromDays(days_since_last_use))};
+                       AutofillClock::Now() - base::Days(30),
+                       AutofillClock::Now() - base::Days(days_since_last_use))};
 
   std::unique_ptr<WDTypedResult> mocked_results =
       GetMockedDbResults(expected_values);

@@ -28,6 +28,9 @@ class CaptivePortalClient {
   explicit CaptivePortalClient(CaptivePortalDetector* captive_portal_detector)
       : num_results_received_(0) {}
 
+  CaptivePortalClient(const CaptivePortalClient&) = delete;
+  CaptivePortalClient& operator=(const CaptivePortalClient&) = delete;
+
   void OnPortalDetectionCompleted(
       const CaptivePortalDetector::Results& results) {
     results_ = results;
@@ -43,8 +46,6 @@ class CaptivePortalClient {
  private:
   CaptivePortalDetector::Results results_;
   int num_results_received_;
-
-  DISALLOW_COPY_AND_ASSIGN(CaptivePortalClient);
 };
 
 }  // namespace
@@ -158,7 +159,7 @@ TEST_F(CaptivePortalDetectorTest, CaptivePortalRetryAfterSeconds) {
   // result and on subsequent requests.
   results.result = captive_portal::RESULT_NO_RESPONSE;
   results.response_code = 503;
-  results.retry_after_delta = base::TimeDelta::FromSeconds(101);
+  results.retry_after_delta = base::Seconds(101);
   RunTest(results, net::OK, 503, retry_after);
 
   results.result = captive_portal::RESULT_INTERNET_CONNECTED;

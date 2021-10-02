@@ -29,8 +29,7 @@ namespace feedback {
 
 namespace {
 
-constexpr base::TimeDelta kTestRetryDelay =
-    base::TimeDelta::FromMilliseconds(1);
+constexpr base::TimeDelta kTestRetryDelay = base::Milliseconds(1);
 
 constexpr char kFeedbackPostUrl[] =
     "https://www.google.com/tools/feedback/chrome/__submit";
@@ -69,6 +68,10 @@ class FeedbackUploaderDispatchTest : public ::testing::Test {
     EXPECT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
   }
 
+  FeedbackUploaderDispatchTest(const FeedbackUploaderDispatchTest&) = delete;
+  FeedbackUploaderDispatchTest& operator=(const FeedbackUploaderDispatchTest&) =
+      delete;
+
   ~FeedbackUploaderDispatchTest() override {
     // Clean up registered ids.
     variations::testing::ClearAllVariationIDs();
@@ -102,8 +105,6 @@ class FeedbackUploaderDispatchTest : public ::testing::Test {
       variations::VariationsIdsProvider::Mode::kUseSignedInState};
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(FeedbackUploaderDispatchTest);
 };
 
 TEST_F(FeedbackUploaderDispatchTest, VariationHeaders) {

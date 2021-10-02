@@ -38,8 +38,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/content_settings/content_settings_custom_extension_provider.h"
-#include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/data_deleter.h"
@@ -73,7 +71,6 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/crx_file/id_util.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "content/public/browser/browser_thread.h"
@@ -135,7 +132,7 @@ namespace {
 bool g_external_updates_disabled_for_test_ = false;
 
 // Wait this long after an extensions becomes idle before updating it.
-constexpr base::TimeDelta kUpdateIdleDelay = base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kUpdateIdleDelay = base::Seconds(5);
 
 // IDs of component extensions that have been obsoleted and need to be
 // uninstalled.
@@ -1854,25 +1851,6 @@ void ExtensionService::FinishInstallation(const Extension* extension) {
 const Extension* ExtensionService::GetPendingExtensionUpdate(
     const std::string& id) const {
   return delayed_installs_.GetByID(id);
-}
-
-void ExtensionService::RegisterContentSettings(
-    HostContentSettingsMap* host_content_settings_map,
-    Profile* profile) {
-  // Most extension services key off of the original profile.
-  Profile* original_profile = profile->GetOriginalProfile();
-
-  TRACE_EVENT0("browser,startup", "ExtensionService::RegisterContentSettings");
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  host_content_settings_map->RegisterProvider(
-      HostContentSettingsMap::CUSTOM_EXTENSION_PROVIDER,
-      std::unique_ptr<content_settings::ObservableProvider>(
-          new content_settings::CustomExtensionProvider(
-              ContentSettingsService::Get(original_profile)
-                  ->content_settings_store(),
-              // TODO(mmenke):  CustomExtensionProvider expects this to be true
-              // for incognito profiles.
-              false)));
 }
 
 void ExtensionService::TerminateExtension(const std::string& extension_id) {

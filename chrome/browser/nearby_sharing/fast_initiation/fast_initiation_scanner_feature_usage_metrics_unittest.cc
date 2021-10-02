@@ -63,10 +63,14 @@ class FastInitiationScannerFeatureUsageMetricsTest : public ::testing::Test {
         fast_initiation_scanner_factory_.get());
   }
 
+  void TearDown() override {
+    FastInitiationScanner::Factory::SetFactoryForTesting(nullptr);
+  }
+
   void ExpectBucketCounts(bool is_eligible, bool is_enabled) {
     // Allow time for the histogram to be logged.
     base::HistogramTester histograms;
-    task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(1));
+    task_environment_.FastForwardBy(base::Minutes(1));
 
     histograms.ExpectBucketCount(
         kHistogramName, feature_usage::FeatureUsageMetrics::Event::kEligible,

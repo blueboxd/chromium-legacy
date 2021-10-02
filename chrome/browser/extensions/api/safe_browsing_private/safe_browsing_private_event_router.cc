@@ -170,6 +170,8 @@ const char SafeBrowsingPrivateEventRouter::kKeyScanId[] = "scanId";
 const char SafeBrowsingPrivateEventRouter::kKeyIsFederated[] = "isFederated";
 const char SafeBrowsingPrivateEventRouter::kKeyFederatedOrigin[] =
     "federatedOrigin";
+const char SafeBrowsingPrivateEventRouter::kKeyLoginUserName[] =
+    "loginUserName";
 const char SafeBrowsingPrivateEventRouter::kKeyPasswordBreachIdentities[] =
     "identities";
 const char SafeBrowsingPrivateEventRouter::kKeyPasswordBreachIdentitiesUrl[] =
@@ -766,7 +768,8 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadWarningBypassed(
 void SafeBrowsingPrivateEventRouter::OnLoginEvent(
     const GURL& url,
     bool is_federated,
-    const url::Origin& federated_origin) {
+    const url::Origin& federated_origin,
+    const std::u16string& username) {
   absl::optional<enterprise_connectors::ReportingSettings> settings =
       GetReportingSettings();
   if (!settings.has_value() ||
@@ -780,6 +783,7 @@ void SafeBrowsingPrivateEventRouter::OnLoginEvent(
   if (is_federated)
     event.SetStringKey(kKeyFederatedOrigin, federated_origin.Serialize());
   event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
+  event.SetStringKey(kKeyLoginUserName, username);
 
   ReportRealtimeEvent(kKeyLoginEvent, std::move(settings.value()),
                       std::move(event));
@@ -1144,7 +1148,7 @@ void SafeBrowsingPrivateEventRouter::OnClientError(
       rejected_dm_token_timers_[client->dm_token()] =
           std::make_unique<base::OneShotTimer>();
       rejected_dm_token_timers_[client->dm_token()]->Start(
-          FROM_HERE, base::TimeDelta::FromHours(24),
+          FROM_HERE, base::Hours(24),
           base::BindOnce(
               &SafeBrowsingPrivateEventRouter::RemoveDmTokenFromRejectedSet,
               weak_ptr_factory_.GetWeakPtr(), client->dm_token()));

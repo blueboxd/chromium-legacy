@@ -40,11 +40,11 @@ namespace {
 // Maximum and minimum delay for financial ping we would allow to be set through
 // master preferences. Somewhat arbitrary, may need to be adjusted in future.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::TimeDelta kMinInitDelay = base::TimeDelta::FromSeconds(60);
-const base::TimeDelta kMaxInitDelay = base::TimeDelta::FromHours(24);
+const base::TimeDelta kMinInitDelay = base::Seconds(60);
+const base::TimeDelta kMaxInitDelay = base::Hours(24);
 #else
-const base::TimeDelta kMinInitDelay = base::TimeDelta::FromSeconds(20);
-const base::TimeDelta kMaxInitDelay = base::TimeDelta::FromSeconds(200);
+const base::TimeDelta kMinInitDelay = base::Seconds(20);
+const base::TimeDelta kMaxInitDelay = base::Seconds(200);
 #endif
 
 void RecordProductEvents(bool first_run,
@@ -179,6 +179,9 @@ class RLZTracker::WrapperURLLoaderFactory
       : url_loader_factory_(std::move(url_loader_factory)),
         main_thread_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
+  WrapperURLLoaderFactory(const WrapperURLLoaderFactory&) = delete;
+  WrapperURLLoaderFactory& operator=(const WrapperURLLoaderFactory&) = delete;
+
   void CreateLoaderAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
       int32_t request_id,
@@ -210,8 +213,6 @@ class RLZTracker::WrapperURLLoaderFactory
 
   // Runner for RLZ main thread tasks.
   scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(WrapperURLLoaderFactory);
 };
 
 // static

@@ -164,6 +164,7 @@
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
+#include "third_party/blink/public/mojom/widget/platform_widget.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/impression_conversions.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -307,9 +308,8 @@ const size_t kMaxURLLogChars = 1024;
 // content state is modified and not sent to session restore, but this is
 // better than having to wake up all renderers during shutdown.
 constexpr base::TimeDelta kDelaySecondsForContentStateSyncHidden =
-    base::TimeDelta::FromSeconds(5);
-constexpr base::TimeDelta kDelaySecondsForContentStateSync =
-    base::TimeDelta::FromSeconds(1);
+    base::Seconds(5);
+constexpr base::TimeDelta kDelaySecondsForContentStateSync = base::Seconds(1);
 
 const blink::PreviewsState kDisabledPreviewsBits =
     blink::PreviewsTypes::PREVIEWS_OFF |
@@ -4370,6 +4370,15 @@ void RenderFrameImpl::DidChangePerformanceTiming() {
 void RenderFrameImpl::DidObserveInputDelay(base::TimeDelta input_delay) {
   for (auto& observer : observers_)
     observer.DidObserveInputDelay(input_delay);
+}
+
+void RenderFrameImpl::DidObserveUserInteraction(
+    base::TimeDelta max_event_duration,
+    base::TimeDelta total_event_duration,
+    blink::UserInteractionType interaction_type) {
+  for (auto& observer : observers_)
+    observer.DidObserveUserInteraction(max_event_duration, total_event_duration,
+                                       interaction_type);
 }
 
 void RenderFrameImpl::DidChangeCpuTiming(base::TimeDelta time) {

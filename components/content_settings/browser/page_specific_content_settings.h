@@ -191,6 +191,10 @@ class PageSpecificContentSettings
     content::WebContents* web_contents_;
   };
 
+  PageSpecificContentSettings(const PageSpecificContentSettings&) = delete;
+  PageSpecificContentSettings& operator=(const PageSpecificContentSettings&) =
+      delete;
+
   ~PageSpecificContentSettings() override;
 
   static void CreateForWebContents(content::WebContents* web_contents,
@@ -536,7 +540,6 @@ class PageSpecificContentSettings
   void MaybeUpdateLocationBar();
 
   WebContentsHandler& handler_;
-  content::RenderFrameHost* main_frame_;
 
   Delegate* delegate_;
 
@@ -592,8 +595,6 @@ class PageSpecificContentSettings
   RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
 
   base::WeakPtrFactory<PageSpecificContentSettings> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PageSpecificContentSettings);
 };
 
 }  // namespace content_settings

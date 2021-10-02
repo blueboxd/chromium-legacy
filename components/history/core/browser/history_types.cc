@@ -169,7 +169,7 @@ QueryOptions& QueryOptions::operator=(QueryOptions&&) noexcept = default;
 
 void QueryOptions::SetRecentDayRange(int days_ago) {
   end_time = base::Time::Now();
-  begin_time = end_time - base::TimeDelta::FromDays(days_ago);
+  begin_time = end_time - base::Days(days_ago);
 }
 
 int64_t QueryOptions::EffectiveBeginTime() const {
@@ -324,7 +324,7 @@ void ExpireHistoryArgs::SetTimeRangeForOneDay(base::Time time) {
 
   // Due to DST, leap seconds, etc., the next day at midnight may be more than
   // 24 hours away, so add 36 hours and round back down to midnight.
-  end_time = (begin_time + base::TimeDelta::FromHours(36)).LocalMidnight();
+  end_time = (begin_time + base::Hours(36)).LocalMidnight();
 }
 
 // DeletionTimeRange ----------------------------------------------------------
@@ -393,6 +393,7 @@ AnnotatedVisit::AnnotatedVisit(URLRow url_row,
                                VisitContextAnnotations context_annotations,
                                VisitContentAnnotations content_annotations,
                                VisitID referring_visit_of_redirect_chain_start,
+                               VisitID opener_visit_of_redirect_chain_start,
                                VisitSource source)
     : url_row(url_row),
       visit_row(visit_row),
@@ -400,6 +401,8 @@ AnnotatedVisit::AnnotatedVisit(URLRow url_row,
       content_annotations(content_annotations),
       referring_visit_of_redirect_chain_start(
           referring_visit_of_redirect_chain_start),
+      opener_visit_of_redirect_chain_start(
+          opener_visit_of_redirect_chain_start),
       source(source) {}
 AnnotatedVisit::AnnotatedVisit(const AnnotatedVisit&) = default;
 AnnotatedVisit& AnnotatedVisit::operator=(const AnnotatedVisit&) = default;

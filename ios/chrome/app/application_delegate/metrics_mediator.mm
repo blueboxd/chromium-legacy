@@ -81,7 +81,7 @@ base::TimeDelta TimeDeltaSinceAppLaunchFromProcess() {
   const NSTimeInterval time_since_1970 =
       time.tv_sec + (time.tv_usec / (double)USEC_PER_SEC);
   NSDate* date = [NSDate dateWithTimeIntervalSince1970:time_since_1970];
-  return base::TimeDelta::FromSecondsD(-date.timeIntervalSinceNow);
+  return base::Seconds(-date.timeIntervalSinceNow);
 }
 }  // namespace
 
@@ -328,9 +328,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   [self setBreakpadEnabled:optIn withUploading:allowUploading];
   [self setWatchWWANEnabled:optIn];
   [self setAppGroupMetricsEnabled:optIn];
-  if (@available(iOS 13, *)) {
-    [[MetricKitSubscriber sharedInstance] setEnabled:optIn];
-  }
+  [[MetricKitSubscriber sharedInstance] setEnabled:optIn];
 }
 
 - (BOOL)areMetricsEnabled {

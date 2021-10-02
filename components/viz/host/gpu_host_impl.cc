@@ -48,6 +48,9 @@ namespace {
 // the same thread.
 class FontRenderParams {
  public:
+  FontRenderParams(const FontRenderParams&) = delete;
+  FontRenderParams& operator=(const FontRenderParams&) = delete;
+
   void Set(const gfx::FontRenderParams& params);
   void Reset();
   const absl::optional<gfx::FontRenderParams>& Get();
@@ -60,8 +63,6 @@ class FontRenderParams {
 
   THREAD_CHECKER(thread_checker_);
   absl::optional<gfx::FontRenderParams> params_;
-
-  DISALLOW_COPY_AND_ASSIGN(FontRenderParams);
 };
 
 void FontRenderParams::Set(const gfx::FontRenderParams& params) {
@@ -512,7 +513,7 @@ void GpuHostImpl::DidDestroyAllChannels() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!channel_requests_.empty())
     return;
-  constexpr base::TimeDelta kShutDownTimeout = base::TimeDelta::FromSeconds(10);
+  constexpr base::TimeDelta kShutDownTimeout = base::Seconds(10);
   shutdown_timeout_.Start(FROM_HERE, kShutDownTimeout,
                           base::BindOnce(&GpuHostImpl::MaybeShutdownGpuProcess,
                                          base::Unretained(this)));

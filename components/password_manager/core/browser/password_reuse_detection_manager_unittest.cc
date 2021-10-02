@@ -54,12 +54,15 @@ class PasswordReuseDetectionManagerTest : public ::testing::Test {
  public:
   PasswordReuseDetectionManagerTest() = default;
 
+  PasswordReuseDetectionManagerTest(const PasswordReuseDetectionManagerTest&) =
+      delete;
+  PasswordReuseDetectionManagerTest& operator=(
+      const PasswordReuseDetectionManagerTest&) = delete;
+
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
   MockPasswordManagerClient client_;
   MockPasswordReuseManager reuse_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordReuseDetectionManagerTest);
 };
 
 // Verify that CheckReuse is called on each key pressed event with an argument
@@ -108,7 +111,7 @@ TEST_F(PasswordReuseDetectionManagerTest,
   manager.OnKeyPressedCommitted(u"1");
 
   // Simulate 10 seconds of inactivity.
-  clock.SetNow(now + base::TimeDelta::FromSeconds(10));
+  clock.SetNow(now + base::Seconds(10));
   // Expect that a keystroke typed before inactivity is cleared.
   EXPECT_CALL(reuse_manager_, CheckReuse(std::u16string(u"2"), _, _));
   manager.OnKeyPressedCommitted(u"2");

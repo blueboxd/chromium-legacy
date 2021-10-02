@@ -33,8 +33,7 @@ constexpr char kReportThree[] = "three";
 constexpr char kReportFour[] = "four";
 constexpr char kReportFive[] = "five";
 
-constexpr base::TimeDelta kRetryDelayForTest =
-    base::TimeDelta::FromMilliseconds(100);
+constexpr base::TimeDelta kRetryDelayForTest = base::Milliseconds(100);
 
 class MockFeedbackUploader : public FeedbackUploader {
  public:
@@ -43,6 +42,9 @@ class MockFeedbackUploader : public FeedbackUploader {
       const base::FilePath& state_path,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : FeedbackUploader(is_off_the_record, state_path, url_loader_factory) {}
+
+  MockFeedbackUploader(const MockFeedbackUploader&) = delete;
+  MockFeedbackUploader& operator=(const MockFeedbackUploader&) = delete;
 
   void RunMessageLoop() {
     if (ProcessingComplete())
@@ -106,8 +108,6 @@ class MockFeedbackUploader : public FeedbackUploader {
   size_t dispatched_reports_count_ = 0;
   size_t expected_reports_ = 0;
   bool simulate_failure_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(MockFeedbackUploader);
 };
 
 }  // namespace

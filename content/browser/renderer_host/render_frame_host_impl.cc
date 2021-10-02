@@ -32,6 +32,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/syslog_logging.h"
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
@@ -153,7 +154,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/disallow_activation_reason.h"
-#include "content/public/browser/document_service_base_internal.h"
+#include "content/public/browser/document_service_internal.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/permission_type.h"
@@ -882,15 +883,12 @@ base::TimeDelta GetSubframeProcessShutdownDelay(
     return kZeroDelay;
   }
 
-  static constexpr base::TimeDelta kShortDelay =
-      base::TimeDelta::FromSeconds(2);
+  static constexpr base::TimeDelta kShortDelay = base::Seconds(2);
   static constexpr base::TimeDelta kLongDelay =
-      base::TimeDelta::FromMilliseconds(
-          kSubframeProcessShutdownLongDelayInMSec);
+      base::Milliseconds(kSubframeProcessShutdownLongDelayInMSec);
   // Added to delay if based on recent performance (i.e., |kHistoryBased| and
   // |kHistoryBasedLong|) to account for small variations in timing.
-  static constexpr base::TimeDelta kDelayBuffer =
-      base::TimeDelta::FromSeconds(1);
+  static constexpr base::TimeDelta kDelayBuffer = base::Seconds(1);
 
   switch (features::kSubframeShutdownDelayTypeParam.Get()) {
     case features::SubframeShutdownDelayType::kConstant: {
@@ -1267,15 +1265,24 @@ RenderFrameHostImpl* RenderFrameHostImpl::FromID(int render_process_id,
 // static
 RenderFrameHostImpl* RenderFrameHostImpl::FromFrameToken(
     int process_id,
-    const blink::LocalFrameToken& frame_token) {
+    const blink::LocalFrameToken& frame_token,
+    mojo::ReportBadMessageCallback* process_mismatch_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto it = g_token_frame_map.Get().find(frame_token);
   if (it == g_token_frame_map.Get().end())
     return nullptr;
 
-  // TODO(tonikitoo): Consider killing the renderer when this happens
-  if (it->second->GetProcess()->GetID() != process_id)
+  if (it->second->GetProcess()->GetID() != process_id) {
+    if (process_mismatch_callback) {
+      SYSLOG(WARNING)
+          << "Denying illegal RenderFrameHost::FromFrameToken request.";
+      std::move(*process_mismatch_callback)
+          .Run(
+              "Unknown LocalFrame made RenderFrameHost::FromFrameToken "
+              "request.");
+    }
     return nullptr;
+  }
 
   return it->second;
 }
@@ -1523,12 +1530,12 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (was_created)
     delegate_->RenderFrameDeleted(this);
 
-  // Resetting `document_associated_data_` destroys live `DocumentServiceBase`
-  // and `RenderDocumentHostUserData` instances. It is important for them to be
+  // Resetting `document_associated_data_` destroys live `DocumentService` and
+  // `RenderDocumentHostUserData` instances. It is important for them to be
   // destroyed before the body of the `RenderFrameHostImpl` destructor
   // completes. Among other things, this ensures that any `SafeRef`s from
-  // `DocumentServiceBase` and `RenderFrameHostUserData` subclasses are still
-  // valid when their destructors run.
+  // `DocumentService` and `RenderFrameHostUserData` subclasses are still valid
+  // when their destructors run.
   document_associated_data_.reset();
 
   // Ensure that the render process host has been notified that all audio
@@ -5215,14 +5222,14 @@ void RenderFrameHostImpl::EnforceInsecureNavigationsSet(
 }
 
 void RenderFrameHostImpl::AddDocumentService(
-    DocumentServiceBaseInternal* document_service,
-    base::PassKey<DocumentServiceBaseInternal>) {
+    internal::DocumentServiceBase* document_service,
+    base::PassKey<internal::DocumentServiceBase>) {
   document_associated_data_->services.push_back(document_service);
 }
 
 void RenderFrameHostImpl::RemoveDocumentService(
-    DocumentServiceBaseInternal* document_service,
-    base::PassKey<DocumentServiceBaseInternal>) {
+    internal::DocumentServiceBase* document_service,
+    base::PassKey<internal::DocumentServiceBase>) {
   base::Erase(document_associated_data_->services, document_service);
 }
 
@@ -5821,8 +5828,7 @@ void RenderFrameHostImpl::UseDummyStickySchedulerTrackedFeatureForTesting() {
 }
 
 bool RenderFrameHostImpl::HasSeenRecentXrOverlaySetup() {
-  static constexpr base::TimeDelta kMaxInterval =
-      base::TimeDelta::FromSeconds(1);
+  static constexpr base::TimeDelta kMaxInterval = base::Seconds(1);
   base::TimeDelta delta = base::TimeTicks::Now() - last_xr_overlay_setup_time_;
   DVLOG(2) << __func__ << ": return " << (delta <= kMaxInterval);
   return delta <= kMaxInterval;
@@ -12619,7 +12625,7 @@ RenderFrameHostImpl::DocumentAssociatedData::DocumentAssociatedData(
 
 RenderFrameHostImpl::DocumentAssociatedData::~DocumentAssociatedData() {
   while (!services.empty()) {
-    // DocumentServiceBaseInternal unregisters itself at destruction time.
+    // DocumentServiceBase unregisters itself at destruction time.
     delete services.back();
   }
 }

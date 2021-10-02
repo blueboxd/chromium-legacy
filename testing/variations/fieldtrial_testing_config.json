@@ -116,6 +116,7 @@
                         "promo_card_max_shown": "3"
                     },
                     "enable_features": [
+                        "ContextualSearchLongpressResolve",
                         "ContextualSearchNewSettings",
                         "ContextualSearchTranslations"
                     ]
@@ -1534,7 +1535,6 @@
     "CanvasOutOfProcessRasterization": [
         {
             "platforms": [
-                "android",
                 "mac"
             ],
             "experiments": [
@@ -1869,22 +1869,6 @@
                     "enable_features": [
                         "ChromeShareLongScreenshot"
                     ]
-                }
-            ]
-        }
-    ],
-    "ChromeSharingHubClankV2": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ChromeShareScreenshot"
-                    ],
-                    "min_os_version": "5.1"
                 }
             ]
         }
@@ -2377,9 +2361,6 @@
             "experiments": [
                 {
                     "name": "Launch-candidate_20210915",
-                    "enable_features": [
-                        "ContextualSearchLongpressResolve"
-                    ],
                     "disable_features": [
                         "ContextualSearchLiteralSearchTap"
                     ]
@@ -4151,6 +4132,26 @@
             ]
         }
     ],
+    "IncludeInitiallyInvisibleImagesInLCP": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IncludeInitiallyInvisibleImagesInLCP"
+                    ]
+                }
+            ]
+        }
+    ],
     "IncognitoBrandConsistencyForDesktop": [
         {
             "platforms": [
@@ -4995,30 +4996,6 @@
             ]
         }
     ],
-    "OmniboxAssistantVoiceSearch": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledDefaultMicThenLensV13",
-                    "params": {
-                        "disableOnIncognito": "true",
-                        "enableCameraAssistedSearchOnLowEndDevice": "false",
-                        "enableCameraAssistedSearchOnTablet": "false",
-                        "minAgsaVersionForLensCameraAssistedSearch": "12.13.8",
-                        "searchBoxStartVariantForLensCameraAssistedSearch": "false",
-                        "skipAgsaVersionCheck": "false",
-                        "skipLensEligibilityChecks": "false"
-                    },
-                    "enable_features": [
-                        "LensCameraAssistedSearch"
-                    ]
-                }
-            ]
-        }
-    ],
     "OmniboxBundledExperimentV1": [
         {
             "platforms": [
@@ -5062,6 +5039,7 @@
                 {
                     "name": "AndroidExperiments",
                     "params": {
+                        "OmniboxDynamicMaxAutocompleteIncreasedLimit": "8",
                         "OmniboxMaxURLMatches": "3",
                         "OmniboxMaxZeroSuggestMatches": "15",
                         "UIMaxAutocompleteMatches": "8"
@@ -5110,6 +5088,30 @@
                     "name": "Enabled ",
                     "enable_features": [
                         "OmniboxDocumentProvider"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxLensIntegration": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledDefaultMicThenLensV1",
+                    "params": {
+                        "disableOnIncognito": "true",
+                        "enableCameraAssistedSearchOnLowEndDevice": "false",
+                        "enableCameraAssistedSearchOnTablet": "false",
+                        "minAgsaVersionForLensCameraAssistedSearch": "12.13.8",
+                        "searchBoxStartVariantForLensCameraAssistedSearch": "false",
+                        "skipAgsaVersionCheck": "false",
+                        "skipLensEligibilityChecks": "false"
+                    },
+                    "enable_features": [
+                        "LensCameraAssistedSearch"
                     ]
                 }
             ]
@@ -6344,21 +6346,6 @@
             ]
         }
     ],
-    "QuickAnswersV2": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "QuickAnswersV2"
-                    ]
-                }
-            ]
-        }
-    ],
     "QuietNotificationPrompts": [
         {
             "platforms": [
@@ -6609,25 +6596,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "RenderAccessibilityHostDeserializationOffMainThread"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ReportAllJavaScriptFrameworks": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows",
-                "android",
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "enabled",
-                    "enable_features": [
-                        "ReportAllJavaScriptFrameworks"
                     ]
                 }
             ]
@@ -7905,25 +7873,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "UseFluentLanguageModel"
-                    ]
-                }
-            ]
-        }
-    ],
-    "UsePageViewportInLCP": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UsePageViewportInLCP"
                     ]
                 }
             ]

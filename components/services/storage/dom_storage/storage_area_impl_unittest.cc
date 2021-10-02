@@ -62,14 +62,15 @@ class BarrierBuilder {
       : continuation_(
             base::MakeRefCounted<ContinuationRef>(std::move(continuation))) {}
 
+  BarrierBuilder(const BarrierBuilder&) = delete;
+  BarrierBuilder& operator=(const BarrierBuilder&) = delete;
+
   base::OnceClosure AddClosure() {
     return base::BindOnce([](scoped_refptr<ContinuationRef>) {}, continuation_);
   }
 
  private:
   const scoped_refptr<ContinuationRef> continuation_;
-
-  DISALLOW_COPY_AND_ASSIGN(BarrierBuilder);
 };
 
 class MockDelegate : public StorageAreaImpl::Delegate {
@@ -118,7 +119,7 @@ base::OnceCallback<void(bool, const std::vector<uint8_t>&)> MakeGetCallback(
 StorageAreaImpl::Options GetDefaultTestingOptions(CacheMode cache_mode) {
   StorageAreaImpl::Options options;
   options.max_size = kTestSizeLimit;
-  options.default_commit_delay = base::TimeDelta::FromSeconds(5);
+  options.default_commit_delay = base::Seconds(5);
   options.max_bytes_per_hour = 10 * 1024 * 1024;
   options.max_commits_per_hour = 60;
   options.cache_mode = cache_mode;

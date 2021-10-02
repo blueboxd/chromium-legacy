@@ -786,7 +786,7 @@ void ManagePasswordsUIController::OnVisibilityChanged(
 
 // static
 base::TimeDelta ManagePasswordsUIController::GetTimeoutForSaveFallback() {
-  return base::TimeDelta::FromSeconds(
+  return base::Seconds(
       ManagePasswordsUIController::save_fallback_timeout_in_seconds_);
 }
 
@@ -963,4 +963,4 @@ void ManagePasswordsUIController::
   move_to_account_store_helpers_.erase(done_helper_it);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ManagePasswordsUIController)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ManagePasswordsUIController);

@@ -66,6 +66,10 @@ void InitializeSiteDataProto(SiteDataProto* site_data) {
 }  // namespace
 
 class SiteDataReaderTest : public ::testing::Test {
+ public:
+  SiteDataReaderTest(const SiteDataReaderTest&) = delete;
+  SiteDataReaderTest& operator=(const SiteDataReaderTest&) = delete;
+
  protected:
   // The constructors needs to call 'new' directly rather than using the
   // base::MakeRefCounted helper function because the constructor of
@@ -104,8 +108,6 @@ class SiteDataReaderTest : public ::testing::Test {
   std::unique_ptr<SiteDataReader> reader_;
 
   testing::NoopSiteDataStore data_store_;
-
-  DISALLOW_COPY_AND_ASSIGN(SiteDataReaderTest);
 };
 
 TEST_F(SiteDataReaderTest, TestAccessors) {
@@ -125,7 +127,7 @@ TEST_F(SiteDataReaderTest, TestAccessors) {
 
   // Advance the clock by a large amount of time, enough for the unused features
   // observation windows to expire.
-  AdvanceClock(base::TimeDelta::FromDays(31));
+  AdvanceClock(base::Days(31));
 
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
             reader_->UpdatesFaviconInBackground());

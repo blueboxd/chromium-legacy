@@ -46,8 +46,7 @@ class MockSyncService : public syncer::TestSyncService {
         0, true, 0, base::Time::Now(), base::Time::Now(),
         std::vector<int>(syncer::GetNumModelTypes(), 0),
         std::vector<int>(syncer::GetNumModelTypes(), 0),
-        sync_pb::SyncEnums::UNKNOWN_ORIGIN, base::TimeDelta::FromMinutes(1),
-        false));
+        sync_pb::SyncEnums::UNKNOWN_ORIGIN, base::Minutes(1), false));
 
     NotifyObserversOfStateChanged();
   }
@@ -117,6 +116,11 @@ class TestUkmConsentStateObserver : public UkmConsentStateObserver {
 class UkmConsentStateObserverTest : public testing::Test {
  public:
   UkmConsentStateObserverTest() {}
+
+  UkmConsentStateObserverTest(const UkmConsentStateObserverTest&) = delete;
+  UkmConsentStateObserverTest& operator=(const UkmConsentStateObserverTest&) =
+      delete;
+
   void RegisterUrlKeyedAnonymizedDataCollectionPref(
       sync_preferences::TestingPrefServiceSyncable& prefs) {
     unified_consent::UnifiedConsentService::RegisterPrefs(prefs.registry());
@@ -128,9 +132,6 @@ class UkmConsentStateObserverTest : public testing::Test {
         unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
         enabled);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UkmConsentStateObserverTest);
 };
 
 }  // namespace

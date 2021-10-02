@@ -328,7 +328,7 @@ void BinaryUploadService::UploadForDeepScanning(
                      weakptr_factory_.GetWeakPtr(), raw_request));
   active_timers_[raw_request] = std::make_unique<base::OneShotTimer>();
   active_timers_[raw_request]->Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kScanningTimeoutSeconds),
+      FROM_HERE, base::Seconds(kScanningTimeoutSeconds),
       base::BindOnce(&BinaryUploadService::OnTimeout,
                      weakptr_factory_.GetWeakPtr(), raw_request));
 }
@@ -346,9 +346,8 @@ void BinaryUploadService::OnGetInstanceID(Request* request,
 
   base::UmaHistogramCustomTimes(
       "SafeBrowsingBinaryUploadRequest.TimeToGetFCMToken",
-      base::TimeTicks::Now() - start_times_[request],
-      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(6),
-      50);
+      base::TimeTicks::Now() - start_times_[request], base::Milliseconds(1),
+      base::Minutes(6), 50);
 
   request->set_fcm_token(instance_id);
   request->GetRequestData(base::BindOnce(&BinaryUploadService::OnGetRequestData,
@@ -508,8 +507,7 @@ void BinaryUploadService::FinishRequestCleanup(Request* request,
   received_connector_results_.erase(request);
 
   auto token_it = active_tokens_.find(request);
-  DCHECK(token_it != active_tokens_.end());
-  if (binary_fcm_service_)
+  if (binary_fcm_service_ && token_it != active_tokens_.end())
     binary_fcm_service_->ClearCallbackForToken(token_it->second);
 
   if (binary_fcm_service_ && instance_id != BinaryFCMService::kInvalidId) {
@@ -527,7 +525,8 @@ void BinaryUploadService::FinishRequestCleanup(Request* request,
     InstanceIDUnregisteredCallback(dm_token, connector, true);
   }
 
-  active_tokens_.erase(token_it);
+  if (token_it != active_tokens_.end())
+    active_tokens_.erase(token_it);
 }
 
 void BinaryUploadService::InstanceIDUnregisteredCallback(
@@ -551,8 +550,7 @@ void BinaryUploadService::RecordRequestMetrics(Request* request,
                                 result);
   base::UmaHistogramCustomTimes("SafeBrowsingBinaryUploadRequest.Duration",
                                 base::TimeTicks::Now() - start_times_[request],
-                                base::TimeDelta::FromMilliseconds(1),
-                                base::TimeDelta::FromMinutes(6), 50);
+                                base::Milliseconds(1), base::Minutes(6), 50);
 }
 
 void BinaryUploadService::RecordRequestMetrics(
@@ -767,7 +765,7 @@ void BinaryUploadService::IsAuthorized(
   // order to invalidate the authorization every 24 hours.
   if (!timer_.IsRunning()) {
     timer_.Start(
-        FROM_HERE, base::TimeDelta::FromHours(24),
+        FROM_HERE, base::Hours(24),
         base::BindRepeating(&BinaryUploadService::ResetAuthorizationData,
                             weakptr_factory_.GetWeakPtr(), url));
   }

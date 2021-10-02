@@ -106,7 +106,7 @@ base::TimeDelta TimeElapsedBetweenVisits(const history::VisitRow& visit1,
                                          const history::VisitRow& visit2) {
   base::TimeDelta delta = visit2.visit_time - visit1.visit_time;
   // Clamp to 30 days maximum to match the UKM retention period.
-  const base::TimeDelta kMaxDurationClamp = base::TimeDelta::FromDays(30);
+  const base::TimeDelta kMaxDurationClamp = base::Days(30);
   return delta < kMaxDurationClamp ? delta : kMaxDurationClamp;
 }
 
@@ -464,4 +464,4 @@ history::HistoryService* HistoryClustersTabHelper::GetHistoryService() {
       profile, ServiceAccessType::IMPLICIT_ACCESS);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(HistoryClustersTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(HistoryClustersTabHelper);

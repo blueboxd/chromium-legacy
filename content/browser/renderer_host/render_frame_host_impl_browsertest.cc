@@ -36,7 +36,7 @@
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame_messages.mojom.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/document_service_base.h"
+#include "content/public/browser/document_service.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/render_document_host_user_data.h"
 #include "content/public/browser/render_frame_host.h"
@@ -1217,8 +1217,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   // PrepContentsForBeforeUnloadTest(), as that clears the timer altogether,
   // and this test needs the timer to be valid, to see whether it gets paused
   // and not restarted correctly.
-  main_frame->SetBeforeUnloadTimeoutDelayForTesting(
-      base::TimeDelta::FromSeconds(30));
+  main_frame->SetBeforeUnloadTimeoutDelayForTesting(base::Seconds(30));
 
   // Start a navigation in the main frame.
   GURL new_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
@@ -3508,8 +3507,8 @@ IN_PROC_BROWSER_TEST_F(
   static_assert(net::IsolationInfo::kPartyContextMaxSize == 20,
                 "kPartyContextMaxSize should have value 20.");
 
-  base::test::ScopedRunLoopTimeout increased_timeout(
-      FROM_HERE, base::TimeDelta::FromSeconds(60));
+  base::test::ScopedRunLoopTimeout increased_timeout(FROM_HERE,
+                                                     base::Seconds(60));
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
   GURL b_url = embedded_test_server()->GetURL("b.com", "/");
@@ -4250,7 +4249,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   main_frame->DisableUnloadTimerForTesting();
   child_rfh->SuddenTerminationDisablerChanged(
       true, blink::mojom::SuddenTerminationDisablerType::kUnloadHandler);
-  child_rfh->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromDays(7));
+  child_rfh->SetSubframeUnloadTimeoutForTesting(base::Days(7));
   child_rfh->DoNotDeleteForTesting();
 
   // Open a popup on a.com to keep the process alive.
@@ -5470,7 +5469,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSubframeReuseBrowserTest,
 
   // Delay process shutdown twice from the same site info.
   const SiteInfo site_info = rfh->GetSiteInstance()->GetSiteInfo();
-  const base::TimeDelta delay = base::TimeDelta::FromSeconds(5);
+  const base::TimeDelta delay = base::Seconds(5);
   process->DelayProcessShutdown(delay, base::TimeDelta(), site_info);
   EXPECT_TRUE(process->IsProcessShutdownDelayedForTesting());
   process->DelayProcessShutdown(delay, base::TimeDelta(), site_info);
@@ -5943,13 +5942,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 class DestructorLifetimeDocumentService
     // The interface in question doesn't really matter here, so just pick a
     // generic one with an easy interface to stub.
-    : public DocumentServiceBase<blink::mojom::BrowserInterfaceBroker> {
+    : public DocumentService<blink::mojom::BrowserInterfaceBroker> {
  public:
   DestructorLifetimeDocumentService(
       RenderFrameHostImpl* render_frame_host,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> receiver,
       bool& was_destroyed)
-      : DocumentServiceBase(render_frame_host, std::move(receiver)),
+      : DocumentService(render_frame_host, std::move(receiver)),
         render_frame_host_(render_frame_host->GetWeakPtr()),
         was_destroyed_(was_destroyed) {}
 
@@ -5974,7 +5973,9 @@ class DestructorLifetimeRenderDocumentHostUserData
   explicit DestructorLifetimeRenderDocumentHostUserData(
       RenderFrameHost* render_frame_host,
       bool& was_destroyed)
-      : render_frame_host_(
+      : RenderDocumentHostUserData<
+            DestructorLifetimeRenderDocumentHostUserData>(render_frame_host),
+        render_frame_host_(
             static_cast<RenderFrameHostImpl*>(render_frame_host)->GetWeakPtr()),
         was_destroyed_(was_destroyed) {}
 
@@ -5994,10 +5995,10 @@ class DestructorLifetimeRenderDocumentHostUserData
 };
 
 RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(
-    DestructorLifetimeRenderDocumentHostUserData)
+    DestructorLifetimeRenderDocumentHostUserData);
 
 // Tests that when RenderFrameHostImpl is destroyed, destructors of
-// commonly-used extension points (currently DocumentServiceBase and
+// commonly-used extension points (currently DocumentService and
 // RenderDocumentHostUserData) run while RenderFrameHostImpl is still in a
 // reasonable state.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, DestructorLifetime) {

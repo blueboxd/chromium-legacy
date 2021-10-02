@@ -55,6 +55,11 @@ const int kDecodeLogoTimeoutSeconds = 30;
 // out a better way, now that it isn't.
 class ImageDecodedHandlerWithTimeout {
  public:
+  ImageDecodedHandlerWithTimeout(const ImageDecodedHandlerWithTimeout&) =
+      delete;
+  ImageDecodedHandlerWithTimeout& operator=(
+      const ImageDecodedHandlerWithTimeout&) = delete;
+
   static base::OnceCallback<void(const gfx::Image&)> Wrap(
       base::OnceCallback<void(const SkBitmap&)> image_decoded_callback) {
     auto* handler =
@@ -63,7 +68,7 @@ class ImageDecodedHandlerWithTimeout {
         FROM_HERE,
         base::BindOnce(&ImageDecodedHandlerWithTimeout::OnImageDecoded,
                        handler->weak_ptr_factory_.GetWeakPtr(), gfx::Image()),
-        base::TimeDelta::FromSeconds(kDecodeLogoTimeoutSeconds));
+        base::Seconds(kDecodeLogoTimeoutSeconds));
     return base::BindOnce(&ImageDecodedHandlerWithTimeout::OnImageDecoded,
                           handler->weak_ptr_factory_.GetWeakPtr());
   }
@@ -80,8 +85,6 @@ class ImageDecodedHandlerWithTimeout {
 
   base::OnceCallback<void(const SkBitmap&)> image_decoded_callback_;
   base::WeakPtrFactory<ImageDecodedHandlerWithTimeout> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ImageDecodedHandlerWithTimeout);
 };
 
 void ObserverOnLogoAvailable(LogoObserver* observer,
@@ -130,8 +133,7 @@ void RunCallbacksWithDisabled(LogoCallbacks callbacks) {
 // OK to show, i.e. it's not expired or it's allowed to be shown temporarily
 // after expiration.
 bool IsLogoOkToShow(const LogoMetadata& metadata, base::Time now) {
-  base::TimeDelta offset =
-      base::TimeDelta::FromMilliseconds(kMaxTimeToLiveMS * 3 / 2);
+  base::TimeDelta offset = base::Milliseconds(kMaxTimeToLiveMS * 3 / 2);
   base::Time distant_past = now - offset;
   // Sanity check so logos aren't accidentally cached forever.
   if (metadata.expiration_time < distant_past) {

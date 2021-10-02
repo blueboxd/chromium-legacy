@@ -196,6 +196,9 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
       const base::TimeDelta& timeout,
       base::OnceCallback<void(std::unique_ptr<Fingerprint>)> callback);
 
+  FingerprintDataLoader(const FingerprintDataLoader&) = delete;
+  FingerprintDataLoader& operator=(const FingerprintDataLoader&) = delete;
+
  private:
   ~FingerprintDataLoader() override {}
 
@@ -255,8 +258,6 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   // For invalidating asynchronous callbacks that might arrive after |this|
   // instance is destroyed.
   base::WeakPtrFactory<FingerprintDataLoader> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FingerprintDataLoader);
 };
 
 FingerprintDataLoader::FingerprintDataLoader(
@@ -488,7 +489,7 @@ void GetFingerprint(
   internal::GetFingerprintInternal(
       obfuscated_gaia_id, window_bounds, content_bounds, screen_info, version,
       charset, accept_languages, install_time, app_locale, user_agent,
-      base::TimeDelta::FromSeconds(kTimeoutSeconds), std::move(callback));
+      base::Seconds(kTimeoutSeconds), std::move(callback));
 }
 
 }  // namespace risk

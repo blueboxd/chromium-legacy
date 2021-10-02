@@ -134,30 +134,6 @@ class ClipboardHostImplTest : public RenderViewHostTestHarness {
   mojo::Remote<blink::mojom::ClipboardHost> remote_;
 };
 
-// Test that it actually works.
-TEST_F(ClipboardHostImplTest, SimpleImage_ReadBitmap) {
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(3, 2);
-  bitmap.eraseARGB(255, 0, 255, 0);
-  mojo_clipboard()->WriteImage(bitmap);
-  ui::ClipboardSequenceNumberToken sequence_number =
-      system_clipboard()->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste);
-  mojo_clipboard()->CommitWrite();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_NE(sequence_number, system_clipboard()->GetSequenceNumber(
-                                 ui::ClipboardBuffer::kCopyPaste));
-  EXPECT_FALSE(system_clipboard()->IsFormatAvailable(
-      ui::ClipboardFormatType::PlainTextType(), ui::ClipboardBuffer::kCopyPaste,
-      /* data_dst=*/nullptr));
-  EXPECT_TRUE(system_clipboard()->IsFormatAvailable(
-      ui::ClipboardFormatType::BitmapType(), ui::ClipboardBuffer::kCopyPaste,
-      /*data_dst=*/nullptr));
-
-  SkBitmap actual = ui::clipboard_test_util::ReadImage(system_clipboard());
-  EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap, actual));
-}
-
 TEST_F(ClipboardHostImplTest, SimpleImage_ReadPng) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(3, 2);
@@ -259,14 +235,14 @@ TEST_F(ClipboardHostImplTest, IsPasteContentAllowedRequest_IsObsolete) {
   request.AddCallback(base::DoNothing());
   EXPECT_FALSE(request.IsObsolete(
       request.time() + ClipboardHostImpl::kIsPasteContentAllowedRequestTooOld +
-      base::TimeDelta::FromMicroseconds(1)));
+      base::Microseconds(1)));
 
   // A request is obsolete once it is too old and has no callbacks.
   // Whether paste is allowed or not is not important.
   request.Complete(ClipboardHostImpl::ClipboardPasteContentAllowed(true));
   EXPECT_TRUE(request.IsObsolete(
       request.time() + ClipboardHostImpl::kIsPasteContentAllowedRequestTooOld +
-      base::TimeDelta::FromMicroseconds(1)));
+      base::Microseconds(1)));
 }
 
 TEST_F(ClipboardHostImplTest, ReadAvailableTypes_TextUriList) {
@@ -338,7 +314,7 @@ class ClipboardHostImplScanTest : public RenderViewHostTestHarness {
  private:
   mojo::Remote<blink::mojom::ClipboardHost> remote_;
   ui::Clipboard* const clipboard_;
-  // `FakeClipboardHostImpl` is a `DocumentServiceBase` and manages its own
+  // `FakeClipboardHostImpl` is a `DocumentService` and manages its own
   // lifetime.
   FakeClipboardHostImpl* fake_clipboard_host_impl_;
 };
@@ -401,7 +377,7 @@ TEST_F(ClipboardHostImplScanTest, CleanupObsoleteScanRequests) {
   // It should be cleaned up.
   task_environment()->FastForwardBy(
       FakeClipboardHostImpl::kIsPasteContentAllowedRequestTooOld +
-      base::TimeDelta::FromMicroseconds(1));
+      base::Microseconds(1));
   clipboard_host_impl()->CleanupObsoleteRequests();
   EXPECT_EQ(
       0u,

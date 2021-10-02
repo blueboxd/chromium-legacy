@@ -1399,7 +1399,12 @@
   },
   'context_lost_passthrough_tests': {
     'modifications': {
-      'Mac FYI GPU ASAN Release': {
+      'Mac FYI ASAN (Intel)': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+      'Mac FYI Retina ASAN (AMD)': {
         'args': [
           '--is-asan',
         ]
@@ -1413,7 +1418,12 @@
       'Android FYI Release (Pixel 2)',
     ],
     'modifications': {
-      'Mac FYI GPU ASAN Release': {
+      'Mac FYI ASAN (Intel)': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+      'Mac FYI Retina ASAN (AMD)': {
         'args': [
           '--is-asan',
         ]
@@ -1734,9 +1744,6 @@
   },
   'info_collection_tests': {
     'remove_from': [
-      # The Mac ASAN swarming bot runs tests on two different GPU
-      # types, so we can't have one expected vendor ID / device ID.
-      'Mac FYI GPU ASAN Release',
       'Android V8 FYI Release (Nexus 5X)',
       'Linux V8 FYI Release (NVIDIA)',
       'Linux V8 FYI Release - pointer compression (NVIDIA)',
@@ -2154,6 +2161,9 @@
     ],
   },
   'net_unittests': {
+    'remove_from': [
+      'android-lollipop-arm-rel', # Not enough capacity. https://crbug.com/1248257
+    ],
     'modifications': {
       'CrWinAsan': {
         # TODO(crbug.com/794372): net_unittests is slow under ASan.
@@ -2220,6 +2230,16 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_10.net_unittests.filter',
         ],
       },
+      'android-cronet-x86-dbg-11-tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.net_unittests.filter',
+        ],
+      },
+      'android-cronet-x86-dbg-oreo-tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.net_unittests.filter',
+        ],
+      },
       'android-cronet-x86-dbg-pie-tests': {
         # crbug.com/1046060
         'args': [
@@ -2257,6 +2277,14 @@
         # TODO(crbug.com/794372): net_unittests is slow under ASan.
         'swarming': {
           'shards': 16,
+        },
+      },
+    },
+    'replacements': {
+      # TODO(crbug.com/1254563): Remove when suite can use run-test-component.
+      'fuchsia-code-coverage': {
+        'args': {
+          '--use-run': None,
         },
       },
     },
@@ -3164,7 +3192,12 @@
       'ChromeOS FYI Release (kevin)': {
         'experiment_percentage': 100,
       },
-      'Mac FYI GPU ASAN Release': {
+      'Mac FYI ASAN (Intel)': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+      'Mac FYI Retina ASAN (AMD)': {
         'args': [
           '--is-asan',
         ]
@@ -3194,7 +3227,12 @@
   },
   'webgl_conformance_validating_tests': {
     'modifications': {
-      'Mac FYI GPU ASAN Release': {
+      'Mac FYI ASAN (Intel)': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+      'Mac FYI Retina ASAN (AMD)': {
         'args': [
           '--is-asan',
         ]

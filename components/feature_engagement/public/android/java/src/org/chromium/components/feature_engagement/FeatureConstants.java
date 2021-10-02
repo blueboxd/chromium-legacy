@@ -53,6 +53,7 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_2_FEATURE,
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_3_FEATURE,
         FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE, FeatureConstants.PAGE_INFO_FEATURE,
+        FeatureConstants.PAGE_INFO_STORE_INFO_FEATURE,
         FeatureConstants.IPH_SHARE_SCREENSHOT_FEATURE,
         FeatureConstants.IPH_SHARING_HUB_LINK_TOGGLE_FEATURE,
         FeatureConstants.IPH_WEB_FEED_FOLLOW_FEATURE,
@@ -60,7 +61,8 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.SHARED_HIGHLIGHTING_BUILDER_FEATURE,
         FeatureConstants.START_SURFACE_TAB_SWITCHER_HOME_BUTTON_FEATURE,
         FeatureConstants.IPH_UPDATED_CONNECTION_SECURITY_INDICATORS_FEATURE,
-        FeatureConstants.SHARED_HIGHLIGHTING_RECEIVER_FEATURE})
+        FeatureConstants.SHARED_HIGHLIGHTING_RECEIVER_FEATURE,
+        FeatureConstants.SHARING_HUB_WEBNOTES_STYLIZE_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
     String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_NEW_TAB_FEATURE =
@@ -265,6 +267,11 @@ public @interface FeatureConstants {
     String PAGE_INFO_FEATURE = "IPH_PageInfo";
 
     /**
+     * An IPH feature to inform users about the StoreInfo feature in PageInfo.
+     */
+    String PAGE_INFO_STORE_INFO_FEATURE = "IPH_PageInfoStoreInfo";
+
+    /**
      * An IPH feature to inform users about the screenshot sharing feature.
      */
     String IPH_SHARE_SCREENSHOT_FEATURE = "IPH_ShareScreenshot";
@@ -306,4 +313,9 @@ public @interface FeatureConstants {
      * An IPH feature encouraging users to create highlights.
      */
     String SHARED_HIGHLIGHTING_RECEIVER_FEATURE = "IPH_SharedHighlightingReceiver";
+
+    /**
+     * An IPH feature to inform users about the Webnotes Stylize feature in Sharing Hub.
+     */
+    String SHARING_HUB_WEBNOTES_STYLIZE_FEATURE = "IPH_SharingHubWebnotesStylize";
 }

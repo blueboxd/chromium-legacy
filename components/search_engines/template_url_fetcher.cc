@@ -70,6 +70,9 @@ class TemplateURLFetcher::RequestDelegate {
                   int render_frame_id,
                   int32_t request_id);
 
+  RequestDelegate(const RequestDelegate&) = delete;
+  RequestDelegate& operator=(const RequestDelegate&) = delete;
+
   // If data contains a valid OSDD, a TemplateURL is created and added to
   // the TemplateURLService.
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
@@ -93,8 +96,6 @@ class TemplateURLFetcher::RequestDelegate {
   const GURL favicon_url_;
 
   base::CallbackListSubscription template_url_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestDelegate);
 };
 
 TemplateURLFetcher::RequestDelegate::RequestDelegate(
@@ -134,7 +135,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
       std::move(resource_request), kTrafficAnnotation);
   simple_url_loader_->SetAllowHttpErrorResults(true);
   simple_url_loader_->SetTimeoutDuration(
-      base::TimeDelta::FromSeconds(kOpenSearchTimeoutSeconds));
+      base::Seconds(kOpenSearchTimeoutSeconds));
   simple_url_loader_->SetRetryOptions(
       kOpenSearchRetryCount, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
   simple_url_loader_->SetRequestID(request_id);

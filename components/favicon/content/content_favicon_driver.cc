@@ -64,7 +64,8 @@ ContentFaviconDriver::ContentFaviconDriver(content::WebContents* web_contents,
 ContentFaviconDriver::~ContentFaviconDriver() = default;
 
 ContentFaviconDriver::DocumentManifestData::DocumentManifestData(
-    content::RenderFrameHost* render_frame_host) {}
+    content::RenderFrameHost* rfh)
+    : content::RenderDocumentHostUserData<DocumentManifestData>(rfh) {}
 ContentFaviconDriver::DocumentManifestData::~DocumentManifestData() = default;
 
 ContentFaviconDriver::NavigationManifestData::NavigationManifestData(
@@ -259,9 +260,9 @@ void ContentFaviconDriver::DidFinishNavigation(
 }
 
 NAVIGATION_HANDLE_USER_DATA_KEY_IMPL(
-    ContentFaviconDriver::NavigationManifestData)
+    ContentFaviconDriver::NavigationManifestData);
 RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(
-    ContentFaviconDriver::DocumentManifestData)
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ContentFaviconDriver)
+    ContentFaviconDriver::DocumentManifestData);
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ContentFaviconDriver);
 
 }  // namespace favicon

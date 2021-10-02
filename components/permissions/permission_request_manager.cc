@@ -93,8 +93,7 @@ bool ShouldShowQuietRequestAgainIfPreempted(
     return true;
   }
 
-  static constexpr base::TimeDelta kQuietChipIgnoreTimeout =
-      base::TimeDelta::FromSecondsD(8.5);
+  static constexpr base::TimeDelta kQuietChipIgnoreTimeout = base::Seconds(8.5);
   return base::Time::Now() - request_display_start_time.value() <
          kQuietChipIgnoreTimeout;
 }
@@ -1029,6 +1028,6 @@ void PermissionRequestManager::PushQueuedRequest(PermissionRequest* request) {
   }
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PermissionRequestManager)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PermissionRequestManager);
 
 }  // namespace permissions

@@ -60,9 +60,9 @@
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
+#include "third_party/blink/public/mojom/drag/drag.mojom.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/touch_event.mojom.h"
-#include "third_party/blink/public/mojom/page/drag.mojom.h"
 #include "ui/display/display_util.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
@@ -1676,8 +1676,7 @@ TEST_F(RenderWidgetHostTest, StopAndStartInputEventAckTimeout) {
   host_->StartInputEventAckTimeout();
 
   // Wait long enough for first timeout and see if it fired.
-  task_environment_.FastForwardBy(kHungRendererDelay +
-                                  base::TimeDelta::FromMilliseconds(10));
+  task_environment_.FastForwardBy(kHungRendererDelay + base::Milliseconds(10));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1691,21 +1690,18 @@ TEST_F(RenderWidgetHostTest, InputEventAckTimeoutDisabledForInputWhenHidden) {
 
   // The timeout should not fire.
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
-  task_environment_.FastForwardBy(kHungRendererDelay +
-                                  base::TimeDelta::FromMilliseconds(10));
+  task_environment_.FastForwardBy(kHungRendererDelay + base::Milliseconds(10));
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // The timeout should never reactivate while hidden.
   SimulateMouseEvent(WebInputEvent::Type::kMouseMove, 10, 10, 0, false);
-  task_environment_.FastForwardBy(kHungRendererDelay +
-                                  base::TimeDelta::FromMilliseconds(10));
+  task_environment_.FastForwardBy(kHungRendererDelay + base::Milliseconds(10));
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // Showing the widget should restore the timeout, as the events have
   // not yet been ack'ed.
   host_->WasShown({} /* record_tab_switch_time_request */);
-  task_environment_.FastForwardBy(kHungRendererDelay +
-                                  base::TimeDelta::FromMilliseconds(10));
+  task_environment_.FastForwardBy(kHungRendererDelay + base::Milliseconds(10));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1728,8 +1724,7 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
       blink::mojom::InputEventResultState::kConsumed);
 
   // Wait long enough for second timeout and see if it fired.
-  task_environment_.FastForwardBy(kHungRendererDelay +
-                                  base::TimeDelta::FromMilliseconds(10));
+  task_environment_.FastForwardBy(kHungRendererDelay + base::Milliseconds(10));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 

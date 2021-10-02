@@ -493,9 +493,9 @@ void AutocompleteResult::ConvertOpenTabMatches(
   }
 
   base::TimeDelta time_delta = base::TimeTicks::Now() - start_time;
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "Omnibox.TabMatchTime", time_delta, base::TimeDelta::FromMicroseconds(1),
-      base::TimeDelta::FromMilliseconds(5), 50);
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES("Omnibox.TabMatchTime", time_delta,
+                                          base::Microseconds(1),
+                                          base::Milliseconds(5), 50);
 }
 
 bool AutocompleteResult::HasCopiedMatches() const {
@@ -654,11 +654,7 @@ size_t AutocompleteResult::CalculateNumMatchesPerUrlCount(
   size_t url_cutoff = base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kDynamicMaxAutocomplete,
       OmniboxFieldTrial::kDynamicMaxAutocompleteUrlCutoffParam, 0);
-  // Take no action in the event where increased_limit is lower than the base
-  // one. This affects for example Android/ZPS where the base limit is 15
-  // suggestions.
-  if (increased_limit <= base_limit)
-    return base_limit;
+  DCHECK(increased_limit >= base_limit);
 
   size_t num_matches = 0;
   size_t num_url_matches = 0;

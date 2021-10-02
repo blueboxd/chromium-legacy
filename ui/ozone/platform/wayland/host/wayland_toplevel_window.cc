@@ -263,12 +263,16 @@ bool WaylandToplevelWindow::CanSetDecorationInsets() const {
              ->SupportsSetWindowGeometry();
 }
 
-void WaylandToplevelWindow::SetOpaqueRegion(std::vector<gfx::Rect> region_px) {
+void WaylandToplevelWindow::SetOpaqueRegion(
+    const std::vector<gfx::Rect>* region_px) {
   root_surface()->SetOpaqueRegion(region_px);
 }
 
-void WaylandToplevelWindow::SetInputRegion(gfx::Rect region_px) {
-  input_region_px_ = region_px;
+void WaylandToplevelWindow::SetInputRegion(const gfx::Rect* region_px) {
+  if (region_px)
+    input_region_px_ = *region_px;
+  else
+    input_region_px_ = absl::nullopt;
   root_surface()->SetInputRegion(region_px);
 }
 
@@ -585,10 +589,10 @@ void WaylandToplevelWindow::ShowSnapPreview(
                            ZAURA_SURFACE_INTENT_TO_SNAP_SINCE_VERSION) {
     uint32_t zaura_shell_snap_direction = ZAURA_SURFACE_SNAP_DIRECTION_NONE;
     switch (snap_direction) {
-      case WaylandWindowSnapDirection::kLeft:
+      case WaylandWindowSnapDirection::kPrimary:
         zaura_shell_snap_direction = ZAURA_SURFACE_SNAP_DIRECTION_LEFT;
         break;
-      case WaylandWindowSnapDirection::kRight:
+      case WaylandWindowSnapDirection::kSecondary:
         zaura_shell_snap_direction = ZAURA_SURFACE_SNAP_DIRECTION_RIGHT;
         break;
       case WaylandWindowSnapDirection::kNone:
@@ -608,10 +612,10 @@ void WaylandToplevelWindow::CommitSnap(
   if (aura_surface_ && zaura_surface_get_version(aura_surface_.get()) >=
                            ZAURA_SURFACE_UNSET_SNAP_SINCE_VERSION) {
     switch (snap_direction) {
-      case WaylandWindowSnapDirection::kLeft:
+      case WaylandWindowSnapDirection::kPrimary:
         zaura_surface_set_snap_left(aura_surface_.get());
         return;
-      case WaylandWindowSnapDirection::kRight:
+      case WaylandWindowSnapDirection::kSecondary:
         zaura_surface_set_snap_right(aura_surface_.get());
         return;
       case WaylandWindowSnapDirection::kNone:
@@ -872,8 +876,9 @@ void WaylandToplevelWindow::UpdateWindowMask() {
   // TODO(http://crbug.com/1158733): When supporting PlatformWindow::SetShape,
   // update window region with the given |shape|.
   WaylandWindow::UpdateWindowMask();
-  root_surface()->SetInputRegion(
-      input_region_px_ ? *input_region_px_ : gfx::Rect(visual_size_px()));
+  gfx::Rect region(visual_size_px());
+  root_surface()->SetInputRegion(input_region_px_ ? &*input_region_px_
+                                                  : &region);
 }
 
 void WaylandToplevelWindow::UpdateWindowShape() {

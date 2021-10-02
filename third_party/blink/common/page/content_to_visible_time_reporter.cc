@@ -12,7 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
-#include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom.h"
+#include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom.h"
 #include "ui/gfx/presentation_feedback.h"
 
 namespace blink {
@@ -52,8 +52,7 @@ void RecordBackForwardCacheRestoreMetric(
   // "PageLoad.PaintTiming.NavigationToFirstContentfulPaint" metric.
   base::UmaHistogramCustomTimes(
       "BackForwardCache.Restore.NavigationToFirstPaint", delta,
-      base::TimeDelta::FromMilliseconds(10), base::TimeDelta::FromMinutes(10),
-      100);
+      base::Milliseconds(10), base::Minutes(10), 100);
 }
 
 }  // namespace

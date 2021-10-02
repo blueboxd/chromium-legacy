@@ -114,6 +114,7 @@
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom-forward.h"
+#include "third_party/blink/public/mojom/navigation/renderer_eviction_reason.mojom.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom-forward.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-forward.h"
@@ -187,12 +188,15 @@ class UkmRecorder;
 
 namespace content {
 
+namespace internal {
+class DocumentServiceBase;
+}  // namespace internal
+
 class AgentSchedulingGroupHost;
 class AppCacheNavigationHandle;
 class CodeCacheHostImpl;
 class CrossOriginEmbedderPolicyReporter;
 class CrossOriginOpenerPolicyAccessReportManager;
-class DocumentServiceBaseInternal;
 class FeatureObserver;
 class FencedFrame;
 class FrameTree;
@@ -274,7 +278,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   static RenderFrameHostImpl* FromID(int process_id, int routing_id);
   static RenderFrameHostImpl* FromFrameToken(
       int process_id,
-      const blink::LocalFrameToken& frame_token);
+      const blink::LocalFrameToken& frame_token,
+      mojo::ReportBadMessageCallback* process_mismatch_callback = nullptr);
 
   static RenderFrameHostImpl* FromAXTreeID(ui::AXTreeID ax_tree_id);
   static RenderFrameHostImpl* FromOverlayRoutingToken(
@@ -2128,10 +2133,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
     document_associated_data_->RemoveUserData(key);
   }
 
-  void AddDocumentService(DocumentServiceBaseInternal* document_service,
-                          base::PassKey<DocumentServiceBaseInternal>);
-  void RemoveDocumentService(DocumentServiceBaseInternal* document_service,
-                             base::PassKey<DocumentServiceBaseInternal>);
+  void AddDocumentService(internal::DocumentServiceBase* document_service,
+                          base::PassKey<internal::DocumentServiceBase>);
+  void RemoveDocumentService(internal::DocumentServiceBase* document_service,
+                             base::PassKey<internal::DocumentServiceBase>);
 
   // Called when we commit speculative RFH early due to not having an alive
   // current frame. This happens when the renderer crashes before navigating to
@@ -3841,9 +3846,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
     // service, as well as with any reports which are queued by this document.
     base::UnguessableToken reporting_source;
 
-    // "Owned" but not with std::unique_ptr, as a DocumentServiceBaseInternal is
+    // "Owned" but not with std::unique_ptr, as a DocumentServiceBase is
     // allowed to delete itself directly.
-    std::vector<DocumentServiceBaseInternal*> services;
+    std::vector<internal::DocumentServiceBase*> services;
   };
 
   // Reset immediately before a RenderFrameHost is reused for hosting a new
@@ -3852,8 +3857,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Note: this is an absl::optional instead of a std::unique_ptr because:
   // 1. it is always allocated
   // 2. `~RenderFrameHostImpl` destroys `document_associated_data_` which
-  //    destroys any `DocumentServiceBase` objects tracking `this`. Destroying a
-  //    `DocumentServiceBase` unregisters it from `this`. A std::unique_ptr's
+  //    destroys any `DocumentService` objects tracking `this`. Destroying a
+  //    `DocumentService` unregisters it from `this`. A std::unique_ptr's
   //    stored pointer value is (intentionally) undefined during destruction
   //    (e.g. it could be nullptr), which would cause unregistration to
   //    dereference a null pointer.

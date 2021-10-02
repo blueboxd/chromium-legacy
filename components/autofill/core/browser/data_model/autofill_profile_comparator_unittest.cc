@@ -92,6 +92,10 @@ class AutofillProfileComparatorTest
     autofill::CountryNames::SetLocaleString(kLocale);
   }
 
+  AutofillProfileComparatorTest(const AutofillProfileComparatorTest&) = delete;
+  AutofillProfileComparatorTest& operator=(
+      const AutofillProfileComparatorTest&) = delete;
+
   NameInfo CreateNameInfo(const char16_t* first,
                           const char16_t* middle,
                           const char16_t* last,
@@ -361,9 +365,6 @@ class AutofillProfileComparatorTest
   bool structured_names_enabled_;
   bool structured_addresses_enabled_;
   base::test::ScopedFeatureList scoped_features_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutofillProfileComparatorTest);
 };
 
 }  // namespace
@@ -912,13 +913,13 @@ TEST_P(AutofillProfileComparatorTest, MergeCJKNames) {
   AutofillProfile p1 = CreateProfileWithName(name1);
   p1.set_use_date(AutofillClock::Now());
   AutofillProfile p2 = CreateProfileWithName(name2);
-  p2.set_use_date(AutofillClock::Now() - base::TimeDelta::FromHours(1));
+  p2.set_use_date(AutofillClock::Now() - base::Hours(1));
   AutofillProfile p3 = CreateProfileWithName(name3);
-  p3.set_use_date(AutofillClock::Now() - base::TimeDelta::FromHours(2));
+  p3.set_use_date(AutofillClock::Now() - base::Hours(2));
   AutofillProfile p4 = CreateProfileWithName(name4);
-  p4.set_use_date(AutofillClock::Now() - base::TimeDelta::FromHours(3));
+  p4.set_use_date(AutofillClock::Now() - base::Hours(3));
   AutofillProfile p5 = CreateProfileWithName(name5);
-  p5.set_use_date(AutofillClock::Now() - base::TimeDelta::FromHours(4));
+  p5.set_use_date(AutofillClock::Now() - base::Hours(4));
 
   AutofillProfile p6 = CreateProfileWithName(name6);
   AutofillProfile p7 = CreateProfileWithName(name7);
@@ -969,7 +970,7 @@ TEST_P(AutofillProfileComparatorTest, MergeEmailAddresses) {
   EmailInfo email_b;
   email_b.SetRawInfo(EMAIL_ADDRESS, kEmailB16);
   AutofillProfile profile_b = CreateProfileWithEmail(kEmailB);
-  profile_b.set_use_date(profile_a.use_date() + base::TimeDelta::FromDays(1));
+  profile_b.set_use_date(profile_a.use_date() + base::Days(1));
 
   MergeEmailAddressesAndExpect(profile_a, profile_a, email_a);
   MergeEmailAddressesAndExpect(profile_b, profile_b, email_b);
@@ -997,14 +998,14 @@ TEST_P(AutofillProfileComparatorTest, MergeCompanyNames) {
   CompanyInfo company_b;
   company_b.SetRawInfo(COMPANY_NAME, kCompanyB16);
   AutofillProfile profile_b = CreateProfileWithCompanyName(kCompanyB);
-  profile_b.set_use_date(profile_a.use_date() + base::TimeDelta::FromDays(1));
+  profile_b.set_use_date(profile_a.use_date() + base::Days(1));
 
   // Company Name C is the most complete. Even though it has the earliest use
   // date, it will be preferred to the other two.
   CompanyInfo company_c;
   company_c.SetRawInfo(COMPANY_NAME, kCompanyC16);
   AutofillProfile profile_c = CreateProfileWithCompanyName(kCompanyC);
-  profile_c.set_use_date(profile_a.use_date() - base::TimeDelta::FromDays(1));
+  profile_c.set_use_date(profile_a.use_date() - base::Days(1));
 
   // Company Name D is in the format of a birthyear, invalid and non-verified.
   CompanyInfo company_d;
@@ -1208,7 +1209,7 @@ TEST_P(AutofillProfileComparatorTest, MergeAddressesMostUniqueTokens) {
   AutofillProfile p2 = CreateProfileWithAddress(
       "1 Some Other Street", "Unit 3", "Carver City", "ca", "90210-1234", "us");
 
-  p2.set_use_date(p1.use_date() + base::TimeDelta::FromMinutes(1));
+  p2.set_use_date(p1.use_date() + base::Minutes(1));
   p2.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME, u"Some Other Street");
   p2.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
                 u"DependentStreetName2");
@@ -1241,7 +1242,7 @@ TEST_P(AutofillProfileComparatorTest, MergeAddressesWithStructure) {
 
   AutofillProfile p2 = CreateProfileWithAddress(
       "6543, Bacon Rd", "", "Montreal", "QC", "hhh 999", "CA");
-  p2.set_use_date(p1.use_date() + base::TimeDelta::FromMinutes(1));
+  p2.set_use_date(p1.use_date() + base::Minutes(1));
   p2.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME, u"StreetName2");
   p2.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
                 u"DependentStreetName2");
@@ -1281,7 +1282,7 @@ TEST_P(AutofillProfileComparatorTest, MergeAddressesWithRewrite) {
   p2.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME, u"PremiseName2");
   p2.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE, u"Subpremise2");
 
-  p2.set_use_date(p1.use_date() + base::TimeDelta::FromMinutes(1));
+  p2.set_use_date(p1.use_date() + base::Minutes(1));
 
   Address expected;
   expected.SetRawInfo(ADDRESS_HOME_LINE1, u"6543 CH BACON");
@@ -1305,7 +1306,7 @@ TEST_P(AutofillProfileComparatorTest,
       "6543, Bacon Rd", "", "Montreal", "QC", "hhh 999", "CA");
   p2.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY, u"Some Other String");
   p2.SetRawInfo(ADDRESS_HOME_SORTING_CODE, u"64205 Biarritz");
-  p2.set_use_date(p1.use_date() + base::TimeDelta::FromMinutes(1));
+  p2.set_use_date(p1.use_date() + base::Minutes(1));
 
   Address expected;
   expected.SetRawInfo(ADDRESS_HOME_LINE1, u"6543 CH BACON");

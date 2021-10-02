@@ -536,7 +536,7 @@ void AVIFImageDecoder::InitializeNewFrame(wtf_size_t index) {
   avifImageTiming timing;
   auto ret = avifDecoderNthImageTiming(decoder_.get(), index, &timing);
   DCHECK_EQ(ret, AVIF_RESULT_OK);
-  buffer.SetDuration(base::TimeDelta::FromSecondsD(timing.duration));
+  buffer.SetDuration(base::Seconds(timing.duration));
 }
 
 void AVIFImageDecoder::Decode(wtf_size_t index) {
@@ -716,11 +716,6 @@ bool AVIFImageDecoder::UpdateDemuxer() {
     // AV1 image items. (This issue has been corrected in libheif v1.12.0.) See
     // crbug.com/1198455.
     decoder_->strictFlags &= ~AVIF_STRICT_PIXI_REQUIRED;
-    // Allow the ImageSpatialExtentsProperty ('ispe') to be missing in alpha
-    // auxiliary image items. avif-serialize 0.7.3 or older does not add the
-    // 'ispe' item property to alpha auxiliary image items. (This issue has been
-    // corrected in avif-serialize 0.7.4.) See crbug.com/1246678.
-    decoder_->strictFlags &= ~AVIF_STRICT_ALPHA_ISPE_REQUIRED;
 
     avif_io_.destroy = nullptr;
     avif_io_.read = ReadFromSegmentReader;

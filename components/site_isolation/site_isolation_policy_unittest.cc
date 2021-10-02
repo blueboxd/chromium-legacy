@@ -115,6 +115,9 @@ class SiteIsolationPolicyTest : public BaseSiteIsolationTest {
     user_prefs::UserPrefs::Set(&browser_context_, &prefs_);
   }
 
+  SiteIsolationPolicyTest(const SiteIsolationPolicyTest&) = delete;
+  SiteIsolationPolicyTest& operator=(const SiteIsolationPolicyTest&) = delete;
+
  protected:
   content::BrowserContext* browser_context() { return &browser_context_; }
 
@@ -128,8 +131,6 @@ class SiteIsolationPolicyTest : public BaseSiteIsolationTest {
   content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext browser_context_;
   TestingPrefServiceSimple prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(SiteIsolationPolicyTest);
 };
 
 class WebTriggeredIsolatedOriginsPolicyTest : public SiteIsolationPolicyTest {
@@ -138,11 +139,16 @@ class WebTriggeredIsolatedOriginsPolicyTest : public SiteIsolationPolicyTest {
       : SiteIsolationPolicyTest(
             content::BrowserTaskEnvironment::TimeSource::MOCK_TIME) {}
 
+  WebTriggeredIsolatedOriginsPolicyTest(
+      const WebTriggeredIsolatedOriginsPolicyTest&) = delete;
+  WebTriggeredIsolatedOriginsPolicyTest& operator=(
+      const WebTriggeredIsolatedOriginsPolicyTest&) = delete;
+
   void PersistOrigin(const std::string& origin) {
     SiteIsolationPolicy::PersistIsolatedOrigin(
         browser_context(), url::Origin::Create(GURL(origin)),
         IsolatedOriginSource::WEB_TRIGGERED);
-    task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(1));
+    task_environment()->FastForwardBy(base::Milliseconds(1));
   }
 
   std::vector<std::string> GetStoredOrigins() {
@@ -187,8 +193,6 @@ class WebTriggeredIsolatedOriginsPolicyTest : public SiteIsolationPolicyTest {
 
  private:
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebTriggeredIsolatedOriginsPolicyTest);
 };
 
 // Verify that persisting web-triggered isolated origins properly saves the
@@ -283,8 +287,7 @@ TEST_F(WebTriggeredIsolatedOriginsPolicyTest, Expiration) {
   base::TimeDelta default_timeout =
       ::features::kSiteIsolationForCrossOriginOpenerPolicyExpirationTimeoutParam
           .default_value;
-  task_environment()->FastForwardBy(default_timeout +
-                                    base::TimeDelta::FromDays(1));
+  task_environment()->FastForwardBy(default_timeout + base::Days(1));
 
   // foo1.com and foo2.com should still be in prefs. (Expired entries are only
   // removed when we try to load them from prefs.)
@@ -316,6 +319,11 @@ class PasswordSiteIsolationPolicyTest : public SiteIsolationPolicyTest {
  public:
   PasswordSiteIsolationPolicyTest() = default;
 
+  PasswordSiteIsolationPolicyTest(const PasswordSiteIsolationPolicyTest&) =
+      delete;
+  PasswordSiteIsolationPolicyTest& operator=(
+      const PasswordSiteIsolationPolicyTest&) = delete;
+
  protected:
   void SetUp() override {
     feature_list_.InitAndEnableFeature(
@@ -326,8 +334,6 @@ class PasswordSiteIsolationPolicyTest : public SiteIsolationPolicyTest {
 
  private:
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordSiteIsolationPolicyTest);
 };
 
 // Verifies that SiteIsolationPolicy::ApplyPersistedIsolatedOrigins applies
@@ -387,6 +393,11 @@ class NoPasswordSiteIsolationPolicyTest : public SiteIsolationPolicyTest {
  public:
   NoPasswordSiteIsolationPolicyTest() = default;
 
+  NoPasswordSiteIsolationPolicyTest(const NoPasswordSiteIsolationPolicyTest&) =
+      delete;
+  NoPasswordSiteIsolationPolicyTest& operator=(
+      const NoPasswordSiteIsolationPolicyTest&) = delete;
+
  protected:
   void SetUp() override {
     feature_list_.InitAndDisableFeature(
@@ -397,8 +408,6 @@ class NoPasswordSiteIsolationPolicyTest : public SiteIsolationPolicyTest {
 
  private:
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(NoPasswordSiteIsolationPolicyTest);
 };
 
 // Verifies that SiteIsolationPolicy::ApplyPersistedIsolatedOrigins ignores
@@ -498,6 +507,11 @@ class SitePerProcessMemoryThresholdBrowserTest
     }
   }
 
+  SitePerProcessMemoryThresholdBrowserTest(
+      const SitePerProcessMemoryThresholdBrowserTest&) = delete;
+  SitePerProcessMemoryThresholdBrowserTest& operator=(
+      const SitePerProcessMemoryThresholdBrowserTest&) = delete;
+
   void SetUp() override {
     // This way the test always sees the same amount of physical memory
     // (kLowMemoryDeviceThresholdMB = 512MB), regardless of how much memory is
@@ -533,8 +547,6 @@ class SitePerProcessMemoryThresholdBrowserTest
  private:
   base::test::ScopedFeatureList threshold_feature_;
   base::test::ScopedFeatureList mode_feature_;
-
-  DISALLOW_COPY_AND_ASSIGN(SitePerProcessMemoryThresholdBrowserTest);
 };
 
 using SitePerProcessMemoryThresholdBrowserTestNoIsolation =
@@ -695,6 +707,11 @@ class PasswordSiteIsolationFieldTrialTest : public BaseSiteIsolationTest {
     feature_list_.InitWithFeatureList(std::move(feature_list));
   }
 
+  PasswordSiteIsolationFieldTrialTest(
+      const PasswordSiteIsolationFieldTrialTest&) = delete;
+  PasswordSiteIsolationFieldTrialTest& operator=(
+      const PasswordSiteIsolationFieldTrialTest&) = delete;
+
   void SetUp() override {
     // This test creates and tests its own field trial group, so it needs to
     // disable the field trial testing config, which might define an
@@ -714,9 +731,6 @@ class PasswordSiteIsolationFieldTrialTest : public BaseSiteIsolationTest {
   base::test::ScopedFieldTrialListResetter trial_list_resetter_;
   base::test::ScopedFeatureList feature_list_;
   base::FieldTrialList field_trial_list_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PasswordSiteIsolationFieldTrialTest);
 };
 
 class EnabledPasswordSiteIsolationFieldTrialTest
@@ -725,8 +739,10 @@ class EnabledPasswordSiteIsolationFieldTrialTest
   EnabledPasswordSiteIsolationFieldTrialTest()
       : PasswordSiteIsolationFieldTrialTest(true /* should_enable */) {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(EnabledPasswordSiteIsolationFieldTrialTest);
+  EnabledPasswordSiteIsolationFieldTrialTest(
+      const EnabledPasswordSiteIsolationFieldTrialTest&) = delete;
+  EnabledPasswordSiteIsolationFieldTrialTest& operator=(
+      const EnabledPasswordSiteIsolationFieldTrialTest&) = delete;
 };
 
 class DisabledPasswordSiteIsolationFieldTrialTest
@@ -735,8 +751,10 @@ class DisabledPasswordSiteIsolationFieldTrialTest
   DisabledPasswordSiteIsolationFieldTrialTest()
       : PasswordSiteIsolationFieldTrialTest(false /* should_enable */) {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DisabledPasswordSiteIsolationFieldTrialTest);
+  DisabledPasswordSiteIsolationFieldTrialTest(
+      const DisabledPasswordSiteIsolationFieldTrialTest&) = delete;
+  DisabledPasswordSiteIsolationFieldTrialTest& operator=(
+      const DisabledPasswordSiteIsolationFieldTrialTest&) = delete;
 };
 
 TEST_F(EnabledPasswordSiteIsolationFieldTrialTest, BelowThreshold) {
@@ -897,6 +915,11 @@ class StrictOriginIsolationFieldTrialTest : public BaseSiteIsolationTest {
     feature_list_.InitWithFeatureList(std::move(feature_list));
   }
 
+  StrictOriginIsolationFieldTrialTest(
+      const StrictOriginIsolationFieldTrialTest&) = delete;
+  StrictOriginIsolationFieldTrialTest& operator=(
+      const StrictOriginIsolationFieldTrialTest&) = delete;
+
   void SetUp() override {
     // This test creates and tests its own field trial group, so it needs to
     // disable the field trial testing config, which might define an
@@ -916,9 +939,6 @@ class StrictOriginIsolationFieldTrialTest : public BaseSiteIsolationTest {
   base::test::ScopedFieldTrialListResetter trial_list_resetter_;
   base::test::ScopedFeatureList feature_list_;
   base::FieldTrialList field_trial_list_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StrictOriginIsolationFieldTrialTest);
 };
 
 class EnabledStrictOriginIsolationFieldTrialTest
@@ -927,8 +947,10 @@ class EnabledStrictOriginIsolationFieldTrialTest
   EnabledStrictOriginIsolationFieldTrialTest()
       : StrictOriginIsolationFieldTrialTest(true /* should_enable */) {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(EnabledStrictOriginIsolationFieldTrialTest);
+  EnabledStrictOriginIsolationFieldTrialTest(
+      const EnabledStrictOriginIsolationFieldTrialTest&) = delete;
+  EnabledStrictOriginIsolationFieldTrialTest& operator=(
+      const EnabledStrictOriginIsolationFieldTrialTest&) = delete;
 };
 
 class DisabledStrictOriginIsolationFieldTrialTest
@@ -937,8 +959,10 @@ class DisabledStrictOriginIsolationFieldTrialTest
   DisabledStrictOriginIsolationFieldTrialTest()
       : StrictOriginIsolationFieldTrialTest(false /* should_enable */) {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DisabledStrictOriginIsolationFieldTrialTest);
+  DisabledStrictOriginIsolationFieldTrialTest(
+      const DisabledStrictOriginIsolationFieldTrialTest&) = delete;
+  DisabledStrictOriginIsolationFieldTrialTest& operator=(
+      const DisabledStrictOriginIsolationFieldTrialTest&) = delete;
 };
 
 // Check that when strict origin isolation is enabled via a field trial, and
@@ -1021,6 +1045,10 @@ class BuiltInIsolatedOriginsTest : public SiteIsolationPolicyTest {
  public:
   BuiltInIsolatedOriginsTest() = default;
 
+  BuiltInIsolatedOriginsTest(const BuiltInIsolatedOriginsTest&) = delete;
+  BuiltInIsolatedOriginsTest& operator=(const BuiltInIsolatedOriginsTest&) =
+      delete;
+
  protected:
   void SetUp() override {
     // Simulate a 512MB device.
@@ -1028,9 +1056,6 @@ class BuiltInIsolatedOriginsTest : public SiteIsolationPolicyTest {
         switches::kEnableLowEndDeviceMode);
     EXPECT_EQ(512, base::SysInfo::AmountOfPhysicalMemoryMB());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BuiltInIsolatedOriginsTest);
 };
 
 // Check that the list of preloaded isolated origins is properly applied when
@@ -1145,6 +1170,11 @@ class OptInOriginIsolationPolicyTest : public BaseSiteIsolationTest {
  public:
   OptInOriginIsolationPolicyTest() = default;
 
+  OptInOriginIsolationPolicyTest(const OptInOriginIsolationPolicyTest&) =
+      delete;
+  OptInOriginIsolationPolicyTest& operator=(
+      const OptInOriginIsolationPolicyTest&) = delete;
+
  protected:
   void SetUp() override {
     // Simulate a 512MB device.
@@ -1167,8 +1197,6 @@ class OptInOriginIsolationPolicyTest : public BaseSiteIsolationTest {
   content::RenderViewHostTestEnabler rvh_test_enabler_;
 
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(OptInOriginIsolationPolicyTest);
 };
 
 // Check that opt-in origin isolation is not applied when below the memory

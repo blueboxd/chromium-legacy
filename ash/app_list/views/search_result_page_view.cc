@@ -75,8 +75,7 @@ constexpr int kSearchBoxSearchResultShadowElevation = 12;
 
 // The amount of time by which notifications to accessibility framework about
 // result page changes are delayed.
-constexpr base::TimeDelta kNotifyA11yDelay =
-    base::TimeDelta::FromMilliseconds(1500);
+constexpr base::TimeDelta kNotifyA11yDelay = base::Milliseconds(1500);
 
 // A container view that ensures the card background and the shadow are painted
 // in the correct order.
@@ -665,19 +664,6 @@ void SearchResultPageView::OnAnimationUpdated(double progress,
 gfx::Size SearchResultPageView::GetPreferredSearchBoxSize() const {
   static gfx::Size size = gfx::Size(kWidth, kSearchBoxHeight);
   return size;
-}
-
-absl::optional<int> SearchResultPageView::GetSearchBoxTop(
-    AppListViewState view_state) const {
-  if (view_state == AppListViewState::kPeeking ||
-      view_state == AppListViewState::kHalf) {
-    return AppListPage::contents_view()
-        ->GetAppListConfig()
-        .search_box_fullscreen_top_padding();
-  }
-  // For other view states, return absl::nullopt so the ContentsView
-  // sets the default search box widget origin.
-  return absl::nullopt;
 }
 
 void SearchResultPageView::OnAnchoredDialogClosed() {

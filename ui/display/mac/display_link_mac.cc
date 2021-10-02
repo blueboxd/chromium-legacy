@@ -203,11 +203,11 @@ void DisplayLinkMac::UpdateVSyncParameters(const CVTimeStamp& cv_time) {
   }
 
   timebase_ = base::TimeTicks::FromMachAbsoluteTime(cv_time.hostTime);
-  interval_ = base::TimeDelta::FromMicroseconds(interval_us.ValueOrDie());
+  interval_ = base::Microseconds(int64_t{interval_us.ValueOrDie()});
   timebase_and_interval_valid_ = true;
 
   // Don't restart the display link for 10 seconds.
-  recalculate_time_ = base::TimeTicks::Now() + base::TimeDelta::FromSeconds(10);
+  recalculate_time_ = base::TimeTicks::Now() + base::Seconds(10);
   StopDisplayLink();
 }
 

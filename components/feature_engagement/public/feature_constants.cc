@@ -140,6 +140,8 @@ const base::Feature kIPHMicToolbarFeature{"IPH_MicToolbar",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHPageInfoFeature{"IPH_PageInfo",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHPageInfoStoreInfoFeature{
+    "IPH_PageInfoStoreInfo", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHPreviewsOmniboxUIFeature{
     "IPH_PreviewsOmniboxUI", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHTabGroupsQuicklyComparePagesFeature{
@@ -192,6 +194,8 @@ const base::Feature kIPHSharedHighlightingReceiverFeature{
     "IPH_SharedHighlightingReceiver", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHStartSurfaceTabSwitcherHomeButton{
     "IPH_StartSurfaceTabSwitcherHomeButton", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kIPHSharingHubWebnotesStylizeFeature{
+    "IPH_SharingHubWebnotesStylize", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_IOS)

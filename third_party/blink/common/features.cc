@@ -983,6 +983,10 @@ const base::Feature kClipboardCustomFormats{"ClipboardCustomFormats",
 const base::Feature kUsePageViewportInLCP{"UsePageViewportInLCP",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Send all user interaction latency data from renderer to the browser process.
+const base::Feature kSendAllUserInteractionLatencies{
+    "SendAllUserInteractionLatencies", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable `Sec-CH-UA-Platform` client hint and request header to be sent by
 // default
 const base::Feature kUACHPlatformEnabledByDefault{
@@ -1006,7 +1010,7 @@ const base::Feature kDesktopPWAsSubApps{"DesktopPWAsSubApps",
 // Enables reporting all JavaScript frameworks via a manual traversal to detect
 // the properties and attributes required.
 const base::Feature kReportAllJavaScriptFrameworks{
-    "ReportAllJavaScriptFrameworks", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ReportAllJavaScriptFrameworks", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Suppresses console errors for CORS problems which report an associated
 // inspector issue anyway.
@@ -1032,7 +1036,7 @@ const base::FeatureParam<int> kMaxNumOfThrottleableRequestsInTightMode{
 
 const base::FeatureParam<base::TimeDelta> kHttpRttThreshold{
     &kDelayLowPriorityRequestsAccordingToNetworkState, "HttpRttThreshold",
-    base::TimeDelta::FromMilliseconds(450)};
+    base::Milliseconds(450)};
 
 const base::FeatureParam<double> kCostReductionOfMultiplexedRequests{
     &kDelayLowPriorityRequestsAccordingToNetworkState,
@@ -1076,6 +1080,10 @@ const base::Feature kClientHintsResourceWidth_DEPRECATED{
 // Enable legacy `viewport-width` client hint.
 const base::Feature kClientHintsViewportWidth_DEPRECATED{
     "ClientHintsViewportWidth_DEPRECATED", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// https://drafts.csswg.org/css-cascade-5/#layering
+const base::Feature kCSSCascadeLayers{"CSSCascadeLayers",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

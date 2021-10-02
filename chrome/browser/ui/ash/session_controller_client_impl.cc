@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/ui/user_adding_screen.h"
 #include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
@@ -399,8 +400,11 @@ SessionControllerClientImpl::GetAddUserSessionPolicy() {
 
   // Multiprofile mode is not allowed when Lacros is running.
   if (crosapi::BrowserManager::Get()) {
-    if (crosapi::BrowserManager::Get()->IsRunningOrWillRun())
+    // If Lacros is the primary browser then it's functionally always running.
+    if (crosapi::BrowserManager::Get()->IsRunningOrWillRun() ||
+        crosapi::browser_util::IsLacrosPrimaryBrowser()) {
       return ash::AddUserSessionPolicy::ERROR_LACROS_RUNNING;
+    }
   } else {
     // If multiprofile is queried while browser manager is not set,
     // we want to make sure that this is done before any user logs in.
@@ -610,7 +614,7 @@ void SessionControllerClientImpl::SendSessionLengthLimit() {
   const PrefService* local_state = local_state_registrar_->prefs();
   base::TimeDelta session_length_limit;
   if (local_state->HasPrefPath(prefs::kSessionLengthLimit)) {
-    session_length_limit = base::TimeDelta::FromMilliseconds(
+    session_length_limit = base::Milliseconds(
         base::clamp(local_state->GetInteger(prefs::kSessionLengthLimit),
                     kSessionLengthLimitMinMs, kSessionLengthLimitMaxMs));
   }

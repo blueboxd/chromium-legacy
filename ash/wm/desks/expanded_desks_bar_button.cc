@@ -56,20 +56,21 @@ class ASH_EXPORT InnerExpandedDesksBarButton : public DeskButtonBase {
         AshColorProvider::Get()->GetContentLayerColor(
             AshColorProvider::ContentLayerType::kButtonIconColor);
     SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(*outer_button_->icon(), enabled_icon_color));
+             gfx::CreateVectorIcon(*outer_button_->button_icon(),
+                                   enabled_icon_color));
     SetImage(views::Button::STATE_DISABLED,
              gfx::CreateVectorIcon(
-                 *outer_button_->icon(),
+                 *outer_button_->button_icon(),
                  AshColorProvider::GetDisabledColor(enabled_icon_color)));
     UpdateButtonState();
   }
 
   void OnButtonPressed() override { button_callback_.Run(); }
+
   // Update the button's enable/disable state based on current desks state.
   // TODO(sophiewen): This disables all expanded button types when the max # of
   // desks is created, but this logic should be separated for New Desk creation
   // and Desks Templates.
-
   void UpdateButtonState() override {
     outer_button_->UpdateLabelColor();
     const bool enabled = DesksController::Get()->CanCreateDesks();
@@ -100,6 +101,7 @@ class ASH_EXPORT InnerExpandedDesksBarButton : public DeskButtonBase {
 
 BEGIN_METADATA(InnerExpandedDesksBarButton, views::LabelButton)
 END_METADATA
+
 }  // namespace
 
 ExpandedDesksBarButton::ExpandedDesksBarButton(
@@ -120,6 +122,19 @@ ExpandedDesksBarButton::ExpandedDesksBarButton(
   label_->SetBackgroundColor(AshColorProvider::Get()->GetShieldLayerColor(
       AshColorProvider::ShieldLayerType::kShield80));
   UpdateLabelColor();
+}
+
+void ExpandedDesksBarButton::UpdateButtonState() {
+  inner_button_->UpdateButtonState();
+}
+
+void ExpandedDesksBarButton::UpdateLabelColor() {
+  const SkColor label_color = AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary);
+  label_->SetEnabledColor(
+      DesksController::Get()->CanCreateDesks()
+          ? label_color
+          : AshColorProvider::Get()->GetDisabledColor(label_color));
 }
 
 void ExpandedDesksBarButton::Layout() {
@@ -151,19 +166,6 @@ void ExpandedDesksBarButton::Layout() {
                      desk_mini_view->GetPreviewBorderInsets().bottom() +
                      kNewDeskButtonAndNameSpacing),
       gfx::Size(label_size.width(), label_height)));
-}
-
-void ExpandedDesksBarButton::UpdateButtonState() {
-  inner_button_->UpdateButtonState();
-}
-
-void ExpandedDesksBarButton::UpdateLabelColor() {
-  const SkColor label_color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextColorPrimary);
-  label_->SetEnabledColor(
-      DesksController::Get()->CanCreateDesks()
-          ? label_color
-          : AshColorProvider::Get()->GetDisabledColor(label_color));
 }
 
 BEGIN_METADATA(ExpandedDesksBarButton, views::View)

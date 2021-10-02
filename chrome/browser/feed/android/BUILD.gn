@@ -9,14 +9,29 @@ import("//chrome/browser/buildflags.gni")
 
 android_library("java") {
   sources = [
+    "java/src/org/chromium/chrome/browser/feed/CardMenuBottomSheetContent.java",
     "java/src/org/chromium/chrome/browser/feed/FeedImageFetchClient.java",
+    "java/src/org/chromium/chrome/browser/feed/FeedPersistentKeyValueCache.java",
+    "java/src/org/chromium/chrome/browser/feed/FeedPlaceholderLayout.java",
     "java/src/org/chromium/chrome/browser/feed/FeedReliabilityLoggingBridge.java",
     "java/src/org/chromium/chrome/browser/feed/FeedServiceBridge.java",
+    "java/src/org/chromium/chrome/browser/feed/FeedSliceViewTracker.java",
     "java/src/org/chromium/chrome/browser/feed/FeedSurfaceTracker.java",
     "java/src/org/chromium/chrome/browser/feed/FeedUma.java",
+    "java/src/org/chromium/chrome/browser/feed/NativeViewListRenderer.java",
     "java/src/org/chromium/chrome/browser/feed/NtpListContentManager.java",
     "java/src/org/chromium/chrome/browser/feed/VideoPreviewsType.java",
     "java/src/org/chromium/chrome/browser/feed/componentinterfaces/SurfaceCoordinator.java",
+    "java/src/org/chromium/chrome/browser/feed/feedmanagement/FeedManagementCoordinator.java",
+    "java/src/org/chromium/chrome/browser/feed/feedmanagement/FeedManagementItemProperties.java",
+    "java/src/org/chromium/chrome/browser/feed/feedmanagement/FeedManagementItemView.java",
+    "java/src/org/chromium/chrome/browser/feed/feedmanagement/FeedManagementItemViewBinder.java",
+    "java/src/org/chromium/chrome/browser/feed/feedmanagement/FeedManagementMediator.java",
+    "java/src/org/chromium/chrome/browser/feed/followmanagement/FollowManagementCoordinator.java",
+    "java/src/org/chromium/chrome/browser/feed/followmanagement/FollowManagementItemProperties.java",
+    "java/src/org/chromium/chrome/browser/feed/followmanagement/FollowManagementItemView.java",
+    "java/src/org/chromium/chrome/browser/feed/followmanagement/FollowManagementItemViewBinder.java",
+    "java/src/org/chromium/chrome/browser/feed/followmanagement/FollowManagementMediator.java",
     "java/src/org/chromium/chrome/browser/feed/settings/FeedAutoplaySettingsFragment.java",
     "java/src/org/chromium/chrome/browser/feed/settings/RadioButtonGroupVideoPreviewsPreference.java",
     "java/src/org/chromium/chrome/browser/feed/webfeed/ShadowedClickableTextBubble.java",
@@ -47,6 +62,7 @@ android_library("java") {
     "//chrome/browser/util:java",
     "//chrome/browser/xsurface:java",
     "//chrome/browser/xsurface:java",
+    "//components/browser_ui/bottomsheet/android:java",
     "//components/browser_ui/settings/android:java",
     "//components/browser_ui/util/android:java",
     "//components/browser_ui/widget/android:java",
@@ -60,11 +76,14 @@ android_library("java") {
     "//components/user_prefs/android:java",
     "//content/public/android:content_main_dex_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
     "//third_party/androidx:androidx_browser_browser_java",
     "//third_party/androidx:androidx_core_core_java",
     "//third_party/androidx:androidx_preference_preference_java",
+    "//third_party/androidx:androidx_recyclerview_recyclerview_java",
     "//ui/android:ui_no_recycler_view_java",
+    "//ui/android:ui_recycler_view_java",
     "//ui/android:ui_utils_java",
     "//url:gurl_java",
   ]
@@ -113,6 +132,7 @@ android_resources("feed_java_resources") {
 generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/chrome/browser/feed/FeedImageFetchClient.java",
+    "java/src/org/chromium/chrome/browser/feed/FeedPersistentKeyValueCache.java",
     "java/src/org/chromium/chrome/browser/feed/FeedReliabilityLoggingBridge.java",
     "java/src/org/chromium/chrome/browser/feed/FeedServiceBridge.java",
     "java/src/org/chromium/chrome/browser/feed/webfeed/WebFeedBridge.java",
@@ -166,6 +186,8 @@ android_library("junit") {
   bypass_platform_checks = true
 
   sources = [
+    "java/src/org/chromium/chrome/browser/feed/FeedSliceViewTrackerTest.java",
+    "java/src/org/chromium/chrome/browser/feed/NativeViewListRendererTest.java",
     "java/src/org/chromium/chrome/browser/feed/NtpListContentManagerTest.java",
     "java/src/org/chromium/chrome/browser/feed/followmanagement/FollowManagementCoordinatorTest.java",
     "java/src/org/chromium/chrome/browser/feed/followmanagement/FollowManagementMediatorTest.java",
@@ -215,6 +237,7 @@ android_library("junit") {
     "//third_party/androidx:androidx_test_core_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/gif_player:gif_player_java",
+    "//third_party/hamcrest:hamcrest_core_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
     "//ui/android:ui_java_test_support",

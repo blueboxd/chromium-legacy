@@ -78,8 +78,7 @@ constexpr gfx::Insets kVerticalScrollInsets(kTileSpacingInFolder, 0, 1, 1);
 // Duration for fading in the target page when opening
 // or closing a folder, and the duration for the top folder icon animation
 // for flying in or out the folder.
-constexpr base::TimeDelta kFolderTransitionDuration =
-    base::TimeDelta::FromMilliseconds(250);
+constexpr base::TimeDelta kFolderTransitionDuration = base::Milliseconds(250);
 
 // Transit from the background of the folder item's icon to the opened
 // folder's background when opening the folder. Transit the other way when
@@ -808,6 +807,7 @@ void AppListFolderView::OnAppListItemWillBeDeleted(AppListItem* item) {
 
 void AppListFolderView::ResetState(bool restore_folder_item_view_state) {
   if (folder_item_) {
+    items_grid_view_->ClearSelectedView();
     items_grid_view_->SetItemList(nullptr);
     folder_header_view_->SetFolderItem(nullptr);
     folder_item_ = nullptr;
@@ -1040,7 +1040,8 @@ bool AppListFolderView::IsPointWithinPageFlipBuffer(
 }
 
 bool AppListFolderView::IsPointWithinBottomDragBuffer(
-    const gfx::Point& point) const {
+    const gfx::Point& point,
+    int page_flip_zone_size) const {
   // Folders page horizontally and do not have a bottom drag buffer.
   return false;
 }

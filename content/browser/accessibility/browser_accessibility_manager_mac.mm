@@ -222,7 +222,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
                 }
               },
               std::move(retained_node)),
-          base::TimeDelta::FromMilliseconds(kLiveRegionChangeIntervalMS));
+          base::Milliseconds(kLiveRegionChangeIntervalMS));
       return;
     }
     case ui::AXEventGenerator::Event::LIVE_REGION_CREATED:

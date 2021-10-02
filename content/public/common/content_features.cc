@@ -73,19 +73,8 @@ const base::Feature kBackgroundFetch{"BackgroundFetch",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable using the BackForwardCache.
-// BackForwardCache is enabled only on Android for the moment, as some
-// desktop-specific features (including extensions) are not compatible with
-// bfcache yet.
-//
-// Tracking bug for enabling bfcache on desktop: https://crbug.com/1171298.
-const base::Feature kBackForwardCache {
-  "BackForwardCache",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kBackForwardCache{"BackForwardCache",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable same-site back-forward cache for trybots. This is here because of
 // https://crbug.com/1211818 and should only used for trybots. For normal use
@@ -302,11 +291,6 @@ const base::Feature kEnumerateDevicesHideDeviceIDs {
       base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 };
-
-// When a screen reader is detected, allow users the option of letting
-// Google provide descriptions for unlabeled images.
-const base::Feature kExperimentalAccessibilityLabels{
-    "ExperimentalAccessibilityLabels", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Content counterpart of ExperimentalContentSecurityPolicyFeatures in
 // third_party/blink/renderer/platform/runtime_enabled_features.json5. Enables
@@ -794,7 +778,7 @@ const base::FeatureParam<int>
 const base::FeatureParam<base::TimeDelta>
     kSiteIsolationForCrossOriginOpenerPolicyExpirationTimeoutParam{
         &kSiteIsolationForCrossOriginOpenerPolicy, "expiration_timeout",
-        base::TimeDelta::FromDays(7)};
+        base::Days(7)};
 // When enabled, OOPIFs will not try to reuse compatible processes from
 // unrelated tabs.
 const base::Feature kDisableProcessReuse{"DisableProcessReuse",

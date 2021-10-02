@@ -1901,6 +1901,47 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Android.Messages.Enqueued.Hidden" enum="MessageIdentifier"
+    expires_after="2022-06-01">
+  <owner>pavely@chromium.org</owner>
+  <owner>lazzzis@chromium.org</owner>
+  <owner>clank-app-team@google.com</owner>
+  <summary>
+    Records the message identifier when an enqueued message is not immediately
+    displayed either because there is another message on the secreen or because
+    message scope (e.g. tab) is not active. This metric is recorded along with
+    Android.Messages.Enqueued.Hiding, which records identifier of currently
+    visible message.
+  </summary>
+</histogram>
+
+<histogram name="Android.Messages.Enqueued.Hiding" enum="MessageIdentifier"
+    expires_after="2022-06-01">
+  <owner>pavely@chromium.org</owner>
+  <owner>lazzzis@chromium.org</owner>
+  <owner>clank-app-team@google.com</owner>
+  <summary>
+    Recorded when an enqueued message is not immediately displayed. This metric
+    records message identifier of a message currently displayed on the screen
+    (that prevented the enqueued message from getting displayed immediately).
+    INVALID_MESSAGE is recorded when the message isn't displayed because message
+    scope (e.g. tab) isn't active or when message queue is suspended.
+  </summary>
+</histogram>
+
+<histogram name="Android.Messages.Enqueued.Visible" enum="MessageIdentifier"
+    expires_after="2022-06-01">
+  <owner>pavely@chromium.org</owner>
+  <owner>lazzzis@chromium.org</owner>
+  <owner>clank-app-team@google.com</owner>
+  <summary>
+    Records the message identifier when a message is displayed immediately when
+    it is enqueued. This includes cases when there are no other messages on the
+    screen as well as cases when the new message is high priority and causes
+    some other message to hide.
+  </summary>
+</histogram>
+
 <histogram name="Android.Messages.TimeToAction.Dismiss{MessageIdentifier}"
     units="ms" expires_after="2022-06-01">
   <owner>pavely@chromium.org</owner>
@@ -3201,7 +3242,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.CPSDirectorySize" units="KB"
-    expires_after="2021-10-08">
+    expires_after="2022-07-01">
   <owner>nator@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -3212,7 +3253,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.CUSDirectorySize" units="KB"
-    expires_after="2021-10-08">
+    expires_after="2022-07-01">
   <owner>nator@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -3223,7 +3264,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.GetFilesDuration" units="ms"
-    expires_after="2022-03-13">
+    expires_after="2022-07-01">
   <owner>nator@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -3235,7 +3276,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.GetFilesResult"
-    enum="WebViewComponentUpdaterGetFilesResult" expires_after="2022-03-13">
+    enum="WebViewComponentUpdaterGetFilesResult" expires_after="2022-07-01">
   <owner>nator@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -3247,7 +3288,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.SafeModeActionExecuted"
-    enum="Boolean" expires_after="2022-06-30">
+    enum="Boolean" expires_after="2022-07-01">
   <owner>nator@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -3258,7 +3299,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.UnexpectedExit"
-    enum="Boolean" expires_after="2021-10-08">
+    enum="Boolean" expires_after="2022-07-01">
   <owner>nator@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -3270,7 +3311,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.UpdateJobDuration" units="ms"
-    expires_after="2022-02-13">
+    expires_after="2022-07-01">
   <owner>nator@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -3281,7 +3322,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.UpdateJobFilesChanged"
-    units="count" expires_after="2021-10-08">
+    units="count" expires_after="2022-07-01">
   <owner>nator@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>

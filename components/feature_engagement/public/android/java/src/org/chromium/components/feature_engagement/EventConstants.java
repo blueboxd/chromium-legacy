@@ -229,6 +229,10 @@ public final class EventConstants {
     /** PageInfo events. */
     public static final String PAGE_INFO_OPENED = "page_info_opened";
 
+    /** PageInfoStoreInfo events. */
+    public static final String PAGE_INFO_STORE_INFO_ROW_CLICKED =
+            "page_info_store_info_row_clicked";
+
     /** Permission events. */
     public static final String PERMISSION_REQUEST_SHOWN = "permission_request_shown";
 
@@ -263,6 +267,10 @@ public final class EventConstants {
     /** Shared Highlighting button event */
     public static final String IPH_SHARED_HIGHLIGHTING_BUTTON_CLICKED =
             "iph_shared_highlighting_button_clicked";
+
+    /** Webnotes Stylize feature used from Sharing Hub */
+    public static final String SHARING_HUB_WEBNOTES_STYLIZE_USED =
+            "sharing_hub_webnotes_stylize_used";
 
     /**
      * Do not instantiate.

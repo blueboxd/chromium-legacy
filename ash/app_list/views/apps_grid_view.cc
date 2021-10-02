@@ -82,8 +82,7 @@ constexpr int kDragBufferPx = 20;
 
 // Time delay before shelf starts to handle icon drag operation,
 // such as shelf icons re-layout.
-constexpr base::TimeDelta kShelfHandleIconDragDelay =
-    base::TimeDelta::FromMilliseconds(500);
+constexpr base::TimeDelta kShelfHandleIconDragDelay = base::Milliseconds(500);
 
 // The drag and drop proxy should get scaled by this factor.
 constexpr float kDragAndDropProxyScale = 1.2f;
@@ -573,15 +572,13 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
       // the item
       if (last_drop_target_region == BETWEEN_ITEMS)
         reorder_timer_.Stop();
-      reorder_timer_.Start(FROM_HERE,
-                           base::TimeDelta::FromMilliseconds(kReorderDelay * 5),
+      reorder_timer_.Start(FROM_HERE, base::Milliseconds(kReorderDelay * 5),
                            this, &AppsGridView::OnReorderTimer);
     } else if (drop_target_region_ != NO_TARGET) {
       // If none of the above cases evaluated true, then all of the possible
       // drop regions should result in a fast reorder.
-      reorder_timer_.Start(FROM_HERE,
-                           base::TimeDelta::FromMilliseconds(kReorderDelay),
-                           this, &AppsGridView::OnReorderTimer);
+      reorder_timer_.Start(FROM_HERE, base::Milliseconds(kReorderDelay), this,
+                           &AppsGridView::OnReorderTimer);
     }
   }
 }
@@ -910,7 +907,7 @@ void AppsGridView::Update() {
 void AppsGridView::UpdatePulsingBlockViews() {
   const int existing_items = item_list_ ? item_list_->item_count() : 0;
   const int tablet_page_size =
-      GetAppListConfig().preferred_cols() * GetAppListConfig().preferred_rows();
+      SharedAppListConfig::instance().GetMaxNumOfItemsPerPage();
   // For scrolling app list, the "page size" is very large, so cap the number of
   // pulsing blocks to the size of the tablet mode page (~20 items).
   const int tiles_per_page = std::min(TilesPerPage(0), tablet_page_size);
@@ -1385,8 +1382,7 @@ void AppsGridView::UpdateDragStateInsideFolder(Pointer pointer,
   if (is_item_dragged_out_of_folder) {
     if (!drag_out_of_folder_container_) {
       folder_item_reparent_timer_.Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kFolderItemReparentDelay), this,
+          FROM_HERE, base::Milliseconds(kFolderItemReparentDelay), this,
           &AppsGridView::OnFolderItemReparentTimer);
       drag_out_of_folder_container_ = true;
     }
@@ -1763,12 +1759,13 @@ void AppsGridView::DispatchDragEventToDragAndDropHost(
   if (!drag_view_ || !drag_and_drop_host_)
     return;
 
-  const bool should_host_start_drag = drag_and_drop_host_->ShouldStartDrag(
+  const bool should_host_handle_drag = drag_and_drop_host_->ShouldHandleDrag(
       drag_view_->item()->id(), location_in_screen_coordinates);
-  if (!should_host_start_drag && host_drag_start_timer_.IsRunning())
-    host_drag_start_timer_.AbandonAndStop();
 
-  if (GetLocalBounds().Contains(last_drag_point_)) {
+  if (!should_host_handle_drag) {
+    if (host_drag_start_timer_.IsRunning())
+      host_drag_start_timer_.AbandonAndStop();
+
     // The event was issued inside the app menu and we should get all events.
     if (forward_events_to_drag_and_drop_host_) {
       // The DnD host was previously called and needs to be informed that the
@@ -1785,26 +1782,34 @@ void AppsGridView::DispatchDragEventToDragAndDropHost(
   if (IsFolderItem(drag_view_->item()))
     return;
 
-  // The event happened outside our app menu and we might need to dispatch.
-  if (forward_events_to_drag_and_drop_host_) {
-    // Dispatch since we have already started.
-    if (!drag_and_drop_host_->Drag(location_in_screen_coordinates,
-                                   drag_icon_proxy_->GetBoundsInScreen())) {
-      // The host is not active any longer and we cancel the operation.
-      forward_events_to_drag_and_drop_host_ = false;
-      // NOTE: Not passing the drag icon proxy to the drag and drop host because
-      // the drag operation is still in progress, and remains being handled by
-      // the apps grid view.
-      drag_and_drop_host_->EndDrag(true, /*drag_icon_proxy=*/nullptr);
+  // NOTE: Drag events are forwarded to drag and drop host whenever drag and
+  // drop host can handle them. At the time of writing, drag and drop host
+  // bounds and apps grid view bounds are not expected to overlap - if that
+  // changes, the logic for determining when to forward events to the host
+  // should be re-evaluated.
+
+  DCHECK(should_host_handle_drag);
+  // If the drag and drop host is not already handling drag events, make sure a
+  // drag and drop host start timer gets scheduled.
+  if (!forward_events_to_drag_and_drop_host_) {
+    if (!host_drag_start_timer_.IsRunning()) {
+      host_drag_start_timer_.Start(FROM_HERE, kShelfHandleIconDragDelay, this,
+                                   &AppsGridView::OnHostDragStartTimerFired);
+      MaybeStopPageFlip();
+      StopAutoScroll();
     }
     return;
   }
 
-  if (should_host_start_drag && !host_drag_start_timer_.IsRunning()) {
-    host_drag_start_timer_.Start(FROM_HERE, kShelfHandleIconDragDelay, this,
-                                 &AppsGridView::OnHostDragStartTimerFired);
-    MaybeStopPageFlip();
-    StopAutoScroll();
+  DCHECK(forward_events_to_drag_and_drop_host_);
+  if (!drag_and_drop_host_->Drag(location_in_screen_coordinates,
+                                 drag_icon_proxy_->GetBoundsInScreen())) {
+    // The host is not active any longer and we cancel the operation.
+    forward_events_to_drag_and_drop_host_ = false;
+    // NOTE: Not passing the drag icon proxy to the drag and drop host because
+    // the drag operation is still in progress, and remains being handled by
+    // the apps grid view.
+    drag_and_drop_host_->EndDrag(true, /*drag_icon_proxy=*/nullptr);
   }
 }
 

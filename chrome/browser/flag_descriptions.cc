@@ -94,6 +94,10 @@ const char kCOLRV1FontsName[] = "COLR v1 Fonts";
 const char kCOLRV1FontsDescription[] =
     "Display COLR v1 color gradient vector fonts.";
 
+const char kCSSCascadeLayersName[] = "Enable CSS Cascade Layers";
+const char kCSSCascadeLayersDescription[] =
+    "Enables support for CSS @layer rules and layered @import syntax.";
+
 extern const char kCSSContainerQueriesName[] = "Enable CSS Container Queries";
 extern const char kCSSContainerQueriesDescription[] =
     "Enables support for @container, inline-size and block-size values for the "
@@ -1267,12 +1271,6 @@ const char kEvDetailsInPageInfoName[] = "EV certificate details in Page Info.";
 const char kEvDetailsInPageInfoDescription[] =
     "Shows the EV certificate details in the Page Info bubble.";
 
-const char kExperimentalAccessibilityLabelsName[] =
-    "Experimental Accessibility Labels";
-const char kExperimentalAccessibilityLabelsDescription[] =
-    "Enables experimental accessibility labels feature. Note that this only "
-    "enables the feature, and enabling the service is a profile preference.";
-
 const char kExperimentalWebPlatformFeaturesName[] =
     "Experimental Web Platform features";
 const char kExperimentalWebPlatformFeaturesDescription[] =
@@ -1748,16 +1746,6 @@ const char kOmniboxDisableCGIParamMatchingName[] =
     "Disable CGI Param Name Matching";
 const char kOmniboxDisableCGIParamMatchingDescription[] =
     "Disables using matches in CGI parameter names while scoring suggestions.";
-
-const char kOmniboxDefaultTypedNavigationsToHttpsName[] =
-    "Omnibox - Use HTTPS as the default protocol for navigations";
-const char kOmniboxDefaultTypedNavigationsToHttpsDescription[] =
-    "Use HTTPS as the default protocol when the user types a URL without "
-    "a protocol in the omnibox such as 'example.com'. Presently, such an entry "
-    "navigates to http://example.com. When this feature is enabled, it will "
-    "navigate to https://example.com if the HTTPS URL is available. If Chrome "
-    "can't determine the availability of the HTTPS URL within the timeout, it "
-    "will fall back to the HTTP URL.";
 
 const char kOmniboxDocumentProviderAsoName[] = "Omnibox Document Provider ASO";
 const char kOmniboxDocumentProviderAsoDescription[] =
@@ -2887,6 +2875,12 @@ const char kExtensionWorkflowJustificationDescription[] =
     "Enables users to justify their extension requests by causing a text field "
     "to appear on the extension request dialog.";
 
+const char kEnterpriseReportingExtensionManifestVersionName[] =
+    "Enterprise reporting of extension manifest versions";
+const char kEnterpriseReportingExtensionManifestVersionDescription[] =
+    "Causes extension manifest versions to be included in the extension info "
+    "section of Chrome Browser Cloud Management reports.";
+
 #if !defined(OS_ANDROID)
 const char kShareContextMenuName[] = "Share context menu";
 const char kShareContextMenuDescription[] =
@@ -3031,10 +3025,6 @@ const char kContinuousSearchDescription[] =
 const char kChromeShareLongScreenshotName[] = "Chrome Share Long Screenshots";
 const char kChromeShareLongScreenshotDescription[] =
     "Enables UI to edit and share long screenshots on Android";
-
-const char kChromeShareScreenshotName[] = "Chrome Share Screenshots";
-const char kChromeShareScreenshotDescription[] =
-    "Enables UI to edit and share screenshots";
 
 const char kChromeSharingHubLaunchAdjacentName[] =
     "Launch new share hub actions in adjacent window";

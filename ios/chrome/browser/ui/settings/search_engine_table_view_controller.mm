@@ -47,7 +47,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 const CGFloat kTableViewSeparatorLeadingInset = 56;
 const int kFaviconDesiredSizeInPoint = 32;
 const int kFaviconMinSizeInPoint = 16;
-constexpr base::TimeDelta kMaxVisitAge = base::TimeDelta::FromDays(2);
+constexpr base::TimeDelta kMaxVisitAge = base::Days(2);
 const size_t kMaxcustomSearchEngines = 3;
 const char kUmaSelectDefaultSearchEngine[] =
     "Search.iOS.SelectDefaultSearchEngine";
@@ -648,26 +648,9 @@ const char kUmaSelectDefaultSearchEngine[] =
     } else {
       engineItem.accessoryType = UITableViewCellAccessoryNone;
     }
-
-    // This function might be called inside the completion handler of
-    // [UITableView performBatchUpdates:completion:], which will cause a crash
-    // in iOS 12.
-    // TODO(crbug.com/1028546): Remove this workaround once iOS 12 is
-    // deprecated.
-    if (@available(iOS 13, *)) {
-    } else {
-      UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
-      if (cell) {
-        TableViewCell* tableViewCell =
-            base::mac::ObjCCastStrict<TableViewCell>(cell);
-        [item configureCell:tableViewCell withStyler:self.styler];
-      }
-    }
   }
-  if (@available(iOS 13, *)) {
-    [self.tableView reloadRowsAtIndexPaths:indexPaths
-                          withRowAnimation:UITableViewRowAnimationAutomatic];
-  }
+  [self.tableView reloadRowsAtIndexPaths:indexPaths
+                        withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 // Returns whether the |item| is different from an item that would be created

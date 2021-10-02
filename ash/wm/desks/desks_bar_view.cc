@@ -80,8 +80,7 @@ constexpr int kVerticalDotsButtonVerticalPadding = 8;
 constexpr int kVerticalDotsButtonRightPadding = 8;
 
 // The duration of scrolling one page.
-constexpr base::TimeDelta kBarScrollDuration =
-    base::TimeDelta::FromMilliseconds(250);
+constexpr base::TimeDelta kBarScrollDuration = base::Milliseconds(250);
 
 gfx::Rect GetGestureEventScreenRect(const ui::Event& event) {
   DCHECK(event.IsGestureEvent());
@@ -194,6 +193,8 @@ class DesksBarScrollViewLayout : public views::LayoutManager {
     auto* desks_templates_button = bar_view_->desks_templates_button();
 
     // |host| here is |scroll_view_contents_|.
+    // TODO(crbug.com/1255185): Make templates button compatible with zero
+    // state.
     if (bar_view_->IsZeroState()) {
       host->SetBoundsRect(scroll_bounds);
       auto* zero_state_default_desk_button =
@@ -256,12 +257,15 @@ class DesksBarScrollViewLayout : public views::LayoutManager {
     if (mini_views.empty())
       return;
 
+    const bool desks_templates_button_visible =
+        desks_templates_button && desks_templates_button->GetVisible();
+
     gfx::Size mini_view_size = mini_views[0]->GetPreferredSize();
     const int mini_view_spacing = GetSpaceBetweenMiniViews(mini_views[0]);
     // The new desk button and template button in the expanded bar view has the
     // same size as mini view.
-    const int num_items =
-        static_cast<int>(mini_views.size()) + (desks_templates_button ? 2 : 1);
+    const int num_items = static_cast<int>(mini_views.size()) +
+                          (desks_templates_button_visible ? 2 : 1);
     const int content_width =
         num_items * (mini_view_size.width() + mini_view_spacing) -
         mini_view_spacing;
@@ -282,7 +286,7 @@ class DesksBarScrollViewLayout : public views::LayoutManager {
     bar_view_->expanded_state_new_desk_button()->SetBoundsRect(
         gfx::Rect(gfx::Point(x, y), mini_view_size));
 
-    if (desks_templates_button) {
+    if (desks_templates_button_visible) {
       x += (mini_view_size.width() + mini_view_spacing);
       desks_templates_button->SetBoundsRect(
           gfx::Rect(gfx::Point(x, y), mini_view_size));
@@ -340,11 +344,11 @@ DesksBarView::DesksBarView(OverviewGrid* overview_grid)
     vertical_dots_button_->layer()->SetFillsBoundsOpaquely(false);
   }
 
+  // Make the scroll content view animatable by painting to a layer.
   scroll_view_contents_ =
       scroll_view_->SetContents(std::make_unique<views::View>());
   scroll_view_contents_->SetPaintToLayer();
 
-  // Make the scroll content view animable by painting to a layer.
   expanded_state_new_desk_button_ = scroll_view_contents_->AddChildView(
       std::make_unique<ExpandedDesksBarButton>(
           this, &kDesksNewDeskButtonIcon,
@@ -363,6 +367,10 @@ DesksBarView::DesksBarView(OverviewGrid* overview_grid)
             this, &kDesksTemplatesIcon, u"Templates",
             base::BindRepeating(&DesksBarView::OnDesksTemplatesButtonPressed,
                                 base::Unretained(this))));
+    // Hide the button initially. The presenter will ask the desk model and
+    // update the visibility of this button if there are any entries to
+    // view.
+    desks_templates_button_->SetVisible(false);
   }
   scroll_view_contents_->SetLayoutManager(
       std::make_unique<DesksBarScrollViewLayout>(this));

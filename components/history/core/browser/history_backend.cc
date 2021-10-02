@@ -176,8 +176,8 @@ std::u16string FormatUrlForRedirectComparison(const GURL& url) {
 }
 
 base::Time MidnightNDaysLater(base::Time time, int days) {
-  return (time.LocalMidnight() + base::TimeDelta::FromDays(days) +
-          base::TimeDelta::FromHours(kDSTRoundingOffsetHours))
+  return (time.LocalMidnight() + base::Days(days) +
+          base::Hours(kDSTRoundingOffsetHours))
       .LocalMidnight();
 }
 
@@ -1502,16 +1502,19 @@ std::vector<AnnotatedVisit> HistoryBackend::GetAnnotatedVisits(
     db_->GetContentAnnotationsForVisit(visit_row.visit_id,
                                        &content_annotations);
 
+    VisitRow redirect_start = GetRedirectChainStart(visit_row);
     VisitID referring_visit_of_redirect_chain_start =
-        GetRedirectChainStart(visit_row).referring_visit;
+        redirect_start.referring_visit;
+    VisitID opener_visit_of_redirect_chain_start = redirect_start.opener_visit;
 
     const auto source = sources.count(visit_row.visit_id) == 0
                             ? VisitSource::SOURCE_BROWSED
                             : sources[visit_row.visit_id];
 
-    annotated_visits.emplace_back(
-        url_row, visit_row, context_annotations, content_annotations,
-        referring_visit_of_redirect_chain_start, source);
+    annotated_visits.emplace_back(url_row, visit_row, context_annotations,
+                                  content_annotations,
+                                  referring_visit_of_redirect_chain_start,
+                                  opener_visit_of_redirect_chain_start, source);
   }
 
   return annotated_visits;
@@ -1613,13 +1616,14 @@ std::vector<AnnotatedVisit> HistoryBackend::AnnotatedVisitsFromRows(
         db_->GetURLRow(visit_row.url_id, &url_row)) {
       VisitSource source;
       GetVisitSource(annotated_visit_row.visit_id, &source);
-      annotated_visits.push_back(
-          {url_row,
-           visit_row,
-           annotated_visit_row.context_annotations,
-           {},
-           GetRedirectChainStart(visit_row).referring_visit,
-           source});
+      VisitRow redirect_start = GetRedirectChainStart(visit_row);
+      annotated_visits.push_back({url_row,
+                                  visit_row,
+                                  annotated_visit_row.context_annotations,
+                                  {},
+                                  redirect_start.referring_visit,
+                                  redirect_start.opener_visit,
+                                  source});
     } else {
       // Ignore corrupt data but do not crash, as user DBs can be in bad states.
       DVLOG(0) << "HistoryBackend: AnnotatedVisit found with missing associated"
@@ -1895,8 +1899,7 @@ MostVisitedURLList HistoryBackend::QueryMostVisitedURLs(int result_count,
                                 base::Unretained(backend_client_.get()))
           : base::NullCallback();
   std::vector<std::unique_ptr<PageUsageData>> data = db_->QuerySegmentUsage(
-      base::Time::Now() - base::TimeDelta::FromDays(days_back), result_count,
-      url_filter);
+      base::Time::Now() - base::Days(days_back), result_count, url_filter);
 
   MostVisitedURLList result;
   for (const std::unique_ptr<PageUsageData>& current_data : data)
@@ -2255,9 +2258,8 @@ void HistoryBackend::ScheduleCommit() {
   scheduled_commit_.Reset(
       base::BindOnce(&HistoryBackend::Commit, base::Unretained(this)));
 
-  task_runner_->PostDelayedTask(
-      FROM_HERE, scheduled_commit_.callback(),
-      base::TimeDelta::FromSeconds(kCommitIntervalSeconds));
+  task_runner_->PostDelayedTask(FROM_HERE, scheduled_commit_.callback(),
+                                base::Seconds(kCommitIntervalSeconds));
 }
 
 void HistoryBackend::CancelScheduledCommit() {

@@ -235,7 +235,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '906e9eb538417a70f6b0e71a26e58d96b7bdb09e',
+  'skia_revision': 'ce22e059ffeb82abdff47e0cebdb38544fa53813',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -243,7 +243,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '12e5a7db66ac074d0c76f6e4a44a69a8ad4ccf3c',
+  'angle_revision': 'd3764f080f6cdf010df34c5c205b4df83cb8c92f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -374,7 +374,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libavif
   # and whatever else without interference from each other.
-  'libavif_revision': 'f131b785938e96995e4ef8d8baaefca8f974afb9',
+  'libavif_revision': '0dd3a3a5d216ff6fcc4f699d32367300b9457928',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
@@ -1505,7 +1505,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'qQ-T1ygXldsYnGaOzMd-YYJg4yphOVAusLqHm6gmawIC'
+              'version': 'jkxKGAGO-OJZooKu5kKKrf2YUV66pAJaSUx1yxbkn-sC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',

@@ -200,6 +200,11 @@ static bool PseudoElementStylesEqual(const ComputedStyle& old_style,
     if (!old_style.HasPseudoElementStyle(pseudo_id) &&
         !new_style.HasPseudoElementStyle(pseudo_id))
       continue;
+    // Highlight pseudo styles are stored in StyleHighlightData, and compared
+    // like any other inherited field, yielding Difference::kInherited.
+    if (RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
+        IsHighlightPseudoElement(pseudo_id))
+      continue;
     const ComputedStyle* new_pseudo_style =
         new_style.GetCachedPseudoElementStyle(pseudo_id);
     if (!new_pseudo_style)
@@ -2595,7 +2600,8 @@ bool ComputedStyle::ShouldApplyAnyContainment(const Element& element) const {
   if (Display() == EDisplay::kInline)
     return false;
   if ((ContainsInlineSize() || ContainsBlockSize()) &&
-      (!IsDisplayTableType() || Display() == EDisplay::kTableCaption)) {
+      (!IsDisplayTableType() || Display() == EDisplay::kTableCaption ||
+       ShouldUseContentDataForElement(GetContentData()))) {
     return true;
   }
   return (ContainsLayout() || ContainsPaint()) &&

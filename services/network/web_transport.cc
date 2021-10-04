@@ -74,16 +74,20 @@ class WebTransport::Stream final {
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&Stream::Send, stream_));
     }
-    void OnResetStreamReceived(
-        quic::WebTransportStreamError /*error*/) override {
-      // TODO(yhirano): Implement this.
+    void OnResetStreamReceived(quic::WebTransportStreamError error) override {
+      if (auto* stream = stream_.get()) {
+        stream->OnResetStreamReceived(error);
+      }
     }
-    void OnStopSendingReceived(
-        quic::WebTransportStreamError /*error*/) override {
-      // TODO(yhirano): Implement this.
+    void OnStopSendingReceived(quic::WebTransportStreamError error) override {
+      if (auto* stream = stream_.get()) {
+        stream->OnStopSendingReceived(error);
+      }
     }
     void OnWriteSideInDataRecvdState() override {
-      // TODO(yhirano): Implement this.
+      if (auto* stream = stream_.get()) {
+        stream->OnWriteSideInDataRecvdState();
+      }
     }
 
    private:
@@ -255,14 +259,9 @@ class WebTransport::Stream final {
       return;
     }
     if (outgoing_->SendFin()) {
-      // TODO(ricea): Wait until DataRecvd state is reached before calling
-      // OnOutgoingStreamClosed, once WebTransportStreamVisitor supports it.
-      transport_->client_->OnOutgoingStreamClosed(id_);
-
-      outgoing_ = nullptr;
+      // We don't reset `outgoing_` as we want to wait for the ACK signal.
       readable_watcher_.Cancel();
       readable_.reset();
-      MayDisposeLater();
     }
     // Otherwise, retry in Send().
   }
@@ -311,10 +310,42 @@ class WebTransport::Stream final {
     }
   }
 
+  void OnResetStreamReceived(quic::WebTransportStreamError error) {
+    if (transport_->client_) {
+      transport_->client_->OnReceivedResetStream(id_, error);
+    }
+    incoming_ = nullptr;
+    writable_watcher_.Cancel();
+    writable_.reset();
+    MayDisposeLater();
+  }
+
+  void OnStopSendingReceived(quic::WebTransportStreamError error) {
+    if (transport_->client_) {
+      transport_->client_->OnReceivedStopSending(id_, error);
+    }
+    outgoing_ = nullptr;
+    readable_watcher_.Cancel();
+    readable_.reset();
+    MayDisposeLater();
+  }
+
+  void OnWriteSideInDataRecvdState() {
+    if (transport_->client_) {
+      transport_->client_->OnOutgoingStreamClosed(id_);
+    }
+
+    outgoing_ = nullptr;
+    readable_watcher_.Cancel();
+    readable_.reset();
+    MayDisposeLater();
+  }
+
   void Dispose() {
     transport_->streams_.erase(id_);
     // Deletes |this|.
   }
+
   void MayDisposeLater() {
     if (outgoing_ || incoming_) {
       return;
@@ -344,7 +375,7 @@ class WebTransport::Stream final {
 
   // This must be the last member.
   base::WeakPtrFactory<Stream> weak_factory_{this};
-};  // namespace network
+};
 
 WebTransport::WebTransport(
     const GURL& url,
@@ -483,8 +514,7 @@ void WebTransport::SetOutgoingDatagramExpirationDuration(
       quic::QuicTime::Delta::FromMicroseconds(duration.InMicroseconds()));
 }
 
-void WebTransport::Close(
-    const absl::optional<net::WebTransportCloseInfo>& close_info) {
+void WebTransport::Close(mojom::WebTransportCloseInfoPtr close_info) {
   if (torn_down_) {
     return;
   }
@@ -494,7 +524,13 @@ void WebTransport::Close(
   handshake_client_.reset();
   client_.reset();
 
-  transport_->Close(close_info);
+  absl::optional<net::WebTransportCloseInfo> close_info_to_pass;
+  if (close_info) {
+    close_info_to_pass = absl::make_optional<net::WebTransportCloseInfo>(
+        close_info->code, close_info->reason);
+  }
+
+  transport_->Close(close_info_to_pass);
 }
 
 void WebTransport::OnConnected(
@@ -538,7 +574,12 @@ void WebTransport::OnClosed(
   if (closing_) {
     closing_ = false;
   } else {
-    // TODO(yhirano): Call client_-> OnClosed().
+    mojom::WebTransportCloseInfoPtr close_info_to_pass;
+    if (close_info) {
+      close_info_to_pass = mojom::WebTransportCloseInfo::New(
+          close_info->code, close_info->reason);
+    }
+    client_->OnClosed(std::move(close_info_to_pass));
   }
 
   TearDown();

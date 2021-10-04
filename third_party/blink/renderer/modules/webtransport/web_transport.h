@@ -87,8 +87,10 @@ class MODULES_EXPORT WebTransport final
   void OnDatagramReceived(base::span<const uint8_t> data) override;
   void OnIncomingStreamClosed(uint32_t stream_id, bool fin_received) override;
   void OnOutgoingStreamClosed(uint32_t stream_id) override;
-
-  void OnClosed(const absl::optional<WebTransportCloseInfo>&);
+  void OnReceivedResetStream(uint32_t stream_id, uint8_t code) override;
+  void OnReceivedStopSending(uint32_t stream_id, uint8_t code) override;
+  void OnClosed(
+      network::mojom::blink::WebTransportCloseInfoPtr close_info) override;
 
   // Implementation of ExecutionContextLifecycleObserver
   void ContextDestroyed() final;
@@ -100,7 +102,10 @@ class MODULES_EXPORT WebTransport final
   void SendFin(uint32_t stream_id);
 
   // Forwards a AbortStream() message to the mojo interface.
-  void AbortStream(uint32_t stream_id);
+  void ResetStream(uint32_t stream_id, uint8_t code);
+
+  // Forwards a StopSending() message to the mojo interface.
+  void StopSending(uint32_t stream_id, uint8_t code);
 
   // Removes the reference to a stream.
   void ForgetIncomingStream(uint32_t stream_id);

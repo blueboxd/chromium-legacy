@@ -17,6 +17,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_web_transport_close_info.h"
@@ -813,15 +814,27 @@ void WebTransport::close(const WebTransportCloseInfo* close_info) {
     return;
   }
 
-  v8::Local<v8::Object> reason = v8::Object::New(isolate);
-  // TODO(yhirano): Set up `reason` correctly. We probably need to accept
-  // "any", to maintain the object identity.
+  v8::Local<v8::Value> reason;
+  if (close_info &&
+      ToV8Traits<WebTransportCloseInfo>::ToV8(script_state_, close_info)
+          .ToLocal(&reason)) {
+  } else {
+    reason = v8::Object::New(isolate);
+  }
 
   v8::Local<v8::Value> error = WebTransportError::Create(
       isolate, /*stream_error_code=*/absl::nullopt, "The session is closed.",
       WebTransportError::Source::kSession);
 
-  // TODO(yhirano): Call transport_remote_->Close().
+  network::mojom::blink::WebTransportCloseInfoPtr close_info_to_pass;
+  if (close_info && close_info->hasCloseCode()) {
+    String reason_string =
+        close_info->hasReason() ? close_info->reason() : g_empty_string;
+    close_info_to_pass = network::mojom::blink::WebTransportCloseInfo::New(
+        close_info->closeCode(), reason_string);
+  }
+
+  transport_remote_->Close(std::move(close_info_to_pass));
 
   Cleanup(reason, error, /*abruptly=*/false);
 }
@@ -912,18 +925,53 @@ void WebTransport::OnIncomingStreamClosed(uint32_t stream_id,
   stream->OnIncomingStreamClosed(fin_received);
 }
 
+void WebTransport::OnReceivedResetStream(uint32_t stream_id, uint8_t code) {
+  DVLOG(1) << "WebTransport::OnReceivedResetStream(" << stream_id << ", "
+           << static_cast<uint32_t>(code) << ") this=" << this;
+  auto it = incoming_stream_map_.find(stream_id);
+  if (it == incoming_stream_map_.end()) {
+    return;
+  }
+  IncomingStream* stream = it->value;
+
+  ScriptState::Scope scope(script_state_);
+  v8::Local<v8::Value> error = WebTransportError::Create(
+      script_state_->GetIsolate(),
+      /*stream_error_code=*/code, "Received RESET_STREAM.",
+      WebTransportError::Source::kStream);
+  stream->Error(ScriptValue(script_state_->GetIsolate(), error));
+}
+
+void WebTransport::OnReceivedStopSending(uint32_t stream_id, uint8_t code) {
+  DVLOG(1) << "WebTransport::OnReceivedResetStream(" << stream_id << ", "
+           << static_cast<uint32_t>(code) << ") this=" << this;
+
+  auto it = outgoing_stream_map_.find(stream_id);
+  if (it == outgoing_stream_map_.end()) {
+    return;
+  }
+  OutgoingStream* stream = it->value;
+
+  ScriptState::Scope scope(script_state_);
+  v8::Local<v8::Value> error = WebTransportError::Create(
+      script_state_->GetIsolate(),
+      /*stream_error_code=*/code, "Received STOP_SENDING.",
+      WebTransportError::Source::kStream);
+  stream->Error(ScriptValue(script_state_->GetIsolate(), error));
+}
+
 void WebTransport::OnClosed(
-    const absl::optional<WebTransportCloseInfo>& close_info) {
+    network::mojom::blink::WebTransportCloseInfoPtr close_info) {
   ScriptState::Scope scope(script_state_);
   v8::Isolate* isolate = script_state_->GetIsolate();
 
   v8::Local<v8::Value> reason;
+  WebTransportCloseInfo idl_close_info;
   if (close_info) {
-    reason = ToV8(&close_info.value(), script_state_);
-  } else {
-    WebTransportCloseInfo empty_close_info;
-    reason = ToV8(&empty_close_info, script_state_);
+    idl_close_info.setCloseCode(close_info->code);
+    idl_close_info.setReason(close_info->reason);
   }
+  reason = ToV8(&idl_close_info, script_state_);
 
   v8::Local<v8::Value> error = WebTransportError::Create(
       isolate, /*stream_error_code=*/absl::nullopt, "The session is closed.",
@@ -978,10 +1026,16 @@ void WebTransport::SendFin(uint32_t stream_id) {
   transport_remote_->SendFin(stream_id);
 }
 
-void WebTransport::AbortStream(uint32_t stream_id) {
-  DVLOG(1) << "WebTransport::AbortStream() this=" << this
-           << ", stream_id=" << stream_id;
-  transport_remote_->AbortStream(stream_id, /*code=*/0);
+void WebTransport::ResetStream(uint32_t stream_id, uint8_t code) {
+  VLOG(0) << "WebTransport::ResetStream(" << stream_id << ", "
+          << static_cast<uint32_t>(code) << ") this = " << this;
+  transport_remote_->AbortStream(stream_id, code);
+}
+
+void WebTransport::StopSending(uint32_t stream_id, uint8_t code) {
+  DVLOG(1) << "WebTransport::StopSending(" << stream_id << ", "
+           << static_cast<uint32_t>(code) << ") this = " << this;
+  transport_remote_->StopSending(stream_id, code);
 }
 
 void WebTransport::ForgetIncomingStream(uint32_t stream_id) {

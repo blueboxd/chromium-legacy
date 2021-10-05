@@ -10,14 +10,13 @@
 </style>
 <diagnostics-card is-networking-card
     hide-data-points="[[!showNetworkDataPoints_]]">
-    <!-- TODO(michaelcheco): Add localized strings. -->
   <template is="dom-if" if="[[showTroubleshootingCard_]]">
     <network-troubleshooting id="networkTroubleshooting"
         slot="left-panel"
         troubleshooting-info="[[troubleshootingInfo_]]">
     </network-troubleshooting>
   </template>
-  <div id="cardTitle" slot="title">
+  <div id="cardTitle" slot="title" tabindex="0">
     <diagnostics-network-icon id="icon" network="[[network]]">
     </diagnostics-network-icon>
     <span id="titleText">

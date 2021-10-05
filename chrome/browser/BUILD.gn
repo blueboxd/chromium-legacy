@@ -2292,6 +2292,7 @@ static_library("browser") {
     "//components/webrtc",
     "//components/webrtc_logging/browser",
     "//components/webrtc_logging/common",
+    "//components/zoom",
     "//content/app/resources",
     "//content/public/browser",
     "//content/public/common",
@@ -3068,6 +3069,8 @@ static_library("browser") {
       "download/android/intercept_oma_download_navigation_throttle.cc",
       "download/android/intercept_oma_download_navigation_throttle.h",
       "download/android/items/offline_content_aggregator_factory_android.cc",
+      "download/android/mixed_content_download_dialog_bridge.cc",
+      "download/android/mixed_content_download_dialog_bridge.h",
       "download/android/mixed_content_download_infobar_delegate.cc",
       "download/android/mixed_content_download_infobar_delegate.h",
       "download/android/service/download_background_task.cc",
@@ -3626,6 +3629,8 @@ static_library("browser") {
       "certificate_viewer.h",
       "chrome_process_singleton.cc",
       "chrome_process_singleton.h",
+      "commerce/coupons/coupon_db.cc",
+      "commerce/coupons/coupon_db.h",
       "commerce/coupons/coupon_service.cc",
       "commerce/coupons/coupon_service.h",
       "commerce/coupons/coupon_service_factory.cc",
@@ -4365,6 +4370,7 @@ static_library("browser") {
     ]
     deps += [
       ":cart_db_content_proto",
+      ":coupon_db_content_proto",
       ":theme_properties",
       "//chrome/app:command_ids",
       "//chrome/app/theme:chrome_unscaled_resources_grit",
@@ -4414,7 +4420,6 @@ static_library("browser") {
       "//components/soda:constants",
       "//components/ukm/content",
       "//components/web_modal",
-      "//components/zoom",
       "//courgette:courgette_lib",
       "//services/device/public/cpp/hid",
       "//third_party/sqlite",
@@ -6709,6 +6714,10 @@ static_library("browser") {
 
   if (enable_session_service) {
     sources += [
+      "sessions/exit_type_service.cc",
+      "sessions/exit_type_service.h",
+      "sessions/exit_type_service_factory.cc",
+      "sessions/exit_type_service_factory.h",
       "sessions/session_data_deleter.cc",
       "sessions/session_data_deleter.h",
       "sessions/session_data_service.cc",
@@ -7668,5 +7677,8 @@ if (is_android) {
 if (!is_android) {
   proto_library("cart_db_content_proto") {
     sources = [ "cart/cart_db_content.proto" ]
+  }
+  proto_library("coupon_db_content_proto") {
+    sources = [ "commerce/coupons/coupon_db_content.proto" ]
   }
 }

@@ -320,7 +320,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Translate.HrefHint.PrefsFilterStatus"
-    enum="HrefTranslatePrefsFilterStatus" expires_after="2021-11-14">
+    enum="HrefTranslatePrefsFilterStatus" expires_after="2022-05-14">
   <owner>sclittle@google.com</owner>
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
@@ -335,7 +335,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Translate.HrefHint.Status" enum="HrefTranslateStatus"
-    expires_after="2021-11-14">
+    expires_after="2022-05-14">
+  <owner>sclittle@google.com</owner>
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -1065,7 +1066,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Translate.Translate.AMPCacheURL" enum="BooleanTranslate"
-    expires_after="2021-10-10">
+    expires_after="2022-04-10">
   <owner>sclittle@google.com</owner>
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>

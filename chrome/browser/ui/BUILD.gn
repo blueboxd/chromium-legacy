@@ -321,6 +321,10 @@ static_library("ui") {
     "webui/webui_load_timer.h",
     "webui/webui_util.cc",
     "webui/webui_util.h",
+    "zoom/chrome_zoom_level_otr_delegate.cc",
+    "zoom/chrome_zoom_level_otr_delegate.h",
+    "zoom/chrome_zoom_level_prefs.cc",
+    "zoom/chrome_zoom_level_prefs.h",
   ]
 
   if (enable_session_service) {
@@ -571,6 +575,7 @@ static_library("ui") {
     "//components/web_resource",
     "//components/webapps/browser",
     "//components/webrtc_logging/browser",
+    "//components/zoom",
     "//content/app/resources",
     "//content/browser/webrtc/resources",
     "//content/public/common",
@@ -1615,10 +1620,6 @@ static_library("ui") {
       "webui/whats_new/whats_new_util.h",
       "window_sizer/window_sizer.cc",
       "window_sizer/window_sizer.h",
-      "zoom/chrome_zoom_level_otr_delegate.cc",
-      "zoom/chrome_zoom_level_otr_delegate.h",
-      "zoom/chrome_zoom_level_prefs.cc",
-      "zoom/chrome_zoom_level_prefs.h",
     ]
     if (is_chrome_branded) {
       sources += [
@@ -1677,7 +1678,6 @@ static_library("ui") {
       "//components/vector_icons",
       "//components/web_modal",
       "//components/webauthn/content/browser",
-      "//components/zoom",
       "//device/bluetooth",
       "//device/bluetooth/strings:strings_grit",
       "//device/fido",
@@ -3076,8 +3076,8 @@ static_library("ui") {
       "signin_view_controller.h",
       "signin_view_controller_delegate.cc",
       "signin_view_controller_delegate.h",
-      "startup/web_app_protocol_handling_startup_utils.cc",
-      "startup/web_app_protocol_handling_startup_utils.h",
+      "startup/web_app_startup_utils.cc",
+      "startup/web_app_startup_utils.h",
       "tab_contents/chrome_web_contents_menu_helper.cc",
       "tab_contents/chrome_web_contents_menu_helper.h",
       "tab_contents/chrome_web_contents_view_handle_drop.cc",
@@ -3820,6 +3820,8 @@ static_library("ui") {
       "views/autofill/payments/offer_notification_icon_view.h",
       "views/autofill/payments/payments_view_util.cc",
       "views/autofill/payments/payments_view_util.h",
+      "views/autofill/payments/promo_code_label_button.cc",
+      "views/autofill/payments/promo_code_label_button.h",
       "views/autofill/payments/save_card_bubble_views.cc",
       "views/autofill/payments/save_card_bubble_views.h",
       "views/autofill/payments/save_card_failure_bubble_views.cc",
@@ -5164,6 +5166,8 @@ static_library("ui") {
 
   if (enable_side_search) {
     sources += [
+      "side_search/side_search_metrics.cc",
+      "side_search/side_search_metrics.h",
       "side_search/side_search_prefs.cc",
       "side_search/side_search_prefs.h",
       "side_search/side_search_side_contents_helper.cc",
@@ -5208,6 +5212,7 @@ static_library("test_support") {
     "//components/permissions",
     "//components/sessions",
     "//components/translate/content/browser",
+    "//components/zoom",
     "//content/public/browser",
     "//content/public/common",
     "//content/test:test_support",
@@ -5294,7 +5299,6 @@ static_library("test_support") {
       "//components/signin/core/browser",
       "//components/signin/public/identity_manager",
       "//components/ukm:test_support",
-      "//components/zoom",
       "//services/metrics/public/mojom",
     ]
   }

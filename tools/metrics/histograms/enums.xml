@@ -7773,7 +7773,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="205" label="RFH_ERROR_PROCESS_NON_ERROR_COMMIT"/>
   <int value="206" label="RFH_ERROR_PROCESS_NON_UNIQUE_ORIGIN_COMMIT"/>
   <int value="207" label="OBSOLETE_RFH_CANNOT_RENDER_FALLBACK_CONTENT"/>
-  <int value="208" label="RFH_CHILD_FRAME_NEEDS_OWNER_ELEMENT_TYPE"/>
+  <int value="208" label="OBSOLETE_RFH_CHILD_FRAME_NEEDS_OWNER_ELEMENT_TYPE"/>
   <int value="209" label="OBSOLETE_RFH_INVALID_WEB_REPORTING_CRASH_ID"/>
   <int value="210" label="RFH_DETACH_MAIN_FRAME"/>
   <int value="211" label="RFH_BROWSER_INTERFACE_BROKER_MISSING"/>
@@ -7816,7 +7816,8 @@ Called by update_bad_message_reasons.py.-->
   <int value="248" label="MDDH_NOT_TOP_LEVEL"/>
   <int value="249" label="RFH_DID_CHANGE_IFRAME_ATTRIBUTE"/>
   <int value="250" label="FARI_LOGOUT_BAD_ENDPOINT"/>
-  <int value="251" label="RFH_CHILD_FRAME_UNEXPECTED_OWNER_ELEMENT_TYPE"/>
+  <int value="251"
+      label="OBSOLETE_RFH_CHILD_FRAME_UNEXPECTED_OWNER_ELEMENT_TYPE"/>
   <int value="252" label="RFH_POPUP_REQUEST_WHILE_PRERENDERING"/>
 </enum>
 
@@ -26945,6 +26946,11 @@ Called by update_document_policy_enum.py.-->
   <int value="25" label="InertialGesturePinchUpdate"/>
 </enum>
 
+<enum name="EventLatencyPinchInputType">
+  <int value="0" label="Touchpad"/>
+  <int value="1" label="Touchscreen"/>
+</enum>
+
 <enum name="EventLatencyScrollInputType">
   <int value="0" label="Autoscroll"/>
   <int value="1" label="Scrollbar"/>
@@ -35124,6 +35130,8 @@ Called by update_permissions_policy_enum.py.-->
   <int value="39"
       label="After long-pressing on the feed and seeing the preview, the user
              tapped on the preview."/>
+  <int value="40"
+      label="User tapped Settings link to open feed autoplay settings."/>
 </enum>
 
 <enum name="FeedUserCommandType">
@@ -43862,6 +43870,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="SSE4.2"/>
   <int value="7" label="AVX"/>
   <int value="8" label="AVX2"/>
+  <int value="9" label="FMA3"/>
 </enum>
 
 <enum name="IntentHeadersResult">
@@ -45376,6 +45385,27 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="KmsVncMethodEnum">
   <int value="1" label="EGL"/>
   <int value="2" label="BO"/>
+</enum>
+
+<enum name="KoreanAction">
+  <summary>Actions that are available on the Korean IME.</summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Press Hanja key"/>
+  <int value="2" label="Press Hangeul key"/>
+  <int value="3" label="Compose out of order"/>
+</enum>
+
+<enum name="KoreanLayout">
+  <summary>Layouts that are available on the Korean IME.</summary>
+  <int value="0" label="Dubeolsik"/>
+  <int value="1" label="Dubeolsik (Old Hangeul)"/>
+  <int value="2" label="Sebeolsik (390)"/>
+  <int value="3" label="Sebeolsik (Final)"/>
+  <int value="4" label="Sebeolsik (No Shift)"/>
+  <int value="5" label="Sebeolsik (Old Hangeul)"/>
+  <int value="6" label="Sebeolsik (Dubeol)"/>
+  <int value="7" label="Romaja"/>
+  <int value="8" label="Ahnmatae"/>
 </enum>
 
 <enum name="LacrosLaunchMode">
@@ -47646,6 +47676,7 @@ from previous Chrome versions.
   <int value="-2090484194" label="ContextualSearchUrlActions:disabled"/>
   <int value="-2088555929" label="EnableAppGridGhost:enabled"/>
   <int value="-2088472280" label="KeyboardShortcutViewerApp:disabled"/>
+  <int value="-2088263177" label="EnableMixedContentDownloadDialog:enabled"/>
   <int value="-2084849051" label="TabGroupsCollapseFreezing:disabled"/>
   <int value="-2083998415" label="VrLaunchIntent:enabled"/>
   <int value="-2083195884" label="enable-firewall-hole-punching"/>
@@ -50292,6 +50323,7 @@ from previous Chrome versions.
   <int value="-55890693" label="MessagesForAndroidSaveCard:disabled"/>
   <int value="-55592344" label="SyncPseudoUSSDictionary:disabled"/>
   <int value="-54796636" label="kids-management-url-classification:disabled"/>
+  <int value="-52737423" label="EnableMixedContentDownloadDialog:disabled"/>
   <int value="-52483823" label="disable-new-video-renderer"/>
   <int value="-52241456" label="enable-single-click-autofill"/>
   <int value="-51567065" label="EnableFeedbackPanel:disabled"/>
@@ -56486,6 +56518,13 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="Started"/>
   <int value="1" label="Failed"/>
   <int value="2" label="ResponseReceived"/>
+</enum>
+
+<enum name="MixedContentDownloadDialogEvent">
+  <int value="0" label="dialog shown"/>
+  <int value="1" label="Dialog confirmed"/>
+  <int value="2" label="Dialog canceled"/>
+  <int value="3" label="Dialog dismissed"/>
 </enum>
 
 <enum name="MixedContentType">
@@ -66479,6 +66518,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Photo picked"/>
   <int value="2" label="New photo"/>
   <int value="3" label="Use Android picker"/>
+</enum>
+
+<enum name="PhotosModuleRequestResult">
+  <int value="0" label="kError"/>
+  <int value="1" label="kSuccess"/>
+  <int value="2" label="kCached"/>
 </enum>
 
 <enum name="PhysicalWebActivityReferer">
@@ -76820,6 +76865,25 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="Dismiss"/>
 </enum>
 
+<enum name="SideSearchAvailabilityChangeType">
+  <int value="0" label="Become available"/>
+  <int value="1" label="Become unavailable"/>
+</enum>
+
+<enum name="SideSearchCloseActionType">
+  <int value="0" label="Tap on side search toolbar button"/>
+  <int value="1" label="Tap on side search close button"/>
+</enum>
+
+<enum name="SideSearchNavigationType">
+  <int value="0" label="Navigation committed within side search"/>
+  <int value="1" label="Redirection to tab"/>
+</enum>
+
+<enum name="SideSearchOpenActionType">
+  <int value="0" label="Tap on side search toolbar button"/>
+</enum>
+
 <enum name="SignedExchangeLoadResult">
   <int value="0" label="Loaded successfully"/>
   <int value="1" label="Served from non-secure origin"/>
@@ -84436,8 +84500,8 @@ Full version information for the fingerprint enum values:
 
 <enum name="UnderlayDamageRect">
   <int value="0" label="Zero Damage Rect"/>
-  <int value="1" label="Non-Occluding Damage Only (deprecated)"/>
-  <int value="2" label="Occluding Damage Only"/>
+  <int value="1" label="Non-Occluding Damage Only"/>
+  <int value="2" label="Occluding Damage Only (Deprecated)"/>
   <int value="3" label="Occluding and Non-Occluding Damages"/>
 </enum>
 

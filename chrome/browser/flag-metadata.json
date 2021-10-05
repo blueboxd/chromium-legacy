@@ -2168,6 +2168,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "enable-mixed-content-download-dialog",
+    "owners": [ "qinmin", "chrome-downloads@google.com" ],
+    "expiry_milestone": 102
+  },
+  {
     "name": "enable-nacl",
     "owners": [ "dschuff", "native-client-dev@googlegroups.com" ],
     "expiry_milestone": 100
@@ -2362,16 +2367,6 @@
     "name": "enable-prerender2",
     "owners": [ "//content/browser/prerender/OWNERS" ],
     "expiry_milestone": 96
-  },
-  {
-    "name": "enable-process-sharing-with-default-site-instances",
-    "owners": [ "creis" ],
-    "expiry_milestone": 81
-  },
-  {
-    "name": "enable-process-sharing-with-strict-site-instances",
-    "owners": [ "japhet" ],
-    "expiry_milestone": 80
   },
   {
     "name": "enable-quic",
@@ -3923,6 +3918,11 @@
     "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 86
   },
+  {
+    "name": "old-sync-string-fre",
+    "owners": [ "gambard", "bling-flags@google.com" ],
+    "expiry_milestone": 97
+},
   {
     "name": "omnibox-active-search-engines",
     "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],

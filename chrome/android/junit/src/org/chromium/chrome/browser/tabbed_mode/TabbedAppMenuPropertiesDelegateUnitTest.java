@@ -81,7 +81,7 @@ import java.util.List;
  * Unit tests for {@link TabbedAppMenuPropertiesDelegate}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Features.EnableFeatures({ChromeFeatureList.WEB_FEED})
+@Features.EnableFeatures({ChromeFeatureList.WEB_FEED, ChromeFeatureList.READ_LATER})
 public class TabbedAppMenuPropertiesDelegateUnitTest {
     // Costants defining flags that determines multi-window menu items visibility.
     private static final boolean TAB_M = true; // multiple tabs
@@ -229,7 +229,7 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
                 R.id.downloads_menu_id, R.id.all_bookmarks_menu_id, R.id.recent_tabs_menu_id,
                 R.id.divider_line_id, R.id.translate_id, R.id.share_row_menu_id,
                 R.id.find_in_page_id, R.id.add_to_homescreen_id,
-                R.id.request_desktop_site_row_menu_id, R.id.auto_dark_web_contents_id,
+                R.id.request_desktop_site_row_menu_id, R.id.auto_dark_web_contents_row_menu_id,
                 R.id.divider_line_id, R.id.preferences_id, R.id.help_id, R.id.managed_by_menu_id};
         assertMenuItemsAreEqual(menu, expectedItems);
     }

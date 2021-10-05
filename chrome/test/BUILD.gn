@@ -302,6 +302,8 @@ static_library("test_support") {
     "//components/variations:test_support",
     "//components/web_resource:test_support",
     "//components/webdata_services",
+    "//components/zoom",
+    "//components/zoom:test_support",
     "//content/public/app",
     "//content/public/child",
     "//content/public/common",
@@ -375,8 +377,6 @@ static_library("test_support") {
       "//components/ukm:test_support",
       "//components/ukm:ukm_test_helper",
       "//components/web_modal",
-      "//components/zoom",
-      "//components/zoom:test_support",
       "//extensions/browser:test_support",
       "//extensions/common:test_support",
       "//ui/snapshot",
@@ -1050,6 +1050,7 @@ if (!is_android && !is_fuchsia) {
       "//chrome/browser",
       "//chrome/browser:buildflags",
       "//chrome/browser:cart_db_content_proto",
+      "//chrome/browser:coupon_db_content_proto",
       "//chrome/browser:theme_properties",
       "//chrome/browser/apps/app_service:test_support",
       "//chrome/browser/browsing_data:constants",
@@ -6019,6 +6020,7 @@ test("unit_tests") {
       "../browser/cart/cart_handler_unittest.cc",
       "../browser/cart/cart_service_unittest.cc",
       "../browser/cart/fetch_discount_worker_unittest.cc",
+      "../browser/commerce/coupons/coupon_service_unittest.cc",
       "../browser/new_tab_page/modules/drive/drive_service_unittest.cc",
       "../browser/new_tab_page/modules/photos/photos_service_unittest.cc",
       "../browser/new_tab_page/modules/task_module/task_module_service_unittest.cc",
@@ -6087,6 +6089,7 @@ test("unit_tests") {
     deps += [
       "//chrome:packed_resources_integrity_hash",
       "//chrome/browser:cart_db_content_proto",
+      "//chrome/browser:coupon_db_content_proto",
       "//chrome/browser/media/router:test_support",
       "//chrome/browser/resource_coordinator:intervention_policy_database_proto",
       "//chrome/browser/resource_coordinator:tab_manager_features",
@@ -6464,6 +6467,7 @@ test("unit_tests") {
       "../browser/ui/ash/shelf/chrome_shelf_prefs_unittest.cc",
       "../browser/ui/ash/shelf/shelf_context_menu_unittest.cc",
       "../browser/ui/ash/wallpaper_controller_client_impl_unittest.cc",
+      "../browser/ui/ash/window_pin_util_unittest.cc",
       "../browser/ui/webui/chromeos/login/fake_update_required_screen_handler.cc",
       "../browser/ui/webui/chromeos/login/fake_update_required_screen_handler.h",
       "../browser/ui/webui/chromeos/sync/os_sync_handler_unittest.cc",
@@ -7335,6 +7339,7 @@ test("unit_tests") {
 
   if (enable_session_service) {
     sources += [
+      "../browser/sessions/exit_type_service_unittest.cc",
       "../browser/sessions/session_data_service_unittest.cc",
       "../browser/sessions/session_restore_observer_unittest.cc",
       "../browser/sessions/session_restore_stats_collector_unittest.cc",

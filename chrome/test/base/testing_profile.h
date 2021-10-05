@@ -42,9 +42,7 @@ class TestingPrefStore;
 namespace content {
 class MockResourceContext;
 class SSLHostStateDelegate;
-#if !defined(OS_ANDROID)
 class ZoomLevelDelegate;
-#endif  // !defined(OS_ANDROID)
 }  // namespace content
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -283,10 +281,8 @@ class TestingProfile : public Profile {
   base::FilePath GetPath() override;
   base::FilePath GetPath() const override;
   base::Time GetCreationTime() const override;
-#if !defined(OS_ANDROID)
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
-#endif  // !defined(OS_ANDROID)
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
   // Do not override IsOffTheRecord to turn a normal profile into an incognito
   // profile dynamically.
@@ -339,14 +335,9 @@ class TestingProfile : public Profile {
 
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
-#if !defined(OS_ANDROID)
   ChromeZoomLevelPrefs* GetZoomLevelPrefs() override;
-#endif  // !defined(OS_ANDROID)
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
-  void set_last_session_exited_cleanly(bool value) {
-    last_session_exited_cleanly_ = value;
-  }
   bool IsSameOrParent(Profile* profile) override;
   base::Time GetStartTime() const override;
   ProfileKey* GetProfileKey() const override;
@@ -366,8 +357,6 @@ class TestingProfile : public Profile {
   bool WasCreatedByVersionOrLater(const std::string& version) override;
   bool IsGuestSession() const override;
   bool IsNewProfile() const override;
-  void SetExitType(ExitType exit_type) override {}
-  ExitType GetLastSessionExitType() const override;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void ChangeAppLocale(const std::string&, AppLocaleChangedVia) override;
@@ -454,9 +443,6 @@ class TestingProfile : public Profile {
   bool is_new_profile_ = false;
 
   std::string supervised_user_id_;
-
-  // Whether the last session exited cleanly.
-  bool last_session_exited_cleanly_ = true;
 
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 

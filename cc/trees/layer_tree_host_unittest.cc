@@ -6157,8 +6157,7 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
   }
 
   void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
-    // Safe to check frame number here because main thread is blocked.
-    if (layer_tree_host()->SourceFrameNumber() == 0) {
+    if (host_impl->sync_tree()->source_frame_number() == 0) {
       host_impl->BlockNotifyReadyToActivateForTesting(true);
     } else {
       NOTREACHED();
@@ -9267,8 +9266,9 @@ class LayerTreeHostTestEventsMetrics : public LayerTreeHostTest {
     tick_clock.Advance(base::Microseconds(10));
     std::unique_ptr<EventMetrics> metrics = EventMetrics::CreateForTesting(
         ui::ET_GESTURE_SCROLL_UPDATE,
-        EventMetrics::ScrollParams(ui::ScrollInputType::kWheel, false,
-                                   EventMetrics::ScrollUpdateType::kContinued),
+        EventMetrics::GestureParams(ui::ScrollInputType::kWheel,
+                                    /*scroll_is_inertial=*/false,
+                                    EventMetrics::ScrollUpdateType::kContinued),
         event_time, &tick_clock);
     DCHECK_NE(metrics, nullptr);
     {

@@ -160,31 +160,6 @@ absl::optional<GURL> GetProtocolHandlingTranslatedUrl(
   return translated_url;
 }
 
-bool IsProtocolHandlerCommandLineArg(const base::CommandLine::StringType& arg) {
-#if defined(OS_WIN)
-  GURL url(base::WideToUTF16(arg));
-#else
-  GURL url(arg);
-#endif
-
-  if (url.is_valid() && url.has_scheme()) {
-    bool has_custom_scheme_prefix = false;
-    return blink::IsValidCustomHandlerScheme(url.scheme(),
-                                             /* allow_ext_plus_prefix */ false,
-                                             has_custom_scheme_prefix);
-  }
-  return false;
-}
-
-bool DoesCommandLineContainProtocolUrl(const base::CommandLine& command_line) {
-  for (const auto& arg : command_line.GetArgs()) {
-    if (IsProtocolHandlerCommandLineArg(arg)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 WebAppLaunchManager::OpenApplicationCallback&
 GetOpenApplicationCallbackForTesting() {
   static base::NoDestructor<WebAppLaunchManager::OpenApplicationCallback>
@@ -282,6 +257,11 @@ std::tuple<GURL, bool /*is_file_handling*/> LaunchProcess::GetLaunchUrl(
     const apps::ShareTarget* share_target) {
   GURL launch_url;
   bool is_file_handling = false;
+  bool is_note_taking_intent =
+      params_.intent &&
+      params_.intent->action == apps_util::kIntentActionCreateNote;
+  const WebApp* web_app = provider_.registrar().GetAppById(params_.app_id);
+  DCHECK(web_app);
 
   if (!params_.override_url.is_empty()) {
     launch_url = params_.override_url;
@@ -302,6 +282,10 @@ std::tuple<GURL, bool /*is_file_handling*/> LaunchProcess::GetLaunchUrl(
   } else if (share_target) {
     // Handle share_target launch.
     launch_url = share_target->action;
+  } else if (is_note_taking_intent &&
+             web_app->note_taking_new_note_url().is_valid()) {
+    // Handle Create Note launch.
+    launch_url = web_app->note_taking_new_note_url();
   } else {
     // This is a default launch.
     launch_url = provider_.registrar().GetAppLaunchUrl(params_.app_id);
@@ -521,10 +505,16 @@ void WebAppLaunchManager::LaunchApplication(
     const base::FilePath& current_directory,
     const absl::optional<GURL>& url_handler_launch_url,
     const absl::optional<GURL>& protocol_handler_launch_url,
+    const std::vector<base::FilePath>& launch_files,
     base::OnceCallback<void(Browser* browser,
                             apps::mojom::LaunchContainer container)> callback) {
   if (!provider_)
     return;
+
+  // At most one of these parameters should be non-empty.
+  DCHECK_LE(url_handler_launch_url.has_value() +
+                protocol_handler_launch_url.has_value() + !launch_files.empty(),
+            1);
 
   apps::mojom::AppLaunchSource launch_source =
       apps::mojom::AppLaunchSource::kSourceCommandLine;
@@ -538,7 +528,10 @@ void WebAppLaunchManager::LaunchApplication(
       WindowOpenDisposition::NEW_WINDOW, launch_source);
   params.command_line = command_line;
   params.current_directory = current_directory;
-  if (!DoesCommandLineContainProtocolUrl(command_line)) {
+  if (base::FeatureList::IsEnabled(
+          features::kDesktopPWAsFileHandlingSettingsGated)) {
+    params.launch_files = launch_files;
+  } else if (!protocol_handler_launch_url) {
     params.launch_files = apps::GetLaunchFilesFromCommandLine(command_line);
   }
   params.url_handler_launch_url = url_handler_launch_url;

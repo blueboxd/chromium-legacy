@@ -36,6 +36,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.banners.AppMenuVerbiage;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
+import org.chromium.chrome.browser.bookmarks.ReadingListFeatures;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.device.DeviceConditions;
@@ -70,6 +71,7 @@ import org.chromium.chrome.browser.ui.appmenu.CustomViewBinder;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.components.webapps.AppBannerManager;
@@ -303,7 +305,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
             }
             int menutype = AppMenuItemType.STANDARD;
             if (item.getItemId() == R.id.request_desktop_site_row_menu_id
-                    || item.getItemId() == R.id.share_row_menu_id) {
+                    || item.getItemId() == R.id.share_row_menu_id
+                    || item.getItemId() == R.id.auto_dark_web_contents_row_menu_id) {
                 menutype = AppMenuItemType.TITLE_BUTTON;
             } else if (item.getItemId() == R.id.icon_row_menu_id) {
                 int viewCount = item.getSubMenu().size();
@@ -344,10 +347,11 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     private void preparePageMenu(
             Menu menu, Tab currentTab, AppMenuHandler handler, boolean isIncognito) {
         GURL url = currentTab.getUrl();
-        boolean isChromeScheme = url.getScheme().equals(UrlConstants.CHROME_SCHEME)
+        final boolean isChromeScheme = url.getScheme().equals(UrlConstants.CHROME_SCHEME)
                 || url.getScheme().equals(UrlConstants.CHROME_NATIVE_SCHEME);
-        boolean isFileScheme = url.getScheme().equals(UrlConstants.FILE_SCHEME);
-        boolean isContentScheme = url.getScheme().equals(UrlConstants.CONTENT_SCHEME);
+        final boolean isFileScheme = url.getScheme().equals(UrlConstants.FILE_SCHEME);
+        final boolean isContentScheme = url.getScheme().equals(UrlConstants.CONTENT_SCHEME);
+        final boolean isHttpOrHttpsScheme = UrlUtilities.isHttpOrHttps(url);
 
         // Update the icon row items (shown in narrow form factors).
         boolean shouldShowIconRow = shouldShowIconRow();
@@ -392,6 +396,9 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                     mContext.getString(R.string.menu_manage_all_windows, getInstanceCount()));
         }
 
+        menu.findItem(R.id.add_to_reading_list_menu_id)
+                .setVisible(isHttpOrHttpsScheme
+                        && ReadingListFeatures.enableAddToReadingListAppMenuItem());
         // Don't allow either "chrome://" pages or interstitial pages to be shared.
         menu.findItem(R.id.share_row_menu_id).setVisible(mShareUtils.shouldEnableShare(currentTab));
 
@@ -485,7 +492,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
 
                 // Remove title button icons.
                 if (item.getItemId() == R.id.request_desktop_site_row_menu_id
-                        || item.getItemId() == R.id.share_row_menu_id) {
+                        || item.getItemId() == R.id.share_row_menu_id
+                        || item.getItemId() == R.id.auto_dark_web_contents_row_menu_id) {
                     item.getSubMenu().getItem(0).setIcon(null);
                 }
             }
@@ -946,7 +954,6 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      * @param currentTab Current tab being displayed.
      * @param canShowRequestDesktopSite If the request desktop site menu item should show or not.
      * @param isChromeScheme Whether URL for the current tab starts with the chrome:// scheme.
-     *
      */
     protected void updateRequestDesktopSiteMenuItem(
             Menu menu, Tab currentTab, boolean canShowRequestDesktopSite, boolean isChromeScheme) {
@@ -992,19 +999,19 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      * @param isChromeScheme Whether URL for the current tab starts with the chrome:// scheme.
      */
     protected void updateAutoDarkMenuItem(Menu menu, Tab currentTab, boolean isChromeScheme) {
-        MenuItem autoDarkMenuItem = menu.findItem(R.id.auto_dark_web_contents_id);
+        MenuItem autoDarkMenuRow = menu.findItem(R.id.auto_dark_web_contents_row_menu_id);
+        MenuItem autoDarkMenuCheck = menu.findItem(R.id.auto_dark_web_contents_check_id);
 
         // Hide app menu item if on non-NTP chrome:// page or auto dark not enabled.
         boolean isAutoDarkEnabled = isAutoDarkWebContentsEnabled();
         boolean itemVisible = !isChromeScheme && isAutoDarkEnabled;
-        autoDarkMenuItem.setVisible(itemVisible);
+        autoDarkMenuRow.setVisible(itemVisible);
         if (!itemVisible) return;
 
         // Set text based on if site is blocked or not.
         boolean isEnabled = WebContentsDarkModeController.isEnabledForUrl(
                 mTabModelSelector.getCurrentModel().getProfile(), currentTab.getUrl());
-        autoDarkMenuItem.setTitle(isEnabled ? R.string.menu_auto_dark_web_contents_on
-                                            : R.string.menu_auto_dark_web_contents_off);
+        autoDarkMenuCheck.setChecked(isEnabled);
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)

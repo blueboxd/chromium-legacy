@@ -8,6 +8,7 @@
 #include "cc/layers/surface_layer.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
@@ -932,7 +933,7 @@ bool RemoteFrame::IsIgnoredForHitTest() const {
   if (!owner || !owner->GetLayoutObject())
     return false;
 
-  return owner->OwnerType() == mojom::blink::FrameOwnerElementType::kPortal ||
+  return owner->OwnerType() == FrameOwnerElementType::kPortal ||
          !visible_to_hit_testing_;
 }
 
@@ -1003,8 +1004,8 @@ bool RemoteFrame::SynchronizeVisualProperties(bool propagate) {
           pending_visual_properties_.local_frame_size ||
       sent_visual_properties_->screen_space_rect.size() !=
           pending_visual_properties_.screen_space_rect.size() ||
-      sent_visual_properties_->screen_info !=
-          pending_visual_properties_.screen_info ||
+      sent_visual_properties_->screen_infos !=
+          pending_visual_properties_.screen_infos ||
       sent_visual_properties_->zoom_level !=
           pending_visual_properties_.zoom_level ||
       sent_visual_properties_->page_scale_factor !=
@@ -1096,8 +1097,9 @@ void RemoteFrame::SetViewportIntersection(
       intersection_state.Clone(), visual_properties);
 }
 
-void RemoteFrame::DidChangeScreenInfo(const display::ScreenInfo& screen_info) {
-  pending_visual_properties_.screen_info = screen_info;
+void RemoteFrame::DidChangeScreenInfos(
+    const display::ScreenInfos& screen_infos) {
+  pending_visual_properties_.screen_infos = screen_infos;
   SynchronizeVisualProperties();
 }
 

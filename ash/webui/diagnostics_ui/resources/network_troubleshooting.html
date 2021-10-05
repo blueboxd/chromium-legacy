@@ -1,6 +1,7 @@
-<style include="diagnostics-shared diagnostics-fonts">
+<style include="diagnostics-shared">
   #troubleshootingText {
-    @apply --diagnostics-no-ethernet-font;
+    @apply --diagnostics-troubleshooting-font;
+    line-height: 20px;
   }
 
   #troubleshootingContainer {
@@ -9,11 +10,13 @@
     flex-direction: column;
     justify-content: center;
     margin: 20px 0;
-    padding-top: 22px;
+    padding-bottom: 20px;
+    padding-top: 16px;
   }
 
   #troubleshootingLinkText {
     @apply --diagnostics-connecting-link-font;
+    line-height: 20px;
     margin-top: 8px;
   }
 </style>

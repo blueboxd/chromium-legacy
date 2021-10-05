@@ -436,6 +436,20 @@ bool IsDataWipeRequiredInternal(base::Version data_version,
   return true;
 }
 
+Channel GetChannelFromString(const std::string channel_str) {
+  if (channel_str == browser_util::kLacrosStabilityChannelCanary)
+    return Channel::CANARY;
+  if (channel_str == browser_util::kLacrosStabilityChannelDev)
+    return Channel::DEV;
+  if (channel_str == browser_util::kLacrosStabilityChannelBeta)
+    return Channel::BETA;
+  if (channel_str == browser_util::kLacrosStabilityChannelStable)
+    return Channel::STABLE;
+
+  NOTREACHED();
+  return Channel::UNKNOWN;
+}
+
 static_assert(
     crosapi::mojom::Crosapi::Version_ == 51,
     "if you add a new crosapi, please add it to kInterfaceVersionEntries");
@@ -450,12 +464,26 @@ const ComponentInfo kLacrosDogfoodCanaryInfo = {
     "lacros-dogfood-canary", "hkifppleldbgkdlijbdfkdpedggaopda"};
 const ComponentInfo kLacrosDogfoodDevInfo = {
     "lacros-dogfood-dev", "ldobopbhiamakmncndpkeelenhdmgfhk"};
+const ComponentInfo kLacrosDogfoodBetaInfo = {
+    "lacros-dogfood-beta", "hnfmbeciphpghlfgpjfbcdifbknombnk"};
 const ComponentInfo kLacrosDogfoodStableInfo = {
-    "lacros-dogfood-stable", "hnfmbeciphpghlfgpjfbcdifbknombnk"};
+    "lacros-dogfood-stable", "ehpjbaiafkpkmhjocnenjbbhmecnfcjb"};
+
+const auto lacros_stability_channel_to_component_info =
+    base::MakeFixedFlatMap<std::string, const ComponentInfo*>({
+        {kLacrosStabilityChannelCanary, &kLacrosDogfoodCanaryInfo},
+        {kLacrosStabilityChannelDev, &kLacrosDogfoodDevInfo},
+        {kLacrosStabilityChannelBeta, &kLacrosDogfoodBetaInfo},
+        {kLacrosStabilityChannelStable, &kLacrosDogfoodStableInfo},
+    });
 
 // When this feature is enabled, Lacros will be available on stable channel.
 const base::Feature kLacrosAllowOnStableChannel{
     "LacrosAllowOnStableChannel", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// A kill switch for lacros chrome apps.
+const base::Feature kLacrosDisableChromeApps{"LacrosDisableChromeApps",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When this feature is enabled, Lacros is allowed to roll out by policy to
 // Googlers.
@@ -465,9 +493,10 @@ const base::Feature kLacrosGooglePolicyRollout{
 const Channel kLacrosDefaultChannel = Channel::DEV;
 
 const char kLacrosStabilitySwitch[] = "lacros-stability";
-const char kLacrosStabilityLeastStable[] = "least-stable";
-const char kLacrosStabilityLessStable[] = "less-stable";
-const char kLacrosStabilityMoreStable[] = "more-stable";
+const char kLacrosStabilityChannelCanary[] = "canary";
+const char kLacrosStabilityChannelDev[] = "dev";
+const char kLacrosStabilityChannelBeta[] = "beta";
+const char kLacrosStabilityChannelStable[] = "stable";
 
 const char kLacrosSelectionSwitch[] = "lacros-selection";
 const char kLacrosSelectionRootfs[] = "rootfs";
@@ -672,6 +701,18 @@ bool IsLacrosAllowedToLaunch() {
   return user_manager::UserManager::Get()->GetLoggedInUsers().size() <= 1;
 }
 
+bool IsLacrosChromeAppsEnabled() {
+  if (base::FeatureList::IsEnabled(kLacrosDisableChromeApps))
+    return false;
+
+  if (!IsLacrosPrimaryBrowser())
+    return false;
+
+  // Always return false for now as the feature isn't ready. Once the feature is
+  // ready this will be flipped to true.
+  return false;
+}
+
 bool IsLacrosWindow(const aura::Window* window) {
   const std::string* app_id = exo::GetShellApplicationId(window);
   if (!app_id)
@@ -826,6 +867,7 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
   params->build_flags = std::move(build_flags);
 
   params->standalone_browser_is_only_browser = !IsAshWebBrowserEnabled();
+  params->publish_chrome_apps = browser_util::IsLacrosChromeAppsEnabled();
   return params;
 }
 
@@ -1011,14 +1053,7 @@ Channel GetStatefulLacrosChannel() {
   if (cmdline->HasSwitch(browser_util::kLacrosStabilitySwitch)) {
     std::string value =
         cmdline->GetSwitchValueASCII(browser_util::kLacrosStabilitySwitch);
-    if (value == browser_util::kLacrosStabilityLeastStable)
-      return Channel::CANARY;
-    if (value == browser_util::kLacrosStabilityLessStable)
-      return Channel::DEV;
-    // Marked as "beta" channel since it gets updated every 2 weeks from beta
-    // branch.
-    if (value == browser_util::kLacrosStabilityMoreStable)
-      return Channel::BETA;
+    return GetChannelFromString(value);
   }
 
   return Channel::UNKNOWN;
@@ -1029,12 +1064,7 @@ ComponentInfo GetLacrosComponentInfo() {
   if (cmdline->HasSwitch(browser_util::kLacrosStabilitySwitch)) {
     std::string value =
         cmdline->GetSwitchValueASCII(browser_util::kLacrosStabilitySwitch);
-    if (value == browser_util::kLacrosStabilityLeastStable)
-      return kLacrosDogfoodCanaryInfo;
-    if (value == browser_util::kLacrosStabilityLessStable)
-      return kLacrosDogfoodDevInfo;
-    if (value == browser_util::kLacrosStabilityMoreStable)
-      return kLacrosDogfoodStableInfo;
+    return *lacros_stability_channel_to_component_info.at(value);
   }
   // Use once a week / Dev style updates by default.
   return kLacrosDogfoodDevInfo;

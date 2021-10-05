@@ -44,6 +44,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/app_session_service.h"
 #include "chrome/browser/sessions/app_session_service_factory.h"
+#include "chrome/browser/sessions/exit_type_service.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -1386,12 +1387,12 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   // Simulate a launch after an unclear exit.
   CloseBrowserAsynchronously(browser());
-  static_cast<ProfileImpl*>(profile_home)->last_session_exit_type_ =
-      Profile::EXIT_CRASHED;
-  static_cast<ProfileImpl*>(profile_last)->last_session_exit_type_ =
-      Profile::EXIT_CRASHED;
-  static_cast<ProfileImpl*>(profile_urls)->last_session_exit_type_ =
-      Profile::EXIT_CRASHED;
+  ExitTypeService::GetInstanceForProfile(profile_home)
+      ->SetLastSessionExitTypeForTest(ExitType::kCrashed);
+  ExitTypeService::GetInstanceForProfile(profile_last)
+      ->SetLastSessionExitTypeForTest(ExitType::kCrashed);
+  ExitTypeService::GetInstanceForProfile(profile_urls)
+      ->SetLastSessionExitTypeForTest(ExitType::kCrashed);
 
 #if !defined(OS_MAC) && !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Use HistogramTester to make sure a bubble is shown when it's not on
@@ -1510,7 +1511,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile2));
 }
 
-#if BUILDFLAG(ENABLE_APP_SESSION_SERVICE) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(ENABLE_APP_SESSION_SERVICE) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
+    !BUILDFLAG(IS_CHROMEOS_LACROS)
 web_app::AppId InstallPWA(Profile* profile, const GURL& start_url) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->start_url = start_url;
@@ -1816,7 +1818,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWithWebAppTest,
   EXPECT_EQ("/title2.html", tab_strip->GetWebContentsAt(0)->GetURL().path());
 }
 
-#if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
+#if BUILDFLAG(ENABLE_APP_SESSION_SERVICE) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 class StartupBrowserWithRealWebAppTest : public StartupBrowserCreatorTest {
  protected:
   StartupBrowserWithRealWebAppTest() = default;

@@ -160,7 +160,6 @@
 #include "components/javascript_dialogs/app_modal_dialog_queue.h"
 #include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "components/lens/lens_features.h"
-#include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/permissions/permission_request_manager.h"
@@ -2993,7 +2992,7 @@ bool BrowserView::ShouldDescendIntoChildForEventHandling(
   // Window for PWAs with window-controls-overlay display override should claim
   // mouse events that fall within the draggable region.
   web_app::AppBrowserController* controller = browser()->app_controller();
-  if (controller && controller->IsWindowControlsOverlayEnabled() &&
+  if (IsWindowControlsOverlayEnabled() && controller &&
       controller->draggable_region().has_value() &&
       controller->draggable_region()->contains(location.x(), location.y())) {
     return false;

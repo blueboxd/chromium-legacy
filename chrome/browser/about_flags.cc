@@ -712,15 +712,18 @@ const char kArcVmBalloonPolicyInternalName[] =
 
 const FeatureEntry::Choice kLacrosStabilityChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kLacrosStabilityLeastStableDescription,
+    {crosapi::browser_util::kLacrosStabilityChannelCanary,
      crosapi::browser_util::kLacrosStabilitySwitch,
-     crosapi::browser_util::kLacrosStabilityLeastStable},
-    {flag_descriptions::kLacrosStabilityLessStableDescription,
+     crosapi::browser_util::kLacrosStabilityChannelCanary},
+    {crosapi::browser_util::kLacrosStabilityChannelDev,
      crosapi::browser_util::kLacrosStabilitySwitch,
-     crosapi::browser_util::kLacrosStabilityLessStable},
-    {flag_descriptions::kLacrosStabilityMoreStableDescription,
+     crosapi::browser_util::kLacrosStabilityChannelDev},
+    {crosapi::browser_util::kLacrosStabilityChannelBeta,
      crosapi::browser_util::kLacrosStabilitySwitch,
-     crosapi::browser_util::kLacrosStabilityMoreStable},
+     crosapi::browser_util::kLacrosStabilityChannelBeta},
+    {crosapi::browser_util::kLacrosStabilityChannelStable,
+     crosapi::browser_util::kLacrosStabilitySwitch,
+     crosapi::browser_util::kLacrosStabilityChannelStable},
 };
 
 const char kLacrosSelectionInternalName[] = "lacros-selection";
@@ -2613,10 +2616,15 @@ const FeatureEntry::FeatureVariation kContinuousSearchFeatureVariations[] = {
 
 const FeatureEntry::FeatureParam kReadLaterUseRootBookmarkAsDefault[] = {
     {"use_root_bookmark_as_default", "true"}};
+const FeatureEntry::FeatureParam kReadLaterInAppMenu[] = {
+    {"use_root_bookmark_as_default", "true"},
+    {"add_to_reading_list_in_app_menu", "true"}};
 
 const FeatureEntry::FeatureVariation kReadLaterVariations[] = {
     {"(use root bookmark as default)", kReadLaterUseRootBookmarkAsDefault,
-     base::size(kReadLaterUseRootBookmarkAsDefault), nullptr}};
+     base::size(kReadLaterUseRootBookmarkAsDefault), nullptr},
+    {"(with app menu item)", kReadLaterInAppMenu,
+     base::size(kReadLaterInAppMenu), nullptr}};
 
 const FeatureEntry::FeatureParam kScrollCaptureInMemory[] = {
     {"in_memory_capture", "true"}};
@@ -3541,16 +3549,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-site-per-process", flag_descriptions::kStrictSiteIsolationName,
      flag_descriptions::kStrictSiteIsolationDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kSitePerProcess)},
-    {"enable-process-sharing-with-default-site-instances",
-     flag_descriptions::kProcessSharingWithDefaultSiteInstancesName,
-     flag_descriptions::kProcessSharingWithDefaultSiteInstancesDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kProcessSharingWithDefaultSiteInstances)},
-    {"enable-process-sharing-with-strict-site-instances",
-     flag_descriptions::kProcessSharingWithStrictSiteInstancesName,
-     flag_descriptions::kProcessSharingWithStrictSiteInstancesDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kProcessSharingWithStrictSiteInstances)},
 #endif
     {"isolate-origins", flag_descriptions::kIsolateOriginsName,
      flag_descriptions::kIsolateOriginsDescription, kOsAll,
@@ -4705,7 +4703,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReadLaterDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(reading_list::switches::kReadLater,
                                     kReadLaterVariations,
-                                    flag_descriptions::kReadLaterName)},
+                                    "ReadLater")},
 #else
     {flag_descriptions::kReadLaterFlagId, flag_descriptions::kReadLaterName,
      flag_descriptions::kReadLaterDescription, kOsDesktop,
@@ -4930,6 +4928,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableDuplicateDownloadDialogDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kEnableDuplicateDownloadDialog)},
 
+    {"enable-mixed-content-download-dialog",
+     flag_descriptions::kEnableMixedContentDownloadDialogName,
+     flag_descriptions::kEnableMixedContentDownloadDialogDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kEnableMixedContentDownloadDialog)},
 #endif
 
     {"enable-new-download-backend",

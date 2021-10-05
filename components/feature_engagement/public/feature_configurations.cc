@@ -122,6 +122,8 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
         EventConfig("download_home_opened", Comparator(EQUAL, 0), 90, 360);
     config->event_configs.insert(EventConfig(
         "download_completed", Comparator(GREATER_THAN_OR_EQUAL, 1), 90, 360));
+    config->snooze_params.snooze_interval = 7;
+    config->snooze_params.max_limit = 3;
     return config;
   }
   if (kIPHDownloadIndicatorFeature.name == feature->name) {
@@ -435,6 +437,25 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
                                   Comparator(LESS_THAN, 6), 360, 360);
     config->used = EventConfig("sharing_hub_webnotes_stylize_used",
                                Comparator(EQUAL, 0), 360, 360);
+    return config;
+  }
+
+  if (kIPHAutoDarkUserEducationMessageFeature.name == feature->name) {
+    // A config that allows the auto dark message to be shown:
+    // * Until the user opens auto dark settings
+    // * 2 times per week
+    // * Up to 6 times (3 weeks)
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->used = EventConfig("auto_dark_settings_opened",
+                               Comparator(EQUAL, 0), 360, 360);
+    config->trigger = EventConfig("auto_dark_user_education_message_trigger",
+                                  Comparator(LESS_THAN, 2), 7, 360);
+    config->event_configs.insert(
+        EventConfig("auto_dark_user_education_message_trigger",
+                    Comparator(LESS_THAN, 6), 360, 360));
     return config;
   }
 #endif  // defined(OS_ANDROID)

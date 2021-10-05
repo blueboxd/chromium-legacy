@@ -54,6 +54,7 @@
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/sessions/exit_type_service.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -63,6 +64,7 @@
 #include "chrome/browser/ui/startup/launch_mode_recorder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
+#include "chrome/browser/ui/startup/web_app_startup_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
@@ -121,8 +123,6 @@
 #include "chrome/browser/printing/print_dialog_cloud_win.h"
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #endif  // defined(OS_WIN)
-
-#include "chrome/browser/ui/startup/web_app_protocol_handling_startup_utils.h"
 
 #if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
@@ -443,6 +443,7 @@ bool MaybeLaunchApplication(
             app_id, command_line, cur_dir,
             /*url_handler_launch_url=*/absl::nullopt,
             /*protocol_handler_launch_url=*/absl::nullopt,
+            /*launch_files=*/{},
             base::BindOnce(&FinalizeWebAppLaunch,
                            std::move(launch_mode_recorder),
                            LaunchMode::kAsWebAppInWindowByAppId));
@@ -1123,38 +1124,40 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
                                         last_opened_profiles);
   }
 
-  // Web app Protocol handling.
-  auto startup_callback = base::BindOnce(
+  // Web app launch handling.
+  auto continue_startup_callback = base::BindOnce(
       [](bool process_startup, const base::CommandLine& command_line,
          const base::FilePath& cur_dir, Profile* profile,
          Profile* last_used_profile,
          const std::vector<Profile*>& last_opened_profiles) {
-        // TODO(crbug.com/1208199): Refactor StartupBrowserCreator and use the
-        // state struct here.
-        StartupBrowserCreator browser_creator;
-        browser_creator.StartupLaunchAfterProtocolHandler(
-            command_line, cur_dir, profile, process_startup, last_used_profile,
-            last_opened_profiles);
+        // TODO(crbug.com/1208199): It's a bug that this object doesn't hold
+        // onto the same state as the outer `this`. Refactor
+        // StartupBrowserCreator and use the state struct here.
+        StartupBrowserCreator()
+            .ContinueProcessingCommandLineAfterEarlyWebAppCheck(
+                command_line, cur_dir, profile, process_startup,
+                last_used_profile, last_opened_profiles);
       },
-      process_startup);
+      process_startup, command_line, cur_dir, privacy_safe_profile,
+      last_used_profile, last_opened_profiles);
 
-  // web_app::startup::MaybeLaunchProtocolHandlerWebApp keeps the `profile`
-  // alive through running of `startup_callback`.
-  if (web_app::startup::MaybeLaunchProtocolHandlerWebApp(
+  // web_app::startup::MaybeLaunchProtocolHandlerWebApp keeps the passed
+  // profiles alive until running `continue_startup_callback`.
+  if (web_app::startup::MaybeHandleEarlyWebAppLaunch(
           command_line, cur_dir, privacy_safe_profile, last_used_profile,
           last_opened_profiles,
           base::BindOnce(&FinalizeWebAppLaunch,
                          std::make_unique<LaunchModeRecorder>(), absl::nullopt),
-          std::move(startup_callback))) {
+          std::move(continue_startup_callback))) {
     return true;
   }
 
-  return StartupLaunchAfterProtocolHandler(
+  return ContinueProcessingCommandLineAfterEarlyWebAppCheck(
       command_line, cur_dir, privacy_safe_profile, process_startup,
       last_used_profile, last_opened_profiles);
 }
 
-bool StartupBrowserCreator::StartupLaunchAfterProtocolHandler(
+bool StartupBrowserCreator::ContinueProcessingCommandLineAfterEarlyWebAppCheck(
     const base::CommandLine& command_line,
     const base::FilePath& cur_dir,
     Profile* privacy_safe_profile,
@@ -1361,7 +1364,8 @@ bool StartupBrowserCreator::ActivatedProfile() {
 }
 
 bool HasPendingUncleanExit(Profile* profile) {
-  return profile->GetLastSessionExitType() == Profile::EXIT_CRASHED &&
+  return ExitTypeService::GetLastSessionExitType(profile) ==
+             ExitType::kCrashed &&
          !profile_launch_observer.Get().HasBeenLaunched(profile) &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kHideCrashRestoreBubble);

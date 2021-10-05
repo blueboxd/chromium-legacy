@@ -72,7 +72,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_features.h"
-#import "ios/chrome/browser/ui/popup_menu/public/feature_flags.h"
+#import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
@@ -731,6 +731,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"download-vcard", flag_descriptions::kDownloadVcardName,
      flag_descriptions::kDownloadVcardDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDownloadVcard)},
+    {"old-sync-string-fre", flag_descriptions::kOldSyncStringFREName,
+     flag_descriptions::kOldSyncStringFREDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kOldSyncStringFRE)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

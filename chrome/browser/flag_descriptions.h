@@ -1784,6 +1784,9 @@ extern const char kEnableDangerousDownloadDialogDescription[];
 extern const char kEnableDuplicateDownloadDialogName[];
 extern const char kEnableDuplicateDownloadDialogDescription[];
 
+extern const char kEnableMixedContentDownloadDialogName[];
+extern const char kEnableMixedContentDownloadDialogDescription[];
+
 extern const char kExploreSitesName[];
 extern const char kExploreSitesDescription[];
 
@@ -1887,12 +1890,6 @@ extern const char kPasswordProtectionForSignedInUsersDescription[];
 
 extern const char kPhotoPickerVideoSupportName[];
 extern const char kPhotoPickerVideoSupportDescription[];
-
-extern const char kProcessSharingWithDefaultSiteInstancesName[];
-extern const char kProcessSharingWithDefaultSiteInstancesDescription[];
-
-extern const char kProcessSharingWithStrictSiteInstancesName[];
-extern const char kProcessSharingWithStrictSiteInstancesDescription[];
 
 extern const char kQueryTilesName[];
 extern const char kQueryTilesDescription[];
@@ -2750,9 +2747,6 @@ extern const char kLacrosPrimaryDescription[];
 
 extern const char kLacrosStabilityName[];
 extern const char kLacrosStabilityDescription[];
-extern const char kLacrosStabilityLeastStableDescription[];
-extern const char kLacrosStabilityLessStableDescription[];
-extern const char kLacrosStabilityMoreStableDescription[];
 
 extern const char kLacrosSelectionName[];
 extern const char kLacrosSelectionDescription[];

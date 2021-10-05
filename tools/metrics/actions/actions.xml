@@ -14774,7 +14774,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileMenuAddToReadingList">
-  <owner>xingliu@chromium.org</owner>
+  <owner>bttk@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
   <description>User pressed 'Add to reading list' in the app menu.</description>
 </action>
 
@@ -29381,6 +29382,8 @@ should be able to be added at any place in this file.
       label="For AddToHomescreen IPH feature."/>
   <suffix name="AddToHomescreenTextBubble"
       label="For AddToHomescreen IPH feature."/>
+  <suffix name="AutoDarkUserEducationMessage"
+      label="For AutoDarkUserEducationMessage feature."/>
   <suffix name="BadgedReadingList" label="For BadgedReadingList feature."/>
   <suffix name="Bookmark" label="For Bookmark feature."/>
   <suffix name="BottomToolbarTip" label="For BottomToolbarTip feature."/>

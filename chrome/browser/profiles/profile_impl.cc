@@ -93,6 +93,7 @@
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/sessions/exit_type_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
@@ -157,6 +158,7 @@
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/version_info/channel.h"
+#include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -208,7 +210,6 @@
 #include "chrome/browser/android/profile_key_startup_accessor.h"
 #else
 #include "chrome/browser/first_run/first_run.h"
-#include "components/zoom/zoom_event_manager.h"
 #include "content/public/common/page_zoom.h"
 #endif
 
@@ -274,10 +275,6 @@ static constexpr TimeDelta kCreateSessionServiceDelay =
     TimeDelta::FromMilliseconds(500);
 #endif
 
-// Value written to prefs for EXIT_CRASHED and EXIT_SESSION_ENDED.
-const char kPrefExitTypeCrashed[] = "Crashed";
-const char kPrefExitTypeSessionEnded[] = "SessionEnded";
-
 // Gets the creation time for |path|, returning base::Time::Now() on failure.
 base::Time GetCreationTimeForPath(const base::FilePath& path) {
   base::File::Info info;
@@ -317,29 +314,6 @@ base::Time CreateProfileDirectory(base::SequencedTaskRunner* io_task_runner,
     return GetCreationTimeForPath(path);
   }
   return base::Time::Now();
-}
-
-// Converts the `kSessionExitType` pref to the corresponding EXIT_TYPE.
-Profile::ExitType SessionTypePrefValueToExitType(const std::string& value) {
-  if (value == kPrefExitTypeSessionEnded)
-    return Profile::EXIT_SESSION_ENDED;
-  if (value == kPrefExitTypeCrashed)
-    return Profile::EXIT_CRASHED;
-  return Profile::EXIT_NORMAL;
-}
-
-// Converts an ExitType into a string that is written to prefs.
-std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
-  switch (type) {
-    case Profile::EXIT_NORMAL:
-      return ProfileImpl::kPrefExitTypeNormal;
-    case Profile::EXIT_SESSION_ENDED:
-      return kPrefExitTypeSessionEnded;
-    case Profile::EXIT_CRASHED:
-      return kPrefExitTypeCrashed;
-  }
-  NOTREACHED();
-  return std::string();
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -392,9 +366,6 @@ std::unique_ptr<Profile> Profile::CreateProfile(const base::FilePath& path,
       path, delegate, create_mode, creation_time, io_task_runner));
   return profile;
 }
-
-// static
-const char ProfileImpl::kPrefExitTypeNormal[] = "Normal";
 
 // static
 void ProfileImpl::RegisterProfilePrefs(
@@ -465,7 +436,6 @@ ProfileImpl::ProfileImpl(
     : path_(path),
       path_creation_time_(path_creation_time),
       io_task_runner_(std::move(io_task_runner)),
-      last_session_exit_type_(EXIT_NORMAL),
       start_time_(base::Time::Now()),
       delegate_(delegate) {
   TRACE_EVENT0("browser,startup", "ProfileImpl::ctor");
@@ -882,9 +852,6 @@ void ProfileImpl::set_last_selected_directory(const base::FilePath& path) {
 ProfileImpl::~ProfileImpl() {
   MaybeSendDestroyedNotification();
 
-  bool prefs_loaded = prefs_->GetInitializationStatus() !=
-                      PrefService::INITIALIZATION_STATUS_WAITING;
-
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   StopCreateSessionServiceTimer();
 #endif
@@ -941,10 +908,6 @@ ProfileImpl::~ProfileImpl() {
   if (configuration_policy_provider())
     configuration_policy_provider()->Shutdown();
 
-  // This causes the Preferences file to be written to disk.
-  if (prefs_loaded)
-    SetExitType(EXIT_NORMAL);
-
   // This must be called before ProfileIOData::ShutdownOnUIThread but after
   // other profile-related destroy notifications are dispatched.
   ShutdownStoragePartitions();
@@ -961,14 +924,12 @@ std::string ProfileImpl::GetProfileUserName() const {
   return std::string();
 }
 
-#if !defined(OS_ANDROID)
 std::unique_ptr<content::ZoomLevelDelegate>
 ProfileImpl::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
   return std::make_unique<ChromeZoomLevelPrefs>(
       GetPrefs(), GetPath(), partition_path,
       zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr());
 }
-#endif  // !defined(OS_ANDROID)
 
 base::FilePath ProfileImpl::GetPath() {
   return path_;
@@ -1124,11 +1085,6 @@ void ProfileImpl::OnLocaleReady(CreateMode create_mode) {
   }
 #endif
 
-  last_session_exit_type_ = SessionTypePrefValueToExitType(
-      prefs_->GetString(prefs::kSessionExitType));
-  // Mark the session as open.
-  prefs_->SetString(prefs::kSessionExitType, kPrefExitTypeCrashed);
-
   g_browser_process->profile_manager()->InitProfileUserPrefs(this);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1188,43 +1144,19 @@ bool ProfileImpl::WasCreatedByVersionOrLater(const std::string& version) {
   return (profile_version.CompareTo(arg_version) >= 0);
 }
 
-void ProfileImpl::SetExitType(ExitType exit_type) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (chromeos::ProfileHelper::IsSigninProfile(this))
-    return;
-#endif
-  if (!prefs_)
-    return;
-  ExitType current_exit_type = SessionTypePrefValueToExitType(
-      prefs_->GetString(prefs::kSessionExitType));
-  // This may be invoked multiple times during shutdown. Only persist the value
-  // first passed in (unless it's a reset to the crash state, which happens when
-  // foregrounding the app on mobile).
-  if (exit_type == EXIT_CRASHED || current_exit_type == EXIT_CRASHED) {
-    prefs_->SetString(prefs::kSessionExitType,
-                      ExitTypeToSessionTypePrefValue(exit_type));
-  }
-}
-
-Profile::ExitType ProfileImpl::GetLastSessionExitType() const {
-  // last_session_exited_cleanly_ is set when the preferences are loaded. Force
-  // it to be set by asking for the prefs.
-  GetPrefs();
-  return last_session_exit_type_;
-}
-
-bool ProfileImpl::ShouldRestoreOldSessionCookies() const {
+bool ProfileImpl::ShouldRestoreOldSessionCookies() {
 #if defined(OS_ANDROID)
   SessionStartupPref::Type startup_pref_type =
       SessionStartupPref::GetDefaultStartupType();
+  return startup_pref_type == SessionStartupPref::LAST;
 #else
   SessionStartupPref::Type startup_pref_type =
       StartupBrowserCreator::GetSessionStartupPref(
           *base::CommandLine::ForCurrentProcess(), this)
           .type;
-#endif
-  return GetLastSessionExitType() == Profile::EXIT_CRASHED ||
+  return ExitTypeService::GetLastSessionExitType(this) == ExitType::kCrashed ||
          startup_pref_type == SessionStartupPref::LAST;
+#endif
 }
 
 bool ProfileImpl::ShouldPersistSessionCookies() const {
@@ -1241,12 +1173,10 @@ const PrefService* ProfileImpl::GetPrefs() const {
   return prefs_.get();
 }
 
-#if !defined(OS_ANDROID)
 ChromeZoomLevelPrefs* ProfileImpl::GetZoomLevelPrefs() {
   return static_cast<ChromeZoomLevelPrefs*>(
       GetDefaultStoragePartition()->GetZoomLevelDelegate());
 }
-#endif  // !defined(OS_ANDROID)
 
 // TODO(crbug.com/734484): Remove this function.
 PrefService* ProfileImpl::GetReadOnlyOffTheRecordPrefs() {

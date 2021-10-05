@@ -139,6 +139,7 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_lifetime_manager_factory.h"
 #include "chrome/browser/cart/cart_db_content.pb.h"
 #include "chrome/browser/cart/cart_service_factory.h"
+#include "chrome/browser/commerce/coupons/coupon_db_content.pb.h"
 #include "chrome/browser/commerce/coupons/coupon_service_factory.h"
 #include "chrome/browser/feedback/feedback_uploader_factory_chrome.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_profile_session_durations_service_factory.h"
@@ -194,6 +195,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
+#include "chrome/browser/sessions/exit_type_service_factory.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #endif
 
@@ -316,6 +318,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   DownloadCoreServiceFactory::GetInstance();
   BackgroundDownloadServiceFactory::GetInstance();
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+  ExitTypeServiceFactory::GetInstance();
+#endif
 #if defined(OS_ANDROID)
   explore_sites::ExploreSitesServiceFactory::GetInstance();
 #endif
@@ -398,6 +403,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   PrefsTabHelper::GetServiceInstance();
 #if !defined(OS_ANDROID)
   ProfileProtoDBFactory<cart_db::ChromeCartContentProto>::GetInstance();
+  ProfileProtoDBFactory<coupon_db::CouponContentProto>::GetInstance();
 #endif
 #if defined(OS_ANDROID)
   ProfileProtoDBFactory<commerce_subscription_db::

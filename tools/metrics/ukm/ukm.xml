@@ -5669,6 +5669,18 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric name="PinchInputType" enum="EventLatencyPinchInputType">
+    <summary>
+      Type of the input device for pinch events.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="RendererCompositorFinishedToActivation">
     <summary>
       The time from when the event processing is finished on the renderer
@@ -5961,7 +5973,7 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="ScrollInputType" enum="EventLatencyScrollInputType">
     <summary>
-      Type of the input device for scroll and pinch events.
+      Type of the input device for scroll events.
     </summary>
     <aggregation>
       <history>
@@ -8154,6 +8166,13 @@ be describing additional metrics about the same event.
       True if the page was added by the user tapping on the Messages prompt to
       save to Reading List.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -8170,12 +8189,26 @@ be describing additional metrics about the same event.
       Distilibility score value indicating the &quot;long readability&quot; of
       the page.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="DistilibilityScore">
     <summary>
       Distilibility score value indicating the &quot;readability&quot; of the
       page.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 

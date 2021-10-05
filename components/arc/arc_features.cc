@@ -52,6 +52,13 @@ const base::Feature kEnableUsap{"ArcEnableUsap",
 const base::Feature kFilePickerExperimentFeature{
     "ArcFilePickerExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether the guest zram is enabled. This is only for ARCVM.
+const base::Feature kGuestZram{"ArcGuestZram",
+                               base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls the size of the guest zram.
+const base::FeatureParam<int> kGuestZramSize{&kGuestZram, "size", 0};
+
 // Controls image copy & paste app compat feature in ARC.
 const base::Feature kImageCopyPasteCompatFeature{
     "ArcImageCopyPasteCompat", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -130,7 +137,7 @@ const base::Feature kVideoDecoder{"ArcVideoDecoder",
 // If disabled, memory is sized by concierge which, at the time of writing, uses
 // RAM - 1024 MiB.
 const base::Feature kVmMemorySize{"ArcVmMemorySize",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls the amount to "shift" system RAM when sizing ARCVM. The default
 // value of 0 means that ARCVM's memory will be thr same as the system.

@@ -31,6 +31,28 @@
             ]
         }
     ],
+    "AccuracyTips": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows",
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_210920",
+                    "params": {
+                        "DisableUI": "true",
+                        "TimeBetweenPrompts": "1d"
+                    },
+                    "enable_features": [
+                        "AccuracyTips"
+                    ]
+                }
+            ]
+        }
+    ],
     "AddToHomescreenIPH": [
         {
             "platforms": [
@@ -3197,13 +3219,6 @@
                 "chromeos"
             ],
             "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EnableSuggestedFiles",
-                        "LauncherItemSuggest"
-                    ]
-                },
                 {
                     "name": "Quick_Access",
                     "params": {
@@ -8801,21 +8816,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WifiSyncAndroid"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WipeDataOnChildAccountSigninAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WipeDataOnChildAccountSignin"
                     ]
                 }
             ]

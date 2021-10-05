@@ -3437,7 +3437,6 @@ void RenderFrameHostImpl::OnCreateChildFrame(
                         ChromeTrackEvent::kRenderFrameProxyHost, *proxy);
     CaptureTraceForNavigationDebugScenario(
         DebugScenario::kDebugSubframeProxyCreationWithNoRVH);
-    return;
   }
 
   // |new_routing_id|, |browser_interface_broker_receiver| and
@@ -6842,6 +6841,8 @@ void RenderFrameHostImpl::CreateNewPopupWidget(
       agent_scheduling_group_, widget_route_id,
       std::move(blink_popup_widget_host), std::move(blink_widget_host),
       std::move(blink_widget));
+  if (!widget)
+    return;
   // The renderer-owned widget was created before sending the IPC received here.
   widget->RendererWidgetCreated(/*for_frame_widget=*/false);
 

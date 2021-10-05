@@ -123,6 +123,7 @@ crbug.com/1254937 http/tests/devtools/oopif/oopif-presentation-console-messages.
 crbug.com/1254937 http/tests/devtools/resource-tree/resource-tree-frame-add.js [ Failure ]
 crbug.com/1254937 http/tests/inspector-protocol/issues/content-security-policy-issue-creation-img.js [ Failure ]
 crbug.com/1254937 http/tests/inspector-protocol/runtime/eval-await-navigation-paused-message-order.js [ Timeout Failure ]
+crbug.com/1256612 plugins/focus-change-3-change-blur.html [ Pass Failure ]
 
 # Timeouts
 crbug.com/1254938 http/tests/doc-write-intervention/doc-write-sync-third-party-script-block.html [ Timeout ]
@@ -3621,6 +3622,13 @@ crbug.com/1220220 external/wpt/html/rendering/non-replaced-elements/form-control
 # Tests pass under virtual/webrtc-wpt-plan-b
 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-operations.https.html [ Pass ]
 
+# Temporarily disable to unblock a WebRTC roll
+crbug.com/webrtc/10739 [ Win ] external/wpt/webrtc-extensions/RTCRtpSynchronizationSource-senderCaptureTimeOffset.html [ Pass Failure ]
+crbug.com/webrtc/10739 [ Linux ] external/wpt/webrtc-extensions/RTCRtpSynchronizationSource-senderCaptureTimeOffset.html [ Pass Failure ]
+crbug.com/webrtc/10739 [ Mac10.12 ] external/wpt/webrtc-extensions/RTCRtpSynchronizationSource-senderCaptureTimeOffset.html [ Pass Failure ]
+crbug.com/webrtc/10739 [ Mac10.13 ] external/wpt/webrtc-extensions/RTCRtpSynchronizationSource-senderCaptureTimeOffset.html [ Pass Failure ]
+crbug.com/webrtc/10739 [ Mac10.15 ] external/wpt/webrtc-extensions/RTCRtpSynchronizationSource-senderCaptureTimeOffset.html [ Pass Failure ]
+
 crbug.com/1131471 external/wpt/web-locks/clientids.tentative.https.html [ Failure ]
 
 # See also crbug.com/920100 (sheriff 2019-01-09).
@@ -7068,6 +7076,11 @@ crbug.com/1250457 [ Mac ] virtual/shared_array_buffer_on_desktop/storage/indexed
 crbug.com/1250457 [ Mac ] external/wpt/html/syntax/speculative-parsing/generated/document-write/meta-viewport-link-stylesheet-media.tentative.sub.html [ Failure ]
 
 crbug.com/1249622 external/wpt/largest-contentful-paint/initially-invisible-images.html [ Failure ]
+crbug.com/1249622 virtual/initially-invisible-images-lcp/external/wpt/largest-contentful-paint/initially-invisible-images.html [ Pass ]
+crbug.com/959296 external/wpt/largest-contentful-paint/observe-svg-background-image.html [ Failure ]
+crbug.com/959296 virtual/background-svg-in-lcp/external/wpt/largest-contentful-paint/observe-svg-background-image.html [ Pass ]
+crbug.com/959296 external/wpt/largest-contentful-paint/observe-svg-data-uri-background-image.html [ Failure ]
+crbug.com/959296 virtual/background-svg-in-lcp/external/wpt/largest-contentful-paint/observe-svg-data-uri-background-image.html [ Pass ]
 
 # FileSystemHandle::move() is temporarily disabled outside of the Origin Private File System
 crbug.com/1247850 external/wpt/file-system-access/local_FileSystemFileHandle-move-manual.https.html [ Failure ]
@@ -7127,3 +7140,9 @@ crbug.com/1222126 http/tests/devtools/network/json-preview.js [ Skip ]
 
 # Skip devtools test hitting an unexpected tracing infrastructure exception 2021-10-04
 crbug.com/1255679 http/tests/devtools/service-workers/service-workers-wasm-test.js [ Skip ]
+
+# Sheriff 2021-10-05
+crbug.com/1256701 [ Debug Linux ] fast/forms/form-invalid-url.html [ Failure Pass ]
+crbug.com/1256755 [ Win ] http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ Failure Pass ]
+crbug.com/1256770 [ Mac ] svg/dynamic-updates/SVGFEComponentTransferElement-dom-intercept-attr.html [ Failure Pass ]
+

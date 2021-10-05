@@ -29,6 +29,10 @@ std::unique_ptr<WebApplicationInfo> CreateWebAppInfoForSampleSystemWebApp() {
       *info);
   info->theme_color = 0xFF4285F4;
   info->background_color = 0xFFFFFFFF;
+  // Bright green in dark mode to be able to see it flicker.
+  // This should match up with the dark theme background color to prevent
+  // flickering.
+  info->dark_mode_theme_color = 0xFF11ff00;
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
   info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
 
@@ -68,6 +72,14 @@ std::unique_ptr<WebApplicationInfo> SampleSystemAppDelegate::GetWebAppInfo()
 
 bool SampleSystemAppDelegate::ShouldCaptureNavigations() const {
   return true;
+}
+
+bool SampleSystemAppDelegate::ShouldShowNewWindowMenuOption() const {
+  return true;
+}
+
+bool SampleSystemAppDelegate::ShouldBeSingleWindow() const {
+  return false;
 }
 
 absl::optional<web_app::SystemAppBackgroundTaskInfo>

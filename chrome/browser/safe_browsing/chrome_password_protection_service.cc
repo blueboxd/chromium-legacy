@@ -52,12 +52,12 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_request_content.h"
-#include "components/safe_browsing/content/browser/safe_browsing_metrics_collector.h"
 #include "components/safe_browsing/content/browser/safe_browsing_navigation_observer_manager.h"
 #include "components/safe_browsing/content/browser/triggers/trigger_throttler.h"
 #include "components/safe_browsing/content/browser/ui_manager.h"
 #include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/browser/db/database_manager.h"
+#include "components/safe_browsing/core/browser/safe_browsing_metrics_collector.h"
 #include "components/safe_browsing/core/browser/sync/safe_browsing_primary_account_token_fetcher.h"
 #include "components/safe_browsing/core/browser/verdict_cache_manager.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -254,7 +254,8 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
               IdentityManagerFactory::GetForProfile(profile)),
           profile->IsOffTheRecord(),
           IdentityManagerFactory::GetForProfile(profile),
-          /*try_token_fetch=*/true),
+          /*try_token_fetch=*/true,
+          SafeBrowsingMetricsCollectorFactory::GetForProfile(profile)),
       ui_manager_(sb_service->ui_manager()),
       trigger_manager_(sb_service->trigger_manager()),
       profile_(profile),
@@ -1606,14 +1607,16 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
     VerdictCacheManager* cache_manager,
     ChangePhishedCredentialsCallback add_phished_credentials,
     ChangePhishedCredentialsCallback remove_phished_credentials)
-    : PasswordProtectionService(nullptr,
-                                nullptr,
-                                nullptr,
-                                nullptr,
-                                nullptr,
-                                false,
-                                nullptr,
-                                /*try_token_fetch=*/false),
+    : PasswordProtectionService(
+          nullptr,
+          nullptr,
+          nullptr,
+          nullptr,
+          nullptr,
+          false,
+          nullptr,
+          /*try_token_fetch=*/false,
+          SafeBrowsingMetricsCollectorFactory::GetForProfile(profile)),
       ui_manager_(ui_manager),
       trigger_manager_(nullptr),
       profile_(profile),

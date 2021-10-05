@@ -2027,6 +2027,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/ui/webui/settings/settings_clear_browsing_data_handler_browsertest.cc",
       "../browser/ui/webui/settings/settings_secure_dns_handler_browsertest.cc",
       "../browser/ui/webui/settings/settings_ui_browsertest.cc",
+      "../browser/ui/webui/support_tool_ui_browsertest.cc",
       "../browser/ui/webui/tab_search/tab_search_ui_browsertest.cc",
       "../browser/ui/webui/webui_load_timer_browsertest.cc",
       "../browser/ui/webui/webui_webview_browsertest.cc",
@@ -3091,6 +3092,8 @@ if (!is_android && !is_fuchsia) {
         "../browser/ash/login/quick_unlock/pin_migration_browsertest.cc",
         "../browser/ash/login/reset_browsertest.cc",
         "../browser/ash/login/saml/fake_saml_idp_mixin.cc",
+        "../browser/ash/login/saml/lockscreen_reauth_dialog_test_helper.cc",
+        "../browser/ash/login/saml/lockscreen_reauth_dialog_test_helper.h",
         "../browser/ash/login/saml/password_change_extension_browsertest.cc",
         "../browser/ash/login/saml/password_change_success_detection_browsertest.cc",
         "../browser/ash/login/saml/saml_browsertest.cc",
@@ -3694,6 +3697,7 @@ if (!is_android && !is_fuchsia) {
       deps += [
         "//chrome/browser/safe_browsing:metrics_collector",
         "//components/safe_browsing/content/browser:safe_browsing_blocking_page",
+        "//components/safe_browsing/core/browser:safe_browsing_metrics_collector",
         "//components/safe_browsing/core/common/fbs:client_model",
       ]
 
@@ -4578,7 +4582,6 @@ test("unit_tests") {
     "../browser/performance_manager/mechanisms/page_freezer_unittest.cc",
     "../browser/performance_manager/metrics/memory_pressure_metrics_unittest.cc",
     "../browser/performance_manager/observers/isolation_context_metrics_unittest.cc",
-    "../browser/performance_manager/observers/metrics_collector_unittest.cc",
     "../browser/performance_manager/policies/page_freezing_policy_unittest.cc",
     "../browser/performance_manager/policies/working_set_trimmer_policy_unittest.cc",
     "../browser/performance_manager/test_support/page_aggregator.cc",

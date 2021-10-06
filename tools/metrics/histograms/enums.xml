@@ -34753,6 +34753,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4054" label="V8Navigator_FinalizeAd_Method"/>
   <int value="4055" label="RegionCapture"/>
   <int value="4056" label="AppHistory"/>
+  <int value="4057" label="FlexboxAlignSingleLineDifference"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -43544,6 +43545,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="Preinstalled by default, but is not considered a system app"/>
   <int value="5" label="Installed by sync"/>
   <int value="6" label="Installed by user action"/>
+  <int value="7" label="Installed by SubApp API"/>
 </enum>
 
 <enum name="InstallSource">
@@ -80171,6 +80173,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="11" label="Failed event write error"/>
   <int value="12" label="Failed event serialization"/>
   <int value="13" label="Uninitialized recorder"/>
+  <int value="14" label="Invalid event parsed"/>
 </enum>
 
 <enum name="StructuredMetricsKeyValidationState">

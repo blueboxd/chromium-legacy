@@ -300,7 +300,7 @@ export class Camera extends View {
     dom.get('#start-takephoto', HTMLButtonElement)
         .addEventListener('click', (e) => {
           const mouseEvent = assertInstanceof(e, MouseEvent);
-          this.beginTake_(getShutterType(mouseEvent));
+          this.beginTake(getShutterType(mouseEvent));
         });
 
     dom.get('#stop-takephoto', HTMLButtonElement)
@@ -309,7 +309,7 @@ export class Camera extends View {
     const videoShutter = dom.get('#recordvideo', HTMLButtonElement);
     videoShutter.addEventListener('click', (e) => {
       if (!state.get(state.State.TAKING)) {
-        this.beginTake_(getShutterType(assertInstanceof(e, MouseEvent)));
+        this.beginTake(getShutterType(assertInstanceof(e, MouseEvent)));
       } else {
         this.endTake_();
       }
@@ -622,9 +622,8 @@ export class Camera extends View {
    *     shutter type.
    * @return {?Promise} Promise resolved when take action completes. Returns
    *     null if CCA can't start take action.
-   * @protected
    */
-  beginTake_(shutterType) {
+  beginTake(shutterType) {
     if (state.get(state.State.CAMERA_CONFIGURING) ||
         state.get(state.State.TAKING)) {
       return null;
@@ -903,7 +902,7 @@ export class Camera extends View {
       if (state.get(state.State.TAKING)) {
         this.endTake_();
       } else {
-        this.beginTake_(metrics.ShutterType.VOLUME_KEY);
+        this.beginTake(metrics.ShutterType.VOLUME_KEY);
       }
       return true;
     }
@@ -1016,6 +1015,18 @@ export class Camera extends View {
             errorToReport =
                 new Error(`${e.message} (constraint = ${e.constraint})`);
             errorToReport.name = 'OverconstrainedError';
+          } else if (e.name === 'NotReadableError') {
+            // TODO(b/187879603): Remove this hacked once we understand more
+            // about such error.
+            // We cannot get the camera facing from stream since it might not be
+            // successfully opened. Therefore, we asked the camera facing via
+            // Mojo API.
+            let facing = Facing.NOT_SET;
+            if (deviceOperator !== null) {
+              facing = await deviceOperator.getCameraFacing(deviceId);
+            }
+            errorToReport = new Error(`${e.message} (facing = ${facing})`);
+            errorToReport.name = 'NotReadableError';
           }
           error.reportError(
               ErrorType.START_CAMERA_FAILURE, ErrorLevel.ERROR,

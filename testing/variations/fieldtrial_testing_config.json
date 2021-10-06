@@ -787,7 +787,28 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20210623",
+                    "name": "EnabledWithGboard_20211005",
+                    "params": {
+                        "group": "gboard"
+                    },
+                    "enable_features": [
+                        "AssistMultiWord"
+                    ]
+                },
+                {
+                    "name": "EnabledWithGboardRelaxedA_20211005",
+                    "params": {
+                        "group": "gboard_relaxed_a"
+                    },
+                    "enable_features": [
+                        "AssistMultiWord"
+                    ]
+                },
+                {
+                    "name": "EnabledWithGboardRelaxedB_20211005",
+                    "params": {
+                        "group": "gboard_relaxed_b"
+                    },
                     "enable_features": [
                         "AssistMultiWord"
                     ]
@@ -2090,22 +2111,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DetailedLanguageSettings"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ClientSideDetectionDocumentScanning": [
-        {
-            "platforms": [
-                "linux",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ClientSideDetectionDocumentScanning"
                     ]
                 }
             ]

@@ -120,6 +120,9 @@ extern const char kEditPasswordsInSettingsDescription[];
 extern const char kEnableBluetoothSerialPortProfileInSerialApiName[];
 extern const char kEnableBluetoothSerialPortProfileInSerialApiDescription[];
 
+extern const char kWebBluetoothBondOnDemandName[];
+extern const char kWebBluetoothBondOnDemandDescription[];
+
 extern const char kEnableDrDcName[];
 extern const char kEnableDrDcDescription[];
 
@@ -2566,9 +2569,6 @@ extern const char kEnablePalmOnToolTypePalmDescription[];
 
 extern const char kEnablePalmSuppressionName[];
 extern const char kEnablePalmSuppressionDescription[];
-
-extern const char kEnableQuickAnswersV2Name[];
-extern const char kEnableQuickAnswersV2Description[];
 
 extern const char kDisableQuickAnswersV2TranslationName[];
 extern const char kDisableQuickAnswersV2TranslationDescription[];

@@ -75,7 +75,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 #include "third_party/blink/renderer/core/loader/frame_client_hints_preferences_context.h"
 #include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -267,7 +266,6 @@ struct SameSizeAsDocumentLoader
   WebNavigationType navigation_type;
   DocumentLoadTiming document_load_timing;
   base::TimeTicks time_of_last_data_received;
-  Member<ApplicationCacheHostForFrame> application_cache_host;
   std::unique_ptr<WebServiceWorkerNetworkProvider>
       service_worker_network_provider;
   DocumentPolicy::ParsedDocumentPolicy document_policy;
@@ -315,7 +313,6 @@ struct SameSizeAsDocumentLoader
   WebVector<WebHistoryItem> app_history_forward_entries;
   mojo::Remote<blink::mojom::CodeCacheHost> code_cache_host;
   HashSet<KURL> early_hints_preloaded_resources_;
-  bool scroll_offset_changed_since_last_history_navigation_triggered_;
 };
 
 // Asserts size of DocumentLoader, so that whenever a new attribute is added to
@@ -563,7 +560,6 @@ LocalFrameClient& DocumentLoader::GetLocalFrameClient() const {
 
 DocumentLoader::~DocumentLoader() {
   DCHECK(!frame_);
-  DCHECK(!application_cache_host_);
   DCHECK_EQ(state_, kSentDidFinishLoad);
 }
 
@@ -574,7 +570,6 @@ void DocumentLoader::Trace(Visitor* visitor) const {
   visitor->Trace(parser_);
   visitor->Trace(subresource_filter_);
   visitor->Trace(document_load_timing_);
-  visitor->Trace(application_cache_host_);
   visitor->Trace(cached_metadata_handler_);
   visitor->Trace(prefetched_signed_exchange_manager_);
   visitor->Trace(use_counter_);
@@ -643,18 +638,6 @@ void DocumentLoader::DidObserveLoadingBehavior(LoadingBehaviorFlag behavior) {
     DCHECK_GE(state_, kCommitted);
     GetLocalFrameClient().DidObserveLoadingBehavior(behavior);
   }
-}
-
-void DocumentLoader::DidTriggerBackForwardNavigation() {
-  scroll_offset_changed_since_last_history_navigation_triggered_ = false;
-}
-
-void DocumentLoader::DidChangeScrollOffset() {
-  // The scroll offset changed. If a pending history navigation commits in this
-  // document later on, we should keep the updated scroll offset instead of
-  // trying to restore the scroll offset from the session history entry.
-  // See also https://crbug.com/1209717.
-  scroll_offset_changed_since_last_history_navigation_triggered_ = true;
 }
 
 // static
@@ -1206,7 +1189,6 @@ DocumentPolicy::ParsedDocumentPolicy DocumentLoader::CreateDocumentPolicy() {
 
 void DocumentLoader::HandleResponse() {
   DCHECK(frame_);
-  application_cache_host_->DidReceiveResponseForMainResource(response_);
 
   if (response_.IsHTTP() && !cors::IsOkStatus(response_.HttpStatusCode())) {
     DCHECK(!IsA<HTMLObjectElement>(frame_->Owner()));
@@ -1384,10 +1366,6 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
   // to check again if frame_ is null.
   if (!frame_ || !frame_->GetPage())
     return;
-
-  bool may_restore_scroll_offset =
-      history_item &&
-      !scroll_offset_changed_since_last_history_navigation_triggered_;
   GetFrameLoader().SaveScrollState();
 
   KURL old_url = frame_->GetDocument()->Url();
@@ -1427,8 +1405,8 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
   // to a same ISN when a history navigation targets a frame that no longer
   // exists (https://crbug.com/705550).
   if (!same_item_sequence_number) {
-    GetFrameLoader().DidFinishSameDocumentNavigation(
-        url, frame_load_type, history_item, may_restore_scroll_offset);
+    GetFrameLoader().DidFinishSameDocumentNavigation(url, frame_load_type,
+                                                     history_item);
   }
 }
 
@@ -1497,10 +1475,6 @@ void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
   if (!frame_)
     return;
 
-  if (application_cache_host_) {
-    application_cache_host_->Detach();
-    application_cache_host_.Clear();
-  }
   service_worker_network_provider_ = nullptr;
   WeakIdentifierMap<DocumentLoader>::NotifyObjectDestroyed(this);
   frame_ = nullptr;
@@ -1545,10 +1519,6 @@ void DocumentLoader::StartLoadingInternal() {
   DCHECK_EQ(state_, kNotStarted);
   DCHECK(params_);
   state_ = kProvisional;
-  application_cache_host_ = MakeGarbageCollected<ApplicationCacheHostForFrame>(
-      this, GetFrame()->Client()->GetBrowserInterfaceBroker(),
-      GetFrame()->GetTaskRunner(TaskType::kNetworking),
-      params_->appcache_host_id);
 
   if (url_.IsEmpty() && commit_reason_ != CommitReason::kInitialization)
     url_ = BlankURL();
@@ -1577,11 +1547,6 @@ void DocumentLoader::StartLoadingInternal() {
           url_.GetString(),
           WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
   virtual_time_pauser_.PauseVirtualTime();
-
-  if (!archive_) {
-    application_cache_host_->WillStartLoadingMainResource(this, url_,
-                                                          http_method_);
-  }
 
   // Many parties are interested in resource loading, so we will notify
   // them through various DispatchXXX methods on FrameFetchContext.

@@ -1328,6 +1328,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_TITLE" desc="Title of the camera roll section (where users access recently taken photos and videos) in phone hub bubble.">
         Recent photos
       </message>
+      <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_MENU_DOWNLOAD_LABEL" desc="Label for the option to download a camera roll item from the phone hub bubble.">
+        Download
+      </message>
       <message name="IDS_ASH_STYLUS_BATTERY_LOW_LABEL" desc="The label next to the stylus battery indicator when the battery level is below 24%">
         Low
       </message>
@@ -3335,17 +3338,11 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_RETRY" desc="Display text when the Quick Answers view is retry.">
         Retry
       </message>
-      <message name="IDS_ASH_QUICK_ANSWERS_VIEW_NO_RESULT" desc="Display text when the Quick Answers view receives no result.">
-        See result in Assistant
-      </message>
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_NO_RESULT_V2" desc="Display text when the Quick Answers view receives no result (V2 version).">
         See result in Google Search
       </message>
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_INFO_ALERT_TEXT" desc="A11y alert text for the Quick Answers view.">
         Info related to your selection available. Use Up arrow key to access.
-      </message>
-      <message name="IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_INFO_DESC_TEMPLATE" desc="A11y description template for the Quick Answers view.">
-        <ph name="QUERY_TEXT">$1<ex>interested</ex></ph>; <ph name="RESULT_TEXT">$2<ex>showing curiosity or concern about something or someone; having a feeling of interest.</ex></ph>; Press Search plus Space to see result in Assistant.
       </message>
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_INFO_DESC_TEMPLATE_V2" desc="A11y description template for the Quick Answers view (V2 version).">
         <ph name="QUERY_TEXT">$1<ex>interested</ex></ph>; <ph name="RESULT_TEXT">$2<ex>showing curiosity or concern about something or someone; having a feeling of interest.</ex></ph>; Press Search plus Space to see result in Google Search.
@@ -3996,6 +3993,14 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_FINGERPRINT_LABEL_NOT_AUTHENTICATED" desc="Label for the Fingerprint icon on user's lock screen after too many failed attempts to authenticate a fingerprint.">
         Too many fingerprint attempts
+      </message>
+
+      <!-- Continue Section strings -->
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_CONTEXT_MENU_OPEN" desc="Context menu option title to open a suggestion for a task in the launcher. Tasks display in the continue section located above the app list.">
+        Open
+      </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_CONTEXT_MENU_REMOVE" desc="Context menu option title to remove a suggestion for a task in the launcher. Tasks display in the continue section located above the app list.">
+        Remove Suggestion
       </message>
     </messages>
   </release>

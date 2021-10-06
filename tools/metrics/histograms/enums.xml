@@ -15306,6 +15306,7 @@ Called by update_net_error_codes.py.-->
   <int value="23" label="kRedirectContainsCredentials"/>
   <int value="24" label="kInsecurePrivateNetwork"/>
   <int value="25" label="kInvalidPrivateNetworkAccess"/>
+  <int value="26" label="kUnexpectedPrivateNetworkAccess"/>
 </enum>
 
 <enum name="CorsAccessCheckResult">
@@ -20553,6 +20554,7 @@ Called by update_debug_scenarios.py.-->
   <int value="109" label="File handling permission request"/>
   <int value="110" label="Enterprise confirmation"/>
   <int value="111" label="App Identity Update Confirmation"/>
+  <int value="112" label="Bluetooth device pairing credentials"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
@@ -26470,6 +26472,8 @@ Called by update_document_policy_enum.py.-->
       label="DeviceLoginScreenPromptOnMultipleMatchingCertificates"/>
   <int value="905" label="PromptOnMultipleMatchingCertificates"/>
   <int value="906" label="SideSearchEnabled"/>
+  <int value="907" label="AccessCodeCastEnabled"/>
+  <int value="908" label="AccessCodeCastDeviceDuration"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -43136,6 +43140,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="Canceled"/>
 </enum>
 
+<enum name="InProductHelp.SnoozeAction">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Snooze"/>
+  <int value="2" label="Dismiss"/>
+</enum>
+
 <enum name="InputEventTypeForResponsivenessMetric">
   <int value="0" label="mousedown"/>
   <int value="1" label="click"/>
@@ -43549,6 +43559,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="Preinstalled by default, but is not considered a system app"/>
   <int value="5" label="Installed by sync"/>
   <int value="6" label="Installed by user action"/>
+</enum>
+
+<enum name="InstallSource2">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Installed as part of Chrome OS"/>
+  <int value="2" label="Installed from sync"/>
+  <int value="3" label="Installed from Play store"/>
+  <int value="4" label="Installed from Chrome web store"/>
+  <int value="5" label="Installed from browser"/>
 </enum>
 
 <enum name="InstallStatus">
@@ -47960,6 +47979,7 @@ from previous Chrome versions.
   <int value="-1895719323" label="VrBrowsingTabsView:enabled"/>
   <int value="-1895050832" label="GlobalMediaControlsCastStartStop:disabled"/>
   <int value="-1894699049" label="AudioFocusEnforcement:disabled"/>
+  <int value="-1894576813" label="WebBluetoothBondOnDemand:enabled"/>
   <int value="-1894289914" label="IncognitoScreenshot:disabled"/>
   <int value="-1894054576" label="FontAccess:enabled"/>
   <int value="-1893668420"
@@ -51177,6 +51197,7 @@ from previous Chrome versions.
   <int value="600037637" label="AndroidSigninPromos:enabled"/>
   <int value="600643275" label="OobeRecommendAppsScreen:enabled"/>
   <int value="602117675" label="NTPBookmarkSuggestions:enabled"/>
+  <int value="602452004" label="WebBluetoothBondOnDemand:disabled"/>
   <int value="603326800" label="UsePasswordSeparatedSigninFlow:enabled"/>
   <int value="603988014" label="NetworkService:enabled"/>
   <int value="604334859" label="Prerender2:enabled"/>
@@ -75222,6 +75243,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="Warning"/>
 </enum>
 
+<enum name="SegmentationBooleanSegmentSwitch">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="None to enabled"/>
+  <int value="2" label="Enabled to none"/>
+</enum>
+
 <enum name="SegmentationPlatformModelExecutionStatus">
   <int value="0" label="Success"/>
   <int value="1" label="ExecutionError"/>
@@ -75233,6 +75260,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="NewTab"/>
   <int value="5" label="Share"/>
   <int value="6" label="Voice"/>
+  <int value="10" label="Dummy"/>
+  <int value="11" label="ClankStart"/>
+  <int value="12" label="QueryTiles"/>
 </enum>
 
 <enum name="SegmentationPlatformValidationResult">
@@ -78101,6 +78131,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="Response allowed after sniffing"/>
 </enum>
 
+<enum name="SiteLayout">
+  <summary>See Android.RequestDesktopSite.Changed</summary>
+  <int value="0" label="Mobile"/>
+  <int value="1" label="Desktop"/>
+</enum>
+
 <enum name="SkiaFilterQuality">
   <int value="0" label="None"/>
   <int value="1" label="Low"/>
@@ -80134,6 +80170,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="10" label="Failed event parse error"/>
   <int value="11" label="Failed event write error"/>
   <int value="12" label="Failed event serialization"/>
+  <int value="13" label="Uninitialized recorder"/>
 </enum>
 
 <enum name="StructuredMetricsKeyValidationState">

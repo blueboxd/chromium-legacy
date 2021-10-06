@@ -2399,32 +2399,6 @@ bool WallpaperControllerImpl::SetSyncedWallpaperInfo(
                           prefs::kSyncableWallpaperInfo);
 }
 
-void WallpaperControllerImpl::SyncLocalAndRemotePrefs(
-    const AccountId& account_id) {
-  // Check if the synced info was set by another device, and if we have already
-  // handled it locally.
-  WallpaperInfo synced_info;
-  WallpaperInfo local_info;
-  if (!GetSyncedWallpaperInfo(account_id, &synced_info))
-    return;
-  if (!GetLocalWallpaperInfo(account_id, &local_info)) {
-    HandleWallpaperInfoSyncedIn(account_id, synced_info);
-    return;
-  }
-  if (synced_info == local_info)
-    return;
-  if (synced_info.date > local_info.date) {
-    HandleWallpaperInfoSyncedIn(account_id, synced_info);
-  } else if (local_info.type == WallpaperType::kCustomized) {
-    // Generally, we handle setting synced_info when local_info is updated.
-    // But for custom images, we wait until the image is uploaded to Drive,
-    // which may not be available at the time of setting the local_info.
-    base::FilePath source = GetCustomWallpaperDir(kOriginalWallpaperSubDir)
-                                .Append(local_info.location);
-    SaveWallpaperToDriveFs(account_id, source);
-  }
-}
-
 void WallpaperControllerImpl::HandleWallpaperInfoSyncedIn(
     const AccountId& account_id,
     WallpaperInfo info) {
@@ -2523,9 +2497,30 @@ std::string WallpaperControllerImpl::GetDailyRefreshCollectionId(
   return info.collection_id;
 }
 
-void WallpaperControllerImpl::OnGoogleDriveMounted(
+void WallpaperControllerImpl::SyncLocalAndRemotePrefs(
     const AccountId& account_id) {
-  SyncLocalAndRemotePrefs(account_id);
+  // Check if the synced info was set by another device, and if we have already
+  // handled it locally.
+  WallpaperInfo synced_info;
+  WallpaperInfo local_info;
+  if (!GetSyncedWallpaperInfo(account_id, &synced_info))
+    return;
+  if (!GetLocalWallpaperInfo(account_id, &local_info)) {
+    HandleWallpaperInfoSyncedIn(account_id, synced_info);
+    return;
+  }
+  if (synced_info == local_info)
+    return;
+  if (synced_info.date > local_info.date) {
+    HandleWallpaperInfoSyncedIn(account_id, synced_info);
+  } else if (local_info.type == WallpaperType::kCustomized) {
+    // Generally, we handle setting synced_info when local_info is updated.
+    // But for custom images, we wait until the image is uploaded to Drive,
+    // which may not be available at the time of setting the local_info.
+    base::FilePath source = GetCustomWallpaperDir(kOriginalWallpaperSubDir)
+                                .Append(local_info.location);
+    SaveWallpaperToDriveFs(account_id, source);
+  }
 }
 
 bool WallpaperControllerImpl::IsDailyRefreshEnabled() const {
@@ -2595,15 +2590,14 @@ void WallpaperControllerImpl::OnSetDailyWallpaper(
 
 void WallpaperControllerImpl::StartDailyRefreshTimer() {
   using base::Time;
-  using base::TimeDelta;
 
-  TimeDelta daily_refresh_delay = GetTimeToNextDailyRefreshUpdate();
+  base::TimeDelta daily_refresh_delay = GetTimeToNextDailyRefreshUpdate();
 
   // Add random delay within 1 hour, to prevent hot spotting, and reduce
   // multiple wallpaper transitions for sync users with multiple devices
-  auto random_delay = TimeDelta::FromMillisecondsD(
-      base::RandDouble() * Time::kMillisecondsPerSecond *
-      Time::kSecondsPerHour);
+  auto random_delay =
+      base::Milliseconds(base::RandDouble() * Time::kMillisecondsPerSecond *
+                         Time::kSecondsPerHour);
   daily_refresh_delay += random_delay;
 
   StartDailyRefreshTimer(daily_refresh_delay);

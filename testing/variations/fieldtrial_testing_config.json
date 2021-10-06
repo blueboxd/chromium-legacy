@@ -622,6 +622,24 @@
             ]
         }
     ],
+    "AndroidScrollCapture": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20210928",
+                    "params": {
+                        "in_memory_capture": "false"
+                    },
+                    "enable_features": [
+                        "ScrollCapture"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidSwitchToTab": [
         {
             "platforms": [
@@ -1178,6 +1196,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillStrictContextualCardNameConditions"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillSuggestVirtualCardsOnIncompleteForm": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillSuggestVirtualCardsOnIncompleteForm"
                     ]
                 }
             ]
@@ -2057,6 +2095,22 @@
             ]
         }
     ],
+    "ClientSideDetectionDocumentScanning": [
+        {
+            "platforms": [
+                "linux",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ClientSideDetectionDocumentScanning"
+                    ]
+                }
+            ]
+        }
+    ],
     "ClientSideDetectionReferrerChain": [
         {
             "platforms": [
@@ -2879,6 +2933,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DirectCompositionForceFullDamage"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DisableDiscoverFeedAppFlows": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "EnableDiscoverFeedAppFlows"
                     ]
                 }
             ]
@@ -7209,6 +7278,7 @@
         {
             "platforms": [
                 "android",
+                "android_webview",
                 "chromeos",
                 "chromeos_lacros",
                 "linux",

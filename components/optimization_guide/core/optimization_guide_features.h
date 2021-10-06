@@ -30,7 +30,6 @@ extern const base::Feature kOptimizationTargetPrediction;
 extern const base::Feature kOptimizationGuideModelDownloading;
 extern const base::Feature kPageContentAnnotations;
 extern const base::Feature kPageTextExtraction;
-extern const base::Feature kLoadModelFileForEachExecution;
 extern const base::Feature kPushNotifications;
 extern const base::Feature kOptimizationGuideMetadataValidation;
 
@@ -212,10 +211,6 @@ bool ShouldExtractRelatedSearches();
 std::vector<optimization_guide::proto::OptimizationTarget>
 GetPageContentModelsToExecute();
 
-// Whether the model files that use |OptimizationTargetModelExecutor| should be
-// loaded for each execution, and then unloaded once complete.
-bool LoadModelFileForEachExecution();
-
 // The time to wait beyond the onload event before sending the hints request for
 // link predictions.
 base::TimeDelta GetOnloadDelayForHintsFetching();
@@ -227,6 +222,9 @@ int NumBitsForRAPPORMetrics();
 // The probability of a bit flip a score with RAPPOR-style metrics reporting.
 // Must be between 0 and 1.
 double NoiseProbabilityForRAPPORMetrics();
+
+// Returns whether the metadata validation fetch feature is host keyed.
+bool ShouldMetadataValidationFetchHostKeyed();
 
 }  // namespace features
 }  // namespace optimization_guide

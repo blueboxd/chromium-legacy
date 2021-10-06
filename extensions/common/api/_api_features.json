@@ -232,6 +232,7 @@
         "chrome://mobilesetup/*",
         "chrome://oobe/*",
         "chrome://os-settings/*",
+        "chrome://parent-access/*",
         "chrome://password-change/*",
         "chrome://lock-reauth/*"
       ]
@@ -630,7 +631,8 @@
     "matches": [
       "chrome://extensions/*",
       // System Web App version of File Manager.
-      "chrome://file-manager/*"
+      "chrome://file-manager/*",
+      "chrome://test/*"
     ]
   }, {
     "channel": "stable",
@@ -677,6 +679,7 @@
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
       "chrome://os-settings/*",
+      "chrome://parent-access/*",
       "chrome://password-change/*",
       "chrome://lock-reauth/*"
     ]
@@ -698,6 +701,7 @@
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
       "chrome://os-settings/*",
+      "chrome://parent-access/*",
       "chrome://password-change/*",
       "chrome://lock-reauth/*"
     ]
@@ -716,7 +720,8 @@
       "chrome://home/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
-      "chrome://os-settings/*"
+      "chrome://os-settings/*",
+      "chrome://parent-access/*"
     ]
   }]
 }

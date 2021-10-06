@@ -43,7 +43,7 @@ const base::Feature kOptimizationHintsFieldTrials{
 const base::Feature kRemoteOptimizationGuideFetching{
     "OptimizationHintsFetching", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent{
+const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent {
   "OptimizationHintsFetchingAnonymousDataConsent",
 #if defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -84,11 +84,6 @@ const base::Feature kPushNotifications{"OptimizationGuidePushNotifications",
 // experiment parameters.
 const base::Feature kPageTextExtraction{
     "OptimizationGuidePageContentExtraction", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables the model file to be loaded for each execution, then unloaded on
-// completion.
-const base::Feature kLoadModelFileForEachExecution{
-    "LoadModelFileForEachExecution", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the validation of optimization guide metadata.
 const base::Feature kOptimizationGuideMetadataValidation{
@@ -413,10 +408,6 @@ GetPageContentModelsToExecute() {
   return model_targets.vector();
 }
 
-bool LoadModelFileForEachExecution() {
-  return base::FeatureList::IsEnabled(kLoadModelFileForEachExecution);
-}
-
 base::TimeDelta GetOnloadDelayForHintsFetching() {
   return base::Milliseconds(GetFieldTrialParamByFeatureAsInt(
       kRemoteOptimizationGuideFetching, "onload_delay_for_hints_fetching_ms",
@@ -435,6 +426,12 @@ double NoiseProbabilityForRAPPORMetrics() {
   return std::max(0.0, std::min(1.0, GetFieldTrialParamByFeatureAsDouble(
                                          kPageContentAnnotations,
                                          "noise_prob_for_rappor_metrics", .5)));
+}
+
+bool ShouldMetadataValidationFetchHostKeyed() {
+  DCHECK(base::FeatureList::IsEnabled(kOptimizationGuideMetadataValidation));
+  return GetFieldTrialParamByFeatureAsBool(kOptimizationGuideMetadataValidation,
+                                           "is_host_keyed", true);
 }
 
 }  // namespace features

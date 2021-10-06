@@ -86,7 +86,6 @@ class TickClock;
 
 namespace blink {
 
-class ApplicationCacheHostForFrame;
 class ContentSecurityPolicy;
 class Document;
 class DocumentParser;
@@ -164,9 +163,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   void DidObserveInputDelay(base::TimeDelta input_delay);
   void DidObserveLoadingBehavior(LoadingBehaviorFlag);
 
-  void DidTriggerBackForwardNavigation();
-  void DidChangeScrollOffset();
-
   // https://html.spec.whatwg.org/multipage/history.html#url-and-history-update-steps
   void RunURLAndHistoryUpdateSteps(
       const KURL&,
@@ -242,10 +238,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   DocumentLoadTiming& GetTiming() { return document_load_timing_; }
 
-  ApplicationCacheHostForFrame* GetApplicationCacheHost() const {
-    return application_cache_host_.Get();
-  }
-
   PreviewsState GetPreviewsState() const { return previews_state_; }
 
   struct InitialScrollState {
@@ -305,10 +297,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // UseCounter
   void CountUse(mojom::WebFeature) override;
   void CountDeprecation(mojom::WebFeature) override;
-
-  void SetApplicationCacheHostForTesting(ApplicationCacheHostForFrame* host) {
-    application_cache_host_ = host;
-  }
 
   void SetCommitReason(CommitReason reason) { commit_reason_ = reason; }
 
@@ -547,8 +535,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   base::TimeTicks time_of_last_data_received_;
 
-  Member<ApplicationCacheHostForFrame> application_cache_host_;
-
   std::unique_ptr<WebServiceWorkerNetworkProvider>
       service_worker_network_provider_;
 
@@ -650,11 +636,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   mojo::Remote<blink::mojom::CodeCacheHost> code_cache_host_;
 
   HashSet<KURL> early_hints_preloaded_resources_;
-
-  // Tracks whether the scroll offset changed since the last time a history
-  // navigation was triggered from this document, so that we won't attempt to do
-  // scroll restoration when the navigation commits.
-  bool scroll_offset_changed_since_last_history_navigation_triggered_ = false;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

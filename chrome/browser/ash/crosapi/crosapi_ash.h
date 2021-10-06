@@ -17,6 +17,10 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
+namespace media {
+class StableVideoDecoderFactoryService;
+}  // namespace media
+
 namespace crosapi {
 
 class AutomationAsh;
@@ -54,7 +58,6 @@ class StructuredMetricsServiceAsh;
 class SystemDisplayAsh;
 class TaskManagerAsh;
 class WebPageInfoFactoryAsh;
-class TestControllerAsh;
 class UrlHandlerAsh;
 class VideoCaptureDeviceFactoryAsh;
 class NetworkSettingsServiceAsh;
@@ -65,6 +68,13 @@ class CrosapiAsh : public mojom::Crosapi {
  public:
   CrosapiAsh();
   ~CrosapiAsh() override;
+
+  // Abstract base class to support dependency injection for tests.
+  class TestControllerReceiver {
+   public:
+    virtual void BindReceiver(
+        mojo::PendingReceiver<mojom::TestController> receiver) = 0;
+  };
 
   // Binds the given receiver to this instance.
   // |disconnected_handler| is called on the connection lost.
@@ -146,6 +156,8 @@ class CrosapiAsh : public mojom::Crosapi {
   void BindSensorHalClient(
       mojo::PendingRemote<chromeos::sensors::mojom::SensorHalClient> remote)
       override;
+  void BindStableVideoDecoderFactory(
+      mojo::GenericPendingReceiver receiver) override;
   void BindHidManager(
       mojo::PendingReceiver<device::mojom::HidManager> receiver) override;
   void BindFeedback(mojo::PendingReceiver<mojom::Feedback> receiver) override;
@@ -221,6 +233,9 @@ class CrosapiAsh : public mojom::Crosapi {
     return structured_metrics_service_ash_.get();
   }
 
+  // Caller is responsible for ensuring that the pointer stays valid.
+  void SetTestControllerForTesting(TestControllerReceiver* test_controller);
+
  private:
   // Called when a connection is lost.
   void OnDisconnected();
@@ -257,14 +272,19 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<ResourceManagerAsh> resource_manager_ash_;
   std::unique_ptr<ScreenManagerAsh> screen_manager_ash_;
   std::unique_ptr<SelectFileAsh> select_file_ash_;
+  std::unique_ptr<media::StableVideoDecoderFactoryService>
+      stable_video_decoder_factory_ash_;
   std::unique_ptr<StructuredMetricsServiceAsh> structured_metrics_service_ash_;
   std::unique_ptr<SystemDisplayAsh> system_display_ash_;
   std::unique_ptr<WebPageInfoFactoryAsh> web_page_info_factory_ash_;
   std::unique_ptr<TaskManagerAsh> task_manager_ash_;
-  std::unique_ptr<TestControllerAsh> test_controller_ash_;
   std::unique_ptr<UrlHandlerAsh> url_handler_ash_;
   std::unique_ptr<VideoCaptureDeviceFactoryAsh>
       video_capture_device_factory_ash_;
+
+  // Only set in the test ash chrome binary. In production ash this is always
+  // nullptr.
+  TestControllerReceiver* test_controller_ = nullptr;
 
   mojo::ReceiverSet<mojom::Crosapi, CrosapiId> receiver_set_;
   std::map<mojo::ReceiverId, base::OnceClosure> disconnect_handler_map_;

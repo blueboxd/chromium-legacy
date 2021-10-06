@@ -144,6 +144,9 @@ CONTENT_EXPORT extern const base::Feature kPepperCrossOriginRedirectRestriction;
 CONTENT_EXPORT extern const base::Feature kPlzServiceWorker;
 CONTENT_EXPORT extern const base::Feature kHighPriorityBeforeUnload;
 CONTENT_EXPORT extern const base::Feature kPrioritizeBootstrapTasks;
+CONTENT_EXPORT extern const base::Feature
+    kPrivateNetworkAccessRespectPreflightResults;
+CONTENT_EXPORT extern const base::Feature kPrivateNetworkAccessSendPreflights;
 CONTENT_EXPORT extern const base::Feature kProactivelySwapBrowsingInstance;
 CONTENT_EXPORT extern const base::Feature
     kProcessSharingWithDefaultSiteInstances;
@@ -245,6 +248,7 @@ CONTENT_EXPORT extern const base::Feature kWebAuthAuthenticatorAttachment;
 CONTENT_EXPORT extern const base::Feature kWebAuthCable;
 CONTENT_EXPORT extern const base::Feature kWebAuthConditionalUI;
 CONTENT_EXPORT extern const base::Feature kWebBluetoothNewPermissionsBackend;
+CONTENT_EXPORT extern const base::Feature kWebBluetoothBondOnDemand;
 CONTENT_EXPORT extern const base::Feature kWebBundles;
 CONTENT_EXPORT extern const base::Feature kWebBundlesFromNetwork;
 CONTENT_EXPORT extern const base::Feature kWebGLImageChromium;

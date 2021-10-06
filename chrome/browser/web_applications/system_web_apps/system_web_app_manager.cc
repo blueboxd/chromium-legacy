@@ -87,7 +87,6 @@
 #include "chromeos/components/connectivity_diagnostics/url_constants.h"
 #include "chromeos/components/personalization_app/personalization_app_url_constants.h"
 #include "chromeos/strings/grit/chromeos_strings.h"  // nogncheck
-#include "extensions/common/constants.h"
 #if !defined(OFFICIAL_BUILD)
 #include "chrome/browser/ash/web_applications/demo_mode_web_app_info.h"
 #include "chrome/browser/ash/web_applications/sample_system_web_app_info.h"
@@ -635,14 +634,6 @@ void SystemWebAppManager::OnAppsSynchronized(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&SystemWebAppManager::StartBackgroundTasks,
                                 weak_ptr_factory_.GetWeakPtr()));
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  bool is_camera_app_installed =
-      system_app_delegates_.find(SystemAppType::CAMERA) !=
-      system_app_delegates_.end();
-  profile_->GetPrefs()->SetBoolean(chromeos::prefs::kHasCameraAppMigratedToSWA,
-                                   is_camera_app_installed);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void SystemWebAppManager::StartBackgroundTasks() const {

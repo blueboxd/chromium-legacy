@@ -5373,10 +5373,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAssistantAppSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantAppSupport)},
 
-    {"enable-quick-answers-v2", flag_descriptions::kEnableQuickAnswersV2Name,
-     flag_descriptions::kEnableQuickAnswersV2Description, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersV2)},
-
     {"disable-quick-answers-v2-translation",
      flag_descriptions::kDisableQuickAnswersV2TranslationName,
      flag_descriptions::kDisableQuickAnswersV2TranslationDescription, kOsCrOS,
@@ -7584,6 +7580,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-cascade-layers", flag_descriptions::kCSSCascadeLayersName,
      flag_descriptions::kCSSCascadeLayersDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kCSSCascadeLayers)},
+
+    {"bluetooth-bond-on-demand",
+     flag_descriptions::kWebBluetoothBondOnDemandName,
+     flag_descriptions::kWebBluetoothBondOnDemandDescription, kOsWin | kOsLinux,
+     FEATURE_VALUE_TYPE(features::kWebBluetoothBondOnDemand)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

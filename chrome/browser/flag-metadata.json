@@ -529,6 +529,11 @@
     "expiry_milestone": 97
   },
   {
+    "name": "bluetooth-bond-on-demand",
+    "owners": [ "cmumford@chromium.org", "deviceapi-team@google.com" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "bluetooth-fix-a2dp-packet-size",
     "owners": [ "michaelfsun", "chromeos-bluetooth@google.com" ],
     "expiry_milestone": 86
@@ -1784,9 +1789,19 @@
     "expiry_milestone": 96
   },
   {
+    "name": "enable-disco-feed-endpoint",
+    "owners": [ "adamta", "sczs" ],
+    "expiry_milestone": 101
+  },
+  {
     "name": "enable-discover-feed-preview",
     "owners": [ "tinazwang", "sczs" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "enable-discover-feed-static-resource-serving",
+    "owners": [ "adamta", "sczs" ],
+    "expiry_milestone": 101
   },
   {
     "name": "enable-dns-proxy",
@@ -2125,7 +2140,7 @@
   {
     "name": "enable-magnifier-continuous-mouse-following-mode-setting",
     "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 98
   },
   {
     "name": "enable-magnifier-panning-improvements",
@@ -2384,11 +2399,6 @@
     "name": "enable-quick-action-search-widget-android-dino-variant",
     "owners": [ "maxtauro@google.com", "ender@google.com" ],
     "expiry_milestone": 98
-  },
-  {
-    "name": "enable-quick-answers-v2",
-    "owners": [ "croissant-eng" ],
-    "expiry_milestone": 100
   },
   {
     "name": "enable-raw-draw",
@@ -3642,7 +3652,7 @@
   {
     "name": "messages-for-android-infrastructure",
     "owners": [ "pavely", "lazzzis" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 102
   },
   {
     "name": "messages-for-android-near-oom-reduction",
@@ -4189,7 +4199,7 @@
   {
     "name": "page-info-version-2-desktop",
     "owners": [ "bsep", "olesiamarukhno" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 97
   },
   {
     "name": "paint-preview-demo",

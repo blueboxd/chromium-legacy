@@ -40,6 +40,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/trace_event/typed_macros.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -81,7 +82,6 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/form_submission.h"
@@ -315,15 +315,8 @@ void FrameLoader::SaveScrollState() {
   // scroll offsets. In order to avoid keeping around a stale anchor, we clear
   // it when the saved scroll offset changes.
   history_item->SetScrollAnchorData(ScrollAnchorData());
-  if (ScrollableArea* layout_scrollable_area =
-          frame_->View()->LayoutViewport()) {
-    if (!history_item->GetViewState() ||
-        layout_scrollable_area->GetScrollOffset() !=
-            history_item->GetViewState()->scroll_offset_) {
-      document_loader_->DidChangeScrollOffset();
-    }
+  if (ScrollableArea* layout_scrollable_area = frame_->View()->LayoutViewport())
     history_item->SetScrollOffset(layout_scrollable_area->GetScrollOffset());
-  }
   history_item->SetVisualViewportScrollOffset(ToScrollOffset(
       frame_->GetPage()->GetVisualViewport().VisibleRect().Location()));
 
@@ -451,8 +444,7 @@ void FrameLoader::DetachDocumentLoader(Member<DocumentLoader>& loader,
 void FrameLoader::DidFinishSameDocumentNavigation(
     const KURL& url,
     WebFrameLoadType frame_load_type,
-    HistoryItem* history_item,
-    bool may_restore_scroll_offset) {
+    HistoryItem* history_item) {
   // If we have a state object, we cannot also be a new navigation.
   scoped_refptr<SerializedScriptValue> state_object =
       history_item ? history_item->StateObject() : nullptr;
@@ -468,7 +460,7 @@ void FrameLoader::DidFinishSameDocumentNavigation(
                                        ? std::move(state_object)
                                        : SerializedScriptValue::NullValue());
 
-  if (view_state && may_restore_scroll_offset) {
+  if (view_state) {
     RestoreScrollPositionAndViewState(frame_load_type, *view_state,
                                       history_item->ScrollRestorationType());
   }
@@ -1209,6 +1201,7 @@ void FrameLoader::CommitDocumentLoader(
     const absl::optional<Document::UnloadEventTiming>& unload_timing,
     HistoryItem* previous_history_item,
     CommitReason commit_reason) {
+  TRACE_EVENT("blink", "FrameLoader::CommitDocumentLoader");
   document_loader_ = document_loader;
   CHECK(document_loader_);
 

@@ -313,7 +313,7 @@ void PredictionManager::AddObserverForOptimizationTargetModel(
       registered_observers_for_optimization_targets_.end()) {
     DLOG(ERROR) << "Did not add observer for optimization target "
                 << static_cast<int>(optimization_target)
-                << " since an observer for the target was already registered";
+                << " since an observer for the target was already registered ";
     return;
   }
 
@@ -667,7 +667,9 @@ void PredictionManager::UpdatePredictionModels(
           prediction_model_download_manager_->StartDownload(download_url);
         }
         base::UmaHistogramBoolean(
-            "OptimizationGuide.PredictionManager.IsDownloadUrlValid",
+            "OptimizationGuide.PredictionManager.IsDownloadUrlValid." +
+                GetStringNameForOptimizationTarget(
+                    model.model_info().optimization_target()),
             download_url.is_valid());
         if (switches::IsDebugLogsEnabled() && download_url.is_valid()) {
           debug_msg += "\nOptimization Target: " +

@@ -495,7 +495,7 @@ int64_t AdjustRequestedWindowBounds(gfx::Rect* bounds, RenderFrameHost* host) {
 // Whilst most WebContents clients should be setting a ColorProviderSource we
 // must accommodate for cases where this is not currently being done. For these
 // cases fallback to a ColorProvider keyed to various NativeTheme bits.
-ui::ColorProviderManager::ColorProviderKey GetWebDefaultColorProviderKey() {
+ui::ColorProviderManager::Key GetWebDefaultColorProviderKey() {
   const auto* native_theme = ui::NativeTheme::GetInstanceForWeb();
   const auto color_scheme = native_theme->GetDefaultSystemColorScheme();
   return {(color_scheme == ui::NativeTheme::ColorScheme::kDark)
@@ -506,7 +506,8 @@ ui::ColorProviderManager::ColorProviderKey GetWebDefaultColorProviderKey() {
               : ui::ColorProviderManager::ContrastMode::kNormal,
           native_theme->is_custom_system_theme()
               ? ui::ColorProviderManager::SystemTheme::kCustom
-              : ui::ColorProviderManager::SystemTheme::kDefault};
+              : ui::ColorProviderManager::SystemTheme::kDefault,
+          nullptr};
 }
 
 }  // namespace
@@ -2477,7 +2478,7 @@ void WebContentsImpl::ReattachToOuterWebContentsFrame() {
   auto* child_rwhv = render_manager->GetRenderWidgetHostView();
   DCHECK(child_rwhv);
   DCHECK(child_rwhv->IsRenderWidgetHostViewChildFrame());
-  render_manager->SetRWHViewForInnerContents(
+  render_manager->SetRWHViewForInnerFrameTree(
       static_cast<RenderWidgetHostViewChildFrame*>(child_rwhv));
 
   RecursivelyRegisterFrameSinkIds();
@@ -7808,10 +7809,19 @@ void WebContentsImpl::CreateRenderWidgetHostViewForRenderManager(
   OPTIONAL_TRACE_EVENT1(
       "content", "WebContentsImpl::CreateRenderWidgetHostViewForRenderManager",
       "render_view_host", render_view_host);
-  RenderWidgetHostViewBase* rwh_view =
-      view_->CreateViewForWidget(render_view_host->GetWidget());
-  view_->SetOverscrollControllerEnabled(CanOverscrollContent());
-  rwh_view->SetSize(GetSizeForMainFrame());
+  // TODO(crbug.com/1254770): Fix this for portals.
+  bool is_inner_frame_tree = static_cast<RenderViewHostImpl*>(render_view_host)
+                                 ->frame_tree()
+                                 ->type() == FrameTree::Type::kFencedFrame;
+  if (is_inner_frame_tree) {
+    WebContentsViewChildFrame::CreateRenderWidgetHostViewForInnerFrameTree(
+        this, render_view_host->GetWidget());
+  } else {
+    RenderWidgetHostViewBase* rwh_view =
+        view_->CreateViewForWidget(render_view_host->GetWidget());
+    view_->SetOverscrollControllerEnabled(CanOverscrollContent());
+    rwh_view->SetSize(GetSizeForMainFrame());
+  }
 }
 
 void WebContentsImpl::ReattachOuterDelegateIfNeeded() {

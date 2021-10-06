@@ -155,6 +155,12 @@ const char kEnableBluetoothSerialPortProfileInSerialApiDescription[] =
     "When enabled, Bluetooth Serial Port Profile devices will be enumerated "
     "for use with the Serial API.";
 
+const char kWebBluetoothBondOnDemandName[] =
+    "Enable on-demand Bluetooth device bonding";
+const char kWebBluetoothBondOnDemandDescription[] =
+    "When enabled, Bluetooth will start the bonding process, if necessary, "
+    "to access protected characteristics.";
+
 const char kEnableDrDcName[] =
     "Enables Display Compositor to use a new gpu thread.";
 const char kEnableDrDcDescription[] =
@@ -4484,10 +4490,6 @@ const char kEnablePalmSuppressionName[] =
     "Enable Palm Suppression with Stylus.";
 const char kEnablePalmSuppressionDescription[] =
     "If enabled, suppresses touch when a stylus is on a touchscreen.";
-
-const char kEnableQuickAnswersV2Name[] = "Enable Quick Answers V2 features";
-const char kEnableQuickAnswersV2Description[] =
-    "Enable Quick Answers V2 features.";
 
 const char kDisableQuickAnswersV2TranslationName[] =
     "Disable Quick Answers Translation";

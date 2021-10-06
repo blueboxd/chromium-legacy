@@ -477,7 +477,7 @@ const base::Feature kEnableSamlReauthenticationOnLockscreen{
 
 // Enables WireGuard VPN, if running a compatible kernel.
 const base::Feature kEnableWireGuard{"EnableWireGuard",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables Device End Of Lifetime warning notifications.
 const base::Feature kEolWarningNotifications{"EolWarningNotifications",
@@ -891,10 +891,6 @@ const base::Feature kProjectorFeaturePod{"ProjectorFeaturePod",
 const base::Feature kProjectorAnnotator{"ProjectorAnnotator",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether to enable quick answers V2 features.
-const base::Feature kQuickAnswersV2{"QuickAnswersV2",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether to enable quick answers V2 settings sub-toggles.
 const base::Feature kQuickAnswersV2SettingsSubToggle{
     "QuickAnswersV2SettingsSubToggle", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1002,7 +998,7 @@ const base::Feature kShowBluetoothDebugLogToggle{
 // Whether to show domain-related questionnaire in feedback report UI
 // (crbug/1241169).
 const base::Feature kShowFeedbackReportQuestionnaire{
-    "FeedbackReportQuestionnaire", base::FEATURE_DISABLED_BY_DEFAULT};
+    "FeedbackReportQuestionnaire", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the system tray to show date in sufficiently large screen.
 const base::Feature kShowDateInTrayButton{"ShowDateInTrayButton",
@@ -1586,10 +1582,6 @@ bool IsProjectorFeaturePodEnabled() {
 bool IsProjectorAnnotatorEnabled() {
   return IsProjectorEnabled() &&
          base::FeatureList::IsEnabled(kProjectorAnnotator);
-}
-
-bool IsQuickAnswersV2Enabled() {
-  return base::FeatureList::IsEnabled(kQuickAnswersV2);
 }
 
 bool IsQuickAnswersV2TranslationDisabled() {

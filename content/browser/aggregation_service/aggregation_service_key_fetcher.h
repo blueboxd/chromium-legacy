@@ -45,10 +45,9 @@ class CONTENT_EXPORT AggregationServiceKeyFetcher {
 
   enum class PublicKeyFetchStatus {
     // TODO(crbug.com/1217823): Propagate up more granular errors.
-    kOk = 0,
-    kPublicKeyFetchFailed = 1,
-    kUntrustworthyOrigin = 2,
-    kMaxValue = kUntrustworthyOrigin,
+    kOk,
+    kPublicKeyFetchFailed,
+    kMaxValue = kPublicKeyFetchFailed,
   };
 
   using FetchCallback =
@@ -60,7 +59,7 @@ class CONTENT_EXPORT AggregationServiceKeyFetcher {
       delete;
   AggregationServiceKeyFetcher& operator=(
       const AggregationServiceKeyFetcher& other) = delete;
-  ~AggregationServiceKeyFetcher();
+  virtual ~AggregationServiceKeyFetcher();
 
   // Gets a currently valid public key for `origin` and triggers the `callback`
   // once completed.
@@ -75,8 +74,8 @@ class CONTENT_EXPORT AggregationServiceKeyFetcher {
   // available. At encryption time, the fetcher will (uniformly at random) pick
   // one of the public keys to use. This selection should be made independently
   // between reports so that the key choice cannot be used to partition reports
-  // into separate groups of users.
-  void GetPublicKey(const url::Origin& origin, FetchCallback callback);
+  // into separate groups of users. Virtual for mocking in tests.
+  virtual void GetPublicKey(const url::Origin& origin, FetchCallback callback);
 
  private:
   // Called when public keys are received from the storage.

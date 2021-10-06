@@ -14,8 +14,28 @@
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
+#include "ui/events/ozone/evdev/input_device_settings_evdev.h"
 
 namespace ui {
+
+namespace {
+
+double GetAxisValue(libinput_event_pointer* const event,
+                    const libinput_pointer_axis axis) {
+  // Check has_axis before get_axis_value to avoid spamming the logs
+  // with libinput errors
+  if (!libinput_event_pointer_has_axis(event, axis)) {
+    return 0.0;
+  }
+
+  // Libinput's scroll axes are reversed compared to Chromium. For
+  // example, libinput produces positive deltas when scrolling down
+  // (with natural scrolling off), but Chromium's event system
+  // produces negative deltas. Simple fix: negate the axis value.
+  return -libinput_event_pointer_get_axis_value(event, axis);
+}
+
+}  // namespace
 
 LibInputEventConverter::LibInputEvent::LibInputEvent(LibInputEvent&& other)
     : event_(other.event_) {
@@ -41,6 +61,56 @@ libinput_event_pointer* LibInputEventConverter::LibInputEvent::PointerEvent()
 
 libinput_event_type LibInputEventConverter::LibInputEvent::Type() const {
   return libinput_event_get_type(event_);
+}
+
+LibInputEventConverter::LibInputDevice::LibInputDevice(
+    libinput_device* const device)
+    : device_(device) {
+  DCHECK(device);
+
+  // |libinput_path_add_device| returns a device pointer that is is
+  // derefed at the next call to |libinput_dispatch|. Add a ref here
+  // so that we can keep using the pointer.
+  libinput_device_ref(device);
+}
+
+LibInputEventConverter::LibInputDevice::LibInputDevice(LibInputDevice&& other)
+    : device_(other.device_) {
+  other.device_ = nullptr;
+}
+
+LibInputEventConverter::LibInputDevice::~LibInputDevice() {
+  if (device_) {
+    libinput_device_unref(device_);
+  }
+}
+
+void LibInputEventConverter::LibInputDevice::ApplySettings(
+    const InputDeviceSettingsEvdev& settings) const {
+  SetNaturalScrollEnabled(settings.natural_scroll_enabled);
+  SetSensitivity(settings.touchpad_sensitivity);
+  SetTapToClickEnabled(settings.tap_to_click_enabled);
+}
+
+void LibInputEventConverter::LibInputDevice::SetNaturalScrollEnabled(
+    const bool enabled) const {
+  libinput_device_config_scroll_set_natural_scroll_enabled(device_, enabled);
+}
+
+void LibInputEventConverter::LibInputDevice::SetSensitivity(
+    const int sensitivity) const {
+  // The range of |sensitivity| is [1..5] according to comments in
+  // libgestures. Rescale to floating point [-1, 1].
+  const double speed = (sensitivity - 3.0) / 2.0;
+  libinput_device_config_accel_set_speed(device_, speed);
+}
+
+void LibInputEventConverter::LibInputDevice::SetTapToClickEnabled(
+    const bool enabled) const {
+  const auto arg =
+      (enabled ? LIBINPUT_CONFIG_TAP_ENABLED : LIBINPUT_CONFIG_TAP_DISABLED);
+
+  libinput_device_config_tap_set_enabled(device_, arg);
 }
 
 LibInputEventConverter::LibInputContext::LibInputContext(
@@ -71,6 +141,18 @@ LibInputEventConverter::LibInputContext::Create() {
   }
 
   return absl::make_optional(LibInputEventConverter::LibInputContext(li));
+}
+
+absl::optional<LibInputEventConverter::LibInputDevice>
+LibInputEventConverter::LibInputContext::AddDevice(
+    const base::FilePath& path) const {
+  auto* const dev = libinput_path_add_device(li_, path.value().c_str());
+  if (!dev) {
+    LOG(ERROR) << "libinput_path_add_device failed with device: " << path;
+    return absl::nullopt;
+  }
+
+  return absl::make_optional(LibInputDevice(dev));
 }
 
 bool LibInputEventConverter::LibInputContext::Dispatch() const {
@@ -169,9 +251,20 @@ LibInputEventConverter::LibInputEventConverter(
       has_mouse_(devinfo.HasMouse()),
       has_touchpad_(devinfo.HasTouchpad()),
       has_touchscreen_(devinfo.HasTouchscreen()),
-      context_(std::move(ctx)) {}
+      context_(std::move(ctx)),
+      device_(context_.AddDevice(path)) {}
 
 LibInputEventConverter::~LibInputEventConverter() {}
+
+void LibInputEventConverter::ApplyDeviceSettings(
+    const InputDeviceSettingsEvdev& settings) {
+  if (device_) {
+    device_->ApplySettings(settings);
+  } else {
+    LOG(ERROR)
+        << "Unable to apply settings due to libinput_path_add_device failure";
+  }
+}
 
 bool LibInputEventConverter::HasKeyboard() const {
   return has_keyboard_;
@@ -207,7 +300,13 @@ void LibInputEventConverter::HandleEvent(const LibInputEvent& event) {
       break;
 
     case LIBINPUT_EVENT_POINTER_BUTTON:
+      HandlePointerButton(event);
+      break;
+
     case LIBINPUT_EVENT_POINTER_AXIS:
+      HandlePointerAxis(event);
+      break;
+
     case LIBINPUT_EVENT_TOUCH_DOWN:
     case LIBINPUT_EVENT_TOUCH_UP:
     case LIBINPUT_EVENT_TOUCH_MOTION:
@@ -251,6 +350,42 @@ void LibInputEventConverter::HandlePointerMotion(const LibInputEvent& evt) {
   dispatcher_->DispatchMouseMoveEvent(
       {input_device_.id, flags, cursor_->GetLocation(), nullptr /*delta*/,
        PointerDetails(EventPointerType::kMouse), Timestamp(evt)});
+}
+
+void LibInputEventConverter::HandlePointerButton(const LibInputEvent& evt) {
+  libinput_event_pointer* event = evt.PointerEvent();
+  const int flags = EF_NONE;
+  const uint32_t button = libinput_event_pointer_get_button(event);
+  const bool down = libinput_event_pointer_get_button_state(event) ==
+                    LIBINPUT_BUTTON_STATE_PRESSED;
+
+  // allow_remap: Controls whether or not remapping buttons is allowed; in
+  // this case whether or not it should respect the "Swap Left/Right Mouse
+  // Button" option in the ChromeOS settings.
+  //
+  // Since we only deal with touchpad buttons here, this should be false,
+  // but if we expand this to handle mice in the future we may need to
+  // have more intricate logic.
+  const MouseButtonMapType allow_remap = MouseButtonMapType::kNone;
+
+  DVLOG(3) << "Button: " << button << ", pressed: " << down;
+
+  dispatcher_->DispatchMouseButtonEvent(
+      {input_device_.id, flags, cursor_->GetLocation(), button, down,
+       allow_remap, PointerDetails(EventPointerType::kMouse), Timestamp(evt)});
+}
+
+void LibInputEventConverter::HandlePointerAxis(const LibInputEvent& evt) {
+  libinput_event_pointer* event = evt.PointerEvent();
+  const auto h = GetAxisValue(event, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL);
+  const auto v = GetAxisValue(event, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
+  const gfx::Vector2d delta(h, v);
+
+  DVLOG(3) << "Pointer axis h:" << h << ", v:" << v;
+
+  dispatcher_->DispatchScrollEvent({input_device_.id, ET_SCROLL,
+                                    cursor_->GetLocation(), delta, delta, 2,
+                                    Timestamp(evt)});
 }
 
 base::TimeTicks LibInputEventConverter::Timestamp(const LibInputEvent& evt) {

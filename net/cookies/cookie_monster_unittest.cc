@@ -62,7 +62,6 @@
 namespace net {
 
 using base::Time;
-using base::TimeDelta;
 using CookieDeletionInfo = net::CookieDeletionInfo;
 
 namespace {
@@ -138,11 +137,11 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
       CookieMonster* cm,
       const GURL& url,
       const CookieOptions& options,
-      const absl::optional<CookiePartitionKey>& cookie_partition_key =
-          absl::nullopt) {
+      const CookiePartitionKeychain& cookie_partition_keychain =
+          CookiePartitionKeychain()) {
     DCHECK(cm);
     GetCookieListCallback callback;
-    cm->GetCookieListWithOptionsAsync(url, options, cookie_partition_key,
+    cm->GetCookieListWithOptionsAsync(url, options, cookie_partition_keychain,
                                       callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.cookies();
@@ -152,11 +151,11 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
       CookieMonster* cm,
       const GURL& url,
       const CookieOptions& options,
-      const absl::optional<CookiePartitionKey>& cookie_partition_key =
-          absl::nullopt) {
+      const CookiePartitionKeychain& cookie_partition_keychain =
+          CookiePartitionKeychain()) {
     DCHECK(cm);
     GetCookieListCallback callback;
-    cm->GetCookieListWithOptionsAsync(url, options, cookie_partition_key,
+    cm->GetCookieListWithOptionsAsync(url, options, cookie_partition_keychain,
                                       callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.excluded_cookies();
@@ -915,8 +914,9 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
       EXPECT_TRUE(SetCookie(cm.get(), https_www_foo_.url(),
                             cookie + "; secure; path=/; partitioned",
                             cookie_partition_key));
-      std::string cookies = this->GetCookies(cm.get(), https_www_foo_.url(),
-                                             cookie_partition_key);
+      std::string cookies =
+          this->GetCookies(cm.get(), https_www_foo_.url(),
+                           CookiePartitionKeychain(cookie_partition_key));
       EXPECT_NE(cookies.find(cookie), std::string::npos);
       EXPECT_LE(CountInString(cookies, '='), max_cookies);
     }
@@ -1052,12 +1052,12 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
 TEST_F(DeferredCookieTaskTest, DeferredGetCookieList) {
   DeclareLoadedCookie(http_www_foo_.url(),
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                      Time::Now() + TimeDelta::FromDays(3));
+                      Time::Now() + base::Days(3));
 
   GetCookieListCallback call1;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-      absl::nullopt /*cookie_partition_key*/, call1.MakeCallback());
+      CookiePartitionKeychain(), call1.MakeCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(call1.was_run());
 
@@ -1070,7 +1070,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetCookieList) {
   GetCookieListCallback call2;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-      absl::nullopt /*cookie_partition_key*/, call2.MakeCallback());
+      CookiePartitionKeychain(), call2.MakeCallback());
   // Already ready, no need for second load.
   EXPECT_THAT(call2.cookies(), MatchesCookieLine("X=1"));
   EXPECT_EQ("", TakeCommandSummary());
@@ -1142,7 +1142,7 @@ TEST_F(DeferredCookieTaskTest, DeferredSetAllCookies) {
 TEST_F(DeferredCookieTaskTest, DeferredGetAllCookies) {
   DeclareLoadedCookie(http_www_foo_.url(),
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                      Time::Now() + TimeDelta::FromDays(3));
+                      Time::Now() + base::Days(3));
 
   GetAllCookiesCallback call1;
   cookie_monster_->GetAllCookiesAsync(call1.MakeCallback());
@@ -1164,12 +1164,12 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllCookies) {
 TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
   DeclareLoadedCookie(http_www_foo_.url(),
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                      Time::Now() + TimeDelta::FromDays(3));
+                      Time::Now() + base::Days(3));
 
   GetCookieListCallback call1;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-      absl::nullopt /*cookie_partition_key*/, call1.MakeCallback());
+      CookiePartitionKeychain(), call1.MakeCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(call1.was_run());
 
@@ -1181,7 +1181,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
   GetCookieListCallback call2;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-      absl::nullopt /*cookie_partition_key*/, call2.MakeCallback());
+      CookiePartitionKeychain(), call2.MakeCallback());
   EXPECT_TRUE(call2.was_run());
   EXPECT_THAT(call2.cookies(), MatchesCookieLine("X=1"));
   EXPECT_EQ("", TakeCommandSummary());
@@ -1190,12 +1190,12 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
 TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlWithOptionsCookies) {
   DeclareLoadedCookie(http_www_foo_.url(),
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                      Time::Now() + TimeDelta::FromDays(3));
+                      Time::Now() + base::Days(3));
 
   GetCookieListCallback call1;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-      absl::nullopt /*cookie_partition_key*/, call1.MakeCallback());
+      CookiePartitionKeychain(), call1.MakeCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(call1.was_run());
 
@@ -1207,7 +1207,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlWithOptionsCookies) {
   GetCookieListCallback call2;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-      absl::nullopt /*cookie_partition_key*/, call2.MakeCallback());
+      CookiePartitionKeychain(), call2.MakeCallback());
   EXPECT_TRUE(call2.was_run());
   EXPECT_THAT(call2.cookies(), MatchesCookieLine("X=1"));
   EXPECT_EQ("", TakeCommandSummary());
@@ -1216,7 +1216,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlWithOptionsCookies) {
 TEST_F(DeferredCookieTaskTest, DeferredDeleteAllCookies) {
   DeclareLoadedCookie(http_www_foo_.url(),
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                      Time::Now() + TimeDelta::FromDays(3));
+                      Time::Now() + base::Days(3));
 
   ResultSavingCookieCallback<uint32_t> call1;
   cookie_monster_->DeleteAllAsync(call1.MakeCallback());
@@ -1353,7 +1353,7 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
   cookie_monster_->SetPersistSessionCookies(true);
   DeclareLoadedCookie(http_www_foo_.url(),
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                      Time::Now() + TimeDelta::FromDays(3));
+                      Time::Now() + base::Days(3));
 
   bool get_cookie_list_callback_was_run = false;
   GetCookieListCallback get_cookie_list_callback_deferred;
@@ -1361,7 +1361,7 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
   base::RunLoop run_loop;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-      absl::nullopt /*cookie_partition_key*/,
+      CookiePartitionKeychain(),
       base::BindLambdaForTesting(
           [&](const CookieAccessResultList& cookies,
               const CookieAccessResultList& excluded_list) {
@@ -1378,7 +1378,7 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
             // before it.
             cookie_monster_->GetCookieListWithOptionsAsync(
                 http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-                absl::nullopt /*cookie_partition_key*/,
+                CookiePartitionKeychain(),
                 get_cookie_list_callback_deferred.MakeCallback());
 
             run_loop.Quit();
@@ -1446,8 +1446,9 @@ TEST_F(CookieMonsterTest, TestCookieDeleteAll) {
       "__Host-" + std::string(kValidCookieLine) + "; partitioned; secure",
       cookie_partition_key));
   EXPECT_EQ(1u, DeleteAll(cm.get()));
-  EXPECT_EQ("", GetCookiesWithOptions(cm.get(), http_www_foo_.url(), options,
-                                      cookie_partition_key));
+  EXPECT_EQ(
+      "", GetCookiesWithOptions(cm.get(), http_www_foo_.url(), options,
+                                CookiePartitionKeychain(cookie_partition_key)));
   EXPECT_EQ(2u, store->commands().size());
 }
 
@@ -1457,39 +1458,34 @@ TEST_F(CookieMonsterTest, TestCookieDeleteAllCreatedInTimeRangeTimestamps) {
   Time now = Time::Now();
 
   // Nothing has been added so nothing should be deleted.
-  EXPECT_EQ(0u,
-            DeleteAllCreatedInTimeRange(
-                cm.get(), TimeRange(now - TimeDelta::FromDays(99), Time())));
+  EXPECT_EQ(0u, DeleteAllCreatedInTimeRange(
+                    cm.get(), TimeRange(now - base::Days(99), Time())));
 
   // Create 5 cookies with different creation dates.
   EXPECT_TRUE(
       SetCookieWithCreationTime(cm.get(), http_www_foo_.url(), "T-0=Now", now));
   EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
-                                        "T-1=Yesterday",
-                                        now - TimeDelta::FromDays(1)));
+                                        "T-1=Yesterday", now - base::Days(1)));
   EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
-                                        "T-2=DayBefore",
-                                        now - TimeDelta::FromDays(2)));
+                                        "T-2=DayBefore", now - base::Days(2)));
   EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
-                                        "T-3=ThreeDays",
-                                        now - TimeDelta::FromDays(3)));
+                                        "T-3=ThreeDays", now - base::Days(3)));
   EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
-                                        "T-7=LastWeek",
-                                        now - TimeDelta::FromDays(7)));
+                                        "T-7=LastWeek", now - base::Days(7)));
 
   // Try to delete threedays and the daybefore.
-  EXPECT_EQ(2u, DeleteAllCreatedInTimeRange(
-                    cm.get(), TimeRange(now - TimeDelta::FromDays(3),
-                                        now - TimeDelta::FromDays(1))));
+  EXPECT_EQ(2u,
+            DeleteAllCreatedInTimeRange(
+                cm.get(), TimeRange(now - base::Days(3), now - base::Days(1))));
 
   // Try to delete yesterday, also make sure that delete_end is not
   // inclusive.
   EXPECT_EQ(1u, DeleteAllCreatedInTimeRange(
-                    cm.get(), TimeRange(now - TimeDelta::FromDays(2), now)));
+                    cm.get(), TimeRange(now - base::Days(2), now)));
 
   // Make sure the delete_begin is inclusive.
   EXPECT_EQ(1u, DeleteAllCreatedInTimeRange(
-                    cm.get(), TimeRange(now - TimeDelta::FromDays(7), now)));
+                    cm.get(), TimeRange(now - base::Days(7), now)));
 
   // Delete the last (now) item.
   EXPECT_EQ(1u, DeleteAllCreatedInTimeRange(cm.get(), TimeRange()));
@@ -1505,40 +1501,36 @@ TEST_F(CookieMonsterTest, TestCookieDeleteAllCreatedInTimeRangeTimestamps) {
       SetCookieWithCreationTime(cm.get(), http_www_foo_.url(), "T-0=Now", now,
                                 CookiePartitionKey::FromURLForTesting(
                                     GURL("https://toplevelsite0.com"))));
-  EXPECT_TRUE(
-      SetCookieWithCreationTime(cm.get(), https_www_foo_.url(), "T-1=Yesterday",
-                                now - TimeDelta::FromDays(1),
-                                CookiePartitionKey::FromURLForTesting(
-                                    GURL("https://toplevelsite1.com"))));
-  EXPECT_TRUE(
-      SetCookieWithCreationTime(cm.get(), http_www_foo_.url(), "T-2=DayBefore",
-                                now - TimeDelta::FromDays(2),
-                                CookiePartitionKey::FromURLForTesting(
-                                    GURL("https://toplevelsite1.com"))));
-  EXPECT_TRUE(
-      SetCookieWithCreationTime(cm.get(), http_www_foo_.url(), "T-3=ThreeDays",
-                                now - TimeDelta::FromDays(3),
-                                CookiePartitionKey::FromURLForTesting(
-                                    GURL("https://toplevelsite2.com"))));
-  EXPECT_TRUE(
-      SetCookieWithCreationTime(cm.get(), http_www_foo_.url(), "T-7=LastWeek",
-                                now - TimeDelta::FromDays(7),
-                                CookiePartitionKey::FromURLForTesting(
-                                    GURL("https://toplevelsite3.com"))));
+  EXPECT_TRUE(SetCookieWithCreationTime(
+      cm.get(), https_www_foo_.url(), "T-1=Yesterday", now - base::Days(1),
+      CookiePartitionKey::FromURLForTesting(
+          GURL("https://toplevelsite1.com"))));
+  EXPECT_TRUE(SetCookieWithCreationTime(
+      cm.get(), http_www_foo_.url(), "T-2=DayBefore", now - base::Days(2),
+      CookiePartitionKey::FromURLForTesting(
+          GURL("https://toplevelsite1.com"))));
+  EXPECT_TRUE(SetCookieWithCreationTime(
+      cm.get(), http_www_foo_.url(), "T-3=ThreeDays", now - base::Days(3),
+      CookiePartitionKey::FromURLForTesting(
+          GURL("https://toplevelsite2.com"))));
+  EXPECT_TRUE(SetCookieWithCreationTime(
+      cm.get(), http_www_foo_.url(), "T-7=LastWeek", now - base::Days(7),
+      CookiePartitionKey::FromURLForTesting(
+          GURL("https://toplevelsite3.com"))));
 
   // Try to delete threedays and the daybefore.
-  EXPECT_EQ(2u, DeleteAllCreatedInTimeRange(
-                    cm.get(), TimeRange(now - TimeDelta::FromDays(3),
-                                        now - TimeDelta::FromDays(1))));
+  EXPECT_EQ(2u,
+            DeleteAllCreatedInTimeRange(
+                cm.get(), TimeRange(now - base::Days(3), now - base::Days(1))));
 
   // Try to delete yesterday, also make sure that delete_end is not
   // inclusive.
   EXPECT_EQ(1u, DeleteAllCreatedInTimeRange(
-                    cm.get(), TimeRange(now - TimeDelta::FromDays(2), now)));
+                    cm.get(), TimeRange(now - base::Days(2), now)));
 
   // Make sure the delete_begin is inclusive.
   EXPECT_EQ(1u, DeleteAllCreatedInTimeRange(
-                    cm.get(), TimeRange(now - TimeDelta::FromDays(7), now)));
+                    cm.get(), TimeRange(now - base::Days(7), now)));
 
   // Delete the last (now) item.
   EXPECT_EQ(1u, DeleteAllCreatedInTimeRange(cm.get(), TimeRange()));
@@ -1556,41 +1548,34 @@ TEST_F(CookieMonsterTest,
   CanonicalCookie test_cookie;
 
   // Nothing has been added so nothing should be deleted.
-  EXPECT_EQ(0u, DeleteAllMatchingInfo(
-                    cm.get(),
-                    CookieDeletionInfo(now - TimeDelta::FromDays(99), Time())));
+  EXPECT_EQ(0u,
+            DeleteAllMatchingInfo(
+                cm.get(), CookieDeletionInfo(now - base::Days(99), Time())));
 
   // Create 5 cookies with different creation dates.
   EXPECT_TRUE(
       SetCookieWithCreationTime(cm.get(), http_www_foo_.url(), "T-0=Now", now));
   EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
-                                        "T-1=Yesterday",
-                                        now - TimeDelta::FromDays(1)));
+                                        "T-1=Yesterday", now - base::Days(1)));
   EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
-                                        "T-2=DayBefore",
-                                        now - TimeDelta::FromDays(2)));
+                                        "T-2=DayBefore", now - base::Days(2)));
   EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
-                                        "T-3=ThreeDays",
-                                        now - TimeDelta::FromDays(3)));
+                                        "T-3=ThreeDays", now - base::Days(3)));
   EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
-                                        "T-7=LastWeek",
-                                        now - TimeDelta::FromDays(7)));
+                                        "T-7=LastWeek", now - base::Days(7)));
 
   // Delete threedays and the daybefore.
-  EXPECT_EQ(2u,
-            DeleteAllMatchingInfo(
-                cm.get(), CookieDeletionInfo(now - TimeDelta::FromDays(3),
-                                             now - TimeDelta::FromDays(1))));
+  EXPECT_EQ(2u, DeleteAllMatchingInfo(cm.get(),
+                                      CookieDeletionInfo(now - base::Days(3),
+                                                         now - base::Days(1))));
 
   // Delete yesterday, also make sure that delete_end is not inclusive.
-  EXPECT_EQ(
-      1u, DeleteAllMatchingInfo(
-              cm.get(), CookieDeletionInfo(now - TimeDelta::FromDays(2), now)));
+  EXPECT_EQ(1u, DeleteAllMatchingInfo(
+                    cm.get(), CookieDeletionInfo(now - base::Days(2), now)));
 
   // Make sure the delete_begin is inclusive.
-  EXPECT_EQ(
-      1u, DeleteAllMatchingInfo(
-              cm.get(), CookieDeletionInfo(now - TimeDelta::FromDays(7), now)));
+  EXPECT_EQ(1u, DeleteAllMatchingInfo(
+                    cm.get(), CookieDeletionInfo(now - base::Days(7), now)));
 
   // Delete the last (now) item.
   EXPECT_EQ(1u, DeleteAllMatchingInfo(cm.get(), CookieDeletionInfo()));
@@ -1606,42 +1591,35 @@ TEST_F(CookieMonsterTest,
       SetCookieWithCreationTime(cm.get(), http_www_foo_.url(), "T-0=Now", now,
                                 CookiePartitionKey::FromURLForTesting(
                                     GURL("https://toplevelsite0.com"))));
-  EXPECT_TRUE(
-      SetCookieWithCreationTime(cm.get(), https_www_foo_.url(), "T-1=Yesterday",
-                                now - TimeDelta::FromDays(1),
-                                CookiePartitionKey::FromURLForTesting(
-                                    GURL("https://toplevelsite1.com"))));
-  EXPECT_TRUE(
-      SetCookieWithCreationTime(cm.get(), http_www_foo_.url(), "T-2=DayBefore",
-                                now - TimeDelta::FromDays(2),
-                                CookiePartitionKey::FromURLForTesting(
-                                    GURL("https://toplevelsite1.com"))));
-  EXPECT_TRUE(
-      SetCookieWithCreationTime(cm.get(), http_www_foo_.url(), "T-3=ThreeDays",
-                                now - TimeDelta::FromDays(3),
-                                CookiePartitionKey::FromURLForTesting(
-                                    GURL("https://toplevelsite2.com"))));
-  EXPECT_TRUE(
-      SetCookieWithCreationTime(cm.get(), http_www_foo_.url(), "T-7=LastWeek",
-                                now - TimeDelta::FromDays(7),
-                                CookiePartitionKey::FromURLForTesting(
-                                    GURL("https://toplevelsite3.com"))));
+  EXPECT_TRUE(SetCookieWithCreationTime(
+      cm.get(), https_www_foo_.url(), "T-1=Yesterday", now - base::Days(1),
+      CookiePartitionKey::FromURLForTesting(
+          GURL("https://toplevelsite1.com"))));
+  EXPECT_TRUE(SetCookieWithCreationTime(
+      cm.get(), http_www_foo_.url(), "T-2=DayBefore", now - base::Days(2),
+      CookiePartitionKey::FromURLForTesting(
+          GURL("https://toplevelsite1.com"))));
+  EXPECT_TRUE(SetCookieWithCreationTime(
+      cm.get(), http_www_foo_.url(), "T-3=ThreeDays", now - base::Days(3),
+      CookiePartitionKey::FromURLForTesting(
+          GURL("https://toplevelsite2.com"))));
+  EXPECT_TRUE(SetCookieWithCreationTime(
+      cm.get(), http_www_foo_.url(), "T-7=LastWeek", now - base::Days(7),
+      CookiePartitionKey::FromURLForTesting(
+          GURL("https://toplevelsite3.com"))));
 
   // Delete threedays and the daybefore.
-  EXPECT_EQ(2u,
-            DeleteAllMatchingInfo(
-                cm.get(), CookieDeletionInfo(now - TimeDelta::FromDays(3),
-                                             now - TimeDelta::FromDays(1))));
+  EXPECT_EQ(2u, DeleteAllMatchingInfo(cm.get(),
+                                      CookieDeletionInfo(now - base::Days(3),
+                                                         now - base::Days(1))));
 
   // Delete yesterday, also make sure that delete_end is not inclusive.
-  EXPECT_EQ(
-      1u, DeleteAllMatchingInfo(
-              cm.get(), CookieDeletionInfo(now - TimeDelta::FromDays(2), now)));
+  EXPECT_EQ(1u, DeleteAllMatchingInfo(
+                    cm.get(), CookieDeletionInfo(now - base::Days(2), now)));
 
   // Make sure the delete_begin is inclusive.
-  EXPECT_EQ(
-      1u, DeleteAllMatchingInfo(
-              cm.get(), CookieDeletionInfo(now - TimeDelta::FromDays(7), now)));
+  EXPECT_EQ(1u, DeleteAllMatchingInfo(
+                    cm.get(), CookieDeletionInfo(now - base::Days(7), now)));
 
   // Delete the last (now) item.
   EXPECT_EQ(1u, DeleteAllMatchingInfo(cm.get(), CookieDeletionInfo()));
@@ -1875,15 +1853,17 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
       CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite1.com"));
   auto cookie_partition_key2 =
       CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite2.com"));
+  auto cookie_partition_key3 =
+      CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite3.com"));
   EXPECT_TRUE(CreateAndSetCookie(
       cm.get(), https_www_bar_.url(), "__Host-K=L; secure; path=/; partitioned",
       options, absl::nullopt, absl::nullopt, cookie_partition_key1));
   EXPECT_TRUE(CreateAndSetCookie(
       cm.get(), https_www_bar_.url(), "__Host-M=N; secure; path=/; partitioned",
-      options, absl::nullopt, absl::nullopt, cookie_partition_key1));
-  EXPECT_TRUE(CreateAndSetCookie(
-      cm.get(), https_www_bar_.url(), "__Host-K=L; secure; path=/; partitioned",
       options, absl::nullopt, absl::nullopt, cookie_partition_key2));
+  EXPECT_TRUE(CreateAndSetCookie(
+      cm.get(), https_www_bar_.url(), "__Host-O=P; secure; path=/; partitioned",
+      options, absl::nullopt, absl::nullopt, cookie_partition_key3));
 
   base::HistogramTester histogram_tester;
 
@@ -1914,18 +1894,41 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
                   MatchesCookieNameDomain("E", http_www_foo_.Format(".%D")),
                   MatchesCookieNameDomain("I", http_www_foo_.Format(".%D"))));
 
-  // Test partitioned cookies.
+  // Test reading partitioned cookies for a single partition.
   EXPECT_THAT(
       GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
-                          cookie_partition_key1),
+                          CookiePartitionKeychain(cookie_partition_key1)),
+      ElementsAre(MatchesCookieNameDomain("G", https_www_bar_.Format(".%D")),
+                  MatchesCookieNameDomain("__Host-K", https_www_bar_.host())));
+  EXPECT_THAT(
+      GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
+                          CookiePartitionKeychain(cookie_partition_key2)),
+      ElementsAre(MatchesCookieNameDomain("G", https_www_bar_.Format(".%D")),
+                  MatchesCookieNameDomain("__Host-M", https_www_bar_.host())));
+
+  // Test reading partitioned cookies from multiple partitions.
+  EXPECT_THAT(
+      GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
+                          CookiePartitionKeychain(
+                              {cookie_partition_key1, cookie_partition_key2})),
       ElementsAre(MatchesCookieNameDomain("G", https_www_bar_.Format(".%D")),
                   MatchesCookieNameDomain("__Host-K", https_www_bar_.host()),
                   MatchesCookieNameDomain("__Host-M", https_www_bar_.host())));
+
+  // Test reading partitioned cookies from every partition.
   EXPECT_THAT(
       GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
-                          cookie_partition_key2),
+                          CookiePartitionKeychain::ContainsAll()),
       ElementsAre(MatchesCookieNameDomain("G", https_www_bar_.Format(".%D")),
-                  MatchesCookieNameDomain("__Host-K", https_www_bar_.host())));
+                  MatchesCookieNameDomain("__Host-K", https_www_bar_.host()),
+                  MatchesCookieNameDomain("__Host-M", https_www_bar_.host()),
+                  MatchesCookieNameDomain("__Host-O", https_www_bar_.host())));
+
+  // Test excluding partitioned cookies.
+  EXPECT_THAT(
+      GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
+                          CookiePartitionKeychain()),
+      ElementsAre(MatchesCookieNameDomain("G", https_www_bar_.Format(".%D"))));
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Cookie.SamePartyReadIncluded.IsHTTP"),
@@ -2173,8 +2176,8 @@ TEST_F(CookieMonsterTest, DeleteExpiredCookiesOnGet) {
                         "__Host-C=D; secure; path=/; partitioned",
                         cookie_partition_key));
 
-  cookies =
-      GetAllCookiesForURL(cm.get(), https_www_bar_.url(), cookie_partition_key);
+  cookies = GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
+                                CookiePartitionKeychain(cookie_partition_key));
   EXPECT_EQ(2u, cookies.size());
 
   EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
@@ -2182,8 +2185,8 @@ TEST_F(CookieMonsterTest, DeleteExpiredCookiesOnGet) {
                         "01-Jan-1970 00:00:00 GMT",
                         cookie_partition_key));
 
-  cookies =
-      GetAllCookiesForURL(cm.get(), https_www_bar_.url(), cookie_partition_key);
+  cookies = GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
+                                CookiePartitionKeychain(cookie_partition_key));
   EXPECT_EQ(1u, cookies.size());
 }
 
@@ -2208,16 +2211,16 @@ TEST_F(CookieMonsterTest, DontImportDuplicateCookies) {
 
   AddCookieToList(GURL("http://www.foo.com"),
                   "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                  Time::Now() + TimeDelta::FromDays(3), &initial_cookies);
+                  Time::Now() + base::Days(3), &initial_cookies);
 
   AddCookieToList(GURL("http://www.foo.com"),
                   "X=2; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                  Time::Now() + TimeDelta::FromDays(1), &initial_cookies);
+                  Time::Now() + base::Days(1), &initial_cookies);
 
   // ===> This one is the WINNER (biggest creation time).  <====
   AddCookieToList(GURL("http://www.foo.com"),
                   "X=3; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                  Time::Now() + TimeDelta::FromDays(4), &initial_cookies);
+                  Time::Now() + base::Days(4), &initial_cookies);
 
   AddCookieToList(GURL("http://www.foo.com"),
                   "X=4; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
@@ -2229,16 +2232,16 @@ TEST_F(CookieMonsterTest, DontImportDuplicateCookies) {
   // ===> This one is the WINNER (biggest creation time).  <====
   AddCookieToList(GURL("http://www.foo.com"),
                   "X=a1; path=/2; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                  Time::Now() + TimeDelta::FromDays(9), &initial_cookies);
+                  Time::Now() + base::Days(9), &initial_cookies);
 
   AddCookieToList(GURL("http://www.foo.com"),
                   "X=a2; path=/2; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                  Time::Now() + TimeDelta::FromDays(2), &initial_cookies);
+                  Time::Now() + base::Days(2), &initial_cookies);
 
   // Insert 1 cookie with name "Y" on path "/".
   AddCookieToList(GURL("http://www.foo.com"),
                   "Y=a; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                  Time::Now() + TimeDelta::FromDays(10), &initial_cookies);
+                  Time::Now() + base::Days(10), &initial_cookies);
 
   // Inject our initial cookies into the mock PersistentCookieStore.
   store->SetLoadExpectation(true, std::move(initial_cookies));
@@ -2274,8 +2277,7 @@ TEST_F(CookieMonsterTest, DontImportDuplicateCookies_PartitionedCookies) {
   // ===> This one is the WINNER (biggest creation time).  <====
   auto cc = CanonicalCookie::Create(
       cookie_url, "__Host-Z=a; Secure; Path=/; Partitioned; Max-Age=3456000",
-      Time::Now() + TimeDelta::FromDays(2), absl::nullopt,
-      cookie_partition_key);
+      Time::Now() + base::Days(2), absl::nullopt, cookie_partition_key);
   initial_cookies.push_back(std::move(cc));
 
   cc = CanonicalCookie::Create(
@@ -2285,8 +2287,7 @@ TEST_F(CookieMonsterTest, DontImportDuplicateCookies_PartitionedCookies) {
 
   cc = CanonicalCookie::Create(
       cookie_url, "__Host-Z=c; Secure; Path=/; Partitioned; Max-Age=3456000",
-      Time::Now() + TimeDelta::FromDays(1), absl::nullopt,
-      cookie_partition_key);
+      Time::Now() + base::Days(1), absl::nullopt, cookie_partition_key);
   initial_cookies.push_back(std::move(cc));
 
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
@@ -2294,8 +2295,9 @@ TEST_F(CookieMonsterTest, DontImportDuplicateCookies_PartitionedCookies) {
 
   store->SetLoadExpectation(true, std::move(initial_cookies));
 
-  EXPECT_EQ("__Host-Z=a", GetCookies(cm.get(), GURL("https://www.bar.com/"),
-                                     cookie_partition_key));
+  EXPECT_EQ("__Host-Z=a",
+            GetCookies(cm.get(), GURL("https://www.bar.com/"),
+                       CookiePartitionKeychain(cookie_partition_key)));
 
   // Verify that the PersistentCookieStore was told to kill the 2
   // duplicates.
@@ -2313,7 +2315,7 @@ TEST_F(CookieMonsterTest, ImportDuplicateCreationTimes) {
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
 
   Time now(Time::Now());
-  Time earlier(now - TimeDelta::FromDays(1));
+  Time earlier(now - base::Days(1));
 
   // Insert 8 cookies, four with the current time as creation times, and
   // four with the earlier time as creation times.  We should only get
@@ -2357,7 +2359,7 @@ TEST_F(CookieMonsterTest, ImportDuplicateCreationTimes_PartitionedCookies) {
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
 
   Time now(Time::Now());
-  Time earlier(now - TimeDelta::FromDays(1));
+  Time earlier(now - base::Days(1));
 
   GURL cookie_url("https://www.foo.com");
   auto cookie_partition_key =
@@ -2429,10 +2431,11 @@ TEST_F(CookieMonsterTest, PredicateSeesAllCookies) {
   EXPECT_EQ("dom_path_2=B; host_path_2=B; dom_2=B; host_2=B; sec_host=B",
             GetCookies(cm.get(), GURL(kTopLevelDomainPlus2Secure +
                                       std::string("/dir1/dir2/xxx"))));
-  EXPECT_EQ("dom_2=B; host_2=B; sec_host=B; __Host-pc_2=B",
-            GetCookies(cm.get(), GURL(kTopLevelDomainPlus2Secure),
-                       CookiePartitionKey::FromURLForTesting(
-                           GURL(kTopLevelDomainPlus1))));
+  EXPECT_EQ(
+      "dom_2=B; host_2=B; sec_host=B; __Host-pc_2=B",
+      GetCookies(cm.get(), GURL(kTopLevelDomainPlus2Secure),
+                 CookiePartitionKeychain(CookiePartitionKey::FromURLForTesting(
+                     GURL(kTopLevelDomainPlus1)))));
 }
 
 // Mainly a test of GetEffectiveDomain, or more specifically, of the
@@ -2475,8 +2478,8 @@ TEST_F(CookieMonsterTest, BackingStoreCommunication) {
        expires, true /* secure */, false, CookieSameSite::NO_RESTRICTION,
        COOKIE_PRIORITY_DEFAULT, false},
       {GURL("https://www.foo.com"), "b", "2", ".foo.com", "/path/from/cookie",
-       expires + TimeDelta::FromSeconds(10), true, true,
-       CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, true},
+       expires + base::Seconds(10), true, true, CookieSameSite::NO_RESTRICTION,
+       COOKIE_PRIORITY_DEFAULT, true},
       {GURL("https://foo.com"), "c", "3", "foo.com", "/another/path/to/cookie",
        base::Time::Now() + base::Seconds(100), false, false,
        CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_DEFAULT, false}};
@@ -2765,7 +2768,7 @@ TEST_F(CookieMonsterTest, WhileLoadingDeleteAllGetForURL) {
 
   GetCookieListCallback get_cookie_list_callback;
   cm->GetCookieListWithOptionsAsync(kUrl, CookieOptions::MakeAllInclusive(),
-                                    absl::nullopt /*cookie_partition_key*/,
+                                    CookiePartitionKeychain(),
                                     get_cookie_list_callback.MakeCallback());
 
   // Only the main load should have been queued.
@@ -3161,10 +3164,10 @@ TEST_F(CookieMonsterTest, PersisentCookieStorageTest) {
 // See http://crbug.com/238041 for background.
 TEST_F(CookieMonsterTest, ControlCharacterPurge) {
   const Time now1(Time::Now());
-  const Time now2(Time::Now() + TimeDelta::FromSeconds(1));
-  const Time now3(Time::Now() + TimeDelta::FromSeconds(2));
-  const Time now4(Time::Now() + TimeDelta::FromSeconds(3));
-  const Time later(now1 + TimeDelta::FromDays(1));
+  const Time now2(Time::Now() + base::Seconds(1));
+  const Time now3(Time::Now() + base::Seconds(2));
+  const Time now4(Time::Now() + base::Seconds(3));
+  const Time later(now1 + base::Days(1));
   const GURL url("https://host/path");
   const std::string domain("host");
   const std::string path("/path");
@@ -3217,8 +3220,9 @@ TEST_F(CookieMonsterTest, ControlCharacterPurge) {
 
   std::unique_ptr<CookieMonster> cm(new CookieMonster(store.get(), &net_log_));
 
-  EXPECT_EQ("foo=bar; hello=world",
-            GetCookies(cm.get(), url, cookie_partition_key));
+  EXPECT_EQ(
+      "foo=bar; hello=world",
+      GetCookies(cm.get(), url, CookiePartitionKeychain(cookie_partition_key)));
 }
 
 // Test that cookie source schemes are histogrammed correctly.
@@ -3428,7 +3432,7 @@ TEST_F(CookieMonsterTest, SecureCookieLocalhost) {
     GetCookieListCallback callback;
     cm->GetCookieListWithOptionsAsync(
         insecure_localhost, CookieOptions::MakeAllInclusive(),
-        absl::nullopt /*cookie_partition_key*/, callback.MakeCallback());
+        CookiePartitionKeychain(), callback.MakeCallback());
     callback.WaitUntilDone();
     EXPECT_EQ(2u, callback.cookies_with_access_results().size());
     for (const auto& cookie_item : callback.cookies_with_access_results()) {
@@ -3446,7 +3450,7 @@ TEST_F(CookieMonsterTest, SecureCookieLocalhost) {
     GetCookieListCallback callback;
     cm->GetCookieListWithOptionsAsync(
         secure_localhost, CookieOptions::MakeAllInclusive(),
-        absl::nullopt /*cookie_partition_key*/, callback.MakeCallback());
+        CookiePartitionKeychain(), callback.MakeCallback());
     callback.WaitUntilDone();
     EXPECT_EQ(2u, callback.cookies_with_access_results().size());
     for (const auto& cookie_item : callback.cookies_with_access_results()) {
@@ -3596,10 +3600,11 @@ TEST_F(CookieMonsterTest,
       false /* can_modify_httponly */);
   EXPECT_TRUE(access_result.status.HasExactlyExclusionReasonsForTesting(
       {CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY}));
-  EXPECT_THAT(GetCookiesWithOptions(cm.get(), https_www_foo_.url(),
-                                    CookieOptions::MakeAllInclusive(),
-                                    cookie_partition_key1),
-              ::testing::HasSubstr("A=B"));
+  EXPECT_THAT(
+      GetCookiesWithOptions(cm.get(), https_www_foo_.url(),
+                            CookieOptions::MakeAllInclusive(),
+                            CookiePartitionKeychain(cookie_partition_key1)),
+      ::testing::HasSubstr("A=B"));
 }
 
 // Test skipping a cookie in MaybeDeleteEquivalentCookieAndUpdateStatus for
@@ -4334,7 +4339,7 @@ TEST_F(CookieMonsterTest, SetCanonicalCookieDoesNotBlockForLoadAll) {
   GetCookieListCallback callback_get;
   cm.GetCookieListWithOptionsAsync(
       GURL("http://b.com/"), CookieOptions::MakeAllInclusive(),
-      absl::nullopt /*cookie_partition_key*/, callback_get.MakeCallback());
+      CookiePartitionKeychain(), callback_get.MakeCallback());
 
   // Now go through the store commands, and execute individual loads.
   const auto& commands = persistent_store->commands();

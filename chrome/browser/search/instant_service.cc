@@ -22,7 +22,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/chrome_colors/chrome_colors_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/most_visited_iframe_source.h"
@@ -227,9 +226,6 @@ void InstantService::OnURLsAvailable(
     item.url = tile.url;
     item.title = tile.title;
     item.favicon = tile.favicon_url;
-    item.source = tile.source;
-    item.title_source = tile.title_source;
-    item.data_generation_time = tile.data_generation_time;
     most_visited_info_->items.push_back(item);
   }
 

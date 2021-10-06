@@ -55,7 +55,6 @@
 #include "chrome/browser/ash/crosapi/structured_metrics_service_ash.h"
 #include "chrome/browser/ash/crosapi/system_display_ash.h"
 #include "chrome/browser/ash/crosapi/task_manager_ash.h"
-#include "chrome/browser/ash/crosapi/test_controller_ash.h"
 #include "chrome/browser/ash/crosapi/url_handler_ash.h"
 #include "chrome/browser/ash/crosapi/video_capture_device_factory_ash.h"
 #include "chrome/browser/ash/crosapi/web_page_info_ash.h"
@@ -86,6 +85,8 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/media_session_service.h"
+#include "media/mojo/mojom/stable/stable_video_decoder.mojom.h"
+#include "media/mojo/services/stable_video_decoder_factory_service.h"
 
 namespace crosapi {
 namespace {
@@ -149,12 +150,13 @@ CrosapiAsh::CrosapiAsh()
       resource_manager_ash_(std::make_unique<ResourceManagerAsh>()),
       screen_manager_ash_(std::make_unique<ScreenManagerAsh>()),
       select_file_ash_(std::make_unique<SelectFileAsh>()),
+      stable_video_decoder_factory_ash_(
+          std::make_unique<media::StableVideoDecoderFactoryService>()),
       structured_metrics_service_ash_(
           std::make_unique<StructuredMetricsServiceAsh>()),
       system_display_ash_(std::make_unique<SystemDisplayAsh>()),
       web_page_info_factory_ash_(std::make_unique<WebPageInfoFactoryAsh>()),
       task_manager_ash_(std::make_unique<TaskManagerAsh>()),
-      test_controller_ash_(std::make_unique<TestControllerAsh>()),
       url_handler_ash_(std::make_unique<UrlHandlerAsh>()),
       video_capture_device_factory_ash_(
           std::make_unique<VideoCaptureDeviceFactoryAsh>()) {
@@ -371,7 +373,8 @@ void CrosapiAsh::BindTaskManager(
 
 void CrosapiAsh::BindTestController(
     mojo::PendingReceiver<mojom::TestController> receiver) {
-  test_controller_ash_->BindReceiver(std::move(receiver));
+  if (test_controller_)
+    test_controller_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindKioskSessionService(
@@ -418,6 +421,12 @@ void CrosapiAsh::BindSensorHalClient(
     mojo::PendingRemote<chromeos::sensors::mojom::SensorHalClient> remote) {
   chromeos::sensors::SensorHalDispatcher::GetInstance()->RegisterClient(
       std::move(remote));
+}
+
+void CrosapiAsh::BindStableVideoDecoderFactory(
+    mojo::GenericPendingReceiver receiver) {
+  if (auto r = receiver.As<media::stable::mojom::StableVideoDecoderFactory>())
+    stable_video_decoder_factory_ash_->BindReceiver(std::move(r));
 }
 
 void CrosapiAsh::BindPower(mojo::PendingReceiver<mojom::Power> receiver) {
@@ -479,6 +488,11 @@ void CrosapiAsh::BindStructuredMetricsService(
 
 void CrosapiAsh::OnBrowserStartup(mojom::BrowserInfoPtr browser_info) {
   BrowserManager::Get()->set_browser_version(browser_info->browser_version);
+}
+
+void CrosapiAsh::SetTestControllerForTesting(
+    TestControllerReceiver* test_controller) {
+  test_controller_ = test_controller;
 }
 
 void CrosapiAsh::OnDisconnected() {

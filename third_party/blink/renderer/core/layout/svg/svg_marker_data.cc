@@ -151,8 +151,8 @@ void SVGMarkerDataBuilder::EmitSegment(const PathSegmentData& segment) {
 double SVGMarkerDataBuilder::CurrentAngle(AngleType type) const {
   // For details of this calculation, see:
   // http://www.w3.org/TR/SVG/single-page.html#painting-MarkerElement
-  double in_angle = rad2deg(FloatPoint(in_slope_).SlopeAngleRadians());
-  double out_angle = rad2deg(FloatPoint(out_slope_).SlopeAngleRadians());
+  double in_angle = Rad2deg(FloatPoint(in_slope_).SlopeAngleRadians());
+  double out_angle = Rad2deg(FloatPoint(out_slope_).SlopeAngleRadians());
   switch (type) {
     case kOutbound:
       return out_angle;
@@ -187,7 +187,7 @@ void SVGMarkerDataBuilder::UpdateAngle(bool ends_subpath) {
   if (last_element_type_ == kPathElementCloseSubpath)
     out_slope_ = last_moveto_out_slope_;
   AngleType type = DetermineAngleType(ends_subpath);
-  float angle = clampTo<float>(CurrentAngle(type));
+  float angle = ClampTo<float>(CurrentAngle(type));
   // When closing a subpath, backpatch the first marker on that subpath.
   if (last_element_type_ == kPathElementCloseSubpath)
     positions_[last_moveto_index_].angle = angle;

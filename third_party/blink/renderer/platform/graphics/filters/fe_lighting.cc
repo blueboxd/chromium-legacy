@@ -51,7 +51,7 @@ FELighting::FELighting(Filter* filter,
       surface_scale_(surface_scale),
       diffuse_constant_(std::max(diffuse_constant, 0.0f)),
       specular_constant_(std::max(specular_constant, 0.0f)),
-      specular_exponent_(clampTo(specular_exponent, 1.0f, 128.0f)) {}
+      specular_exponent_(ClampTo(specular_exponent, 1.0f, 128.0f)) {}
 
 Color FELighting::LightingColor() const {
   return lighting_color_;
@@ -87,8 +87,8 @@ sk_sp<PaintFilter> FELighting::CreateImageFilter() {
     case LS_DISTANT: {
       DistantLightSource* distant_light_source =
           static_cast<DistantLightSource*>(light_source_.get());
-      float azimuth_rad = deg2rad(distant_light_source->Azimuth());
-      float elevation_rad = deg2rad(distant_light_source->Elevation());
+      float azimuth_rad = Deg2rad(distant_light_source->Azimuth());
+      float elevation_rad = Deg2rad(distant_light_source->Elevation());
       const SkPoint3 direction = SkPoint3::Make(
           cosf(azimuth_rad) * cosf(elevation_rad),
           sinf(azimuth_rad) * cosf(elevation_rad), sinf(elevation_rad));

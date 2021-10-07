@@ -3749,11 +3749,22 @@ void NavigationRequest::OnStartChecksComplete(
     cached_response_head = last_response_head->Clone();
   }
 
+  // Sandbox flags inherited from the frame. In particular, this does not
+  // include:
+  // - Sandbox flags inherited from the creator via the PolicyContainer.
+  // - Sandbox flags forced for MHTML documents.
+  // - Sandbox flags from the future response via CSP.
+  // It is used by the ExternalProtocolHandler to ensure sandboxed iframe won't
+  // navigate the user toward a different application, which can be seen as a
+  // main frame navigation somehow.
+  network::mojom::WebSandboxFlags sandbox_flags =
+      commit_params_->frame_policy.sandbox_flags;
+
   loader_ = NavigationURLLoader::Create(
       browser_context, partition,
       std::make_unique<NavigationRequestInfo>(
-          common_params_->Clone(), begin_params_.Clone(), GetIsolationInfo(),
-          frame_tree_node_->IsMainFrame(),
+          common_params_->Clone(), begin_params_.Clone(), sandbox_flags,
+          GetIsolationInfo(), frame_tree_node_->IsMainFrame(),
           IsSecureFrame(frame_tree_node_->parent()),
           frame_tree_node_->frame_tree_node_id(), report_raw_headers,
           upgrade_if_insecure_,
@@ -5409,6 +5420,8 @@ void NavigationRequest::DidCommitNavigation(
   previous_main_frame_url_ = previous_main_frame_url;
   navigation_type_ = navigation_type;
 
+  // It should be kept in sync with the check in
+  // RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation.
   if (DidEncounterError()) {
     EnterChildTraceEvent("DidCommitNavigation: error page", this);
     SetState(DID_COMMIT_ERROR_PAGE);
@@ -6864,7 +6877,7 @@ bool NavigationRequest::ShouldReplaceCurrentEntryForSameUrlNavigation() const {
   // from this rule so that we don't leave an error page in the back/forward
   // list if a cross-origin iframe happens to successfully re-naivgate a frame
   // that had previously failed.
-  if (!frame_tree_node_->current_frame_host()->is_error_page() &&
+  if (!frame_tree_node_->current_frame_host()->IsErrorDocument() &&
       common_params_->initiator_origin &&
       !common_params_->initiator_origin->IsSameOriginWith(
           frame_tree_node_->current_origin())) {

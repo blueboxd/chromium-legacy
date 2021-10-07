@@ -48,8 +48,8 @@ class BrowserDataMigratorTest : public ::testing::Test {
     // |- user/                       /* from_dir_ */
     //     |- Cache                   /* no copy */
     //     |- Downloads/data          /* ash */
+    //     |- FullRestoreData         /* ash */
     //     |- Bookmarks               /* lacros */
-    //     |- FullRestoreData         /* common */
     //     |- Cookies                 /* common */
     //     |- Affilication Database/  /* common */
     //         |- data
@@ -123,18 +123,25 @@ TEST_F(BrowserDataMigratorTest, GetTargetInfo) {
   BrowserDataMigrator::TargetInfo target_info =
       BrowserDataMigrator::GetTargetInfo(from_dir_);
 
-  EXPECT_EQ(target_info.ash_data_size, kFileSize /* expect one files */);
+  EXPECT_EQ(target_info.ash_data_size, kFileSize * 2 /* expect two files */);
   EXPECT_EQ(target_info.no_copy_data_size, kFileSize /* expect one file */);
   EXPECT_EQ(target_info.lacros_data_size, kFileSize /* expect one file */);
-  EXPECT_EQ(target_info.common_data_size, kFileSize * 4 /* expect four file */);
+  EXPECT_EQ(target_info.common_data_size,
+            kFileSize * 3 /* expect three file */);
 
   // Check for ash data.
   std::vector<BrowserDataMigrator::TargetItem> expected_ash_data_items = {
       {from_dir_.Append(kDownloads),
        BrowserDataMigrator::TargetItem::ItemType::kDirectory},
-  };
+      {from_dir_.Append(kFullRestoreData),
+       BrowserDataMigrator::TargetItem::ItemType::kFile}};
+  std::sort(target_info.ash_data_items.begin(),
+            target_info.ash_data_items.end(), TargetItemComparator());
   ASSERT_EQ(target_info.ash_data_items.size(), expected_ash_data_items.size());
-  EXPECT_EQ(target_info.ash_data_items[0], expected_ash_data_items[0]);
+  for (int i = 0; i < target_info.ash_data_items.size(); i++) {
+    SCOPED_TRACE(target_info.ash_data_items[i].path.value());
+    EXPECT_EQ(target_info.ash_data_items[i], expected_ash_data_items[i]);
+  }
 
   // Check for lacros data.
   std::vector<BrowserDataMigrator::TargetItem> expected_lacros_data_items = {
@@ -151,11 +158,7 @@ TEST_F(BrowserDataMigratorTest, GetTargetInfo) {
       {from_dir_.Append(kAffiliationDatabase),
        BrowserDataMigrator::TargetItem::ItemType::kDirectory},
       {from_dir_.Append(kCookies),
-       BrowserDataMigrator::TargetItem::ItemType::kFile},
-      {from_dir_.Append(kFullRestoreData),
        BrowserDataMigrator::TargetItem::ItemType::kFile}};
-  std::sort(target_info.common_data_items.begin(),
-            target_info.common_data_items.end(), TargetItemComparator());
   ASSERT_EQ(target_info.common_data_items.size(),
             expected_common_data_items.size());
   std::sort(target_info.common_data_items.begin(),
@@ -233,7 +236,10 @@ TEST_F(BrowserDataMigratorTest, RecordStatus) {
     base::HistogramTester histogram_tester;
 
     BrowserDataMigrator::TargetInfo target_info;
-    target_info.lacros_data_size = /* 200 MBs */ 200 * 1024 * 1024;
+    target_info.ash_data_size = /* 300 MBs */ 300 * 1024 * 1024;
+    target_info.lacros_data_size = /* 400 MBs */ 400 * 1024 * 1024;
+    target_info.common_data_size = /* 500 MBs */ 500 * 1024 * 1024;
+    target_info.no_copy_data_size = /* 600 MBs */ 600 * 1024 * 1024;
 
     base::ElapsedTimer timer;
 
@@ -242,12 +248,23 @@ TEST_F(BrowserDataMigratorTest, RecordStatus) {
 
     histogram_tester.ExpectTotalCount(kFinalStatus, 1);
     histogram_tester.ExpectTotalCount(kCopiedDataSize, 1);
+    histogram_tester.ExpectTotalCount(kAshDataSize, 1);
+    histogram_tester.ExpectTotalCount(kLacrosDataSize, 1);
+    histogram_tester.ExpectTotalCount(kCommonDataSize, 1);
     histogram_tester.ExpectTotalCount(kTotalTime, 1);
 
     histogram_tester.ExpectBucketCount(
         kFinalStatus, BrowserDataMigrator::FinalStatus::kSuccess, 1);
     histogram_tester.ExpectBucketCount(
-        kCopiedDataSize, target_info.lacros_data_size / (1024 * 1024), 1);
+        kCopiedDataSize, target_info.TotalCopySize() / (1024 * 1024), 1);
+    histogram_tester.ExpectBucketCount(
+        kAshDataSize, target_info.ash_data_size / (1024 * 1024), 1);
+    histogram_tester.ExpectBucketCount(
+        kLacrosDataSize, target_info.lacros_data_size / (1024 * 1024), 1);
+    histogram_tester.ExpectBucketCount(
+        kCommonDataSize, target_info.common_data_size / (1024 * 1024), 1);
+    histogram_tester.ExpectBucketCount(
+        kNoCopyDataSize, target_info.no_copy_data_size / (1024 * 1024), 1);
   }
 }
 
@@ -263,8 +280,8 @@ TEST_F(BrowserDataMigratorTest, Migrate) {
     // |- user/                       /* from_dir_ */
     //     |- Cache                   /* no copy */
     //     |- Downloads/data          /* ash */
+    //     |- FullRestoreData         /* ash */
     //     |- Bookmarks               /* lacros */
-    //     |- FullRestoreData         /* common */
     //     |- Cookies                 /* common */
     //     |- Affiliation Database/   /* common */
     //         |- data
@@ -295,7 +312,13 @@ TEST_F(BrowserDataMigratorTest, Migrate) {
 
   histogram_tester.ExpectTotalCount(kFinalStatus, 1);
   histogram_tester.ExpectTotalCount(kCopiedDataSize, 1);
+  histogram_tester.ExpectTotalCount(kAshDataSize, 1);
+  histogram_tester.ExpectTotalCount(kLacrosDataSize, 1);
+  histogram_tester.ExpectTotalCount(kCommonDataSize, 1);
+  histogram_tester.ExpectTotalCount(kNoCopyDataSize, 1);
   histogram_tester.ExpectTotalCount(kTotalTime, 1);
+  histogram_tester.ExpectTotalCount(kLacrosDataTime, 1);
+  histogram_tester.ExpectTotalCount(kCommonDataTime, 1);
   histogram_tester.ExpectTotalCount(kCreateDirectoryFail, 0);
 
   histogram_tester.ExpectBucketCount(

@@ -43,7 +43,7 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "ui/gfx/geometry/quaternion.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 #if defined(ARCH_CPU_X86_64)
 #include <emmintrin.h>
@@ -84,7 +84,7 @@ typedef double Vector3[3];
 static void Clamp(double& value) {
   // TODO(crbug.com/1224320): We should prevent NaN input from outside.
   // To prevent crashes, the following clamp NaN to 0 is added.
-  value = UNLIKELY(std::isnan(value)) ? 0 : clampTo<double>(value);
+  value = UNLIKELY(std::isnan(value)) ? 0 : ClampTo<double>(value);
 }
 
 static void ClampMatrix(TransformationMatrix::Matrix4& matrix) {
@@ -97,7 +97,7 @@ static void ClampMatrix(TransformationMatrix::Matrix4& matrix) {
 
 static float ClampToFloat(double value) {
   // TODO(crbug.com/1224320): See Clamp() about isnan.
-  return UNLIKELY(std::isnan(value)) ? 0 : clampTo<float>(value);
+  return UNLIKELY(std::isnan(value)) ? 0 : ClampTo<float>(value);
 }
 
 // inverse(original_matrix, inverse_matrix)
@@ -576,9 +576,9 @@ static void V3Cross(const Vector3 a, const Vector3 b, Vector3 result) {
 }
 
 // TODO(crbug/937296): This implementation is virtually identical to the
-// implementation in ui/gfx/transform_util with the main difference being
-// the representation of the underlying matrix. These implementations should be
-// consolidated.
+// implementation in ui/gfx/geometry/transform_util with the main difference
+// being the representation of the underlying matrix. These implementations
+// should be consolidated.
 static bool Decompose(const TransformationMatrix::Matrix4& mat,
                       TransformationMatrix::DecomposedType& result) {
   // https://www.w3.org/TR/css-transforms-2/#decomposing-a-3d-matrix.
@@ -890,7 +890,7 @@ FloatQuad TransformationMatrix::ProjectQuad(const FloatQuad& q) const {
 
 static float ClampEdgeValue(float f) {
   DCHECK(!std::isnan(f));
-  return clampTo(f, (-LayoutUnit::Max() / 2).ToFloat(),
+  return ClampTo(f, (-LayoutUnit::Max() / 2).ToFloat(),
                  (LayoutUnit::Max() / 2).ToFloat());
 }
 
@@ -1051,7 +1051,7 @@ TransformationMatrix& TransformationMatrix::Rotate3d(double x,
   }
 
   // Angles are in degrees. Switch to radians.
-  angle = deg2rad(angle);
+  angle = Deg2rad(angle);
 
   double sin_theta = std::sin(angle);
   double cos_theta = std::cos(angle);
@@ -1131,9 +1131,9 @@ TransformationMatrix& TransformationMatrix::Rotate3d(double rx,
                                                      double ry,
                                                      double rz) {
   // Angles are in degrees. Switch to radians.
-  rx = deg2rad(rx);
-  ry = deg2rad(ry);
-  rz = deg2rad(rz);
+  rx = Deg2rad(rx);
+  ry = Deg2rad(ry);
+  rz = Deg2rad(rz);
 
   TransformationMatrix mat;
 
@@ -1250,8 +1250,8 @@ TransformationMatrix& TransformationMatrix::PostTranslate3d(double tx,
 
 TransformationMatrix& TransformationMatrix::Skew(double sx, double sy) {
   // angles are in degrees. Switch to radians
-  sx = deg2rad(sx);
-  sy = deg2rad(sy);
+  sx = Deg2rad(sx);
+  sy = Deg2rad(sy);
 
   TransformationMatrix mat;
   mat.matrix_[0][1] =

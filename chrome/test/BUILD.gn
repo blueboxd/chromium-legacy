@@ -4070,6 +4070,7 @@ if (is_chromeos_lacros) {
       "../browser/lacros/browser_test_util.h",
       "../browser/lacros/clipboard_lacros_browsertest.cc",
       "../browser/lacros/crosapi_pref_observer_lacros_browsertest.cc",
+      "../browser/lacros/net/lacros_extension_proxy_tracker_browsertest.cc",
       "../browser/lacros/overview_lacros_browsertest.cc",
       "../browser/lacros/tablet_mode_lacros_browsertest.cc",
     ]
@@ -5535,12 +5536,14 @@ test("unit_tests") {
       "../browser/ui/passwords/account_storage_auth_helper_unittest.cc",
       "../browser/ui/views/profiles/dice_web_signin_interception_bubble_view_unittest.cc",
       "../browser/ui/views/profiles/profile_customization_bubble_sync_controller_unittest.cc",
-      "../browser/ui/webui/signin/dice_turn_sync_on_helper_unittest.cc",
     ]
   }
 
-  if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
-    sources += [ "../browser/ui/profile_picker_unittest.cc" ]
+  if (is_win || is_mac || (is_linux || is_chromeos_lacros)) {
+    sources += [
+      "../browser/ui/profile_picker_unittest.cc",
+      "../browser/ui/webui/signin/dice_turn_sync_on_helper_unittest.cc",
+    ]
   }
 
   if (enable_offline_pages) {
@@ -7005,6 +7008,7 @@ test("unit_tests") {
         "../browser/extensions/system_display/system_display_serialization_unittest.cc",
         "../browser/media_galleries/chromeos/mtp_device_object_enumerator_unittest.cc",
         "../browser/ui/webui/about_ui_unittest.cc",
+        "../common/chromeos/extensions/chromeos_system_extension_info_unittest.cc",
         "../common/chromeos/extensions/manifest_tests/extension_manifests_chromeos_system_extension_unittest.cc",
         "../renderer/extensions/accessibility_private_hooks_delegate_unittest.cc",
       ]
@@ -7730,6 +7734,7 @@ test("unit_tests") {
     deps += [
       "//chrome/browser/supervised_user:test_support",
       "//chrome/browser/supervised_user/supervised_user_error_page:unit_tests",
+      "//chrome/browser/supervised_user/supervised_user_features:unit_tests",
     ]
   }
   if (safe_browsing_mode == 1 && enable_extensions) {

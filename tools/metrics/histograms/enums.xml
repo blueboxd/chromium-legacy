@@ -1802,6 +1802,7 @@ Unknown properties are collapsed to zero. -->
   <int value="0" label="Theme settings"/>
   <int value="1" label="Site settings global"/>
   <int value="2" label="App menu"/>
+  <int value="3" label="Site settings exception list"/>
 </enum>
 
 <enum name="AndroidComponentLoaderLoadStatus">
@@ -10217,6 +10218,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Initialized to be read frequently"/>
 </enum>
 
+<enum name="BooleanWin11MenuStyle">
+  <int value="0" label="Prior to Win11 Style"/>
+  <int value="1" label="Win11 Style"/>
+</enum>
+
 <enum name="BooleanWiped">
   <int value="0" label="Re-enabled"/>
   <int value="1" label="Wiped out"/>
@@ -14496,8 +14502,7 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="Go to URL"/>
   <int value="20" label="Copy link to text"/>
   <int value="21" label="Search Image with Google Lens"/>
-  <int value="22" label="Search Images with Google Lens"/>
-  <int value="23" label="Search Images with non-Google visual search provider"/>
+  <int value="22" label="Search part of page with Google Lens"/>
 </enum>
 
 <enum name="ContextMenuOptionIOS">
@@ -22939,6 +22944,43 @@ Called by update_document_policy_enum.py.-->
   <int value="4" label="Write to already failed file"/>
 </enum>
 
+<enum name="DownloadShelfContextMenuAction">
+  <int value="0" label="Drop down shown"/>
+  <int value="1" label="Drop down enabled"/>
+  <int value="2" label="Show in folder enabled"/>
+  <int value="3" label="Show in folder clicked"/>
+  <int value="4" label="Open when complete enabled"/>
+  <int value="5" label="Open when complete clicked"/>
+  <int value="6" label="Always open type enabled"/>
+  <int value="7" label="Always open type clicked"/>
+  <int value="8" label="Open enabled"/>
+  <int value="9" label="Open clicked"/>
+  <int value="10" label="Cancel enabled"/>
+  <int value="11" label="Cancel clicked"/>
+  <int value="12" label="Pause enabled"/>
+  <int value="13" label="Pause clicked"/>
+  <int value="14" label="Resume Enabled"/>
+  <int value="15" label="Resume clicked"/>
+  <int value="16" label="Discard Enabled"/>
+  <int value="17" label="Discard Clicked"/>
+  <int value="18" label="Keep Enabled"/>
+  <int value="19" label="Keep Clicked"/>
+  <int value="20" label="Learn more scanning enabled"/>
+  <int value="21" label="Learn more scanning clicked"/>
+  <int value="22" label="Learn more interrupted enabled"/>
+  <int value="23" label="Learn more interrupted clicked"/>
+  <int value="24" label="Learn more mixed content enabled"/>
+  <int value="25" label="Learn more mixed content clicked"/>
+  <int value="26" label="Copy to clipboard enabled"/>
+  <int value="27" label="Copy to clipboard clicked"/>
+  <int value="28" label="Annotate enabled"/>
+  <int value="29" label="Annotate clicked"/>
+  <int value="30" label="Deep scan enabled"/>
+  <int value="31" label="Deep scan clicked"/>
+  <int value="32" label="Bypass deep scanning enabled"/>
+  <int value="33" label="Bypass deep scanning clicked"/>
+</enum>
+
 <enum name="DownloadSource">
   <int value="0" label="Initiated by Save Package on Non-HTML content"/>
   <int value="1" label="Initiated by Drag-and-drop"/>
@@ -26479,6 +26521,8 @@ Called by update_document_policy_enum.py.-->
   <int value="909" label="NetworkServiceSandboxEnabled"/>
   <int value="910" label="DeskTemplatesEnabled"/>
   <int value="911" label="PreconfiguredDeskTemplates"/>
+  <int value="912" label="FastPairEnabled"/>
+  <int value="913" label="SandboxExternalProtocol"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -29428,6 +29472,7 @@ Called by update_extension_histograms.py.-->
   <int value="1591" label="SPEECHRECOGNITIONPRIVATE_STOP"/>
   <int value="1592" label="FILEMANAGERPRIVATEINTERNAL_STARTIOTASK"/>
   <int value="1593" label="WALLPAPERPRIVATE_ISSWAENABLED"/>
+  <int value="1594" label="INPUTMETHODPRIVATE_GETTEXTFIELDBOUNDS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -34759,6 +34804,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4055" label="RegionCapture"/>
   <int value="4056" label="AppHistory"/>
   <int value="4057" label="FlexboxAlignSingleLineDifference"/>
+  <int value="4058" label="ExternalProtocolBlockedBySandbox"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -47773,6 +47819,7 @@ from previous Chrome versions.
       label="IncognitoBrandConsistencyForAndroid:disabled"/>
   <int value="-2036629516" label="SideSearchStatePerTab:enabled"/>
   <int value="-2036149591" label="FaviconsFromWebManifest:disabled"/>
+  <int value="-2036127998" label="LocalWebApprovals:disabled"/>
   <int value="-2035126988" label="enabled-new-style-notification"/>
   <int value="-2033950090" label="AutofillNoLocalSaveOnUploadSuccess:disabled"/>
   <int value="-2033908928" label="NightLight:enabled"/>
@@ -50073,6 +50120,7 @@ from previous Chrome versions.
   <int value="-288316828" label="enable-delegated-renderer"/>
   <int value="-286603268" label="hide-android-files-in-files-app"/>
   <int value="-284547865" label="UnifiedConsent:enabled"/>
+  <int value="-284328071" label="LocalWebApprovals:enabled"/>
   <int value="-283388027" label="ManualFallbacksFilling:disabled"/>
   <int value="-283024110" label="WebXRPlaneDetection:disabled"/>
   <int value="-281844827" label="AutofillCreditCardAblationExperiment:enabled"/>
@@ -51653,6 +51701,7 @@ from previous Chrome versions.
   <int value="944484780" label="EnableEmbeddedAssistantUI:enabled"/>
   <int value="946185008" label="EnableAppDataSearch:disabled"/>
   <int value="946688335" label="OmniboxSpareRenderer:disabled"/>
+  <int value="948085015" label="WebFilterInterstitialRefresh:disabled"/>
   <int value="948351976" label="WallpaperWebUI:disabled"/>
   <int value="948521531" label="StylusHandwriting:disabled"/>
   <int value="952558794" label="enable-remote-assistance"/>
@@ -52899,6 +52948,7 @@ from previous Chrome versions.
   <int value="1903206193" label="NewWindowAppMenu:disabled"/>
   <int value="1903444879" label="VirtualKeyboardApi:disabled"/>
   <int value="1905465678" label="ContextualSearchSingleActions:enabled"/>
+  <int value="1906901281" label="WebFilterInterstitialRefresh:enabled"/>
   <int value="1906942630" label="enable-easy-unlock"/>
   <int value="1907273605" label="NtpZeroSuggest:disabled"/>
   <int value="1909117215" label="animated-image-resume"/>
@@ -72632,7 +72682,6 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="113" label="IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE"/>
   <int value="114" label="IDC_CONTENT_CONTEXT_REMOVELINKTOTEXT"/>
   <int value="115" label="IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH"/>
-  <int value="116" label="IDC_CONTENT_CONTEXT_WEB_REGION_SEARCH"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">

@@ -79,9 +79,9 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/range/range.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/native_theme/themed_vector_icon.h"
@@ -238,7 +238,8 @@ bool is_mixed_content(download::DownloadItemMode mode) {
 
 // Whether a warning label is visible.
 bool has_warning_label(download::DownloadItemMode mode) {
-  return is_download_warning(mode) || is_mixed_content(mode);
+  return is_download_warning(mode) || is_mixed_content(mode) ||
+         mode == download::DownloadItemMode::kIncognitoWarning;
 }
 
 float GetDPIScaleForView(views::View* view) {
@@ -897,7 +898,8 @@ void DownloadItemView::UpdateButtons() {
 
   save_button_->SetVisible(
       (mode_ == download::DownloadItemMode::kDangerous) ||
-      (mode_ == download::DownloadItemMode::kMixedContentWarn));
+      (mode_ == download::DownloadItemMode::kMixedContentWarn) ||
+      (mode_ == download::DownloadItemMode::kIncognitoWarning));
   save_button_->SetText(model_->GetWarningConfirmButtonText());
 
   discard_button_->SetVisible(
@@ -907,6 +909,12 @@ void DownloadItemView::UpdateButtons() {
   review_button_->SetVisible(prompt_to_review);
 
   dropdown_button_->SetVisible(model_->ShouldShowDropdown());
+  if (dropdown_button_->GetVisible() && !dropdown_button_shown_recorded_) {
+    dropdown_button_shown_recorded_ = true;
+    base::UmaHistogramEnumeration(
+        "Download.ShelfContextMenuAction",
+        DownloadShelfContextMenuAction::kDropDownShown);
+  }
 }
 
 void DownloadItemView::UpdateAccessibleAlertAndAnimationsForNormalMode() {
@@ -1098,6 +1106,10 @@ ui::ImageModel DownloadItemView::GetIcon() const {
   const auto kError = ui::ImageModel::FromVectorIcon(
       vector_icons::kErrorIcon, ui::kColorAlertHighSeverity,
       UseNewWarnings() ? 20 : 24);
+
+  if (model_->ShouldShowIncognitoWarning()) {
+    return kWarning;
+  }
 
   const auto danger_type = model_->GetDangerType();
   const auto kInfo = ui::ImageModel::FromVectorIcon(
@@ -1298,6 +1310,12 @@ void DownloadItemView::DropdownButtonPressed(const ui::Event& event) {
   SetDropdownPressed(true);
   ShowContextMenuImpl(dropdown_button_->GetBoundsInScreen(),
                       ui::GetMenuSourceTypeForEvent(event));
+  if (!dropdown_button_pressed_recorded_) {
+    base::UmaHistogramEnumeration(
+        "Download.ShelfContextMenuAction",
+        DownloadShelfContextMenuAction::kDropDownPressed);
+    dropdown_button_pressed_recorded_ = true;
+  }
 }
 
 void DownloadItemView::ReviewButtonPressed() {

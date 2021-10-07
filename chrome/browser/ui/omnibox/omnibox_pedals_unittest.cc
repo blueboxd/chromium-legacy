@@ -26,6 +26,7 @@ void TestDataLoadsForAllLocales(bool with_translation_console) {
   std::vector<base::Feature> features = {
       omnibox::kOmniboxPedalsBatch2NonEnglish,
       omnibox::kOmniboxPedalsBatch3,
+      omnibox::kOmniboxPedalsBatch3NonEnglish,
   };
   if (with_translation_console) {
     // TODO(orinj): Consider loading sets of cover cases from translation
@@ -225,6 +226,16 @@ void TestDataLoadsForAllLocales(bool with_translation_console) {
           "new chrome features",
           "google account control",
           "google account password change",
+          "play chrome dino game",
+          "help me locate lost device",
+          "manage google privacy settings",
+          "control chrome browser settings",
+          "control chrome browser downloads",
+          "revisit google chrome browsing history",
+          "share link with qr code",
+          "google chrome font sizing",
+          "chrome backgrounds",
+          "custom search engines",
         }
       },
       { "es",

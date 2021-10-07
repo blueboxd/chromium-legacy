@@ -1668,6 +1668,17 @@ ci.chromium_builder(
     schedule = "triggered",
     triggered_by = [],
     execution_timeout = 7 * time.hour,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "mac-tagged.json",
+            ],
+        },
+    },
 )
 
 ci.chromium_builder(
@@ -1705,6 +1716,17 @@ ci.chromium_builder(
     schedule = "triggered",
     triggered_by = [],
     execution_timeout = 7 * time.hour,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "mac-tagged.json",
+            ],
+        },
+    },
 )
 
 ci.chromium_builder(
@@ -1762,6 +1784,17 @@ ci.chromium_builder(
     schedule = "triggered",
     triggered_by = [],
     execution_timeout = 7 * time.hour,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "win-tagged.json",
+            ],
+        },
+    },
 )
 
 ci.chromium_builder(
@@ -1816,6 +1849,17 @@ ci.chromium_builder(
     schedule = "triggered",
     triggered_by = [],
     execution_timeout = 7 * time.hour,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "win-tagged.json",
+            ],
+        },
+    },
 )
 
 ci.chromium_builder(
@@ -4208,6 +4252,74 @@ ci.fyi_builder(
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 1,
+    ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "ASAN Release (reclient shadow)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux asan",
+        short_name = "rel",
+    ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 5,
+    ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "ASAN Release Media (reclient shadow)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux asan",
+        short_name = "med",
+    ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "MSAN Release (chained origins) (reclient shadow)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux msan",
+        short_name = "org",
+    ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "MSAN Release (no origins) (reclient shadow)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux msan",
+        short_name = "rel",
+    ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
     ),
     goma_backend = None,
     reclient_jobs = 250,

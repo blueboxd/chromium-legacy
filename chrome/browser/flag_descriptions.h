@@ -142,6 +142,9 @@ extern const char kU2FPermissionPromptDescription[];
 extern const char kU2FSecurityKeyAPIName[];
 extern const char kU2FSecurityKeyAPIDescription[];
 
+extern const char kUpcomingSharingFeaturesName[];
+extern const char kUpcomingSharingFeaturesDescription[];
+
 extern const char kUseStorkSmdsServerAddressName[];
 extern const char kUseStorkSmdsServerAddressDescription[];
 
@@ -992,6 +995,9 @@ extern const char kOmniboxAdaptiveSuggestionsCountDescription[];
 extern const char kOmniboxAssistantVoiceSearchName[];
 extern const char kOmniboxAssistantVoiceSearchDescription[];
 
+extern const char kOmniboxBookmarkPathsName[];
+extern const char kOmniboxBookmarkPathsDescription[];
+
 extern const char kOmniboxClobberTriggersContextualWebZeroSuggestName[];
 extern const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[];
 
@@ -1031,6 +1037,9 @@ extern const char kOmniboxOnFocusSuggestionsContextualWebAllowSRPDescription[];
 
 extern const char kOmniboxOnFocusSuggestionsContextualWebName[];
 extern const char kOmniboxOnFocusSuggestionsContextualWebDescription[];
+
+extern const char kOmniboxShortBookmarkSuggestionsName[];
+extern const char kOmniboxShortBookmarkSuggestionsDescription[];
 
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
@@ -1395,6 +1404,9 @@ extern const char kTabEngagementReportingDescription[];
 
 extern const char kTabGridLayoutAndroidName[];
 extern const char kTabGridLayoutAndroidDescription[];
+
+extern const char kCommerceDeveloperName[];
+extern const char kCommerceDeveloperDescription[];
 
 extern const char kCommerceMerchantViewerAndroidName[];
 extern const char kCommerceMerchantViewerAndroidDescription[];
@@ -2154,6 +2166,9 @@ extern const char kOmniboxPedalsBatch2NonEnglishDescription[];
 extern const char kOmniboxPedalsBatch3Name[];
 extern const char kOmniboxPedalsBatch3Description[];
 
+extern const char kOmniboxPedalsBatch3NonEnglishName[];
+extern const char kOmniboxPedalsBatch3NonEnglishDescription[];
+
 extern const char kOmniboxPedalsTranslationConsoleName[];
 extern const char kOmniboxPedalsTranslationConsoleDescription[];
 
@@ -2795,6 +2810,9 @@ extern const char kNearbySharingArcDescription[];
 extern const char kNearbySharingBackgroundScanningName[];
 extern const char kNearbySharingBackgroundScanningDescription[];
 
+extern const char kPcieBillboardNotificationName[];
+extern const char kPcieBillboardNotificationDescription[];
+
 extern const char kPerformantSplitViewResizing[];
 extern const char kPerformantSplitViewResizingDescription[];
 
@@ -2806,6 +2824,9 @@ extern const char kPhoneHubRecentAppsDescription[];
 
 extern const char kProductivityLauncherName[];
 extern const char kProductivityLauncherDescription[];
+
+extern const char kForceShowContinueSectionName[];
+extern const char kForceShowContinueSectionDescription[];
 
 extern const char kReduceDisplayNotificationsName[];
 extern const char kReduceDisplayNotificationsDescription[];

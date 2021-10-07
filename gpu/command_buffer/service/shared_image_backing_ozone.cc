@@ -134,6 +134,10 @@ bool SharedImageBackingOzone::ProduceLegacyMailbox(
   return false;
 }
 
+scoped_refptr<gfx::NativePixmap> SharedImageBackingOzone::GetNativePixmap() {
+  return pixmap_;
+}
+
 std::unique_ptr<SharedImageRepresentationDawn>
 SharedImageBackingOzone::ProduceDawn(SharedImageManager* manager,
                                      MemoryTypeTracker* tracker,
@@ -199,6 +203,7 @@ SharedImageBackingOzone::ProduceOverlay(SharedImageManager* manager,
   gfx::BufferFormat buffer_format = viz::BufferFormat(format());
   auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(
       pixmap_->GetBufferSize(), buffer_format);
+  image->Initialize(std::move(pixmap_));
   return std::make_unique<SharedImageRepresentationOverlayOzone>(
       manager, this, tracker, image);
 }

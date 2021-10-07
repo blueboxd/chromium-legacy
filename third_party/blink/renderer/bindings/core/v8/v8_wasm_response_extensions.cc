@@ -49,7 +49,7 @@ void SendCachedData(String response_url,
   scoped_refptr<CachedMetadata> cached_metadata =
       CachedMetadata::CreateFromSerializedData(std::move(serialized_module));
 
-  CodeCacheHost* code_cache_host =
+  blink::mojom::CodeCacheHost* code_cache_host =
       ExecutionContext::GetCodeCacheHostFromContext(execution_context);
   base::span<const uint8_t> serialized_data = cached_metadata->SerializedData();
   CachedMetadataSender::SendToCodeCacheHost(
@@ -136,6 +136,7 @@ class WasmStreamingClient : public v8::WasmStreaming::Client {
 // received bytes get forwarded to the V8 API class |WasmStreaming|.
 class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
                                               public BytesConsumer::Client {
+
  public:
   FetchDataLoaderForWasmStreaming(
       const String& url,
@@ -314,9 +315,14 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
 class WasmDataLoaderClient final
     : public GarbageCollected<WasmDataLoaderClient>,
       public FetchDataLoader::Client {
+
  public:
   explicit WasmDataLoaderClient(FetchDataLoaderForWasmStreaming* loader)
       : loader_(loader) {}
+
+  WasmDataLoaderClient(const WasmDataLoaderClient&) = delete;
+  WasmDataLoaderClient& operator=(const WasmDataLoaderClient&) = delete;
+
   void DidFetchDataLoadedCustomFormat() override {}
   void DidFetchDataLoadFailed() override { NOTREACHED(); }
   void Abort() override { loader_->AbortFromClient(); }
@@ -328,7 +334,6 @@ class WasmDataLoaderClient final
 
  private:
   Member<FetchDataLoaderForWasmStreaming> loader_;
-  DISALLOW_COPY_AND_ASSIGN(WasmDataLoaderClient);
 };
 
 // ExceptionToAbortStreamingScope converts a possible exception to an abort

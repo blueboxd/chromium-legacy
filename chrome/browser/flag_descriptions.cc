@@ -209,6 +209,12 @@ const char kU2FSecurityKeyAPIDescription[] =
     "information, refer to the deprecation announcement at "
     "https://groups.google.com/a/chromium.org/g/blink-dev/c/xHC3AtU_65A";
 
+const char kUpcomingSharingFeaturesName[] = "Enable upcoming sharing features.";
+const char kUpcomingSharingFeaturesDescription[] =
+    "This flag enables all upcoming sharing features, in the experiment "
+    "arms that are most likely to be shipped. This is a meta-flag so which "
+    "features are upcoming at any given time may change.";
+
 const char kUseStorkSmdsServerAddressName[] = "Use Stork SM-DS address";
 const char kUseStorkSmdsServerAddressDescription[] =
     "Use the Stork SM-DS address to fetch pending eSIM profiles managed by the "
@@ -1726,6 +1732,12 @@ const char kOmniboxAssistantVoiceSearchDescription[] =
     "When enabled, use Assistant for omnibox voice query recognition instead of"
     " Android's built-in voice recognition service. Only works on Android.";
 
+const char kOmniboxBookmarkPathsName[] = "Omnibox Bookmark Paths";
+const char kOmniboxBookmarkPathsDescription[] =
+    "Allows inputs to match with bookmark paths. E.g. 'planets jupiter' can "
+    "suggest a bookmark titled 'Jupiter' with URL "
+    "'en.wikipedia.org/wiki/Jupiter' located in a path containing 'planet.'";
+
 const char kOmniboxClobberTriggersContextualWebZeroSuggestName[] =
     "Omnibox Clobber Triggers Contextual Web ZeroSuggest";
 const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[] =
@@ -2450,6 +2462,10 @@ const char kTabGridLayoutAndroidName[] = "Tab Grid Layout";
 const char kTabGridLayoutAndroidDescription[] =
     "Allows users to see their tabs in a grid layout in the tab switcher on "
     "phones.";
+
+const char kCommerceDeveloperName[] = "Commerce developer mode";
+const char kCommerceDeveloperDescription[] =
+    "Allows users in the allowlist to enter the developer mode";
 
 const char kCommerceMerchantViewerAndroidName[] = "Merchant Viewer";
 const char kCommerceMerchantViewerAndroidDescription[] =
@@ -3767,6 +3783,13 @@ const char kOmniboxPedalsBatch3Name[] = "Omnibox Pedals batch 3";
 const char kOmniboxPedalsBatch3Description[] =
     "Enable the third batch of Omnibox Pedals.";
 
+const char kOmniboxPedalsBatch3NonEnglishName[] =
+    "Omnibox Pedals batch 3 for non-English locales";
+const char kOmniboxPedalsBatch3NonEnglishDescription[] =
+    "Enable the second batch of Omnibox Pedals (Find your phone, etc.) for "
+    "locales other than 'en' and 'en-GB'. This flag has no effect unless "
+    "\"Omnibox Pedals batch 3\" is also enabled.";
+
 const char kOmniboxPedalsTranslationConsoleName[] =
     "Omnibox Pedals Translation Console";
 const char kOmniboxPedalsTranslationConsoleDescription[] =
@@ -3777,6 +3800,12 @@ const char kOmniboxKeywordSearchButtonName[] = "Omnibox keyword search button";
 const char kOmniboxKeywordSearchButtonDescription[] =
     "Enable the omnibox keyword search button which offers a way to search "
     "on specific sites from the omnibox.";
+
+const char kOmniboxShortBookmarkSuggestionsName[] =
+    "Omnibox short bookmark suggestions";
+const char kOmniboxShortBookmarkSuggestionsDescription[] =
+    "Match very short input words to beginning of words in bookmark "
+    "suggestions.";
 
 const char kReadLaterFlagId[] = "read-later";
 const char kReadLaterName[] = "Reading List";
@@ -4851,6 +4880,10 @@ const char kNearbySharingBackgroundScanningDescription[] =
     "persistently scan and present a notification when a nearby device is "
     "attempting to share.";
 
+const char kPcieBillboardNotificationName[] = "Pcie billboard notification";
+const char kPcieBillboardNotificationDescription[] =
+    "Enable Pcie peripheral billboard notification.";
+
 const char kPerformantSplitViewResizing[] = "Performant Split View Resizing";
 const char kPerformantSplitViewResizingDescription[] =
     "If enabled, windows may be moved instead of scaled when resizing split "
@@ -4871,6 +4904,12 @@ const char kProductivityLauncherName[] =
 const char kProductivityLauncherDescription[] =
     "To evaluate an enhanced Launcher experience that aims to improve app "
     "workflows by optimizing access to apps, app content, and app actions.";
+
+const char kForceShowContinueSectionName[] =
+    "App Launcher: Force Continue Section Suggestions";
+const char kForceShowContinueSectionDescription[] =
+    "Forces the continue section of the app launcher to show. If there are no "
+    "file suggestions available, the suggestions will be faked.";
 
 const char kReduceDisplayNotificationsName[] = "Reduce display notifications";
 const char kReduceDisplayNotificationsDescription[] =

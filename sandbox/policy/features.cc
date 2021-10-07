@@ -60,22 +60,26 @@ const base::Feature kForceSpectreVariant2Mitigation{
 
 #if defined(OS_WIN)
 bool IsWinNetworkServiceSandboxSupported() {
-  // Since some APIs used for LPAC are unsupported below Windows 10, place a
-  // check here in a central place.
-  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
+  // Since some APIs used for LPAC are unsupported below Windows 10 RS2 (1703
+  // build 15063) so place a check here in a central place.
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS2)
     return false;
   return true;
 }
+#endif  // defined(OS_WIN)
 
-bool IsWinNetworkServiceSandboxEnabled() {
-  // Check platform support.
+bool IsNetworkSandboxEnabled() {
+#if defined(OS_MAC) || defined(OS_FUCHSIA)
+  return true;
+#else
+#if defined(OS_WIN)
   if (!IsWinNetworkServiceSandboxSupported())
     return false;
-
+#endif  // defined(OS_WIN)
   // Check feature status.
   return base::FeatureList::IsEnabled(kNetworkServiceSandbox);
+#endif  // defined(OS_MAC) || defined(OS_FUCHSIA)
 }
-#endif  // defined(OS_WIN)
 
 }  // namespace features
 }  // namespace policy

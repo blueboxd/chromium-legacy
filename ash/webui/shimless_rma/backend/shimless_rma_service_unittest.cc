@@ -325,7 +325,6 @@ TEST_F(ShimlessRmaServiceTest, ChooseNetworkHasNetworkConnection) {
         EXPECT_EQ(state, mojom::RmaState::kWelcomeScreen);
         EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
       }));
-  LOG(ERROR) << "Waiting to get current state";
   run_loop.RunUntilIdle();
 
   // No network should prompt select network page
@@ -335,7 +334,6 @@ TEST_F(ShimlessRmaServiceTest, ChooseNetworkHasNetworkConnection) {
         EXPECT_EQ(state, mojom::RmaState::kConfigureNetwork);
         EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
       }));
-  LOG(ERROR) << "Waiting to begin finalization";
   run_loop.RunUntilIdle();
   SetupWiFiNetwork();
 
@@ -347,7 +345,6 @@ TEST_F(ShimlessRmaServiceTest, ChooseNetworkHasNetworkConnection) {
         EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
         run_loop.Quit();
       }));
-  LOG(ERROR) << "Waiting for network selection";
   run_loop.Run();
 }
 
@@ -884,10 +881,40 @@ TEST_F(ShimlessRmaServiceTest, GetRsuDisableWriteProtectChallengeQrCode) {
       }));
   run_loop.RunUntilIdle();
 
+  std::vector<uint8_t> expected_qrcode_data = {
+      1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1,
+      1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1,
+      1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1,
+      1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1,
+      1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1,
+      1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1,
+      1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1,
+      0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+      1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1,
+      1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0,
+      0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1,
+      1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1,
+      1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,
+      1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0,
+      1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1,
+      1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1,
+      1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0,
+      1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1,
+      1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1,
+      1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1,
+      1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1,
+      1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1,
+      1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1,
+  };
   shimless_rma_provider_->GetRsuDisableWriteProtectChallengeQrCode(
       base::BindLambdaForTesting([&](mojom::QrCodePtr qrcode) {
-        // TODO(gavindodd): Add test of data in QR code.
         EXPECT_FALSE(qrcode.is_null());
+        EXPECT_EQ(qrcode->size, 25);
+        EXPECT_EQ(qrcode->data.size(), 25UL * 25UL);
+        EXPECT_EQ(qrcode->data.size(), expected_qrcode_data.size());
+        EXPECT_EQ(qrcode->data, expected_qrcode_data);
         run_loop.Quit();
       }));
   run_loop.Run();
@@ -1046,6 +1073,11 @@ TEST_F(ShimlessRmaServiceTest, SetComponentList) {
   component->set_repair_status(
       rmad::ComponentsRepairState::ComponentRepairStatus::
           RMAD_REPAIR_STATUS_ORIGINAL);
+  // This is not the expected state from rmad, but allows us to confirm the flag
+  // is cleared by SetComponentList
+  components_repair_state.mutable_state()
+      ->mutable_components_repair()
+      ->set_mainboard_rework(true);
   std::vector<rmad::GetStateReply> fake_states = {
       components_repair_state,
       CreateStateReply(rmad::RmadState::kDeviceDestination,
@@ -1065,6 +1097,7 @@ TEST_F(ShimlessRmaServiceTest, SetComponentList) {
         EXPECT_EQ(state.components_repair().components(1).repair_status(),
                   rmad::ComponentsRepairState::ComponentRepairStatus::
                       RMAD_REPAIR_STATUS_ORIGINAL);
+        EXPECT_EQ(state.components_repair().mainboard_rework(), false);
       });
   base::RunLoop run_loop;
   shimless_rma_provider_->GetCurrentState(base::BindLambdaForTesting(
@@ -1155,8 +1188,8 @@ TEST_F(ShimlessRmaServiceTest, ReworkMainboard) {
   fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
   fake_rmad_client_()->check_state_callback =
       base::BindRepeating([](const rmad::RmadState& state) {
-        // TODO(gavindodd): Check the rework_mainboard flag when it is in
-        // rmad.proto.
+        EXPECT_EQ(state.state_case(), rmad::RmadState::kComponentsRepair);
+        EXPECT_EQ(state.components_repair().mainboard_rework(), true);
       });
   base::RunLoop run_loop;
   shimless_rma_provider_->GetCurrentState(base::BindLambdaForTesting(

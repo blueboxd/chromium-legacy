@@ -211,7 +211,7 @@ class LinkerDriver(object):
         self._dsymutil_cmd = [dsymutil_path]
         return []
 
-    def run_save_unstripped(unstripped_path_prefix):
+    def run_save_unstripped(self, unstripped_path_prefix):
         """Linker driver action for -Wcrl,unstripped,<unstripped_path_prefix>.
         Copies the linker output to |unstripped_path_prefix| before stripping.
 
@@ -229,7 +229,7 @@ class LinkerDriver(object):
         unstripped_out = os.path.join(unstripped_path_prefix,
                                       base + '.unstripped')
 
-        shutil.copyfile(linker_out, unstripped_out)
+        shutil.copyfile(self._get_linker_output(), unstripped_out)
         return [unstripped_out]
 
     def run_strip(self, strip_args_string):

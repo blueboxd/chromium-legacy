@@ -646,6 +646,10 @@ bool WebLocalFrameImpl::ConsumeTransientUserActivation(
   return LocalFrame::ConsumeTransientUserActivation(GetFrame(), update_source);
 }
 
+bool WebLocalFrameImpl::LastActivationWasRestricted() const {
+  return GetFrame()->LastActivationWasRestricted();
+}
+
 WebLocalFrame* WebLocalFrame::FrameForContext(v8::Local<v8::Context> context) {
   return WebLocalFrameImpl::FromFrame(ToLocalFrameIfNotDetached(context));
 }
@@ -761,14 +765,14 @@ void WebLocalFrameImpl::CopyToFindPboard() {
     GetFrame()->GetSystemClipboard()->CopyToFindPboard(SelectionAsText());
 }
 
-gfx::ScrollOffset WebLocalFrameImpl::GetScrollOffset() const {
+gfx::Vector2dF WebLocalFrameImpl::GetScrollOffset() const {
   if (ScrollableArea* scrollable_area = LayoutViewport()) {
-    return gfx::ScrollOffset(scrollable_area->GetScrollOffset());
+    return gfx::Vector2dF(scrollable_area->GetScrollOffset());
   }
-  return gfx::ScrollOffset();
+  return gfx::Vector2dF();
 }
 
-void WebLocalFrameImpl::SetScrollOffset(const gfx::ScrollOffset& offset) {
+void WebLocalFrameImpl::SetScrollOffset(const gfx::Vector2dF& offset) {
   if (ScrollableArea* scrollable_area = LayoutViewport()) {
     scrollable_area->SetScrollOffset(ScrollOffset(offset.x(), offset.y()),
                                      mojom::blink::ScrollType::kProgrammatic);

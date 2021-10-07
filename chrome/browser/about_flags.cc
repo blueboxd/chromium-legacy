@@ -54,6 +54,7 @@
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_params.h"
 #include "chrome/browser/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
+#include "chrome/browser/share/share_features.h"
 #include "chrome/browser/share/share_submenu_model.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
@@ -1121,6 +1122,27 @@ const FeatureEntry::FeatureVariation
         {"Conservative - Title, min 3", kOmniboxRichAutocompletionConservative,
          base::size(kOmniboxRichAutocompletionConservative), nullptr}};
 
+const FeatureEntry::FeatureParam kOmniboxBookmarkPathsReplaceTitle[] = {
+    {"OmniboxBookmarkPathsUiReplaceTitle", "true"}};
+const FeatureEntry::FeatureParam kOmniboxBookmarkPathsReplaceUrl[] = {
+    {"OmniboxBookmarkPathsUiReplaceUrl", "true"}};
+const FeatureEntry::FeatureParam kOmniboxBookmarkPathsAppendAfterTitle[] = {
+    {"OmniboxBookmarkPathsUiAppendAfterTitle", "true"}};
+const FeatureEntry::FeatureParam kOmniboxBookmarkPathsDynamicReplaceUrl[] = {
+    {"OmniboxBookmarkPathsUiDynamicReplaceUrl", "true"}};
+
+const FeatureEntry::FeatureVariation kOmniboxBookmarkPathsVariations[] = {
+    {"Default UI (Title - URL)", {}, 0, nullptr},
+    {"Replace title (Path/Title - URL)", kOmniboxBookmarkPathsReplaceTitle,
+     base::size(kOmniboxBookmarkPathsReplaceTitle), nullptr},
+    {"Replace URL (Title - Path)", kOmniboxBookmarkPathsReplaceUrl,
+     base::size(kOmniboxBookmarkPathsReplaceUrl), nullptr},
+    {"Append after title (Title : Path - URL)",
+     kOmniboxBookmarkPathsAppendAfterTitle,
+     base::size(kOmniboxBookmarkPathsAppendAfterTitle), nullptr},
+    {"Dynamic Replace URL (Title - Path|URL)",
+     kOmniboxBookmarkPathsDynamicReplaceUrl,
+     base::size(kOmniboxBookmarkPathsDynamicReplaceUrl), nullptr}};
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) ||
         // defined(OS_WIN)
 
@@ -4440,6 +4462,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxExperimentalKeywordModeName,
      flag_descriptions::kOmniboxExperimentalKeywordModeDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kExperimentalKeywordMode)},
+    {"omnibox-short-bookmark-suggestions",
+     flag_descriptions::kOmniboxShortBookmarkSuggestionsName,
+     flag_descriptions::kOmniboxShortBookmarkSuggestionsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kShortBookmarkSuggestions)},
     {"omnibox-tab-switch-suggestions",
      flag_descriptions::kOmniboxTabSwitchSuggestionsName,
      flag_descriptions::kOmniboxTabSwitchSuggestionsDescription, kOsDesktop,
@@ -4451,6 +4477,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-pedals-batch3", flag_descriptions::kOmniboxPedalsBatch3Name,
      flag_descriptions::kOmniboxPedalsBatch3Description, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalsBatch3)},
+    {"omnibox-pedals-batch3-nonenglish",
+     flag_descriptions::kOmniboxPedalsBatch3NonEnglishName,
+     flag_descriptions::kOmniboxPedalsBatch3NonEnglishDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalsBatch3NonEnglish)},
     {"omnibox-pedals-translation-console",
      flag_descriptions::kOmniboxPedalsTranslationConsoleName,
      flag_descriptions::kOmniboxPedalsTranslationConsoleDescription, kOsDesktop,
@@ -4510,6 +4540,11 @@ const FeatureEntry kFeatureEntries[] = {
          omnibox::kRichAutocompletion,
          kOmniboxRichAutocompletionPromisingVariations,
          "OmniboxBundledExperimentV1")},
+    {"omnibox-bookmark-paths", flag_descriptions::kOmniboxBookmarkPathsName,
+     flag_descriptions::kOmniboxBookmarkPathsDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kBookmarkPaths,
+                                    kOmniboxBookmarkPathsVariations,
+                                    "OmniboxBundledExperimentV1")},
     {"omnibox-disable-cgi-param-matching",
      flag_descriptions::kOmniboxDisableCGIParamMatchingName,
      flag_descriptions::kOmniboxDisableCGIParamMatchingDescription, kOsDesktop,
@@ -5635,6 +5670,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFastPairDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kFastPair)},
 
+    {"pcie-billboard-notification",
+     flag_descriptions::kPcieBillboardNotificationName,
+     flag_descriptions::kPcieBillboardNotificationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kPcieBillboardNotification)},
+
     {"reduce-display-notifications",
      flag_descriptions::kReduceDisplayNotificationsName,
      flag_descriptions::kReduceDisplayNotificationsDescription, kOsCrOS,
@@ -6555,6 +6595,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"shelf-drag-to-pin", flag_descriptions::kShelfDragToPinName,
      flag_descriptions::kShelfDragToPinDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDragUnpinnedAppToPin)},
+    {"force-show-continue-section",
+     flag_descriptions::kForceShowContinueSectionName,
+     flag_descriptions::kForceShowContinueSectionDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kForceShowContinueSection)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -6902,7 +6946,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kScrollCaptureDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kScrollCapture,
                                     kScrollCaptureVariations,
-                                    "ScrollCapture")},
+                                    "AndroidScrollCapture")},
 #endif  // defined(OS_ANDROID)
 
     {"chrome-labs", flag_descriptions::kChromeLabsName,
@@ -7524,6 +7568,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"u2f-permission-prompt", flag_descriptions::kU2FPermissionPromptName,
      flag_descriptions::kU2FPermissionPromptDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(device::kU2fPermissionPrompt)},
+    {"upcoming-sharing-features",
+     flag_descriptions::kUpcomingSharingFeaturesName,
+     flag_descriptions::kUpcomingSharingFeaturesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(share::kUpcomingSharingFeatures)},
 
 #if BUILDFLAG(ENABLE_SIDE_SEARCH)
     {"side-search", flag_descriptions::kSideSearchName,
@@ -7575,11 +7623,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCSSCascadeLayersDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kCSSCascadeLayers)},
 
+    {"enable-commerce-developer", flag_descriptions::kCommerceDeveloperName,
+     flag_descriptions::kCommerceDeveloperDescription, kOsAll,
+     FEATURE_VALUE_TYPE(commerce::kCommerceDeveloper)},
+
     {"bluetooth-bond-on-demand",
      flag_descriptions::kWebBluetoothBondOnDemandName,
      flag_descriptions::kWebBluetoothBondOnDemandDescription, kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(features::kWebBluetoothBondOnDemand)},
-
+  
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

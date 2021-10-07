@@ -23,15 +23,15 @@ extern const base::Feature kSharedHighlightingIOS;
 // users to update the default browser in the Settings.app.
 extern const base::Feature kEnableFREDefaultBrowserScreen;
 
+// Feature flag for testing 'kEnableFREDefaultBrowserScreen' experiment.
+extern const base::Feature kEnableFREDefaultBrowserScreenTesting;
+
 // Feature flag that enables using the FRE UI module to show first run screens.
 extern const base::Feature kEnableFREUIModuleIOS;
 
 // Feature flag that enables using the strings of the previous sync screen in
 // the current FRE.
 extern const base::Feature kOldSyncStringFRE;
-
-// Feature flag that enables taking fullpage screenshots of a webpage.
-extern const base::Feature kEnableFullPageScreenshot;
 
 // TODO(crbug.com/1128242): Remove this flag after the refactoring work is
 // finished. Flag to modernize the tabstrip without disturbing the existing one.
@@ -71,6 +71,10 @@ extern const base::Feature kContextMenuActionsRefresh;
 
 // Feature flag to enable using Lens to search for images.
 extern const base::Feature kUseLensToSearchForImage;
+
+// Feature flag to enable promotional view for Passwords In Other Apps in
+// Settings.
+extern const base::Feature kCredentialProviderExtensionPromo;
 
 // Whether the ContextMenuActionsRefresh flag is enabled.
 bool IsContextMenuActionsRefreshEnabled();

@@ -1182,7 +1182,6 @@ if (!is_android && !is_fuchsia) {
       "//components/password_manager/core/browser/form_parsing",
       "//components/payments/content",
       "//components/payments/content:utils",
-      "//components/pdf/browser",
       "//components/performance_manager",
       "//components/policy:chrome_settings_proto_generated_compile",
       "//components/policy/core/browser:test_support",
@@ -2129,7 +2128,10 @@ if (!is_android && !is_fuchsia) {
     }
 
     if (enable_pdf) {
-      deps += [ "//pdf:internal" ]
+      deps += [
+        "//components/pdf/browser",
+        "//pdf:internal",
+      ]
     }
 
     if (safe_browsing_mode != 0) {
@@ -3825,7 +3827,10 @@ if (!is_android && !is_fuchsia) {
       }
     }
     if (is_win) {
-      sources += [ "../browser/policy/test/audio_process_high_priority_enabled_browsertest.cc" ]
+      sources += [
+        "../browser/policy/test/audio_process_high_priority_enabled_browsertest.cc",
+        "../browser/policy/test/network_service_sandbox_enabled_browsertest.cc",
+      ]
     }
     if (((is_linux || is_chromeos_lacros) && !is_chromeos_lacros) || is_mac) {
       sources +=
@@ -4413,6 +4418,7 @@ test("unit_tests") {
     "../browser/bitmap_fetcher/bitmap_fetcher_service_unittest.cc",
     "../browser/bluetooth/bluetooth_chooser_context_unittest.cc",
     "../browser/bookmarks/managed_bookmark_service_unittest.cc",
+    "../browser/breadcrumbs/crash_reporter_breadcrumb_observer_unittest.cc",
     "../browser/browser_about_handler_unittest.cc",
     "../browser/browsing_data/access_context_audit_database_unittest.cc",
     "../browser/browsing_data/access_context_audit_service_unittest.cc",
@@ -5173,6 +5179,7 @@ test("unit_tests") {
     "//chrome/browser:buildflags",
     "//chrome/browser:permissions_proto",
     "//chrome/browser:theme_properties",
+    "//chrome/browser/breadcrumbs",
     "//chrome/browser/browsing_data:constants",
     "//chrome/browser/commerce:feature_list",
     "//chrome/browser/commerce/shopping_list:unit_tests",
@@ -5228,6 +5235,7 @@ test("unit_tests") {
     "//components/bookmarks/browser",
     "//components/bookmarks/common",
     "//components/bookmarks/managed",
+    "//components/breadcrumbs/core",
     "//components/browser_sync",
     "//components/browsing_data/content",
     "//components/browsing_data/content:test_support",
@@ -5598,6 +5606,7 @@ test("unit_tests") {
       "../browser/page_load_metrics/observers/android_page_load_metrics_observer_unittest.cc",
       "../browser/page_load_metrics/observers/offline_measurements_page_load_metrics_observer_unittest.cc",
       "../browser/permissions/permission_prompt_android_unittest.cc",
+      "../browser/permissions/permission_update_message_controller_android_unittest.cc",
       "../browser/policy/browser_dm_token_storage_android_unittest.cc",
       "../browser/policy/chrome_browser_cloud_management_controller_android_unittest.cc",
       "../browser/policy/client_data_delegate_android_unittest.cc",

@@ -381,6 +381,12 @@ extern const char kImprovedShortcutsNotificationShownCount[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kLacrosProxyControllingExtension[];
 
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kFastPairEnabled[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDeskTemplatesEnabled[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPreconfiguredDeskTemplates[];
+
 }  // namespace prefs
 }  // namespace ash
 

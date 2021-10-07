@@ -13,10 +13,10 @@ import android.text.style.StyleSpan;
 
 import androidx.core.content.res.ResourcesCompat;
 
-import org.chromium.base.Callback;
 import org.chromium.chrome.browser.merchant_viewer.RatingStarSpan.RatingStarType;
 import org.chromium.chrome.browser.merchant_viewer.proto.MerchantTrustSignalsOuterClass.MerchantTrustSignals;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.messages.DismissReason;
 import org.chromium.components.messages.MessageBannerProperties;
 import org.chromium.components.messages.MessageIdentifier;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -29,8 +29,24 @@ import java.text.NumberFormat;
 class MerchantTrustMessageViewModel {
     private static final int BASELINE_RATING = 5;
 
+    /** Handles message actions. */
+    interface MessageActionsHandler {
+        /**
+         * Called when message is dismissed.
+         * @param dismissReason The reason why the message is dismissed.
+         * @param messageAssociatedUrl The url associated with this message context.
+         */
+        void onMessageDismissed(@DismissReason int dismissReason, String messageAssociatedUrl);
+
+        /**
+         * Called when message primary action is tapped.
+         * @param trustSignals The signal associated with this message.
+         */
+        void onMessagePrimaryAction(MerchantTrustSignals trustSignals);
+    }
+
     public static PropertyModel create(Context context, MerchantTrustSignals trustSignals,
-            Callback<Integer> onDismissed, Callback<MerchantTrustSignals> onPrimaryAction) {
+            String messageAssociatedUrl, MessageActionsHandler actionsHandler) {
         return new PropertyModel.Builder(MessageBannerProperties.ALL_KEYS)
                 .with(MessageBannerProperties.MESSAGE_IDENTIFIER, MessageIdentifier.MERCHANT_TRUST)
                 .with(MessageBannerProperties.ICON,
@@ -43,26 +59,28 @@ class MerchantTrustMessageViewModel {
                         getMessageDescription(context, trustSignals))
                 .with(MessageBannerProperties.PRIMARY_BUTTON_TEXT,
                         context.getResources().getString(R.string.merchant_viewer_message_action))
-                .with(MessageBannerProperties.ON_DISMISSED, onDismissed)
+                .with(MessageBannerProperties.ON_DISMISSED,
+                        (reason) -> actionsHandler.onMessageDismissed(reason, messageAssociatedUrl))
                 .with(MessageBannerProperties.ON_PRIMARY_ACTION,
-                        () -> { onPrimaryAction.onResult(trustSignals); })
+                        () -> actionsHandler.onMessagePrimaryAction(trustSignals))
                 .build();
     }
 
     public static Spannable getMessageDescription(
             Context context, MerchantTrustSignals trustSignals) {
+        // Only keep one decimal to avoid inaccurate double value.
+        double ratingValue = Math.round(trustSignals.getMerchantStarRating() * 10) / 10.0;
         SpannableStringBuilder builder = new SpannableStringBuilder();
         NumberFormat numberFormatter = NumberFormat.getIntegerInstance();
         numberFormatter.setMaximumFractionDigits(1);
         if (MerchantViewerConfig.doesTrustSignalsMessageUseRatingBar()) {
-            builder.append(numberFormatter.format(trustSignals.getMerchantStarRating()));
+            builder.append(numberFormatter.format(ratingValue));
             builder.append(" ");
-            builder.append(getRatingBarSpan(context, trustSignals.getMerchantStarRating()));
+            builder.append(getRatingBarSpan(context, ratingValue));
         } else {
             builder.append(context.getResources().getString(
                     R.string.merchant_viewer_message_description_rating,
-                    numberFormatter.format(trustSignals.getMerchantStarRating()),
-                    numberFormatter.format(BASELINE_RATING)));
+                    numberFormatter.format(ratingValue), numberFormatter.format(BASELINE_RATING)));
             builder.setSpan(new StyleSpan(Typeface.BOLD), 0, builder.length(),
                     Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         }

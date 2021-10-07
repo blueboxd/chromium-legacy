@@ -43,14 +43,17 @@ int32_t FetchRestoreWindowId(const std::string& app_id) {
   if (!full_restore::features::IsFullRestoreEnabled())
     return 0;
 
-  // `DeskTemplateReadHandler::FetchRestoreWindowId()` will return 0 if full
-  // restore is running.
+  // If full restore is not running, check if desk templates can get a viable
+  // window id, otherwise default to checking full restore.
   // TODO(sammiequon): Separate full restore and desk templates logic.
-  const int32_t desk_template_restore_window_id =
-      app_restore::DeskTemplateReadHandler::GetInstance()->FetchRestoreWindowId(
-          app_id);
-  if (desk_template_restore_window_id > 0)
-    return desk_template_restore_window_id;
+  auto* full_restore_read_handler = FullRestoreReadHandler::GetInstance();
+  if (!full_restore_read_handler->IsFullRestoreRunning()) {
+    const int32_t desk_template_restore_window_id =
+        app_restore::DeskTemplateReadHandler::GetInstance()
+            ->FetchRestoreWindowId(app_id);
+    if (desk_template_restore_window_id > 0)
+      return desk_template_restore_window_id;
+  }
 
   return FullRestoreReadHandler::GetInstance()->FetchRestoreWindowId(app_id);
 }
@@ -108,31 +111,6 @@ void ModifyWidgetParams(int32_t restore_window_id,
 
   FullRestoreReadHandler::GetInstance()->ModifyWidgetParams(restore_window_id,
                                                             out_params);
-}
-
-void OnTaskCreated(const std::string& app_id,
-                   int32_t task_id,
-                   int32_t session_id) {
-  FullRestoreReadHandler::GetInstance()->OnTaskCreated(app_id, task_id,
-                                                       session_id);
-  FullRestoreSaveHandler::GetInstance()->OnTaskCreated(app_id, task_id,
-                                                       session_id);
-}
-
-void OnTaskDestroyed(int32_t task_id) {
-  FullRestoreReadHandler::GetInstance()->OnTaskDestroyed(task_id);
-  FullRestoreSaveHandler::GetInstance()->OnTaskDestroyed(task_id);
-}
-
-void SetArcConnection(bool is_connection_ready) {
-  FullRestoreSaveHandler::GetInstance()->SetArcConnection(is_connection_ready);
-}
-
-void OnTaskThemeColorUpdated(int32_t task_id,
-                             uint32_t primary_color,
-                             uint32_t status_bar_color) {
-  FullRestoreSaveHandler::GetInstance()->OnTaskThemeColorUpdated(
-      task_id, primary_color, status_bar_color);
 }
 
 void AddChromeBrowserLaunchInfoForTesting(const base::FilePath& profile_path) {

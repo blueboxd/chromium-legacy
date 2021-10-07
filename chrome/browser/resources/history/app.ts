@@ -118,6 +118,7 @@ declare global {
 
 export interface HistoryAppElement {
   $: {
+    'content': IronPagesElement,
     'drawer': CrLazyRenderElement<CrDrawerElement>,
     'history': HistoryListElement,
     'tabs-container': Element,
@@ -181,8 +182,19 @@ export class HistoryAppElement extends HistoryAppElementBase {
 
       historyClustersEnabled_: {
         type: Boolean,
-        reflectToAttribute: true,
         value: () => loadTimeData.getBoolean('isHistoryClustersEnabled'),
+      },
+
+      historyClustersVisible_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('isHistoryClustersVisible'),
+      },
+
+      showHistoryClusters_: {
+        type: Boolean,
+        computed:
+            'computeShowHistoryClusters_(historyClustersEnabled_, historyClustersVisible_)',
+        reflectToAttribute: true,
       },
 
       // The index of the currently selected tab.
@@ -213,12 +225,14 @@ export class HistoryAppElement extends HistoryAppElementBase {
   private eventTracker_: EventTracker = new EventTracker();
   private hasDrawer_: boolean;
   private historyClustersEnabled_: boolean;
+  private historyClustersVisible_: boolean;
   private isUserSignedIn_: boolean = loadTimeData.getBoolean('isUserSignedIn');
   private pendingDelete_: boolean;
   private queryResult_: QueryResult;
   private queryState_: QueryState;
   private selectedPage_: Page;
   private selectedTab_: number;
+  private showHistoryClusters_: boolean;
   private tabsIcons_: Array<string>;
   private tabsNames_: Array<string>;
   private toolbarShadow_: boolean;
@@ -280,10 +294,14 @@ export class HistoryAppElement extends HistoryAppElementBase {
         new CustomEvent(eventName, {bubbles: true, composed: true, detail}));
   }
 
+  private computeShowHistoryClusters_(): boolean {
+    return this.historyClustersEnabled_ && this.historyClustersVisible_;
+  }
+
   private historyClustersSelected_(
-      _selectedPage: Page, _historyClustersEnabled: boolean): boolean {
+      _selectedPage: Page, _showHistoryClusters: boolean): boolean {
     return this.selectedPage_ === Page.HISTORY_CLUSTERS &&
-        this.historyClustersEnabled_;
+        this.showHistoryClusters_;
   }
 
   private onFirstRender_() {
@@ -314,7 +332,7 @@ export class HistoryAppElement extends HistoryAppElementBase {
       // When the tabs are visible, show the toolbar shadow for the synced
       // devices page only.
       this.toolbarShadow_ = this.scrollTarget.scrollTop !== 0 &&
-          (!this.historyClustersEnabled_ ||
+          (!this.showHistoryClusters_ ||
            this.syncedTabsSelected_(this.selectedPage_!));
     }
   }
@@ -397,7 +415,7 @@ export class HistoryAppElement extends HistoryAppElementBase {
     if (this.$.toolbar.searchField.isSearchFocused() ||
         this.syncedTabsSelected_(this.selectedPage_!) ||
         this.historyClustersSelected_(
-            this.selectedPage_!, this.historyClustersEnabled_)) {
+            this.selectedPage_!, this.showHistoryClusters_)) {
       return false;
     }
     this.selectOrUnselectAll();
@@ -445,15 +463,21 @@ export class HistoryAppElement extends HistoryAppElementBase {
     this.maybeUpdateSelectedHistoryTab_();
   }
 
-  private selectedItemChanged_(e: Event) {
-    // <history-list> and <history-clusters> are inside two nested <iron-pages>.
-    // Adjust the scroll target when the selection on the outer one changes.
-    const selectedItem =
-        ((e.target as IronPagesElement).selectedItem as HTMLElement);
-    if (selectedItem && selectedItem !== this.$['tabs-container']) {
-      this.scrollTarget = selectedItem;
-    } else if (this.$['tabs-content'].selectedItem) {
-      this.scrollTarget = (this.$['tabs-content'].selectedItem as HTMLElement);
+  private updateScrollTarget_() {
+    const topLevelIronPages = this.$['content'];
+    const lowerLevelIronPages = this.$['tabs-content'];
+
+    const topLevelHistoryPage = this.$['tabs-container'];
+    if (topLevelIronPages.selectedItem &&
+        topLevelIronPages.selectedItem === topLevelHistoryPage) {
+      // The top-level History page has another inner IronPages element that
+      // can toggle between different pages. If this is the case, set the
+      // scroll target to the currently selected inner tab.
+      this.scrollTarget = lowerLevelIronPages.selectedItem as HTMLElement;
+    } else if (topLevelIronPages.selectedItem) {
+      this.scrollTarget = topLevelIronPages.selectedItem as HTMLElement;
+    } else {
+      this.scrollTarget = null;
     }
   }
 

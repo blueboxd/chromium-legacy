@@ -52,6 +52,8 @@ extern const base::Feature kOnDeviceHeadProviderNonIncognito;
 extern const base::Feature kOmniboxExperimentalSuggestScoring;
 extern const base::Feature kHistoryQuickProviderAblateInMemoryURLIndexCacheFile;
 extern const base::Feature kDisableCGIParamMatching;
+extern const base::Feature kShortBookmarkSuggestions;
+extern const base::Feature kShortBookmarkSuggestionsByTotalInputLength;
 extern const base::Feature kPreserveLongerShortcutsText;
 extern const base::Feature kBookmarkPaths;
 
@@ -69,6 +71,7 @@ extern const base::Feature kNtpRealboxPedals;
 extern const base::Feature kNtpRealboxSuggestionAnswers;
 extern const base::Feature kOmniboxPedalsBatch2NonEnglish;
 extern const base::Feature kOmniboxPedalsBatch3;
+extern const base::Feature kOmniboxPedalsBatch3NonEnglish;
 extern const base::Feature kOmniboxPedalsTranslationConsole;
 extern const base::Feature kOmniboxKeywordSearchButton;
 extern const base::Feature kWebUIOmniboxPopup;

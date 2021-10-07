@@ -6,6 +6,16 @@
       "chromium_builder_asan"
     ]
   },
+  "ASAN Release (reclient shadow)": {
+    "additional_compile_targets": [
+      "chromium_builder_asan"
+    ]
+  },
+  "ASAN Release Media (reclient shadow)": {
+    "additional_compile_targets": [
+      "chromium_builder_asan"
+    ]
+  },
   "Comparison Linux": {
     "additional_compile_targets": [
       "all"
@@ -143,6 +153,16 @@
         },
         "test_id_prefix": "ninja://:blink_web_tests/"
       }
+    ]
+  },
+  "MSAN Release (chained origins) (reclient shadow)": {
+    "additional_compile_targets": [
+      "chromium_builder_asan"
+    ]
+  },
+  "MSAN Release (no origins) (reclient shadow)": {
+    "additional_compile_targets": [
+      "chromium_builder_asan"
     ]
   },
   "Mac Builder (reclient)": {

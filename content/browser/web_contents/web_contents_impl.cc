@@ -51,7 +51,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
-#include "content/browser/attribution_reporting/conversion_host.h"
+#include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
@@ -922,10 +922,10 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       std::make_unique<ScreenChangeMonitor>(base::BindRepeating(
           &WebContentsImpl::OnScreensChange, base::Unretained(this)));
 
-  // ConversionHost takes a weak ref on |this|, so it must be created outside of
-  // the initializer list.
+  // AttributionHost takes a weak ref on |this|, so it must be created outside
+  // of the initializer list.
   if (base::FeatureList::IsEnabled(blink::features::kConversionMeasurement)) {
-    ConversionHost::CreateForWebContents(this);
+    AttributionHost::CreateForWebContents(this);
   }
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
@@ -1487,7 +1487,10 @@ void WebContentsImpl::OnScreensChange(bool is_multi_screen_changed) {
   // that the RenderWidgetHostView is valid before sending an update.
   if (RenderWidgetHostViewBase* view =
           GetRenderViewHost()->GetWidget()->GetView()) {
-    view->UpdateScreenInfo();
+    // Only update top-level views, as child frames will have their ScreenInfos
+    // updated by the visual property flow.
+    if (!view->IsRenderWidgetHostViewChildFrame())
+      view->UpdateScreenInfo();
   }
 #endif  // !OS_MAC
 }
@@ -2022,6 +2025,11 @@ void WebContentsImpl::SetHasPictureInPictureVideo(
   NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
   observers_.NotifyObservers(&WebContentsObserver::MediaPictureInPictureChanged,
                              has_picture_in_picture_video_);
+
+  // Picture-in-picture state can affect how we notify visibility for non-
+  // visible pages.
+  if (visibility_ != Visibility::VISIBLE)
+    UpdateVisibilityAndNotifyPageAndView(visibility_);
 }
 
 bool WebContentsImpl::IsCrashed() {
@@ -8996,11 +9004,13 @@ void WebContentsImpl::DecrementCapturerCount(bool stay_hidden,
 void WebContentsImpl::NotifyPrimaryMainFrameProcessIsAlive() {
   // The WebContents tracks the process state for the primary main frame's
   // renderer.
-  bool was_crashed = IsCrashed();
+  // Consider renderer as terminated when exited with any termination status.
+  bool was_renderer_terminated = primary_main_frame_process_status_ !=
+                                 base::TERMINATION_STATUS_STILL_RUNNING;
   SetPrimaryMainFrameProcessStatus(base::TERMINATION_STATUS_STILL_RUNNING, 0);
   // Restore the focus to the tab (otherwise the focus will be on the top
   // window).
-  if (was_crashed && !FocusLocationBarByDefault()) {
+  if (was_renderer_terminated && !FocusLocationBarByDefault()) {
     if (!delegate_ || delegate_->ShouldFocusPageAfterCrash()) {
       view_->Focus();
     }

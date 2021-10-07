@@ -10,6 +10,33 @@
       "use_remoteexec": true
     }
   },
+  "ASAN Release (reclient shadow)": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "enable_ipc_fuzzer": true,
+      "is_asan": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_lsan": true,
+      "use_rbe": true,
+      "use_remoteexec": true,
+      "v8_enable_verify_heap": true
+    }
+  },
+  "ASAN Release Media (reclient_shadow)": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "ffmpeg_branding": "ChromeOS",
+      "is_asan": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_lsan": true,
+      "proprietary_codecs": true,
+      "use_rbe": true,
+      "use_remoteexec": true,
+      "v8_enable_verify_heap": true
+    }
+  },
   "Afl Upload Linux ASan": {
     "gn_args": {
       "archive_seed_corpus": false,
@@ -248,6 +275,28 @@
       "is_debug": false,
       "symbol_level": 1,
       "use_goma": true
+    }
+  },
+  "MSAN Release (chained origins) (reclient shadow)": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_msan": true,
+      "msan_track_origins": 2,
+      "use_rbe": true,
+      "use_remoteexec": true
+    }
+  },
+  "MSAN Release (no origins) (reclient shadow)": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_msan": true,
+      "msan_track_origins": 0,
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "Mac Builder (reclient)": {

@@ -75,8 +75,6 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/scroll_offset.h"
-#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/skia_util.h"
 #include "url/gurl.h"
@@ -174,16 +172,20 @@ class BlinkContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
   }
 
   void Alert(const blink::WebString& message) override {
-    GetFrame()->Alert(message);
+    blink::WebLocalFrame* frame = GetFrame();
+    if (frame)
+      frame->Alert(message);
   }
 
   bool Confirm(const blink::WebString& message) override {
-    return GetFrame()->Confirm(message);
+    blink::WebLocalFrame* frame = GetFrame();
+    return frame && frame->Confirm(message);
   }
 
   blink::WebString Prompt(const blink::WebString& message,
                           const blink::WebString& default_value) override {
-    return GetFrame()->Prompt(message, default_value);
+    blink::WebLocalFrame* frame = GetFrame();
+    return frame ? frame->Prompt(message, default_value) : blink::WebString();
   }
 
   void TextSelectionChanged(const blink::WebString& selection_text,
@@ -926,14 +928,6 @@ void PdfViewWebPlugin::OnViewportChanged(
       gfx::ScaleToEnclosingRectSafe(plugin_rect_in_css_pixel,
                                     css_to_device_pixel_scale),
       new_device_scale);
-
-  if (IsPrintPreview()) {
-    UpdateScroll(gfx::ScrollOffsetToVector2dF(
-        container_wrapper_->GetFrame()->GetScrollOffset()));
-  }
-
-  // Scrolling in the main PDF Viewer UI is already handled by
-  // `HandleUpdateScrollMessage()`.
 }
 
 void PdfViewWebPlugin::InvalidatePluginContainer() {

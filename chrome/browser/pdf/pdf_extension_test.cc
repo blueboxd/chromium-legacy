@@ -46,6 +46,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/pdf/pdf_extension_util.h"
+#include "chrome/browser/pdf/pdf_frame_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/plugins/plugin_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -105,6 +106,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "pdf/buildflags.h"
 #include "pdf/pdf_features.h"
+#include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -130,6 +132,16 @@
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #endif
+
+#if BUILDFLAG(ENABLE_PRINTING)
+#include "chrome/browser/printing/print_view_manager_base.h"
+#include "chrome/browser/ui/browser_commands.h"
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#include "chrome/browser/printing/print_view_manager.h"
+#else
+#include "chrome/browser/printing/print_view_manager_basic.h"
+#endif
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 
 namespace {
 
@@ -318,20 +330,9 @@ class PDFExtensionTestWithoutUnseasonedOverride
   }
 
   content::RenderFrameHost* GetPluginFrame(WebContents* guest_contents) const {
-    if (!IsUnseasoned())
-      return guest_contents->GetMainFrame();
-
-    content::RenderFrameHost* plugin_frame = nullptr;
-    guest_contents->ForEachRenderFrameHost(base::BindLambdaForTesting(
-        [&plugin_frame](content::RenderFrameHost* frame) {
-          // Assume exactly one child frame.
-          if (frame->GetParent()) {
-            EXPECT_FALSE(plugin_frame);
-            plugin_frame = frame;
-          }
-        }));
-
-    return plugin_frame;
+    content::RenderFrameHost* main_frame = guest_contents->GetMainFrame();
+    return IsUnseasoned() ? pdf_frame_util::FindPdfChildFrame(main_frame)
+                          : main_frame;
   }
 
   // Finds the `RenderFrameHost`s of Unseasoned PDF plugins within a given
@@ -1543,6 +1544,97 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, SelectAllShortcut) {
               MatchesRegex("this is some text\r?\nsome more text"));
 }
 
+// TODO(crbug.com/1253714): Add tests for using space and shift+space shortcuts
+// for scrolling PDFs.
+
+#if BUILDFLAG(ENABLE_PRINTING)
+namespace {
+
+class PrintObserver : public printing::PrintViewManagerBase::Observer {
+ public:
+  PrintObserver(content::WebContents* contents,
+                const content::RenderFrameHost* rfh)
+      : print_view_manager_(PrintViewManagerImpl::FromWebContents(contents)),
+        rfh_(rfh) {
+    print_view_manager_->AddObserver(*this);
+  }
+
+  ~PrintObserver() override { print_view_manager_->RemoveObserver(*this); }
+
+  // printing::PrintViewManagerBase::Observer:
+  void OnPrintNow(const content::RenderFrameHost* rfh) override {
+    EXPECT_FALSE(print_now_called_);
+    EXPECT_FALSE(print_preview_called_);
+    EXPECT_EQ(rfh, rfh_);
+    run_loop_.Quit();
+    print_now_called_ = true;
+  }
+  void OnPrintPreview(const content::RenderFrameHost* rfh) override {
+    EXPECT_FALSE(print_preview_called_);
+    EXPECT_FALSE(print_now_called_);
+    EXPECT_EQ(rfh, rfh_);
+    run_loop_.Quit();
+    print_preview_called_ = true;
+  }
+
+  void WaitForPrintNow() {
+    WaitIfNotAlreadyPrinted();
+    EXPECT_TRUE(print_now_called_);
+    EXPECT_FALSE(print_preview_called_);
+  }
+
+  void WaitForPrintPreview() {
+    WaitIfNotAlreadyPrinted();
+    EXPECT_TRUE(print_preview_called_);
+    EXPECT_FALSE(print_now_called_);
+  }
+
+ private:
+  void WaitIfNotAlreadyPrinted() {
+    if (!print_now_called_ && !print_preview_called_)
+      run_loop_.Run();
+  }
+
+  bool print_now_called_ = false;
+  bool print_preview_called_ = false;
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  using PrintViewManagerImpl = printing::PrintViewManager;
+#else
+  using PrintViewManagerImpl = printing::PrintViewManagerBasic;
+#endif
+  PrintViewManagerImpl* const print_view_manager_;
+  const content::RenderFrameHost* const rfh_;
+  base::RunLoop run_loop_;
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest, BasicPrintCommand) {
+  content::WebContents* guest_contents =
+      LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  content::RenderFrameHost* frame = GetPluginFrame(guest_contents);
+  ASSERT_TRUE(frame);
+
+  PrintObserver print_observer(guest_contents, frame);
+  chrome::BasicPrint(browser());
+  print_observer.WaitForPrintNow();
+}
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest, PrintCommand) {
+  content::WebContents* guest_contents =
+      LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  content::RenderFrameHost* frame = GetPluginFrame(guest_contents);
+  ASSERT_TRUE(frame);
+
+  PrintObserver print_observer(guest_contents, frame);
+  chrome::Print(browser());
+  print_observer.WaitForPrintPreview();
+}
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#endif  // BUILDFLAG(ENABLE_PRINTING)
+
 namespace {
 
 std::string DumpPdfAccessibilityTree(const ui::AXTreeUpdate& ax_tree) {
@@ -1894,15 +1986,14 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionIsolatedContentTest, PdfAndHtml) {
       GetUnseasonedPdfFrames(guest_contents);
   ASSERT_EQ(pdf_frames.size(), 1u);
 
-  std::vector<content::RenderFrameHost*> frames =
-      GetActiveWebContents()->GetAllFrames();
-  ASSERT_EQ(frames.size(), 4u);
-  EXPECT_EQ(frames[1]->GetLastCommittedURL(),
+  content::RenderFrameHost* iframe = ChildFrameAt(GetActiveWebContents(), 0);
+  ASSERT_TRUE(iframe);
+  EXPECT_EQ(iframe->GetLastCommittedURL(),
             embedded_test_server()->GetURL("/title1.html"));
 
   EXPECT_EQ(pdf_frames[0]->GetLastCommittedOrigin(),
-            frames[1]->GetLastCommittedOrigin());
-  EXPECT_NE(pdf_frames[0]->GetProcess(), frames[1]->GetProcess());
+            iframe->GetLastCommittedOrigin());
+  EXPECT_NE(pdf_frames[0]->GetProcess(), iframe->GetProcess());
 }
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionIsolatedContentTest, HistoryNavigation) {

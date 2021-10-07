@@ -769,7 +769,7 @@ const base::Feature kMultilingualTyping{"MultilingualTyping",
 // Enables Nearby Connections to specificy KeepAlive interval and timeout while
 // also making the Nearby Connections WebRTC defaults longer.
 const base::Feature kNearbyKeepAliveFix{"NearbyKeepAliveFix",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether new Lockscreen reauth layout is shown or not.
 const base::Feature kNewLockScreenReauthLayout{
@@ -829,6 +829,11 @@ const base::Feature kOsSettingsAppNotificationsPage{
 
 const base::Feature kOverviewButton{"OverviewButton",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables a notification warning users that their Thunderbolt device is not
+// supported on their CrOS device.
+const base::Feature kPcieBillboardNotification{
+    "PcieBillboardNotification", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Limits the items on the shelf to the ones associated with windows the
 // currently active desk.
@@ -1526,6 +1531,9 @@ bool IsOobeConsolidatedConsentEnabled() {
   return base::FeatureList::IsEnabled(kOobeConsolidatedConsent);
 }
 
+bool IsPcieBillboardNotificationEnabled() {
+  return base::FeatureList::IsEnabled(kPcieBillboardNotification);
+}
 bool IsPciguardUiEnabled() {
   return base::FeatureList::IsEnabled(kEnablePciguardUi);
 }

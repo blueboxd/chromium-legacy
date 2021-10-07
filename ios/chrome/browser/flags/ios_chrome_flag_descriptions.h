@@ -172,13 +172,14 @@ extern const char kEnableDiscoverFeedStaticResourceServingDescription[];
 extern const char kEnableFREDefaultBrowserScreenName[];
 extern const char kEnableFREDefaultBrowserScreenDescription[];
 
+// Title and description for the flag to test the FRE default browser promo
+// experiment.
+extern const char kEnableFREDefaultBrowserScreenTestingName[];
+extern const char kEnableFREDefaultBrowserScreenTestingDescription[];
+
 // Title and description for the flag to enable FRE UI module.
 extern const char kEnableFREUIModuleIOSName[];
 extern const char kEnableFREUIModuleIOSDescription[];
-
-// Title and description for the flag to enable fullpage screenshots.
-extern const char kEnableFullPageScreenshotName[];
-extern const char kEnableFullPageScreenshotDescription[];
 
 // Title and description for the flag to enable long message duration.
 extern const char kEnableLongMessageDurationName[];
@@ -219,6 +220,11 @@ extern const char kForceDisableExtendedSyncPromosDescription[];
 // Title and description for the flag to trigger the startup sign-in promo.
 extern const char kForceStartupSigninPromoName[];
 extern const char kForceStartupSigninPromoDescription[];
+
+// Title and description for the flag to trigger credentials provider extension
+// promo.
+extern const char kCredentialProviderExtensionPromoName[];
+extern const char kCredentialProviderExtensionPromoDescription[];
 
 // Title and description for the flag to set the major version the UA string to
 // 100.

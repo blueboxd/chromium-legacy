@@ -3056,6 +3056,7 @@ Unknown properties are collapsed to zero. -->
   <int value="22" label="LAUNCH_SOURCE_ARC"/>
   <int value="23" label="LAUNCH_SOURCE_INTENT_URL"/>
   <int value="24" label="LAUNCH_SOURCE_RUN_ON_OS_LOGIN"/>
+  <int value="25" label="LAUNCH_SOURCE_PROTOCOL_HANDLER"/>
 </enum>
 
 <enum name="AppleScriptCommandEvents">
@@ -14495,7 +14496,8 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="Go to URL"/>
   <int value="20" label="Copy link to text"/>
   <int value="21" label="Search Image with Google Lens"/>
-  <int value="22" label="Search part of page with Google Lens"/>
+  <int value="22" label="Search Images with Google Lens"/>
+  <int value="23" label="Search Images with non-Google visual search provider"/>
 </enum>
 
 <enum name="ContextMenuOptionIOS">
@@ -26474,6 +26476,9 @@ Called by update_document_policy_enum.py.-->
   <int value="906" label="SideSearchEnabled"/>
   <int value="907" label="AccessCodeCastEnabled"/>
   <int value="908" label="AccessCodeCastDeviceDuration"/>
+  <int value="909" label="NetworkServiceSandboxEnabled"/>
+  <int value="910" label="DeskTemplatesEnabled"/>
+  <int value="911" label="PreconfiguredDeskTemplates"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -42822,6 +42827,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="WITH_DIACRITICS"/>
 </enum>
 
+<enum name="IMEPaprikaActions">
+  <int value="0" label="DELETE"/>
+  <int value="1" label="SWITCH_TO_VK"/>
+  <int value="2" label="UNDO"/>
+</enum>
+
 <enum name="IMERegisterProxyView">
   <obsolete>
     Removed as of Jan 2020.
@@ -46436,13 +46447,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Success"/>
   <int value="1" label="Failed to open results in a new tab"/>
   <int value="2" label="Error capturing image from selected region"/>
-  <int value="3" label="User exited the capture mode via the escape key."/>
-  <int value="4"
-      label="User exited the capture mode via the close button on the
-             instructional bubble."/>
-  <int value="5"
-      label="User navigated away from the page while capture mode was open,
-             closing the capture mode."/>
 </enum>
 
 <enum name="LensSdkError">
@@ -47849,6 +47853,7 @@ from previous Chrome versions.
   <int value="-1981692093"
       label="SafeBrowsingPasswordProtectionForSignedInUsers:enabled"/>
   <int value="-1980328793" label="trace-upload-url"/>
+  <int value="-1978625006" label="PcieBillboardNotification:disabled"/>
   <int value="-1977496883" label="ViewPasswords:enabled"/>
   <int value="-1975719988" label="GlobalMediaControlsSeamlessTransfer:enabled"/>
   <int value="-1973722176" label="VoiceSearchOnLocalNtp:enabled"/>
@@ -48082,6 +48087,7 @@ from previous Chrome versions.
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
   <int value="-1832575380" label="show-saved-copy"/>
   <int value="-1832221649" label="disable-out-of-process-pac"/>
+  <int value="-1830709105" label="OmniboxPedalsBatch3NonEnglish:disabled"/>
   <int value="-1830472348" label="CryptAuthV2DeviceSync:enabled"/>
   <int value="-1830199297" label="force-empty-corb-allowlist"/>
   <int value="-1827599944" label="QueryTilesLocalOrdering:enabled"/>
@@ -49895,6 +49901,7 @@ from previous Chrome versions.
   <int value="-424584720" label="ClipboardFilenames:enabled"/>
   <int value="-424134004" label="WebPaymentsExperimentalFeatures:disabled"/>
   <int value="-421428607" label="InheritNativeThemeFromParentWidget:disabled"/>
+  <int value="-421314301" label="ForceShowContinueSection:enabled"/>
   <int value="-420956156" label="WebApkGenerator:disabled"/>
   <int value="-420347911" label="MobileIdentityConsistencyFRE:disabled"/>
   <int value="-419733676" label="IsolatePrerendersMustProbeOrigin:disabled"/>
@@ -50213,6 +50220,7 @@ from previous Chrome versions.
   <int value="-167420098" label="WebBluetoothNewPermissionsBackend:enabled"/>
   <int value="-165756594" label="enable-touch-feedback"/>
   <int value="-165006916" label="EnableNeuralPalmDetectionFilter:enabled"/>
+  <int value="-164673139" label="ForceShowContinueSection:disabled"/>
   <int value="-164539906"
       label="OmniboxPreserveDefaultMatchAgainstAsyncUpdate:disabled"/>
   <int value="-162928621" label="ForceStartupSigninPromo:disabled"/>
@@ -50246,6 +50254,7 @@ from previous Chrome versions.
   <int value="-135584175" label="EnableAggregatedMlAppRanking:enabled"/>
   <int value="-135223364" label="AutofillShowTypePredictions:disabled"/>
   <int value="-133098377" label="SyncPseudoUSSSearchEngines:disabled"/>
+  <int value="-132786900" label="CommerceDeveloper:disabled"/>
   <int value="-132082004" label="CacheOneGoogleBar:enabled"/>
   <int value="-131886819"
       label="AutofillEnableMerchantBoundVirtualCards:enabled"/>
@@ -50731,6 +50740,7 @@ from previous Chrome versions.
   <int value="240856309" label="MimeHandlerViewInCrossProcessFrame:enabled"/>
   <int value="241187301" label="BrowserTouchBar:disabled"/>
   <int value="244697230" label="enable-theme-color-in-tabbed-mode"/>
+  <int value="245100553" label="PcieBillboardNotification:enabled"/>
   <int value="245896533" label="SearchSuggestionsOnLocalNtp:enabled"/>
   <int value="246106068" label="HandwritingLegacyRecognition:disabled"/>
   <int value="247200195" label="EnhancedProtectionPromoCard:enabled"/>
@@ -51344,6 +51354,7 @@ from previous Chrome versions.
   <int value="698809951" label="WebRtcHWVP8Encoding:enabled"/>
   <int value="699149897" label="ContentSuggestionsDebugLog:disabled"/>
   <int value="700346797" label="WheelEventRegions:enabled"/>
+  <int value="700926106" label="OmniboxPedalsBatch3NonEnglish:enabled"/>
   <int value="701766325" label="PerNavigationMojoInterface:enabled"/>
   <int value="701795774" label="WebAppEnableUrlHandlers:enabled"/>
   <int value="702060507" label="SafetyCheckWeakPasswords:disabled"/>
@@ -51635,6 +51646,7 @@ from previous Chrome versions.
   <int value="941036016" label="ContentSuggestionsSettings:disabled"/>
   <int value="941883332" label="ProactiveTabFreezeAndDiscard:disabled"/>
   <int value="941948340" label="PlaybackSpeedButton:enabled"/>
+  <int value="942357311" label="UpcomingSharingFeatures:disabled"/>
   <int value="942807728" label="NewTabstripAnimation:disabled"/>
   <int value="943319566" label="enable-intent-picker"/>
   <int value="943447234" label="NtpDriveModule:disabled"/>
@@ -51718,6 +51730,7 @@ from previous Chrome versions.
   <int value="1009437086" label="AutofillEnableOfferNotification:disabled"/>
   <int value="1009976778" label="SidePanel:disabled"/>
   <int value="1011550878" label="MessagesForAndroidPermissionUpdate:disabled"/>
+  <int value="1012643576" label="CommerceDeveloper:enabled"/>
   <int value="1012942422" label="HorizontalTabSwitcherAndroid:disabled"/>
   <int value="1015012662" label="ChromeOSDirectVideoDecoder:enabled"/>
   <int value="1015895665" label="drop-sync-credential:enabled"/>
@@ -53211,6 +53224,7 @@ from previous Chrome versions.
   <int value="2141463681" label="enable-offer-upload-credit-cards"/>
   <int value="2142661816" label="AllowRemoteContextForNotifications:disabled"/>
   <int value="2142979536" label="EnableManualFallbacksFilling:disabled"/>
+  <int value="2144581598" label="UpcomingSharingFeatures:enabled"/>
 </enum>
 
 <enum name="LoginDatabaseInitError">
@@ -59843,6 +59857,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="LTE"/>
   <int value="8" label="UMTS"/>
   <int value="9" label="Unknown"/>
+  <int value="10" label="5GNR"/>
 </enum>
 
 <enum name="NetworkCellularUsage">
@@ -72617,6 +72632,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="113" label="IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE"/>
   <int value="114" label="IDC_CONTENT_CONTEXT_REMOVELINKTOTEXT"/>
   <int value="115" label="IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH"/>
+  <int value="116" label="IDC_CONTENT_CONTEXT_WEB_REGION_SEARCH"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">

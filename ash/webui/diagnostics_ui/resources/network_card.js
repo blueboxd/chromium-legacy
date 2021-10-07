@@ -14,7 +14,7 @@ import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Network, NetworkHealthProviderInterface, NetworkState, NetworkStateObserverInterface, NetworkStateObserverReceiver, NetworkType, TroubleshootingInfo} from './diagnostics_types.js';
-import {filterNameServers, formatMacAddress, getNetworkState, getNetworkType, isConnectedOrOnline, isNetworkMissingNameServers} from './diagnostics_utils.js';
+import {filterNameServers, formatMacAddress, getNetworkCardTitle, getNetworkState, getNetworkType, isConnectedOrOnline, isNetworkMissingNameServers} from './diagnostics_utils.js';
 import {getNetworkHealthProvider} from './mojo_interface_provider.js';
 
 const BASE_SUPPORT_URL = 'https://support.google.com/chromebook?p=diagnostics_';
@@ -129,8 +129,20 @@ Polymer({
     this.networkHealthProvider_ = getNetworkHealthProvider();
   },
 
+  /** @override */
+  detached() {
+    this.resetTimer_();
+  },
+
   /** @private */
   observeNetwork_() {
+    // If necessary, clear setInterval and reset the timerId.
+    this.resetTimer_();
+
+    // Reset this flag in case we were unable to obtain an IP Address for the
+    // previous network.
+    this.unableToObtainIpAddress_ = false;
+
     if (!this.guid) {
       return;
     }
@@ -167,8 +179,6 @@ Polymer({
     let isTimerInProgress = this.timerId_ !== -1;
 
     if (!isIpAddressMissing) {
-      // Reset this flag now that this network has a valid IP Address.
-      this.unableToObtainIpAddress_ = false;
       this.isMissingNameServers_ = isNetworkMissingNameServers(network);
     }
 
@@ -178,8 +188,7 @@ Polymer({
       let tickCount = 0;
       this.timerId_ = setInterval(() => {
         if (tickCount >= maxTicks) {
-          clearInterval(this.timerId_);
-          this.timerId_ = -1;
+          this.resetTimer_();
           this.unableToObtainIpAddress_ = true;
         }
         tickCount++;
@@ -198,7 +207,7 @@ Polymer({
    * @return {string}
    */
   getNetworkCardTitle_() {
-    return `${this.networkType_} (${this.networkState_})`;
+    return getNetworkCardTitle(this.networkType_, this.networkState_);
   },
 
   /**
@@ -379,6 +388,14 @@ Polymer({
         return {
           header: '', linkText: '', url: '',
         }
+    }
+  },
+
+  /** @private */
+  resetTimer_() {
+    if (this.timerId_ !== -1) {
+      clearInterval(this.timerId_);
+      this.timerId_ = -1;
     }
   },
 });

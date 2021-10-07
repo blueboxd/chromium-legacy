@@ -54,7 +54,7 @@
 
 namespace gfx {
 class Point;
-class ScrollOffset;
+class Vector2dF;
 }  // namespace gfx
 
 namespace ui {
@@ -681,8 +681,8 @@ class WebLocalFrame : public WebFrame {
   // not be accurate if the page layout is out-of-date.
 
   // The scroll offset from the top-left corner of the frame in pixels.
-  virtual gfx::ScrollOffset GetScrollOffset() const = 0;
-  virtual void SetScrollOffset(const gfx::ScrollOffset&) = 0;
+  virtual gfx::Vector2dF GetScrollOffset() const = 0;
+  virtual void SetScrollOffset(const gfx::Vector2dF&) = 0;
 
   // The size of the document in this frame.
   virtual gfx::Size DocumentSize() const = 0;
@@ -783,20 +783,23 @@ class WebLocalFrame : public WebFrame {
 
   // User activation -----------------------------------------------------------
 
-  // See blink::LocalFrame::NotifyUserActivation().
+  // See |blink::LocalFrame::NotifyUserActivation()|.
   virtual void NotifyUserActivation(
       mojom::UserActivationNotificationType notification_type) = 0;
 
-  // See blink::LocalFrame::HasStickyUserActivation().
+  // See |blink::Frame::HasStickyUserActivation()|.
   virtual bool HasStickyUserActivation() = 0;
 
-  // See blink::LocalFrame::HasTransientUserActivation().
+  // See |blink::Frame::HasTransientUserActivation()|.
   virtual bool HasTransientUserActivation() = 0;
 
-  // See blink::LocalFrame::ConsumeTransientUserActivation().
+  // See |blink::LocalFrame::ConsumeTransientUserActivation()|.
   virtual bool ConsumeTransientUserActivation(
       UserActivationUpdateSource update_source =
           UserActivationUpdateSource::kRenderer) = 0;
+
+  // See |blink::Frame::LastActivationWasRestricted()|.
+  virtual bool LastActivationWasRestricted() const = 0;
 
   // Testing ------------------------------------------------------------------
 

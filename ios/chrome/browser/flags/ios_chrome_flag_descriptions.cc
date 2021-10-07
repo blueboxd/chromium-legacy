@@ -199,14 +199,15 @@ const char kEnableFREDefaultBrowserScreenDescription[] =
     "suggests changing the default browser in the Settings.app with a button "
     "to go directly to it.";
 
+const char kEnableFREDefaultBrowserScreenTestingName[] =
+    "Enable FRE default browser screen testing";
+const char kEnableFREDefaultBrowserScreenTestingDescription[] =
+    "This test display the FRE default browser screen and other default "
+    "browser promo depending on experiment.";
+
 const char kEnableFREUIModuleIOSName[] = "Enable FRE UI module";
 const char kEnableFREUIModuleIOSDescription[] =
     "Enable the option of using new FRE UI module to show first run screens.";
-
-const char kEnableFullPageScreenshotName[] = "Enable fullpage screenshots";
-const char kEnableFullPageScreenshotDescription[] =
-    "Enables the option of capturing an entire webpage as a PDF when a "
-    "screenshot is taken.";
 
 const char kEnableLongMessageDurationName[] = "Enable long message duration";
 const char kEnableLongMessageDurationDescription[] =
@@ -259,6 +260,13 @@ const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
 const char kForceStartupSigninPromoDescription[] =
     "When enabled, the startup sign-in promo is always displayed when starting "
     "Chrome.";
+
+const char kCredentialProviderExtensionPromoName[] =
+    "Enable the credential provider extension promo";
+const char kCredentialProviderExtensionPromoDescription[] =
+    "When enabled, a new item 'Passwords In Other Apps' item will be available "
+    "Chrome passwords settings, containing promotional instructions to enable"
+    "password autofill using Chrome.";
 
 const char kFullscreenSmoothScrollingName[] = "Fullscreen Smooth Scrolling";
 const char kFullscreenSmoothScrollingDescription[] =

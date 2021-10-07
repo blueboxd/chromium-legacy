@@ -34,13 +34,13 @@ class LensRegionSearchController : public content::WebContentsObserver {
   // around the web contents. When finished with selection, the region is
   // converted into a PNG and sent to Lens. If `use_fullscreen_capture` is set
   // to true, the whole screen will automatically be captured.
-  void Start(bool use_fullscreen_capture);
+  void Start(bool use_fullscreen_capture,
+             bool is_google_default_search_provider);
 
   // Closes the UI overlay and user education bubble if currently being shown.
   // The closed reason for this method is defaulted to the close button being
   // clicked.
   void Close();
-  void Escape();
 
   // Closes the UI overlay and user education bubble if shown with the specified
   // closed reason.
@@ -74,7 +74,10 @@ class LensRegionSearchController : public content::WebContentsObserver {
 
   gfx::Image ResizeImageIfNecessary(const gfx::Image& image);
 
-  bool in_capture_mode_ = false;
+  // Variable for tracking the default search provider as to launch the image
+  // results in correct search engine. This value is set every time the capture
+  // mode is started to have an accurate value for the completed capture.
+  bool is_google_default_search_provider_ = false;
 
   std::unique_ptr<image_editor::ScreenshotFlow> screenshot_flow_;
 

@@ -268,6 +268,8 @@
     'chromium.fyi': {
       'Afl Upload Linux ASan': 'afl_asan_shared_release_bot',
       'ASAN Debug (reclient)': 'asan_lsan_debug_bot_reclient',
+      'ASAN Release Media (reclient_shadow)': 'asan_lsan_fuzzer_v8_heap_chromeos_codecs_release_bot_reclient',
+      'ASAN Release (reclient shadow)': 'asan_lsan_fuzzer_v8_heap_release_bot_reclient',
       'Comparison Linux': {
         'goma': 'gpu_tests_release_bot',
         'reclient': 'gpu_tests_release_bot_reclient',
@@ -298,7 +300,8 @@
       'Mac Builder Next': 'gpu_tests_release_bot_minimal_symbols',
       'Mac deterministic': 'release_bot_mac_strip_minimal_symbols',
       'Mac deterministic (dbg)': 'debug_bot',
-
+      'MSAN Release (chained origins) (reclient shadow)': 'msan_release_bot_reclient',
+      'MSAN Release (no origins) (reclient shadow)': 'msan_no_origins_release_bot_reclient',
       'Site Isolation Android': 'android_release_bot_minimal_symbols_arm64',
       'TSAN Debug (reclient)': 'tsan_disable_nacl_debug_bot_reclient',
       'TSAN Release (deps-cache) (reclient)':  'tsan_disable_nacl_release_bot_reclient',
@@ -589,7 +592,7 @@
 
     'chromium.perf.calibration': {
       'linux-perf-calibration': 'official_goma_linux_perf_py3',
-      'android-pixel2-perf-calibration': 'official_goma_minimal_symbols_android_arm64',
+      'android-pixel2-perf-calibration': 'official_goma_minimal_symbols_android_arm64_py3',
     },
 
     'chromium.perf.fyi': {
@@ -751,9 +754,7 @@
     },
 
     'internal.chromeos.fyi': {
-      'chromeos-betty-arc-r-chrome': 'chromeos_betty-arc-r_include_unwind_tables_official_use_fake_dbus_clients',
       'chromeos-betty-pi-arc-chrome-dchecks': 'chromeos_betty-pi-arc_dchecks',
-      'chromeos-eve-arc-r-chrome': 'chromeos_eve-arc-r_include_unwind_tables_official',
       'lacros-amd64-generic-chrome-fyi': 'chromeos_amd64-generic_lacros_official_skylab',
       'lacros-arm-generic-chrome-fyi': 'chromeos_arm-generic_lacros_official_skylab',
     },
@@ -814,6 +815,7 @@
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_allowlisting_fastbuild_java_coverage',
       'android-marshmallow-arm64-rel-rts': 'gpu_tests_android_release_trybot_arm64_resource_allowlisting_fastbuild_java_coverage',
       'android-marshmallow-x86-rel': 'android_release_trybot_x86_fastbuild_resource_allowlisting_webview_google_coverage',
+      'android-marshmallow-x86-rel-orchestrator': 'android_release_trybot_x86_fastbuild_resource_allowlisting_webview_google_coverage',
       'android-marshmallow-x86-rel-non-cq': 'android_release_trybot_x86_fastbuild_resource_allowlisting_webview_google',
       'android-marshmallow-x86-rel-rts': 'android_release_trybot_x86_fastbuild_resource_allowlisting_webview_google',
       'android-nougat-arm64-rel': 'android_release_trybot_arm64_fastbuild_webview_google',
@@ -1746,8 +1748,16 @@
       'asan', 'lsan', 'v8_heap', 'chromeos_codecs', 'release_bot',
     ],
 
+    'asan_lsan_fuzzer_v8_heap_chromeos_codecs_release_bot_reclient': [
+      'asan', 'lsan', 'v8_heap', 'chromeos_codecs', 'release_bot_reclient',
+    ],
+
     'asan_lsan_fuzzer_v8_heap_release_bot': [
       'asan', 'lsan', 'fuzzer', 'v8_heap', 'release_bot',
+    ],
+
+    'asan_lsan_fuzzer_v8_heap_release_bot_reclient': [
+      'asan', 'lsan', 'fuzzer', 'v8_heap', 'release_bot_reclient',
     ],
 
     'asan_lsan_release_bot': [
@@ -2602,8 +2612,16 @@
       'msan_no_origins', 'release_bot',
     ],
 
+    'msan_no_origins_release_bot_reclient': [
+      'msan_no_origins', 'release_bot_reclient',
+    ],
+
     'msan_release_bot': [
       'msan', 'release_bot',
+    ],
+
+    'msan_release_bot_reclient': [
+      'msan', 'release_bot_reclient',
     ],
 
     'msan_release_bot_blink': [
@@ -2680,6 +2698,10 @@
 
     'official_goma_minimal_symbols_android_arm64': [
       'official', 'goma', 'minimal_symbols', 'android', 'arm64', 'pgo_phase_0', 'no_default_afdo'
+    ],
+
+    'official_goma_minimal_symbols_android_arm64_py3': [
+      'official', 'goma', 'minimal_symbols', 'android', 'arm64', 'pgo_phase_0', 'no_default_afdo', 'use_py3_for_perf'
     ],
 
     'official_goma_minimal_symbols_android_thin_lto_opt': [

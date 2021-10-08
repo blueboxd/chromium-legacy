@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "chrome/browser/apps/app_service/app_platform_metrics.h"
-#include "chrome/browser/apps/app_service/app_platform_metrics_service.h"
-#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
+#include "chrome/browser/apps/app_service/metrics/app_platform_metrics.h"
+#include "chrome/browser/apps/app_service/metrics/app_platform_metrics_service.h"
+#include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/publishers/borealis_apps.h"
 #include "chrome/browser/apps/app_service/publishers/built_in_chromeos_apps.h"
 #include "chrome/browser/apps/app_service/publishers/crostini_apps.h"
@@ -48,11 +48,15 @@ bool g_omit_plugin_vm_apps_for_testing_ = false;
 }  // anonymous namespace
 
 AppServiceProxyChromeOs::AppServiceProxyChromeOs(Profile* profile)
-    : AppServiceProxyBase(profile),
-      browser_app_instance_tracker_(
-          BrowserAppInstanceTracker::Create(profile_, app_registry_cache_)),
-      browser_app_instance_registry_(BrowserAppInstanceRegistry::Create(
-          browser_app_instance_tracker_.get())) {
+    : AppServiceProxyBase(profile) {
+  if (features::IsBrowserAppInstanceTrackingEnabled()) {
+    browser_app_instance_tracker_ =
+        std::make_unique<apps::BrowserAppInstanceTracker>(profile_,
+                                                          app_registry_cache_);
+    browser_app_instance_registry_ =
+        std::make_unique<apps::BrowserAppInstanceRegistry>(
+            *browser_app_instance_tracker_);
+  }
   Initialize();
 }
 

@@ -14,7 +14,7 @@
 #include "base/notreached.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/apps/app_service/app_icon_source.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_forwarder.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
@@ -96,11 +96,16 @@ AppServiceProxyLacros::AppServiceProxyLacros(Profile* profile)
       icon_coalescer_(&inner_icon_loader_),
       outer_icon_loader_(&icon_coalescer_,
                          apps::IconCache::GarbageCollectionPolicy::kEager),
-      profile_(profile),
-      browser_app_instance_tracker_(
-          BrowserAppInstanceTracker::Create(profile_, app_registry_cache_)),
-      browser_app_instance_forwarder_(BrowserAppInstanceForwarder::Create(
-          browser_app_instance_tracker_.get())) {
+      profile_(profile) {
+  auto* service = chromeos::LacrosService::Get();
+  if (service && service->init_params()->web_apps_enabled) {
+    browser_app_instance_tracker_ =
+        std::make_unique<apps::BrowserAppInstanceTracker>(profile_,
+                                                          app_registry_cache_);
+    browser_app_instance_forwarder_ =
+        std::make_unique<apps::BrowserAppInstanceForwarder>(
+            *browser_app_instance_tracker_);
+  }
   Initialize();
 }
 

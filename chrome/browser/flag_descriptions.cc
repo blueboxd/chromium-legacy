@@ -2108,6 +2108,11 @@ const char kPrerender2Description[] =
     "Enables the new prerenderer implementation for "
     "<script type=speculationrules> that specifies prerender candidates.";
 
+const char kOmniboxTriggerForPrerender2Name[] =
+    "Omnibox trigger for Prerender2";
+const char kOmniboxTriggerForPrerender2Description[] =
+    "Enables the new omnibox trigger prerenderer implementation.";
+
 const char kPrivacyAdvisorName[] = "Privacy Advisor";
 const char kPrivacyAdvisorDescription[] =
     "Provides contextual entry points for adjusting privacy settings";
@@ -3604,6 +3609,11 @@ const char kUpdateMenuTypeInlineUpdateDownloadCanceled[] =
 const char kUpdateMenuTypeInlineUpdateInstallFailed[] =
     "Inline Update Error: Install Failed";
 
+extern const char kUseRealColorSpaceForAndroidVideoName[] =
+    "Use color space from MediaCodec";
+extern const char kUseRealColorSpaceForAndroidVideoDescription[] =
+    "When enabled video will use real color space instead of srgb.";
+
 const char kUserMediaScreenCapturingName[] = "Screen Capture API";
 const char kUserMediaScreenCapturingDescription[] =
     "Allows sites to request a video stream of your screen.";
@@ -4567,6 +4577,9 @@ const char kEcheSWADescription[] = "Enable the SWA version of the Eche.";
 const char kEcheSWAResizingName[] = "Allow resizing Eche App.";
 const char kEcheSWAResizingDescription[] =
     "Enable a naive resize for the Eche window";
+
+const char kEcheSWADebugModeName[] = "Enable Eche Debug Mode";
+const char kEcheSWADebugModeDescription[] = "Enable the Debug Mode of the Eche";
 
 const char kEnableNetworkingInDiagnosticsAppName[] =
     "Enable networking cards in the Diagnostics App";

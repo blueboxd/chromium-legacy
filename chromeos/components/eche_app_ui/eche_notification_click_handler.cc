@@ -4,6 +4,7 @@
 
 #include "chromeos/components/eche_app_ui/eche_notification_click_handler.h"
 
+#include "ash/constants/ash_features.h"
 #include "chromeos/components/eche_app_ui/launch_app_helper.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/phonehub/phone_hub_manager.h"
@@ -38,9 +39,9 @@ void EcheNotificationClickHandler::HandleNotificationClick(
     int64_t notification_id,
     const phonehub::Notification::AppMetadata& app_metadata) {
   if (launch_app_helper_->IsAppLaunchAllowed()) {
-    launch_app_helper_->LaunchEcheApp(notification_id,
-                                      app_metadata.package_name,
-                                      app_metadata.visible_app_name);
+    launch_app_helper_->LaunchEcheApp(
+        notification_id, app_metadata.package_name,
+        app_metadata.visible_app_name, app_metadata.user_id);
   } else {
     launch_app_helper_->ShowNotification(
         /* title= */ absl::nullopt, /* message= */ absl::nullopt,
@@ -64,7 +65,8 @@ void EcheNotificationClickHandler::OnFeatureStatusChanged() {
   } else if (is_click_handler_set_ && !clickable) {
     handler_->RemoveNotificationClickHandler(this);
     is_click_handler_set_ = false;
-    if (NeedClose(feature_status_provider_->GetStatus())) {
+    if (NeedClose(feature_status_provider_->GetStatus()) &&
+        !base::FeatureList::IsEnabled(chromeos::features::kEcheSWADebugMode)) {
       PA_LOG(INFO) << "Close Eche app window";
       launch_app_helper_->CloseEcheApp();
     }

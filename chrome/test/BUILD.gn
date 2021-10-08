@@ -1263,6 +1263,7 @@ if (!is_android && !is_fuchsia) {
       "//components/user_manager",
       "//components/variations/service",
       "//components/variations/service:constants",
+      "//components/version_info",
       "//components/webapps/browser",
       "//components/webrtc",
       "//components/webrtc_logging/browser",
@@ -2954,10 +2955,10 @@ if (!is_android && !is_fuchsia) {
     # NOTE: This is the main "browser_tests" section for |is_chromeos_ash|.
     if (is_chromeos_ash) {
       sources += [
-        "../browser/apps/app_service/app_platform_metrics_browsertest.cc",
         "../browser/apps/app_service/browser_app_instance_tracker_browsertest.cc",
         "../browser/apps/app_service/intent_util_browsertest.cc",
         "../browser/apps/app_service/media_access_browsertest.cc",
+        "../browser/apps/app_service/metrics/app_platform_metrics_browsertest.cc",
         "../browser/apps/app_service/notifications_browsertest.cc",
         "../browser/apps/app_service/webapk/webapk_policy_browsertest.cc",
         "../browser/apps/icon_standardizer_unittest.cc",
@@ -6217,7 +6218,7 @@ test("unit_tests") {
   if (!is_android) {
     sources += [
       "../browser/apps/app_discovery_service/app_discovery_service_unittest.cc",
-      "../browser/apps/app_service/app_icon_factory_unittest.cc",
+      "../browser/apps/app_service/app_icon/app_icon_factory_unittest.cc",
       "../browser/apps/app_service/app_service_proxy_unittest.cc",
       "../browser/apps/app_service/app_service_test.cc",
       "../browser/apps/app_service/app_service_test.h",
@@ -6353,9 +6354,9 @@ test("unit_tests") {
       "../browser/ui/window_sizer/window_sizer_unittest.cc",
     ]
     sources += [
-      "../browser/apps/app_service/app_platform_metrics_service_unittest.cc",
       "../browser/apps/app_service/file_utils_unittest.cc",
       "../browser/apps/app_service/intent_util_unittest.cc",
+      "../browser/apps/app_service/metrics/app_platform_metrics_service_unittest.cc",
       "../browser/apps/app_service/webapk/webapk_install_task_unittest.cc",
       "../browser/apps/app_service/webapk/webapk_manager_unittest.cc",
       "../browser/component_updater/cros_component_installer_chromeos_unittest.cc",
@@ -7297,6 +7298,7 @@ test("unit_tests") {
         "../browser/printing/test_print_job.h",
         "../browser/printing/test_printer_query.cc",
         "../browser/printing/test_printer_query.h",
+        "../browser/ui/webui/print_preview/data_request_filter_unittest.cc",
         "../browser/ui/webui/print_preview/extension_printer_handler_unittest.cc",
         "../browser/ui/webui/print_preview/fake_print_render_frame.cc",
         "../browser/ui/webui/print_preview/fake_print_render_frame.h",

@@ -79,29 +79,23 @@ StatusOr<SequencingInformation> SequencingInformationValueToProto(
 }  // namespace
 
 FakeUploadClient::FakeUploadClient(
-    policy::CloudPolicyClient* cloud_policy_client,
-    ReportSuccessfulUploadCallback report_upload_success_cb,
-    EncryptionKeyAttachedCallback encryption_key_attached_cb)
-    : cloud_policy_client_(cloud_policy_client),
-      report_upload_success_cb_(report_upload_success_cb),
-      encryption_key_attached_cb_(encryption_key_attached_cb) {}
+    policy::CloudPolicyClient* cloud_policy_client)
+    : cloud_policy_client_(cloud_policy_client) {}
 
 FakeUploadClient::~FakeUploadClient() = default;
 
-void FakeUploadClient::Create(
-    policy::CloudPolicyClient* cloud_policy_client,
-    ReportSuccessfulUploadCallback report_upload_success_cb,
-    EncryptionKeyAttachedCallback encryption_key_attached_cb,
-    CreatedCallback created_cb) {
+void FakeUploadClient::Create(policy::CloudPolicyClient* cloud_policy_client,
+                              CreatedCallback created_cb) {
   std::move(created_cb)
-      .Run(base::WrapUnique<UploadClient>(new FakeUploadClient(
-          cloud_policy_client, std::move(report_upload_success_cb),
-          std::move(encryption_key_attached_cb))));
+      .Run(base::WrapUnique<UploadClient>(
+          new FakeUploadClient(cloud_policy_client)));
 }
 
 Status FakeUploadClient::EnqueueUpload(
     bool need_encryption_key,
-    std::unique_ptr<std::vector<EncryptedRecord>> records) {
+    std::unique_ptr<std::vector<EncryptedRecord>> records,
+    ReportSuccessfulUploadCallback report_upload_success_cb,
+    EncryptionKeyAttachedCallback encryption_key_attached_cb) {
   UploadEncryptedReportingRequestBuilder builder;
   for (auto record : *records) {
     builder.AddRecord(record);
@@ -115,7 +109,9 @@ Status FakeUploadClient::EnqueueUpload(
   }
 
   auto response_cb = base::BindOnce(&FakeUploadClient::OnUploadComplete,
-                                    base::Unretained(this));
+                                    base::Unretained(this),
+                                    std::move(report_upload_success_cb),
+                                    std::move(encryption_key_attached_cb));
 
   cloud_policy_client_->UploadEncryptedReport(
       std::move(request_result.value()),
@@ -123,7 +119,10 @@ Status FakeUploadClient::EnqueueUpload(
   return Status::StatusOK();
 }
 
-void FakeUploadClient::OnUploadComplete(absl::optional<base::Value> response) {
+void FakeUploadClient::OnUploadComplete(
+    ReportSuccessfulUploadCallback report_upload_success_cb,
+    EncryptionKeyAttachedCallback encryption_key_attached_cb,
+    absl::optional<base::Value> response) {
   if (!response.has_value()) {
     return;
   }
@@ -135,8 +134,8 @@ void FakeUploadClient::OnUploadComplete(absl::optional<base::Value> response) {
         force_confirm_flag.has_value() && force_confirm_flag.value();
     auto seq_info_result = SequencingInformationValueToProto(*last_success);
     if (seq_info_result.ok()) {
-      report_upload_success_cb_.Run(seq_info_result.ValueOrDie(),
-                                    force_confirm);
+      std::move(report_upload_success_cb)
+          .Run(seq_info_result.ValueOrDie(), force_confirm);
     }
   }
 
@@ -160,7 +159,7 @@ void FakeUploadClient::OnUploadComplete(absl::optional<base::Value> response) {
       signed_encryption_key.set_public_asymmetric_key(public_key);
       signed_encryption_key.set_public_key_id(public_key_id_result.value());
       signed_encryption_key.set_signature(public_key_signature);
-      encryption_key_attached_cb_.Run(signed_encryption_key);
+      std::move(encryption_key_attached_cb).Run(signed_encryption_key);
     }
   }
 }

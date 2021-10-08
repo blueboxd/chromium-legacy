@@ -1201,6 +1201,9 @@ extern const char kPointerLockOptionsDescription[];
 extern const char kPrerender2Name[];
 extern const char kPrerender2Description[];
 
+extern const char kOmniboxTriggerForPrerender2Name[];
+extern const char kOmniboxTriggerForPrerender2Description[];
+
 extern const char kPrivacyAdvisorName[];
 extern const char kPrivacyAdvisorDescription[];
 
@@ -2056,6 +2059,9 @@ extern const char kUpdateMenuTypeInlineUpdateDownloadFailed[];
 extern const char kUpdateMenuTypeInlineUpdateDownloadCanceled[];
 extern const char kUpdateMenuTypeInlineUpdateInstallFailed[];
 
+extern const char kUseRealColorSpaceForAndroidVideoName[];
+extern const char kUseRealColorSpaceForAndroidVideoDescription[];
+
 extern const char kUserMediaScreenCapturingName[];
 extern const char kUserMediaScreenCapturingDescription[];
 
@@ -2618,6 +2624,9 @@ extern const char kEcheSWADescription[];
 
 extern const char kEcheSWAResizingName[];
 extern const char kEcheSWAResizingDescription[];
+
+extern const char kEcheSWADebugModeName[];
+extern const char kEcheSWADebugModeDescription[];
 
 extern const char kEnableNetworkingInDiagnosticsAppName[];
 extern const char kEnableNetworkingInDiagnosticsAppDescription[];

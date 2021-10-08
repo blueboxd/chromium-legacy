@@ -189,36 +189,9 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
   DCHECK(platform_field_trials);
   DCHECK(safe_seed_manager);
 
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kForceFieldTrialParams)) {
-    bool result = AssociateParamsFromString(
-        command_line->GetSwitchValueASCII(switches::kForceFieldTrialParams));
-    if (!result) {
-      // Some field trial params implement things like csv or json with a
-      // particular param. If some control characters are not %-encoded, it can
-      // lead to confusing error messages, so add a hint here.
-      ExitWithMessage(base::StringPrintf(
-          "Invalid --%s list specified. Make sure you %%-"
-          "encode the following characters in param values: %%:/.,",
-          switches::kForceFieldTrialParams));
-    }
-  }
-
-  // Ensure any field trials specified on the command line are initialized.
-  if (command_line->HasSwitch(::switches::kForceFieldTrials)) {
-    // Create field trials without activating them, so that this behaves in a
-    // consistent manner with field trials created from the server.
-    bool result = base::FieldTrialList::CreateTrialsFromString(
-        command_line->GetSwitchValueASCII(::switches::kForceFieldTrials));
-    if (!result) {
-      ExitWithMessage(base::StringPrintf("Invalid --%s list specified.",
-                                         ::switches::kForceFieldTrials));
-    }
-  }
-
-#if !defined(OS_ANDROID)
-  // TODO(crbug/1248239): Enable Extended Variations Safe Mode on Android.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // TODO(crbug/1248239): Enable Extended Variations Safe Mode on Clank.
+  // TODO(crbug/1255305): Re-enable it on iOS.
   if (extend_variations_safe_mode &&
       !metrics_state_manager->is_background_session()) {
     // If the session is expected to be a background session, then do not extend
@@ -228,11 +201,16 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
     // crashes.
     MaybeExtendVariationsSafeMode(metrics_state_manager);
   }
-#endif
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
+  // TODO(crbug/1257204): Some FieldTrial-setup-related code is here and some is
+  // in MetricsStateManager::InstantiateFieldTrialList(). It's not ideal that
+  // it's in two places.
   VariationsIdsProvider* http_header_provider =
       VariationsIdsProvider::GetInstance();
   http_header_provider->SetLowEntropySourceValue(low_entropy_source_value);
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   // Force the variation ids selected in chrome://flags and/or specified using
   // the command-line flag.
   auto result = http_header_provider->ForceVariationIds(
@@ -469,6 +447,29 @@ bool VariationsFieldTrialCreator::IsOverrideResourceMapEmpty() {
   return overridden_strings_map_.empty();
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+void VariationsFieldTrialCreator::MaybeExtendVariationsSafeMode(
+    metrics::MetricsStateManager* metrics_state_manager) {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName(kExtendedSafeModeTrial);
+  if (group_name.empty() || group_name == kControlGroup ||
+      group_name == kDefaultGroup) {
+    return;
+  }
+
+  // For clients in the SignalAndWrite* groups, the beacon is updated and a
+  // synchronous write is performed. Conversely, for clients in the
+  // WriteSynchronouslyViaPrefService group, prefs are written synchronously
+  // without updating the beacon, i.e. without signaling that Chrome should
+  // start watching for crashes.
+  bool update_beacon = group_name != kWriteSynchronouslyViaPrefServiceGroup;
+
+  metrics_state_manager->LogHasSessionShutdownCleanly(
+      /*has_session_shutdown_cleanly=*/false,
+      /*write_synchronously=*/true, update_beacon);
+}
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
 bool VariationsFieldTrialCreator::HasSeedExpired(bool is_safe_seed) {
   const base::Time fetch_time = is_safe_seed
                                     ? GetSeedStore()->GetSafeSeedFetchTime()
@@ -629,44 +630,5 @@ Study::Platform VariationsFieldTrialCreator::GetPlatform() {
     return platform_override_;
   return ClientFilterableState::GetCurrentPlatform();
 }
-
-#if !defined(OS_ANDROID)
-void VariationsFieldTrialCreator::MaybeExtendVariationsSafeMode(
-    metrics::MetricsStateManager* metrics_state_manager) const {
-  version_info::Channel channel = client_->GetChannelForVariations();
-  if (channel != version_info::Channel::UNKNOWN &&
-      channel != version_info::Channel::CANARY &&
-      channel != version_info::Channel::DEV) {
-    return;
-  }
-
-  int default_group;
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          kExtendedSafeModeTrial, 100, kDefaultGroup,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, &default_group));
-
-  const int control_group = trial->AppendGroup(kControlGroup, 25);
-  const int write_only_group =
-      trial->AppendGroup(kWriteSynchronouslyViaPrefServiceGroup, 25);
-  trial->AppendGroup(kSignalAndWriteSynchronouslyViaPrefServiceGroup, 25);
-  trial->AppendGroup(kSignalAndWriteViaFileUtilGroup, 25);
-  const int assigned_group = trial->group();
-
-  if (assigned_group == control_group)
-    return;
-
-  // For clients in the SignalAndWrite* groups, the beacon is updated and a
-  // synchronous write is performed. Conversely, for clients in
-  // |write_only_group|, i.e. the WriteSynchronouslyViaPrefService group, prefs
-  // are written synchronously without updating the beacon, i.e. without
-  // signaling that Chrome should start watching for crashes.
-  bool update_beacon = assigned_group != write_only_group;
-
-  metrics_state_manager->LogHasSessionShutdownCleanly(
-      /*has_session_shutdown_cleanly=*/false, /*write_synchronously=*/true,
-      update_beacon);
-}
-#endif  // !defined(OS_ANDROID)
 
 }  // namespace variations

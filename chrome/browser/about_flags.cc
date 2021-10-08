@@ -4378,6 +4378,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"eche-swa-resizing", flag_descriptions::kEcheSWAResizingName,
      flag_descriptions::kEcheSWAResizingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEcheSWAResizing)},
+    {"eche-swa-debug-mode", flag_descriptions::kEcheSWADebugModeName,
+     flag_descriptions::kEcheSWADebugModeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kEcheSWADebugMode)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN)
@@ -6976,6 +6979,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-prerender2", flag_descriptions::kPrerender2Name,
      flag_descriptions::kPrerender2Description, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kPrerender2)},
+    {"omnibox-trigger-for-prerender2",
+     flag_descriptions::kOmniboxTriggerForPrerender2Name,
+     flag_descriptions::kOmniboxTriggerForPrerender2Description, kOsAll,
+     FEATURE_VALUE_TYPE(features::kOmniboxTriggerForPrerender2)},
 
 #if !defined(OS_ANDROID)
     {"settings-landing-page-redesign",
@@ -7656,6 +7663,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"web-midi", flag_descriptions::kWebMidiName,
      flag_descriptions::kWebMidiDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebMidi)},
+#if defined(OS_ANDROID)
+    {"canvas-oop-rasterization",
+     flag_descriptions::kUseRealColorSpaceForAndroidVideoName,
+     flag_descriptions::kUseRealColorSpaceForAndroidVideoDescription,
+     kOsAndroid, FEATURE_VALUE_TYPE(media::kUseRealColorSpaceForAndroidVideo)},
+#endif
 
 #if defined(OS_WIN)
     {"win11-style-menus", flag_descriptions::kWin11StyleMenusName,

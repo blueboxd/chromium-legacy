@@ -1322,7 +1322,12 @@
   {
     "name": "eche-swa",
     "owners": [ "dhnishi" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 101
+  },
+  {
+    "name": "eche-swa-debug-mode",
+    "owners": [ "dhnishi" ],
+    "expiry_milestone": 101
   },
   {
     "name": "eche-swa-resizing",
@@ -2383,7 +2388,7 @@
   {
     "name": "enable-phone-hub-recent-apps",
     "owners": [ "dhnishi", "cros-recentapps@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 101
   },
   {
     "name": "enable-pixel-canvas-recording",
@@ -2418,7 +2423,7 @@
   {
     "name": "enable-prerender2",
     "owners": [ "//content/browser/prerender/OWNERS" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 104
   },
   {
     "name": "enable-quic",
@@ -4170,6 +4175,11 @@
     "expiry_milestone": 97
   },
   {
+    "name": "omnibox-trigger-for-prerender2",
+    "owners": [ "//content/browser/prerender/OWNERS" ],
+    "expiry_milestone": 104
+  },
+  {
     "name": "omnibox-ui-max-autocomplete-matches",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
@@ -4956,7 +4966,7 @@
   {
     "name": "show-metered-toggle",
     "owners": [ "stevenjb" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 100
   },
   {
     "name": "show-overdraw-feedback",
@@ -5386,6 +5396,11 @@
   {
     "name": "use-passthrough-command-decoder",
     "owners": [ "//third_party/angle/OWNERS" ],
+    "expiry_milestone": 100
+  },
+  {
+    "name": "use-real-color-space-for-android-video",
+    "owners": [ "liberato", "vasilyt" ],
     "expiry_milestone": 100
   },
   {

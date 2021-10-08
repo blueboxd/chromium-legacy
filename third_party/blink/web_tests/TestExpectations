@@ -329,7 +329,7 @@ crbug.com/1126305 virtual/prerender/http/tests/inspector-protocol/prerender/* [ 
 ## prerender test: the File System Access API is not supported on Android ##
 crbug.com/1182032 [ Android ] virtual/prerender/wpt_internal/prerender/restriction-local-file-system-access.https.html [ Skip ]
 ## prerender test: Notification constructor is not supported on Android ##
-crbug.com/1198110 [ Android ] virtual/prerender/wpt_internal/prerender/restriction-notification.https.html [ Skip ]
+crbug.com/1198110 [ Android ] virtual/prerender/external/wpt/speculation-rules/prerender/restriction-notification.https.html [ Skip ]
 
 # These tests require BFCache, which is currently disabled by default on Desktop.
 # Keep this in sync with VirtualTestSuites.
@@ -991,7 +991,6 @@ crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 
 # [css-flexbox]
 
-crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
 crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
 crbug.com/1155036 external/wpt/css/css-flexbox/contain-size-layout-abspos-flex-container-crash.html [ Crash Pass ]
 crbug.com/1251689 external/wpt/css/css-flexbox/table-as-item-specified-width-vertical.html [ Failure ]
@@ -2912,6 +2911,16 @@ crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/worker-interception.https.html [ Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-errors.https.html [ Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-errors.https.html [ Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/webrtc/protocol/rtp-demuxing.html [ Skip Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/protocol/rtp-demuxing.html [ Skip Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/webrtc/RTCRtpTransceiver.https.html [ Skip Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCRtpTransceiver.https.html [ Skip Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/webrtc/promises-call.html [ Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/promises-call.html [ Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/webrtc/RTCPeerConnection-connectionState.https.html [ Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCPeerConnection-connectionState.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-fonts/font-palette-5.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-palette-modify.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-palette-16.html [ Failure ]
@@ -2940,7 +2949,6 @@ crbug.com/626703 external/wpt/css/css-fonts/font-palette-8.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/palette-values-rule-delete.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-fonts/palette-values-rule-delete-2.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-fonts/font-palette-remove.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/webrtc/RTCPeerConnection-onsignalingstatechanged.https.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCPeerConnection-onsignalingstatechanged.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Skip Timeout ]
@@ -6640,7 +6648,6 @@ crbug.com/1224804 virtual/not-site-per-process/external/wpt/wasm/serialization/m
 
 # Sheriff 2021-07-13
 crbug.com/1220114 [ Linux ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Failure Pass Timeout ]
-crbug.com/1228772 [ Linux ] external/wpt/webrtc/simulcast/h264.https.html [ Crash Failure Pass Skip Timeout ]
 crbug.com/1228772 [ Linux ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Failure Pass ]
 crbug.com/1228959 [ Linux ] virtual/scroll-unification/fast/scroll-snap/snaps-after-wheel-scrolling-single-tick.html [ Failure Pass ]
 
@@ -6994,7 +7001,6 @@ crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/video-decoder.crossOrig
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h264_annexb [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h264_avc [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webrtc/RTCRtpTransceiver-setCodecPreferences.html [ Failure Pass ]
-crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webrtc/protocol/rtp-demuxing.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webrtc/protocol/video-codecs.https.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/webrtc/simulcast/h264.https.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] fast/mediarecorder/MediaRecorder-ignores-oversize-frames-h264.html [ Failure Pass ]

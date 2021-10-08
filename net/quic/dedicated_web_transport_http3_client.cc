@@ -32,7 +32,7 @@ constexpr int kCustomCertificateMaxValidityDays = 14;
 
 // The time the client would wait for the server to acknowledge the session
 // being closed.
-constexpr base::TimeDelta kMaxCloseTimeout = base::TimeDelta::FromSeconds(2);
+constexpr base::TimeDelta kMaxCloseTimeout = base::Seconds(2);
 
 std::set<std::string> HostsFromOrigins(std::set<HostPortPair> origins) {
   std::set<std::string> hosts;
@@ -255,7 +255,7 @@ void DedicatedWebTransportHttp3Client::Connect() {
 
 void DedicatedWebTransportHttp3Client::Close(
     const absl::optional<WebTransportCloseInfo>& close_info) {
-  base::TimeDelta probe_timeout = base::TimeDelta::FromMicroseconds(
+  base::TimeDelta probe_timeout = base::Microseconds(
       connection_->sent_packet_manager().GetPtoDelay().ToMicroseconds());
   // Wait for at least three PTOs similar to what's used in
   // https://www.rfc-editor.org/rfc/rfc9000.html#name-immediate-close
@@ -340,9 +340,10 @@ int DedicatedWebTransportHttp3Client::DoInit() {
 
   // TODO(vasilvv): check if QUIC is disabled by policy.
 
-  // Ensure that for the duration of the origin trial, a fixed QUIC transport
-  // version is available.
-  supported_versions_ = QuicVersionsForWebTransportOriginTrial();
+  // Ensure that RFC 9000 is always supported.
+  supported_versions_ = quic::ParsedQuicVersionVector{
+      quic::ParsedQuicVersion::RFCv1(),
+  };
   // Add other supported versions if available.
   for (quic::ParsedQuicVersion& version :
        quic_context_->params()->supported_versions) {

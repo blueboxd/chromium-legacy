@@ -527,6 +527,10 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
+    name = "android-10-x86-fyi-rel-tests",
+)
+
+try_.chromium_android_builder(
     name = "android-pie-arm64-wpt-rel-non-cq",
 )
 
@@ -1355,7 +1359,7 @@ try_.chromium_linux_builder(
     },
 )
 
-try_.chromium_linux_builder(
+try_.chromium_android_builder(
     name = "android-marshmallow-x86-rel-orchestrator",
     builderless = False,
     cores = 4,
@@ -2296,6 +2300,29 @@ try_.presubmit_builder(
     },
     tryjob = try_.job(
         location_regexp = [r".+/[+]/infra/config/.+"],
+    ),
+)
+
+try_.presubmit_builder(
+    name = "reclient-config-deployment-verifier",
+    executable = "recipe:reclient_config_deploy_check/tester",
+    properties = {
+        "fetch_script": "buildtools/reclient_cfgs/fetch_reclient_cfgs.py",
+        "rbe_project": [
+            {
+                "name": "rbe-chromium-trusted",
+                "cfg_file": [
+                    "buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg",
+                    "buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_windows.cfg",
+                    "buildtools/reclient_cfgs/nacl/rewrapper_linux.cfg",
+                    "buildtools/reclient_cfgs/nacl/rewrapper_windows.cfg",
+                ],
+            },
+        ],
+    },
+    tryjob = try_.job(
+        experiment_percentage = 100,
+        location_regexp = [r".+/[+]/tools/clang/scripts/update.py"],
     ),
 )
 

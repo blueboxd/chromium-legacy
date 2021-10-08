@@ -630,6 +630,16 @@ const FeatureEntry::FeatureVariation kWebNoteStylizeVariations[] = {
     {"With Randomized Order", kWebNoteStylizeRandomizeParam,
      base::size(kWebNoteStylizeRandomizeParam), nullptr}};
 
+const FeatureEntry::FeatureParam kLongScreenshot_AutoscrollDragSlow[] = {
+    {"autoscroll", "1"}};
+const FeatureEntry::FeatureParam kLongScreenshot_AutoscrollDragQuick[] = {
+    {"autoscroll", "2"}};
+const FeatureEntry::FeatureVariation kLongScreenshotVariations[] = {
+    {"Autoscroll Experiment 1", kLongScreenshot_AutoscrollDragSlow,
+     base::size(kLongScreenshot_AutoscrollDragSlow), nullptr},
+    {"Autoscroll Experiment 2", kLongScreenshot_AutoscrollDragQuick,
+     base::size(kLongScreenshot_AutoscrollDragQuick), nullptr}};
+
 const FeatureEntry::FeatureParam kSharingHubLinkToggle_ImageEnabled[] = {
     {"image_enabled", "true"}};
 const FeatureEntry::FeatureParam kSharingHubLinkToggle_ScreenshotEnabled[] = {
@@ -3480,7 +3490,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"chrome-share-long-screenshot",
      flag_descriptions::kChromeShareLongScreenshotName,
      flag_descriptions::kChromeShareLongScreenshotDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kChromeShareLongScreenshot)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kChromeShareLongScreenshot,
+                                    kLongScreenshotVariations,
+                                    "ChromeShareLongScreenshot")},
+
     {"chrome-sharing-hub-launch-adjacent",
      flag_descriptions::kChromeSharingHubLaunchAdjacentName,
      flag_descriptions::kChromeSharingHubLaunchAdjacentDescription, kOsAndroid,
@@ -5269,6 +5282,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCCTResizable90MaximumHeightName,
      flag_descriptions::kCCTResizable90MaximumHeightDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCCTResizable90MaximumHeight)},
+    {"cct-resizable-allow-resize-by-user-gesture",
+     flag_descriptions::kCCTResizableAllowResizeByUserGestureName,
+     flag_descriptions::kCCTResizableAllowResizeByUserGestureDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         chrome::android::kCCTResizableAllowResizeByUserGesture)},
     {"cct-resizable-for-first-parties",
      flag_descriptions::kCCTResizableForFirstPartiesName,
      flag_descriptions::kCCTResizableForFirstPartiesDescription, kOsAndroid,
@@ -5471,7 +5490,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnablePipRoundedCornersName,
      flag_descriptions::kAshEnablePipRoundedCornersDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kPipRoundedCorners)},
-
+    {"ash-enable-floating-window", flag_descriptions::kWindowControlMenu,
+     flag_descriptions::kWindowControlMenuDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kWindowControlMenu)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -5618,6 +5639,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAllowDisableMouseAccelerationName,
      flag_descriptions::kAllowDisableMouseAccelerationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAllowDisableMouseAcceleration)},
+
+    {"allow-disable-touchpad-haptic-feedback",
+     flag_descriptions::kAllowDisableTouchpadHapticFeedbackName,
+     flag_descriptions::kAllowDisableTouchpadHapticFeedbackDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kAllowDisableTouchpadHapticFeedback)},
 
     {"allow-repeated-updates", flag_descriptions::kAllowRepeatedUpdatesName,
      flag_descriptions::kAllowRepeatedUpdatesDescription, kOsCrOS,
@@ -6437,6 +6463,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"page-info-history", flag_descriptions::kPageInfoHistoryName,
      flag_descriptions::kPageInfoHistoryDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(page_info::kPageInfoHistory)},
+    {"page-info-store-info", flag_descriptions::kPageInfoStoreInfoName,
+     flag_descriptions::kPageInfoStoreInfoDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(page_info::kPageInfoStoreInfo)},
 #endif  // !defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
@@ -6852,6 +6881,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopDetailedLanguageSettingsName,
      flag_descriptions::kDesktopDetailedLanguageSettingsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(language::kDesktopDetailedLanguageSettings)},
+#endif
+
+#if defined(OS_WIN)
+    {"pwa-uninstall-in-windows-os",
+     flag_descriptions::kPwaUninstallInWindowsOsName,
+     flag_descriptions::kPwaUninstallInWindowsOsDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kEnableWebAppUninstallFromOsSettings)},
 #endif
 
     {"pwa-update-dialog-for-name-and-icon",
@@ -7648,7 +7684,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebBluetoothBondOnDemandName,
      flag_descriptions::kWebBluetoothBondOnDemandDescription, kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(features::kWebBluetoothBondOnDemand)},
-  
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"enable-libinput-to-handle-touchpad",
+     flag_descriptions::kEnableLibinputToHandleTouchpadName,
+     flag_descriptions::kEnableLibinputToHandleTouchpadDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ui::kLibinputHandleTouchpad)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

@@ -49,8 +49,6 @@ import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
-import org.chromium.chrome.browser.ntp.ScrollListener;
-import org.chromium.chrome.browser.ntp.ScrollableContainerDelegate;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.cards.promo.enhanced_protection.EnhancedProtectionPromoController;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderListProperties;
@@ -407,6 +405,21 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider, FeedBubbleDe
             mHybridListRenderer.unbind();
         }
         mRootView.removeAllViews();
+    }
+
+    /**
+     * Enables/disables the pull-to-refresh.
+     *
+     * @param enabled Whether the pull-to-refresh should be enabled.
+     */
+    public void enableSwipeRefresh(boolean enabled) {
+        if (mSwipeRefreshLayout != null) {
+            if (enabled) {
+                mSwipeRefreshLayout.enableSwipe(null);
+            } else {
+                mSwipeRefreshLayout.disableSwipe();
+            }
+        }
     }
 
     @Override

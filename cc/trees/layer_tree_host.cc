@@ -348,7 +348,9 @@ void LayerTreeHost::RequestMainFrameUpdate(bool report_cc_metrics) {
 // code that is logically a main thread operation, e.g. deletion of a Layer,
 // should be delayed until the LayerTreeHost::CommitComplete, which will run
 // after the commit, but on the main thread.
-void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
+void LayerTreeHost::FinishCommitOnImplThread(
+    LayerTreeHostImpl* host_impl,
+    std::vector<std::unique_ptr<SwapPromise>> swap_promises) {
   DCHECK(task_runner_provider_->IsImplThread());
 
   TRACE_EVENT0("cc,benchmark", "LayerTreeHost::FinishCommitOnImplThread");
@@ -394,7 +396,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     PushLayerTreePropertiesTo(sync_tree);
     PushLayerTreeHostPropertiesTo(host_impl);
 
-    sync_tree->PassSwapPromises(swap_promise_manager_.TakeSwapPromises());
+    sync_tree->PassSwapPromises(std::move(swap_promises));
     sync_tree->AppendEventsMetricsFromMainThread(
         events_metrics_manager_.TakeSavedEventsMetrics());
 
@@ -437,6 +439,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
   property_trees_.ResetAllChangeTracking();
+
+  SetImplCommitFinishTime(base::TimeTicks::Now());
 
   // Dump property trees and layers if run with:
   //   --vmodule=layer_tree_host=3
@@ -502,9 +506,18 @@ void LayerTreeHost::PushPropertyTreesTo(LayerTreeImpl* tree_impl) {
   tree_impl->SetPropertyTrees(&property_trees_);
 }
 
-void LayerTreeHost::WillCommit() {
+void LayerTreeHost::WillCommit(std::unique_ptr<CompletionEvent> completion) {
+  DCHECK(!commit_completion_event_);
+  commit_completion_event_ = std::move(completion);
   swap_promise_manager_.WillCommit();
   client_->WillCommit();
+}
+
+void LayerTreeHost::WaitForCommitCompletion() {
+  if (commit_completion_event_) {
+    commit_completion_event_->Wait();
+    commit_completion_event_ = nullptr;
+  }
 }
 
 void LayerTreeHost::UpdateDeferMainFrameUpdateInternal() {
@@ -517,9 +530,12 @@ bool LayerTreeHost::IsUsingLayerLists() const {
 }
 
 void LayerTreeHost::CommitComplete() {
+  // This DCHECK ensures that WaitForCommitCompletion() will not block.
+  DCHECK(!in_commit());
+  WaitForCommitCompletion();
   source_frame_number_++;
-  client_->DidCommit(impl_commit_start_time_);
-  impl_commit_start_time_ = base::TimeTicks();
+  client_->DidCommit(impl_commit_start_time_, impl_commit_finish_time_);
+  impl_commit_start_time_ = impl_commit_finish_time_ = base::TimeTicks();
   if (did_complete_scale_animation_) {
     client_->DidCompletePageScaleAnimation();
     did_complete_scale_animation_ = false;

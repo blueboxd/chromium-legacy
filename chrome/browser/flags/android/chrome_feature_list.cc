@@ -18,6 +18,7 @@
 #include "chrome/browser/notifications/chime/android/features.h"
 #include "chrome/browser/performance_hints/performance_hints_features.h"
 #include "chrome/browser/push_messaging/push_messaging_features.h"
+#include "chrome/browser/share/share_features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/video_tutorials/switches.h"
@@ -45,6 +46,7 @@
 #include "components/paint_preview/features/features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/permissions/features.h"
+#include "components/policy/core/common/features.h"
 #include "components/query_tiles/switches.h"
 #include "components/reading_list/features/reading_list_switches.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -182,9 +184,10 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTRedirectPreconnect,
     &kCCTRemoveRemoteViewIds,
     &kCCTReportParallelRequestStatus,
+    &kCCTResizable90MaximumHeight,
+    &kCCTResizableAllowResizeByUserGesture,
     &kCCTResizableForFirstParties,
     &kCCTResizableForThirdParties,
-    &kCCTResizable90MaximumHeight,
     &kCCTResourcePrefetch,
     &kDarkenWebsitesCheckboxInThemesSetting,
     &kQuickActionSearchWidgetAndroidDinoVariant,
@@ -332,6 +335,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kRecoverFromNeverSaveAndroid,
     &performance_hints::features::kContextMenuPerformanceInfo,
     &permissions::features::kRevertDSEAutomaticPermissions,
+    &policy::features::kChromeManagementPageAndroid,
     &query_tiles::features::kQueryTilesGeoFilter,
     &query_tiles::features::kQueryTiles,
     &query_tiles::features::kQueryTilesInNTP,
@@ -343,6 +347,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &send_tab_to_self::kSendTabToSelfV2,
     &send_tab_to_self::kSendTabToSelfManageDevicesLink,
     &send_tab_to_self::kSendTabToSelfWhenSignedIn,
+    &share::kUpcomingSharingFeatures,
     &signin::kMobileIdentityConsistencyPromos,
     &switches::kForceStartupSigninPromo,
     &switches::kDecoupleSyncFromAndroidMasterSync,
@@ -461,14 +466,17 @@ const base::Feature kCCTRemoveRemoteViewIds{"CCTRemoveRemoteViewIds",
 const base::Feature kCCTReportParallelRequestStatus{
     "CCTReportParallelRequestStatus", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCCTResizable90MaximumHeight{
+    "CCTResizable90MaximumHeight", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCCTResizableAllowResizeByUserGesture{
+    "CCTResizableAllowResizeByUserGesture", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kCCTResizableForFirstParties{
     "CCTResizableForFirstParties", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCCTResizableForThirdParties{
     "CCTResizableForThirdParties", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCCTResizable90MaximumHeight{
-    "CCTResizable90MaximumHeight", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCCTResourcePrefetch{"CCTResourcePrefetch",
                                          base::FEATURE_ENABLED_BY_DEFAULT};

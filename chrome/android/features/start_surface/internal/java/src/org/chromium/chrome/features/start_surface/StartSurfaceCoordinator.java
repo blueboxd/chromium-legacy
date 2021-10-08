@@ -17,19 +17,21 @@ import com.google.android.material.appbar.AppBarLayout;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.jank_tracker.JankTracker;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.feed.FeedLaunchReliabilityLoggingState;
 import org.chromium.chrome.browser.feed.FeedSwipeRefreshLayout;
+import org.chromium.chrome.browser.feed.ScrollListener;
+import org.chromium.chrome.browser.feed.ScrollableContainerDelegate;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.init.ChromeActivityNativeDelegate;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
-import org.chromium.chrome.browser.ntp.ScrollListener;
-import org.chromium.chrome.browser.ntp.ScrollableContainerDelegate;
 import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
@@ -89,6 +91,10 @@ public class StartSurfaceCoordinator implements StartSurface {
     private final MenuOrKeyboardActionController mMenuOrKeyboardActionController;
     private final MultiWindowModeStateDispatcher mMultiWindowModeStateDispatcher;
     private final Supplier<Toolbar> mToolbarSupplier;
+
+    @VisibleForTesting
+    static final String START_SHOWN_AT_STARTUP_UMA = "Startup.Android.StartSurfaceShownAtStartup";
+    private static final String TAG = "StartSurface";
 
     // Non-null in SurfaceMode.SINGLE_PANE mode.
     @Nullable
@@ -473,6 +479,11 @@ public class StartSurfaceCoordinator implements StartSurface {
         if (StartSurfaceConfiguration.CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP.getValue()) {
             ReturnToChromeExperimentsUtil.cachePrimaryAccountSyncStatus();
         }
+        if (ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled()) {
+            Log.i(TAG, "Recorded %s = %b", START_SHOWN_AT_STARTUP_UMA, isOverviewShownOnStartup);
+            RecordHistogram.recordBooleanHistogram(
+                    START_SHOWN_AT_STARTUP_UMA, isOverviewShownOnStartup);
+        }
     }
 
     @VisibleForTesting
@@ -599,7 +610,7 @@ public class StartSurfaceCoordinator implements StartSurface {
      */
     private void createSwipeRefreshLayout() {
         assert mSwipeRefreshLayout == null;
-        mSwipeRefreshLayout = FeedSwipeRefreshLayout.create(mActivity);
+        mSwipeRefreshLayout = FeedSwipeRefreshLayout.create(mActivity, R.id.toolbar_container);
 
         // If FeedSwipeRefreshLayout is not created because the feature is not enabled, don't create
         // another layer.

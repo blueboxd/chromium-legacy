@@ -58,7 +58,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </variants>
 
 <histogram name="Power.ApproxCpuTimeSecondsPerCoreTypeAndFrequency"
-    units="50 MHz" expires_after="2022-02-20">
+    units="50 MHz" expires_after="2022-04-24">
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <summary>
@@ -100,7 +100,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
   </token>
 </histogram>
 
-<histogram name="Power.BacklightLevelOnAC" units="%" expires_after="2022-01-02">
+<histogram name="Power.BacklightLevelOnAC" units="%" expires_after="2022-04-17">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -110,7 +110,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.BacklightLevelOnBattery" units="%"
-    expires_after="2021-11-07">
+    expires_after="2022-04-10">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -120,7 +120,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.BatteryChargeHealth" units="%"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -143,7 +143,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.BatteryDischargeRate" units="mW"
-    expires_after="2022-04-03">
+    expires_after="2022-04-10">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -169,7 +169,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.BatteryDischargeRateWhileSuspended" units="mW"
-    expires_after="2021-12-12">
+    expires_after="2022-04-03">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -190,7 +190,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
   </summary>
 </histogram>
 
-<histogram name="Power.BatteryPercentDrop" units="%" expires_after="2021-12-12">
+<histogram name="Power.BatteryPercentDrop" units="%" expires_after="2022-04-10">
   <owner>ryansturm@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -215,7 +215,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.BatteryRemainingAtEndOfSessionOnBattery" units="%"
-    expires_after="2021-12-26">
+    expires_after="2022-05-01">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -225,7 +225,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.BatteryRemainingAtStartOfSessionOnAC" units="%"
-    expires_after="2021-12-26">
+    expires_after="2022-04-10">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -244,7 +244,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.BatteryRemainingWhenChargeStarts" units="%"
-    expires_after="2021-12-12">
+    expires_after="2022-05-01">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -285,7 +285,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.ConnectedChargingPorts"
-    enum="PowerConnectedChargingPorts" expires_after="2021-12-26">
+    enum="PowerConnectedChargingPorts" expires_after="2022-04-24">
   <owner>bleung@chromium.org</owner>
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
@@ -498,7 +498,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.ExternalBrightnessReadResult"
-    enum="ExternalDisplayReceiveResult" expires_after="M100">
+    enum="ExternalDisplayReceiveResult" expires_after="2022-05-01">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -802,7 +802,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.IdleScreenDimCountDaily" units="count"
-    expires_after="M100">
+    expires_after="2022-04-17">
   <owner>tbroch@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -817,7 +817,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.IdleScreenOffCountDaily" units="count"
-    expires_after="M100">
+    expires_after="2022-05-01">
   <owner>tbroch@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -832,7 +832,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.IdleSuspendCountDaily" units="count"
-    expires_after="2021-12-12">
+    expires_after="2022-05-01">
   <owner>tbroch@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -846,7 +846,8 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
   </summary>
 </histogram>
 
-<histogram name="Power.IdleTimeAfterDimOnAC" units="ms" expires_after="M100">
+<histogram name="Power.IdleTimeAfterDimOnAC" units="ms"
+    expires_after="2022-04-24">
   <owner>tbroch@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -856,7 +857,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.IdleTimeAfterDimOnBattery" units="ms"
-    expires_after="M100">
+    expires_after="2022-04-17">
   <owner>tbroch@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -866,7 +867,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.IdleTimeAfterScreenOffOnAC" units="ms"
-    expires_after="M100">
+    expires_after="2022-05-01">
   <owner>tbroch@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -876,7 +877,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.IdleTimeAfterScreenOffOnBattery" units="ms"
-    expires_after="M100">
+    expires_after="2022-04-17">
   <owner>tbroch@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -885,7 +886,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
   </summary>
 </histogram>
 
-<histogram name="Power.IdleTimeOnAC" units="ms" expires_after="M100">
+<histogram name="Power.IdleTimeOnAC" units="ms" expires_after="2022-04-24">
   <owner>tbroch@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -932,7 +933,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.KernelSuspendTimeOnBattery" units="ms"
-    expires_after="2021-12-26">
+    expires_after="2022-04-10">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -988,7 +989,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.Mac.AppleSMCOpened" enum="BooleanSuccess"
-    expires_after="2022-02-27">
+    expires_after="2022-05-01">
   <owner>lgrey@chromium.org</owner>
   <summary>
     When metrics collection started, records true if a handle to the System
@@ -1031,7 +1032,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.Mac.IsOnBattery2" enum="BooleanOnBattery"
-    expires_after="2022-01-02">
+    expires_after="2022-04-03">
   <owner>avi@chromium.org</owner>
   <owner>lgrey@chromium.org</owner>
   <summary>
@@ -1078,7 +1079,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.MainScreenBrightnessAvailable" units="Boolean"
-    expires_after="2021-11-30">
+    expires_after="2022-04-10">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -1131,7 +1132,8 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
   </summary>
 </histogram>
 
-<histogram name="Power.PowerButtonDownTime" units="ms" expires_after="M100">
+<histogram name="Power.PowerButtonDownTime" units="ms"
+    expires_after="2022-04-24">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1159,7 +1161,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.PowerButtonPressInTabletMode"
-    enum="PowerButtonPressType" expires_after="2021-12-12">
+    enum="PowerButtonPressType" expires_after="2022-05-01">
   <owner>minch@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>
@@ -1210,7 +1212,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.PowerSupplyMaxPower" units="W"
-    expires_after="2021-10-31">
+    expires_after="2022-04-17">
   <owner>bleung@chromium.org</owner>
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
@@ -1221,7 +1223,8 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
   </summary>
 </histogram>
 
-<histogram name="Power.PowerSupplyMaxVoltage" units="V" expires_after="M100">
+<histogram name="Power.PowerSupplyMaxVoltage" units="V"
+    expires_after="2022-04-17">
   <owner>bleung@chromium.org</owner>
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
@@ -1233,7 +1236,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.PowerSupplyType" enum="PowerSupplyType"
-    expires_after="2021-10-31">
+    expires_after="2022-04-10">
   <owner>bleung@chromium.org</owner>
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
@@ -1254,14 +1257,14 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.SmartCharging.Messages" enum="SmartChargingMessages"
-    expires_after="2021-11-15">
+    expires_after="2022-05-01">
   <owner>thanhdng@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>Type of messages that are reported by smart charging.</summary>
 </histogram>
 
 <histogram name="Power.SuspendAttempt" enum="SuspendAttempt"
-    expires_after="2021-12-12">
+    expires_after="2022-04-17">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1272,7 +1275,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.SuspendAttemptsBeforeCancel" units="units"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1284,7 +1287,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.SuspendAttemptsBeforeSuccess" units="units"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1295,7 +1298,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.SuspendResult" enum="SuspendResult"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1322,7 +1325,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.UserBrightnessAdjustmentsPerSessionOnAC" units="units"
-    expires_after="M100">
+    expires_after="2022-05-01">
   <owner>tbroch@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -1344,7 +1347,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="PowerML.DimImminent.Action" enum="PowerMLDimImminentAction"
-    expires_after="2022-02-27">
+    expires_after="2022-05-01">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>
@@ -1354,7 +1357,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="PowerML.ModelDim.Result" enum="PowerMLFinalResult"
-    expires_after="2022-02-27">
+    expires_after="2022-05-01">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>
@@ -1364,7 +1367,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="PowerML.ModelNoDim.Result" enum="PowerMLFinalResult"
-    expires_after="2022-02-27">
+    expires_after="2022-05-01">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>
@@ -1395,7 +1398,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 
 <histogram name="PowerML.SmartDimComponent.LoadComponentEvent"
     enum="PowerMLSmartDimComponentLoadComponentEvent"
-    expires_after="2022-02-13">
+    expires_after="2022-04-17">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
@@ -1406,7 +1409,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="PowerML.SmartDimComponent.VersionType"
-    enum="PowerMLSmartDimComponentVersionType" expires_after="2022-02-20">
+    enum="PowerMLSmartDimComponentVersionType" expires_after="2022-04-24">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
@@ -1417,7 +1420,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="PowerML.SmartDimComponent.WorkerType"
-    enum="PowerMLSmartDimComponentWorkerType" expires_after="2022-02-13">
+    enum="PowerMLSmartDimComponentWorkerType" expires_after="2022-04-17">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
@@ -1451,7 +1454,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="PowerML.SmartDimModel.RequestCompleteDuration" units="ms"
-    expires_after="2022-02-27">
+    expires_after="2022-05-01">
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <owner>napper@chromium.org</owner>
@@ -1463,7 +1466,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="PowerML.SmartDimModel.Result"
-    enum="PowerMLSmartDimModelResult" expires_after="2022-02-20">
+    enum="PowerMLSmartDimModelResult" expires_after="2022-04-24">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>
@@ -1476,7 +1479,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="PowerML.SmartDimParameter.Result"
-    enum="PowerMLSmartDimParameterResult" expires_after="2022-02-27">
+    enum="PowerMLSmartDimParameterResult" expires_after="2022-05-01">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>

@@ -63,7 +63,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.DeprecatedApiCalled"
-    enum="CryptohomeDeprecatedApiCalled" expires_after="2021-12-12">
+    enum="CryptohomeDeprecatedApiCalled" expires_after="2022-04-03">
   <owner>apronin@chromium.org</owner>
   <owner>louiscollard@chromium.org</owner>
   <owner>zuan@chromium.org</owner>
@@ -194,7 +194,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.DiskCleanupProgress"
-    enum="CryptohomeDiskCleanupProgress" expires_after="2021-12-26">
+    enum="CryptohomeDiskCleanupProgress" expires_after="2022-04-03">
   <owner>dlunev@chromium.org</owner>
   <owner>sarthakkukreti@chromium.org</owner>
   <summary>
@@ -206,7 +206,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.DiskCleanupResult"
-    enum="CryptohomeDiskCleanupResult" expires_after="2022-01-23">
+    enum="CryptohomeDiskCleanupResult" expires_after="2022-04-17">
   <owner>vsavu@google.com</owner>
   <owner>dlunev@chromium.org</owner>
   <summary>Records the result of triggering disk cleanup.</summary>
@@ -269,7 +269,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.HomedirEncryptionType" enum="HomedirEncryptionType"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>dspaid@chromium.org</owner>
   <summary>
     The encryption type used for a user's cryptohome directory. This is logged
@@ -319,7 +319,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.MigrationToGaiaId"
-    enum="CryptohomeMigrationToGaiaId" expires_after="M97">
+    enum="CryptohomeMigrationToGaiaId" expires_after="2022-05-01">
   <owner>alemate@chromium.org</owner>
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
@@ -401,7 +401,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.OOPMountOperationResult"
-    enum="CryptohomeOOPMountOperationResult" expires_after="2021-12-12">
+    enum="CryptohomeOOPMountOperationResult" expires_after="2022-05-01">
   <owner>betuls@chromium.org</owner>
   <owner>jorgelo@chromium.org</owner>
   <summary>
@@ -421,7 +421,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.RestoreSELinuxContextResultForHome"
-    enum="BooleanSuccess" expires_after="2022-02-25">
+    enum="BooleanSuccess" expires_after="2022-05-01">
   <owner>betuls@chromium.org</owner>
   <owner>jorgelo@chromium.org</owner>
   <summary>
@@ -443,7 +443,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TimeBetweenFreeDiskSpace" units="s"
-    expires_after="2022-01-01">
+    expires_after="2022-05-01">
   <owner>vsavu@google.com</owner>
   <owner>dlunev@chromium.org</owner>
   <owner>sarthakkukreti@chromium.org</owner>
@@ -455,7 +455,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TimeSessionUnlock" units="ms"
-    expires_after="2021-12-12">
+    expires_after="2022-04-03">
   <owner>kerrnel@chromium.org</owner>
   <owner>mnissler@chromium.org</owner>
   <summary>
@@ -498,7 +498,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TimeToMountEx" units="ms"
-    expires_after="2021-12-12">
+    expires_after="2022-05-01">
   <owner>jorgelo@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -528,7 +528,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TimeToPerformEphemeralMount" units="ms"
-    expires_after="2021-12-12">
+    expires_after="2022-05-01">
   <owner>jorgelo@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -539,7 +539,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TimeToPerformMount" units="ms"
-    expires_after="2021-12-05">
+    expires_after="2022-05-01">
   <owner>betuls@chromium.org</owner>
   <owner>jorgelo@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -562,7 +562,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TimeToPerformOOPMountOperation" units="ms"
-    expires_after="2021-12-12">
+    expires_after="2022-05-01">
   <owner>jorgelo@chromium.org</owner>
   <owner>betuls@chromium.org</owner>
   <summary>
@@ -582,7 +582,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TpmResults" enum="CryptohomeTpmResults"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>afakhry@chromium.org</owner>
   <summary>
     The errors resulting from interacting with the Trusted Platform Module (TPM)
@@ -591,7 +591,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.UserSubdirHasCorrectGroup" enum="BooleanCorrect"
-    expires_after="2022-02-01">
+    expires_after="2022-04-03">
   <owner>austinct@chromium.org</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>

@@ -256,14 +256,17 @@ public abstract class ChromeFeatureList {
     public static final String CCT_POST_MESSAGE_API = "CCTPostMessageAPI";
     public static final String CCT_REDIRECT_PRECONNECT = "CCTRedirectPreconnect";
     public static final String CCT_REMOVE_REMOTE_VIEW_IDS = "CCTRemoveRemoteViewIds";
+    public static final String CCT_RESIZABLE_90_MAXIMUM_HEIGHT = "CCTResizable90MaximumHeight";
+    public static final String CCT_RESIZABLE_ALLOW_RESIZE_BY_USER_GESTURE =
+            "CCTResizableAllowResizeByUserGesture";
     public static final String CCT_RESIZABLE_FOR_FIRST_PARTIES = "CCTResizableForFirstParties";
     public static final String CCT_RESIZABLE_FOR_THIRD_PARTIES = "CCTResizableForThirdParties";
-    public static final String CCT_RESIZABLE_90_MAXIMUM_HEIGHT = "CCTResizable90MaximumHeight";
     public static final String CCT_RESOURCE_PREFETCH = "CCTResourcePrefetch";
     public static final String CCT_REPORT_PARALLEL_REQUEST_STATUS =
             "CCTReportParallelRequestStatus";
     public static final String CLOSE_TAB_SUGGESTIONS = "CloseTabSuggestions";
     public static final String DONT_AUTO_HIDE_BROWSER_CONTROLS = "DontAutoHideBrowserControls";
+    public static final String CHROME_MANAGEMENT_PAGE = "ChromeManagementPageAndroid";
     public static final String CHROME_SHARE_LONG_SCREENSHOT = "ChromeShareLongScreenshot";
     public static final String CHROME_SHARING_HUB = "ChromeSharingHub";
     public static final String CHROME_SHARING_HUB_LAUNCH_ADJACENT =
@@ -526,6 +529,7 @@ public abstract class ChromeFeatureList {
     public static final String TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT_WARNING =
             "TrustedWebActivityQualityEnforcementWarning";
     public static final String VIDEO_TUTORIALS = "VideoTutorials";
+    public static final String UPCOMING_SHARING_FEATURES = "UpcomingSharingFeatures";
     public static final String UPDATE_NOTIFICATION_IMMEDIATE_SHOW_OPTION =
             "UpdateNotificationScheduleServiceImmediateShowOption";
     public static final String UPDATE_HISTORY_ENTRY_POINTS_IN_INCOGNITO =

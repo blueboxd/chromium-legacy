@@ -50,13 +50,12 @@ public class LogoViewTest extends DummyUiChromeActivityTestCase {
 
     @Before
     public void setup() {
-        Activity activity = getActivity();
-        mView = new LogoView(activity, null);
-        mBitmap = Bitmap.createBitmap(1, 1, Config.ALPHA_8);
-        LayoutParams params =
-                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Activity activity = getActivity();
+            mView = new LogoView(activity, null);
+            mBitmap = Bitmap.createBitmap(1, 1, Config.ALPHA_8);
+            LayoutParams params =
+                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
             TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
             getActivity().setContentView(mView, params);
         });

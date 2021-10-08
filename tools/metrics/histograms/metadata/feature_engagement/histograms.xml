@@ -39,6 +39,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <variant name="IPH_AddToHomescreenTextBubble"
       summary="educating users about adding website shortcuts to their home
                screen (using a text bubble)"/>
+  <variant name="IPH_AutoDarkOptOut"
+      summary="educating users about disabling auto dark feature globally"/>
   <variant name="IPH_AutoDarkUserEducationMessage"
       summary="message educating users about adding disabling auto dark web
                contents feature globally"/>
@@ -237,7 +239,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </variants>
 
 <histogram name="InProductHelp.Config.ParsingEvent" enum="ConfigParsingEvent"
-    expires_after="2022-02-27">
+    expires_after="2022-05-01">
   <owner>nyquist@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
   <summary>
@@ -283,7 +285,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="InProductHelp.Db.TotalEvents" units="events"
-    expires_after="2022-02-27">
+    expires_after="2022-05-01">
   <owner>nyquist@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
   <summary>

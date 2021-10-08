@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="IOS.Allocator.ShimInstalled" enum="Boolean"
-    expires_after="2022-01-28">
+    expires_after="2022-04-10">
   <owner>rohitrao@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <summary>
@@ -59,7 +59,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.ContentExtension.DisplayCount" units="count"
-    expires_after="2021-12-11">
+    expires_after="2022-04-24">
   <owner>javierrobles@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -150,7 +150,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.DisplayCount" units="count"
-    expires_after="2021-12-11">
+    expires_after="2022-04-10">
   <owner>javierrobles@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -216,7 +216,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.PasswordUseCount" units="count"
-    expires_after="2021-12-11">
+    expires_after="2022-04-10">
   <owner>javierrobles@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -227,7 +227,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.QuickPasswordUseCount" units="count"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>javierrobles@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -260,7 +260,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.SearchCount" units="count"
-    expires_after="2021-12-11">
+    expires_after="2022-04-10">
   <owner>javierrobles@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -283,7 +283,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.ShowPasswordCount" units="count"
-    expires_after="2021-12-11">
+    expires_after="2022-04-24">
   <owner>javierrobles@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -336,7 +336,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.DefaultBrowserFullscreenPromoRemindMe"
-    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2022-01-16">
+    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2022-04-10">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -346,7 +346,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.DefaultBrowserFullscreenPromoRemindMeSecondPromo"
-    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2021-12-19">
+    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2022-04-10">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -356,7 +356,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.DefaultBrowserFullscreenTailoredPromoAllTabs"
-    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2022-02-01">
+    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2022-04-03">
   <owner>javierrobles@chromium.org</owner>
   <owner>rkgibson@chromium.org</owner>
   <summary>
@@ -366,7 +366,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.DefaultBrowserFullscreenTailoredPromoMadeForIOS"
-    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2022-02-01">
+    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2022-04-03">
   <owner>javierrobles@chromium.org</owner>
   <owner>rkgibson@chromium.org</owner>
   <summary>
@@ -376,7 +376,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.DefaultBrowserFullscreenTailoredPromoStaySafe"
-    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2022-02-01">
+    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2022-04-03">
   <owner>javierrobles@chromium.org</owner>
   <owner>rkgibson@chromium.org</owner>
   <summary>
@@ -644,7 +644,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.LocationPermissions.FirstRunModal.Interaction"
-    enum="LocationPermissionsFirstRunModalIOSEnum" expires_after="2021-12-05">
+    enum="LocationPermissionsFirstRunModalIOSEnum" expires_after="2022-04-17">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -899,7 +899,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.NTP.Impression" enum="IOSNTPImpression"
-    expires_after="2022-01-16">
+    expires_after="2022-04-03">
   <owner>gambard@chromium.org</owner>
   <summary>
     The type of NTP impressions on iOS, split by type of suggestions shown
@@ -929,7 +929,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.PageLoadCount.Counts"
-    enum="IOSPageLoadCountNavigationType" expires_after="2021-12-19">
+    enum="IOSPageLoadCountNavigationType" expires_after="2022-04-10">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>The number of navigation started events by navigation type.</summary>
@@ -1033,7 +1033,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.Reauth.Password.Autofill" enum="ReauthenticationEvent"
-    expires_after="2022-02-20">
+    expires_after="2022-05-01">
   <owner>javierrobles@chromium.org</owner>
   <owner>sarraf@google.com</owner>
   <summary>
@@ -1043,7 +1043,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.Reauth.Password.ManualFallback"
-    enum="ReauthenticationEvent" expires_after="2022-02-20">
+    enum="ReauthenticationEvent" expires_after="2022-05-01">
   <owner>javierrobles@chromium.org</owner>
   <owner>sarraf@google.com</owner>
   <summary>
@@ -1158,7 +1158,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.ShareExtension.ReceivedEntry"
-    enum="IOSShareExtensionReceivedEntryType" expires_after="2021-12-11">
+    enum="IOSShareExtensionReceivedEntryType" expires_after="2022-05-01">
   <owner>javierrobles@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>Type of the item received from the iOS share extension.</summary>
@@ -1175,7 +1175,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.ShareExtension.Source"
-    enum="IOSShareExtensionReceivedEntrySource" expires_after="2021-12-11">
+    enum="IOSShareExtensionReceivedEntrySource" expires_after="2022-05-01">
   <owner>javierrobles@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1218,7 +1218,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="IOS.Snapshots.ImageSize" units="KB" expires_after="2021-11-28">
+<histogram name="IOS.Snapshots.ImageSize" units="KB" expires_after="2022-05-01">
   <owner>ajuma@chromium.org</owner>
   <owner>edchin@chromium.org</owner>
   <summary>
@@ -1344,7 +1344,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.TabSwitcher.PageChangeInteraction"
-    enum="IOSTabSwitcherPageChangeInteraction" expires_after="M99">
+    enum="IOSTabSwitcherPageChangeInteraction" expires_after="2022-05-01">
   <owner>marq@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -1354,7 +1354,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.TabSwitcher.TimeSpent" units="ms"
-    expires_after="2022-01-28">
+    expires_after="2022-05-01">
   <owner>mrefaat@chromium.org</owner>
   <owner>marq@chromium.org</owner>
   <summary>
@@ -1364,7 +1364,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.Web.URLDidChangeToEmptyURL" enum="BooleanHit"
-    expires_after="2021-11-30">
+    expires_after="2022-05-01">
   <owner>gambard@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <summary>
@@ -1375,7 +1375,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.WidgetKit.Action" enum="IOSWidgetKitAction"
-    expires_after="2021-12-11">
+    expires_after="2022-04-03">
   <owner>javierrobles@chromium.org</owner>
   <owner>muradyan@google.com</owner>
   <summary>
@@ -1404,7 +1404,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.WindowIDInjection.ElapsedTime" units="ms"
-    expires_after="2021-12-11">
+    expires_after="2022-04-17">
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>

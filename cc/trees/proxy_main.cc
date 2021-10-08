@@ -159,11 +159,13 @@ void ProxyMain::BeginMainFrame(
     // commit happens in the future.
     std::vector<std::unique_ptr<SwapPromise>> empty_swap_promises;
     ImplThreadTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&ProxyImpl::BeginMainFrameAbortedOnImpl,
-                                  base::Unretained(proxy_impl_.get()),
-                                  CommitEarlyOutReason::ABORTED_NOT_VISIBLE,
-                                  begin_main_frame_start_time,
-                                  std::move(empty_swap_promises)));
+        FROM_HERE,
+        base::BindOnce(&ProxyImpl::BeginMainFrameAbortedOnImpl,
+                       base::Unretained(proxy_impl_.get()),
+                       CommitEarlyOutReason::ABORTED_NOT_VISIBLE,
+                       begin_main_frame_start_time,
+                       std::move(empty_swap_promises),
+                       false /* scroll_and_viewport_changes_synced */));
     return;
   }
 
@@ -184,7 +186,8 @@ void ProxyMain::BeginMainFrame(
                        base::Unretained(proxy_impl_.get()),
                        CommitEarlyOutReason::ABORTED_DEFERRED_MAIN_FRAME_UPDATE,
                        begin_main_frame_start_time,
-                       std::move(empty_swap_promises)));
+                       std::move(empty_swap_promises),
+                       false /* scroll_and_viewport_changes_synced */));
     // When we stop deferring main frame updates, we should resume any
     // previously requested pipeline stages.
     deferred_final_pipeline_stage_ =
@@ -204,6 +207,7 @@ void ProxyMain::BeginMainFrame(
   if (IsDeferringCommits() && base::TimeTicks::Now() > commits_restart_time_)
     StopDeferringCommits(ReasonToTimeoutTrigger(*paint_holding_reason_));
   bool skip_commit = IsDeferringCommits();
+  bool scroll_and_viewport_changes_synced = false;
 
   if (!skip_commit) {
     // Synchronizes scroll offsets and page scale deltas (for pinch zoom) from
@@ -212,6 +216,7 @@ void ProxyMain::BeginMainFrame(
     // layer tree, to prevent scroll offsets getting out of sync.
     layer_tree_host_->ApplyCompositorChanges(
         begin_main_frame_state->commit_data.get());
+    scroll_and_viewport_changes_synced = true;
   }
 
   layer_tree_host_->ApplyMutatorEvents(
@@ -275,7 +280,8 @@ void ProxyMain::BeginMainFrame(
                                   base::Unretained(proxy_impl_.get()),
                                   CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT,
                                   begin_main_frame_start_time,
-                                  std::move(empty_swap_promises)));
+                                  std::move(empty_swap_promises),
+                                  scroll_and_viewport_changes_synced));
     // We intentionally don't report CommitComplete() here since it was aborted
     // prematurely and we're waiting to do another commit in the future.
     // When we stop deferring commits, we should resume any previously requested
@@ -308,7 +314,11 @@ void ProxyMain::BeginMainFrame(
 
   int source_frame_number = layer_tree_host_->SourceFrameNumber();
 
-  layer_tree_host_->WillCommit();
+  auto completion_event_ptr = std::make_unique<CompletionEvent>(
+      base::WaitableEvent::ResetPolicy::MANUAL);
+  auto* completion_event = completion_event_ptr.get();
+  layer_tree_host_->WillCommit(std::move(completion_event_ptr));
+
   devtools_instrumentation::ScopedCommitTrace commit_task(
       layer_tree_host_->GetId(),
       begin_main_frame_state->begin_frame_args.frame_id.sequence_number);
@@ -316,6 +326,7 @@ void ProxyMain::BeginMainFrame(
   current_pipeline_stage_ = COMMIT_PIPELINE_STAGE;
   if (final_pipeline_stage_ < COMMIT_PIPELINE_STAGE) {
     current_pipeline_stage_ = NO_PIPELINE_STAGE;
+    completion_event->Signal();
     layer_tree_host_->DidBeginMainFrame();
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoUpdates", TRACE_EVENT_SCOPE_THREAD);
     std::vector<std::unique_ptr<SwapPromise>> swap_promises =
@@ -326,16 +337,20 @@ void ProxyMain::BeginMainFrame(
     // such events.
     layer_tree_host_->ClearEventsMetrics();
 
+    // We can only be here if !skip_commits, so we did do a scroll and
+    // viewport sync.
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&ProxyImpl::BeginMainFrameAbortedOnImpl,
                        base::Unretained(proxy_impl_.get()),
                        CommitEarlyOutReason::FINISHED_NO_UPDATES,
-                       begin_main_frame_start_time, std::move(swap_promises)));
+                       begin_main_frame_start_time, std::move(swap_promises),
+                       true /* scroll_and_viewport_changes_synced */));
 
     // Although the commit is internally aborted, this is because it has been
     // detected to be a no-op.  From the perspective of an embedder, this commit
     // went through, and input should no longer be throttled, etc.
+    layer_tree_host_->SetImplCommitFinishTime(base::TimeTicks::Now());
     layer_tree_host_->CommitComplete();
     layer_tree_host_->RecordEndOfFrameMetrics(
         begin_main_frame_start_time,
@@ -354,17 +369,20 @@ void ProxyMain::BeginMainFrame(
 
     DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
 
+    std::vector<std::unique_ptr<SwapPromise>> swap_promises =
+        layer_tree_host_->GetSwapPromiseManager()->TakeSwapPromises();
+
     bool hold_commit_for_activation = commit_waits_for_activation_;
     commit_waits_for_activation_ = false;
-    CompletionEvent completion;
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&ProxyImpl::NotifyReadyToCommitOnImpl,
-                       base::Unretained(proxy_impl_.get()), &completion,
+                       base::Unretained(proxy_impl_.get()), completion_event,
                        layer_tree_host_, begin_main_frame_start_time,
                        begin_main_frame_state->begin_frame_args,
-                       source_frame_number, hold_commit_for_activation));
-    completion.Wait();
+                       source_frame_number, std::move(swap_promises),
+                       hold_commit_for_activation));
+    layer_tree_host_->WaitForCommitCompletion();
   }
 
   // For Blink implementations, this updates frame throttling and

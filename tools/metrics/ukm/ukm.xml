@@ -155,11 +155,25 @@ be describing additional metrics about the same event.
       Records an enum value representing which action in the accuracy tip was
       taken.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="TimeSpent">
     <summary>
       The amount of time spent on the dialog until it was closed. In seconds.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -174,6 +188,13 @@ be describing additional metrics about the same event.
     <summary>
       The accuracy tip status that was determined for a pageload.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -8191,11 +8212,17 @@ be describing additional metrics about the same event.
 <event name="IOS.PageReadability">
   <owner>thegreenfrog@chromium.org</owner>
   <summary>
-    Logged when the Distilibility score of the current page is returned.
-    Muliplied by 10X to get tenth digit granularity. 0.1 granularity will be
-    recorded for scores between 0.5 and 1.5. Otherwise, the granularity will be
-    0.5.
+    Logged when the Distilibility score of the current page is returned and the
+    Reading List Message is shown. Muliplied by 10X to get tenth digit
+    granularity. 0.1 granularity will be recorded for scores between 0.5 and
+    1.5. Otherwise, the granularity will be 0.5.
   </summary>
+  <metric name="DidAccept" enum="Boolean">
+    <summary>
+      True if the user tapped on the Messages prompt to save the current page to
+      Reading List.
+    </summary>
+  </metric>
   <metric name="DistilibilityLongScore">
     <summary>
       Distilibility score value indicating the &quot;long readability&quot; of
@@ -9797,6 +9824,13 @@ be describing additional metrics about the same event.
       Type of media::Renderer used for the playback. In most cases we do not
       support dynamically changing RendererType during one playback.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="TimeToFirstFrame">
     <summary>
@@ -11766,6 +11800,26 @@ be describing additional metrics about the same event.
       could be evicted by Android anytime after that happens.
     </summary>
   </metric>
+  <metric
+      name="InteractiveTiming.AverageUserInteractionLatencyOverBudget.MaxEventDuration">
+    <summary>
+      The average value of user interaction latency above budget of a page load,
+      in ms. For this metric, we measure the latency of user interactions by
+      Responsiveness.UserInteraction.MaxEventDuration and we reduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="InteractiveTiming.AverageUserInteractionLatencyOverBudget.TotalEventDuration">
+    <summary>
+      The average value of user interaction latency above budget of a page load,
+      in ms. For this metric, we measure the latency of user interactions by
+      Responsiveness.UserInteraction.TotalEventDuration and we reduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
   <metric name="InteractiveTiming.FirstInputDelay">
     <obsolete>
       Deprecated on January 2019 in favor of InteractiveTiming.FirstInputDelay2,
@@ -12051,6 +12105,28 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric
+      name="InteractiveTiming.SlowUserInteractionLatencyOverBudget.HighPercentile.MaxEventDuration">
+    <summary>
+      An approximation of a high percentile of user interaction latency above
+      budget of a page load, in ms. For this metric, we measure the latency of
+      user interactions by Responsiveness.UserInteraction.MaxlEventDuration and
+      we reduct a budget from the original value. If the latency value is below
+      the budget, it will be treated as 0 ms. Each type of interaction has its
+      own budget.
+    </summary>
+  </metric>
+  <metric
+      name="InteractiveTiming.SlowUserInteractionLatencyOverBudget.HighPercentile.TotalEventDuration">
+    <summary>
+      An approximation of a high percentile of user interaction latency above
+      budget of a page load, in ms. For this metric, we measure the latency of
+      user interactions by Responsiveness.UserInteraction.TotalEventDuration and
+      we reduct a budget from the original value. If the latency value is below
+      the budget, it will be treated as 0 ms. Each type of interaction has its
+      own budget.
+    </summary>
+  </metric>
   <metric name="InteractiveTiming.TotalAdjustedInputDelay">
     <summary>
       sum(max(Input Delay - 50, 0)). The Input Delay refers to the duration
@@ -12078,6 +12154,63 @@ be describing additional metrics about the same event.
         </statistics>
       </history>
     </aggregation>
+  </metric>
+  <metric
+      name="InteractiveTiming.TotalUserInteractionLatencyOverBudget.MaxEventDuration">
+    <summary>
+      The sum of user interaction latency above budget of a page load, in ms.
+      For this metric, we measure the latency of user interactions by
+      Responsiveness.UserInteraction.MaxEventDuration and we reduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="InteractiveTiming.TotalUserInteractionLatencyOverBudget.TotalEventDuration">
+    <summary>
+      The sum of user interaction latency above budget of a page load, in ms.
+      For this metric, we measure the latency of user interactions by
+      Responsiveness.UserInteraction.TotalEventDuration and we reduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric name="InteractiveTiming.WorstUserInteractionLatency.MaxEventDuration">
+    <summary>
+      The maximum value of user interaction latency of a page load, in ms. For
+      this metric, we measure the latency of user interactions by
+      Responsiveness.UserInteraction.MaxEventDuration. Each type of interaction
+      has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="InteractiveTiming.WorstUserInteractionLatency.TotalEventDuration">
+    <summary>
+      The maximum value of user interaction latency of a page load, in ms. For
+      this metric, we measure the latency of user interactions by
+      Responsiveness.UserInteraction.TotalEventDuration. Each type of
+      interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="InteractiveTiming.WorstUserInteractionLatencyOverBudget.MaxEventDuration">
+    <summary>
+      The maximum value of user interaction latency above budget of a page load,
+      in ms. For this metric, we measure the latency of user interactions by
+      Responsiveness.UserInteraction.TotalEventDuration and we reduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="InteractiveTiming.WorstUserInteractionLatencyOverBudget.TotalEventDuration">
+    <summary>
+      The maximum value of user interaction latency above budget of a page load,
+      in ms. For this metric, we measure the latency of user interactions by
+      Responsiveness.UserInteraction.TotalEventDuration and we reduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
   </metric>
   <metric name="IsCrossProcessNavigation">
     <owner>altimin@chromium.org</owner>

@@ -50,7 +50,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BackForwardCache.AllSites.HistoryNavigationOutcome"
-    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2021-12-26">
+    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2022-04-10">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -64,7 +64,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="BackForwardCache.AllSites.HistoryNavigationOutcome.BlocklistedFeature"
-    enum="WebSchedulerTrackedFeature" expires_after="2022-01-02">
+    enum="WebSchedulerTrackedFeature" expires_after="2022-04-17">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -81,7 +81,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="BackForwardCache.AllSites.HistoryNavigationOutcome.BrowsingInstanceNotSwappedReason"
     enum="BackForwardCacheBrowsingInstanceNotSwappedReason"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -143,7 +143,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="BackForwardCache.AllSites.HistoryNavigationOutcome.NotRestoredReason"
-    enum="BackForwardCacheNotRestoredReason" expires_after="2021-12-19">
+    enum="BackForwardCacheNotRestoredReason" expires_after="2022-04-17">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -173,7 +173,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="BackForwardCache.EvictedAfterDocumentRestoredReason"
     enum="BackForwardCacheEvictedAfterDocumentRestoredReason"
-    expires_after="2021-12-19">
+    expires_after="2022-04-10">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -189,7 +189,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BackForwardCache.Eviction.Renderer"
-    enum="BackForwardCacheRendererEvictionReason" expires_after="2022-02-06">
+    enum="BackForwardCacheRendererEvictionReason" expires_after="2022-04-17">
   <owner>rakina@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -257,7 +257,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BackForwardCache.HistoryNavigationOutcome.BlocklistedFeature"
-    enum="WebSchedulerTrackedFeature" expires_after="2021-12-19">
+    enum="WebSchedulerTrackedFeature" expires_after="2022-04-03">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -275,7 +275,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="BackForwardCache.HistoryNavigationOutcome.BrowsingInstanceNotSwappedReason"
     enum="BackForwardCacheBrowsingInstanceNotSwappedReason"
-    expires_after="2021-12-19">
+    expires_after="2022-04-10">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -319,7 +319,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="BackForwardCache.HistoryNavigationOutcome.DisabledForRenderFrameHostReason2"
     enum="BackForwardCacheDisabledForRenderFrameHostReason2"
-    expires_after="2022-01-01">
+    expires_after="2022-04-03">
   <owner>carlscab@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
@@ -358,7 +358,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BackForwardCache.HistoryNavigationOutcome.NotRestoredReason"
-    enum="BackForwardCacheNotRestoredReason" expires_after="2022-02-20">
+    enum="BackForwardCacheNotRestoredReason" expires_after="2022-04-24">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -458,7 +458,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="BackForwardCache.ReloadsAndHistoryNavigations"
     enum="BackForwardCacheReloadsAndHistoryNavigations"
-    expires_after="2022-02-06">
+    expires_after="2022-04-24">
   <owner>sreejakshetty@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
@@ -488,7 +488,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BackForwardCache.Restore.NavigationToFirstPaint" units="ms"
-    expires_after="2021-12-05">
+    expires_after="2022-04-17">
   <owner>sreejakshetty@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
@@ -525,7 +525,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="BackForwardCache.UnexpectedRendererToBrowserMessage.InterfaceName"
-    enum="MojoInterfaceName" expires_after="2022-01-01">
+    enum="MojoInterfaceName" expires_after="2022-04-17">
   <owner>carlscab@google.com</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -759,7 +759,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Navigation.EngagementTime.HTTP" units="ms" expires_after="M94">
+<histogram name="Navigation.EngagementTime.HTTP" units="ms"
+    expires_after="2022-01-09">
   <owner>estark@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -769,7 +770,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.EngagementTime.HTTPS" units="ms"
-    expires_after="2022-01-09">
+    expires_after="2022-04-10">
   <owner>estark@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -779,7 +780,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.EngagementTime.Ratio" units="%"
-    expires_after="2022-01-02">
+    expires_after="2022-05-01">
   <owner>estark@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -865,7 +866,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.IsSameSiteInstance"
-    enum="NavigationIsSameSiteInstance" expires_after="2022-01-16">
+    enum="NavigationIsSameSiteInstance" expires_after="2022-04-24">
   <owner>arthursonzogni@chromium.org</owner>
   <owner>clamy@chromium.org</owner>
   <owner>nasko@chromium.org</owner>
@@ -914,7 +915,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.MainFrame.SiteEngagementLevel"
-    enum="SiteEngagementLevel" expires_after="2021-12-12">
+    enum="SiteEngagementLevel" expires_after="2022-04-24">
   <owner>meacer@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -934,17 +935,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.MainFrameHasRTLDomain2" enum="Boolean"
-    expires_after="M92">
+    expires_after="2022-04-12">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
     Whether the main-frame navigation was to a URL with an RTL domain name. This
-    is only recorded for finished navigations and not attempts.
+    is only recorded for finished navigations and not attempts. Warning: this
+    histogram was expired from M92 through M95; data may be missing.
   </summary>
 </histogram>
 
 <histogram name="Navigation.MainFrameHasRTLDomainDifferentPage2" enum="Boolean"
-    expires_after="2021-12-12">
+    expires_after="2022-04-12">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -957,7 +959,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.MainFrameProfileType2" enum="BrowserProfileType"
-    expires_after="2022-02-06">
+    expires_after="2022-04-10">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -967,17 +969,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.MainFrameScheme2" enum="NavigationScheme"
-    expires_after="2021-06-01">
+    expires_after="2022-02-06">
   <owner>elawrence@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
     The scheme of the URL for each main-frame navigation. This is only recorded
-    for finished navigations and not attempts.
+    for finished navigations and not attempts. Warning: this histogram was
+    expired from 2021-06-01 through M95; data may be missing.
   </summary>
 </histogram>
 
 <histogram name="Navigation.MainFrameSchemeDifferentPage2"
-    enum="NavigationScheme" expires_after="2022-02-06">
+    enum="NavigationScheme" expires_after="2022-04-10">
   <owner>elawrence@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
@@ -989,7 +992,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.MainFrameSchemeDifferentPageOTR2"
-    enum="NavigationScheme" expires_after="2021-12-12">
+    enum="NavigationScheme" expires_after="2022-04-24">
   <owner>elawrence@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
@@ -1054,7 +1057,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.OriginAgentCluster.Result"
-    enum="OriginAgentClusterEndResult" expires_after="2022-01-26">
+    enum="OriginAgentClusterEndResult" expires_after="2022-04-10">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>wjmaclean@chromium.org</owner>
@@ -1117,7 +1120,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.ReadyToCommitUntilCommit2" units="ms"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>clamy@chromium.org</owner>
   <owner>nasko@chromium.org</owner>
   <summary>
@@ -1154,7 +1157,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.RequiresDedicatedProcess"
-    enum="NavigationRequiresDedicatedProcess" expires_after="2021-12-21">
+    enum="NavigationRequiresDedicatedProcess" expires_after="2022-04-03">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -1165,7 +1168,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.RequiresDedicatedProcess.HTTPOrHTTPS"
-    enum="NavigationRequiresDedicatedProcess" expires_after="2021-12-21">
+    enum="NavigationRequiresDedicatedProcess" expires_after="2022-05-01">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -1187,7 +1190,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.StartToCommit" units="ms"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>nasko@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
   <summary>
@@ -1235,7 +1238,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.TimeToReadyToCommit2" units="ms"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>clamy@chromium.org</owner>
   <owner>nasko@chromium.org</owner>
   <summary>
@@ -1458,7 +1461,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NavigationSuggestion.Event2" enum="NavigationSuggestionEvent"
-    expires_after="2021-10-25">
+    expires_after="2022-05-01">
   <owner>meacer@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -1532,7 +1535,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Prerender.FinalStatus" enum="PrerenderFinalStatus"
-    expires_after="2021-10-31">
+    expires_after="2022-04-03">
   <owner>ryansturm@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>

@@ -123,6 +123,7 @@
       'android-weblayer-pie-x86-wpt-smoketest': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
       'android-webview-pie-x86-wpt-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_chrome_webview_shell',
       'android-weblayer-with-aosp-webview-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_disable_proguard_chrome_google',
+      'android-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_chrome_webview_shell',
     },
 
     'chromium.angle': {
@@ -318,8 +319,6 @@
       'android-code-coverage-native': 'gpu_tests_android_release_bot_no_symbols_arm64_fastbuild_native_coverage',
       'android-backuprefptr-arm-fyi-rel': 'release_trybot_backuprefptr_arm',
       'android-backuprefptr-arm64-fyi-rel': 'release_trybot_backuprefptr_arm64',
-      'arm-upload-perfetto': 'release_bot_arm_chromeos',
-      'arm64-upload-perfetto': 'release_bot_arm64_chromeos',
       'chromeos-amd64-generic-rel-dchecks': 'chromeos_amd64-generic_use_fake_dbus_clients_dchecks',
       'chromeos-amd64-generic-rel (reclient)': 'chromeos_amd64-generic_use_fake_dbus_clients_reclient',
       # TODO(crbug.com/1235218): remove after the migration.
@@ -1567,7 +1566,7 @@
     ],
 
     'android_release_trybot_x86_fastbuild_resource_allowlisting_webview_google': [
-      'android', 'release_trybot_minimal_symbols', 'x86', 'android_fastbuild',
+      'android', 'release_trybot', 'x86', 'android_fastbuild',
       'resource_allowlisting', 'webview_google',
     ],
 
@@ -2268,7 +2267,7 @@
     ],
 
     'gpu_tests_android_release_trybot_arm64_resource_allowlisting_fastbuild_java_coverage': [
-      'gpu_tests', 'android', 'release_trybot_minimal_symbols', 'arm64', 'static_angle',
+      'gpu_tests', 'android', 'release_trybot', 'arm64', 'static_angle',
       'strip_debug_info', 'android_fastbuild', 'webview_google',
       'use_java_coverage', 'partial_code_coverage_instrumentation',
     ],
@@ -2411,11 +2410,8 @@
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
-    # Keep in sync with
-    # gpu_tests_release_trybot_no_symbols_use_dummy_lastchange.
     'gpu_tests_wayland_release_trybot_no_symbols_use_dummy_lastchange_code_coverage': [
       'gpu_tests', 'release_trybot', 'no_symbols', 'use_dummy_lastchange',
-      'use_clang_coverage', 'partial_code_coverage_instrumentation',
       'linux_wayland',
     ],
 
@@ -2792,14 +2788,6 @@
 
     'release_bot': [
       'release_bot',
-    ],
-
-    'release_bot_arm_chromeos': [
-      'release_bot', 'chromeos', 'arm',
-    ],
-
-    'release_bot_arm64_chromeos': [
-      'release_bot', 'chromeos', 'arm64',
     ],
 
     'release_bot_blink': [

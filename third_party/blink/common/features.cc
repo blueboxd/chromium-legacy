@@ -55,7 +55,7 @@ const base::Feature kPaintHolding{"PaintHolding",
 
 // Enable defer commits to avoid flash of unstyled content, for all navigation.
 const base::Feature kPaintHoldingCrossOrigin{"PaintHoldingCrossOrigin",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable eagerly setting up a CacheStorage interface pointer and
 // passing it to service workers on startup as an optimization.
@@ -834,7 +834,7 @@ const base::Feature kWebAppEnableUrlHandlers{"WebAppEnableUrlHandlers",
 // information:
 // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/main/URLProtocolHandler/explainer.md
 const base::Feature kWebAppEnableProtocolHandlers{
-    "WebAppEnableProtocolHandlers", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebAppEnableProtocolHandlers", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether web apps are able to be treated as note-taking apps. Controls parsing
 // of "note_taking" dictionary field and "new_note_url" entry in web app
@@ -1071,7 +1071,7 @@ const base::Feature kClientHintsViewportWidth{
 
 // Allows third party use of WebSQL (`DOMWindowWebDatabase::openDatabase`).
 const base::Feature kWebSQLInThirdPartyContextEnabled{
-    "WebSQLInThirdPartyContextEnabled", base::FEATURE_ENABLED_BY_DEFAULT};
+    "WebSQLInThirdPartyContextEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable legacy `device-memory` client hint.
 const base::Feature kClientHintsDeviceMemory_DEPRECATED{

@@ -22,9 +22,9 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner_forward.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -1264,8 +1264,8 @@ void PrintRenderFrameHelper::PrintRequestedPages() {
   if (render_frame_gone_)
     return;
 
-  // If we are printing a PDF extension frame, find the plugin node and print
-  // that instead.
+  // If we are printing a frame with an internal PDF plugin element, find the
+  // plugin node and print that instead.
   auto plugin = delegate_->GetPdfElement(frame);
 
   Print(frame, plugin, PrintRequestType::kRegular);
@@ -1328,8 +1328,8 @@ void PrintRenderFrameHelper::InitiatePrintPreview(
 
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
 
-  // If we are printing a PDF extension frame, find the plugin node and print
-  // that instead.
+  // If we are printing a frame with an internal PDF plugin element, find the
+  // plugin node and print that instead.
   auto plugin = delegate_->GetPdfElement(frame);
   if (!plugin.IsNull()) {
     PrintNode(plugin);

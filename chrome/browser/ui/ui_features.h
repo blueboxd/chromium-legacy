@@ -63,6 +63,8 @@ extern const char kMinimumTabWidthFeatureParameterName[];
 
 extern const base::Feature kScrollableTabStripButtons;
 
+extern const base::Feature kForceDisableStackedTabs;
+
 #if !defined(ANDROID)
 extern const base::Feature kSettingsLandingPageRedesign;
 #endif
@@ -179,10 +181,6 @@ extern const base::FeatureParam<int> kTabSearchRecentlyClosedTabCountThreshold;
 // Determines how screenshots of the toolbar uses Software or Hardware drawing.
 // Works on Android 10+.
 extern const base::Feature kToolbarUseHardwareBitmapDraw;
-
-// Whether to label the update menu item as "Relaunch to update Chrome", rather
-// than "Update Google Chrome".
-extern const base::Feature kUseRelaunchToUpdateString;
 
 extern const base::Feature kWebUIBubblePerProfilePersistence;
 

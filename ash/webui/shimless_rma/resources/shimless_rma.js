@@ -10,7 +10,6 @@ import './onboarding_network_page.js';
 import './onboarding_select_components_page.js';
 import './onboarding_update_page.js';
 import './onboarding_wait_for_manual_wp_disable_page.js';
-import './onboarding_verify_rsu_page.js';
 import './onboarding_wp_disable_complete_page.js';
 import './reimaging_calibration_page.js';
 import './reimaging_calibration_run_page.js';
@@ -109,13 +108,6 @@ const StateComponentMapping = {
   [RmaState.kEnterRSUWPDisableCode]: {
     componentIs: 'onboarding-enter-rsu-wp-disable-code-page',
     requiresReloadWhenShown: true,
-    buttonNext: ButtonState.DISABLED,
-    buttonCancel: ButtonState.HIDDEN,
-    buttonBack: ButtonState.HIDDEN,
-  },
-  [RmaState.kVerifyRsu]: {
-    componentIs: 'onboarding-verify-rsu-page',
-    requiresReloadWhenShown: false,
     buttonNext: ButtonState.DISABLED,
     buttonCancel: ButtonState.HIDDEN,
     buttonBack: ButtonState.HIDDEN,
@@ -316,11 +308,6 @@ export class ShimlessRmaElement extends PolymerElement {
   }
 
   /** @private */
-  fetchNextState_() {
-    return this.shimlessRmaService_.transitionNextState();
-  }
-
-  /** @private */
   fetchPrevState_() {
     return this.shimlessRmaService_.transitionPreviousState();
   }
@@ -404,10 +391,6 @@ export class ShimlessRmaElement extends PolymerElement {
     component.setAttribute('class', 'shimless-content');
     component.hidden = true;
 
-    if (!component) {
-      console.error('Failed to create ' + componentIs);
-    }
-
     shimlessBody.appendChild(component);
     return component;
   }
@@ -440,17 +423,16 @@ export class ShimlessRmaElement extends PolymerElement {
   /** @protected */
   onNextButtonClicked_() {
     const page = this.shadowRoot.querySelector(this.currentPage_.componentIs);
-    assert(page);
+    assert(page, 'Could not find page ' + this.currentPage_.componentIs);
+    assert(
+        page.onNextButtonClick,
+        'No onNextButtonClick for ' + this.currentPage_.componentIs);
+    assert(
+        typeof page.onNextButtonClick === 'function',
+        'onNextButtonClick not a function for ' +
+            this.currentPage_.componentIs);
 
-    // Acquire promise to check whether current page is ready for next page.
-    const prepPageAdvance =
-        page.onNextButtonClick || (() => Promise.resolve(undefined));
-    assert(typeof prepPageAdvance === 'function');
-
-    prepPageAdvance.call(page)
-        .then(
-            (stateResult) => !!stateResult ? Promise.resolve(stateResult) :
-                                             this.fetchNextState_())
+    page.onNextButtonClick()
         .then((stateResult) => this.processStateResult_(stateResult))
         .catch((err) => void 0);
   }

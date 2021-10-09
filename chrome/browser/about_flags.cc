@@ -210,6 +210,10 @@
 #include "base/allocator/buildflags.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/features/chromeos_features.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
@@ -1463,16 +1467,6 @@ const FeatureEntry::FeatureVariation kNtpSafeBrowsingModuleVariations[] = {
     {"(Fast Cooldown)", kNtpSafeBrowsingModuleFastCooldown,
      base::size(kNtpSafeBrowsingModuleFastCooldown), nullptr},
 };
-#endif  // !defined(OS_ANDROID)
-
-#if !defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kEnterpriseRealtimeExtensionRequestParam[] = {
-    {"with_erp", "true"}};
-const FeatureEntry::FeatureVariation
-    kEnterpriseRealtimeExtensionRequestVariation[] = {
-        {"with encrypted reporting pipeline",
-         kEnterpriseRealtimeExtensionRequestParam,
-         base::size(kEnterpriseRealtimeExtensionRequestParam), nullptr}};
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
@@ -3227,6 +3221,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDeprecateLowUsageCodecsName,
      flag_descriptions::kDeprecateLowUsageCodecsDescription, kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(media::kDeprecateLowUsageCodecs)},
+    {"enable-tts-lacros-support",
+     flag_descriptions::kEnableTtsLacrosSupportName,
+     flag_descriptions::kEnableTtsLacrosSupportDescription, kOsCrOS | kOsLinux,
+     FEATURE_VALUE_TYPE(chromeos::kLacrosTtsSupport)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_LINUX)
@@ -4823,6 +4821,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kScrollableTabStripButtonsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kScrollableTabStripButtons)},
 
+    {"force-disable-stacked-tabs",
+     flag_descriptions::kForceDisableStackedTabsName,
+     flag_descriptions::kForceDisableStackedTabsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kForceDisableStackedTabs)},
+
     {flag_descriptions::kSidePanelFlagId, flag_descriptions::kSidePanelName,
      flag_descriptions::kSidePanelDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSidePanel)},
@@ -5824,17 +5827,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          features::kEnterpriseReportingExtensionManifestVersion)},
-
-#if !defined(OS_ANDROID)
-    {"enterprise-realtime-extension-request",
-     flag_descriptions::kEnterpriseRealtimeExtensionRequestName,
-     flag_descriptions::kEnterpriseRealtimeExtensionRequestDescription,
-     kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         features::kEnterpriseRealtimeExtensionRequest,
-         kEnterpriseRealtimeExtensionRequestVariation,
-         "EnterpriseRealtimeExtensionRequest")},
-#endif  // !defined(OS_ANDROID)
 
     {"enable-unsafe-webgpu", flag_descriptions::kUnsafeWebGPUName,
      flag_descriptions::kUnsafeWebGPUDescription, kOsMac | kOsLinux | kOsWin,

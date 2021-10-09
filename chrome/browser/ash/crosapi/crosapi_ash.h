@@ -37,6 +37,7 @@ class DriveIntegrationServiceAsh;
 class FeedbackAsh;
 class FieldTrialServiceAsh;
 class FileManagerAsh;
+class ForceInstalledTrackerAsh;
 class GeolocationServiceAsh;
 class IdentityManagerAsh;
 class IdleServiceAsh;
@@ -57,6 +58,7 @@ class SelectFileAsh;
 class StructuredMetricsServiceAsh;
 class SystemDisplayAsh;
 class TaskManagerAsh;
+class TtsAsh;
 class WebPageInfoFactoryAsh;
 class UrlHandlerAsh;
 class VideoCaptureDeviceFactoryAsh;
@@ -122,6 +124,8 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::FieldTrialService> receiver) override;
   void BindFileManager(
       mojo::PendingReceiver<mojom::FileManager> receiver) override;
+  void BindForceInstalledTracker(
+      mojo::PendingReceiver<mojom::ForceInstalledTracker> receiver) override;
   void BindGeolocationService(
       mojo::PendingReceiver<mojom::GeolocationService> receiver) override;
   void BindIdentityManager(
@@ -179,6 +183,7 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::TaskManager> receiver) override;
   void BindTestController(
       mojo::PendingReceiver<mojom::TestController> receiver) override;
+  void BindTts(mojo::PendingReceiver<mojom::Tts> receiver) override;
   void BindUrlHandler(
       mojo::PendingReceiver<mojom::UrlHandler> receiver) override;
   void BindMachineLearningService(
@@ -207,6 +212,10 @@ class CrosapiAsh : public mojom::Crosapi {
     return download_controller_ash_.get();
   }
 
+  ForceInstalledTrackerAsh* force_installed_tracker_ash() {
+    return force_installed_tracker_ash_.get();
+  }
+
   KioskSessionServiceAsh* kiosk_session_service() {
     return kiosk_session_service_ash_.get();
   }
@@ -224,6 +233,8 @@ class CrosapiAsh : public mojom::Crosapi {
   }
 
   TaskManagerAsh* task_manager_ash() { return task_manager_ash_.get(); }
+
+  TtsAsh* tts_ash() { return tts_ash_.get(); }
 
   KeystoreServiceAsh* keystore_service_ash() {
     return keystore_service_ash_.get();
@@ -254,6 +265,7 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<FeedbackAsh> feedback_ash_;
   std::unique_ptr<FieldTrialServiceAsh> field_trial_service_ash_;
   std::unique_ptr<FileManagerAsh> file_manager_ash_;
+  std::unique_ptr<ForceInstalledTrackerAsh> force_installed_tracker_ash_;
   std::unique_ptr<GeolocationServiceAsh> geolocation_service_ash_;
   std::unique_ptr<IdentityManagerAsh> identity_manager_ash_;
   std::unique_ptr<IdleServiceAsh> idle_service_ash_;
@@ -278,6 +290,7 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<SystemDisplayAsh> system_display_ash_;
   std::unique_ptr<WebPageInfoFactoryAsh> web_page_info_factory_ash_;
   std::unique_ptr<TaskManagerAsh> task_manager_ash_;
+  std::unique_ptr<TtsAsh> tts_ash_;
   std::unique_ptr<UrlHandlerAsh> url_handler_ash_;
   std::unique_ptr<VideoCaptureDeviceFactoryAsh>
       video_capture_device_factory_ash_;

@@ -7,10 +7,10 @@
 #include <atomic>
 #include <utility>
 
-#include "base/bind_post_task.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
+#include "base/task/bind_post_task_forward.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/chromeos_buildflags.h"
@@ -30,6 +30,7 @@
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/field_trial.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
+#include "chromeos/crosapi/mojom/force_installed_tracker.mojom.h"
 #include "chromeos/crosapi/mojom/geolocation.mojom.h"
 #include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
 #include "chromeos/crosapi/mojom/identity_manager.mojom.h"
@@ -50,6 +51,7 @@
 #include "chromeos/crosapi/mojom/system_display.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
+#include "chromeos/crosapi/mojom/tts.mojom.h"
 #include "chromeos/crosapi/mojom/url_handler.mojom.h"
 #include "chromeos/crosapi/mojom/web_page_info.mojom.h"
 #include "chromeos/lacros/lacros_service_never_blocking_state.h"
@@ -242,6 +244,10 @@ LacrosService::LacrosService()
       &crosapi::mojom::Crosapi::BindFieldTrialService,
       Crosapi::MethodMinVersions::kBindFieldTrialServiceMinVersion>();
   ConstructRemote<
+      crosapi::mojom::ForceInstalledTracker,
+      &crosapi::mojom::Crosapi::BindForceInstalledTracker,
+      Crosapi::MethodMinVersions::kBindForceInstalledTrackerMinVersion>();
+  ConstructRemote<
       crosapi::mojom::GeolocationService,
       &crosapi::mojom::Crosapi::BindGeolocationService,
       Crosapi::MethodMinVersions::kBindGeolocationServiceMinVersion>();
@@ -310,6 +316,8 @@ LacrosService::LacrosService()
   ConstructRemote<crosapi::mojom::TaskManager,
                   &crosapi::mojom::Crosapi::BindTaskManager,
                   Crosapi::MethodMinVersions::kBindTaskManagerMinVersion>();
+  ConstructRemote<crosapi::mojom::Tts, &crosapi::mojom::Crosapi::BindTts,
+                  Crosapi::MethodMinVersions::kBindTtsMinVersion>();
   ConstructRemote<crosapi::mojom::UrlHandler,
                   &crosapi::mojom::Crosapi::BindUrlHandler,
                   Crosapi::MethodMinVersions::kBindUrlHandlerMinVersion>();

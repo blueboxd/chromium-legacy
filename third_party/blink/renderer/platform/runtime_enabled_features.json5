@@ -603,6 +603,7 @@
       //
       // https://crbug.com/1180159
       name: "CSSDelayedAnimationUpdates",
+      status: "stable",
     },
     {
       name: "CSSDynamicRangeMediaQueries",
@@ -1102,6 +1103,10 @@
     {
       name: "ForcedColors",
       status: "stable",
+    },
+    {
+      name: "ForcedColorsPreserveParentColor",
+      depends_on: ["ForcedColors"],
     },
     {
       // This is used in tests to perform memory measurement without
@@ -2390,6 +2395,7 @@
     },
     {
       name: "WebAssemblyCSP",
+      status: "experimental",
     },
     {
       name: "WebAssemblyExceptions",

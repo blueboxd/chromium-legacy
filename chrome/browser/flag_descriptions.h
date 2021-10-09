@@ -1276,6 +1276,9 @@ extern const char kScrollableTabStripDescription[];
 extern const char kScrollableTabStripButtonsName[];
 extern const char kScrollableTabStripButtonsDescription[];
 
+extern const char kForceDisableStackedTabsName[];
+extern const char kForceDisableStackedTabsDescription[];
+
 extern const char kScrollUnificationName[];
 extern const char kScrollUnificationDescription[];
 
@@ -2115,9 +2118,6 @@ extern const char kEnableAccessibilityLiveCaptionDescription[];
 
 extern const char kCopyLinkToTextName[];
 extern const char kCopyLinkToTextDescription[];
-
-extern const char kEnterpriseRealtimeExtensionRequestName[];
-extern const char kEnterpriseRealtimeExtensionRequestDescription[];
 
 extern const char kGlobalMediaControlsCastStartStopName[];
 extern const char kGlobalMediaControlsCastStartStopDescription[];
@@ -3026,6 +3026,9 @@ extern const char kDeprecateLowUsageCodecsDescription[];
 
 extern const char kVaapiAV1DecoderName[];
 extern const char kVaapiAV1DecoderDescription[];
+
+extern const char kEnableTtsLacrosSupportName[];
+extern const char kEnableTtsLacrosSupportDescription[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)

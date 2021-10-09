@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/cart/commerce_hints.mojom.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/cart/commerce_renderer_feature_list.h"
@@ -751,12 +750,6 @@ void CommerceHintAgent::JavaScriptRequest::WillExecute() {
 
 void CommerceHintAgent::JavaScriptRequest::Completed(
     const blink::WebVector<v8::Local<v8::Value>>& result) {
-  // Only record when the start time is correctly captured.
-  DCHECK(!start_time_.is_null());
-  if (!start_time_.is_null()) {
-    base::UmaHistogramTimes("Commerce.Carts.ExtractionExecutionTime",
-                            base::TimeTicks::Now() - start_time_);
-  }
   if (!agent_)
     return;
   blink::WebLocalFrame* main_frame = agent_->render_frame()->GetWebFrame();
@@ -790,6 +783,12 @@ void CommerceHintAgent::JavaScriptRequest::Completed(
 
 void CommerceHintAgent::JavaScriptRequest::HandlePromiseResults(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
+  // Only record when the start time is correctly captured.
+  DCHECK(!start_time_.is_null());
+  if (!start_time_.is_null()) {
+    base::UmaHistogramTimes("Commerce.Carts.ExtractionExecutionTime",
+                            base::TimeTicks::Now() - start_time_);
+  }
   if (!agent_)
     return;
   blink::WebLocalFrame* main_frame = agent_->render_frame()->GetWebFrame();
@@ -817,9 +816,8 @@ void CommerceHintAgent::OnProductsExtracted(
     if (!value)
       return;
     if (value->is_int() || value->is_double()) {
-      base::UmaHistogramTimes(
-          histograme_name,
-          base::TimeDelta::FromMillisecondsD(value->GetDouble()));
+      base::UmaHistogramTimes(histograme_name,
+                              base::Milliseconds(value->GetDouble()));
     }
   };
   record_time("longest_task_ms", "Commerce.Carts.ExtractionLongestTaskTime");
@@ -880,6 +878,9 @@ void CommerceHintAgent::OnDestruct() {
 }
 
 void CommerceHintAgent::WillSendRequest(const blink::WebURLRequest& request) {
+  if (should_skip_) {
+    return;
+  }
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   const GURL& url(frame->GetDocument().Url());
   if (!url.SchemeIsHTTPOrHTTPS())
@@ -911,17 +912,44 @@ void CommerceHintAgent::WillSendRequest(const blink::WebURLRequest& request) {
   }
 }
 
+void CommerceHintAgent::OnNavigation(const GURL& url,
+                                     OnNavigationCallback callback) {
+  if (!commerce_renderer_feature::kOptimizeRendererSignal.Get()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  if (!navigation_observer_.is_bound() ||
+      !navigation_observer_.is_connected()) {
+    navigation_observer_ = GetObserver(render_frame());
+  }
+  navigation_observer_->OnNavigation(url, std::move(callback));
+}
+
 void CommerceHintAgent::DidStartNavigation(
     const GURL& url,
     absl::optional<blink::WebNavigationType> navigation_type) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
-  starting_url_ = url;
   has_finished_loading_ = false;
+  OnNavigation(url,
+               base::BindOnce(&CommerceHintAgent::DidStartNavigationCallback,
+                              weak_factory_.GetWeakPtr(), url,
+                              std::move(navigation_type)));
+}
+
+void CommerceHintAgent::DidStartNavigationCallback(
+    const GURL& url,
+    absl::optional<blink::WebNavigationType> navigation_type,
+    bool should_skip) {
+  should_skip_ = should_skip;
+  starting_url_ = url;
 }
 
 void CommerceHintAgent::DidCommitProvisionalLoad(
     ui::PageTransition transition) {
+  if (should_skip_) {
+    return;
+  }
   if (!starting_url_.is_valid())
     return;
   if (IsAddToCart(starting_url_.PathForRequestPiece())) {
@@ -948,9 +976,18 @@ void CommerceHintAgent::DidFinishLoad() {
   const GURL& url(frame->GetDocument().Url());
   if (!url.SchemeIs(url::kHttpsScheme))
     return;
+  OnNavigation(url, base::BindOnce(&CommerceHintAgent::DidFinishLoadCallback,
+                                   weak_factory_.GetWeakPtr()));
+}
+
+void CommerceHintAgent::DidFinishLoadCallback(bool should_skip) {
+  should_skip_ = should_skip;
+  if (should_skip_) {
+    return;
+  }
   has_finished_loading_ = true;
   extraction_count_ = 0;
-
+  const GURL& url(render_frame()->GetWebFrame()->GetDocument().Url());
   // Some URLs might satisfy the patterns for both cart and checkout (e.g.
   // https://www.foo.com/cart/checkout). In those cases, cart has higher
   // priority.
@@ -966,6 +1003,9 @@ void CommerceHintAgent::DidFinishLoad() {
 }
 
 void CommerceHintAgent::WillSubmitForm(const blink::WebFormElement& form) {
+  if (should_skip_) {
+    return;
+  }
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   const GURL url(frame->GetDocument().Url());
   if (!url.SchemeIsHTTPOrHTTPS())
@@ -985,6 +1025,9 @@ void CommerceHintAgent::WillSubmitForm(const blink::WebFormElement& form) {
 
 // TODO(crbug/1164236): use MutationObserver on cart instead.
 void CommerceHintAgent::ExtractCartFromCurrentFrame() {
+  if (should_skip_) {
+    return;
+  }
   if (!has_finished_loading_)
     return;
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();

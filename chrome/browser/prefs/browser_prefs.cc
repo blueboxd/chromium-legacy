@@ -183,6 +183,7 @@
 #include "extensions/browser/extension_prefs.h"
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/attestation/tpm_challenge_key.h"
+#include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/ash/device_name/device_name_store.h"
 #include "chrome/browser/ash/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
@@ -375,6 +376,7 @@
 #include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/bluetooth_config/device_name_manager_impl.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_prefs.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/timezone/timezone_resolver.h"
@@ -987,6 +989,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ash::ChromeUserManagerImpl::RegisterPrefs(registry);
   crosapi::browser_util::RegisterLocalStatePrefs(registry);
   chromeos::CupsPrintersManager::RegisterLocalStatePrefs(registry);
+  ash::BrowserDataMigrator::RegisterLocalStatePrefs(registry);
   ash::DemoModeDetector::RegisterPrefs(registry);
   ash::DemoModeResourcesRemover::RegisterLocalStatePrefs(registry);
   ash::DemoSession::RegisterLocalStatePrefs(registry);
@@ -1315,6 +1318,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ash::ClientAppMetadataProviderService::RegisterProfilePrefs(registry);
   chromeos::CupsPrintersManager::RegisterProfilePrefs(registry);
   chromeos::device_sync::RegisterProfilePrefs(registry);
+  chromeos::bluetooth_config::DeviceNameManagerImpl::RegisterPrefs(registry);
   ash::FamilyUserChromeActivityMetrics::RegisterProfilePrefs(registry);
   ash::FamilyUserMetricsService::RegisterProfilePrefs(registry);
   ash::FamilyUserSessionMetrics::RegisterProfilePrefs(registry);

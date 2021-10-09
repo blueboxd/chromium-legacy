@@ -28,10 +28,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/scoped_observation.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner_forward.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -1289,7 +1289,6 @@ void UserSessionManager::OnProfileCreated(const UserContext& user_context,
     case Profile::CREATE_STATUS_CREATED:
       CHECK(profile);
       // Profile created but before initializing extensions and promo resources.
-      BrowserDataMigrator::MaybeRestartToMigrate(user_context);
       InitProfilePreferences(profile, user_context);
       break;
     case Profile::CREATE_STATUS_INITIALIZED:
@@ -2223,8 +2222,18 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
     return;
   }
 
+  // Call this before `RestartToApplyPerSessionFlagsIfNeed()` in the login
+  // process.
+  ash::BrowserDataMigrator::ClearMigrationStep(
+      g_browser_process->local_state());
+
   if (RestartToApplyPerSessionFlagsIfNeed(profile, false))
     return;
+
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  ash::BrowserDataMigrator::MaybeRestartToMigrate(user->GetAccountId(),
+                                                  user->username_hash());
 
   if (login_host) {
     login_host->SetStatusAreaVisible(true);

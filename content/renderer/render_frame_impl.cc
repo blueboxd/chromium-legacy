@@ -41,8 +41,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/task_runner_util_forward.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/base_tracing.h"
@@ -3147,6 +3147,7 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
     bool is_client_redirect =
         !!(common_params->transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
     bool started_with_transient_activation = common_params->has_user_gesture;
+    bool is_browser_initiated = commit_params->is_browser_initiated;
 
     WebSecurityOrigin initiator_origin;
     if (common_params->initiator_origin)
@@ -3173,7 +3174,7 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
     commit_status = frame_->CommitSameDocumentNavigation(
         url, load_type, item_for_history_navigation, is_client_redirect,
         started_with_transient_activation, initiator_origin,
-        std::move(document_state));
+        is_browser_initiated, std::move(document_state));
 
     // The load of the URL can result in this frame being removed. Use a
     // WeakPtr as an easy way to detect whether this has occured. If so, this

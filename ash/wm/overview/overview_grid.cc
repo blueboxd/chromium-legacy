@@ -30,7 +30,9 @@
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/desks/expanded_desks_bar_button.h"
 #include "ash/wm/desks/templates/desks_templates_grid_view.h"
+#include "ash/wm/desks/templates/desks_templates_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/drop_target_view.h"
@@ -75,6 +77,13 @@
 
 namespace ash {
 namespace {
+
+// Values for the no items indicator which appears when opening overview mode
+// with no opened windows.
+constexpr int kNoItemsIndicatorHeightDp = 32;
+constexpr int kNoItemsIndicatorHorizontalPaddingDp = 16;
+constexpr int kNoItemsIndicatorRoundingDp = 16;
+constexpr int kNoItemsIndicatorVerticalPaddingDp = 8;
 
 // Windows are not allowed to get taller than this.
 constexpr int kMaxHeight = 512;
@@ -417,7 +426,7 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
 
 OverviewGrid::~OverviewGrid() = default;
 
-void OverviewGrid::Shutdown() {
+void OverviewGrid::Shutdown(OverviewEnterExitType exit_type) {
   EndNudge();
 
   SplitViewController::Get(root_window_)->RemoveObserver(this);
@@ -458,6 +467,18 @@ void OverviewGrid::Shutdown() {
     desks_templates_grid_->CloseNow();
 
   overview_session_ = nullptr;
+
+  if (no_windows_widget_) {
+    if (exit_type == OverviewEnterExitType::kImmediateExit) {
+      ImmediatelyCloseWidgetOnExit(std::move(no_windows_widget_));
+      return;
+    }
+
+    // Fade out the no windows widget. This animation continues past the
+    // lifetime of |this|.
+    FadeOutWidgetFromOverview(std::move(no_windows_widget_),
+                              OVERVIEW_ANIMATION_RESTORE_WINDOW);
+  }
 }
 
 void OverviewGrid::PrepareForOverview() {
@@ -473,7 +494,7 @@ void OverviewGrid::PrepareForOverview() {
   grid_event_handler_ = std::make_unique<OverviewGridEventHandler>(this);
   Shell::Get()->wallpaper_controller()->AddObserver(this);
 
-  if (features::AreDesksTemplatesEnabled())
+  if (desks_templates_util::AreDesksTemplatesEnabled())
     ShowCreateDesksTemplatesButtons();
 }
 
@@ -845,22 +866,53 @@ void OverviewGrid::ShowDesksTemplatesGrid() {
   desks_templates_grid_->Show();
 }
 
-void OverviewGrid::ShowCreateDesksTemplatesButtons() {
-  create_desks_templates_widget_ = CreateDesksTemplatesWidget(root_window_);
-  create_desks_templates_widget_->SetContentsView(CreateDesksTemplatesButton(
-      base::BindRepeating(&OverviewGrid::OnCreateDesksTemplatesButtonPressed,
-                          base::Unretained(this))));
-  create_desks_templates_widget_->Show();
-  // TODO(sophiewen): Set bounds when specs come out.
-  create_desks_templates_widget_->SetBounds(gfx::Rect(20, 136, 180, 32));
-}
-
-void OverviewGrid::OnCreateDesksTemplatesButtonPressed() {
-  // TODO(sophiewen): This logic will be implemented.
-}
-
 bool OverviewGrid::IsShowingDesksTemplatesGrid() const {
   return desks_templates_grid_ && desks_templates_grid_->IsVisible();
+}
+
+void OverviewGrid::UpdateNoWindowsWidget(bool no_items) {
+  // Hide the widget if there is an item in overview or the desk templates grid
+  // is visible.
+  if (!no_items || IsShowingDesksTemplatesGrid()) {
+    no_windows_widget_.reset();
+    return;
+  }
+
+  if (!no_windows_widget_) {
+    // Create and fade in the widget.
+    RoundedLabelWidget::InitParams params;
+    params.name = "OverviewNoWindowsLabel";
+    params.horizontal_padding = kNoItemsIndicatorHorizontalPaddingDp;
+    params.vertical_padding = kNoItemsIndicatorVerticalPaddingDp;
+    params.rounding_dp = kNoItemsIndicatorRoundingDp;
+    auto* color_provider = AshColorProvider::Get();
+    params.background_color = color_provider->GetBaseLayerColor(
+        AshColorProvider::BaseLayerType::kTransparent80);
+    params.foreground_color = color_provider->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kTextColorPrimary);
+    params.preferred_height = kNoItemsIndicatorHeightDp;
+    params.message_id = IDS_ASH_OVERVIEW_NO_RECENT_ITEMS;
+    params.parent =
+        root_window_->GetChildById(desks_util::GetActiveDeskContainerId());
+    params.hide_in_mini_view = true;
+    no_windows_widget_ = std::make_unique<RoundedLabelWidget>();
+    no_windows_widget_->Init(std::move(params));
+
+    aura::Window* widget_window = no_windows_widget_->GetNativeWindow();
+    widget_window->parent()->StackChildAtBottom(widget_window);
+    ScopedOverviewAnimationSettings settings(OVERVIEW_ANIMATION_NO_RECENTS_FADE,
+                                             widget_window);
+    no_windows_widget_->SetOpacity(1.f);
+  }
+
+  RefreshNoWindowsWidgetBounds(/*animate=*/false);
+}
+
+void OverviewGrid::RefreshNoWindowsWidgetBounds(bool animate) {
+  if (!no_windows_widget_)
+    return;
+
+  no_windows_widget_->SetBoundsCenteredIn(GetGridEffectiveBounds(), animate);
 }
 
 void OverviewGrid::OnSelectorItemDragEnded(bool snap) {
@@ -1449,7 +1501,7 @@ bool OverviewGrid::IntersectsWithDesksBar(const gfx::Point& screen_location,
   return dragged_item_over_bar;
 }
 
-bool OverviewGrid::MaybeDropItemOnDeskMiniView(
+bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
     const gfx::Point& screen_location,
     OverviewItem* drag_item) {
   DCHECK(desks_util::ShouldDesksBarBeCreated());
@@ -1490,7 +1542,30 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
         DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
   }
 
-  return false;
+  if (!features::IsDragWindowToNewDeskEnabled())
+    return false;
+
+  if (!desks_controller->CanCreateDesks())
+    return false;
+
+  if (!desks_bar_view_->expanded_state_new_desk_button()->IsPointOnButton(
+          screen_location)) {
+    return false;
+  }
+
+  desks_bar_view_->OnNewDeskButtonPressed(
+      DesksCreationRemovalSource::kDragToNewDeskButton);
+
+  return desks_controller->MoveWindowFromActiveDeskTo(
+      dragged_window, desks_controller->desks().back().get(), root_window_,
+      DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
+}
+
+void OverviewGrid::MaybeExpandDesksBarView() {
+  if (desks_bar_view_ && desks_bar_view_->IsZeroState()) {
+    desks_bar_view_->UpdateNewMiniViews(/*initializing_bar_view=*/false,
+                                        /*expanding_bar_view=*/true);
+  }
 }
 
 void OverviewGrid::StartScroll() {
@@ -2051,6 +2126,20 @@ void OverviewGrid::UpdateFrameThrottling() {
       [](std::unique_ptr<OverviewItem>& item) { return item->GetWindow(); });
   Shell::Get()->frame_throttling_controller()->StartThrottling(
       windows_to_throttle);
+}
+
+void OverviewGrid::ShowCreateDesksTemplatesButtons() {
+  create_desks_templates_widget_ = CreateDesksTemplatesWidget(root_window_);
+  create_desks_templates_widget_->SetContentsView(CreateDesksTemplatesButton(
+      base::BindRepeating(&OverviewGrid::OnCreateDesksTemplatesButtonPressed,
+                          base::Unretained(this))));
+  create_desks_templates_widget_->Show();
+  // TODO(sophiewen): Set bounds when specs come out.
+  create_desks_templates_widget_->SetBounds(gfx::Rect(20, 136, 180, 32));
+}
+
+void OverviewGrid::OnCreateDesksTemplatesButtonPressed() {
+  // TODO(sophiewen): This logic will be implemented.
 }
 
 }  // namespace ash

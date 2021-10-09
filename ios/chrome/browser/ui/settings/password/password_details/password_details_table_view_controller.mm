@@ -76,7 +76,6 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
   ReauthenticationReasonShow = 0,
   ReauthenticationReasonCopy,
   ReauthenticationReasonEdit,
-  ReauthenticationReasonReplacePassword,
 };
 
 }  // namespace
@@ -497,8 +496,7 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
       }
       break;
     case ItemTypeDuplicateCredentialButton:
-      // TODO(crbug.com/1226006):Implement the functionality to authenticate and
-      // show the password.
+      [self reauthAndShowExistingCredential];
       break;
   }
 }
@@ -844,9 +842,6 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
       [super editButtonPressed];
       [self reloadData];
       break;
-    case ReauthenticationReasonReplacePassword:
-      NOTREACHED();
-      break;
   }
   [self logPasswordAccessWith:reason];
 }
@@ -863,9 +858,6 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
     case ReauthenticationReasonEdit:
       return l10n_util::GetNSString(
           IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_EDIT);
-    case ReauthenticationReasonReplacePassword:
-      // TODO(crbug.com/1226006): Use i18n string.
-      return @"Replace Password";
   }
 }
 
@@ -944,6 +936,38 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
     [model removeSectionWithIdentifier:sectionIdentifier];
     [[self tableView] deleteSections:[NSIndexSet indexSetWithIndex:section]
                     withRowAnimation:animation];
+  }
+}
+
+- (void)reauthAndShowExistingCredential {
+  if ([self.reauthModule canAttemptReauth]) {
+    __weak __typeof(self) weakSelf = self;
+    void (^viewExistingPasswordHandler)(ReauthenticationResult) =
+        ^(ReauthenticationResult result) {
+          PasswordDetailsTableViewController* strongSelf = weakSelf;
+          if (!strongSelf)
+            return;
+          [strongSelf logPasswordSettingsReauthResult:result];
+
+          if (result == ReauthenticationResult::kFailure) {
+            return;
+          }
+
+          [strongSelf.delegate
+              showExistingCredentialWithSite:strongSelf.websiteTextItem
+                                                 .textFieldValue
+                                    username:strongSelf.usernameTextItem
+                                                 .textFieldValue];
+        };
+
+    // TODO(crbug.com/1226006): Use i18n string.
+    [self.reauthModule
+        attemptReauthWithLocalizedReason:@"Test Show Existing Credential"
+                    canReusePreviousAuth:YES
+                                 handler:viewExistingPasswordHandler];
+  } else {
+    DCHECK(self.addPasswordHandler);
+    [self.addPasswordHandler showPasscodeDialog];
   }
 }
 
@@ -1103,9 +1127,6 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
           password_manager::metrics_util::ACCESS_PASSWORD_EDITED,
           password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
       break;
-    case ReauthenticationReasonReplacePassword:
-      NOTREACHED();
-      break;
   }
 }
 
@@ -1124,34 +1145,8 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
   [self reloadData];
 }
 
-- (void)validateUserAndReplaceExistingCredential {
-  if ([self.reauthModule canAttemptReauth]) {
-    __weak __typeof(self) weakSelf = self;
-    void (^editPasswordConfirmationHandler)(ReauthenticationResult) =
-        ^(ReauthenticationResult result) {
-          PasswordDetailsTableViewController* strongSelf = weakSelf;
-          if (!strongSelf)
-            return;
-          [strongSelf logPasswordSettingsReauthResult:result];
-
-          if (result == ReauthenticationResult::kFailure) {
-            return;
-          }
-
-          [strongSelf.delegate didConfirmReplaceExistingCredential];
-        };
-
-    NSString* reauthReason =
-        [self localizedStringForReason:ReauthenticationReasonReplacePassword];
-
-    [self.reauthModule
-        attemptReauthWithLocalizedReason:reauthReason
-                    canReusePreviousAuth:YES
-                                 handler:editPasswordConfirmationHandler];
-  } else {
-    DCHECK(self.addPasswordHandler);
-    [self.addPasswordHandler showPasscodeDialog];
-  }
+- (void)showPasswordWithoutAuthentication {
+  [self showPasswordFor:ReauthenticationReasonShow];
 }
 
 @end

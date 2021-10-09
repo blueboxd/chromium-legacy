@@ -4,6 +4,7 @@
 
 #include "chromeos/services/bluetooth_config/cros_bluetooth_config.h"
 
+#include "chromeos/services/bluetooth_config/device_name_manager.h"
 #include "chromeos/services/bluetooth_config/device_operation_handler.h"
 #include "chromeos/services/bluetooth_config/discovery_session_manager.h"
 #include "chromeos/services/bluetooth_config/initializer.h"
@@ -18,9 +19,12 @@ CrosBluetoothConfig::CrosBluetoothConfig(
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter)
     : adapter_state_controller_(
           initializer.CreateAdapterStateController(bluetooth_adapter)),
+      device_name_manager_(
+          initializer.CreateDeviceNameManager(bluetooth_adapter)),
       device_cache_(
           initializer.CreateDeviceCache(adapter_state_controller_.get(),
-                                        bluetooth_adapter)),
+                                        bluetooth_adapter,
+                                        device_name_manager_.get())),
       system_properties_provider_(
           std::make_unique<SystemPropertiesProviderImpl>(
               adapter_state_controller_.get(),
@@ -34,6 +38,11 @@ CrosBluetoothConfig::CrosBluetoothConfig(
           bluetooth_adapter)) {}
 
 CrosBluetoothConfig::~CrosBluetoothConfig() = default;
+
+void CrosBluetoothConfig::SetPrefs(PrefService* logged_in_profile_prefs,
+                                   PrefService* device_prefs) {
+  device_name_manager_->SetPrefs(device_prefs);
+}
 
 void CrosBluetoothConfig::BindPendingReceiver(
     mojo::PendingReceiver<mojom::CrosBluetoothConfig> pending_receiver) {
@@ -69,6 +78,11 @@ void CrosBluetoothConfig::Disconnect(
 void CrosBluetoothConfig::Forget(const std::string& device_id,
                                  CrosBluetoothConfig::ForgetCallback callback) {
   device_operation_handler_->Forget(device_id, std::move(callback));
+}
+
+void CrosBluetoothConfig::SetDeviceNickname(const std::string& device_id,
+                                            const std::string& nickname) {
+  device_name_manager_->SetDeviceNickname(device_id, nickname);
 }
 
 }  // namespace bluetooth_config

@@ -5,12 +5,12 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/add_password_mediator.h"
 
 #include "base/bind.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner_forward.h"
+#include "base/task/task_runner_util_forward.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -121,17 +121,6 @@ bool CheckForDuplicates(
   passwordForm.in_store = password_manager::PasswordForm::Store::kProfileStore;
   passwordForm.type = password_manager::PasswordForm::Type::kManuallyAdded;
 
-  for (const auto& form : _manager->GetAllCredentials()) {
-    if (form.signon_realm == passwordForm.signon_realm &&
-        form.username_value == passwordForm.username_value) {
-      _cachedPasswordForm = passwordForm;
-      [self.delegate
-          showReplacePasswordAlert:username
-                           hostUrl:SysUTF8ToNSString(passwordForm.url.host())];
-      return;
-    }
-  }
-
   _manager->AddPasswordForm(passwordForm);
   [self.delegate setUpdatedPasswordForm:passwordForm];
   [self.delegate dismissPasswordDetailsTableViewController];
@@ -150,21 +139,23 @@ bool CheckForDuplicates(
       }));
 }
 
-- (void)didCancelAddPasswordDetails {
-  [self.delegate dismissPasswordDetailsTableViewController];
-}
-
-- (void)didConfirmReplaceExistingCredential {
-  DCHECK(self.cachedPasswordForm);
+- (void)showExistingCredentialWithSite:(NSString*)website
+                              username:(NSString*)username {
+  GURL gurl = net::GURLWithNSURL([NSURL URLWithString:website]);
+  std::string signon_realm = password_manager::GetSignonRealm(
+      password_manager_util::StripAuthAndParams(gurl));
+  std::u16string username_value = SysNSStringToUTF16(username);
   for (const auto& form : _manager->GetAllCredentials()) {
-    if (form.signon_realm == self.cachedPasswordForm->signon_realm &&
-        form.username_value == self.cachedPasswordForm->username_value) {
-      _manager->EditPasswordForm(form, self.cachedPasswordForm->username_value,
-                                 self.cachedPasswordForm->password_value);
-      [self.delegate setUpdatedPasswordForm:self.cachedPasswordForm.value()];
-      break;
+    if (form.signon_realm == signon_realm &&
+        form.username_value == username_value) {
+      [self.delegate showPasswordDetailsControllerWithForm:form];
+      return;
     }
   }
+  NOTREACHED();
+}
+
+- (void)didCancelAddPasswordDetails {
   [self.delegate dismissPasswordDetailsTableViewController];
 }
 

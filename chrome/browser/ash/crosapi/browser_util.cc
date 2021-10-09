@@ -62,6 +62,7 @@
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
+#include "chromeos/crosapi/mojom/force_installed_tracker.mojom.h"
 #include "chromeos/crosapi/mojom/geolocation.mojom.h"
 #include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
 #include "chromeos/crosapi/mojom/identity_manager.mojom.h"
@@ -81,6 +82,7 @@
 #include "chromeos/crosapi/mojom/system_display.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
+#include "chromeos/crosapi/mojom/tts.mojom.h"
 #include "chromeos/crosapi/mojom/url_handler.mojom.h"
 #include "chromeos/crosapi/mojom/video_capture.mojom.h"
 #include "chromeos/crosapi/mojom/web_page_info.mojom.h"
@@ -358,6 +360,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::Feedback>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FieldTrialService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FileManager>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::ForceInstalledTracker>(),
     MakeInterfaceVersionEntry<crosapi::mojom::GeolocationService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::HoldingSpaceService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::IdentityManager>(),
@@ -383,6 +386,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::SystemDisplay>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TaskManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TestController>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::Tts>(),
     MakeInterfaceVersionEntry<crosapi::mojom::UrlHandler>(),
     MakeInterfaceVersionEntry<crosapi::mojom::VideoCaptureDeviceFactory>(),
     MakeInterfaceVersionEntry<crosapi::mojom::WebPageInfoFactory>(),
@@ -454,7 +458,7 @@ Channel GetChannelFromString(const std::string channel_str) {
 }
 
 static_assert(
-    crosapi::mojom::Crosapi::Version_ == 52,
+    crosapi::mojom::Crosapi::Version_ == 54,
     "if you add a new crosapi, please add it to kInterfaceVersionEntries");
 static_assert(!HasDuplicatedUuid(),
               "Each Crosapi Mojom interface should have unique UUID.");

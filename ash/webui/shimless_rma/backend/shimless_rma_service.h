@@ -32,7 +32,6 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   ~ShimlessRmaService() override;
 
   void GetCurrentState(GetCurrentStateCallback callback) override;
-  void TransitionNextState(TransitionNextStateCallback callback) override;
   void TransitionPreviousState(
       TransitionPreviousStateCallback callback) override;
 
@@ -64,6 +63,12 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   void SetRsuDisableWriteProtectCode(
       const std::string& code,
       SetRsuDisableWriteProtectCodeCallback callback) override;
+
+  void WriteProtectManuallyDisabled(
+      WriteProtectManuallyDisabledCallback callback) override;
+
+  void ConfirmManualWpDisableComplete(
+      ConfirmManualWpDisableCompleteCallback callback) override;
 
   void GetComponentList(GetComponentListCallback callback) override;
   void SetComponentList(
@@ -102,6 +107,13 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   void RunCalibrationStep(RunCalibrationStepCallback callback) override;
   void ContinueCalibration(ContinueCalibrationCallback callback) override;
   void CalibrationComplete(CalibrationCompleteCallback callback) override;
+
+  void ProvisioningComplete(ProvisioningCompleteCallback callback) override;
+
+  void FinalizationComplete(FinalizationCompleteCallback callback) override;
+
+  void WriteProtectManuallyEnabled(
+      WriteProtectManuallyEnabledCallback callback) override;
 
   void EndRmaAndReboot(EndRmaAndRebootCallback callback) override;
   void EndRmaAndShutdown(EndRmaAndShutdownCallback callback) override;
@@ -164,6 +176,17 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   rmad::RmadState state_proto_;
   bool can_abort_ = false;
   bool can_go_back_ = false;
+
+  absl::optional<rmad::CalibrationComponentStatus> last_calibration_progress_;
+  absl::optional<rmad::CalibrationOverallStatus>
+      last_calibration_overall_progress_;
+  absl::optional<rmad::ProvisionDeviceState::ProvisioningStep>
+      last_provisioning_progress_step_;
+  absl::optional<double> last_provisioning_progress_;
+  absl::optional<bool> last_hardware_protection_state_;
+  absl::optional<bool> last_power_cable_state_;
+  absl::optional<rmad::HardwareVerificationResult>
+      last_hardware_verification_result_;
 
   mojo::Remote<mojom::ErrorObserver> error_observer_;
   mojo::Remote<mojom::OsUpdateObserver> os_update_observer_;

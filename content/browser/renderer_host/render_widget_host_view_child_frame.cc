@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner_forward.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -942,18 +942,10 @@ RenderWidgetHostViewChildFrame::FilterInputEvent(
 
 void RenderWidgetHostViewChildFrame::GetScreenInfo(
     display::ScreenInfo* screen_info) {
-  // TODO(crbug.com/1182855): Propagate screen infos from the parent on changes
-  // and on connection init; avoid lazily updating the local cache like this.
-  if (frame_connector_)
-    UpdateScreenInfo();
   *screen_info = screen_infos_.current();
 }
 
 display::ScreenInfos RenderWidgetHostViewChildFrame::GetScreenInfos() {
-  // TODO(crbug.com/1182855): Propagate screen infos from the parent on changes
-  // and on connection init; avoid lazily updating the local cache like this.
-  if (frame_connector_)
-    UpdateScreenInfo();
   return screen_infos_;
 }
 

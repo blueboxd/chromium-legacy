@@ -28,12 +28,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/one_shot_event.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner_forward.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -4102,11 +4102,6 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsLoadFromPrefs) {
   EXPECT_TRUE(service()->UninstallExtension(
       extension->id(), UNINSTALL_REASON_FOR_TESTING, nullptr));
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
-
-  // Ensure that the quota storage system has finished RegisterClient calls
-  // before test shuts down, triggering LazyInitialize().
-  // TODO(http://crbug.com/1182630): Remove this when 1182630 is fixed.
-  task_environment()->RunUntilIdle();
 
   // Ensure we cannot load it if management policy prohibits installation.
   TestManagementPolicyProvider provider_(

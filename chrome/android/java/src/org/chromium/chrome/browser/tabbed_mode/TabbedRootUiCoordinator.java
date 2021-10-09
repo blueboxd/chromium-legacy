@@ -633,8 +633,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             // TODO(crbug.com/1252965): Investigate locking feature engagement system during
             // "second run promos" to avoid !didTriggerPromo check.
             WebContentsDarkModeMessageController.attemptToSendMessage(mActivity,
-                    Profile.fromWebContents(mActivityTabProvider.get().getWebContents()),
-                    new SettingsLauncherImpl(), mMessageDispatcher);
+                    mProfileSupplier.get(), new SettingsLauncherImpl(), mMessageDispatcher);
         }
 
         if (FeedFeatures.isWebFeedUIEnabled()) {
@@ -662,7 +661,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
     }
 
     private void initCommerceSubscriptionsService() {
-        if (!PriceTrackingUtilities.ENABLE_PRICE_NOTIFICATION.getValue()) {
+        if (!PriceTrackingUtilities.getPriceTrackingNotificationsEnabled()) {
             return;
         }
 

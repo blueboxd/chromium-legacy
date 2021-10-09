@@ -138,8 +138,8 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/task/single_thread_task_runner_forward.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -295,10 +295,6 @@ void MetricsService::DisableReporting() {
 
 std::string MetricsService::GetClientId() const {
   return state_manager_->client_id();
-}
-
-int64_t MetricsService::GetInstallDate() {
-  return state_manager_->GetInstallDate();
 }
 
 bool MetricsService::WasLastShutdownClean() const {

@@ -28,7 +28,6 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
-#include "base/bind_post_task.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
@@ -39,6 +38,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/bind_post_task_forward.h"
 #include "base/task/current_thread.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -579,7 +579,8 @@ void CaptureModeController::CaptureScreenshotsOfAllDisplays() {
   // Since this doesn't create a capture mode session, log metrics here.
   RecordCaptureModeEntryType(CaptureModeEntryType::kCaptureAllDisplays);
   RecordCaptureModeConfiguration(CaptureModeType::kImage,
-                                 CaptureModeSource::kFullscreen);
+                                 CaptureModeSource::kFullscreen,
+                                 /*audio_on=*/false);
 }
 
 void CaptureModeController::PerformCapture() {
@@ -1087,12 +1088,13 @@ void CaptureModeController::OnVideoFileSaved(
       client->AddScreenRecording(current_video_file_path_);
   }
 
-  if (!on_file_saved_callback_.is_null())
-    std::move(on_file_saved_callback_).Run(current_video_file_path_);
-
   low_disk_space_threshold_reached_ = false;
   recording_start_time_ = base::TimeTicks();
+  const auto local_video_file_path = current_video_file_path_;
   current_video_file_path_.clear();
+
+  if (!on_file_saved_callback_.is_null())
+    std::move(on_file_saved_callback_).Run(local_video_file_path);
 }
 
 void CaptureModeController::ShowPreviewNotification(

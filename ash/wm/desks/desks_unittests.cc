@@ -3041,7 +3041,7 @@ TEST_F(DesksTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_TRUE(overview_grid->empty());
   EXPECT_FALSE(DoesActiveDeskContainWindow(window.get()));
-  EXPECT_TRUE(overview_session->no_windows_widget_for_testing());
+  EXPECT_TRUE(overview_grid->no_windows_widget());
   EXPECT_FALSE(overview_grid->drop_target_widget());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
             overview_session->grid_list()[0]
@@ -6380,6 +6380,186 @@ TEST_F(PersistentDesksBarTest, UpdateBarStateOnPrefChanges) {
   session_controller->SwitchActiveUser(kUserAccount1);
   EXPECT_FALSE(GetBarWidget());
   EXPECT_FALSE(bar_controller->IsEnabled());
+}
+
+// Tests desks bar's position in overview and app window's position in
+// split view.
+TEST_F(PersistentDesksBarTest, SnappingWindowsInOverview) {
+  UpdateDisplay("800x600");
+  NewDesk();
+  std::unique_ptr<aura::Window> window1 =
+      CreateTestWindow(gfx::Rect(0, 0, 300, 300));
+  std::unique_ptr<aura::Window> window2 =
+      CreateTestWindow(gfx::Rect(0, 0, 300, 300));
+  EnterOverview();
+
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  OverviewSession* overview_session = overview_controller->overview_session();
+  OverviewGrid* overview_grid =
+      overview_session->GetGridWithRootWindow(Shell::GetPrimaryRootWindow());
+  OverviewItem* overview_item_1 =
+      overview_session->GetOverviewItemForWindow(window1.get());
+  OverviewItem* overview_item_2 =
+      overview_session->GetOverviewItemForWindow(window2.get());
+
+  // Test the desks bar is at the top of the display while trying to snap a
+  // window in overview mode.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  DragItemToPoint(overview_item_1, gfx::Point(0, 300), event_generator);
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_EQ(overview_grid->desks_widget()->GetNativeWindow()->bounds().y(), 0);
+
+  // Test windows are at the correct position after snapping.
+  DragItemToPoint(overview_item_2, gfx::Point(800, 300), event_generator);
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  const int bar_height = PersistentDesksBarController::kBarHeight;
+  EXPECT_EQ(window1->GetBoundsInScreen().y(), bar_height);
+  EXPECT_EQ(window2->GetBoundsInScreen().y(), bar_height);
+}
+
+// Test fixture for feature flag |kDragWindowToNewDesk|.
+class DragWindowToNewDeskTest : public DesksTest {
+ public:
+  DragWindowToNewDeskTest() = default;
+
+  DragWindowToNewDeskTest(const DragWindowToNewDeskTest&) = delete;
+  DragWindowToNewDeskTest& operator=(const DragWindowToNewDeskTest&) = delete;
+
+  ~DragWindowToNewDeskTest() override = default;
+
+  // DesksTest:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kDragWindowToNewDesk);
+    DesksTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests that dragging and dropping window to new desk while desks bar view is
+// at zero state.
+TEST_F(DragWindowToNewDeskTest, DragWindowAtZeroState) {
+  auto* controller = DesksController::Get();
+  auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+
+  ASSERT_EQ(1u, controller->desks().size());
+  auto* overview_controller = Shell::Get()->overview_controller();
+  EnterOverview();
+
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+
+  // Since we only have one desk, there should be 0 desk mini view and the zero
+  // state default desk button and new desk button should be visible.
+  ASSERT_EQ(0u, desks_bar_view->mini_views().size());
+  auto* zero_state_default_desk_button =
+      desks_bar_view->zero_state_default_desk_button();
+  auto* zero_state_new_desk_button =
+      desks_bar_view->zero_state_new_desk_button();
+  EXPECT_TRUE(zero_state_default_desk_button->GetVisible());
+  EXPECT_TRUE(zero_state_new_desk_button->GetVisible());
+  EXPECT_FALSE(desks_bar_view->expanded_state_new_desk_button()->GetVisible());
+
+  auto* overview_session = overview_controller->overview_session();
+  auto* overview_item1 = overview_session->GetOverviewItemForWindow(win1.get());
+  auto* event_generator = GetEventGenerator();
+
+  // Start dragging |overview_item1| without dropping it. This will lead
+  // |desks_bar_view| changing from zero state to expanded state.
+  DragItemToPoint(overview_item1,
+                  zero_state_new_desk_button->GetBoundsInScreen().CenterPoint(),
+                  event_generator, /*by_touch_gestures=*/false, /*drop=*/false);
+  EXPECT_FALSE(zero_state_default_desk_button->GetVisible());
+  EXPECT_FALSE(zero_state_new_desk_button->GetVisible());
+  EXPECT_TRUE(desks_bar_view->expanded_state_new_desk_button()->GetVisible());
+
+  // Now drop |overview_item1|, a new desk which contains |win1| will be
+  // created.
+  event_generator->ReleaseLeftButton();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_EQ(2u, desks_bar_view->mini_views().size());
+  EXPECT_EQ(2u, controller->desks().size());
+  EXPECT_TRUE(base::Contains(controller->desks()[1]->windows(), win1.get()));
+  // The active desk should still be the first desk, even though a new desk is
+  // created.
+  EXPECT_EQ(DesksController::Get()->active_desk(),
+            controller->desks()[0].get());
+  // |overview_grid| should have size equals to 0 now, since |overview_item1|
+  // havs been moved to a new desk.
+  EXPECT_EQ(0u, overview_grid->size());
+}
+
+// Tests that dragging and dropping window to new desk while desks bar view is
+// at expanded state.
+TEST_F(DragWindowToNewDeskTest, DragWindowAtExpandedState) {
+  auto* controller = DesksController::Get();
+  auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  NewDesk();
+
+  ASSERT_EQ(2u, controller->desks().size());
+  auto* overview_controller = Shell::Get()->overview_controller();
+  EnterOverview();
+
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  const auto* desks_bar_view =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow())->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+
+  ASSERT_EQ(2u, desks_bar_view->mini_views().size());
+  auto* expanded_state_new_desk_button =
+      desks_bar_view->expanded_state_new_desk_button();
+  EXPECT_TRUE(expanded_state_new_desk_button->GetVisible());
+
+  // Drag and drop |overview_item1| on |expanded_state_new_desk_button|. A new
+  // desk which contains |win1| will be created.
+  DragItemToPoint(
+      overview_controller->overview_session()->GetOverviewItemForWindow(
+          win1.get()),
+      expanded_state_new_desk_button->GetBoundsInScreen().CenterPoint(),
+      GetEventGenerator());
+
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_EQ(3u, desks_bar_view->mini_views().size());
+  EXPECT_EQ(3u, controller->desks().size());
+  EXPECT_TRUE(base::Contains(controller->desks()[2]->windows(), win1.get()));
+}
+
+// Tests that dragging and dropping window to new desk while the number of desks
+// has already reached to the maximum number 8.
+TEST_F(DragWindowToNewDeskTest, DragWindowAtMaximumDesksState) {
+  auto* controller = DesksController::Get();
+  auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  while (controller->desks().size() < desks_util::kMaxNumberOfDesks)
+    NewDesk();
+
+  ASSERT_EQ(desks_util::kMaxNumberOfDesks, controller->desks().size());
+  auto* overview_controller = Shell::Get()->overview_controller();
+  EnterOverview();
+
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  const auto* desks_bar_view =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow())->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+
+  // Drag and drop |overview_item1| to |expanded_state_new_desk_button|. Since
+  // we already have maximum number of desks, this won't create a new desk, and
+  // the dragged window will fall back to the desk where it's from.
+  DragItemToPoint(
+      overview_controller->overview_session()->GetOverviewItemForWindow(
+          win1.get()),
+      desks_bar_view->expanded_state_new_desk_button()
+          ->GetBoundsInScreen()
+          .CenterPoint(),
+      GetEventGenerator());
+
+  // We should still have the max number of desks. And |win1| should still
+  // belong to the first desk.
+  EXPECT_EQ(desks_util::kMaxNumberOfDesks, desks_bar_view->mini_views().size());
+  EXPECT_EQ(desks_util::kMaxNumberOfDesks, controller->desks().size());
+  EXPECT_TRUE(base::Contains(controller->desks()[0]->windows(), win1.get()));
 }
 
 // TODO(afakhry): Add more tests:

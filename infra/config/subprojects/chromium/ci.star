@@ -1240,6 +1240,15 @@ ci.android_fyi_builder(
     os = os.LINUX_BIONIC_REMOVE,
 )
 
+ci.android_fyi_builder(
+    name = "android-annotator-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "network|traffic|annotations",
+        short_name = "and",
+    ),
+    notifies = ["annotator-rel"],
+)
+
 ci.angle_linux_builder(
     name = "android-angle-arm64-builder",
     console_view_entry = consoles.console_view_entry(
@@ -1570,6 +1579,21 @@ ci.chromium_builder(
     main_console_view = "main",
     notifies = ["linux-archive-rel"],
     os = os.LINUX_BIONIC_REMOVE,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "archive_datas": [
+                {
+                    "files": [
+                        "chrome_100_percent.pak",
+                    ],
+                    "gcs_bucket": "chromium-browser-snapshots",
+                    "gcs_path": "experimental/Linux_x64/{%position%}",
+                    "archive_type": "ARCHIVE_TYPE_FILES",
+                },
+            ],
+        },
+    },
 )
 
 ci.chromium_builder(
@@ -1620,7 +1644,7 @@ ci.chromium_builder(
                     ],
                     "dirs": ["ClearKeyCdm", "locales", "resources"],
                     "gcs_bucket": "chromium-browser-versioned",
-                    "gcs_path": "experimental/Linux_x64_Tagged/{$chromium_version%}/chrome-linux.zip",
+                    "gcs_path": "experimental/Linux_x64_Tagged/{%chromium_version%}/chrome-linux.zip",
                     "archive_type": "ARCHIVE_TYPE_ZIP",
                 },
                 {
@@ -1628,7 +1652,7 @@ ci.chromium_builder(
                         "chromedriver",
                     ],
                     "gcs_bucket": "chromium-browser-versioned",
-                    "gcs_path": "experimental/Linux_x64_Tagged/{$chromium_version%}/chromedriver_linux64.zip",
+                    "gcs_path": "experimental/Linux_x64_Tagged/{%chromium_version%}/chromedriver_linux64.zip",
                     "archive_type": "ARCHIVE_TYPE_ZIP",
                 },
             ],

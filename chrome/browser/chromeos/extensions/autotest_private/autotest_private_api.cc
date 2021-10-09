@@ -1994,7 +1994,7 @@ ExtensionFunction::ResponseAction AutotestPrivateLaunchAppFunction::Run() {
   if (!controller)
     return RespondNow(Error("Controller not available"));
   controller->LaunchApp(ash::ShelfID(params->app_id),
-                        ash::ShelfLaunchSource::LAUNCH_FROM_UNKNOWN,
+                        ash::ShelfLaunchSource::LAUNCH_FROM_INTERNAL,
                         0, /* event_flags */
                         display::Screen::GetScreen()->GetPrimaryDisplay().id());
   return RespondNow(NoArguments());
@@ -3937,8 +3937,8 @@ AutotestPrivateGetAppWindowListFunction::Run() {
           views::CAPTION_BUTTON_ICON_MINIMIZE,
           views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
           views::CAPTION_BUTTON_ICON_CLOSE,
-          views::CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-          views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+          views::CAPTION_BUTTON_ICON_LEFT_TOP_SNAPPED,
+          views::CAPTION_BUTTON_ICON_RIGHT_BOTTOM_SNAPPED,
           views::CAPTION_BUTTON_ICON_BACK,
           views::CAPTION_BUTTON_ICON_LOCATION,
           views::CAPTION_BUTTON_ICON_MENU,

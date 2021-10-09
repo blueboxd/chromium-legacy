@@ -15,7 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner_forward.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/insets.h"
@@ -179,7 +179,7 @@ class WaylandWindow : public PlatformWindow,
   bool ShouldWindowContentsBeTransparent() const override;
   void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
   bool IsTranslucentWindowOpacitySupported() const override;
-  void SetDecorationInsets(gfx::Insets insets_px) override;
+  void SetDecorationInsets(const gfx::Insets* insets_px) override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
   void SizeConstraintsChanged() override;

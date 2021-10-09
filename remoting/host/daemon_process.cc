@@ -16,7 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner_forward.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/branding.h"
@@ -58,8 +58,7 @@ void DaemonProcess::OnConfigUpdated(const std::string& serialized_config) {
 
   if (serialized_config_ != serialized_config) {
     serialized_config_ = serialized_config;
-    SendToNetwork(
-        new ChromotingDaemonNetworkMsg_Configuration(serialized_config_));
+    SendHostConfigToNetworkProcess(serialized_config_);
   }
 }
 
@@ -80,9 +79,7 @@ void DaemonProcess::OnChannelConnected(int32_t peer_pid) {
   // by the the newly started process yet.
   next_terminal_id_ = 0;
 
-  // Send the configuration to the network process.
-  SendToNetwork(
-      new ChromotingDaemonNetworkMsg_Configuration(serialized_config_));
+  SendHostConfigToNetworkProcess(serialized_config_);
 }
 
 bool DaemonProcess::OnMessageReceived(const IPC::Message& message) {

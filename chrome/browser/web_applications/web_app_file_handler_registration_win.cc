@@ -44,13 +44,13 @@ void RegisterFileHandlersWithOsTask(
   if (!app_specific_launcher_path.has_value())
     return;
 
-  base::CommandLine app_specific_launcher_command = GetAppLauncherCommand(
+  const base::CommandLine app_specific_launcher_command = GetAppLauncherCommand(
       app_id, app_specific_launcher_path.value(), profile_path);
 
   std::wstring user_visible_app_name(app_name);
   user_visible_app_name.append(app_name_extension);
 
-  base::FilePath icon_path =
+  const base::FilePath icon_path =
       internals::GetIconFilePath(web_app_path, base::AsString16(app_name));
 
   bool result = ShellUtil::AddFileAssociations(
@@ -68,10 +68,10 @@ void RegisterFileHandlersWithOs(const AppId& app_id,
                                 const apps::FileHandlers& file_handlers) {
   DCHECK(!file_handlers.empty());
 
-  std::wstring app_name_extension =
+  const std::wstring app_name_extension =
       GetAppNameExtensionForNextInstall(app_id, profile->GetPath());
 
-  std::set<std::string> file_extensions =
+  const std::set<std::string> file_extensions =
       apps::GetFileExtensionsFromFileHandlers(file_handlers);
   std::set<std::wstring> file_extensions_wide;
   for (const auto& file_extension : file_extensions) {
@@ -90,30 +90,30 @@ void RegisterFileHandlersWithOs(const AppId& app_id,
                      app_id, base::DoNothing()));
 }
 
-void UnregisterFileHandlersWithOsTask(const AppId& app_id,
-                                      const base::FilePath& profile_path) {
-  // Need to delete the app-specific-launcher file, since uninstall may not
-  // remove the web application directory. This must be done before cleaning up
-  // the registry, since the app-specific-launcher path is retrieved from the
-  // registry.
-  std::wstring prog_id = GetProgIdForApp(profile_path, app_id);
-  base::FilePath app_specific_launcher_path =
-      ShellUtil::GetApplicationPathForProgId(prog_id);
-  ShellUtil::DeleteFileAssociations(prog_id);
-
-  // Need to delete the hardlink file as well, since extension uninstall
-  // by default doesn't remove the web application directory.
-  base::DeleteFile(app_specific_launcher_path);
+void DeleteAppLauncher(const base::FilePath& launcher_path) {
+  // Need to delete the app launcher file, since extension uninstall by default
+  // doesn't remove the web application directory.
+  base::DeleteFile(launcher_path);
 }
 
 void UnregisterFileHandlersWithOs(const AppId& app_id,
                                   Profile* profile,
                                   base::OnceCallback<void(bool)> callback) {
+  // The app-specific-launcher file name must be calculated before cleaning up
+  // the registry, since the app-specific-launcher path is retrieved from the
+  // registry.
+  const std::wstring prog_id = GetProgIdForApp(profile->GetPath(), app_id);
+  const base::FilePath app_specific_launcher_path =
+      ShellUtil::GetApplicationPathForProgId(prog_id);
+  // This needs to be done synchronously. If it's done via a task, protocol
+  // unregistration will delete HKCU\Classes\<progid> before the task runs.
+  // Information in that key is needed to unregister file associations.
+  ShellUtil::DeleteFileAssociations(prog_id);
+
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&UnregisterFileHandlersWithOsTask, app_id,
-                     profile->GetPath()),
+      base::BindOnce(&DeleteAppLauncher, app_specific_launcher_path),
       base::BindOnce(&CheckAndUpdateExternalInstallations, profile->GetPath(),
                      app_id, std::move(callback)));
 }

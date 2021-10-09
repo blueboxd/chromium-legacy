@@ -1,4 +1,24 @@
 {
+    "AcceptCHFrame": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AcceptCHFrame"
+                    ]
+                }
+            ]
+        }
+    ],
     "AccountManagementFlowsV2": [
         {
             "platforms": [
@@ -2554,26 +2574,6 @@
             ]
         }
     ],
-    "CriticalCLientHint": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "CriticalClientHint",
-                    "enable_features": [
-                        "CriticalClientHint"
-                    ]
-                }
-            ]
-        }
-    ],
     "CriticalPersistedTabData_V2": [
         {
             "platforms": [
@@ -3378,29 +3378,6 @@
                     },
                     "enable_features": [
                         "EnhancedProtectionPromoCard"
-                    ]
-                }
-            ]
-        }
-    ],
-    "EnterpriseRealtimeExtensionRequest": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "with_erp": "true"
-                    },
-                    "enable_features": [
-                        "EnterpriseRealtimeExtensionRequest"
                     ]
                 }
             ]

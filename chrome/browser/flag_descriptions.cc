@@ -2242,6 +2242,11 @@ const char kScrollableTabStripButtonsDescription[] =
     "When the scrollable-tabstrip flag is enabled, this enables buttons to "
     "permanently appear on the tabstrip.";
 
+const char kForceDisableStackedTabsName[] = "Force Disable Stacked Tabs";
+const char kForceDisableStackedTabsDescription[] =
+    "Prevents the tabstrip from "
+    "entering stacked tabs mode, for any reason.";
+
 const char kScrollUnificationName[] = "Scroll Unification";
 const char kScrollUnificationDescription[] =
     "Refactoring project that eliminates scroll handling code from Blink. "
@@ -3704,12 +3709,6 @@ const char kCopyLinkToTextName[] = "Copy Link To Text";
 const char kCopyLinkToTextDescription[] =
     "Adds an item to the context menu to allow a user to copy a link to the "
     "page with the selected text highlighted.";
-
-const char kEnterpriseRealtimeExtensionRequestName[] =
-    "Enterprise real-time extension request report";
-const char kEnterpriseRealtimeExtensionRequestDescription[] =
-    "Enable the real-time extension request uploading. The feature requires "
-    "the enterprise reporting and extension request being enabled.";
 
 const char kGlobalMediaControlsCastStartStopName[] =
     "Global media controls control Cast start/stop";
@@ -5244,6 +5243,10 @@ const char kDeprecateLowUsageCodecsDescription[] =
 const char kVaapiAV1DecoderName[] = "VA-API decode acceleration for AV1";
 const char kVaapiAV1DecoderDescription[] =
     "Enable or disable decode acceleration of AV1 videos using the VA-API.";
+
+const char kEnableTtsLacrosSupportName[] = "Enable tts lacros support";
+const char kEnableTtsLacrosSupportDescription[] =
+    "Enable or disable lacros support for text to speech.";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)

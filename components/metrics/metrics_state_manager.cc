@@ -355,10 +355,6 @@ bool MetricsStateManager::IsMetricsReportingEnabled() {
   return enabled_state_provider_->IsReportingEnabled();
 }
 
-int64_t MetricsStateManager::GetInstallDate() const {
-  return ReadInstallDate(local_state_);
-}
-
 int MetricsStateManager::GetLowEntropySource() {
   return entropy_state_.GetLowEntropySource();
 }
@@ -433,10 +429,9 @@ void MetricsStateManager::InstantiateFieldTrialList(
 
 void MetricsStateManager::LogHasSessionShutdownCleanly(
     bool has_session_shutdown_cleanly,
-    bool write_synchronously,
-    bool update_beacon) {
+    bool write_synchronously) {
   clean_exit_beacon_.WriteBeaconValue(has_session_shutdown_cleanly,
-                                      write_synchronously, update_beacon);
+                                      write_synchronously);
 }
 
 void MetricsStateManager::ForceClientIdCreation() {

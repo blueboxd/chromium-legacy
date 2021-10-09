@@ -36,7 +36,7 @@
 #include <utility>
 
 #include "base/dcheck_is_on.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner_forward.h"
 #include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -349,6 +349,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       bool is_client_redirect,
       bool has_transient_user_activation,
       const WebSecurityOrigin& initiator_origin,
+      bool is_browser_initiated,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
   void SetCommittedFirstRealLoad() override;
   bool HasCommittedFirstRealLoad() override;

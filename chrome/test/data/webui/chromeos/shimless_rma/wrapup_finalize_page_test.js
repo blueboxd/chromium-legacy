@@ -72,7 +72,7 @@ export function wrapupFinalizePageTest() {
     await initializeFinalizePage();
     service.triggerFinalizationObserver(true, 'ok', 0);
     await flushTasks();
-    service.transitionNextState = () => {
+    service.finalizationComplete = () => {
       return resolver.promise;
     };
 

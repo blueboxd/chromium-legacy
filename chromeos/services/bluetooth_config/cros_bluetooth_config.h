@@ -16,11 +16,14 @@ namespace device {
 class BluetoothAdapter;
 }  // namespace device
 
+class PrefService;
+
 namespace chromeos {
 namespace bluetooth_config {
 
 class AdapterStateController;
 class DeviceCache;
+class DeviceNameManager;
 class DeviceOperationHandler;
 class DiscoverySessionManager;
 class Initializer;
@@ -35,6 +38,10 @@ class CrosBluetoothConfig : public mojom::CrosBluetoothConfig {
       Initializer& initializer,
       scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
   ~CrosBluetoothConfig() override;
+
+  // Sets the PrefServices to be used by classes within CrosBluetoothConfig.
+  void SetPrefs(PrefService* logged_in_profile_prefs,
+                PrefService* device_prefs);
 
   // Binds a PendingReceiver to this instance. Clients wishing to use the
   // CrosBluetoothConfig API should use this function as an entrypoint.
@@ -52,10 +59,13 @@ class CrosBluetoothConfig : public mojom::CrosBluetoothConfig {
   void Disconnect(const std::string& device_id,
                   DisconnectCallback callback) override;
   void Forget(const std::string& device_id, ForgetCallback callback) override;
+  void SetDeviceNickname(const std::string& device_id,
+                         const std::string& nickname) override;
 
   mojo::ReceiverSet<mojom::CrosBluetoothConfig> receivers_;
 
   std::unique_ptr<AdapterStateController> adapter_state_controller_;
+  std::unique_ptr<DeviceNameManager> device_name_manager_;
   std::unique_ptr<DeviceCache> device_cache_;
   std::unique_ptr<SystemPropertiesProvider> system_properties_provider_;
   std::unique_ptr<DiscoverySessionManager> discovery_session_manager_;

@@ -100,7 +100,7 @@
   {
     "name": "allow-insecure-localhost",
     "owners": [ "security-dev" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 101
   },
   {
     "name": "allow-previews",
@@ -1941,11 +1941,6 @@
     "expiry_milestone": 99
   },
   {
-    "name": "enable-fre-default-browser-screen",
-    "owners": [ "alionadangla", "gambard" ],
-    "expiry_milestone": 100
-  },
-  {
     "name": "enable-fre-default-browser-screen-testing",
     "owners": [ "alionadangla", "gambard" ],
     "expiry_milestone": 100
@@ -2691,6 +2686,11 @@
     "expiry_milestone": 96
   },
   {
+    "name": "enable-tts-lacros-support",
+    "owners": ["jennyz"],
+    "expiry_milestone": 100
+  },
+  {
     "name": "enable-ui-devtools",
     "owners": [ "//components/ui_devtools/OWNERS" ],
     // Convenience debugging flag for non-stable ChromeOS Builds.
@@ -2929,11 +2929,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "enterprise-realtime-extension-request",
-    "owners": ["zmin", "parastoog"],
-    "expiry_milestone": 98
-  },
-  {
     "name": "enterprise-reporting-api-keychain-recreation",
     "owners": ["zmin", "sacomoto"],
     "expiry_milestone": 92
@@ -3134,6 +3129,11 @@
     "name": "force-disable-extended-sync-promos",
     "owners": ["fernandex", "msarda"],
     "expiry_milestone": 100
+  },
+  {
+    "name": "force-disable-stacked-tabs",
+    "owners": [ "chrome-desktop-ui-sea@google.com", "tbergquist" ],
+    "expiry_milestone": 98
   },
   {
     "name": "force-effective-connection-type",

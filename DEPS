@@ -203,7 +203,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:413d434bd4eee1130614494dfb19f1eba03d71af',
+  'luci_go': 'git_revision:d1c03082ecda0148d8096f1fd8bf5491eafc7323',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -1664,7 +1664,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': '8BEdZmdEb_Trpttj9e1dPv8UkzzT2TcgaA7HDWbfw_oC',
+          'version': 'gBAjq66wEoX-xg7SYwdl9IwTb41P6_uogFXZWqmg42cC',
         },
       ],
       'dep_type': 'cipd',
@@ -1674,7 +1674,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': '6xtIsouHQ17XqTFF6ZHf3XyJvVUPt1OTvgPG2Opk56AC',
+          'version': 'waM0kUtv5T9ysntYENPWn_NyN14lIcqEDgfIaITeL0gC',
         },
       ],
       'dep_type': 'cipd',
@@ -1684,7 +1684,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'rUm7H5eJ9geBU3-v0VR5qj_uAZoU9K1pEIiSVnxbDmIC',
+          'version': 's5FQ4at83HB6cms6U4yFCQ-DS8LAIk6BsYD0SYwtiyMC',
         },
       ],
       'dep_type': 'cipd',

@@ -115,6 +115,11 @@ static scoped_refptr<base::RefCountedBytes> MakeRefCountedBytes(void* ptr,
       reinterpret_cast<uint8_t*>(ptr), size);
 }
 
+scoped_refptr<VP8Picture> GetVP8Picture(
+    const VaapiVideoEncoderDelegate::EncodeJob& job) {
+  return base::WrapRefCounted(
+      reinterpret_cast<VP8Picture*>(job.picture().get()));
+}
 }  // namespace
 
 VP8VaapiVideoEncoderDelegate::EncodeParams::EncodeParams()
@@ -209,22 +214,22 @@ std::vector<gfx::Size> VP8VaapiVideoEncoderDelegate::GetSVCLayerResolutions() {
   return {visible_size_};
 }
 
-bool VP8VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob* encode_job) {
+bool VP8VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob& encode_job) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (encode_job->IsKeyframeRequested())
+  if (encode_job.IsKeyframeRequested())
     frame_num_ = 0;
 
   if (frame_num_ == 0)
-    encode_job->ProduceKeyframe();
+    encode_job.ProduceKeyframe();
 
   frame_num_++;
   frame_num_ %= current_params_.kf_period_frames;
 
-  scoped_refptr<VP8Picture> picture = GetPicture(encode_job);
+  scoped_refptr<VP8Picture> picture = GetVP8Picture(encode_job);
   DCHECK(picture);
 
-  UpdateFrameHeader(encode_job->IsKeyframeRequested());
+  UpdateFrameHeader(encode_job.IsKeyframeRequested());
   *picture->frame_hdr = current_frame_hdr_;
 
   // We only use |last_frame| for a reference frame. This follows the behavior
@@ -355,14 +360,6 @@ void VP8VaapiVideoEncoderDelegate::UpdateReferenceFrames(
   reference_frames_.Refresh(picture);
 }
 
-scoped_refptr<VP8Picture> VP8VaapiVideoEncoderDelegate::GetPicture(
-    VaapiVideoEncoderDelegate::EncodeJob* job) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  return base::WrapRefCounted(
-      reinterpret_cast<VP8Picture*>(job->picture().get()));
-}
-
 void VP8VaapiVideoEncoderDelegate::NotifyEncodedChunkSize(
     VABufferID buffer_id,
     VASurfaceID sync_surface_id) {
@@ -376,7 +373,7 @@ void VP8VaapiVideoEncoderDelegate::NotifyEncodedChunkSize(
 }
 
 bool VP8VaapiVideoEncoderDelegate::SubmitFrameParameters(
-    VaapiVideoEncoderDelegate::EncodeJob* job,
+    EncodeJob& job,
     const EncodeParams& encode_params,
     scoped_refptr<VP8Picture> pic,
     const Vp8ReferenceFrameVector& ref_frames,
@@ -411,7 +408,7 @@ bool VP8VaapiVideoEncoderDelegate::SubmitFrameParameters(
   pic_param.ref_arf_frame =
       alt_frame ? alt_frame->AsVaapiVP8Picture()->GetVASurfaceID()
                 : VA_INVALID_ID;
-  pic_param.coded_buf = job->coded_buffer_id();
+  pic_param.coded_buf = job.coded_buffer_id();
   DCHECK_NE(pic_param.coded_buf, VA_INVALID_ID);
   pic_param.ref_flags.bits.no_ref_last =
       !ref_frames_used[Vp8RefType::VP8_FRAME_LAST];
@@ -495,25 +492,25 @@ bool VP8VaapiVideoEncoderDelegate::SubmitFrameParameters(
   qmatrix_buf.quantization_index_delta[4] =
       frame_header->quantization_hdr.uv_ac_delta;
 
-  job->AddSetupCallback(
+  job.AddSetupCallback(
       base::BindOnce(&VaapiVideoEncoderDelegate::SubmitBuffer,
                      base::Unretained(this), VAEncSequenceParameterBufferType,
                      MakeRefCountedBytes(&seq_param, sizeof(seq_param))));
 
-  job->AddSetupCallback(
+  job.AddSetupCallback(
       base::BindOnce(&VaapiVideoEncoderDelegate::SubmitBuffer,
                      base::Unretained(this), VAEncPictureParameterBufferType,
                      MakeRefCountedBytes(&pic_param, sizeof(pic_param))));
 
-  job->AddSetupCallback(
+  job.AddSetupCallback(
       base::BindOnce(&VaapiVideoEncoderDelegate::SubmitBuffer,
                      base::Unretained(this), VAQMatrixBufferType,
                      MakeRefCountedBytes(&qmatrix_buf, sizeof(qmatrix_buf))));
 
-  job->AddPostExecuteCallback(
+  job.AddPostExecuteCallback(
       base::BindOnce(&VP8VaapiVideoEncoderDelegate::NotifyEncodedChunkSize,
-                     base::Unretained(this), job->coded_buffer_id(),
-                     job->input_surface()->id()));
+                     base::Unretained(this), job.coded_buffer_id(),
+                     job.input_surface()->id()));
 
   return true;
 }

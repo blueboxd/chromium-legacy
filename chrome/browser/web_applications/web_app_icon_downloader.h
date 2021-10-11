@@ -24,6 +24,8 @@ class Size;
 
 namespace web_app {
 
+enum class IconsDownloadedResult;
+
 // Class to help download all icons (including favicons and web app manifest
 // icons) for a tab.
 class WebAppIconDownloader : public content::WebContentsObserver {
@@ -35,7 +37,9 @@ class WebAppIconDownloader : public content::WebContentsObserver {
   };
 
   using WebAppIconDownloaderCallback =
-      base::OnceCallback<void(bool success, IconsMap icons_map)>;
+      base::OnceCallback<void(IconsDownloadedResult result,
+                              IconsMap icons_map,
+                              DownloadedIconsHttpResults icons_http_results)>;
 
   // |extra_favicon_urls| allows callers to provide icon urls that aren't
   // provided by the renderer (e.g touch icons on non-android environments).
@@ -88,6 +92,7 @@ class WebAppIconDownloader : public content::WebContentsObserver {
       content::RenderFrameHost* rfh,
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
 
+  void CompleteCallback();
   void CancelDownloads();
 
   // Whether we need to fetch favicons from the renderer.
@@ -104,6 +109,8 @@ class WebAppIconDownloader : public content::WebContentsObserver {
 
   // The icons which were downloaded. Populated by FetchIcons().
   IconsMap icons_map_;
+  // The http status codes resulted from url downloading requests.
+  DownloadedIconsHttpResults icons_http_results_;
 
   // Request ids of in-progress requests.
   std::set<int> in_progress_requests_;

@@ -186,6 +186,11 @@ const char kEnableDiscoverFeedPreviewName[] = "Enable discover feed preview";
 const char kEnableDiscoverFeedPreviewDescription[] =
     "Enable showing a live preview for discover feed long-press menu.";
 
+const char kEnableDiscoverFeedShorterCacheName[] =
+    "Enable discover feed shorter cache";
+const char kEnableDiscoverFeedShorterCacheDescription[] =
+    "Enable more ghost cards by using a shorter cache.";
+
 const char kEnableDiscoverFeedStaticResourceServingName[] =
     "Enable discover feed static resource serving";
 const char kEnableDiscoverFeedStaticResourceServingDescription[] =
@@ -325,12 +330,6 @@ const char kSharedHighlightingUseBlocklistIOSDescription[] =
     "certain sites where personalized or dynamic content or other technical "
     "restrictions make it unlikely that a URL can be generated and actually "
     "work when shared.";
-
-const char kLocationPermissionsPromptName[] =
-    "Location Permisssions Prompt Experiment";
-const char kLocationPermissionsPromptDescription[] =
-    "When enabled, a different user experience flow will be shown to ask for "
-    "location permissions.";
 
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =

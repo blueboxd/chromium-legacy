@@ -556,10 +556,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebViewNativeContextMenuName,
      flag_descriptions::kWebViewNativeContextMenuDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kWebViewNativeContextMenu)},
-    {"location-permissions-prompt",
-     flag_descriptions::kLocationPermissionsPromptName,
-     flag_descriptions::kLocationPermissionsPromptDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kLocationPermissionsPrompt)},
     {"record-snapshot-size", flag_descriptions::kRecordSnapshotSizeName,
      flag_descriptions::kRecordSnapshotSizeDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kRecordSnapshotSize)},
@@ -786,7 +782,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"credential-provider-extension-promo",
      flag_descriptions::kCredentialProviderExtensionPromoName,
      flag_descriptions::kCredentialProviderExtensionPromoDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kCredentialProviderExtensionPromo)}};
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kCredentialProviderExtensionPromo)},
+    {"enable-discover-feed-shorter-cache",
+     flag_descriptions::kEnableDiscoverFeedShorterCacheName,
+     flag_descriptions::kEnableDiscoverFeedShorterCacheDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableDiscoverFeedShorterCache)},
+};
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
   return false;

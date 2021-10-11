@@ -163,6 +163,10 @@ extern const char kEnableDiscoverFeedDiscoFeedEndpointDescription[];
 extern const char kEnableDiscoverFeedPreviewName[];
 extern const char kEnableDiscoverFeedPreviewDescription[];
 
+// Title and description for the flag to shorten the cache.
+extern const char kEnableDiscoverFeedShorterCacheName[];
+extern const char kEnableDiscoverFeedShorterCacheDescription[];
+
 // Title and description for the flag to enable the discover feed static
 // resource serving.
 extern const char kEnableDiscoverFeedStaticResourceServingName[];
@@ -275,11 +279,6 @@ extern const char kIOSPersistCrashRestoreDescription[];
 // change in iOS.
 extern const char kIOSSharedHighlightingColorChangeName[];
 extern const char kIOSSharedHighlightingColorChangeDescription[];
-
-// Title and description for the flag to experiment with different location
-// permission user experiences.
-extern const char kLocationPermissionsPromptName[];
-extern const char kLocationPermissionsPromptDescription[];
 
 // Title and description for the flag to lock the bottom toolbar into place.
 extern const char kLockBottomToolbarName[];

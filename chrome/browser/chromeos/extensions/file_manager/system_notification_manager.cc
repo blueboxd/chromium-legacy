@@ -567,6 +567,7 @@ SystemNotificationManager::MakeMountErrorNotification(
     file_manager_private::MountCompletedEvent& event,
     const Volume& volume) {
   std::unique_ptr<message_center::Notification> notification;
+  std::vector<message_center::ButtonInfo> notification_buttons;
   scoped_refptr<message_center::NotificationDelegate> delegate =
       new message_center::HandleNotificationClickDelegate(base::BindRepeating(
           &SystemNotificationManager::HandleRemovableNotificationClick,
@@ -592,6 +593,8 @@ SystemNotificationManager::MakeMountErrorNotification(
                 IDS_DEVICE_UNSUPPORTED_MESSAGE,
                 base::UTF8ToUTF16(volume.drive_label()));
           }
+          RecordDeviceNotificationMetric(
+              DeviceNotificationUmaType::DEVICE_FAIL);
         } else {
           if (volume.drive_label().empty()) {
             message =
@@ -600,6 +603,16 @@ SystemNotificationManager::MakeMountErrorNotification(
             message = l10n_util::GetStringFUTF16(
                 IDS_DEVICE_UNKNOWN_MESSAGE,
                 base::UTF8ToUTF16(volume.drive_label()));
+          }
+          if (!volume.is_read_only()) {
+            // Give a format device button on the notification.
+            notification_buttons.push_back(message_center::ButtonInfo(
+                l10n_util::GetStringUTF16(IDS_DEVICE_UNKNOWN_BUTTON_LABEL)));
+            RecordDeviceNotificationMetric(
+                DeviceNotificationUmaType::DEVICE_FAIL_UNKNOWN);
+          } else {
+            RecordDeviceNotificationMetric(
+                DeviceNotificationUmaType::DEVICE_FAIL_UNKNOWN_READONLY);
           }
         }
         break;
@@ -614,6 +627,7 @@ SystemNotificationManager::MakeMountErrorNotification(
               IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE,
               base::UTF8ToUTF16(volume.drive_label()));
         }
+        RecordDeviceNotificationMetric(DeviceNotificationUmaType::DEVICE_FAIL);
         break;
       default:
         DLOG(WARNING) << "Unhandled mount status for "
@@ -622,6 +636,7 @@ SystemNotificationManager::MakeMountErrorNotification(
     }
     notification =
         CreateNotification(kDeviceFailNotificationId, title, message, delegate);
+    notification->set_buttons(notification_buttons);
   }
   return notification;
 }

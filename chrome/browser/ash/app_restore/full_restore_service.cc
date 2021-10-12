@@ -50,12 +50,6 @@ const char kRestoreForCrashNotificationHistogramName[] =
 const char kRestoreSettingHistogramName[] = "Apps.RestoreSetting";
 const char kRestoreInitSettingHistogramName[] = "Apps.RestoreInitSetting";
 
-constexpr char kWindowCountHistogramPrefix[] = "Apps.WindowCount.";
-constexpr char kRestoreHistogramSuffix[] = "Restore";
-constexpr char kNotRestoreHistogramSuffix[] = "NotRestore";
-constexpr char kCloseByUserHistogramSuffix[] = "CloseByUser";
-constexpr char kCloseNotByUserHistogramSuffix[] = "CloseNotByUser";
-
 // static
 FullRestoreService* FullRestoreService::GetForProfile(Profile* profile) {
   return static_cast<FullRestoreService*>(
@@ -137,8 +131,11 @@ void FullRestoreService::Init() {
   if (!can_be_inited_)
     return;
 
-  // If the restore ddata has not been loaded, wait for it.
-  if (!app_launch_handler_->IsRestoreDataLoaded())
+  // If the restore data has not been loaded, wait for it. For test cases,
+  // `app_launch_handler_` might be reset as null because test cases might be
+  // finished before Init is called, so check `app_launch_handler_` to prevent
+  // crash for test cases.
+  if (!app_launch_handler_ || !app_launch_handler_->IsRestoreDataLoaded())
     return;
 
   if (is_shut_down_)
@@ -221,8 +218,6 @@ void FullRestoreService::Close(bool by_user) {
     RecordRestoreAction(
         notification_->id(),
         by_user ? RestoreAction::kCloseByUser : RestoreAction::kCloseNotByUser);
-    RecordWindowCount(by_user ? kCloseByUserHistogramSuffix
-                              : kCloseNotByUserHistogramSuffix);
   }
   notification_ = nullptr;
 
@@ -247,7 +242,6 @@ void FullRestoreService::Click(const absl::optional<int>& button_index,
 
     // Restore if the user clicks the notification body.
     RecordRestoreAction(notification_->id(), RestoreAction::kRestore);
-    RecordWindowCount(kRestoreHistogramSuffix);
     Restore();
 
     // If the user selects restore, don't start the save timer. Wait for the
@@ -270,7 +264,6 @@ void FullRestoreService::Click(const absl::optional<int>& button_index,
   // Close the crash notification if the user clicks the cancel button of the
   // crash notification.
   RecordRestoreAction(notification_->id(), RestoreAction::kCancel);
-  RecordWindowCount(kNotRestoreHistogramSuffix);
   MaybeCloseNotification();
 }
 
@@ -454,12 +447,6 @@ void FullRestoreService::OnPreferenceChanged(const std::string& pref_name) {
 bool FullRestoreService::ShouldShowNotification() {
   return app_launch_handler_ && app_launch_handler_->HasRestoreData() &&
          !::first_run::IsChromeFirstRun() && !close_notification_;
-}
-
-void FullRestoreService::RecordWindowCount(const std::string& restore_action) {
-  base::UmaHistogramCounts100(
-      kWindowCountHistogramPrefix + restore_action,
-      ::full_restore::FullRestoreSaveHandler::GetInstance()->window_count());
 }
 
 ScopedRestoreForTesting::ScopedRestoreForTesting() {

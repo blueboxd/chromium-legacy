@@ -31,6 +31,7 @@ namespace file_manager_private = extensions::api::file_manager_private;
 struct TestNotificationStrings {
   std::u16string title;
   std::u16string message;
+  std::vector<std::u16string> buttons;
 };
 
 // Notification platform bridge implementation for testing.
@@ -50,6 +51,8 @@ class TestNotificationPlatformBridgeDelegator
     notification_ids_.insert(notification.id());
     strings.title = notification.title();
     strings.message = notification.message();
+    for (const message_center::ButtonInfo& button : notification.buttons())
+      strings.buttons.push_back(button.title);
     notifications_[notification.id()] = strings;
   }
 
@@ -548,6 +551,7 @@ constexpr char kDeviceFailNotificationId[] = "swa-device-fail-id";
 // method. Both parent and child unknown volume filesystems generate
 // the same nofication.
 TEST_F(SystemNotificationManagerTest, DeviceUnsupportedDefault) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<Volume> volume(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
       VolumeType::VOLUME_TYPE_TESTING, chromeos::DeviceType::DEVICE_TYPE_USB,
@@ -577,11 +581,16 @@ TEST_F(SystemNotificationManagerTest, DeviceUnsupportedDefault) {
   EXPECT_EQ(
       notification_strings.message,
       u"Sorry, your external storage device is not supported at this time.");
+  // Check that the correct UMA was emitted.
+  histogram_tester.ExpectUniqueSample(kNotificationShowHistogramName,
+                                      DeviceNotificationUmaType::DEVICE_FAIL,
+                                      1);
 }
 
 // The named version of the device unsupported notification is
 // generated when the device includes a device label.
 TEST_F(SystemNotificationManagerTest, DeviceUnsupportedNamed) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<Volume> volume(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
       VolumeType::VOLUME_TYPE_TESTING, chromeos::DeviceType::DEVICE_TYPE_USB,
@@ -610,6 +619,10 @@ TEST_F(SystemNotificationManagerTest, DeviceUnsupportedNamed) {
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message,
             u"Sorry, the device MyUSB is not supported at this time.");
+  // Check that the correct UMA was emitted.
+  histogram_tester.ExpectUniqueSample(kNotificationShowHistogramName,
+                                      DeviceNotificationUmaType::DEVICE_FAIL,
+                                      1);
 }
 
 // Multipart device unsupported notifications are generated when there is
@@ -619,6 +632,7 @@ TEST_F(SystemNotificationManagerTest, DeviceUnsupportedNamed) {
 //       1) A device navigation notification for the supported file system
 //       2) The multipart device unsupported notification.
 TEST_F(SystemNotificationManagerTest, MultipartDeviceUnsupportedDefault) {
+  base::HistogramTester histogram_tester;
   // Build a supported file system volume and mount it.
   std::unique_ptr<Volume> volume1(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
@@ -672,12 +686,17 @@ TEST_F(SystemNotificationManagerTest, MultipartDeviceUnsupportedDefault) {
   EXPECT_EQ(notification_strings.message,
             u"Sorry, at least one partition on your external storage device "
             u"could not be mounted.");
+  // A DEVICE_NAVIGATION UMA is emitted during the setup so just check for the
+  // occurrence of the DEVICE_FAIL sample instead.
+  histogram_tester.ExpectBucketCount(kNotificationShowHistogramName,
+                                     DeviceNotificationUmaType::DEVICE_FAIL, 1);
 }
 
 // The named version of the multipart device unsupported notification is
 // generated when the device label exists and at least one partition can be
 // mounted on a device with an unsupported file system on another partition.
 TEST_F(SystemNotificationManagerTest, MultipartDeviceUnsupportedNamed) {
+  base::HistogramTester histogram_tester;
   // Build a supported file system volume and mount it.
   std::unique_ptr<Volume> volume1(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
@@ -717,6 +736,10 @@ TEST_F(SystemNotificationManagerTest, MultipartDeviceUnsupportedNamed) {
   EXPECT_EQ(notification_strings.message,
             u"Sorry, at least one partition on the device MyUSB could not be "
             u"mounted.");
+  // A DEVICE_NAVIGATION UMA is emitted during the setup so just check for the
+  // occurrence of the DEVICE_FAIL sample instead.
+  histogram_tester.ExpectBucketCount(kNotificationShowHistogramName,
+                                     DeviceNotificationUmaType::DEVICE_FAIL, 1);
 }
 
 // Device fail unknown notifications are generated when the type of filesystem
@@ -726,6 +749,7 @@ TEST_F(SystemNotificationManagerTest, MultipartDeviceUnsupportedNamed) {
 // These notifications are similar to the device unsupported notifications,
 // the difference being an unknown vs. unsupported file system.
 TEST_F(SystemNotificationManagerTest, DeviceFailUnknownDefault) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<Volume> volume(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
       VolumeType::VOLUME_TYPE_TESTING, chromeos::DeviceType::DEVICE_TYPE_USB,
@@ -754,11 +778,17 @@ TEST_F(SystemNotificationManagerTest, DeviceFailUnknownDefault) {
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message,
             u"Sorry, your external storage device could not be recognized.");
+  EXPECT_EQ(notification_strings.buttons.size(), 1);
+  EXPECT_EQ(notification_strings.buttons[0], u"Format this device");
+  histogram_tester.ExpectUniqueSample(
+      kNotificationShowHistogramName,
+      DeviceNotificationUmaType::DEVICE_FAIL_UNKNOWN, 1);
 }
 
 // The named version of the device fail unknown notification is
 // generated when the device includes a device label.
 TEST_F(SystemNotificationManagerTest, DeviceFailUnknownNamed) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<Volume> volume(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
       VolumeType::VOLUME_TYPE_TESTING, chromeos::DeviceType::DEVICE_TYPE_USB,
@@ -787,6 +817,11 @@ TEST_F(SystemNotificationManagerTest, DeviceFailUnknownNamed) {
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message,
             u"Sorry, the device MyUSB could not be recognized.");
+  EXPECT_EQ(notification_strings.buttons.size(), 1);
+  EXPECT_EQ(notification_strings.buttons[0], u"Format this device");
+  histogram_tester.ExpectUniqueSample(
+      kNotificationShowHistogramName,
+      DeviceNotificationUmaType::DEVICE_FAIL_UNKNOWN, 1);
 }
 
 // Device fail unknown read only notifications are generated when
@@ -794,6 +829,7 @@ TEST_F(SystemNotificationManagerTest, DeviceFailUnknownNamed) {
 // The default notification message is generated when there is
 // no device label.
 TEST_F(SystemNotificationManagerTest, DeviceFailUnknownReadOnlyDefault) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<Volume> volume(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
       VolumeType::VOLUME_TYPE_TESTING, chromeos::DeviceType::DEVICE_TYPE_USB,
@@ -822,11 +858,17 @@ TEST_F(SystemNotificationManagerTest, DeviceFailUnknownReadOnlyDefault) {
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message,
             u"Sorry, your external storage device could not be recognized.");
+  // Device is read-only, expect no buttons present.
+  EXPECT_EQ(notification_strings.buttons.size(), 0);
+  histogram_tester.ExpectUniqueSample(
+      kNotificationShowHistogramName,
+      DeviceNotificationUmaType::DEVICE_FAIL_UNKNOWN_READONLY, 1);
 }
 
 // The named version of the read only device fail unknown notification is
 // generated when the device includes a device label.
 TEST_F(SystemNotificationManagerTest, DeviceFailUnknownReadOnlyNamed) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<Volume> volume(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
       VolumeType::VOLUME_TYPE_TESTING, chromeos::DeviceType::DEVICE_TYPE_USB,
@@ -855,6 +897,9 @@ TEST_F(SystemNotificationManagerTest, DeviceFailUnknownReadOnlyNamed) {
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message,
             u"Sorry, the device MyUSB could not be recognized.");
+  histogram_tester.ExpectUniqueSample(
+      kNotificationShowHistogramName,
+      DeviceNotificationUmaType::DEVICE_FAIL_UNKNOWN_READONLY, 1);
 }
 
 TEST_F(SystemNotificationManagerTest, TestCopyEvents) {

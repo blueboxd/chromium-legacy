@@ -5235,6 +5235,14 @@ others/histograms.xml -->
   <int value="3" label="DELETE ALL"/>
 </enum>
 
+<enum name="AutocompleteActionPredictorNoStatePrefetchStatus">
+  <int value="0" label="NSP not started"/>
+  <int value="1" label="NSP cancelled"/>
+  <int value="2" label="NSP unused"/>
+  <int value="3" label="NSP hit finished"/>
+  <int value="4" label="NSP hit unfinished"/>
+</enum>
+
 <enum name="AutocompleteEvents">
   <int value="0" label="Suggestions Shown"/>
   <int value="1" label="Suggestion Selected"/>
@@ -19283,6 +19291,7 @@ Called by update_debug_scenarios.py.-->
   <int value="7" label="kDebugSubframeProxyCreationWithNoRVH"/>
   <int value="8" label="kDebugBackForwardCacheEntryExistsOnSubframeHistoryNav"/>
   <int value="9" label="kDebugNoRenderFrameProxyHostOnSetFocusedFrame"/>
+  <int value="10" label="kDebugNoRestoredRFHOnNonRestartedNavigation"/>
 </enum>
 
 <enum name="DeclarativeAPIFunctionType">
@@ -47812,6 +47821,8 @@ from previous Chrome versions.
       label="AutofillSaveCreditCardUsesStrikeSystemV2:disabled"/>
   <int value="-2059771509" label="NTPTilesLowerResolutionFavicons:disabled"/>
   <int value="-2059331227" label="DiceWebSigninInterception:disabled"/>
+  <int value="-2058862330"
+      label="ExperimentalAccessibilitySwitchAccessSetupGuide:disabled"/>
   <int value="-2058762785"
       label="AllowDownloadResumptionWithoutStrongValidators:disabled"/>
   <int value="-2058656447" label="ContextualSearchUrlActions:enabled"/>
@@ -48426,6 +48437,8 @@ from previous Chrome versions.
       label="AutofillLocalCardMigrationUsesStrikeSystemV2:disabled"/>
   <int value="-1614912400" label="enable-link-disambiguation-popup"/>
   <int value="-1613583483" label="UseNewAcceptLanguageHeader:enabled"/>
+  <int value="-1612418793"
+      label="ExperimentalAccessibilitySwitchAccessSetupGuide:enabled"/>
   <int value="-1611758030" label="AndroidWebContentsDarkMode:disabled"/>
   <int value="-1611357520" label="MediaAppPdfInInk:enabled"/>
   <int value="-1611305202" label="KeepPrefetchedContentSuggestions:disabled"/>
@@ -52035,6 +52048,7 @@ from previous Chrome versions.
   <int value="1159760152"
       label="ContextMenuSearchAndShopWithGoogleLens:disabled"/>
   <int value="1161822401" label="LoginDetection:enabled"/>
+  <int value="1162420462" label="ShelfLauncherNudge:disabled"/>
   <int value="1162693272" label="MacCoreLocationImplementation:disabled"/>
   <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>
   <int value="1164377197" label="SwipingFromLeftEdgeToGoBack:enabled"/>
@@ -52902,6 +52916,7 @@ from previous Chrome versions.
   <int value="1825940786" label="ChromeHomePromo:disabled"/>
   <int value="1827369558" label="AndroidPayIntegrationV1:disabled"/>
   <int value="1828660283" label="enable-webfonts-intervention-trigger"/>
+  <int value="1829231569" label="ShelfLauncherNudge:enabled"/>
   <int value="1829259057" label="MediaAppHandlesPdf:enabled"/>
   <int value="1830460973" label="disable-network-settings-config"/>
   <int value="1831103529" label="MediaNotificationsCounter:disabled"/>
@@ -72025,9 +72040,20 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="RelroSharingStatus">
-  <int value="0" label="Not attempted (this value must not be recorded)"/>
+  <int value="0" label="Using shared RELRO failed: other reasons"/>
   <int value="1" label="Using shared RELRO succeeded"/>
-  <int value="2" label="Using shared RELRO failed, contents did not match"/>
+  <int value="2" label="Using shared RELRO failed: contents did not match"/>
+  <int value="3" label="Using shared RELRO failed: RELRO FD was not provided"/>
+  <int value="4"
+      label="Using shared RELRO failed: RELRO region not found in the current
+             process"/>
+  <int value="5"
+      label="Using shared RELRO failed: could not find shared memory
+             functions"/>
+  <int value="6"
+      label="Using shared RELRO failed: failed to mmap on top of previous
+             RELRO"/>
+  <int value="7" label="Using shared RELRO failed: invalid RELRO information"/>
 </enum>
 
 <enum name="RemoteBookmarkUpdateError">
@@ -78475,8 +78501,6 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="42" label="UMA_WEB_FEED_UNFOLLOW_FAILURE"/>
   <int value="43" label="UMA_LANGUAGE_SPLIT_RESTART"/>
   <int value="44" label="UMA_AUTOFILL_VIRTUAL_CARD_FILLED"/>
-  <int value="45" label="UMA_WINDOW_ERROR"/>
-  <int value="46" label="UMA_MODULE_INSTALL_FAILURE"/>
 </enum>
 
 <enum name="SnapshotItemId">
@@ -80307,6 +80331,29 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="StructuredMetricsInternalError">
+  <obsolete>
+    Deprecated as of 10/08/2021. Histogram using this enum had a recording bug
+    that grouped failed key errors with failed event erorrs. Prefer to use
+    StructuredMetrcsInternalError2.
+  </obsolete>
+  <int value="0" label="Missing key (deprecated)"/>
+  <int value="1" label="Wrong key length"/>
+  <int value="2" label="Missing last rotation"/>
+  <int value="3" label="Missing rotation period"/>
+  <int value="4" label="Failed uint conversion"/>
+  <int value="5" label="Failed key or event read error"/>
+  <int value="6" label="Failed key or event parse error"/>
+  <int value="7" label="Failed key or event write error"/>
+  <int value="8" label="Failed key or event serialization"/>
+  <int value="9" label="Unused"/>
+  <int value="10" label="Unused"/>
+  <int value="11" label="Unused"/>
+  <int value="12" label="Unused"/>
+  <int value="13" label="Uninitialized recorder"/>
+  <int value="14" label="Invalid event parsed"/>
+</enum>
+
+<enum name="StructuredMetricsInternalError2">
   <int value="0" label="Missing key (deprecated)"/>
   <int value="1" label="Wrong key length"/>
   <int value="2" label="Missing last rotation"/>

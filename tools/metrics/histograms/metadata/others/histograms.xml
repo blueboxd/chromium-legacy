@@ -1374,6 +1374,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="AutocompleteActionPredictor.NoStatePrefetchStatus"
+    enum="AutocompleteActionPredictorNoStatePrefetchStatus"
+    expires_after="2022-06-01">
+  <owner>spelchat@chromium.org</owner>
+  <owner>chrome-brapp-loading@google.com</owner>
+  <summary>
+    Records the status of no state prefetches started by the omnibox action
+    predictor. In particular, this records whether they were used or not.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Availability.Prober.CacheEntryAge" units="hours"
     expires_after="M95">
   <owner>robertogden@chromium.org</owner>
@@ -2796,12 +2807,29 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ChromiumAndroidLinker.RelroSharingStatus"
     enum="RelroSharingStatus" expires_after="2022-10-01">
+  <obsolete>
+    Upgraded to ChromiumAndroidLinker.RelroSharingStatus2 around 2021-10.
+  </obsolete>
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
     Recorded when RELRO is replaced with a shared memory region, in all
     processes consuming RELRO. Indicates whether the replacement was a success.
     ModernLinker only.
+  </summary>
+</histogram>
+
+<histogram name="ChromiumAndroidLinker.RelroSharingStatus2"
+    enum="RelroSharingStatus" expires_after="2022-10-01">
+  <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    Recorded when RELRO is replaced with a shared memory region, in all
+    processes consuming RELRO. Indicates whether the replacement was a success.
+    ModernLinker only.
+
+    See a description of RELRO sharing here:
+    https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/android_native_libraries.md#RELRO-Sharing
   </summary>
 </histogram>
 
@@ -3866,7 +3894,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Conversions.CreateReportStatus"
-    enum="ConversionStorageCreateReportStatus" expires_after="M98">
+    enum="ConversionStorageCreateReportStatus" expires_after="M99">
   <owner>apaseltiner@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
   <owner>measurement-api-dev+metrics@google.com</owner>
@@ -3878,7 +3906,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Conversions.DeleteSentReportOperation"
-    enum="ConversionPostSendReportDeleteEvent" expires_after="M98">
+    enum="ConversionPostSendReportDeleteEvent" expires_after="M99">
   <owner>apaseltiner@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
   <owner>measurement-api-dev+metrics@google.com</owner>
@@ -16310,6 +16338,10 @@ should be kept until we remove incident reporting. -->
 
 <histogram name="Spellcheck.Android.Available" enum="BooleanAvailable"
     expires_after="2021-10-10">
+  <obsolete>
+    Removed 2021/10: This histogram was added as part of an investigation that
+    has been completed.
+  </obsolete>
   <owner>timvolodine@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
   <summary>

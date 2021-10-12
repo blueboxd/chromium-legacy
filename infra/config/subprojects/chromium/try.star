@@ -886,6 +886,10 @@ try_.chromium_chromiumos_builder(
 )
 
 try_.chromium_chromiumos_builder(
+    name = "linux-lacros-dbg",
+)
+
+try_.chromium_chromiumos_builder(
     name = "linux-lacros-rel",
     builderless = not settings.is_main,
     cores = 16,
@@ -2271,6 +2275,10 @@ try_.chromium_mac_ios_builder(
 try_.infra_builder(
     name = "linux-bootstrap",
     bootstrap = True,
+    mirrors = [
+        "ci/linux-bootstrap",
+        "ci/linux-bootstrap-tests",
+    ],
 )
 
 try_.infra_builder(

@@ -4,6 +4,7 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builders.star", "cpu", "goma", "os", "sheriff_rotations", "xcode")
+load("//lib/chromium_tests_builder_config.star", "ctbc")
 load("//lib/ci.star", "ci", "rbe_instance")
 load("//lib/consoles.star", "consoles")
 load("//console-header.star", "HEADER")
@@ -1582,15 +1583,11 @@ ci.chromium_builder(
     properties = {
         # The format of these properties is defined at archive/properties.proto
         "$build/archive": {
-            "archive_datas": [
-                {
-                    "files": [
-                        "chrome_100_percent.pak",
-                    ],
-                    "gcs_bucket": "chromium-browser-snapshots",
-                    "gcs_path": "experimental/Linux_x64/{%position%}",
-                    "archive_type": "ARCHIVE_TYPE_FILES",
-                },
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "linux-archive-rel.json",
             ],
         },
     },
@@ -1811,6 +1808,17 @@ ci.chromium_builder(
     cores = 32,
     main_console_view = "main",
     os = os.WINDOWS_DEFAULT,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "win-archive-rel.json",
+            ],
+        },
+    },
 )
 
 ci.chromium_builder(
@@ -6126,6 +6134,17 @@ ci.linux_builder(
 ci.infra_builder(
     name = "linux-bootstrap",
     bootstrap = True,
+    builder_spec = ctbc.builder_spec(
+        chromium_config = ctbc.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = ctbc.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        gclient_config = ctbc.gclient_config(
+            config = "chromium",
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "bootstrap|linux",
         short_name = "bld",
@@ -6137,11 +6156,23 @@ ci.infra_builder(
 ci.infra_builder(
     name = "linux-bootstrap-tests",
     bootstrap = True,
+    builder_spec = ctbc.builder_spec(
+        execution_mode = ctbc.execution_mode.TEST,
+        parent = "ci/linux-bootstrap",
+        chromium_config = ctbc.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = ctbc.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        gclient_config = ctbc.gclient_config(
+            config = "chromium",
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "bootstrap|linux",
         short_name = "tst",
     ),
-    triggered_by = ["ci/linux-bootstrap"],
 )
 
 ci.infra_builder(

@@ -74,6 +74,9 @@ const base::FeatureParam<bool> kDelayedWarningsEnableMouseClicks{
 const base::Feature kSimplifiedUrlDisplay{"SimplifiedUrlDisplay",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kTailoredSecurityIntegration{
+    "TailoredSecurityIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kOmitNonUserGesturesFromReferrerChain{
     "SafeBrowsingOmitNonUserGesturesFromReferrerChain",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -118,7 +121,7 @@ const base::Feature kSafeBrowsingPageLoadToken{
 const base::Feature
     kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid{
         "SafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid",
-        base::FEATURE_DISABLED_BY_DEFAULT};
+        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSafeBrowsingSeparateNetworkContexts{
     "SafeBrowsingSeparateNetworkContexts", base::FEATURE_ENABLED_BY_DEFAULT};

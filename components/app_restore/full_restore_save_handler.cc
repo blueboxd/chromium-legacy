@@ -107,7 +107,6 @@ void FullRestoreSaveHandler::OnWindowInitialized(aura::Window* window) {
     if (arc_save_handler_)
       arc_save_handler_->OnWindowInitialized(window);
 
-    ++window_count_;
     return;
   }
 
@@ -115,7 +114,6 @@ void FullRestoreSaveHandler::OnWindowInitialized(aura::Window* window) {
   if (!SessionID::IsValidValue(window_id))
     return;
 
-  ++window_count_;
   observed_windows_.AddObservation(window);
 
   std::string* app_id_str = window->GetProperty(app_restore::kAppIdKey);
@@ -420,7 +418,7 @@ void FullRestoreSaveHandler::RemoveAppRestoreData(
   MaybeStartSaveTimer(profile_path);
 }
 
-void FullRestoreSaveHandler::RemoveWindowInfo(
+void FullRestoreSaveHandler::SendWindowToBackground(
     const base::FilePath& profile_path,
     const std::string& app_id,
     int window_id) {
@@ -428,7 +426,7 @@ void FullRestoreSaveHandler::RemoveWindowInfo(
   if (it == profile_path_to_restore_data_.end())
     return;
 
-  it->second.RemoveWindowInfo(app_id, window_id);
+  it->second.SendWindowToBackground(app_id, window_id);
 
   pending_save_profile_paths_.insert(profile_path);
 

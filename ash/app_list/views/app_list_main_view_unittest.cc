@@ -241,7 +241,7 @@ class AppListMainViewTest : public views::ViewsTestBase,
 
  protected:
   TestAppListColorProvider color_provider_;  // Needed by AppListView.
-  AppListView* app_list_view_ = nullptr;  // Owned by native widget.
+  AppListView* app_list_view_ = nullptr;     // Owned by native widget.
   std::unique_ptr<AppListTestViewDelegate> delegate_;
 
  private:
@@ -328,12 +328,10 @@ TEST_P(AppListMainViewTest, DragLastItemFromFolderAndDropAtLastSlot) {
   // This is a regression test for https://crbug.com/466058.
   SimulateKeyPress(ui::VKEY_RIGHT);
 
-  // Initial key press moves focus to the search box. The next one should move
-  // the focus to the root apps grid.
-  EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
-
-  SimulateKeyPress(ui::VKEY_LEFT);
-
+  // Focus moves to the item that was just dropped. This is consistent with
+  // focus behavior for dragging and dropping items in the main grid (not
+  // involving folders).
+  EXPECT_TRUE(GetRootViewModel()->view_at(0)->HasFocus());
   EXPECT_TRUE(GetRootGridView()->has_selected_view());
   EXPECT_FALSE(GetFolderGridView()->has_selected_view());
 }

@@ -2655,6 +2655,24 @@ const FeatureEntry::FeatureVariation kReadLaterVariations[] = {
     {"(with app menu item)", kReadLaterInAppMenu,
      base::size(kReadLaterInAppMenu), nullptr}};
 
+const FeatureEntry::FeatureParam kBookmarksRefreshVisuals[] = {
+    {"bookmark_visuals_enabled", "true"}};
+const FeatureEntry::FeatureParam kBookmarksRefreshAppMenu[] = {
+    {"add_bookmark_in_app_menu", "true"},
+    {"edit_bookmark_in_app_menu", "true"}};
+const FeatureEntry::FeatureParam kBookmarksRefreshWithEverything[] = {
+    {"bookmark_visuals_enabled", "true"},
+    {"add_bookmark_in_app_menu", "true"},
+    {"edit_bookmark_in_app_menu", "true"}};
+
+const FeatureEntry::FeatureVariation kBookmarksRefreshVariations[] = {
+    {"(manager visuals only)", kBookmarksRefreshVisuals,
+     base::size(kBookmarksRefreshVisuals), nullptr},
+    {"(app menu)", kBookmarksRefreshAppMenu,
+     base::size(kBookmarksRefreshAppMenu), nullptr},
+    {"(everything)", kBookmarksRefreshWithEverything,
+     base::size(kBookmarksRefreshWithEverything), nullptr}};
+
 const FeatureEntry::FeatureParam kScrollCaptureInMemory[] = {
     {"in_memory_capture", "true"}};
 
@@ -4020,8 +4038,8 @@ const FeatureEntry kFeatureEntries[] = {
     {"password-import", flag_descriptions::kPasswordImportName,
      flag_descriptions::kPasswordImportDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordImport)},
-    {"enable-force-dark", flag_descriptions::kForceWebContentsDarkModeName,
-     flag_descriptions::kForceWebContentsDarkModeDescription, kOsAll,
+    {"enable-force-dark", flag_descriptions::kAutoWebContentsDarkModeName,
+     flag_descriptions::kAutoWebContentsDarkModeDescription, kOsAll,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
      // TODO(https://crbug.com/1011696): Investigate crash reports and
      // re-enable variations for ChromeOS.
@@ -4180,8 +4198,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::
          kExperimentalAccessibilitySwitchAccessSetupGuideDescription,
      kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         ::switches::kEnableExperimentalAccessibilitySwitchAccessSetupGuide)},
+     FEATURE_VALUE_TYPE(
+         features::kExperimentalAccessibilitySwitchAccessSetupGuide)},
     {"enable-experimental-kernel-vm-support",
      flag_descriptions::kKernelnextVMsName,
      flag_descriptions::kKernelnextVMsDescription, kOsCrOS,
@@ -5903,16 +5921,6 @@ const FeatureEntry kFeatureEntries[] = {
          kEnhancedProtectionPromoCardVariations,
          "EnhancedProtectionPromoCard")},
 
-    {"safe-browsing-passwordcheck-integration-for-saved-passwords-android",
-     flag_descriptions::
-         kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroidName,
-     flag_descriptions::
-         kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroidDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         safe_browsing::
-             kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid)},
-
     {"safe-browsing-password-protection-for-signed-in-users",
      flag_descriptions::kPasswordProtectionForSignedInUsersName,
      flag_descriptions::kPasswordProtectionForSignedInUsersDescription,
@@ -6644,6 +6652,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceShowContinueSectionName,
      flag_descriptions::kForceShowContinueSectionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kForceShowContinueSection)},
+    {"launcher-nudge", flag_descriptions::kLauncherNudgeName,
+     flag_descriptions::kLauncherNudgeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kShelfLauncherNudge)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -7580,7 +7591,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"bookmarks-refresh", flag_descriptions::kBookmarksRefreshName,
      flag_descriptions::kBookmarksRefreshDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kBookmarksRefresh)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kBookmarksRefresh,
+                                    kBookmarksRefreshVariations,
+                                    "BookmarksRefresh")},
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -7660,7 +7673,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebMidiDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebMidi)},
 #if defined(OS_ANDROID)
-    {"canvas-oop-rasterization",
+    {"use-real-color-space-for-android-video",
      flag_descriptions::kUseRealColorSpaceForAndroidVideoName,
      flag_descriptions::kUseRealColorSpaceForAndroidVideoDescription,
      kOsAndroid, FEATURE_VALUE_TYPE(media::kUseRealColorSpaceForAndroidVideo)},

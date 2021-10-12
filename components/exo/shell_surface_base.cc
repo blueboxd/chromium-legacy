@@ -39,8 +39,8 @@
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
+#include "components/app_restore/app_restore_utils.h"
 #include "components/app_restore/full_restore_info.h"
-#include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/window_properties.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
@@ -1210,9 +1210,9 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
                            : views::Widget::InitParams::Activatable::kNo;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  full_restore::ModifyWidgetParams(params.init_properties_container.GetProperty(
-                                       app_restore::kRestoreWindowIdKey),
-                                   &params);
+  app_restore::ModifyWidgetParams(params.init_properties_container.GetProperty(
+                                      app_restore::kRestoreWindowIdKey),
+                                  &params);
 #endif
 
   OverrideInitParams(&params);
@@ -1392,8 +1392,15 @@ void ShellSurfaceBase::UpdateFrameType() {
 gfx::Rect ShellSurfaceBase::GetVisibleBounds() const {
   // Use |geometry_| if set, otherwise use the visual bounds of the surface.
   if (geometry_.IsEmpty()) {
-    return root_surface() ? gfx::Rect(root_surface()->content_size())
-                          : gfx::Rect();
+    gfx::Size size;
+    if (root_surface()) {
+      size = root_surface()->content_size();
+      if (client_submits_surfaces_in_pixel_coordinates()) {
+        int dsf = std::ceil(host_window()->layer()->device_scale_factor());
+        size = gfx::ScaleToRoundedSize(size, 1.0f / dsf);
+      }
+    }
+    return gfx::Rect(size);
   }
 
   const auto* screen = display::Screen::GetScreen();

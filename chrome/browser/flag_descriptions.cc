@@ -2033,8 +2033,8 @@ const char kPdfXfaFormsDescription[] =
     "Enables support for XFA forms in PDFs. "
     "Has no effect if Chrome was not built with XFA support.";
 
-const char kForceWebContentsDarkModeName[] = "Force Dark Mode for Web Contents";
-const char kForceWebContentsDarkModeDescription[] =
+const char kAutoWebContentsDarkModeName[] = "Auto Dark Mode for Web Contents";
+const char kAutoWebContentsDarkModeDescription[] =
     "Automatically render all web contents using a dark theme.";
 
 const char kForcedColorsName[] = "Forced Colors";
@@ -2099,9 +2099,9 @@ const char kBookmarksImprovedSaveFlowName[] = "Improved bookmarks save flow";
 const char kBookmarksImprovedSaveFlowDescription[] =
     "Enabled an improved save flow for bookmarks.";
 
-const char kBookmarksRefreshName[] = "Bookmarks visual refresh";
+const char kBookmarksRefreshName[] = "Bookmarks refresh";
 const char kBookmarksRefreshDescription[] =
-    "Enalbed a visual refresh for bookmarks.";
+    "Enable various changes to bookmarks.";
 
 const char kPrerender2Name[] = "Prerender2";
 const char kPrerender2Description[] =
@@ -3492,13 +3492,6 @@ const char kSafeBrowsingClientSideDetectionAndroidName[] =
     "Safe Browsing Client Side Detection on Android";
 const char kSafeBrowsingClientSideDetectionAndroidDescription[] =
     "Enable DOM feature collection on Safe Browsing pings on Android";
-
-const char kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroidName[] =
-    "Safe Browsing PasswordCheck Integration for Saved Passwords Android";
-const char
-    kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroidDescription[] =
-        "Allows Android Chrome users to change their saved passwords through "
-        "password reuse warnings on phishing or low reputation sites.";
 
 const char kEnhancedProtectionPromoAndroidName[] =
     "Enable enhanced protection promo card on Android on the New Tab Page";
@@ -5212,6 +5205,10 @@ const char kWindowControlMenu[] = "Float current active window";
 const char kWindowControlMenuDescription[] =
     "Enables the accelerator (Control + Alt + F) to float current active "
     "window.";
+
+const char kLauncherNudgeName[] = "Enable launcher nudge";
+const char kLauncherNudgeDescription[] =
+    "Enables nudges that bring new users' attention to the launcher button.";
 
 // Prefer keeping this section sorted to adding new definitions down here.
 

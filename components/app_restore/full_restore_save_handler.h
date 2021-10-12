@@ -150,10 +150,10 @@ class COMPONENT_EXPORT(APP_RESTORE) FullRestoreSaveHandler
                             const std::string& app_id,
                             int window_id);
 
-  // Removes WindowInfo from |profile_path| for |app_id| and |window_id|.
-  void RemoveWindowInfo(const base::FilePath& profile_path,
-                        const std::string& app_id,
-                        int window_id);
+  // Sends the window for `profile_path` `app_id and `window_id` to background.
+  void SendWindowToBackground(const base::FilePath& profile_path,
+                              const std::string& app_id,
+                              int window_id);
 
   // Starts the timer, and when timeout, clears restore data for |profile_path|.
   void ClearRestoreData(const base::FilePath& profile_path);
@@ -169,8 +169,6 @@ class COMPONENT_EXPORT(APP_RESTORE) FullRestoreSaveHandler
   // Returns the full restore app id for |window| that can be used to look up
   // the window's associated AppRestoreData.
   std::string GetAppId(aura::Window* window);
-
-  int window_count() const { return window_count_; }
 
   base::OneShotTimer* GetTimerForTesting() { return &save_timer_; }
 
@@ -280,9 +278,6 @@ class COMPONENT_EXPORT(APP_RESTORE) FullRestoreSaveHandler
   // When one of the above condition is matched, allow_save_ is set as true to
   // permit `save_timer_` to start periodically triggering saving to disk.
   bool allow_save_ = false;
-
-  // The number of window created. This is used for metrics only.
-  int window_count_ = 0;
 
   base::ScopedObservation<aura::Env, aura::EnvObserver> env_observer_{this};
 

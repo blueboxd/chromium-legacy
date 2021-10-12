@@ -1165,8 +1165,8 @@ extern const char kBookmarksImprovedSaveFlowDescription[];
 extern const char kBookmarksRefreshName[];
 extern const char kBookmarksRefreshDescription[];
 
-extern const char kForceWebContentsDarkModeName[];
-extern const char kForceWebContentsDarkModeDescription[];
+extern const char kAutoWebContentsDarkModeName[];
+extern const char kAutoWebContentsDarkModeDescription[];
 
 extern const char kForcedColorsName[];
 extern const char kForcedColorsDescription[];
@@ -1999,11 +1999,6 @@ extern const char kRequestDesktopSiteForTabletsDescription[];
 
 extern const char kSafeBrowsingClientSideDetectionAndroidName[];
 extern const char kSafeBrowsingClientSideDetectionAndroidDescription[];
-
-extern const char
-    kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroidName[];
-extern const char
-    kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroidDescription[];
 
 extern const char kEnhancedProtectionPromoAndroidName[];
 extern const char kEnhancedProtectionPromoAndroidDescription[];
@@ -3004,6 +2999,9 @@ extern const char kWifiSyncAndroidDescription[];
 
 extern const char kWindowControlMenu[];
 extern const char kWindowControlMenuDescription[];
+
+extern const char kLauncherNudgeName[];
+extern const char kLauncherNudgeDescription[];
 
 // Prefer keeping this section sorted to adding new declarations down here.
 

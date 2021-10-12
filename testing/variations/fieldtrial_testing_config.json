@@ -2008,6 +2008,21 @@
             ]
         }
     ],
+    "ChromeOSWallpaperMigration": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WallpaperWebUI"
+                    ]
+                }
+            ]
+        }
+    ],
     "ChromeShareLongScreenshot": [
         {
             "platforms": [
@@ -2714,6 +2729,23 @@
                     "name": "Enabled_20191004",
                     "enable_features": [
                         "DefaultPassthroughCommandDecoder"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DesktopBookmarksBarAppShortcut": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AppsShortcutDefaultOff"
                     ]
                 }
             ]
@@ -6821,21 +6853,6 @@
             ]
         }
     ],
-    "SafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid"
-                    ]
-                }
-            ]
-        }
-    ],
     "SafeBrowsingPasswordProtectionForSignedInUsers": [
         {
             "platforms": [
@@ -6866,6 +6883,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafeBrowsingPasswordProtectionRequestWithToken"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingRealTimeUrlLookupReferrerChainForEnterprise": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingRealTimeUrlLookupReferrerChainForEnterprise"
                     ]
                 }
             ]
@@ -7268,6 +7304,7 @@
                 {
                     "name": "ShrinkLogo",
                     "params": {
+                        "show_return_to_recent_tab": "true",
                         "shrink_logo": "true"
                     },
                     "enable_features": [

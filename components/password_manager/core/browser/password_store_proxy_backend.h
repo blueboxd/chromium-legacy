@@ -17,9 +17,10 @@ namespace password_manager {
 // while the shadow backend is only queried to record shadow traffic.
 class PasswordStoreProxyBackend : public PasswordStoreBackend {
  public:
-  PasswordStoreProxyBackend(
-      std::unique_ptr<PasswordStoreBackend> main_backend,
-      std::unique_ptr<PasswordStoreBackend> shadow_backend);
+  // `main_backend` and `shadow_backend` must not be null and must outlive this
+  // object as long as Shutdown() is not called.
+  PasswordStoreProxyBackend(PasswordStoreBackend* main_backend,
+                            PasswordStoreBackend* shadow_backend);
   PasswordStoreProxyBackend(const PasswordStoreProxyBackend&) = delete;
   PasswordStoreProxyBackend(PasswordStoreProxyBackend&&) = delete;
   PasswordStoreProxyBackend& operator=(const PasswordStoreProxyBackend&) =
@@ -63,8 +64,8 @@ class PasswordStoreProxyBackend : public PasswordStoreBackend {
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
   CreateSyncControllerDelegateFactory() override;
 
-  std::unique_ptr<PasswordStoreBackend> main_backend_;
-  std::unique_ptr<PasswordStoreBackend> shadow_backend_;
+  PasswordStoreBackend* const main_backend_;
+  PasswordStoreBackend* const shadow_backend_;
 };
 
 }  // namespace password_manager

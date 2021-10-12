@@ -11,23 +11,12 @@ js_type_check("closure_compile") {
   is_polymer3 = true
   closure_flags = settings_closure_flags + mojom_js_args
   deps = [
-    ":account_manager_browser_proxy",
     ":profile_info_browser_proxy",
-    ":sync_browser_proxy",
   ]
-}
-
-js_library("account_manager_browser_proxy") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
 js_library("profile_info_browser_proxy") {
   deps = [ "//ui/webui/resources/js:cr.m" ]
-}
-
-js_library("sync_browser_proxy") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
-  externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 html_to_js("web_components") {

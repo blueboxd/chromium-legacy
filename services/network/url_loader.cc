@@ -27,6 +27,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_id_helper.h"
+#include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -44,6 +46,8 @@
 #include "net/cookies/static_cookie_policy.h"
 #include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_request_headers.h"
+#include "net/log/net_log_source_type.h"
+#include "net/log/net_log_with_source.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_private_key.h"
@@ -516,7 +520,9 @@ URLLoader::URLLoader(
       allow_http1_for_streaming_upload_(
           request.request_body &&
           request.request_body->AllowHTTP1ForStreamingUpload()),
-      accept_ch_frame_observer_(std::move(accept_ch_frame_observer)) {
+      accept_ch_frame_observer_(std::move(accept_ch_frame_observer)),
+      trace_id_(base::trace_event::GetNextGlobalTraceId()) {
+  TRACE_EVENT("loading", "URLLoader::URLLoader", perfetto::Flow(trace_id_));
   DCHECK(delete_callback_);
   DCHECK(factory_params_);
 
@@ -542,10 +548,7 @@ URLLoader::URLLoader(
       base::BindOnce(&URLLoader::OnMojoDisconnect, base::Unretained(this)));
   url_request_ = url_request_context_->CreateRequest(
       GURL(request.url), request.priority, this, traffic_annotation,
-      /*is_for_websockets=*/false,
-      request.net_log_params
-          ? absl::make_optional(request.net_log_params->source_id)
-          : absl::nullopt);
+      /*is_for_websockets=*/false, request.net_log_create_info);
 
   url_request_->set_method(request.method);
   url_request_->set_site_for_cookies(request.site_for_cookies);
@@ -651,6 +654,13 @@ URLLoader::URLLoader(
   if (keepalive_ && keepalive_statistics_recorder_) {
     keepalive_statistics_recorder_->OnLoadStarted(
         *factory_params_->top_frame_id, keepalive_request_size_);
+  }
+
+  if (request.net_log_reference_info) {
+    // Log source object that created the request, if avairable.
+    url_request_->net_log().AddEventReferencingSource(
+        net::NetLogEventType::CREATED_BY,
+        request.net_log_reference_info.value());
   }
 
 #if defined(OS_ANDROID)
@@ -1871,8 +1881,8 @@ void URLLoader::DeleteSelf() {
 }
 
 void URLLoader::SendResponseToClient() {
-  TRACE_EVENT1("loading", "network::URLLoader::SendResponseToClient", "url",
-               url_request_->url().possibly_invalid_spec());
+  TRACE_EVENT("loading", "network::URLLoader::SendResponseToClient",
+              perfetto::Flow(trace_id_), "url", url_request_->url());
   url_loader_client_->OnReceiveResponse(std::move(response_));
   url_loader_client_->OnStartLoadingResponseBody(std::move(consumer_handle_));
 }

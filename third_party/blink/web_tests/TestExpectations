@@ -6549,7 +6549,6 @@ crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-createDTMFSe
 crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-datachannel.html [ Pass Timeout ]
 crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-lifetime.html [ Pass Timeout ]
 crbug.com/1215575 [ Mac11-arm64 ] fast/peerconnection/RTCPeerConnection-lifetime.html [ Pass Timeout ]
-crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-sdes-gcm.html [ Pass Timeout ]
 crbug.com/1215584 [ Mac11.0 ] inspector-protocol/layout-fonts/lang-fallback.js [ Failure Pass ]
 
 # Fail with field trial testing config.
@@ -6878,7 +6877,7 @@ crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-colo
 crbug.com/1247758 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-pattern-over-image.html [ Pass Timeout ]
 
 # Sheriff 2021-09-13
-crbug.com/1229701 [ Linux ] http/tests/inspector-protocol/network/disable-cache-media-resource.js [ Failure Pass ]
+crbug.com/1229701 [ Linux ] http/tests/inspector-protocol/network/disable-cache-media-resource.js [ Failure Pass Timeout ]
 
 # WebRTC simulcast tests contineue to be flaky
 crbug.com/1230534 [ Win ] external/wpt/webrtc/simulcast/vp8.https.html [ Pass Skip Timeout ]
@@ -7197,3 +7196,7 @@ crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-prof
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-object.html [ Failure Pass ]
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-svg.html [ Failure Pass ]
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/jpeg-with-color-profile.html [ Failure Pass ]
+
+# Sheriff 2021-10-12
+crbug.com/1259133 [ Mac10.14 ] external/wpt/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.commit.html [ Failure Pass ]
+crbug.com/1259133 [ Mac10.14 ] virtual/no-alloc-direct-call/external/wpt/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.commit.html [ Failure Pass ]

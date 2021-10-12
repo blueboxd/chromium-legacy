@@ -14,6 +14,7 @@ import '/os_apps_page/app_notification_handler.mojom-lite.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {recordSettingChange} from '../../metrics_recorder.m.js';
+import {createBoolPermissionValue, createTriStatePermissionValue, isBoolValue, isPermissionEnabled, isTriStateValue} from '../permission_util.js';
 
 import {getAppNotificationProvider} from './mojo_interface_provider.js';
 
@@ -58,34 +59,20 @@ export class AppNotificationRowElement extends PolymerElement {
   }
 
   isNotificationPermissionEnabled_() {
-    if (this.app.notificationPermission.valueType ===
-            apps.mojom.PermissionValueType.kBool &&
-        this.app.notificationPermission.value === 1) {
-      this.checked_ = true;
-      return;
-    }
-
-    if (this.app.notificationPermission.valueType ===
-            apps.mojom.PermissionValueType.kTriState &&
-        this.app.notificationPermission.value === apps.mojom.TriState.kAllow) {
-      this.checked_ = true;
-      return;
-    }
-
-    this.checked_ = false;
+    this.checked_ = isPermissionEnabled(this.app.notificationPermission.value);
   }
 
   /** @param {!Event} event */
   onNotificationRowClicked_(event) {
     const permission = this.app.notificationPermission;
 
-    if (permission.valueType === apps.mojom.PermissionValueType.kBool) {
-      // apps.mojom.permission.value expects a number type.
-      permission.value = this.checked_ ? 0 : 1;
-    } else if (
-        permission.valueType === apps.mojom.PermissionValueType.kTriState) {
-      permission.value = this.checked_ ? apps.mojom.TriState.kBlock :
-                                         apps.mojom.TriState.kAllow;
+    if (isBoolValue(permission.value)) {
+      permission.value =
+          createBoolPermissionValue(this.checked_ ? false : true);
+    } else if (isTriStateValue(permission.value)) {
+      permission.value = createTriStatePermissionValue(
+          this.checked_ ? apps.mojom.TriState.kBlock :
+                          apps.mojom.TriState.kAllow);
     }
 
     this.mojoInterfaceProvider_.setNotificationPermission(

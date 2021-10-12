@@ -8,11 +8,13 @@ import {assert, assertNotReached} from '//resources/js/assert.m.js';
 import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from '../../metrics_recorder.m.js';
+import {PermissionType, PermissionValue, TriState} from '../permission_constants.js';
+import {createBoolPermission, createTriStatePermission, getBoolPermissionValue, getTriStatePermissionValue, isBoolValue, isTriStateValue} from '../permission_util.js';
 
 import {BrowserProxy} from './browser_proxy.js';
-import {AppManagementUserAction, Bool, PermissionType, PermissionValueType, TriState} from './constants.js';
+import {AppManagementUserAction} from './constants.js';
 import {AppManagementStoreClient} from './store_client.js';
-import {createPermission, getPermission, getPermissionValueBool, getSelectedApp, recordAppManagementUserAction} from './util.js';
+import {getPermission, getPermissionValueBool, getSelectedApp, recordAppManagementUserAction} from './util.js';
 
 Polymer({
   _template: html`{__html_template__}`,
@@ -166,20 +168,21 @@ Polymer({
     let newPermission;
 
     let newBoolState = false;  // to keep the closure compiler happy.
-    switch (getPermission(this.app_, this.permissionType).valueType) {
-      case PermissionValueType.kBool:
-        newPermission =
-            this.getUIPermissionBoolean_(this.app_, this.permissionType);
-        newBoolState = newPermission.value === Bool.kTrue;
-        break;
-      case PermissionValueType.kTriState:
-        newPermission =
-            this.getUIPermissionTriState_(this.app_, this.permissionType);
-        newBoolState = newPermission.value === TriState.kAllow;
-        break;
-      default:
-        assertNotReached();
+    const permissionValue = getPermission(this.app_, this.permissionType).value;
+    if (isBoolValue(permissionValue)) {
+      newPermission =
+          this.getUIPermissionBoolean_(this.app_, this.permissionType);
+      newBoolState = getBoolPermissionValue(newPermission.value);
+    } else if (isTriStateValue(permissionValue)) {
+      newPermission =
+          this.getUIPermissionTriState_(this.app_, this.permissionType);
+
+      newBoolState =
+          getTriStatePermissionValue(newPermission.value) === TriState.kAllow;
+    } else {
+      assertNotReached();
     }
+
     BrowserProxy.getInstance().handler.setPermission(
         this.app_.id, newPermission);
 
@@ -199,23 +202,15 @@ Polymer({
    * @private
    */
   getUIPermissionBoolean_(app, permissionType) {
-    let newPermissionValue;
     const currentPermission = getPermission(app, permissionType);
 
-    switch (currentPermission.value) {
-      case Bool.kFalse:
-        newPermissionValue = Bool.kTrue;
-        break;
-      case Bool.kTrue:
-        newPermissionValue = Bool.kFalse;
-        break;
-      default:
-        assertNotReached();
-    }
-    assert(newPermissionValue !== undefined);
-    return createPermission(
-        PermissionType[permissionType], PermissionValueType.kBool,
-        newPermissionValue, currentPermission.isManaged);
+    assert(isBoolValue(currentPermission.value));
+
+    const newPermissionValue = !getBoolPermissionValue(currentPermission.value);
+
+    return createBoolPermission(
+        PermissionType[permissionType], newPermissionValue,
+        currentPermission.isManaged);
   },
 
   /**
@@ -230,7 +225,9 @@ Polymer({
     let newPermissionValue;
     const currentPermission = getPermission(app, permissionType);
 
-    switch (currentPermission.value) {
+    assert(isTriStateValue(currentPermission.value));
+
+    switch (getTriStatePermissionValue(currentPermission.value)) {
       case TriState.kBlock:
         newPermissionValue = TriState.kAllow;
         break;
@@ -249,9 +246,9 @@ Polymer({
     }
 
     assert(newPermissionValue !== undefined);
-    return createPermission(
-        PermissionType[permissionType], PermissionValueType.kTriState,
-        newPermissionValue, currentPermission.isManaged);
+    return createTriStatePermission(
+        PermissionType[permissionType], newPermissionValue,
+        currentPermission.isManaged);
   },
 
   /**

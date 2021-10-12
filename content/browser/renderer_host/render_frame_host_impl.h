@@ -639,16 +639,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return renderer_url_info_.last_document_url;
   }
 
-  // Returns the "loading" URL in the renderer. This tries to replicate
-  // RenderFrameImpl::GetLoadingUrl(). This might return a different URL from
-  // GetLastCommittedURL() in case the document had changed its URL through
-  // document.open() before, and last_document_url_in_renderer() in case of
-  // error pages and loadDataWithBaseURL documents. See comments in the
-  // implementation for details.
-  // This function should only be used to preserve calculations that were
-  // previously done in the renderer but got moved to the browser (e.g. URL
-  // comparisons to determine if a navigation should do a replacement or not).
-  const GURL& GetLastLoadingURLInRenderer() const;
+  // Whether the last committed document was loaded from loadDataWithBaseURL or
+  // not.
+  bool was_loaded_from_load_data_with_base_url() const {
+    return renderer_url_info_.was_loaded_from_load_data_with_base_url;
+  }
 
   // Saves the URLs and other URL-related information used in the renderer.
   // These values can be used to know the current state of URLs in the renderer.
@@ -676,7 +671,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
     // Whether the currently committed document is a result of webview's
     // loadDataWithBaseURL API or not.
-    bool is_loaded_from_load_data_with_base_url = false;
+    bool was_loaded_from_load_data_with_base_url = false;
   };
 
   // Returns the storage key for the last committed document in this
@@ -1959,7 +1954,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DocumentAvailableInMainFrame(bool uses_temporary_zoom_level) override;
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
   void SetVirtualKeyboardOverlayPolicy(bool vk_overlays_content) override;
-  void EvictFromBackForwardCache(blink::mojom::RendererEvictionReason) override;
   void VisibilityChanged(blink::mojom::FrameVisibility) override;
   void DidChangeThemeColor(absl::optional<SkColor> theme_color) override;
   void DidChangeBackgroundColor(SkColor background_color,
@@ -2075,6 +2069,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const absl::optional<std::u16string>& source_id,
       const absl::optional<std::u16string>& untrusted_stack_trace) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
+
+  // blink::mojom::BackForwardCacheControllerHost:
+  void EvictFromBackForwardCache(blink::mojom::RendererEvictionReason) override;
 
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;

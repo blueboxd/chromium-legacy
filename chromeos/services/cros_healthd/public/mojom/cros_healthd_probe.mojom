@@ -23,24 +23,27 @@ enum CpuArchitectureEnum {
 };
 
 // An enumeration of each category of information that cros_healthd can report.
+//
+// NextMinVersion: 1, NextIndex: 17
 [Extensible]
 enum ProbeCategoryEnum {
-  kBattery,
-  kNonRemovableBlockDevices,
-  kCpu,
-  kTimezone,
-  kMemory,
-  kBacklight,
-  kFan,
-  kStatefulPartition,
-  kBluetooth,
-  kSystem,
-  kNetwork,
-  kAudio,
-  kBootPerformance,
-  kBus,
-  kTpm,
-  kGraphics,
+  [Default] kUnknown = 16,
+  kBattery = 0,
+  kNonRemovableBlockDevices = 1,
+  kCpu = 2,
+  kTimezone = 3,
+  kMemory = 4,
+  kBacklight = 5,
+  kFan = 6,
+  kStatefulPartition = 7,
+  kBluetooth = 8,
+  kSystem = 9,
+  kNetwork = 10,
+  kAudio = 11,
+  kBootPerformance = 12,
+  kBus = 13,
+  kTpm = 14,
+  kGraphics = 15,
 
   // TODO(b/190459636): Rename it to kSystem after migration.
   kSystem2 = 0x10000,
@@ -48,16 +51,19 @@ enum ProbeCategoryEnum {
 
 // An enumeration of the different categories of errors that can occur when
 // probing telemetry information.
+//
+// NextMinVersion: 1, NextIndex: 5
 [Extensible]
 enum ErrorType {
+  [Default] kUnknown = 4,
   // An error reading a system file.
-  kFileReadError,
+  kFileReadError = 0,
   // An error parsing data into a consumable form.
-  kParseError,
+  kParseError = 1,
   // An error using a system utility.
-  kSystemUtilityError,
+  kSystemUtilityError = 2,
   // The external service used to probe the information is not available.
-  kServiceUnavailable,
+  kServiceUnavailable = 3,
 };
 
 // Structure that contains error information for a telemetry probe.

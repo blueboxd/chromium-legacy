@@ -307,7 +307,8 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       },
       base::Unretained(this));
 
-  VaapiVideoEncoderDelegate::Config ave_config{};
+  VaapiVideoEncoderDelegate::Config ave_config{.native_input_mode =
+                                                   native_input_mode_};
   switch (output_codec_) {
     case VideoCodec::kH264:
       if (!IsConfiguredForTesting()) {
@@ -424,26 +425,6 @@ void VaapiVideoEncodeAccelerator::RecycleVASurface(
   EncodePendingInputs();
 }
 
-void VaapiVideoEncodeAccelerator::ExecuteEncode(VASurfaceID va_surface_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
-
-  if (!vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(va_surface_id))
-    NOTIFY_ERROR(kPlatformFailureError, "Failed to execute encode");
-}
-
-void VaapiVideoEncodeAccelerator::UploadFrame(
-    scoped_refptr<VideoFrame> frame,
-    VASurfaceID va_surface_id,
-    const gfx::Size& va_surface_size) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
-
-  DVLOGF(4) << "frame is uploading: " << va_surface_id;
-  if (!vaapi_wrapper_->UploadVideoFrameToSurface(*frame, va_surface_id,
-                                                 va_surface_size)) {
-    NOTIFY_ERROR(kPlatformFailureError, "Failed to upload frame");
-  }
-}
-
 void VaapiVideoEncodeAccelerator::TryToReturnBitstreamBuffer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
 
@@ -485,7 +466,7 @@ void VaapiVideoEncodeAccelerator::ReturnBitstreamBuffer(
   }
 
   auto metadata = encode_result->metadata();
-  metadata.payload_size_bytes = data_size;
+  DCHECK_NE(metadata.payload_size_bytes, 0u);
   encode_result.reset();
 
   DVLOGF(4) << "Returning bitstream buffer "
@@ -809,19 +790,9 @@ VaapiVideoEncodeAccelerator::CreateEncodeJob(
       return nullptr;
   }
 
-  auto job = std::make_unique<EncodeJob>(
-      frame, force_keyframe,
-      base::BindOnce(&VaapiVideoEncodeAccelerator::ExecuteEncode,
-                     encoder_weak_this_, input_surface->id()),
-      input_surface, std::move(picture), std::move(coded_buffer));
-
-  if (!native_input_mode_) {
-    job->AddSetupCallback(base::BindOnce(
-        &VaapiVideoEncodeAccelerator::UploadFrame, encoder_weak_this_, frame,
-        input_surface->id(), input_surface->size()));
-  }
-
-  return job;
+  return std::make_unique<EncodeJob>(frame, force_keyframe, input_surface,
+                                     std::move(picture),
+                                     std::move(coded_buffer));
 }
 
 void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
@@ -885,20 +856,14 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
     }
 
     for (auto&& job : jobs) {
-      if (!encoder_->PrepareEncodeJob(*job.get())) {
-        NOTIFY_ERROR(kPlatformFailureError, "Failed preparing an encode job.");
+      TRACE_EVENT0("media,gpu", "VAVEA::FromEncodeToReturn");
+      std::unique_ptr<EncodeResult> result = encoder_->Encode(std::move(job));
+      if (!result) {
+        NOTIFY_ERROR(kPlatformFailureError, "Failed encoding job");
         return;
       }
 
-      TRACE_EVENT0("media,gpu", "VAVEA::FromExecuteToReturn");
-      {
-        TRACE_EVENT0("media,gpu", "VAVEA::Execute");
-        job->Execute();
-      }
-
-      auto metadata = encoder_->GetMetadata(job.get(), 0u);
-      pending_encode_results_.push(
-          std::make_unique<EncodeResult>(std::move(job), metadata));
+      pending_encode_results_.push(std::move(result));
       TryToReturnBitstreamBuffer();
     }
 

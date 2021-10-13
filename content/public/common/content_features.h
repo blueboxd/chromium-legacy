@@ -31,7 +31,9 @@ CONTENT_EXPORT extern const base::Feature kAudioServiceSandbox;
 CONTENT_EXPORT extern const base::Feature kBackgroundFetch;
 CONTENT_EXPORT extern const base::Feature kBackForwardCache;
 CONTENT_EXPORT extern const base::Feature kBackForwardCacheSameSiteForBots;
+CONTENT_EXPORT extern const base::Feature kBackForwardCacheMediaPlay;
 CONTENT_EXPORT extern const base::Feature kBackForwardCacheMemoryControls;
+CONTENT_EXPORT extern const base::Feature kBackForwardCacheMediaSessionService;
 CONTENT_EXPORT extern const base::Feature kBlockCredentialedSubresources;
 CONTENT_EXPORT extern const base::Feature kBlockInsecurePrivateNetworkRequests;
 CONTENT_EXPORT extern const base::Feature
@@ -226,6 +228,9 @@ CONTENT_EXPORT extern const base::Feature kTouchpadAsyncPinchEvents;
 CONTENT_EXPORT extern const base::Feature kTouchpadOverscrollHistoryNavigation;
 CONTENT_EXPORT extern const base::Feature kTrustedDOMTypes;
 CONTENT_EXPORT extern const base::Feature kUnrestrictedSharedArrayBuffer;
+#if defined(OS_ANDROID) && defined(INCLUDE_BOTH_V8_SNAPSHOTS)
+CONTENT_EXPORT extern const base::Feature kUseContextSnapshot;
+#endif
 CONTENT_EXPORT extern const base::Feature kUserActivationSameOriginVisibility;
 CONTENT_EXPORT extern const base::Feature kVerifyDidCommitParams;
 CONTENT_EXPORT extern const base::Feature kVideoPlaybackQuality;

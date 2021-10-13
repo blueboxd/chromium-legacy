@@ -751,9 +751,9 @@
     "expiry_milestone": 99
   },
   {
-    "name": "color-provider-redirection",
+    "name": "color-provider-redirection-for-theme-provider",
     "owners": [ "//ui/color/OWNERS" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 102
   },
   {
     "name": "colr-v1-fonts",
@@ -2530,6 +2530,11 @@
     "name": "enable-sharesheet-content-previews",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
     "expiry_milestone": 96
+  },
+  {
+    "name": "enable-sharesheet-copy-to-clipboard",
+    "owners": [ "melzhang", "chromeos-apps-foundation-team" ],
+    "expiry_milestone": 105
   },
   {
     "name": "enable-shortcut-customization-app",

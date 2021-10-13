@@ -464,8 +464,8 @@ extern const char kEnableRemovingAllThirdPartyCookiesDescription[];
 extern const char kEnableBrowsingDataLifetimeManagerName[];
 extern const char kEnableBrowsingDataLifetimeManagerDescription[];
 
-extern const char kColorProviderRedirectionName[];
-extern const char kColorProviderRedirectionDescription[];
+extern const char kColorProviderRedirectionForThemeProviderName[];
+extern const char kColorProviderRedirectionForThemeProviderDescription[];
 
 extern const char kDesktopPWAsAdditionalWindowingControlsName[];
 extern const char kDesktopPWAsAdditionalWindowingControlsDescription[];
@@ -2888,6 +2888,9 @@ extern const char kScanAppSearchablePdfDescription[];
 
 extern const char kScanAppStickySettingsName[];
 extern const char kScanAppStickySettingsDescription[];
+
+extern const char kSharesheetCopyToClipboardName[];
+extern const char kSharesheetCopyToClipboardDescription[];
 
 extern const char kShimlessRMAFlowName[];
 extern const char kShimlessRMAFlowDescription[];

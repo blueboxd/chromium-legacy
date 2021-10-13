@@ -1959,6 +1959,7 @@ bool RenderProcessHostImpl::Init() {
     std::unique_ptr<SandboxedProcessLauncherDelegate> sandbox_delegate =
         std::make_unique<RendererSandboxedProcessLauncherDelegate>();
 #endif
+    auto snapshot_files = GetV8SnapshotFilesToPreload(*cmd_line);
     // Spawn the child process asynchronously to avoid blocking the UI thread.
     // As long as there's no renderer prefix, we can use the zygote process
     // at this stage.
@@ -1966,7 +1967,7 @@ bool RenderProcessHostImpl::Init() {
         std::move(sandbox_delegate), std::move(cmd_line), GetID(), this,
         std::move(mojo_invitation_),
         base::BindRepeating(&RenderProcessHostImpl::OnMojoError, id_),
-        GetV8SnapshotFilesToPreload());
+        std::move(snapshot_files));
     channel_->Pause();
 
     // In single process mode, browser-side tracing and memory will cover the
@@ -3732,8 +3733,10 @@ bool RenderProcessHostImpl::FastShutdownIfPossible(size_t page_count,
   if (worker_ref_count_ != 0)
     return false;
 
-  // Note: we intentionally don't include a |shutdown_delay_ref_count_| check
-  // here, since it doesn't preclude fast shutdown.
+  // TODO(wjmaclean): This is probably unnecessary, but let's remove it in a
+  // separate CL to be safe.
+  if (shutdown_delay_ref_count_ != 0)
+    return false;
 
   // Set this before ProcessDied() so observers can tell if the render process
   // died due to fast shutdown versus another cause.

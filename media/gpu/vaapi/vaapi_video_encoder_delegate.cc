@@ -10,6 +10,7 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/codec_picture.h"
 #include "media/gpu/gpu_video_encode_accelerator_helpers.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -20,7 +21,6 @@ namespace media {
 VaapiVideoEncoderDelegate::EncodeJob::EncodeJob(
     scoped_refptr<VideoFrame> input_frame,
     bool keyframe,
-    base::OnceClosure execute_cb,
     scoped_refptr<VASurface> input_surface,
     scoped_refptr<CodecPicture> picture,
     std::unique_ptr<ScopedVABuffer> coded_buffer)
@@ -29,24 +29,18 @@ VaapiVideoEncoderDelegate::EncodeJob::EncodeJob(
       keyframe_(keyframe),
       input_surface_(input_surface),
       picture_(std::move(picture)),
-      coded_buffer_(std::move(coded_buffer)),
-      execute_callback_(std::move(execute_cb)) {
+      coded_buffer_(std::move(coded_buffer)) {
   DCHECK(input_surface_);
   DCHECK(picture_);
   DCHECK(coded_buffer_);
-  DCHECK(!execute_callback_.is_null());
 }
 
 VaapiVideoEncoderDelegate::EncodeJob::EncodeJob(
     scoped_refptr<VideoFrame> input_frame,
-    bool keyframe,
-    base::OnceClosure execute_cb)
+    bool keyframe)
     : input_frame_(input_frame),
       timestamp_(input_frame->timestamp()),
-      keyframe_(keyframe),
-      execute_callback_(std::move(execute_cb)) {
-  DCHECK(!execute_callback_.is_null());
-}
+      keyframe_(keyframe) {}
 
 VaapiVideoEncoderDelegate::EncodeJob::~EncodeJob() = default;
 
@@ -56,30 +50,22 @@ void VaapiVideoEncoderDelegate::EncodeJob::AddSetupCallback(
   setup_callbacks_.push(std::move(cb));
 }
 
-void VaapiVideoEncoderDelegate::EncodeJob::AddPostExecuteCallback(
-    base::OnceClosure cb) {
-  DCHECK(!cb.is_null());
-  post_execute_callbacks_.push(std::move(cb));
-}
-
 void VaapiVideoEncoderDelegate::EncodeJob::AddReferencePicture(
     scoped_refptr<CodecPicture> ref_pic) {
   DCHECK(ref_pic);
   reference_pictures_.push_back(ref_pic);
 }
 
-void VaapiVideoEncoderDelegate::EncodeJob::Execute() {
+void VaapiVideoEncoderDelegate::EncodeJob::ExecuteSetupCallbacks() {
   while (!setup_callbacks_.empty()) {
     std::move(setup_callbacks_.front()).Run();
     setup_callbacks_.pop();
   }
+}
 
-  std::move(execute_callback_).Run();
-
-  while (!post_execute_callbacks_.empty()) {
-    std::move(post_execute_callbacks_.front()).Run();
-    post_execute_callbacks_.pop();
-  }
+const scoped_refptr<VideoFrame>&
+VaapiVideoEncoderDelegate::EncodeJob::input_frame() const {
+  return input_frame_;
 }
 
 VABufferID VaapiVideoEncoderDelegate::EncodeJob::coded_buffer_id() const {
@@ -134,20 +120,50 @@ size_t VaapiVideoEncoderDelegate::GetBitstreamBufferSize() const {
 void VaapiVideoEncoderDelegate::BitrateControlUpdate(
     uint64_t encoded_chunk_size_bytes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  NOTREACHED()
-      << __func__ << "() is called to on an"
-      << "VaapiVideoEncoderDelegate that doesn't support BitrateControl"
-      << "::kConstantQuantizationParameter";
 }
 
 BitstreamBufferMetadata VaapiVideoEncoderDelegate::GetMetadata(
-    EncodeJob* encode_job,
+    const EncodeJob& encode_job,
     size_t payload_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  return BitstreamBufferMetadata(
-      payload_size, encode_job->IsKeyframeRequested(), encode_job->timestamp());
+  return BitstreamBufferMetadata(payload_size, encode_job.IsKeyframeRequested(),
+                                 encode_job.timestamp());
+}
+
+std::unique_ptr<VaapiVideoEncoderDelegate::EncodeResult>
+VaapiVideoEncoderDelegate::Encode(std::unique_ptr<EncodeJob> encode_job) {
+  if (!PrepareEncodeJob(*encode_job)) {
+    VLOGF(1) << "Failed preparing an encode job";
+    return nullptr;
+  }
+
+  const VASurfaceID va_surface_id = encode_job->input_surface()->id();
+  if (!native_input_mode_ && !vaapi_wrapper_->UploadVideoFrameToSurface(
+                                 *encode_job->input_frame(), va_surface_id,
+                                 encode_job->input_surface()->size())) {
+    VLOGF(1) << "Failed to upload frame";
+    return nullptr;
+  }
+
+  encode_job->ExecuteSetupCallbacks();
+
+  if (!vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(va_surface_id)) {
+    VLOGF(1) << "Failed to execute encode";
+    return nullptr;
+  }
+
+  const uint64_t encoded_chunk_size = vaapi_wrapper_->GetEncodedChunkSize(
+      encode_job->coded_buffer_id(), va_surface_id);
+  if (encoded_chunk_size == 0) {
+    VLOGF(1) << "Invalid encoded chunk size";
+    return nullptr;
+  }
+
+  BitrateControlUpdate(encoded_chunk_size);
+
+  auto metadata = GetMetadata(*encode_job, encoded_chunk_size);
+  return std::make_unique<EncodeResult>(std::move(encode_job), metadata);
 }
 
 void VaapiVideoEncoderDelegate::SubmitBuffer(

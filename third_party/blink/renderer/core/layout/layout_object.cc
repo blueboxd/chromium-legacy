@@ -592,42 +592,21 @@ void LayoutObject::RegisterSubtreeChangeListenerOnDescendants(bool value) {
     curr->RegisterSubtreeChangeListenerOnDescendants(value);
 }
 
-void LayoutObject::NotifyAncestorsOfSubtreeChange() {
+bool LayoutObject::NotifyOfSubtreeChange() {
   NOT_DESTROYED();
-  if (bitfields_.NotifiedOfSubtreeChange())
-    return;
-
+  if (!bitfields_.SubtreeChangeListenerRegistered() ||
+      bitfields_.NotifiedOfSubtreeChange()) {
+    return false;
+  }
   bitfields_.SetNotifiedOfSubtreeChange(true);
-  if (Parent())
-    Parent()->NotifyAncestorsOfSubtreeChange();
-}
-
-void LayoutObject::NotifyOfSubtreeChange() {
-  NOT_DESTROYED();
-  if (!bitfields_.SubtreeChangeListenerRegistered())
-    return;
-  if (bitfields_.NotifiedOfSubtreeChange())
-    return;
-  NotifyAncestorsOfSubtreeChange();
-  GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
+  return true;
 }
 
 void LayoutObject::HandleSubtreeModifications() {
   NOT_DESTROYED();
-  DCHECK(WasNotifiedOfSubtreeChange());
-  DCHECK(GetDocument().Lifecycle().StateAllowsLayoutTreeNotifications());
-
   if (ConsumesSubtreeChangeNotification())
     SubtreeDidChange();
-
   bitfields_.SetNotifiedOfSubtreeChange(false);
-
-  for (LayoutObject* object = SlowFirstChild(); object;
-       object = object->NextSibling()) {
-    if (!object->WasNotifiedOfSubtreeChange())
-      continue;
-    object->HandleSubtreeModifications();
-  }
 }
 
 LayoutObject* LayoutObject::NextInPreOrder() const {
@@ -3128,7 +3107,8 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
         // <br> or <wbr>.
         // See StyleToHorizontalWritingModeWithWordBreak
         DCHECK(child->SlowFirstChild()->IsBR() ||
-               To<LayoutText>(child->SlowFirstChild())->IsWordBreak());
+               To<LayoutText>(child->SlowFirstChild())->IsWordBreak() ||
+               child->SlowFirstChild()->GetNode()->NeedsReattachLayoutTree());
       } else {
         // "text-combine-width-after-style-change.html" reaches here.
         StyleAdjuster::AdjustStyleForTextCombine(*new_style);

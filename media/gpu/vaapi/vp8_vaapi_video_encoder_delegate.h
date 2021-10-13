@@ -71,8 +71,6 @@ class VP8VaapiVideoEncoderDelegate : public VaapiVideoEncoderDelegate {
   gfx::Size GetCodedSize() const override;
   size_t GetMaxNumOfRefFrames() const override;
   std::vector<gfx::Size> GetSVCLayerResolutions() override;
-  bool PrepareEncodeJob(EncodeJob& encode_job) override;
-  void BitrateControlUpdate(uint64_t encoded_chunk_size_bytes) override;
 
  private:
   void InitializeFrameHeader();
@@ -80,10 +78,8 @@ class VP8VaapiVideoEncoderDelegate : public VaapiVideoEncoderDelegate {
   void UpdateReferenceFrames(scoped_refptr<VP8Picture> picture);
   void Reset();
 
-  // Gets the encoded chunk size whose id is |buffer_id| and updates the bitrate
-  // control.
-  void NotifyEncodedChunkSize(VABufferID buffer_id,
-                              VASurfaceID sync_surface_id);
+  bool PrepareEncodeJob(EncodeJob& encode_job) override;
+  void BitrateControlUpdate(uint64_t encoded_chunk_size_bytes) override;
 
   bool SubmitFrameParameters(
       EncodeJob& job,

@@ -11087,18 +11087,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>Mouse scroll sensitivity value. Only reported on Chrome OS.</summary>
 </histogram>
 
-<histogram name="MPArch.ChildProcessLaunchFirst" units="units"
+<histogram name="MPArch.ChildProcessLaunchFirst" units="ms"
     expires_after="2022-05-01">
-  <owner>ppi@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
   <summary>
     The time it takes to spawn the first child subprocess (including sandbox
     init).
   </summary>
 </histogram>
 
-<histogram name="MPArch.ChildProcessLaunchSubsequent" units="units"
+<histogram name="MPArch.ChildProcessLaunchSubsequent" units="ms"
     expires_after="2022-04-24">
-  <owner>ppi@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
   <summary>
     The time it takes to spawn child sub processes not counting the first one.
   </summary>
@@ -13470,6 +13472,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Privacy.ThirdPartyCookieBlockingEnabledForSite" enum="Boolean"
     expires_after="2022-04-10">
+  <obsolete>
+    Removed in M96. Replaced by
+    Navigation.MainFrame.ThirdPartyCookieBlockingEnabled.
+  </obsolete>
   <owner>dullweber@chromium.org</owner>
   <owner>huanzhong@chromium.org</owner>
   <summary>
@@ -18009,6 +18015,26 @@ should be kept until we use this API.  -->
     expires_after="M85">
   <owner>jhawkins@chromium.org</owner>
   <summary>Tracks touchpad device state.</summary>
+</histogram>
+
+<histogram name="Touchpad.HapticFeedback.Changed" enum="BooleanEnabled"
+    expires_after="2022-10-07">
+  <owner>gavinwill@chromium.org</owner>
+  <owner>cros-peripherals@chromium.org</owner>
+  <summary>
+    Tracks touchpad haptic feedback setting changes by the user. Only reported
+    on Chrome OS.
+  </summary>
+</histogram>
+
+<histogram name="Touchpad.HapticFeedback.Started" enum="BooleanEnabled"
+    expires_after="2022-10-07">
+  <owner>gavinwill@chromium.org</owner>
+  <owner>cros-peripherals@chromium.org</owner>
+  <summary>
+    Tracks touchpad haptic feedback setting on startup. Only reported on Chrome
+    OS.
+  </summary>
 </histogram>
 
 <histogram name="Touchpad.NaturalScroll.Changed" enum="BooleanEnabled"

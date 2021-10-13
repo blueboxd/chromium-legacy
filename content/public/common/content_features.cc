@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/common/content_features.h"
+
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -75,6 +76,15 @@ const base::Feature kBackgroundFetch{"BackgroundFetch",
 // Enable using the BackForwardCache.
 const base::Feature kBackForwardCache{"BackForwardCache",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Allows pages with a media play to stay eligible the back/forward cache.
+const base::Feature kBackForwardCacheMediaPlay{
+    "BackForwardCacheMediaPlay", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Allows pages that created a MediaSession service to stay eligible for the
+// back/forward cache.
+const base::Feature kBackForwardCacheMediaSessionService{
+    "BackForwardCacheMediaSessionService", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable same-site back-forward cache for trybots. This is here because of
 // https://crbug.com/1211818 and should only used for trybots. For normal use
@@ -870,6 +880,12 @@ const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
 // https://crbug.com/1144104
 const base::Feature kUnrestrictedSharedArrayBuffer{
     "UnrestrictedSharedArrayBuffer", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_ANDROID) && defined(INCLUDE_BOTH_V8_SNAPSHOTS)
+// If enabled, blink's context snapshot is used rather than the v8 snapshot.
+const base::Feature kUseContextSnapshot{"UseContextSnapshot",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // Allows user activation propagation to all frames having the same origin as
 // the activation notifier frame.  This is an intermediate measure before we

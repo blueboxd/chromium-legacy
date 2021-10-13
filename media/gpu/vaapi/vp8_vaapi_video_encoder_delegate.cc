@@ -109,12 +109,6 @@ libvpx::VP8RateControlRtcConfig CreateRateControlConfig(
   return rc_cfg;
 }
 
-static scoped_refptr<base::RefCountedBytes> MakeRefCountedBytes(void* ptr,
-                                                                size_t size) {
-  return base::MakeRefCounted<base::RefCountedBytes>(
-      reinterpret_cast<uint8_t*>(ptr), size);
-}
-
 scoped_refptr<VP8Picture> GetVP8Picture(
     const VaapiVideoEncoderDelegate::EncodeJob& job) {
   return base::WrapRefCounted(
@@ -172,6 +166,8 @@ bool VP8VaapiVideoEncoderDelegate::Initialize(
     DVLOGF(1) << "Only CQ bitrate control is supported";
     return false;
   }
+
+  native_input_mode_ = ave_config.native_input_mode;
 
   visible_size_ = config.input_visible_size;
   coded_size_ = gfx::Size(base::bits::AlignUp(visible_size_.width(), 16),
@@ -360,18 +356,6 @@ void VP8VaapiVideoEncoderDelegate::UpdateReferenceFrames(
   reference_frames_.Refresh(picture);
 }
 
-void VP8VaapiVideoEncoderDelegate::NotifyEncodedChunkSize(
-    VABufferID buffer_id,
-    VASurfaceID sync_surface_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const uint64_t encoded_chunk_size =
-      vaapi_wrapper_->GetEncodedChunkSize(buffer_id, sync_surface_id);
-  if (encoded_chunk_size == 0)
-    error_cb_.Run();
-
-  BitrateControlUpdate(encoded_chunk_size);
-}
-
 bool VP8VaapiVideoEncoderDelegate::SubmitFrameParameters(
     EncodeJob& job,
     const EncodeParams& encode_params,
@@ -492,26 +476,10 @@ bool VP8VaapiVideoEncoderDelegate::SubmitFrameParameters(
   qmatrix_buf.quantization_index_delta[4] =
       frame_header->quantization_hdr.uv_ac_delta;
 
-  job.AddSetupCallback(
-      base::BindOnce(&VaapiVideoEncoderDelegate::SubmitBuffer,
-                     base::Unretained(this), VAEncSequenceParameterBufferType,
-                     MakeRefCountedBytes(&seq_param, sizeof(seq_param))));
-
-  job.AddSetupCallback(
-      base::BindOnce(&VaapiVideoEncoderDelegate::SubmitBuffer,
-                     base::Unretained(this), VAEncPictureParameterBufferType,
-                     MakeRefCountedBytes(&pic_param, sizeof(pic_param))));
-
-  job.AddSetupCallback(
-      base::BindOnce(&VaapiVideoEncoderDelegate::SubmitBuffer,
-                     base::Unretained(this), VAQMatrixBufferType,
-                     MakeRefCountedBytes(&qmatrix_buf, sizeof(qmatrix_buf))));
-
-  job.AddPostExecuteCallback(
-      base::BindOnce(&VP8VaapiVideoEncoderDelegate::NotifyEncodedChunkSize,
-                     base::Unretained(this), job.coded_buffer_id(),
-                     job.input_surface()->id()));
-
-  return true;
+  return vaapi_wrapper_->SubmitBuffer(VAEncSequenceParameterBufferType,
+                                      &seq_param) &&
+         vaapi_wrapper_->SubmitBuffer(VAEncPictureParameterBufferType,
+                                      &pic_param) &&
+         vaapi_wrapper_->SubmitBuffer(VAQMatrixBufferType, &qmatrix_buf);
 }
 }  // namespace media

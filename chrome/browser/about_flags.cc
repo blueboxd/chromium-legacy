@@ -6533,10 +6533,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kScanAppStickySettings)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-    {"color-provider-redirection",
-     flag_descriptions::kColorProviderRedirectionName,
-     flag_descriptions::kColorProviderRedirectionDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kColorProviderRedirection)},
+    {"color-provider-redirection-for-theme-provider",
+     flag_descriptions::kColorProviderRedirectionForThemeProviderName,
+     flag_descriptions::kColorProviderRedirectionForThemeProviderDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kColorProviderRedirectionForThemeProvider)},
 
     {"trust-tokens", flag_descriptions::kTrustTokensName,
      flag_descriptions::kTrustTokensDescription, kOsAll,
@@ -7727,6 +7728,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableLibinputToHandleTouchpadName,
      flag_descriptions::kEnableLibinputToHandleTouchpadDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kLibinputHandleTouchpad)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"enable-sharesheet-copy-to-clipboard",
+     flag_descriptions::kSharesheetCopyToClipboardName,
+     flag_descriptions::kSharesheetCopyToClipboardDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kSharesheetCopyToClipboard)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

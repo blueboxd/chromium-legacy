@@ -21,7 +21,12 @@ using ::testing::Return;
 namespace media {
 namespace {
 
-VaapiVideoEncoderDelegate::Config kDefaultVEADelegateConfig{4};
+VaapiVideoEncoderDelegate::Config kDefaultVEADelegateConfig{
+    .max_num_ref_frames = 4,
+    .native_input_mode = false,
+    .bitrate_control =
+        VaapiVideoEncoderDelegate::BitrateControl::kConstantBitrate,
+};
 
 VideoEncodeAccelerator::Config kDefaultVEAConfig(
     PIXEL_FORMAT_I420,
@@ -140,8 +145,7 @@ H264VaapiVideoEncoderDelegateTest::CreateEncodeJob(bool keyframe) {
       kDefaultVEAConfig.input_visible_size.GetArea());
 
   return std::make_unique<VaapiVideoEncoderDelegate::EncodeJob>(
-      input_frame, keyframe, base::DoNothing(), va_surface, picture,
-      std::move(scoped_va_buffer));
+      input_frame, keyframe, va_surface, picture, std::move(scoped_va_buffer));
 }
 
 void H264VaapiVideoEncoderDelegateTest::SetUp() {
@@ -184,7 +188,7 @@ void H264VaapiVideoEncoderDelegateTest::EncodeFrame(bool force_keyframe) {
   const int frame_num = pic.frame_num;
   constexpr size_t kDummyPayloadSize = 12345;
   const BitstreamBufferMetadata metadata =
-      encoder_->GetMetadata(encode_job.get(), kDummyPayloadSize);
+      encoder_->GetMetadata(*encode_job.get(), kDummyPayloadSize);
   ASSERT_TRUE(metadata.h264.has_value());
 
   const uint8_t temporal_idx = metadata.h264->temporal_idx;

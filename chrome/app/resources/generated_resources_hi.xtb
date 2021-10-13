@@ -219,7 +219,6 @@
 <translation id="1218015446623563536">Linux मिटाएं</translation>
 <translation id="1218839827383191197"><ph name="BEGIN_PARAGRAPH1" />Google की जगह की जानकारी सेवा, इस डिवाइस की जगह का पता लगाने के लिए वाई-फ़ाई, मोबाइल नेटवर्क और सेंसर जैसे स्रोतों का इस्तेमाल करती है.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />आप इस डिवाइस पर जगह की मुख्य सेटिंग बंद करके जगह की जानकारी वाली सेवा को बंद कर सकते हैं. आप जगह की सेटिंग में जाकर वाई-फ़ाई, मोबाइल नेटवर्क और जगह की जानकारी का पता लगाने वाले सेंसर का इस्तेमाल करना बंद भी कर सकते हैं.<ph name="END_PARAGRAPH2" /></translation>
-<translation id="1219115285613502247"><ph name="LANGUAGE" /> स्पीच फ़ाइलें डाउनलोड नहीं की जा सकीं. बाद में, डाउनलोड करने की कोशिश की जाएगी. अब स्पीच को प्रोसेस करने के लिए, Google को भेजा गया है.</translation>
 <translation id="122082903575839559">प्रमाणपत्र हस्ताक्षर एल्गोरिद्म</translation>
 <translation id="1221024147024329929">RSA सुरक्षित करने के तरीके के साथ PKCS #1 MD2</translation>
 <translation id="1221825588892235038">सिर्फ़ चुनें</translation>
@@ -306,6 +305,7 @@
 <translation id="1313660246522271310">आप सभी साइटों और खुले हुए टैब से साइन आउट हो जाएंगे</translation>
 <translation id="1313705515580255288">आपके बुकमार्क, इतिहास, और अन्य सेटिंग को आपके Google खाते में समन्वयित किया जाएगा</translation>
 <translation id="1316136264406804862">खोज रहा है...</translation>
+<translation id="1316248800168909509"><ph name="DEVICE" /> से कनेक्ट नहीं किया जा सका. फिर से कोशिश करें.</translation>
 <translation id="1316495628809031177">सिंक रोका हुआ है</translation>
 <translation id="1317637799698924700">आपका डॉकिंग स्टेशन, यूएसबी टाइप-सी पर काम करने वाले मोड पर चलेगा.</translation>
 <translation id="1319983966058170660"><ph name="SUBPAGE_TITLE" /> सबपेज पर वापस जाने का बटन</translation>
@@ -1182,6 +1182,7 @@
 <translation id="2200356397587687044">जारी रखने के लिए Chrome को अनुमति चाहिए</translation>
 <translation id="2202898655984161076">प्रिंटरों को सूचीबद्ध करने में कोई समस्या थी. आपके प्रिंटरों में से कुछ <ph name="CLOUD_PRINT_NAME" /> के साथ सफलतापूर्वक पंजीकृत नहीं हो सके हैं.</translation>
 <translation id="2203088913459920044">नाम में अक्षर, संख्याएं, और विशेष वर्ण इस्तेमाल किए जा सकते हैं</translation>
+<translation id="220321590587754225">कनेक्ट नहीं किया जा सका. फिर से कोशिश करें.</translation>
 <translation id="2204034823255629767">आप जो कुछ भी लिखते हैं उसे पढ़ें और बदलें</translation>
 <translation id="220858061631308971">कृपया इस पिन कोड को "<ph name="DEVICE_NAME" />" पर दर्ज करें:</translation>
 <translation id="2212565012507486665">कुकी की अनुमति दें</translation>
@@ -4895,7 +4896,6 @@
 <translation id="6232017090690406397">बैटरी</translation>
 <translation id="6232116551750539448"><ph name="NAME" /> से कनेक्शन टूट गया</translation>
 <translation id="6233154960150021497">कीबोर्ड के बजाय आवाज़ का इस्तेमाल करना डिफ़ॉल्ट करें</translation>
-<translation id="6233455992368963267"><ph name="LANGUAGE" /> बोली को प्रोसेस के लिए, Google के पास भेजा जाता है.</translation>
 <translation id="6234108445915742946">Chrome की सेवा की शर्तें 31 मार्च से बदलने वाली हैं</translation>
 <translation id="6234474535228214774">इंस्टॉल होना बाकी है</translation>
 <translation id="6235208551686043831">डिवाइस का कैमरा चालू है. अपने ई-सिम क्यूआर कोड को कैमरे के सामने लाएं.</translation>
@@ -4932,6 +4932,7 @@
 <translation id="6263284346895336537">महत्वपूर्ण नहीं</translation>
 <translation id="6264365405983206840">&amp;सभी को चुनें</translation>
 <translation id="6265687851677020761">पोर्ट हटाएं</translation>
+<translation id="6266532094411434237"><ph name="DEVICE" /> से कनेक्ट किया जा रहा है</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME" /> पर अपना प्रमाणन करने के लिए किसी प्रमाणपत्र को चुनें</translation>
 <translation id="6268252012308737255"><ph name="APP" /> में खोलें</translation>
 <translation id="6270391203985052864">साइटें आपको सूचनाएं भेजने के लिए पूछ सकती हैं</translation>

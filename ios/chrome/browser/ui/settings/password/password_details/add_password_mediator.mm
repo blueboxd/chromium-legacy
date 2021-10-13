@@ -114,6 +114,12 @@ bool CheckForDuplicates(
             (PasswordDetailsTableViewController*)viewController
                 didAddPasswordDetails:(NSString*)username
                              password:(NSString*)password {
+  if (_validationTaskTracker->HasTrackedTasks()) {
+    // If the task tracker has pending tasks and the "Save" button is pressed,
+    // don't do anything.
+    return;
+  }
+
   password_manager::PasswordForm passwordForm;
   DCHECK([self isURLValid]);
 
@@ -175,6 +181,11 @@ bool CheckForDuplicates(
 
 - (BOOL)isURLValid {
   return self.URL.is_valid() && self.URL.SchemeIsHTTPOrHTTPS();
+}
+
+- (BOOL)isTLDMissing {
+  std::string hostname = self.URL.host();
+  return hostname.find('.') == std::string::npos;
 }
 
 - (BOOL)isUsernameReused:(NSString*)newUsername {

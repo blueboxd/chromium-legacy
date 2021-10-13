@@ -174,12 +174,6 @@ libvpx::VP9RateControlRtcConfig CreateRateControlConfig(
   return rc_cfg;
 }
 
-static scoped_refptr<base::RefCountedBytes> MakeRefCountedBytes(void* ptr,
-                                                                size_t size) {
-  return base::MakeRefCounted<base::RefCountedBytes>(
-      reinterpret_cast<uint8_t*>(ptr), size);
-}
-
 scoped_refptr<VP9Picture> GetVP9Picture(
     const VaapiVideoEncoderDelegate::EncodeJob& job) {
   return base::WrapRefCounted(
@@ -231,6 +225,8 @@ bool VP9VaapiVideoEncoderDelegate::Initialize(
     DVLOGF(1) << "Only CQ bitrate control is supported";
     return false;
   }
+
+  native_input_mode_ = ave_config.native_input_mode;
 
   visible_size_ = config.input_visible_size;
   coded_size_ = gfx::Size(base::bits::AlignUp(visible_size_.width(), 16),
@@ -354,13 +350,13 @@ bool VP9VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob& encode_job) {
 }
 
 BitstreamBufferMetadata VP9VaapiVideoEncoderDelegate::GetMetadata(
-    EncodeJob* encode_job,
+    const EncodeJob& encode_job,
     size_t payload_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto metadata =
       VaapiVideoEncoderDelegate::GetMetadata(encode_job, payload_size);
-  auto picture = GetVP9Picture(*encode_job);
+  auto picture = GetVP9Picture(encode_job);
   DCHECK(picture);
   metadata.vp9 = picture->metadata_for_encoding;
   return metadata;
@@ -521,18 +517,6 @@ void VP9VaapiVideoEncoderDelegate::UpdateReferenceFrames(
   reference_frames_.Refresh(picture);
 }
 
-void VP9VaapiVideoEncoderDelegate::NotifyEncodedChunkSize(
-    VABufferID buffer_id,
-    VASurfaceID sync_surface_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const uint64_t encoded_chunk_size =
-      vaapi_wrapper_->GetEncodedChunkSize(buffer_id, sync_surface_id);
-  if (encoded_chunk_size == 0)
-    error_cb_.Run();
-
-  BitrateControlUpdate(encoded_chunk_size);
-}
-
 bool VP9VaapiVideoEncoderDelegate::SubmitFrameParameters(
     EncodeJob& job,
     const EncodeParams& encode_params,
@@ -624,21 +608,10 @@ bool VP9VaapiVideoEncoderDelegate::SubmitFrameParameters(
   pic_param.log2_tile_rows = frame_header->tile_rows_log2;
   pic_param.log2_tile_columns = frame_header->tile_cols_log2;
 
-  job.AddSetupCallback(
-      base::BindOnce(&VaapiVideoEncoderDelegate::SubmitBuffer,
-                     base::Unretained(this), VAEncSequenceParameterBufferType,
-                     MakeRefCountedBytes(&seq_param, sizeof(seq_param))));
-
-  job.AddSetupCallback(
-      base::BindOnce(&VaapiVideoEncoderDelegate::SubmitBuffer,
-                     base::Unretained(this), VAEncPictureParameterBufferType,
-                     MakeRefCountedBytes(&pic_param, sizeof(pic_param))));
-
-  job.AddPostExecuteCallback(
-      base::BindOnce(&VP9VaapiVideoEncoderDelegate::NotifyEncodedChunkSize,
-                     base::Unretained(this), job.coded_buffer_id(),
-                     job.input_surface()->id()));
-  return true;
+  return vaapi_wrapper_->SubmitBuffer(VAEncSequenceParameterBufferType,
+                                      &seq_param) &&
+         vaapi_wrapper_->SubmitBuffer(VAEncPictureParameterBufferType,
+                                      &pic_param);
 }
 
 }  // namespace media

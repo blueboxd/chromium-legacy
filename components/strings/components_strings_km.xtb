@@ -215,6 +215,7 @@
 <translation id="160851722280695521">លេងហ្គេមដាយណូស័រត់នៅក្នុង Chrome</translation>
 <translation id="161042844686301425">បៃតងខ្ចី</translation>
 <translation id="1611101756749861742">ដុំទីពីរ</translation>
+<translation id="1615402009686901181">គោលការណ៍​របស់អ្នកគ្រប់គ្រង​បិទការថត​អេក្រង់ នៅពេលអាច​មើលឃើញខ្លឹមសារ​សម្ងាត់</translation>
 <translation id="1620510694547887537">កាមេរ៉ា</translation>
 <translation id="1623104350909869708">បង្ការទំព័រនេះពីការបង្កើតប្រអប់បន្ថែម។</translation>
 <translation id="16338877384480380">Architecture-B</translation>
@@ -408,6 +409,7 @@
 <translation id="2241693394036365668">ឯកសារ​ត្រូវបាន​ទាញយក</translation>
 <translation id="2248949050832152960">ប្រើ WebAuthn</translation>
 <translation id="2250931979407627383">ដេរគែម​ខាងឆ្វេង</translation>
+<translation id="2251943122176102076">អ្នកគ្រប់គ្រង​មិនណែនាំឱ្យ​ថតអេក្រង់ ឬថតវីដេអូអេក្រង់ទេ ដោយសារខ្លឹមសារសម្ងាត់ត្រូវបានថត៖</translation>
 <translation id="225207911366869382">តម្លៃនេះត្រូវបានបដិសេធសម្រាប់គោលការណ៍នេះ។</translation>
 <translation id="2258928405015593961">បញ្ចូល​កាលបរិច្ឆេទ​ផុតកំណត់​ក្នុងពេល​អនាគត រួច​ព្យាយាម​ម្ដងទៀត</translation>
 <translation id="225943865679747347">កំហុសឆ្គងលេខកូដ៖ <ph name="ERROR_CODE" /></translation>
@@ -866,7 +868,6 @@
 <translation id="3781428340399460090">ផ្កាឈូកចាស់</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3784372983762739446">ឧបករណ៍​ប៊្លូធូស</translation>
-<translation id="3787675388804467730">លេខកាតនិម្មិត</translation>
 <translation id="3787705759683870569">ផុតកំណត់ <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">ទំហំ 16</translation>
 <translation id="3789841737615482174">តំឡើង</translation>
@@ -1204,6 +1205,7 @@
           <ph name="LIST_ITEM" />ក្រុមហ៊ុន​ផ្ដល់​សេវាកម្ម​អ៊ីនធឺណិត​អាចពិនិត្យតាមដាន​ចរាចរណ៍បណ្ដាញ<ph name="END_LIST_ITEM" />
         <ph name="END_LIST" /></translation>
 <translation id="483241715238664915">បើក​ការព្រមាន</translation>
+<translation id="4834718916855725099">អ្នកគ្រប់គ្រង​មិនណែនាំឱ្យ​ថតអេក្រង់ ឬថតវីដេអូអេក្រង់ទេ ដោយសារមាន​ខ្លឹមសារសម្ងាត់នៅលើអេក្រង់៖</translation>
 <translation id="4838327282952368871">ដូចក្ដី​សុបិន</translation>
 <translation id="4840250757394056958">មើលប្រវត្តិ Chrome របស់អ្នក</translation>
 <translation id="484462545196658690">ស្វ័យប្រវត្តិ</translation>
@@ -1581,6 +1583,7 @@
 <translation id="6080696365213338172">អ្នកបានចូលប្រើមាតិកាដោយប្រើវិញ្ញាបនប័ត្រដែលបានផ្តល់ឲ្យអ្នកគ្រប់គ្រង។ ទិន្នន័យដែលអ្នកផ្តល់ទៅ <ph name="DOMAIN" /> អាចត្រូវបានស្ទាក់ដោយអ្នកគ្រប់គ្រងរបស់អ្នក។</translation>
 <translation id="6087312102907839798">ការស្វែងរក​ដែលពាក់ព័ន្ធ</translation>
 <translation id="6094273045989040137">ចំណារ</translation>
+<translation id="6094290315941448991">គោលការណ៍​របស់អ្នកគ្រប់គ្រង​បិទការថតវីដេអូអេក្រង់ នៅពេលអាច​មើលឃើញខ្លឹមសារ​សម្ងាត់</translation>
 <translation id="6104072995492677441">JIS B6</translation>
 <translation id="6105460996796456817">បង្កើត​គេហទំព័រ</translation>
 <translation id="6106989379647458772">គេហទំព័រនៅ <ph name="PAGE" /> អាចមិនដំណើរការបណ្តោះអាសន្ន ឬវាអាចត្រូវបានផ្លាស់ទីទៅអាសយដ្ឋានគេហទំព័រថ្មី។</translation>
@@ -2383,6 +2386,7 @@
 <translation id="8870494189203302833">ផ្កាប់ចុះតាមលំដាប់លំដោយ​ដូចគ្នា</translation>
 <translation id="8871553383647848643">ប្ដូររូបរាង​នៃកម្មវិធីរុករកតាមអ៊ីនធឺណិត​របស់អ្នក​តាមបំណង</translation>
 <translation id="8874824191258364635">បញ្ចូលលេខបណ្ណដែលត្រឹមត្រូវ</translation>
+<translation id="8884537526797090108">មិនអាចថតខ្លឹមសារសម្ងាត់បានទេ</translation>
 <translation id="8891727572606052622">របៀបប្រូកស៊ីគ្មានសុពលភាព។</translation>
 <translation id="8894794286471754040">គែមវែង​មុនគេ</translation>
 <translation id="8903921497873541725">ពង្រីក</translation>
@@ -2437,6 +2441,7 @@
 <translation id="9050666287014529139">ឃ្លាសម្ងាត់</translation>
 <translation id="9056953843249698117">ហាង</translation>
 <translation id="9062620674789239642">ឯកសារ​ប្រហែលជាត្រូវបានផ្លាស់ទី កែ ឬលុប។</translation>
+<translation id="9063800855227801443">មិនអាចថតខ្លឹមសារសម្ងាត់បានទេ</translation>
 <translation id="9065203028668620118">កែប្រែ</translation>
 <translation id="9065745800631924235">ការស្វែងរក <ph name="TEXT" /> ពីប្រវត្តិ</translation>
 <translation id="9069693763241529744">ទប់ស្កាត់ដោយកម្មវិធីបន្ថែម</translation>

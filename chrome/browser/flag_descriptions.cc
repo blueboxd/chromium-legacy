@@ -783,9 +783,11 @@ const char kEnableBrowsingDataLifetimeManagerDescription[] =
     "Enables the BrowsingDataLifetimeManager service to run and periodically "
     "delete browsing data as specified by the BrowsingDataLifetime policy.";
 
-const char kColorProviderRedirectionName[] = "Color Provider Redirection";
-const char kColorProviderRedirectionDescription[] =
-    "Redirects color requests to the color provider where possible.";
+const char kColorProviderRedirectionForThemeProviderName[] =
+    "Color Provider Redirection For Theme Provider";
+const char kColorProviderRedirectionForThemeProviderDescription[] =
+    "Redirects color requests from the ThemeProvider to the ColorProvider "
+    "where possible.";
 
 const char kDesktopPWAsAdditionalWindowingControlsName[] =
     "Desktop PWA Window Minimize/maximize/restore";
@@ -5016,6 +5018,12 @@ const char kScanAppStickySettingsName[] = "Enable sticky settings in Scan app";
 const char kScanAppStickySettingsDescription[] =
     "Enables sticky settings in Scan app for automatically saving scan"
     " settings in Chrome OS.";
+
+extern const char kSharesheetCopyToClipboardName[] =
+    "Enable copy to clipboard in the Chrome OS Sharesheet.";
+extern const char kSharesheetCopyToClipboardDescription[] =
+    "Enables a share action in the sharesheet that copies the selected data to "
+    "the clipboard.";
 
 const char kShimlessRMAFlowName[] = "Enable shimless RMA flow";
 const char kShimlessRMAFlowDescription[] = "Enable shimless RMA flow";

@@ -4958,7 +4958,6 @@ test("unit_tests") {
       "../browser/performance_manager/policies/dynamic_tcmalloc_policy_chromeos_unittest.cc",
       "../browser/performance_manager/policies/working_set_trimmer_policy_arcvm_unittest.cc",
       "../browser/performance_manager/policies/working_set_trimmer_policy_chromeos_unittest.cc",
-      "../browser/signin/signin_status_metrics_provider_chromeos_unittest.cc",
       "../browser/ui/views/crostini/crostini_app_restart_dialog_unittest.cc",
     ]
 
@@ -7606,10 +7605,8 @@ test("unit_tests") {
       "../browser/ui/views/frame/test_with_browser_view.cc",
       "../browser/ui/views/frame/test_with_browser_view.h",
       "../browser/ui/views/frame/web_contents_close_handler_unittest.cc",
-      "../browser/ui/views/global_media_controls/media_notification_container_impl_view_unittest.cc",
-      "../browser/ui/views/global_media_controls/media_notification_device_selector_view_unittest.cc",
-      "../browser/ui/views/global_media_controls/media_notification_footer_view_unittest.cc",
-      "../browser/ui/views/global_media_controls/media_notification_list_view_unittest.cc",
+      "../browser/ui/views/global_media_controls/media_item_ui_device_selector_view_unittest.cc",
+      "../browser/ui/views/global_media_controls/media_item_ui_footer_view_unittest.cc",
       "../browser/ui/views/hover_button_unittest.cc",
       "../browser/ui/views/infobars/infobar_view_unittest.cc",
       "../browser/ui/views/intent_picker_bubble_view_unittest.cc",
@@ -7667,7 +7664,7 @@ test("unit_tests") {
       "../browser/ui/views/user_education/new_badge_label_unittest.cc",
       "../browser/ui/views/user_education/tip_marquee_view_unittest.cc",
       "../browser/ui/views/webid/webid_dialog_views_unittest.cc",
-      "../browser/ui/views/window_name_prompt_unittest.cc",
+      "../browser/ui/window_name_prompt/window_name_prompt_unittest.cc",
     ]
     if (is_linux) {
       sources += [ "../browser/ui/views/frame/browser_frame_view_layout_linux_native_unittest.cc" ]

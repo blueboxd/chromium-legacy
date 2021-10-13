@@ -91,11 +91,16 @@ class ChromePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate,
   // ash::WallpaperControllerObserver:
   void OnWallpaperChanged() override;
 
+  // ash::WallpaperControllerObserver:
+  void OnWallpaperPreviewEnded() override;
+
   // chromeos::personalization_app::mojom::WallpaperProvider:
   void SelectWallpaper(uint64_t image_asset_id,
+                       bool preview_mode,
                        SelectWallpaperCallback callback) override;
 
   void SelectLocalImage(const base::FilePath& path,
+                        bool preview_mode,
                         SelectLocalImageCallback callback) override;
 
   void SetCustomWallpaperLayout(ash::WallpaperLayout layout) override;
@@ -107,6 +112,12 @@ class ChromePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate,
 
   void UpdateDailyRefreshWallpaper(
       UpdateDailyRefreshWallpaperCallback callback) override;
+
+  void IsInTabletMode(IsInTabletModeCallback callback) override;
+
+  void ConfirmPreviewWallpaper() override;
+
+  void CancelPreviewWallpaper() override;
 
  private:
   friend class ChromePersonalizationAppUiDelegateTest;

@@ -672,6 +672,10 @@ interface BroadcastChannel : EventTarget
     method postMessage
     setter onmessage
     setter onmessageerror
+interface BrowserCaptureMediaStreamTrack : FocusableMediaStreamTrack
+    attribute @@toStringTag
+    method constructor
+    method cropTo
 interface ByteLengthQueuingStrategy
     attribute @@toStringTag
     getter highWaterMark
@@ -4525,6 +4529,7 @@ interface Highlight
     attribute @@toStringTag
     getter priority
     getter size
+    getter type
     method @@iterator
     method add
     method clear
@@ -4536,6 +4541,7 @@ interface Highlight
     method keys
     method values
     setter priority
+    setter type
 interface HighlightRegistry
     attribute @@toStringTag
     getter size
@@ -6381,6 +6387,7 @@ interface PeriodicWave
     method constructor
 interface PermissionStatus : EventTarget
     attribute @@toStringTag
+    getter name
     getter onchange
     getter state
     method constructor

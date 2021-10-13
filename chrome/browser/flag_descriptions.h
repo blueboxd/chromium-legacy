@@ -2668,6 +2668,11 @@ extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
 extern const char kExperimentalAccessibilitySwitchAccessSetupGuideName[];
 extern const char kExperimentalAccessibilitySwitchAccessSetupGuideDescription[];
 
+extern const char
+    kExperimentalAccessibilitySwitchAccessMultistepAutomationName[];
+extern const char
+    kExperimentalAccessibilitySwitchAccessMultistepAutomationDescription[];
+
 extern const char kMagnifierContinuousMouseFollowingModeSettingName[];
 extern const char kMagnifierContinuousMouseFollowingModeSettingDescription[];
 
@@ -2841,6 +2846,9 @@ extern const char kPcieBillboardNotificationDescription[];
 
 extern const char kPerformantSplitViewResizing[];
 extern const char kPerformantSplitViewResizingDescription[];
+
+extern const char kPhoneHubCallNotificationName[];
+extern const char kPhoneHubCallNotificationDescription[];
 
 extern const char kPhoneHubCameraRollName[];
 extern const char kPhoneHubCameraRollDescription[];

@@ -11,6 +11,8 @@ import android.widget.RelativeLayout;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.chrome.browser.content_creation.reactions.internal.R;
+import org.chromium.chrome.browser.content_creation.reactions.toolbar.ToolbarReactionsDelegate;
+import org.chromium.components.content_creation.reactions.ReactionMetadata;
 import org.chromium.ui.LayoutInflaterUtils;
 import org.chromium.ui.base.ViewUtils;
 
@@ -20,7 +22,7 @@ import java.util.Set;
 /**
  * Manages the scene UI and the reactions on the scene.
  */
-public class SceneCoordinator implements SceneEditorDelegate {
+public class SceneCoordinator implements SceneEditorDelegate, ToolbarReactionsDelegate {
     private static final int DEFAULT_REACTION_SIZE_DP = 100;
     private static final int REACTION_OFFSET_DP = 45;
     private static final int MAX_REACTION_COUNT = 10;
@@ -28,6 +30,7 @@ public class SceneCoordinator implements SceneEditorDelegate {
     private final Activity mActivity;
     private final Set<ReactionLayout> mReactionLayouts;
 
+    private ReactionLayout mActiveReaction;
     private RelativeLayout mSceneBackground;
 
     /**
@@ -42,6 +45,8 @@ public class SceneCoordinator implements SceneEditorDelegate {
 
     public void setSceneBackground(RelativeLayout sceneBackground) {
         mSceneBackground = sceneBackground;
+        mSceneBackground.setOnClickListener(
+                (view) -> { markActiveStatus(mActiveReaction, false); });
     }
 
     public void addInitialReaction() {
@@ -65,11 +70,17 @@ public class SceneCoordinator implements SceneEditorDelegate {
                 - res.getDimensionPixelSize(R.dimen.toolbar_total_height);
         lp.setMargins(leftPx, topPx, 0, 0);
 
-        mSceneBackground.addView(reactionLayout, lp);
-        mReactionLayouts.add(reactionLayout);
+        addReaction(reactionLayout, lp);
     }
 
-    // SceneEditorCallback implementation.
+    private void addReaction(
+            ReactionLayout reactionLayout, RelativeLayout.LayoutParams layoutParams) {
+        mSceneBackground.addView(reactionLayout, layoutParams);
+        mReactionLayouts.add(reactionLayout);
+        markActiveStatus(reactionLayout, true);
+    }
+
+    // SceneEditorDelegate implementation.
     @Override
     public boolean canAddReaction() {
         return mReactionLayouts.size() < MAX_REACTION_COUNT;
@@ -89,20 +100,34 @@ public class SceneCoordinator implements SceneEditorDelegate {
         int offsetPx = ViewUtils.dpToPx(mActivity, REACTION_OFFSET_DP);
         newLayoutParams.leftMargin = oldLayoutParams.leftMargin + offsetPx;
         newLayoutParams.topMargin = oldLayoutParams.topMargin + offsetPx;
-        newReactionLayout.setLayoutParams(newLayoutParams);
 
-        mSceneBackground.addView(newReactionLayout);
-        mReactionLayouts.add(newReactionLayout);
+        addReaction(newReactionLayout, newLayoutParams);
     }
 
     @Override
     public void removeReaction(ReactionLayout reactionLayout) {
+        markActiveStatus(reactionLayout, false);
         mSceneBackground.removeView(reactionLayout);
         mReactionLayouts.remove(reactionLayout);
     }
 
     @Override
     public void markActiveStatus(ReactionLayout reactionLayout, boolean isActive) {
-        // no-op for now
+        if (isActive) {
+            if (mActiveReaction != null) {
+                mActiveReaction.setActive(false);
+            }
+            reactionLayout.setActive(true);
+            mActiveReaction = reactionLayout;
+        } else if (mActiveReaction != null) {
+            mActiveReaction.setActive(false);
+            mActiveReaction = null;
+        }
+    }
+
+    // ToolbarReactionsDelegate implementation.
+    @Override
+    public void onToolbarReactionTapped(ReactionMetadata reactionData) {
+        // No-op for now, will either add a new reaction or change the currently selected one.
     }
 }

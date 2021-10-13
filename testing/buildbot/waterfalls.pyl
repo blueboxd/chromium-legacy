@@ -2737,6 +2737,11 @@
           'chromium_builder_asan',
         ],
       },
+      'UBSan vptr Release (reclient shadow)': {
+        'additional_compile_targets': [
+          'chromium_builder_asan',
+        ],
+      },
       'VR Linux': {
         'mixins': [
           'has_native_resultdb_integration',
@@ -6698,7 +6703,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_android_webkit_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
         'os_type': 'android',
       },

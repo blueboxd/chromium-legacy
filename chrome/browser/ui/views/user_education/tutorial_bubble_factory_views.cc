@@ -15,6 +15,17 @@
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/views/interaction/element_tracker_views.h"
 
+namespace {
+
+// The amount of time the tutorial should stay onscreen depending on if the
+// bubble is interacted with it. similar to FeaturePromoBubbleView's timeouts
+constexpr base::TimeDelta kDelayNoInteraction =
+    base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kDelayWithInteraction =
+    base::TimeDelta::FromSeconds(3);
+constexpr base::TimeDelta kDelayZero = base::TimeDelta::FromSeconds(0);
+}  // namespace
+
 TutorialBubbleViews::TutorialBubbleViews(absl::optional<base::Token> bubble_id)
     : bubble_id_(bubble_id) {}
 
@@ -34,7 +45,9 @@ std::unique_ptr<TutorialBubble> TutorialBubbleFactoryViews::CreateBubble(
     absl::optional<std::u16string> title_text,
     absl::optional<std::u16string> body_text,
     TutorialDescription::Step::Arrow arrow,
-    absl::optional<std::pair<int, int>> progress) {
+    absl::optional<std::pair<int, int>> progress,
+    base::RepeatingClosure abort_callback,
+    bool is_last_step) {
   if (!element->IsA<views::TrackedElementViews>())
     return nullptr;
 
@@ -79,6 +92,16 @@ std::unique_ptr<TutorialBubble> TutorialBubbleFactoryViews::CreateBubble(
     case TutorialDescription::Step::Arrow::NONE:
       params.arrow = views::BubbleBorder::Arrow::NONE;
       break;
+  }
+
+  params.timeout_no_interaction =
+      is_last_step ? kDelayNoInteraction : kDelayZero;
+  params.timeout_after_interaction =
+      is_last_step ? kDelayWithInteraction : kDelayZero;
+
+  if (abort_callback) {
+    params.has_close_button = true;
+    params.dismiss_callback = abort_callback;
   }
 
   return std::make_unique<TutorialBubbleViews>(

@@ -311,6 +311,7 @@
       'TSAN Release (g-ip) (reclient)':  'tsan_disable_nacl_release_bot_reclient',
       'TSAN Release (reclient)':  'tsan_disable_nacl_release_bot_reclient',
       'UBSan Release (reclient)': 'ubsan_release_bot_reclient',
+      'UBSan vptr Release (reclient shadow)': 'ubsan_vptr_release_bot_reclient',
       'VR Linux': 'vr_release_bot',
       'VR Linux (reclient)': 'vr_release_bot_reclient',
       'Win 10 Fast Ring': 'release_trybot_minimal_symbols',
@@ -960,6 +961,7 @@
       'linux-chromeos-js-code-coverage': 'chromeos_with_codecs_release_trybot_js_cpp_code_coverage',
       'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
+      'linux-lacros-dbg': 'lacros_on_linux_debug_bot',
       'linux-lacros-rel': 'lacros_on_linux_release_trybot',
       'linux-lacros-rel-rts': 'lacros_on_linux_release_trybot',
       'linux-cfm-rel': 'linux_cfm_release_trybot',
@@ -1040,6 +1042,7 @@
       'linux-extended-tracing-rel': 'release_trybot_extended_tracing',
       'linux-inverse-fieldtrials-fyi-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_invert_fieldtrials',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
+      'linux-headless-shell-rel': 'headless_shell_release_bot',
       'linux-lacros-fyi-rel': 'lacros_on_linux_release_trybot',
       'linux-lacros-version-skew-fyi': 'lacros_on_linux_release_not_build_ash_bot',
       'linux-libfuzzer-asan-rel': 'libfuzzer_asan_release_trybot',
@@ -2998,6 +3001,14 @@
 
     'ubsan_vptr_release_bot': [
       'ubsan_vptr', 'ubsan_no_recover_hack', 'release_bot',
+    ],
+
+    'ubsan_vptr_release_bot_reclient': [
+      'ubsan_vptr', 'release_bot_reclient',
+    ],
+
+    'ubsan_vptr_release_bot_reclient': [
+      'ubsan_vptr', 'ubsan_no_recover_hack', 'release_bot_reclient',
     ],
 
     'v8_future_debug_bot': [

@@ -4657,6 +4657,13 @@ const char kExperimentalAccessibilitySwitchAccessSetupGuideDescription[] =
     "Enable a setup guide to walk through the steps of initially configuring "
     "Switch Access.";
 
+const char kExperimentalAccessibilitySwitchAccessMultistepAutomationName[] =
+    "Enable multistep automation for Switch Access.";
+const char
+    kExperimentalAccessibilitySwitchAccessMultistepAutomationDescription[] =
+        "Enable multistep automation for Switch Access, which is a project for "
+        "the 2021 accessibility sprint.";
+
 const char kMagnifierContinuousMouseFollowingModeSettingName[] =
     "Enable ability to choose continuous mouse following mode in Magnifier "
     "settings";
@@ -4935,6 +4942,11 @@ const char kPerformantSplitViewResizing[] = "Performant Split View Resizing";
 const char kPerformantSplitViewResizingDescription[] =
     "If enabled, windows may be moved instead of scaled when resizing split "
     "view in tablet mode.";
+
+const char kPhoneHubCallNotificationName[] =
+    "Incoming call notification in Phone Hub";
+const char kPhoneHubCallNotificationDescription[] =
+    "Enables the incoming/ongoing call feature in Phone Hub.";
 
 const char kPhoneHubCameraRollName[] = "Camera Roll in Phone Hub";
 const char kPhoneHubCameraRollDescription[] =

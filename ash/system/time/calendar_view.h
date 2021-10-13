@@ -10,7 +10,6 @@
 #include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "base/scoped_multi_source_observation.h"
-#include "base/timer/timer.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
@@ -34,20 +33,16 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   METADATA_HEADER(CalendarView);
 
   CalendarView(DetailedViewDelegate* delegate,
-               UnifiedSystemTrayController* controller,
-               CalendarViewController* calendar_view_controller);
+               UnifiedSystemTrayController* controller);
   CalendarView(const CalendarView& other) = delete;
   CalendarView& operator=(const CalendarView& other) = delete;
   ~CalendarView() override;
-
-  void Init();
 
   // views::ScrollView::Observer:
   void OnContentsScrolled() override;
 
   // CalendarViewController::Observer:
   void OnMonthChanged(const base::Time::Exploded current_month) override;
-  void OnEventsFetched(const google_apis::calendar::EventList* events) override;
 
   // views::ViewObserver:
   void OnViewBoundsChanged(views::View* observed_view) override;
@@ -61,6 +56,10 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   void CreateExtraTitleRowButtons() override;
   views::Button* CreateInfoButton(views::Button::PressedCallback callback,
                                   int info_accessible_name_id) override;
+
+  CalendarViewController* calendar_view_controller() {
+    return calendar_view_controller_.get();
+  }
 
  private:
   // The header of each month view which shows the month's name. If the year of
@@ -118,14 +117,10 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   // today's button), resets the content view's `FocusBehavior` to `ALWAYS`.
   void MaybeResetContentViewFocusBehavior();
 
-  // We only fetch events after we've "settled" on the current on-screen month.
-  void OnScrollingSettledTimerFired();
-
   // Unowned.
   UnifiedSystemTrayController* controller_;
 
-  // Owned by `UnifiedCalendarViewController`.
-  CalendarViewController* const calendar_view_controller_;
+  std::unique_ptr<CalendarViewController> calendar_view_controller_;
 
   // The content of the `scroll_view_`, which carries months and month labels.
   // Owned by `CalendarView`.
@@ -147,10 +142,6 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   // If it `is_resetting_scroll_`, we don't calculate the scroll position and we
   // don't need to check if we need to update the month or not.
   bool is_resetting_scroll_ = false;
-
-  // Timer that fires when we've "settled" on, i.e. finished scrolling to, a
-  // currently-visible month
-  base::RetainingOneShotTimer scrolling_settled_timer_;
 
   base::ScopedObservation<views::ScrollView,
                           views::ScrollView::Observer,

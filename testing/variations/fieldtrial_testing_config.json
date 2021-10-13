@@ -3074,6 +3074,32 @@
             ]
         }
     ],
+    "DnsHttpsSvcbSchemeUpgrade": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "linux",
+                "chromeos",
+                "chromeos_lacros",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "UseDnsHttpsSvcb",
+                    "params": {
+                        "UseDnsHttpsSvcbEnableInsecure": "true",
+                        "UseDnsHttpsSvcbExtraTimeAbsolute": "500ms",
+                        "UseDnsHttpsSvcbExtraTimePercent": "50",
+                        "UseDnsHttpsSvcbHttpUpgrade": "true"
+                    },
+                    "enable_features": [
+                        "UseDnsHttpsSvcb"
+                    ]
+                }
+            ]
+        }
+    ],
     "DnsHttpssvc": [
         {
             "platforms": [
@@ -4318,6 +4344,30 @@
             ]
         }
     ],
+    "IgnoreSyncEncryptionKeysLongMissing": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "MinGuResponsesToIgnoreKey": "2"
+                    },
+                    "enable_features": [
+                        "IgnoreSyncEncryptionKeysLongMissing"
+                    ]
+                }
+            ]
+        }
+    ],
     "IncludeInitiallyInvisibleImagesInLCP": [
         {
             "platforms": [
@@ -5323,6 +5373,24 @@
                     },
                     "enable_features": [
                         "OmniboxOnDeviceHeadProviderNonIncognito"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxPedalsBatch3": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Batch3_Enabled",
+                    "enable_features": [
+                        "OmniboxPedalsBatch3"
                     ]
                 }
             ]
@@ -7520,6 +7588,40 @@
             ]
         }
     ],
+    "TabSearchEntrypointChevronIcon": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TabSearchChevronIcon"
+                    ]
+                }
+            ]
+        }
+    ],
+    "TabSearchEntrypointWindowsEntrypoint": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TabSearchChevronIcon",
+                        "Win10TabSearchCaptionButton"
+                    ]
+                }
+            ]
+        }
+    ],
     "TabSearchIPH": [
         {
             "platforms": [
@@ -8105,7 +8207,6 @@
         {
             "platforms": [
                 "android",
-                "chromeos_lacros",
                 "ios",
                 "linux",
                 "mac",
@@ -8135,7 +8236,8 @@
         },
         {
             "platforms": [
-                "chromeos"
+                "chromeos",
+                "chromeos_lacros"
             ],
             "experiments": [
                 {
@@ -8667,24 +8769,6 @@
                 "android",
                 "android_webview",
                 "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
-    "WebRTC-DataChannel-Dcsctp": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
                 "ios",
                 "linux",
                 "mac",

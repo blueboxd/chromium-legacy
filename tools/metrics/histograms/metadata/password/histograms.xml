@@ -1508,7 +1508,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PasswordManager.ImportedPasswordsPerUserInCSV" units="units"
-    expires_after="M98">
+    expires_after="M100">
   <owner>vasilii@chromium.org</owner>
   <owner>src/components/password_manager/OWNERS</owner>
   <summary>
@@ -1518,7 +1518,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PasswordManager.ImportPasswordFromCSVResult"
-    enum="PasswordImportFromCSVResult" expires_after="M98">
+    enum="PasswordImportFromCSVResult" expires_after="M100">
   <owner>vasilii@chromium.org</owner>
   <owner>src/components/password_manager/OWNERS</owner>
   <summary>
@@ -2176,7 +2176,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PasswordManager.PasswordStoreInitResult" enum="BooleanSuccess"
-    expires_after="M98">
+    expires_after="M100">
   <owner>vasilii@chromium.org</owner>
   <owner>src/components/password_manager/OWNERS</owner>
   <summary>
@@ -2977,6 +2977,25 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     sending a PasswordProtectionRequest. Logged every time visual features are
     extracted (when an SBER user sends an On Focus ping).
   </summary>
+</histogram>
+
+<histogram name="PasswordProtection.{TriggerType}.UserPopulation{Moment}"
+    enum="SafeBrowsingUserPopulation" expires_after="M98">
+  <owner>drubery@chromium.org</owner>
+  <owner>chrome-safebrowsing-core@chromium.org</owner>
+  <summary>
+    Records the user population for the profile triggering a password protection
+    check, due to {TriggerType}, {Moment}.
+  </summary>
+  <token key="TriggerType">
+    <variant name="OnFocus" summary="focusing on an unfamiliar login page"/>
+    <variant name="PasswordEntry"
+        summary="entering a password on the wrong login page"/>
+  </token>
+  <token key="Moment">
+    <variant name="OnPing" summary="when we decide to contact Safe Browsing"/>
+    <variant name="Start" summary="when the check is triggered"/>
+  </token>
 </histogram>
 
 </histograms>

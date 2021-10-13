@@ -6,9 +6,9 @@
 
 #include "base/containers/contains.h"
 #include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/app_restore_utils.h"
 #include "components/app_restore/full_restore_info.h"
 #include "components/app_restore/full_restore_save_handler.h"
-#include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/window_info.h"
 #include "components/app_restore/window_properties.h"
 #include "ui/aura/window.h"
@@ -215,6 +215,11 @@ void ArcSaveHandler::OnTaskDestroyed(int32_t task_id) {
       profile_path_, it->second, task_id);
 
   task_id_to_app_id_.erase(task_id);
+}
+
+void ArcSaveHandler::OnArcPlayStoreEnabledChanged(bool enabled) {
+  if (!enabled)
+    task_id_to_app_id_.clear();
 }
 
 void ArcSaveHandler::OnTaskThemeColorUpdated(int32_t task_id,

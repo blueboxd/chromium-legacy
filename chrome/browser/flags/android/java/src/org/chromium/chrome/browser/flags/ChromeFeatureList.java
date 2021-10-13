@@ -276,8 +276,6 @@ public abstract class ChromeFeatureList {
     public static final String COMMERCE_PRICE_TRACKING = "CommercePriceTracking";
     public static final String CONDITIONAL_TAB_STRIP_ANDROID = "ConditionalTabStripAndroid";
     public static final String CONTACTS_PICKER_SELECT_ALL = "ContactsPickerSelectAll";
-    public static final String CONTENT_SUGGESTIONS_SCROLL_TO_LOAD =
-            "ContentSuggestionsScrollToLoad";
     public static final String CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST =
             "ContextMenuEnableLensShoppingAllowlist";
     public static final String CONTEXT_MENU_GOOGLE_LENS_CHIP = "ContextMenuGoogleLensChip";
@@ -417,6 +415,7 @@ public abstract class ChromeFeatureList {
             "OptimizationGuidePushNotifications";
     public static final String OVERLAY_NEW_LAYOUT = "OverlayNewLayout";
     public static final String PAGE_ANNOTATIONS_SERVICE = "PageAnnotationsService";
+    public static final String PAGE_INFO_ABOUT_THIS_SITE = "PageInfoAboutThisSite";
     public static final String PAINT_PREVIEW_DEMO = "PaintPreviewDemo";
     public static final String PAINT_PREVIEW_SHOW_ON_STARTUP = "PaintPreviewShowOnStartup";
     public static final String PASSWORD_SCRIPTS_FETCHING = "PasswordScriptsFetching";

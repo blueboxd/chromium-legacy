@@ -43,6 +43,7 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/page_info/features.h"
 #include "components/paint_preview/features/features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/permissions/features.h"
@@ -198,7 +199,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kChromeSurveyNextAndroid,
     &kCommandLineOnNonRooted,
     &kConditionalTabStripAndroid,
-    &kContentSuggestionsScrollToLoad,
     &kContextMenuEnableLensShoppingAllowlist,
     &kContextMenuGoogleLensChip,
     &kContextMenuSearchWithGoogleLens,
@@ -329,6 +329,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &omnibox::kOmniboxSpareRenderer,
     &omnibox::kUpdatedConnectionSecurityIndicators,
     &optimization_guide::features::kPushNotifications,
+    &page_info::kPageInfoAboutThisSite,
     &password_manager::features::kBiometricTouchToFill,
     &password_manager::features::kEditPasswordsInSettings,
     &password_manager::features::kPasswordScriptsFetching,
@@ -498,9 +499,6 @@ const base::Feature kChromeSurveyNextAndroid{"ChromeSurveyNextAndroid",
 
 const base::Feature kCommandLineOnNonRooted{"CommandLineOnNonRooted",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kContentSuggestionsScrollToLoad{
-    "ContentSuggestionsScrollToLoad", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextMenuEnableLensShoppingAllowlist{
     "ContextMenuEnableLensShoppingAllowlist",

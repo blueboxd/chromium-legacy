@@ -1884,6 +1884,17 @@ ci.chromium_builder(
     cores = 32,
     main_console_view = "main",
     os = os.WINDOWS_DEFAULT,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "win32-archive-rel.json",
+            ],
+        },
+    },
 )
 
 ci.chromium_builder(
@@ -4384,6 +4395,22 @@ ci.fyi_builder(
     configure_kitchen = True,
     kitchen_emulate_gce = True,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "UBSan vptr Release (reclient shadow)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux UBSan",
+        short_name = "vpt",
+    ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
 )
 
 ci.fyi_builder(

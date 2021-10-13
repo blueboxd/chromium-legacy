@@ -26,7 +26,7 @@
 #include "chrome/browser/web_applications/app_service/web_apps_publisher_host.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chromeos/lacros/lacros_service.h"
-#include "components/services/app_service/app_service_impl.h"
+#include "components/services/app_service/app_service_mojom_impl.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/types_util.h"
@@ -98,13 +98,18 @@ AppServiceProxyLacros::AppServiceProxyLacros(Profile* profile)
                          apps::IconCache::GarbageCollectionPolicy::kEager),
       profile_(profile) {
   auto* service = chromeos::LacrosService::Get();
-  if (service && service->init_params()->web_apps_enabled) {
+  if (service && service->init_params()->web_apps_enabled &&
+      service->IsAvailable<crosapi::mojom::BrowserAppInstanceRegistry>()) {
     browser_app_instance_tracker_ =
         std::make_unique<apps::BrowserAppInstanceTracker>(profile_,
                                                           app_registry_cache_);
+    auto& registry =
+        chromeos::LacrosService::Get()
+            ->GetRemote<crosapi::mojom::BrowserAppInstanceRegistry>();
+    DCHECK(registry);
     browser_app_instance_forwarder_ =
         std::make_unique<apps::BrowserAppInstanceForwarder>(
-            *browser_app_instance_tracker_);
+            *browser_app_instance_tracker_, registry);
   }
   Initialize();
 }

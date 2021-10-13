@@ -119,10 +119,10 @@ void WaylandWindow::UpdateWindowScale(bool update_bounds) {
   if (!output)
     return;
 
-  int32_t new_scale = output->scale_factor();
+  float new_scale = output->scale_factor();
   ui_scale_ = output->GetUIScaleFactor();
 
-  int32_t old_scale = window_scale();
+  float old_scale = window_scale();
   window_scale_ = new_scale;
 
   // We need to keep DIP size of the window the same whenever the scale changes.
@@ -138,8 +138,8 @@ gfx::AcceleratedWidget WaylandWindow::GetWidget() const {
   return accelerated_widget_;
 }
 
-void WaylandWindow::SetWindowScale(int32_t new_scale) {
-  DCHECK_GE(new_scale, 0);
+void WaylandWindow::SetWindowScale(float new_scale) {
+  DCHECK_GE(new_scale, 0.f);
   window_scale_ = new_scale;
 }
 
@@ -278,7 +278,7 @@ gfx::Rect WaylandWindow::GetBounds() const {
 }
 
 gfx::Rect WaylandWindow::GetBoundsInDIP() const {
-  return gfx::ScaleToRoundedRect(bounds_px_, 1.0 / window_scale());
+  return gfx::ScaleToRoundedRect(bounds_px_, 1.0f / window_scale());
 }
 
 void WaylandWindow::SetTitle(const std::u16string& title) {}
@@ -820,6 +820,8 @@ bool WaylandWindow::CommitOverlays(
         std::vector<gfx::Rect> opaque_region{region_px};
         (*iter)->wayland_surface()->SetOpaqueRegion(&opaque_region);
         (*iter)->wayland_surface()->SetOpacity((*overlay_iter)->opacity);
+        (*iter)->wayland_surface()->SetRoundedCorners(
+            (*overlay_iter)->rounded_corners);
         connection_->buffer_manager_host()->CommitBufferInternal(
             (*iter)->wayland_surface(), (*overlay_iter)->buffer_id,
             (*overlay_iter)->damage_region,
@@ -869,6 +871,8 @@ bool WaylandWindow::CommitOverlays(
         std::vector<gfx::Rect> opaque_region{region_px};
         (*iter)->wayland_surface()->SetOpaqueRegion(&opaque_region);
         (*iter)->wayland_surface()->SetOpacity((*overlay_iter)->opacity);
+        (*iter)->wayland_surface()->SetRoundedCorners(
+            (*overlay_iter)->rounded_corners);
         connection_->buffer_manager_host()->CommitBufferInternal(
             (*iter)->wayland_surface(), (*overlay_iter)->buffer_id,
             (*overlay_iter)->damage_region,
@@ -928,6 +932,8 @@ bool WaylandWindow::CommitOverlays(
     std::vector<gfx::Rect> opaque_region{region_px};
     primary_subsurface_->wayland_surface()->SetOpaqueRegion(&opaque_region);
     primary_subsurface_->wayland_surface()->SetOpacity((*split)->opacity);
+    primary_subsurface_->wayland_surface()->SetRoundedCorners(
+        (*split)->rounded_corners);
     connection_->buffer_manager_host()->CommitBufferInternal(
         primary_subsurface_->wayland_surface(), (*split)->buffer_id,
         (*split)->damage_region,

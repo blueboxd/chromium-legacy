@@ -241,6 +241,13 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kPasswordLeakDetectionEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#if defined(OS_ANDROID)
+  registry->RegisterIntegerPref(
+      prefs::kCurrentMigrationVersionToGoogleMobileServices, 0);
+
+  registry->RegisterBooleanPref(prefs::kIsEligibleForGmsPasswordsManagement,
+                                false);
+#endif
 }
 
 // static

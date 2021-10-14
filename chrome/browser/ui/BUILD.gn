@@ -668,6 +668,7 @@ static_library("ui") {
     ]
 
     deps += [
+      "//chrome/browser/enterprise/connectors/device_trust:features",
       "//chrome/browser/enterprise/connectors/device_trust/attestation/common:types",
       "//chrome/browser/ui/webui/connectors_internals:mojo_bindings",
     ]
@@ -2910,6 +2911,7 @@ static_library("ui") {
       "//chromeos/dbus/pciguard:pciguard",
       "//chromeos/dbus/power",
       "//chromeos/dbus/session_manager",
+      "//chromeos/dbus/spaced",
       "//chromeos/dbus/system_clock",
       "//chromeos/dbus/tpm_manager",
       "//chromeos/dbus/tpm_manager:tpm_manager_proto",
@@ -3094,6 +3096,7 @@ static_library("ui") {
       "autofill/payments/webauthn_dialog_model_observer.h",
       "autofill/payments/webauthn_dialog_state.h",
       "autofill/payments/webauthn_dialog_view.h",
+      "browser_dialogs_desktop.cc",
       "frame/window_frame_util.cc",
       "frame/window_frame_util.h",
       "signin_view_controller.cc",
@@ -3112,7 +3115,6 @@ static_library("ui") {
       "views/autofill/payments/webauthn_dialog_view_impl.h",
       "views/close_bubble_on_tab_activation_helper.cc",
       "views/close_bubble_on_tab_activation_helper.h",
-      "views/direct_sockets_connection_bubble_dialog.cc",
       "views/external_protocol_dialog.cc",
       "views/external_protocol_dialog.h",
       "views/hats/hats_next_web_dialog.cc",

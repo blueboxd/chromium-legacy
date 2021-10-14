@@ -46,6 +46,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_visibility_state.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -3134,16 +3135,19 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // Simulate getting 0b1 as a feature vector from the renderer.
   static_cast<blink::mojom::LocalFrameHost*>(main_frame)
       ->DidChangeActiveSchedulerTrackedFeatures(0b1u);
-  DCHECK_EQ(main_frame->scheduler_tracked_features().ToEnumBitmask(), 0b1u);
+  DCHECK_EQ(main_frame->GetBackForwardCacheDisablingFeatures().ToEnumBitmask(),
+            0b1u);
   // Simulate the browser side reporting a feature usage.
   main_frame->OnSchedulerTrackedFeatureUsed(
       static_cast<blink::scheduler::WebSchedulerTrackedFeature>(1));
-  DCHECK_EQ(main_frame->scheduler_tracked_features().ToEnumBitmask(), 0b11u);
+  DCHECK_EQ(main_frame->GetBackForwardCacheDisablingFeatures().ToEnumBitmask(),
+            0b11u);
   // Simulate a feature vector being updated from the renderer with some
   // features being activated and some being deactivated.
   static_cast<blink::mojom::LocalFrameHost*>(main_frame)
       ->DidChangeActiveSchedulerTrackedFeatures(0b100u);
-  DCHECK_EQ(main_frame->scheduler_tracked_features().ToEnumBitmask(), 0b110u);
+  DCHECK_EQ(main_frame->GetBackForwardCacheDisablingFeatures().ToEnumBitmask(),
+            0b110u);
 
   // Navigate away and expect that no values persist the navigation.
   // Note that we are still simulating the renderer call, otherwise features
@@ -3840,8 +3844,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), trusty_url));
   {
     RenderFrameHostImpl* main_frame = web_contents()->GetMainFrame();
-    EXPECT_EQ(trusty_url.GetOrigin(),
-              main_frame->GetLastCommittedURL().GetOrigin());
+    EXPECT_EQ(trusty_url.DeprecatedGetOriginAsURL(),
+              main_frame->GetLastCommittedURL().DeprecatedGetOriginAsURL());
 
     ASSERT_EQ(1u, main_frame->child_count());
     FrameTreeNode* child_a = main_frame->child_at(0);
@@ -3902,8 +3906,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), trusty_if_secure_url));
   {
     RenderFrameHostImpl* main_frame = web_contents()->GetMainFrame();
-    EXPECT_EQ(trusty_if_secure_url.GetOrigin(),
-              main_frame->GetLastCommittedURL().GetOrigin());
+    EXPECT_EQ(trusty_if_secure_url.DeprecatedGetOriginAsURL(),
+              main_frame->GetLastCommittedURL().DeprecatedGetOriginAsURL());
 
     ASSERT_EQ(1u, main_frame->child_count());
     FrameTreeNode* child_a = main_frame->child_at(0);
@@ -5967,12 +5971,14 @@ class DestructorLifetimeDocumentService
       bool& was_destroyed)
       : DocumentService(render_frame_host, std::move(receiver)),
         render_frame_host_(render_frame_host->GetWeakPtr()),
+        page_(render_frame_host->GetPage().GetWeakPtr()),
         was_destroyed_(was_destroyed) {}
 
   ~DestructorLifetimeDocumentService() override {
     was_destroyed_ = true;
     // The destructor should run before SafeRef<RenderFrameHost> is invalidated.
     EXPECT_TRUE(render_frame_host_);
+    EXPECT_TRUE(page_);
   }
 
   void GetInterface(mojo::GenericPendingReceiver pending_receiver) override {}
@@ -5980,6 +5986,7 @@ class DestructorLifetimeDocumentService
  private:
   // This should be a SafeRef but that is not yet exposed publicly.
   const base::WeakPtr<RenderFrameHostImpl> render_frame_host_;
+  const base::WeakPtr<Page> page_;
   bool& was_destroyed_;
 };
 
@@ -5992,12 +5999,14 @@ class DestructorLifetimeDocumentUserData
       : DocumentUserData<DestructorLifetimeDocumentUserData>(render_frame_host),
         render_frame_host_(
             static_cast<RenderFrameHostImpl*>(render_frame_host)->GetWeakPtr()),
+        page_(render_frame_host->GetPage().GetWeakPtr()),
         was_destroyed_(was_destroyed) {}
 
   ~DestructorLifetimeDocumentUserData() override {
     was_destroyed_ = true;
     // The destructor should run before SafeRef<RenderFrameHost> is invalidated.
     EXPECT_TRUE(render_frame_host_);
+    EXPECT_TRUE(page_);
   }
 
  private:
@@ -6006,6 +6015,7 @@ class DestructorLifetimeDocumentUserData
 
   // This should be a SafeRef or use render_frame_host().
   const base::WeakPtr<RenderFrameHostImpl> render_frame_host_;
+  const base::WeakPtr<Page> page_;
   bool& was_destroyed_;
 };
 
@@ -6015,10 +6025,95 @@ DOCUMENT_USER_DATA_KEY_IMPL(DestructorLifetimeDocumentUserData);
 // commonly-used extension points (currently DocumentService and
 // DocumentUserData) run while RenderFrameHostImpl is still in a
 // reasonable state.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, DestructorLifetime) {
-  GURL main_url(embedded_test_server()->GetURL(
-      "a.com", "/cross_site_iframe_factory.html?a(a)"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       MainFrameSameSiteNavigationDestructorLifetime) {
+  // The test assumes that the main frame RFH will be reused when navigating.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  RenderFrameHostImpl* main_frame = web_contents()->GetMainFrame();
+  ASSERT_TRUE(main_frame);
+
+  bool document_service_was_destroyed = false;
+  mojo::Remote<blink::mojom::BrowserInterfaceBroker> remote;
+  // This is self-owned so the bare new is OK.
+  new DestructorLifetimeDocumentService(main_frame,
+                                        remote.BindNewPipeAndPassReceiver(),
+                                        document_service_was_destroyed);
+
+  bool document_user_data_was_destroyed = false;
+  DestructorLifetimeDocumentUserData::CreateForCurrentDocument(
+      main_frame, document_user_data_was_destroyed);
+
+  RenderFrameHostWrapper main_frame_wrapper(main_frame);
+  ASSERT_FALSE(main_frame_wrapper.IsDestroyed());
+
+  // Perform a same-site navigation in the main frame.
+  EXPECT_TRUE(NavigateToURLFromRenderer(
+      main_frame, embedded_test_server()->GetURL("a.com", "/title2.html")));
+
+  // The navigation should reuse the same RenderFrameHost.
+  EXPECT_EQ(web_contents()->GetMainFrame(), main_frame_wrapper.get());
+
+  // The destructors of DestructorLifetimeDocumentService and
+  // DestructorLifetimeDocumentUserData also perform googletest
+  // assertions to validate invariants.
+  EXPECT_TRUE(document_service_was_destroyed);
+  EXPECT_TRUE(document_user_data_was_destroyed);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       MainFrameCrossSiteNavigationDestructorLifetime) {
+  // The test assumes that the main frame RFH will be replaced during
+  // navigation.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+  // All sites must be isolated in order for the navigatino code to replace the
+  // navigated RFH.
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  RenderFrameHostImpl* main_frame = web_contents()->GetMainFrame();
+  ASSERT_TRUE(main_frame);
+
+  bool document_service_was_destroyed = false;
+  mojo::Remote<blink::mojom::BrowserInterfaceBroker> remote;
+  // This is self-owned so the bare new is OK.
+  new DestructorLifetimeDocumentService(main_frame,
+                                        remote.BindNewPipeAndPassReceiver(),
+                                        document_service_was_destroyed);
+
+  bool document_user_data_was_destroyed = false;
+  DestructorLifetimeDocumentUserData::CreateForCurrentDocument(
+      main_frame, document_user_data_was_destroyed);
+
+  RenderFrameHostWrapper main_frame_wrapper(main_frame);
+  ASSERT_FALSE(main_frame_wrapper.IsDestroyed());
+
+  // Perform a cross-site navigation in the main frame.
+  EXPECT_TRUE(NavigateToURLFromRenderer(
+      main_frame, embedded_test_server()->GetURL("b.com", "/title2.html")));
+
+  main_frame_wrapper.WaitUntilRenderFrameDeleted();
+
+  // The destructors of DestructorLifetimeDocumentService and
+  // DestructorLifetimeDocumentUserData also perform googletest
+  // assertions to validate invariants.
+  EXPECT_TRUE(main_frame_wrapper.IsDestroyed());
+  EXPECT_TRUE(document_service_was_destroyed);
+  EXPECT_TRUE(document_user_data_was_destroyed);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ChildFrameSameSiteNavigationDestructorLifetime) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "a.com", "/cross_site_iframe_factory.html?a(a)")));
 
   RenderFrameHostImpl* child_frame =
       static_cast<RenderFrameHostImpl*>(ChildFrameAt(shell(), 0));
@@ -6035,17 +6130,96 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, DestructorLifetime) {
   DestructorLifetimeDocumentUserData::CreateForCurrentDocument(
       child_frame, document_user_data_was_destroyed);
 
-  base::WeakPtr<RenderFrameHostImpl> weak_child_frame =
-      child_frame->GetWeakPtr();
-  ASSERT_TRUE(weak_child_frame);
+  RenderFrameHostWrapper child_frame_wrapper(child_frame);
+  ASSERT_FALSE(child_frame_wrapper.IsDestroyed());
 
-  // Remove the child frame from the DOM, which destroys the RenderFrameHost.
+  // Perform a same-site navigation in the child frame.
+  EXPECT_TRUE(NavigateToURLFromRenderer(
+      child_frame, embedded_test_server()->GetURL("a.com", "/title2.html")));
+
+  // The navigation should reuse the same RenderFrameHost.
+  EXPECT_EQ(ChildFrameAt(shell(), 0), child_frame_wrapper.get());
+
   // The destructors of DestructorLifetimeDocumentService and
   // DestructorLifetimeDocumentUserData also perform googletest
   // assertions to validate invariants.
+  EXPECT_TRUE(document_service_was_destroyed);
+  EXPECT_TRUE(document_user_data_was_destroyed);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ChildFrameCrossSiteNavigationDestructorLifetime) {
+  // All sites must be isolated in order for the navigatino code to replace the
+  // navigated RFH.
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "a.com", "/cross_site_iframe_factory.html?a(a)")));
+
+  RenderFrameHostImpl* child_frame =
+      static_cast<RenderFrameHostImpl*>(ChildFrameAt(shell(), 0));
+  ASSERT_TRUE(child_frame);
+
+  bool document_service_was_destroyed = false;
+  mojo::Remote<blink::mojom::BrowserInterfaceBroker> remote;
+  // This is self-owned so the bare new is OK.
+  new DestructorLifetimeDocumentService(child_frame,
+                                        remote.BindNewPipeAndPassReceiver(),
+                                        document_service_was_destroyed);
+
+  bool document_user_data_was_destroyed = false;
+  DestructorLifetimeDocumentUserData::CreateForCurrentDocument(
+      child_frame, document_user_data_was_destroyed);
+
+  RenderFrameHostWrapper child_frame_wrapper(child_frame);
+  ASSERT_FALSE(child_frame_wrapper.IsDestroyed());
+
+  // Perform a cross-site navigation in the child frame.
+  EXPECT_TRUE(NavigateToURLFromRenderer(
+      child_frame, embedded_test_server()->GetURL("b.com", "/title2.html")));
+
+  child_frame_wrapper.WaitUntilRenderFrameDeleted();
+
+  // The destructors of DestructorLifetimeDocumentService and
+  // DestructorLifetimeDocumentUserData also perform googletest
+  // assertions to validate invariants.
+  EXPECT_TRUE(child_frame_wrapper.IsDestroyed());
+  EXPECT_TRUE(document_service_was_destroyed);
+  EXPECT_TRUE(document_user_data_was_destroyed);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ChildFrameDetachDestructorLifetime) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "a.com", "/cross_site_iframe_factory.html?a(a)")));
+
+  RenderFrameHostImpl* child_frame =
+      static_cast<RenderFrameHostImpl*>(ChildFrameAt(shell(), 0));
+  ASSERT_TRUE(child_frame);
+
+  bool document_service_was_destroyed = false;
+  mojo::Remote<blink::mojom::BrowserInterfaceBroker> remote;
+  // This is self-owned so the bare new is OK.
+  new DestructorLifetimeDocumentService(child_frame,
+                                        remote.BindNewPipeAndPassReceiver(),
+                                        document_service_was_destroyed);
+
+  bool document_user_data_was_destroyed = false;
+  DestructorLifetimeDocumentUserData::CreateForCurrentDocument(
+      child_frame, document_user_data_was_destroyed);
+
+  RenderFrameHostWrapper child_frame_wrapper(child_frame);
+  ASSERT_FALSE(child_frame_wrapper.IsDestroyed());
+
+  // Remove the child frame from the DOM, which destroys the RenderFrameHost.
   EXPECT_TRUE(ExecJs(shell(), "document.querySelector('iframe').remove()"));
 
-  EXPECT_FALSE(weak_child_frame);
+  // The destructors of DestructorLifetimeDocumentService and
+  // DestructorLifetimeDocumentUserData also perform googletest
+  // assertions to validate invariants.
+  EXPECT_TRUE(child_frame_wrapper.IsDestroyed());
   EXPECT_TRUE(document_service_was_destroyed);
   EXPECT_TRUE(document_user_data_was_destroyed);
 }
@@ -6190,7 +6364,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplAnonymousIframeNikBrowserTest,
 
     ResetNetworkState();
 
-    std::string main_url_origin = main_url.GetOrigin().spec();
+    std::string main_url_origin = main_url.DeprecatedGetOriginAsURL().spec();
     // Remove trailing '/'.
     main_url_origin.pop_back();
 
@@ -6206,7 +6380,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplAnonymousIframeNikBrowserTest,
         ->GetBrowserContext()
         ->GetDefaultStoragePartition()
         ->GetNetworkContext()
-        ->PreconnectSockets(1, fetch_url.GetOrigin(), true,
+        ->PreconnectSockets(1, fetch_url.DeprecatedGetOriginAsURL(), true,
                             main_rfh->GetNetworkIsolationKey());
 
     connection_tracker_->WaitForAcceptedConnections(1);

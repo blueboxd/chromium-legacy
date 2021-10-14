@@ -70,7 +70,6 @@ source_set("test_support") {
 }
 
 source_set("eg_test_support+eg2") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",
@@ -189,7 +188,6 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/favicon:unit_tests",
     "//ios/chrome/browser/find_in_page:unit_tests",
     "//ios/chrome/browser/flags:unit_tests",
-    "//ios/chrome/browser/geolocation:unit_tests",
     "//ios/chrome/browser/history:unit_tests",
     "//ios/chrome/browser/infobars:unit_tests",
     "//ios/chrome/browser/infobars/overlays:unit_tests",

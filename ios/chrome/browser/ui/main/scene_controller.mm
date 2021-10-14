@@ -53,8 +53,7 @@
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
 #import "ios/chrome/browser/first_run/first_run.h"
-#include "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
-#import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
+#import "ios/chrome/browser/geolocation/geolocation_logger.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
@@ -91,8 +90,6 @@
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
-#import "ios/chrome/browser/ui/first_run/location_permissions_commands.h"
-#import "ios/chrome/browser/ui/first_run/location_permissions_coordinator.h"
 #import "ios/chrome/browser/ui/first_run/orientation_limiting_navigation_controller.h"
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
@@ -185,7 +182,6 @@ bool IsSigninForcedByPolicy() {
 }  // namespace
 
 @interface SceneController () <AppStateObserver,
-                               LocationPermissionsCommands,
                                PolicyWatcherBrowserAgentObserving,
                                SettingsNavigationControllerDelegate,
                                SceneURLLoadingServiceDelegate,
@@ -251,9 +247,6 @@ bool IsSigninForcedByPolicy() {
 // time it is accessed. Use -[startSigninCoordinatorWithCompletion:] to start
 // the coordinator.
 @property(nonatomic, strong) SigninCoordinator* signinCoordinator;
-
-@property(nonatomic, strong)
-    LocationPermissionsCoordinator* locationPermissionsCoordinator;
 
 // Additional product specific data used by UserFeedbackDataSource.
 // TODO(crbug.com/1117041): Move this into a UserFeedback config object.
@@ -884,7 +877,7 @@ bool IsSigninForcedByPolicy() {
 
   // Make sure the geolocation controller is created to observe permission
   // events.
-  [OmniboxGeolocationController sharedInstance];
+  [GeolocationLogger sharedInstance];
 }
 
 // Determines the mode (normal or incognito) the initial UI should be in.
@@ -1552,16 +1545,6 @@ bool IsSigninForcedByPolicy() {
                                                       browser:mainBrowser
                                                   signinState:signinState];
   [self startSigninCoordinatorWithCompletion:nil];
-}
-
-- (void)showLocationPermissionsFromViewController:
-    (UIViewController*)baseViewController {
-  // TODO(crbug.com/1258089): Remove all location permission related code.
-}
-
-- (void)dismissLocationPermissionsExplanationModal {
-  [self.locationPermissionsCoordinator stop];
-  self.locationPermissionsCoordinator = nil;
 }
 
 - (void)

@@ -2203,6 +2203,28 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "executeScriptInChromeUntrusted") {
+    for (auto* web_contents : GetAllWebContents()) {
+      std::vector<content::RenderFrameHost*> all_frames =
+          web_contents->GetAllFrames();
+      for (auto frame_iterator = all_frames.begin();
+           frame_iterator != all_frames.end(); ++frame_iterator) {
+        content::RenderFrameHost* frame = *frame_iterator;
+        const url::Origin origin = frame->GetLastCommittedOrigin();
+        if (origin.GetURL() ==
+            ash::file_manager::kChromeUIFileManagerUntrustedURL) {
+          std::string script;
+          ASSERT_TRUE(value.GetString("data", &script));
+          CHECK(ExecuteScriptAndExtractString(frame, script, output));
+          return;
+        }
+      }
+    }
+    // Fail the test if the chrome-untrusted:// frame wasn't found.
+    NOTREACHED();
+    return;
+  }
+
   if (name == "isDevtoolsCoverageActive") {
     bool devtools_coverage_active = !devtools_code_coverage_dir_.empty();
     LOG(INFO) << "isDevtoolsCoverageActive: " << devtools_coverage_active;
@@ -2260,7 +2282,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     // Obtain the mock CWS widget container URL and URL.origin.
     const GURL url = embedded_test_server()->GetURL(
         "/chromeos/file_manager/cws_container_mock/index.html");
-    std::string origin = url.GetOrigin().spec();
+    std::string origin = url.DeprecatedGetOriginAsURL().spec();
     if (*origin.rbegin() == '/')  // Strip origin trailing '/'.
       origin.resize(origin.length() - 1);
 

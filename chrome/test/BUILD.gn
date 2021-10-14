@@ -4667,6 +4667,7 @@ test("unit_tests") {
     "../browser/prefs/profile_pref_store_manager_unittest.cc",
     "../browser/prefs/proxy_policy_unittest.cc",
     "../browser/prefs/session_startup_pref_unittest.cc",
+    "../browser/privacy/privacy_metrics_service_unittest.cc",
     "../browser/privacy_sandbox/privacy_sandbox_settings_unittest.cc",
     "../browser/profiles/gaia_info_update_service_unittest.cc",
     "../browser/profiles/guest_mode_policy_handler_unittest.cc",
@@ -7060,6 +7061,12 @@ test("unit_tests") {
     sources += [ "../browser/ui/global_media_controls/media_notification_device_monitor_unittest.cc" ]
   }
 
+  if (is_chromeos_lacros) {
+    sources += [
+      "../browser/upgrade_detector/get_installed_version_lacros_unittest.cc",
+    ]
+  }
+
   if (is_linux) {
     sources += [
       "../browser/shell_integration_linux_unittest.cc",
@@ -7254,6 +7261,8 @@ test("unit_tests") {
       "../browser/enterprise/connectors/device_trust/signals/decorators/common",
       "../browser/enterprise/connectors/device_trust/signals/decorators/common:test_support",
       "../browser/enterprise/connectors/device_trust/signals/decorators/common:unit_tests",
+      "../browser/enterprise/connectors/device_trust/signals/decorators/content",
+      "../browser/enterprise/connectors/device_trust/signals/decorators/content:unit_tests",
     ]
   }
 

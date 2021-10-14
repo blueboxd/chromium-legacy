@@ -1112,6 +1112,7 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Print Preview dialog"/>
   <int value="5" label="Account Manager migration welcome screen"/>
   <int value="6" label="Onboarding"/>
+  <int value="7" label="Chrome profile creation"/>
 </enum>
 
 <enum name="AccountManagerTokenLoadStatus">
@@ -13007,6 +13008,25 @@ In case of new special images, values 3 to 9 can be used. -->
   <int value="5" label="Notifications and Durable"/>
   <int value="6" label="Notifications, Durable, and Engagement"/>
   <int value="7" label="Unknown"/>
+</enum>
+
+<enum name="ClearOnExitSyncEvent">
+  <int value="0" label="Profile startup, sync is disabled"/>
+  <int value="1" label="Profile startup, sync is paused"/>
+  <int value="2" label="Profile startup, sync is active"/>
+  <int value="3" label="Re-login to a sync paused account"/>
+  <int value="4" label="Logout of a sync paused account"/>
+  <int value="5"
+      label="Profile shutdown, sync is active, started paused, consent change"/>
+  <int value="6"
+      label="Profile shutdown, sync is active, started paused, no consent
+             change"/>
+  <int value="7"
+      label="Profile shutdown, sync is active, started active, consent change"/>
+  <int value="8"
+      label="Profile shutdown, sync is active, started active, no consent
+             change"/>
+  <int value="9" label="Profile shutdown, sync is paused"/>
 </enum>
 
 <enum name="ClearServerDataEvents">
@@ -47643,6 +47663,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="LocationPermissionsFirstRunModalIOSEnum">
+  <obsolete>
+    Removed in October 2021
+  </obsolete>
   <int value="0" label="iOS native system location prompt shown"/>
   <int value="1" label="No system prompt shown, modal dismissed"/>
 </enum>

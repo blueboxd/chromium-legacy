@@ -212,6 +212,9 @@ class PartitionAllocTest : public testing::Test {
                             PartitionOptions::BackupRefPtr::kDisabled,
                             PartitionOptions::UseConfigurablePool::kNo});
     test_bucket_index_ = SizeToIndex(kRealAllocSize);
+
+    allocator.root()->UncapEmptySlotSpanMemoryForTesting();
+    aligned_allocator.root()->UncapEmptySlotSpanMemoryForTesting();
   }
 
   size_t SizeToIndex(size_t size) {
@@ -887,6 +890,7 @@ TEST_F(PartitionAllocTest, AllocSizes) {
     // Check a more reasonable, but still direct mapped, size.
     // Chop a system page and a byte off to test for rounding errors.
     size_t size = 20 * 1024 * 1024;
+    ASSERT_GT(size, kMaxBucketed);
     size -= SystemPageSize();
     size -= 1;
     void* ptr = allocator.root()->Alloc(size, type_name);
@@ -1115,7 +1119,9 @@ TEST_F(PartitionAllocTest, Realloc) {
   // Single-slot slot spans...
   // Test that growing an allocation with realloc() copies everything from the
   // old allocation.
-  size = 200000;
+  size = 300000;
+  ASSERT_GT(size, MaxRegularSlotSpanSize());
+  ASSERT_LE(size, kMaxBucketed);
   // Confirm size doesn't fill the entire slot.
   ASSERT_LT(size, allocator.root()->AllocationCapacityFromRequestedSize(size));
   ptr = allocator.root()->Alloc(size, type_name);
@@ -1149,6 +1155,7 @@ TEST_F(PartitionAllocTest, Realloc) {
   // downsize even if one less super page is used (due to high granularity on
   // 64-bit systems).
   size = 10 * kSuperPageSize + SystemPageSize() - 42;
+  ASSERT_GT(size, kMaxBucketed);
   ptr = allocator.root()->Alloc(size, type_name);
   size_t actual_capacity = allocator.root()->AllocationCapacityFromPtr(ptr);
   ptr2 = allocator.root()->Realloc(ptr, size - SystemPageSize(), type_name);
@@ -1194,6 +1201,7 @@ TEST_F(PartitionAllocTest, ReallocDirectMapAligned) {
     // downsize even if one less super page is used (due to high granularity on
     // 64-bit systems), even if the alignment padding is taken out.
     size_t size = 10 * kSuperPageSize + SystemPageSize() - 42;
+    ASSERT_GT(size, kMaxBucketed);
     void* ptr =
         allocator.root()->AllocFlagsInternal(0, size, alignment, type_name);
     size_t actual_capacity = allocator.root()->AllocationCapacityFromPtr(ptr);
@@ -1234,6 +1242,7 @@ TEST_F(PartitionAllocTest, ReallocDirectMapAlignedRelocate) {
   // Pick size such that the alignment will put it cross the super page
   // boundary.
   size_t size = 2 * kSuperPageSize - kMaxSupportedAlignment + SystemPageSize();
+  ASSERT_GT(size, kMaxBucketed);
   void* ptr = allocator.root()->AllocFlagsInternal(
       0, size, kMaxSupportedAlignment, type_name);
   // Reallocating with the same size will actually relocate, because without a
@@ -1246,6 +1255,7 @@ TEST_F(PartitionAllocTest, ReallocDirectMapAlignedRelocate) {
   // boundary, but this time make it so large that Realloc doesn't fing it worth
   // shrinking.
   size = 10 * kSuperPageSize - kMaxSupportedAlignment + SystemPageSize();
+  ASSERT_GT(size, kMaxBucketed);
   ptr = allocator.root()->AllocFlagsInternal(0, size, kMaxSupportedAlignment,
                                              type_name);
   ptr2 = allocator.root()->Realloc(ptr, size, type_name);
@@ -1789,19 +1799,25 @@ TEST_F(PartitionAllocTest, LostFreeSlotSpansBug) {
 // TODO(lizeb): make these tests faster.
 TEST_F(PartitionAllocDeathTest, RepeatedAllocReturnNullDirect) {
   // A direct-mapped allocation size.
-  EXPECT_DEATH(DoReturnNullTest(32 * 1024 * 1024, kPartitionAllocFlags),
+  size_t direct_map_size = 32 * 1024 * 1024;
+  ASSERT_GT(direct_map_size, kMaxBucketed);
+  EXPECT_DEATH(DoReturnNullTest(direct_map_size, kPartitionAllocFlags),
                "DoReturnNullTest");
 }
 
 // Repeating above test with Realloc
 TEST_F(PartitionAllocDeathTest, RepeatedReallocReturnNullDirect) {
-  EXPECT_DEATH(DoReturnNullTest(32 * 1024 * 1024, kPartitionReallocFlags),
+  size_t direct_map_size = 32 * 1024 * 1024;
+  ASSERT_GT(direct_map_size, kMaxBucketed);
+  EXPECT_DEATH(DoReturnNullTest(direct_map_size, kPartitionReallocFlags),
                "DoReturnNullTest");
 }
 
 // Repeating above test with TryRealloc
 TEST_F(PartitionAllocDeathTest, RepeatedTryReallocReturnNullDirect) {
-  EXPECT_DEATH(DoReturnNullTest(32 * 1024 * 1024, kPartitionRootTryRealloc),
+  size_t direct_map_size = 32 * 1024 * 1024;
+  ASSERT_GT(direct_map_size, kMaxBucketed);
+  EXPECT_DEATH(DoReturnNullTest(direct_map_size, kPartitionRootTryRealloc),
                "DoReturnNullTest");
 }
 
@@ -1809,19 +1825,28 @@ TEST_F(PartitionAllocDeathTest, RepeatedTryReallocReturnNullDirect) {
 // Test "return null" with a 512 kB block size.
 TEST_F(PartitionAllocDeathTest, DISABLED_RepeatedAllocReturnNull) {
   // A single-slot but non-direct-mapped allocation size.
-  EXPECT_DEATH(DoReturnNullTest(512 * 1024, kPartitionAllocFlags),
+  size_t single_slot_size = 512 * 1024;
+  ASSERT_GT(single_slot_size, MaxRegularSlotSpanSize());
+  ASSERT_LE(single_slot_size, kMaxBucketed);
+  EXPECT_DEATH(DoReturnNullTest(single_slot_size, kPartitionAllocFlags),
                "DoReturnNullTest");
 }
 
 // Repeating above test with Realloc.
 TEST_F(PartitionAllocDeathTest, DISABLED_RepeatedReallocReturnNull) {
-  EXPECT_DEATH(DoReturnNullTest(512 * 1024, kPartitionReallocFlags),
+  size_t single_slot_size = 512 * 1024;
+  ASSERT_GT(single_slot_size, MaxRegularSlotSpanSize());
+  ASSERT_LE(single_slot_size, kMaxBucketed);
+  EXPECT_DEATH(DoReturnNullTest(single_slot_size, kPartitionReallocFlags),
                "DoReturnNullTest");
 }
 
 // Repeating above test with TryRealloc.
 TEST_F(PartitionAllocDeathTest, DISABLED_RepeatedTryReallocReturnNull) {
-  EXPECT_DEATH(DoReturnNullTest(512 * 1024, kPartitionRootTryRealloc),
+  size_t single_slot_size = 512 * 1024;
+  ASSERT_GT(single_slot_size, MaxRegularSlotSpanSize());
+  ASSERT_LE(single_slot_size, kMaxBucketed);
+  EXPECT_DEATH(DoReturnNullTest(single_slot_size, kPartitionRootTryRealloc),
                "DoReturnNullTest");
 }
 
@@ -1868,6 +1893,7 @@ TEST_F(PartitionAllocDeathTest, DirectMapGuardPages) {
       bits::AlignUp(kMaxBucketed + kSuperPageSize, kSuperPageSize) -
           PartitionRoot<ThreadSafe>::GetDirectMapMetadataAndGuardPagesSize()};
   for (size_t size : kSizes) {
+    ASSERT_GT(size, kMaxBucketed);
     size -= kExtraAllocSize;
     EXPECT_GT(size, kMaxBucketed)
         << "allocation not large enough for direct allocation";
@@ -2236,8 +2262,12 @@ TEST_F(PartitionAllocTest, Purge) {
   // state of the free cache ring.
   allocator.root()->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans);
 
-  char* big_ptr =
-      reinterpret_cast<char*>(allocator.root()->Alloc(256 * 1024, type_name));
+  // A single-slot but non-direct-mapped allocation size.
+  size_t single_slot_size = 512 * 1024;
+  ASSERT_GT(single_slot_size, MaxRegularSlotSpanSize());
+  ASSERT_LE(single_slot_size, kMaxBucketed);
+  char* big_ptr = reinterpret_cast<char*>(
+      allocator.root()->Alloc(single_slot_size, type_name));
   allocator.root()->Free(big_ptr);
   allocator.root()->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans);
 
@@ -2638,6 +2668,8 @@ TEST_F(PartitionAllocTest, Bug_897585) {
   // test case in the indicated bug.
   size_t kInitialSize = 983040;
   size_t kDesiredSize = 983100;
+  ASSERT_GT(kInitialSize, kMaxBucketed);
+  ASSERT_GT(kDesiredSize, kMaxBucketed);
   void* ptr = allocator.root()->AllocFlags(PartitionAllocReturnNull,
                                            kInitialSize, nullptr);
   ASSERT_NE(nullptr, ptr);
@@ -2953,8 +2985,12 @@ TEST_F(PartitionAllocTest, MAYBE_Bookkeeping) {
 
   // Single-slot slot spans...
   size_t big_size = kMaxBucketed - SystemPageSize();
+  ASSERT_GT(big_size, MaxRegularSlotSpanSize());
+  ASSERT_LE(big_size, kMaxBucketed);
   bucket_index = SizeToIndex(big_size - kExtraAllocSize);
   bucket = &root.buckets[bucket_index];
+  // Assert the allocation doesn't fill the entire span nor entire partition
+  // page, to make the test more interesting.
   ASSERT_LT(big_size, bucket->get_bytes_per_span());
   ASSERT_NE(big_size % PartitionPageSize(), 0U);
   ptr = root.Alloc(big_size - kExtraAllocSize, type_name);
@@ -3056,6 +3092,7 @@ TEST_F(PartitionAllocTest, MAYBE_Bookkeeping) {
       kMaxSupportedAlignment,
   };
   for (size_t huge_size : huge_sizes) {
+    ASSERT_GT(huge_size, kMaxBucketed);
     for (size_t alignment : alignments) {
       // For direct map, we commit only as many pages as needed.
       size_t aligned_size = bits::AlignUp(huge_size, SystemPageSize());
@@ -3220,6 +3257,7 @@ TEST_F(PartitionAllocTest, ReservationOffset) {
 
   // For direct-map,
   size_t large_size = kSuperPageSize * 5 + PartitionPageSize() * .5f;
+  ASSERT_GT(large_size, kMaxBucketed);
   ptr = allocator.root()->Alloc(large_size, type_name);
   EXPECT_TRUE(ptr);
   ptr_as_uintptr = reinterpret_cast<uintptr_t>(ptr);
@@ -3257,6 +3295,7 @@ TEST_F(PartitionAllocTest, ReservationOffset) {
 
 TEST_F(PartitionAllocTest, GetReservationStart) {
   size_t large_size = kSuperPageSize * 3 + PartitionPageSize() * .5f;
+  ASSERT_GT(large_size, kMaxBucketed);
   void* ptr = allocator.root()->Alloc(large_size, type_name);
   EXPECT_TRUE(ptr);
   void* slot_start = allocator.root()->AdjustPointerForExtrasSubtract(ptr);
@@ -3304,6 +3343,7 @@ TEST_F(PartitionAllocTest, CheckReservationType) {
   EXPECT_TRUE(IsManagedByNormalBucketsOrDirectMap(ptr_to_check));
 
   size_t large_size = 2 * kSuperPageSize;
+  ASSERT_GT(large_size, kMaxBucketed);
   ptr = reinterpret_cast<char*>(allocator.root()->Alloc(large_size, type_name));
   EXPECT_TRUE(ptr);
   ptr_to_check = ptr;
@@ -3547,41 +3587,105 @@ TEST_F(PartitionAllocTest, ConfigurablePool) {
 
   // The rest is only applicable to 64-bit mode
 #if defined(ARCH_CPU_64_BITS)
-  const size_t pool_size =
-      PartitionAddressSpace::ConfigurablePoolReservationSize();
-  void* pool_memory = AllocPages(nullptr, pool_size, pool_size,
-                                 PageInaccessible, PageTag::kPartitionAlloc);
-  EXPECT_NE(nullptr, pool_memory);
-  PartitionAddressSpace::InitConfigurablePool(pool_memory, pool_size);
+  // Repeat the test for every possible Pool size
+  const size_t max_pool_size = PartitionAddressSpace::ConfigurablePoolMaxSize();
+  const size_t min_pool_size = PartitionAddressSpace::ConfigurablePoolMinSize();
+  for (size_t pool_size = max_pool_size; pool_size >= min_pool_size;
+       pool_size /= 2) {
+    DCHECK(bits::IsPowerOfTwo(pool_size));
+    EXPECT_FALSE(IsConfigurablePoolAvailable());
+    void* pool_memory = AllocPages(nullptr, pool_size, pool_size,
+                                   PageInaccessible, PageTag::kPartitionAlloc);
+    EXPECT_NE(nullptr, pool_memory);
+    PartitionAddressSpace::InitConfigurablePool(pool_memory, pool_size);
 
-  EXPECT_TRUE(IsConfigurablePoolAvailable());
+    EXPECT_TRUE(IsConfigurablePoolAvailable());
 
-  auto* root = new base::PartitionRoot<ThreadSafe>({
-      base::PartitionOptions::AlignedAlloc::kDisallowed,
-      base::PartitionOptions::ThreadCache::kDisabled,
-      base::PartitionOptions::Quarantine::kDisallowed,
-      base::PartitionOptions::Cookie::kAllowed,
-      base::PartitionOptions::BackupRefPtr::kDisabled,
-      base::PartitionOptions::UseConfigurablePool::kIfAvailable,
-  });
+    auto* root = new base::PartitionRoot<ThreadSafe>({
+        base::PartitionOptions::AlignedAlloc::kDisallowed,
+        base::PartitionOptions::ThreadCache::kDisabled,
+        base::PartitionOptions::Quarantine::kDisallowed,
+        base::PartitionOptions::Cookie::kAllowed,
+        base::PartitionOptions::BackupRefPtr::kDisabled,
+        base::PartitionOptions::UseConfigurablePool::kIfAvailable,
+    });
 
-  const size_t count = 250;
-  std::vector<void*> allocations(count, nullptr);
-  uintptr_t pool_base = reinterpret_cast<uintptr_t>(pool_memory);
-  for (size_t i = 0; i < count; ++i) {
-    const size_t size = kTestSizes[base::RandGenerator(kTestSizesCount)];
-    allocations[i] = root->Alloc(size, nullptr);
-    EXPECT_NE(nullptr, allocations[i]);
-    uintptr_t allocation_base = reinterpret_cast<uintptr_t>(allocations[i]);
-    EXPECT_TRUE(allocation_base >= pool_base &&
-                allocation_base < pool_base + pool_size);
-  }
+    const size_t count = 250;
+    std::vector<void*> allocations(count, nullptr);
+    uintptr_t pool_base = reinterpret_cast<uintptr_t>(pool_memory);
+    for (size_t i = 0; i < count; ++i) {
+      const size_t size = kTestSizes[base::RandGenerator(kTestSizesCount)];
+      allocations[i] = root->Alloc(size, nullptr);
+      EXPECT_NE(nullptr, allocations[i]);
+      uintptr_t allocation_base = reinterpret_cast<uintptr_t>(allocations[i]);
+      EXPECT_TRUE(allocation_base >= pool_base &&
+                  allocation_base < pool_base + pool_size);
+    }
 
-  for (size_t i = 0; i < count; ++i) {
-    root->Free(allocations[i]);
+    for (size_t i = 0; i < count; ++i) {
+      root->Free(allocations[i]);
+    }
+
+    PartitionAddressSpace::UninitConfigurablePoolForTesting();
+    FreePages(pool_memory, pool_size);
   }
 
 #endif  // defined(ARCH_CPU_64_BITS)
+}
+
+TEST_F(PartitionAllocTest, EmptySlotSpanSizeIsCapped) {
+  // Use another root, since the ones from the test harness disable the empty
+  // slot span size cap.
+  PartitionRoot<ThreadSafe> root;
+  root.Init({PartitionOptions::AlignedAlloc::kDisallowed,
+             PartitionOptions::ThreadCache::kDisabled,
+             PartitionOptions::Quarantine::kDisallowed,
+             PartitionOptions::Cookie::kAllowed,
+             PartitionOptions::BackupRefPtr::kDisabled,
+             PartitionOptions::UseConfigurablePool::kNo});
+
+  // Allocate some memory, don't free it to keep committed memory.
+  std::vector<void*> allocated_memory;
+  const size_t size = 4096;
+  const size_t count = 200;
+  for (size_t i = 0; i < count; i++) {
+    void* ptr = root.Alloc(size, "");
+    allocated_memory.push_back(ptr);
+  }
+  ASSERT_GE(root.total_size_of_committed_pages.load(std::memory_order_relaxed),
+            size * count);
+
+  // To create empty slot spans, allocate from single-slot slot spans, 128kiB at
+  // a time.
+  std::vector<void*> single_slot_allocated_memory;
+  constexpr size_t single_slot_count = 15;
+  static_assert(single_slot_count < kMaxFreeableSpans,
+                "Should do fewer allocations than the ring size.");
+  const size_t single_slot_size = MaxRegularSlotSpanSize() + 1;
+  for (size_t i = 0; i < single_slot_count; i++) {
+    void* ptr = root.Alloc(single_slot_size, "");
+    single_slot_allocated_memory.push_back(ptr);
+  }
+
+  // Free everything at once, creating as many empty slot spans as there are
+  // allocations (since they are from single-slot slot spans).
+  for (void* ptr : single_slot_allocated_memory)
+    root.Free(ptr);
+
+  // Still have some committed empty slot spans.
+  // TS_UNCHECKED_READ() is not an issue here, since everything is
+  // single-threaded.
+  EXPECT_GT(TS_UNCHECKED_READ(root.empty_slot_spans_dirty_bytes), 0u);
+  // But not all, as the cap triggered.
+  EXPECT_LT(TS_UNCHECKED_READ(root.empty_slot_spans_dirty_bytes),
+            single_slot_count * single_slot_size);
+
+  // Nothing left after explicit purge.
+  root.PurgeMemory(PartitionPurgeDecommitEmptySlotSpans);
+  EXPECT_EQ(TS_UNCHECKED_READ(root.empty_slot_spans_dirty_bytes), 0u);
+
+  for (void* ptr : allocated_memory)
+    root.Free(ptr);
 }
 
 }  // namespace internal

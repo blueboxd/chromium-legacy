@@ -40,7 +40,6 @@
 #include "ios/chrome/browser/feature_engagement/tracker_util.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #include "ios/chrome/browser/first_run/first_run.h"
-#import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/language/url_language_histogram_factory.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -1655,6 +1654,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
        withTransitionCoordinator:
            (id<UIViewControllerTransitionCoordinator>)coordinator {
   [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+  // After |-shutdown| is called, |self.browser| is invalid and will cause
+  // a crash.
+  if (_isShutdown)
+    return;
+
   [self dismissPopups];
 
   __weak BrowserViewController* weakSelf = self;

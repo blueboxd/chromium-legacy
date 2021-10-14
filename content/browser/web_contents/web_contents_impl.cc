@@ -581,11 +581,18 @@ WebContents* WebContents::FromRenderFrameHost(RenderFrameHost* rfh) {
   OPTIONAL_TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("content.verbose"),
                         "WebContents::FromRenderFrameHost", "render_frame_host",
                         rfh);
+  return WebContentsImpl::FromRenderFrameHostImpl(
+      static_cast<RenderFrameHostImpl*>(rfh));
+}
+
+WebContentsImpl* WebContentsImpl::FromRenderFrameHostImpl(
+    RenderFrameHostImpl* rfh) {
+  OPTIONAL_TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("content.verbose"),
+                        "WebContentsImpl::FromRenderFrameHostImpl",
+                        "render_frame_host", rfh);
   if (!rfh)
     return nullptr;
-  RenderFrameHostDelegate* delegate =
-      static_cast<RenderFrameHostImpl*>(rfh)->delegate();
-  return static_cast<WebContentsImpl*>(delegate);
+  return static_cast<WebContentsImpl*>(rfh->delegate());
 }
 
 WebContents* WebContents::FromFrameTreeNodeId(int frame_tree_node_id) {
@@ -1897,7 +1904,8 @@ void WebContentsImpl::SetWasDiscarded(bool was_discarded) {
 base::ScopedClosureRunner WebContentsImpl::IncrementCapturerCount(
     const gfx::Size& capture_size,
     bool stay_hidden,
-    bool stay_awake) {
+    bool stay_awake,
+    bool is_activity) {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::IncrementCapturerCount");
   DCHECK(!IsBeingDestroyed());
   if (stay_hidden) {
@@ -1932,11 +1940,11 @@ base::ScopedClosureRunner WebContentsImpl::IncrementCapturerCount(
   if (capture_wake_lock_)
     capture_wake_lock_->RequestWakeLock();
 
-  UpdateVisibilityAndNotifyPageAndView(GetVisibility());
+  UpdateVisibilityAndNotifyPageAndView(GetVisibility(), is_activity);
 
-  return base::ScopedClosureRunner(
-      base::BindOnce(&WebContentsImpl::DecrementCapturerCount,
-                     weak_factory_.GetWeakPtr(), stay_hidden, stay_awake));
+  return base::ScopedClosureRunner(base::BindOnce(
+      &WebContentsImpl::DecrementCapturerCount, weak_factory_.GetWeakPtr(),
+      stay_hidden, stay_awake, is_activity));
 }
 
 const blink::mojom::CaptureHandleConfig&
@@ -3402,7 +3410,8 @@ PageVisibilityState WebContentsImpl::GetPageVisibilityState() const {
 }
 
 void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
-    Visibility new_visibility) {
+    Visibility new_visibility,
+    bool is_activity) {
   PageVisibilityState page_visibility =
       CalculatePageVisibilityState(new_visibility);
 
@@ -3461,7 +3470,9 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
   // Make sure to call SetVisibilityAndNotifyObservers(VISIBLE) before notifying
   // the CrossProcessFrameConnector.
   if (new_visibility == Visibility::VISIBLE) {
-    last_active_time_ = base::TimeTicks::Now();
+    if (is_activity) {
+      last_active_time_ = base::TimeTicks::Now();
+    }
     SetVisibilityAndNotifyObservers(new_visibility);
   }
 
@@ -6668,7 +6679,7 @@ void WebContentsImpl::RunJavaScriptDialog(
           render_frame_host->GetLastCommittedOrigin() !=
           url::Origin::Create(render_frame_host->GetMainFrame()
                                   ->GetLastCommittedURL()
-                                  .GetOrigin());
+                                  .DeprecatedGetOriginAsURL());
       suppress_this_message |= is_different_origin_subframe;
       if (is_different_origin_subframe) {
         GetMainFrame()->AddMessageToConsole(
@@ -8592,8 +8603,8 @@ WebContentsImpl::GetRecordAggregateWatchTimeCallback(
          bool has_video, bool has_audio) {
         content::MediaPlayerWatchTime watch_time(
             page_main_frame_last_committed_url,
-            page_main_frame_last_committed_url.GetOrigin(), total_watch_time,
-            time_stamp, has_video, has_audio);
+            page_main_frame_last_committed_url.DeprecatedGetOriginAsURL(),
+            total_watch_time, time_stamp, has_video, has_audio);
 
         // Save the watch time if the delegate is still alive.
         if (delegate)
@@ -8961,7 +8972,8 @@ void WebContentsImpl::RenderFrameHostStateChanged(
 }
 
 void WebContentsImpl::DecrementCapturerCount(bool stay_hidden,
-                                             bool stay_awake) {
+                                             bool stay_awake,
+                                             bool is_activity) {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::DecrementCapturerCount");
   if (stay_hidden)
     --hidden_capturer_count_;
@@ -8986,7 +8998,7 @@ void WebContentsImpl::DecrementCapturerCount(bool stay_hidden,
   if (capture_wake_lock_ && (!is_being_captured || !stay_awake_capturer_count_))
     capture_wake_lock_->CancelWakeLock();
 
-  UpdateVisibilityAndNotifyPageAndView(GetVisibility());
+  UpdateVisibilityAndNotifyPageAndView(GetVisibility(), is_activity);
 }
 
 void WebContentsImpl::NotifyPrimaryMainFrameProcessIsAlive() {

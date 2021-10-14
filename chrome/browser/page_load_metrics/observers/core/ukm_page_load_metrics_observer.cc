@@ -28,6 +28,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/metrics/metrics_data_validation.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_utils.h"
@@ -691,22 +692,22 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
               normalized_responsiveness_metrics.normalized_total_event_durations
                   .worst_latency_over_budget.InMilliseconds());
       builder
-          .SetInteractiveTiming_TotalUserInteractionLatencyOverBudget_MaxEventDuration(
+          .SetInteractiveTiming_SumOfUserInteractionLatencyOverBudget_MaxEventDuration(
               normalized_responsiveness_metrics.normalized_max_event_durations
-                  .total_latency_over_budget.InMilliseconds());
+                  .sum_of_latency_over_budget.InMilliseconds());
       builder
-          .SetInteractiveTiming_TotalUserInteractionLatencyOverBudget_TotalEventDuration(
+          .SetInteractiveTiming_SumOfUserInteractionLatencyOverBudget_TotalEventDuration(
               normalized_responsiveness_metrics.normalized_total_event_durations
-                  .total_latency_over_budget.InMilliseconds());
+                  .sum_of_latency_over_budget.InMilliseconds());
       builder
           .SetInteractiveTiming_AverageUserInteractionLatencyOverBudget_MaxEventDuration(
               normalized_responsiveness_metrics.normalized_max_event_durations
-                  .total_latency_over_budget.InMilliseconds() /
+                  .sum_of_latency_over_budget.InMilliseconds() /
               normalized_responsiveness_metrics.num_user_interactions);
       builder
           .SetInteractiveTiming_AverageUserInteractionLatencyOverBudget_TotalEventDuration(
               normalized_responsiveness_metrics.normalized_total_event_durations
-                  .total_latency_over_budget.InMilliseconds() /
+                  .sum_of_latency_over_budget.InMilliseconds() /
               normalized_responsiveness_metrics.num_user_interactions);
       builder
           .SetInteractiveTiming_SlowUserInteractionLatencyOverBudget_HighPercentile_MaxEventDuration(
@@ -716,6 +717,29 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
           .SetInteractiveTiming_SlowUserInteractionLatencyOverBudget_HighPercentile_TotalEventDuration(
               normalized_responsiveness_metrics.normalized_total_event_durations
                   .high_percentile_latency_over_budget.InMilliseconds());
+      auto worst_ten_max_event_durations =
+          normalized_responsiveness_metrics.normalized_max_event_durations
+              .worst_ten_latencies_over_budget;
+      auto worst_ten_total_event_durations =
+          normalized_responsiveness_metrics.normalized_total_event_durations
+              .worst_ten_latencies_over_budget;
+      int index = std::max(
+          0, static_cast<int>(worst_ten_max_event_durations.size()) - 1 -
+                 static_cast<int>(
+                     GetDelegate()
+                         .GetNormalizedResponsivenessMetrics()
+                         .num_user_interactions /
+                     page_load_metrics::kHighPercentileUpdateFrequency));
+      for (; index > 0; index--) {
+        worst_ten_max_event_durations.pop();
+        worst_ten_total_event_durations.pop();
+      }
+      builder
+          .SetInteractiveTiming_SlowUserInteractionLatencyOverBudget_HighPercentile2_MaxEventDuration(
+              worst_ten_max_event_durations.top().InMilliseconds());
+      builder
+          .SetInteractiveTiming_SlowUserInteractionLatencyOverBudget_HighPercentile2_TotalEventDuration(
+              worst_ten_total_event_durations.top().InMilliseconds());
     }
   }
   if (timing.interactive_timing->first_scroll_delay &&
@@ -1047,10 +1071,15 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
 
   // TODO(crbug.com/1064483): We should move UMA recording to components/
 
+  const float page_shift_score = page_load_metrics::LayoutShiftUmaValue(
+      GetDelegate().GetPageRenderData().layout_shift_score);
+  UMA_HISTOGRAM_COUNTS_100("PageLoad.LayoutInstability.CumulativeShiftScore",
+                           page_shift_score);
+  // The pseudo metric of PageLoad.LayoutInstability.CumulativeShiftScore. Only
+  // used to assess field trial data quality.
   UMA_HISTOGRAM_COUNTS_100(
-      "PageLoad.LayoutInstability.CumulativeShiftScore",
-      page_load_metrics::LayoutShiftUmaValue(
-          GetDelegate().GetPageRenderData().layout_shift_score));
+      "UMA.Pseudo.PageLoad.LayoutInstability.CumulativeShiftScore",
+      metrics::GetPseudoMetricsSample(page_shift_score));
 
   TRACE_EVENT_INSTANT1("loading", "CumulativeShiftScore::AllFrames::UMA",
                        TRACE_EVENT_SCOPE_THREAD, "data",

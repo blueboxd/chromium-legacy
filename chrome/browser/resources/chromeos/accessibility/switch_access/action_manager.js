@@ -117,6 +117,41 @@ export class ActionManager {
         ActionManager.exitCurrentMenu();
         Navigator.byPoint.performMouseAction(action);
         break;
+      case SwitchAccessMenuAction.QUICK_COMMANDS:
+        if (SwitchAccess.instance.multistepAutomationFeaturesEnabled()) {
+          ActionManager.openMenu(SAConstants.MenuType.QUICK_COMMANDS_MENU);
+        }
+        break;
+      case SwitchAccessMenuAction.STATUS_BAR:
+        if (SwitchAccess.instance.multistepAutomationFeaturesEnabled()) {
+          FocusRingManager.clearAll();
+          ActionManager.exitCurrentMenu();
+          EventGenerator.sendKeyPress(KeyCode.S, {alt: true, shift: true});
+        }
+        break;
+      case SwitchAccessMenuAction.SCREENSHOT:
+        if (SwitchAccess.instance.multistepAutomationFeaturesEnabled()) {
+          FocusRingManager.clearAll();
+          ActionManager.exitCurrentMenu();
+          EventGenerator.sendKeyPress(KeyCode.MEDIA_LAUNCH_APP1, {ctrl: true});
+        }
+        break;
+      case SwitchAccessMenuAction.VOLUME_UP:
+        if (SwitchAccess.instance.multistepAutomationFeaturesEnabled()) {
+          EventGenerator.sendKeyPress(KeyCode.VOLUME_UP);
+        }
+        break;
+      case SwitchAccessMenuAction.VOLUME_DOWN:
+        if (SwitchAccess.instance.multistepAutomationFeaturesEnabled()) {
+          EventGenerator.sendKeyPress(KeyCode.VOLUME_DOWN);
+        }
+        break;
+      case SwitchAccessMenuAction.LEAVE_GROUP:
+        if (SwitchAccess.instance.multistepAutomationFeaturesEnabled()) {
+          ActionManager.exitAllMenus();
+          Navigator.byItem.exitGroupUnconditionally();
+        }
+        break;
       // Item scan actions:
       default:
         ActionManager.instance.performActionOnCurrentNode_(action);
@@ -188,6 +223,19 @@ export class ActionManager {
           SwitchAccessMenuAction.LEFT_CLICK,
           SwitchAccessMenuAction.RIGHT_CLICK,
         ];
+
+      case SAConstants.MenuType.QUICK_COMMANDS_MENU:
+        if (SwitchAccess.instance.multistepAutomationFeaturesEnabled()) {
+          // TODO(crbug.com/1258921): Replace this with quick commands.
+          return [
+            SwitchAccessMenuAction.LEAVE_GROUP,
+            SwitchAccessMenuAction.STATUS_BAR, SwitchAccessMenuAction.VOLUME_UP,
+            SwitchAccessMenuAction.VOLUME_DOWN,
+            SwitchAccessMenuAction.SCREENSHOT
+          ];
+        }
+
+        return [];
       default:
         return [];
     }
@@ -225,6 +273,9 @@ export class ActionManager {
       let actions = this.actionsForType_(SAConstants.MenuType.POINT_SCAN_MENU);
       actions = this.addGlobalActions_(actions);
       return actions;
+    } else if (
+        this.currentMenuType_ === SAConstants.MenuType.QUICK_COMMANDS_MENU) {
+      return this.actionsForType_(SAConstants.MenuType.QUICK_COMMANDS_MENU);
     }
 
     if (!this.actionNode_ || !this.actionNode_.isValidAndVisible()) {
@@ -235,6 +286,10 @@ export class ActionManager {
     actions = actions.filter((a) => possibleActions.includes(a));
     if (this.currentMenuType_ === SAConstants.MenuType.MAIN_MENU) {
       actions = this.addGlobalActions_(actions);
+      if (SwitchAccess.instance.multistepAutomationFeaturesEnabled()) {
+        // Ensure quick commands are the first item in the menu.
+        actions.unshift(SwitchAccessMenuAction.QUICK_COMMANDS);
+      }
     }
     return actions;
   }

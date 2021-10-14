@@ -30,14 +30,10 @@ namespace {
 constexpr int kSuggestedTasksHorizontalPadding = 6;
 
 // Suggested tasks layout constants.
-constexpr int kColumnSpacing = 8;
+constexpr int kColumnSpacingClamshell = 8;
+constexpr int kColumnSpacingTablet = 16;
 constexpr int kRowSpacing = 8;
 constexpr size_t kMaxFilesForContinueSection = 4;
-
-bool IsFileType(AppListSearchResultType type) {
-  return type == AppListSearchResultType::kFileChip ||
-         type == AppListSearchResultType::kDriveChip;
-}
 
 struct CompareByDisplayIndexAndPositionPriority {
   bool operator()(const SearchResult* result1,
@@ -50,22 +46,21 @@ struct CompareByDisplayIndexAndPositionPriority {
   }
 };
 
-std::vector<SearchResult*> GetTasksResultsFromSuggestionChips(
+std::vector<SearchResult*> GetTasksResultsForContinueSection(
     SearchModel* search_model) {
   SearchModel::SearchResults* results = search_model->results();
-  auto file_chips_filter = [](const SearchResult& r) -> bool {
-    return IsFileType(r.result_type()) &&
-           r.display_type() == SearchResultDisplayType::kChip;
+  auto continue_filter = [](const SearchResult& r) -> bool {
+    return r.display_type() == SearchResultDisplayType::kContinue;
   };
-  std::vector<SearchResult*> file_chips_results =
+  std::vector<SearchResult*> continue_results =
       SearchModel::FilterSearchResultsByFunction(
-          results, base::BindRepeating(file_chips_filter),
+          results, base::BindRepeating(continue_filter),
           /*max_results=*/4);
 
-  std::sort(file_chips_results.begin(), file_chips_results.end(),
+  std::sort(continue_results.begin(), continue_results.end(),
             CompareByDisplayIndexAndPositionPriority());
 
-  return file_chips_results;
+  return continue_results;
 }
 
 }  // namespace
@@ -73,7 +68,8 @@ std::vector<SearchResult*> GetTasksResultsFromSuggestionChips(
 ContinueTaskContainerView::ContinueTaskContainerView(
     AppListViewDelegate* view_delegate,
     int columns,
-    OnResultsChanged update_callback)
+    OnResultsChanged update_callback,
+    bool tablet_mode)
     : view_delegate_(view_delegate), update_callback_(update_callback) {
   DCHECK(!update_callback_.is_null());
 
@@ -85,7 +81,9 @@ ContinueTaskContainerView::ContinueTaskContainerView(
   views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
   for (int i = 0; i < columns; i++) {
     if (i > 0)
-      column_set->AddPaddingColumn(GridLayout::kFixedSize, kColumnSpacing);
+      column_set->AddPaddingColumn(
+          GridLayout::kFixedSize,
+          tablet_mode ? kColumnSpacingTablet : kColumnSpacingClamshell);
     column_set->AddColumn(
         GridLayout::FILL, GridLayout::CENTER, /*resize_percent=*/1.0,
         GridLayout::ColumnSize::kUsePreferred, /*fixed_width=*/0,
@@ -101,8 +99,8 @@ ContinueTaskContainerView::ContinueTaskContainerView(
         layout->StartRow(GridLayout::kFixedSize, kColumnSetId);
       }
     }
-    ContinueTaskView* task =
-        layout->AddView(std::make_unique<ContinueTaskView>(view_delegate));
+    ContinueTaskView* task = layout->AddView(
+        std::make_unique<ContinueTaskView>(view_delegate, tablet_mode));
     // This view has a predefined number of placeholder tasks views which toggle
     // visibility depending on the result being null or not. The container's
     // visibility is handled on the parent view.
@@ -135,7 +133,7 @@ void ContinueTaskContainerView::Update() {
   // Invalidate this callback to cancel a scheduled update.
   update_factory_.InvalidateWeakPtrs();
   std::vector<SearchResult*> tasks =
-      GetTasksResultsFromSuggestionChips(view_delegate_->GetSearchModel());
+      GetTasksResultsForContinueSection(view_delegate_->GetSearchModel());
 
   // Update search results here.
   for (size_t i = 0; i < suggestion_tasks_views_.size(); ++i) {

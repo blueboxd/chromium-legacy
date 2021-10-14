@@ -11,11 +11,11 @@
 #include "chrome/browser/ash/attestation/mock_machine_certificate_uploader.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key_result.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/platform_keys/key_permissions/fake_user_private_token_kpm_service.h"
+#include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_manager_impl.h"
+#include "chrome/browser/ash/platform_keys/key_permissions/mock_key_permissions_manager.h"
+#include "chrome/browser/ash/platform_keys/key_permissions/user_private_token_kpm_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions/fake_user_private_token_kpm_service.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_manager_impl.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions/mock_key_permissions_manager.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions/user_private_token_kpm_service_factory.h"
 #include "chrome/browser/platform_keys/platform_keys.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -651,10 +651,10 @@ TEST_F(AffiliatedUserTpmChallengeKeySubtleTest, UserKeyRegisteredSuccess) {
   AttestationClient::Get()->GetTestInterface()->AllowlistRegisterKey(
       kTestUserEmail, key_name);
 
-  EXPECT_CALL(*user_private_token_key_permissions_manager_,
-              AllowKeyForUsage(/*callback=*/_,
-                               chromeos::platform_keys::KeyUsage::kCorporate,
-                               GetPublicKey()))
+  EXPECT_CALL(
+      *user_private_token_key_permissions_manager_,
+      AllowKeyForUsage(/*callback=*/_, platform_keys::KeyUsage::kCorporate,
+                       GetPublicKey()))
       .WillOnce(RunOnceCallback<0>(chromeos::platform_keys::Status::kSuccess));
 
   RunThreeStepsAndExpect(key_type, /*will_register_key=*/true, key_name,

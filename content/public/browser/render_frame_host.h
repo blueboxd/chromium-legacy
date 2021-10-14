@@ -12,7 +12,6 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "build/build_config.h"
-#include "cc/input/browser_controls_state.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/common/isolated_world_ids.h"
@@ -363,7 +362,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // over its lifetime, and this RenderFrameHost might have a shorter lifetime
   // than the frame hosting content, as explained above. For associating data
   // with a single document, DocumentUserData can be used.
-  virtual int GetFrameTreeNodeId() = 0;
+  virtual int GetFrameTreeNodeId() const = 0;
 
   // Used for devtools instrumentation and trace-ability. The token is
   // propagated to Blink's LocalFrame and both Blink and content/
@@ -918,13 +917,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // The |notification_type| parameter is used for histograms only.
   virtual void NotifyUserActivation(
       blink::mojom::UserActivationNotificationType notification_type) = 0;
-
-  // Notifies the renderer whether hiding/showing the browser controls is
-  // enabled, what the current state should be, and whether or not to animate to
-  // the proper state.
-  virtual void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
-                                          cc::BrowserControlsState current,
-                                          bool animate) = 0;
 
   // Reloads the frame. It initiates a reload but doesn't wait for it to finish.
   // In some rare cases, there is no history related to the frame, nothing

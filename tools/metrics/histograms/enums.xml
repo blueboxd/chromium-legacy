@@ -34911,6 +34911,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4057" label="FlexboxAlignSingleLineDifference"/>
   <int value="4058" label="ExternalProtocolBlockedBySandbox"/>
   <int value="4059" label="WebAssemblyDynamicTiering"/>
+  <int value="4060" label="DeferredShapingTallerIfc"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35020,6 +35021,7 @@ Called by update_permissions_policy_enum.py.-->
   <int value="87" label="ClientHintUABitness"/>
   <int value="88" label="ClientHintUAReduced"/>
   <int value="89" label="ClientHintViewportHeight"/>
+  <int value="90" label="KeyboardMap"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
@@ -48813,6 +48815,7 @@ from previous Chrome versions.
       label="DesktopPWAsMigrationUserDisplayModeCleanUp:enabled"/>
   <int value="-1408869905"
       label="AutofillEnforceMinRequiredFieldsForQuery:disabled"/>
+  <int value="-1408696172" label="CompositeBGColorAnimation:enabled"/>
   <int value="-1408370474" label="AssistantRoutines:enabled"/>
   <int value="-1408288176" label="enable-account-consistency"/>
   <int value="-1405349891" label="PictureInPictureAPI:enabled"/>
@@ -49251,6 +49254,7 @@ from previous Chrome versions.
   <int value="-1086656172"
       label="PrefetchNotificationSchedulingIntegration:disabled"/>
   <int value="-1085492638" label="FetchKeepaliveTimeoutSetting:enabled"/>
+  <int value="-1084618227" label="CompositeBGColorAnimation:disabled"/>
   <int value="-1084055006" label="disable-web-notification-custom-layouts"/>
   <int value="-1083736482" label="OmniboxCompactSuggestions:enabled"/>
   <int value="-1083547717" label="NotificationExpansionAnimation:disabled"/>
@@ -50342,6 +50346,7 @@ from previous Chrome versions.
   <int value="-222296540" label="VirtualKeyboardBorderedKey:disabled"/>
   <int value="-222282965"
       label="disable_idle_sockets_close_on_memory_pressure:enabled"/>
+  <int value="-221649438" label="AllowTouchpadHapticClickSettings:disabled"/>
   <int value="-220599034" label="UsePdfCompositorServiceForPrint:enabled"/>
   <int value="-220298483" label="ImeOptionsInSettings:enabled"/>
   <int value="-217885320" label="CdmFactoryDaemon:disabled"/>
@@ -51995,6 +52000,7 @@ from previous Chrome versions.
   <int value="1050664817" label="CSSFragmentIdentifiers:enabled"/>
   <int value="1053743655" label="NewOverviewAnimations:enabled"/>
   <int value="1054910800" label="enable-timezone-tracking-option"/>
+  <int value="1055116004" label="AllowTouchpadHapticClickSettings:enabled"/>
   <int value="1057014709" label="EnforceTLS13Downgrade:enabled"/>
   <int value="1057709415" label="DeprecateAltBasedSixPack:disabled"/>
   <int value="1057741107"
@@ -60721,8 +60727,8 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="NightMode">
   <int value="0" label="undefined"/>
-  <int value="1" label="no"/>
-  <int value="2" label="yes"/>
+  <int value="1" label="on"/>
+  <int value="2" label="off"/>
 </enum>
 
 <enum name="NormalizedScore">
@@ -90297,11 +90303,11 @@ Called by update_scheduler_enums.py.-->
 
 <enum name="WebViewInDarkModeVsNightMode">
   <int value="0" label="WebView dark, night mode undefined"/>
-  <int value="1" label="WebView dark, night mode off"/>
-  <int value="2" label="WebView dark, night mode on"/>
+  <int value="1" label="WebView dark, night mode on"/>
+  <int value="2" label="WebView dark, night mode off"/>
   <int value="3" label="WebView light, night mode undefined"/>
-  <int value="4" label="WebView light, night mode off"/>
-  <int value="5" label="WebView light, night mode on"/>
+  <int value="4" label="WebView light, night mode on"/>
+  <int value="5" label="WebView light, night mode off"/>
 </enum>
 
 <enum name="WebViewMixedContentMode">
@@ -90314,12 +90320,12 @@ Called by update_scheduler_enums.py.-->
   <int value="0" label="Night mode undefined, light theme undefined"/>
   <int value="1" label="Night mode undefined, light theme no"/>
   <int value="2" label="Night mode undefined, light theme yes"/>
-  <int value="3" label="Night mode off, light theme undefined"/>
-  <int value="4" label="Night mode off, light theme no"/>
-  <int value="5" label="Night mode off, light theme yes"/>
-  <int value="6" label="Night mode on, light theme undefined"/>
-  <int value="7" label="Night mode on, light theme no"/>
-  <int value="8" label="Night mode on, light theme yes"/>
+  <int value="3" label="Night mode on, light theme undefined"/>
+  <int value="4" label="Night mode on, light theme no"/>
+  <int value="5" label="Night mode on, light theme yes"/>
+  <int value="6" label="Night mode off, light theme undefined"/>
+  <int value="7" label="Night mode off, light theme no"/>
+  <int value="8" label="Night mode off, light theme yes"/>
 </enum>
 
 <enum name="WebViewOpenWebScreenPortion">
@@ -90343,21 +90349,27 @@ Called by update_scheduler_enums.py.-->
 </enum>
 
 <enum name="WebViewPrimaryTextLuminanceVsLightTheme">
-  <int value="0" label="Text dark, light theme undefined"/>
-  <int value="1" label="Text dark, light theme no"/>
-  <int value="2" label="Text dark, light theme yes"/>
+  <int value="0" label="Text undefined, light theme undefined"/>
+  <int value="1" label="Text undefined, light theme no"/>
+  <int value="2" label="Text undefined, light theme yes"/>
   <int value="3" label="Text light, light theme undefined"/>
   <int value="4" label="Text light, light theme no"/>
   <int value="5" label="Text light, light theme yes"/>
+  <int value="6" label="Text dark, light theme undefined"/>
+  <int value="7" label="Text dark, light theme no"/>
+  <int value="8" label="Text dark, light theme yes"/>
 </enum>
 
 <enum name="WebViewPrimaryTextLuminanceVsNightMode">
-  <int value="0" label="Text dark, night mode undefined"/>
-  <int value="1" label="Text dark, night mode off"/>
-  <int value="2" label="Text dark, night mode on"/>
+  <int value="0" label="Text undefined, night mode undefined"/>
+  <int value="1" label="Text undefined, night mode on"/>
+  <int value="2" label="Text undefined, night mode off"/>
   <int value="3" label="Text light, night mode undefined"/>
-  <int value="4" label="Text light, night mode off"/>
-  <int value="5" label="Text light, night mode on"/>
+  <int value="4" label="Text light, night mode on"/>
+  <int value="5" label="Text light, night mode off"/>
+  <int value="6" label="Text dark, night mode undefined"/>
+  <int value="7" label="Text dark, night mode on"/>
+  <int value="8" label="Text dark, night mode off"/>
 </enum>
 
 <enum name="WebViewUrlScheme">

@@ -5,6 +5,7 @@
 #include "ui/message_center/views/notification_view.h"
 
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/color_utils.h"
@@ -15,6 +16,7 @@
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/notification_view_util.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -31,6 +33,9 @@ constexpr gfx::Insets kContentRowPadding(0, 12, 16, 12);
 constexpr gfx::Size kIconViewSize(36, 36);
 constexpr gfx::Insets kLeftContentPadding(2, 4, 0, 4);
 constexpr gfx::Insets kLeftContentPaddingWithIcon(2, 4, 0, 12);
+
+// Minimum size of a button in the actions row.
+constexpr gfx::Size kActionButtonMinSize(0, 32);
 
 constexpr int kMessageViewWidthWithIcon =
     kNotificationWidth - kIconViewSize.width() -
@@ -84,6 +89,47 @@ gfx::Insets CalculateTopPadding(int font_list_height) {
 
   return kTextViewPaddingDefault;
 }
+
+// NotificationTextButton //////////////////////////////////////////////////////
+
+// TODO(crbug/1241983): Add metadata and builder support to this view.
+
+// NotificationTextButton extends MdTextButton to allow for placeholder text
+// as well as capitalizing the given label string. Used by chrome notifications.
+// Ash notifications create their own.
+class NotificationTextButton : public views::MdTextButton {
+ public:
+  NotificationTextButton(PressedCallback callback, const std::u16string& label)
+      : views::MdTextButton(std::move(callback), label) {
+    SetMinSize(kActionButtonMinSize);
+    views::InstallRectHighlightPathGenerator(this);
+    SetTextSubpixelRenderingEnabled(false);
+  }
+  NotificationTextButton(const NotificationTextButton&) = delete;
+  NotificationTextButton& operator=(const NotificationTextButton&) = delete;
+  ~NotificationTextButton() override = default;
+
+  // views::MdTextButton:
+  void UpdateBackgroundColor() override {
+    // Overridden as no-op so we don't draw any background or border.
+  }
+
+  void OnThemeChanged() override {
+    views::MdTextButton::OnThemeChanged();
+    SetEnabledTextColors(color_);
+    label()->SetBackgroundColor(
+        GetColorProvider()->GetColor(ui::kColorNotificationActionsBackground));
+  }
+
+  void SetEnabledTextColors(absl::optional<SkColor> color) override {
+    color_ = std::move(color);
+    views::MdTextButton::SetEnabledTextColors(color_);
+    label()->SetAutoColorReadabilityEnabled(true);
+  }
+
+ private:
+  absl::optional<SkColor> color_;
+};
 
 }  // namespace
 
@@ -185,6 +231,13 @@ void NotificationView::CreateOrUpdateSmallIconView(
   }
 }
 
+std::unique_ptr<views::LabelButton>
+NotificationView::GenerateNotificationLabelButton(
+    views::Button::PressedCallback callback,
+    const std::u16string& label) {
+  return std::make_unique<NotificationTextButton>(std::move(callback), label);
+}
+
 void NotificationView::UpdateViewForExpandedState(bool expanded) {
   left_content()->SetBorder(views::CreateEmptyBorder(
       IsIconViewShown() ? kLeftContentPaddingWithIcon : kLeftContentPadding));
@@ -249,6 +302,35 @@ void NotificationView::ToggleInlineSettings(const ui::Event& event) {
   // point after it's called.
   if (disable_notification)
     MessageCenter::Get()->DisableNotification(notification_id());
+}
+
+bool NotificationView::IsExpandable() const {
+  // Inline settings can not be expanded.
+  if (GetMode() == Mode::SETTING)
+    return false;
+
+  // Expandable if the message exceeds one line.
+  if (message_view() && message_view()->GetVisible() &&
+      message_view()->GetRequiredLines() > 1) {
+    return true;
+  }
+  // Expandable if there is at least one inline action.
+  if (!action_buttons_row()->children().empty())
+    return true;
+
+  // Expandable if the notification has image.
+  if (!image_container_view()->children().empty())
+    return true;
+
+  // Expandable if there are multiple list items.
+  if (item_views().size() > 1)
+    return true;
+
+  // Expandable if both progress bar and status message exist.
+  if (status_view())
+    return true;
+
+  return false;
 }
 
 void NotificationView::UpdateHeaderViewBackgroundColor() {

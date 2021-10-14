@@ -972,10 +972,10 @@ Try tapping the mic to ask me anything.
         For more accurate results, close all apps until the test is complete.
       </message>
       <message name="IDS_DIAGNOSTICS_TROUBLE_CONNECTING" desc="The label for the text link that leads to a help support article to learn more about connecting to Ethernet networks.">
-        Having trouble connecting?
+        Try troubleshooting steps
       </message>
       <message name="IDS_DIAGNOSTICS_TROUBLESHOOTING_TEXT" desc="The label for the text displayed when an internet network is not in a connected or connecting state.">
-        No <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph> connection detected
+        No <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph> network available
       </message>
       <message name="IDS_DIAGNOSTICS_SYSTEM" desc="The label for the system navigation panel item.">
         System
@@ -989,14 +989,20 @@ Try tapping the mic to ask me anything.
         other {Name servers}}
       </message>
       <message name="IDS_DIAGNOSTICS_DISABLED_TEXT" desc="The label for the text displaed when a network has been disabled.">
-        <ph name="NETWORK_NAME">$1<ex>Wi-Fi</ex></ph> has been disabled
+        <ph name="NETWORK_NAME">$1<ex>Wi-Fi</ex></ph> is off
       </message>
       <message name="IDS_DIAGNOSTICS_RECONNECT_LINK_TEXT" desc="The text contains a link to the settings page to allow users to reconnect their network.">
-        Visit Settings to reconnect
+        To reconnect, go to Settings
+      </message>
+      <message name="IDS_DIAGNOSTICS_JOIN_NETWORK_LINK_TEXT" desc="The text contains a link to the settings page to allow users to reconnect their network.">
+        To join a <ph name="NETWORK_NAME">$1<ex>Wi-Fi</ex></ph> network, go to Settings
+      </message>
+      <message name="IDS_DIAGNOSTICS_NETWORK_TYPE_CELLULAR" desc="Label used to describe Cellular networks.">
+        Mobile data
       </message>
 
       <message name="IDS_DIAGNOSTICS_SETTINGS_LINK_TEXT" desc="The text contains a link to the settings page, allowing a user to set up a new connection.">
-        To set up a new connection, go to <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Settings<ph name="END_LINK">&lt;/a&gt;</ph>.
+        To set up or update a connection, go to <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Settings<ph name="END_LINK">&lt;/a&gt;</ph>.
       </message>
       <message name="IDS_DIAGNOSTICS_NETWORK_SIM_LOCK_STATUS_LABEL" desc="The label for a Cellular network's Sim Lock Status.">
         SIM Lock Status

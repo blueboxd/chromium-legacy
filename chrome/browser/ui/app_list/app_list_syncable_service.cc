@@ -201,11 +201,30 @@ bool IsOsSettingsApp(const std::string& app_id) {
   return app_id == web_app::kOsSettingsAppId;
 }
 
-bool IsSystemCreatedSyncFolder(AppListSyncableService::SyncItem* folder_item) {
-  if (folder_item->item_type != sync_pb::AppListSpecifics::TYPE_FOLDER)
+bool IsSystemCreatedSyncFolder(
+    const AppListSyncableService::SyncItem& folder_item) {
+  if (folder_item.item_type != sync_pb::AppListSpecifics::TYPE_FOLDER)
     return false;
-  return (folder_item->item_id == ash::kOemFolderId ||
-          folder_item->item_id == ash::kCrostiniFolderId);
+  return (folder_item.item_id == ash::kOemFolderId ||
+          folder_item.item_id == ash::kCrostiniFolderId);
+}
+
+// Generates app list item meta data from the given sync item.
+std::unique_ptr<ash::AppListItemMetadata> GenerateItemMetadataFromSyncItem(
+    const AppListSyncableService::SyncItem& sync_item) {
+  auto item_meta_data = std::make_unique<ash::AppListItemMetadata>();
+  item_meta_data->id = sync_item.item_id;
+  item_meta_data->position = sync_item.item_ordinal;
+  item_meta_data->is_folder =
+      (sync_item.item_type == sync_pb::AppListSpecifics::TYPE_FOLDER);
+  item_meta_data->is_page_break =
+      (sync_item.item_type == sync_pb::AppListSpecifics::TYPE_PAGE_BREAK);
+  item_meta_data->name = sync_item.item_name;
+  item_meta_data->folder_id = sync_item.parent_id;
+
+  if (IsSystemCreatedSyncFolder(sync_item))
+    item_meta_data->is_persistent = true;
+  return item_meta_data;
 }
 
 }  // namespace
@@ -603,7 +622,7 @@ void AppListSyncableService::CleanUpSingleItemSyncFolder() {
 AppListSyncableService::SyncItem*
 AppListSyncableService::GetOnlyChildOfUserCreatedFolder(SyncItem* sync_item) {
   if (sync_item->item_type != sync_pb::AppListSpecifics::TYPE_FOLDER ||
-      IsSystemCreatedSyncFolder(sync_item))
+      IsSystemCreatedSyncFolder(*sync_item))
     return nullptr;
 
   const std::string& folder_id = sync_item->item_id;
@@ -653,6 +672,14 @@ void AppListSyncableService::AddItem(
     std::string folder_id = sync_item->parent_id;
     VLOG(2) << this << ": AddItem: " << sync_item->ToString() << " Folder: '"
             << folder_id << "'";
+
+    if (folder_id == ash::kCrostiniFolderId)
+      MaybeAddOrUpdateCrostiniFolderSyncData();
+
+    // Create a folder if `app_item`'s parent folder does not exist.
+    if (!folder_id.empty())
+      MaybeCreateFolderBeforeAddingItem(app_item.get(), folder_id);
+
     model_updater_->AddItemToFolder(std::move(app_item), folder_id);
   }
 
@@ -871,8 +898,8 @@ void AppListSyncableService::SortSyncItems(ash::AppListSortOrder order) {
 
   // Delete all the page breakers so that empty spaces are removed on the
   // devices with the old OS version.
-  // TODO(https://crbug.com/1242649): add page breaks to avoid page overflow on
-  // devices that expect at most 20 items per page.
+  // TODO(https://crbug.com/1242649): add page breaks to avoid page overflow
+  // on devices that expect at most 20 items per page.
   std::vector<std::string> page_breaker_ids;
   for (const auto& id_item_pair : sync_items_) {
     if (id_item_pair.second->item_type ==
@@ -975,10 +1002,10 @@ void AppListSyncableService::PruneEmptySyncFolders() {
     if (sync_item->item_type != sync_pb::AppListSpecifics::TYPE_FOLDER)
       continue;
 
-    // Do not prune OEM folder - OEM app sync items will not have the parent ID
-    // set to OEM folder, so OEM folder will not be listed in `parent_ids`.
-    // Additionally, even if the folder is empty / not needed on this device, it
-    // may exist on another user's device. Deleting it from sync would
+    // Do not prune OEM folder - OEM app sync items will not have the parent
+    // ID set to OEM folder, so OEM folder will not be listed in `parent_ids`.
+    // Additionally, even if the folder is empty / not needed on this device,
+    // it may exist on another user's device. Deleting it from sync would
     // invalidate the folder position on other devices.
     if (sync_item->item_id == ash::kOemFolderId)
       continue;
@@ -1031,8 +1058,8 @@ AppListSyncableService::MergeDataAndStartSyncing(
 
   const bool first_time_user = initial_sync_data.empty();
   if (first_time_user) {
-    // Post a task to avoid adding the default page break items which can cause
-    // sync changes during sync startup.
+    // Post a task to avoid adding the default page break items which can
+    // cause sync changes during sync startup.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&AppListSyncableService::InstallDefaultPageBreaks,
@@ -1075,7 +1102,8 @@ AppListSyncableService::MergeDataAndStartSyncing(
     }
     unsynced_items.erase(item_id);
   }
-  // Initial sync data has been processed, it is safe now to add new sync items.
+  // Initial sync data has been processed, it is safe now to add new sync
+  // items.
   initial_sync_data_processed_ = true;
 
   // Send unsynced items.
@@ -1258,9 +1286,9 @@ void AppListSyncableService::ProcessNewSyncItem(SyncItem* sync_item) {
     }
     case sync_pb::AppListSpecifics::TYPE_PAGE_BREAK: {
       // This is can be either a default page break item that was installed by
-      // default for new users, or a non-default page-break item that was added
-      // by the user. the ctor of PageBreakAppItem will update the newly-created
-      // item from its |sync_item|.
+      // default for new users, or a non-default page-break item that was
+      // added by the user. the ctor of PageBreakAppItem will update the
+      // newly-created item from its |sync_item|.
       model_updater_->AddItem(std::make_unique<PageBreakAppItem>(
           profile_, model_updater_.get(), sync_item, sync_item->item_id));
       return;
@@ -1497,8 +1525,8 @@ void AppListSyncableService::InstallDefaultPageBreaks() {
     if (sync_item) {
       // The user may have cleared their sync from
       // https://chrome.google.com/sync, so it may appear here that it's a new
-      // user, while in fact on this device, it's not. We don't want to recreate
-      // and re-add an already existing default page break item.
+      // user, while in fact on this device, it's not. We don't want to
+      // recreate and re-add an already existing default page break item.
       continue;
     }
 
@@ -1515,9 +1543,9 @@ void AppListSyncableService::UpdateSyncItemFromSync(
   item->item_type = specifics.item_type();
   item->item_name = specifics.item_name();
 
-  // Ignore update to put item into the OEM folder in case app is not OEM. This
-  // can happen when app is installed on several devices where app is OEM on one
-  // device and not on another devices.
+  // Ignore update to put item into the OEM folder in case app is not OEM.
+  // This can happen when app is installed on several devices where app is OEM
+  // on one device and not on another devices.
   if (specifics.parent_id() != ash::kOemFolderId || AppIsOem(item->item_id))
     item->parent_id = specifics.parent_id();
   if (specifics.has_item_ordinal())
@@ -1553,6 +1581,64 @@ bool AppListSyncableService::UpdateSyncItemFromAppItem(
     changed = true;
   }
   return changed;
+}
+
+void AppListSyncableService::MaybeAddOrUpdateCrostiniFolderSyncData() {
+  const std::string crostini_folder_id = ash::kCrostiniFolderId;
+  if (model_updater_->FindItem(crostini_folder_id)) {
+    // The Crostini folder exists. Therefore its sync data is update-to-date.
+    return;
+  }
+
+  ChromeAppListItem crostini_folder(profile_, crostini_folder_id,
+                                    model_updater_.get());
+  crostini_folder.SetChromeName(
+      l10n_util::GetStringUTF8(IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME));
+  crostini_folder.SetIsPersistent(true);
+  crostini_folder.SetChromeIsFolder(true);
+
+  // Calculate the Crostini folder's position.
+  SyncItem* current_sync_data = FindSyncItem(crostini_folder_id);
+  syncer::StringOrdinal crostini_folder_position =
+      current_sync_data ? current_sync_data->item_ordinal
+                        : crostini_folder.CalculateDefaultPositionIfApplicable(
+                              model_updater_.get());
+  crostini_folder.SetChromePosition(crostini_folder_position);
+
+  // Add or update the Crostini folder's sync data.
+  // Note that we cannot call `AddOrUpdateFromSyncItem()` here because
+  // the Crostini folder is not added to `model_updater_` yet.
+  if (current_sync_data)
+    UpdateSyncItem(&crostini_folder);
+  else
+    CreateSyncItemFromAppItem(&crostini_folder);
+}
+
+void AppListSyncableService::MaybeCreateFolderBeforeAddingItem(
+    ChromeAppListItem* app_item,
+    const std::string& folder_id) {
+  DCHECK(!folder_id.empty());
+
+  const SyncItem* folder_sync_item = FindSyncItem(folder_id);
+  if (!folder_sync_item) {
+    // TODO(https://crbug.com/1259459): delete this code block if the sync item
+    // indexed by `folder_id` always exists.
+    app_item->SetChromeFolderId("");
+    return;
+  }
+
+  ChromeAppListItem* folder_item = model_updater_->FindItem(folder_id);
+  DCHECK(!folder_item || folder_item->is_folder());
+
+  // The folder item specified by `folder_id` already exists. Nothing to do.
+  if (folder_item)
+    return;
+
+  auto new_folder_item = std::make_unique<ChromeAppListItem>(
+      profile_, folder_id, model_updater_.get());
+  new_folder_item->SetMetadata(
+      GenerateItemMetadataFromSyncItem(*folder_sync_item));
+  model_updater_->AddItem(std::move(new_folder_item));
 }
 
 }  // namespace app_list

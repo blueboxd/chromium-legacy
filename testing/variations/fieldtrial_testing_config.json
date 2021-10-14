@@ -1129,34 +1129,6 @@
             ]
         }
     ],
-    "AutofillMerchantBoundVirtualCards": [
-        {
-            "platforms": [
-                "android",
-                "mac",
-                "windows",
-                "chromeos",
-                "chromeos_lacros",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "availability": "any",
-                        "event_trigger": "name:keyboard_accessory_payment_virtual_card_iph_trigger;comparator:<3;window:90;storage:360",
-                        "event_used": "name:keyboard_accessory_payment_suggestion_accepted;comparator:<2;window:90;storage:360",
-                        "session_rate": "any",
-                        "session_rate_impact": "IPH_KeyboardAccessoryBarSwiping"
-                    },
-                    "enable_features": [
-                        "AutofillEnableMerchantBoundVirtualCards",
-                        "IPH_KeyboardAccessoryPaymentVirtualCard"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillNameSectionsWithRendererIds": [
         {
             "platforms": [
@@ -2045,6 +2017,22 @@
             ],
             "experiments": [
                 {
+                    "name": "CandidateB",
+                    "params": {
+                        "hide_switch_when_no_incognito_tabs": "true",
+                        "open_ntp_instead_of_start": "true",
+                        "show_last_active_tab_only": "true",
+                        "start_surface_variation": "single",
+                        "support_accessibility": "true",
+                        "tab_count_button_on_start_surface": "true",
+                        "tab_switcher_on_return_time_ms": "3600000"
+                    },
+                    "enable_features": [
+                        "StartSurfaceAndroid",
+                        "TabSwitcherOnReturn"
+                    ]
+                },
+                {
                     "name": "CandidateA",
                     "params": {
                         "hide_switch_when_no_incognito_tabs": "true",
@@ -2090,34 +2078,6 @@
                         "tab_switcher_on_return_time_ms": "3600000"
                     },
                     "enable_features": [
-                        "StartSurfaceAndroid",
-                        "TabSwitcherOnReturn"
-                    ]
-                },
-                {
-                    "name": "EnabledSingleSurface",
-                    "params": {
-                        "start_surface_variation": "single",
-                        "support_accessibility": "false",
-                        "tab_switcher_on_return_time_ms": "3600000"
-                    },
-                    "enable_features": [
-                        "InstantStart",
-                        "StartSurfaceAndroid",
-                        "TabSwitcherOnReturn"
-                    ]
-                },
-                {
-                    "name": "EnabledSingleSurfaceV2",
-                    "params": {
-                        "open_ntp_instead_of_start": "true",
-                        "show_last_active_tab_only": "true",
-                        "start_surface_variation": "single",
-                        "support_accessibility": "false",
-                        "tab_switcher_on_return_time_ms": "3600000"
-                    },
-                    "enable_features": [
-                        "InstantStart",
                         "StartSurfaceAndroid",
                         "TabSwitcherOnReturn"
                     ]
@@ -2170,6 +2130,22 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DetailedLanguageSettings"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ClientSideDetectionDocumentScanning": [
+        {
+            "platforms": [
+                "linux",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ClientSideDetectionDocumentScanning"
                     ]
                 }
             ]

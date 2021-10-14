@@ -362,17 +362,17 @@ const char* GetSignalingStateString(
   const char* result = "";
   switch (state) {
     case webrtc::PeerConnectionInterface::SignalingState::kStable:
-      return "SignalingStateStable";
+      return "stable";
     case webrtc::PeerConnectionInterface::SignalingState::kHaveLocalOffer:
-      return "SignalingStateHaveLocalOffer";
+      return "have-local-offer";
     case webrtc::PeerConnectionInterface::SignalingState::kHaveRemoteOffer:
-      return "SignalingStateHaveRemoteOffer";
+      return "have-remote-offer";
     case webrtc::PeerConnectionInterface::SignalingState::kHaveLocalPrAnswer:
-      return "SignalingStateHaveLocalPrAnswer";
+      return "have-local-pranswer";
     case webrtc::PeerConnectionInterface::SignalingState::kHaveRemotePrAnswer:
-      return "SignalingStateHaveRemotePrAnswer";
+      return "have-remote-pranswer";
     case webrtc::PeerConnectionInterface::SignalingState::kClosed:
-      return "SignalingStateClosed";
+      return "closed";
     default:
       NOTREACHED();
       break;
@@ -776,6 +776,14 @@ void PeerConnectionTracker::OnThermalStateChange(
   current_thermal_state_ = thermal_state;
   for (auto& entry : peer_connection_local_id_map_) {
     entry.key->OnThermalStateChange(current_thermal_state_);
+  }
+}
+
+void PeerConnectionTracker::OnSpeedLimitChange(int32_t speed_limit) {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
+  current_speed_limit_ = speed_limit;
+  for (auto& entry : peer_connection_local_id_map_) {
+    entry.key->OnSpeedLimitChange(speed_limit);
   }
 }
 

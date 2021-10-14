@@ -12,6 +12,7 @@
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/controls/label.h"
 
 using message_center::Notification;
 using message_center::NotificationHeaderView;
@@ -50,6 +51,12 @@ std::unique_ptr<Notification> CreateTestNotification(bool has_image = false) {
   return notification;
 }
 
+class DummyEvent : public ui::Event {
+ public:
+  DummyEvent() : Event(ui::ET_UNKNOWN, base::TimeTicks(), 0) {}
+  ~DummyEvent() override = default;
+};
+
 }  // namespace
 
 class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
@@ -84,6 +91,11 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
     task_environment()->RunUntilIdle();
   }
 
+  // Toggle inline settings with a dummy event.
+  void ToggleInlineSettings() {
+    notification_view_->ToggleInlineSettings(DummyEvent());
+  }
+
  protected:
   AshNotificationView* GetFirstGroupedChildNotificationView() {
     if (!notification_view_->grouped_notifications_container_->children()
@@ -107,6 +119,7 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
     return notification_view_->header_row();
   }
   views::View* left_content() { return notification_view_->left_content(); }
+  views::View* content_row() { return notification_view_->content_row(); }
   views::View* title_row() { return notification_view_->title_row_; }
   views::Label* title_view() {
     return notification_view_->title_row_->title_view_;
@@ -178,8 +191,6 @@ TEST_F(AshNotificationViewTest, CreateOrUpdateTitle) {
 }
 
 TEST_F(AshNotificationViewTest, UpdatesTimestampOverTime) {
-  EXPECT_FALSE(timestamp_in_collapsed_view()->GetVisible());
-
   auto notification = CreateTestNotification(/*has_image=*/true);
   notification_view()->UpdateWithNotification(*notification);
   notification_view()->SetExpanded(false);
@@ -299,13 +310,24 @@ TEST_F(AshNotificationViewTest, GroupedNotificationExpandState) {
 }
 
 TEST_F(AshNotificationViewTest, ExpandButtonVisibility) {
-  // Expand button should not be shown when it is not expandable.
-  EXPECT_FALSE(expand_button()->GetVisible());
+  // Expand button should be shown in any type of notification and hidden in
+  // inline settings UI.
+  auto notification1 = CreateTestNotification();
+  notification_view()->UpdateWithNotification(*notification1);
+  EXPECT_TRUE(expand_button()->GetVisible());
 
-  // Expand button should be shown when it is expandable (i.e. there is an
-  // image).
-  auto notification = CreateTestNotification(/*has_image=*/true);
-  notification_view()->UpdateWithNotification(*notification);
+  auto notification2 = CreateTestNotification(/*has_image=*/true);
+  notification_view()->UpdateWithNotification(*notification2);
+  EXPECT_TRUE(expand_button()->GetVisible());
+
+  ToggleInlineSettings();
+  // `content_row()` should be hidden, which also means expand button should be
+  // hidden here.
+  EXPECT_FALSE(content_row()->GetVisible());
+
+  // Toggle back.
+  ToggleInlineSettings();
+  EXPECT_TRUE(content_row()->GetVisible());
   EXPECT_TRUE(expand_button()->GetVisible());
 }
 

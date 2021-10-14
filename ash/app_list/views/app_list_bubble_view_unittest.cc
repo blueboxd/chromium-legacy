@@ -41,6 +41,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
@@ -82,7 +83,7 @@ void AddContinueSuggestionResult(int num_suggestions) {
     result->set_result_type(AppListSearchResultType::kFileChip);
     // TODO(crbug.com/1216662): Replace with a real display type after the ML
     // team gives us a way to query directly for recent apps.
-    result->set_display_type(SearchResultDisplayType::kChip);
+    result->set_display_type(SearchResultDisplayType::kContinue);
     search_model->results()->Add(std::move(result));
   }
 }
@@ -847,6 +848,29 @@ TEST_F(AppListBubbleViewTest, CloseFolderWithSelectedItemFocusesFolderItem) {
   EXPECT_TRUE(root_apps_grid_view->has_selected_view());
   EXPECT_TRUE(root_apps_grid_view->IsSelectedView(folder_item));
   EXPECT_TRUE(folder_item->HasFocus()) << GetFocusedViewName();
+}
+
+TEST_F(AppListBubbleViewTest, ScrollInFolderHeaderScrollsFolder) {
+  // Add a folder with enough apps that its grid will be scrollable.
+  AddFolderWithApps(30);
+  ShowAppList();
+
+  // Open the folder and get the initial scroll position.
+  AppListItemView* folder_item = GetAppsGridView()->GetItemViewAt(0);
+  LeftClickOn(folder_item);
+  auto* folder_view = GetAppListTestHelper()->GetBubbleFolderView();
+  auto* scroll_view = folder_view->scroll_view_for_test();
+  const int initial_scroll_offset = scroll_view->GetVisibleRect().y();
+
+  // Simulate a mouse wheel scroll up event in the folder header.
+  auto* generator = GetEventGenerator();
+  generator->MoveMouseTo(
+      folder_view->folder_header_view()->GetBoundsInScreen().CenterPoint());
+  generator->MoveMouseWheel(0, -10);
+
+  // The view scrolled.
+  const int final_scroll_offset = scroll_view->GetVisibleRect().y();
+  EXPECT_GT(final_scroll_offset, initial_scroll_offset);
 }
 
 }  // namespace

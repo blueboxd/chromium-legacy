@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addWebUIListener, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 import {$} from 'chrome://resources/js/util.m.js';
 
 type RuleSet = {
@@ -103,10 +103,13 @@ function updateTables(rulesets: RuleSetList) {
 }
 
 function checkUrl() {
-  const url = ($('url-checker-input') as HTMLInputElement).value;
+  let url = ($('url-checker-input') as HTMLInputElement).value;
   if (!url) {
     $('output').innerText = '';
     return;
+  }
+  if (!/^http[s]?:\/\//g.test(url)) {
+    url = 'http://' + url;
   }
   sendWithPromise('getDecision', url)
       .then(decision => {
@@ -203,4 +206,8 @@ updateEverything();
 
 $('refresh-xml-button').addEventListener('click', () => {
   chrome.send('refreshXml');
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  addWebUIListener('data-changed', updateEverything);
 });

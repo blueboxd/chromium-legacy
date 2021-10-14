@@ -48,6 +48,7 @@ experimental domain Accessibility
   # Enum of possible native property sources (as a subtype of a particular AXValueSourceType).
   type AXValueNativeSourceType extends string
     enum
+      description
       figcaption
       label
       labelfor
@@ -578,6 +579,7 @@ experimental domain Audits
       kURLViolation
       kTrustedTypesSinkViolation
       kTrustedTypesPolicyViolation
+      kWasmEvalViolation
 
   type SourceCodeLocation extends object
     properties
@@ -6718,6 +6720,7 @@ domain Page
       hid
       idle-detection
       interest-cohort
+      keyboard-map
       magnetometer
       microphone
       midi

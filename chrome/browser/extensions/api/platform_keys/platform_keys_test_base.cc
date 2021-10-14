@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "chrome/browser/ash/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/ash/policy/affiliation/affiliation_test_helper.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/extensions/mixin_based_extension_apitest.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/ui/browser.h"
@@ -70,8 +70,8 @@ void PlatformKeysTestBase::SetUp() {
   // allowed while spawning sandbox host process. See crbug.com/322732.
   ASSERT_TRUE(gaia_server_.InitializeAndListen());
 
-  chromeos::platform_keys::PlatformKeysServiceFactory::GetInstance()
-      ->SetTestingMode(true);
+  ash::platform_keys::PlatformKeysServiceFactory::GetInstance()->SetTestingMode(
+      true);
 
   if (system_token_status() == SystemTokenStatus::EXISTS) {
     CreateTestSystemSlot();
@@ -181,8 +181,8 @@ void PlatformKeysTestBase::SetUpOnMainThread() {
 void PlatformKeysTestBase::TearDownOnMainThread() {
   extensions::MixinBasedExtensionApiTest::TearDownOnMainThread();
 
-  chromeos::platform_keys::PlatformKeysServiceFactory::GetInstance()
-      ->SetTestingMode(false);
+  ash::platform_keys::PlatformKeysServiceFactory::GetInstance()->SetTestingMode(
+      false);
 
   if (system_token_status() == SystemTokenStatus::EXISTS) {
     base::RunLoop loop;

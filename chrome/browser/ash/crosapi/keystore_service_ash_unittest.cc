@@ -15,8 +15,8 @@
 #include "base/test/gmock_move_support.h"
 #include "chrome/browser/ash/attestation/mock_tpm_challenge_key.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key_result.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions/mock_key_permissions_service.h"
-#include "chrome/browser/chromeos/platform_keys/mock_platform_keys_service.h"
+#include "chrome/browser/ash/platform_keys/key_permissions/mock_key_permissions_service.h"
+#include "chrome/browser/ash/platform_keys/mock_platform_keys_service.h"
 #include "chrome/browser/platform_keys/platform_keys.h"
 #include "chromeos/crosapi/cpp/keystore_service_util.h"
 #include "chromeos/crosapi/mojom/keystore_error.mojom.h"
@@ -40,21 +40,20 @@
 namespace crosapi {
 namespace {
 
-using base::test::RunOnceCallback;
-using chromeos::platform_keys::BuildMockPlatformKeysService;
-using chromeos::platform_keys::HashAlgorithm;
-using chromeos::platform_keys::MockKeyPermissionsService;
-using chromeos::platform_keys::MockPlatformKeysService;
-using chromeos::platform_keys::Status;
-using chromeos::platform_keys::TokenId;
-using crosapi::keystore_service_util::MakeEcKeystoreSigningAlgorithm;
-using crosapi::keystore_service_util::MakeRsaKeystoreSigningAlgorithm;
-using testing::_;
-using testing::DoAll;
-using testing::ElementsAre;
-using testing::StrictMock;
-using testing::UnorderedElementsAre;
-using testing::WithArg;
+using ::ash::platform_keys::MockKeyPermissionsService;
+using ::ash::platform_keys::MockPlatformKeysService;
+using ::base::test::RunOnceCallback;
+using ::chromeos::platform_keys::HashAlgorithm;
+using ::chromeos::platform_keys::Status;
+using ::chromeos::platform_keys::TokenId;
+using ::crosapi::keystore_service_util::MakeEcKeystoreSigningAlgorithm;
+using ::crosapi::keystore_service_util::MakeRsaKeystoreSigningAlgorithm;
+using ::testing::_;
+using ::testing::DoAll;
+using ::testing::ElementsAre;
+using ::testing::StrictMock;
+using ::testing::UnorderedElementsAre;
+using ::testing::WithArg;
 
 constexpr char kData[] = "\1\2\3\4\5\6\7";
 

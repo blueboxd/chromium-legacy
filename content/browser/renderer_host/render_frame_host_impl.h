@@ -334,7 +334,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ForEachRenderFrameHost(FrameIterationCallback on_frame) override;
   void ForEachRenderFrameHost(
       FrameIterationAlwaysContinueCallback on_frame) override;
-  int GetFrameTreeNodeId() override;
+  int GetFrameTreeNodeId() const override;
   const base::UnguessableToken& GetDevToolsFrameToken() override;
   absl::optional<base::UnguessableToken> GetEmbeddingToken() override;
   const std::string& GetFrameName() override;
@@ -422,9 +422,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool HasTransientUserActivation() override;
   void NotifyUserActivation(
       blink::mojom::UserActivationNotificationType notification_type) override;
-  void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
-                                  cc::BrowserControlsState current,
-                                  bool animate) override;
   bool Reload() override;
   bool IsDOMContentLoaded() override;
   void UpdateIsAdSubframe(bool is_ad_subframe) override;
@@ -451,7 +448,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const RenderFrameHostImpl* GetMainFrame() const;
 
   // Additional non-override const version of GetParent.
-  RenderFrameHostImpl* GetParent() const;
+  const RenderFrameHostImpl* GetParent() const;
 
   // Determines if a clipboard paste using |data| of type |data_type| is allowed
   // in this renderer frame.  The implementation delegates to
@@ -477,6 +474,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // RenderFrameHost. Will create one if it does not exist (and update all the
   // renderers with the newly computed value).
   blink::web_pref::WebPreferences GetOrCreateWebPreferences();
+
+  // Notifies the renderer whether hiding/showing the browser controls is
+  // enabled, what the current state should be, and whether or not to animate to
+  // the proper state.
+  void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
+                                  cc::BrowserControlsState current,
+                                  bool animate);
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -1498,6 +1502,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   bool ShouldVirtualKeyboardOverlayContent() const;
   void NotifyVirtualKeyboardOverlayRect(const gfx::Rect& keyboard_rect);
+
+  // Returns the keyboard layout mapping.
+  base::flat_map<std::string, std::string> GetKeyboardLayoutMap();
 
   blink::mojom::FrameVisibility visibility() const { return visibility_; }
 

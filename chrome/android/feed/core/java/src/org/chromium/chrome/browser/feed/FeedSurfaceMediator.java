@@ -33,6 +33,11 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.memory.MemoryPressureCallback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.feedmanagement.FeedManagementActivity;
+import org.chromium.chrome.browser.feed.sections.OnSectionHeaderSelectedListener;
+import org.chromium.chrome.browser.feed.sections.SectionHeaderListProperties;
+import org.chromium.chrome.browser.feed.sections.SectionHeaderProperties;
+import org.chromium.chrome.browser.feed.sections.SectionType;
+import org.chromium.chrome.browser.feed.sections.ViewVisibility;
 import org.chromium.chrome.browser.feed.shared.FeedFeatures;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
@@ -44,11 +49,6 @@ import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.ntp.cards.promo.enhanced_protection.EnhancedProtectionPromoController.EnhancedProtectionPromoStateListener;
-import org.chromium.chrome.browser.ntp.snippets.OnSectionHeaderSelectedListener;
-import org.chromium.chrome.browser.ntp.snippets.SectionHeaderListProperties;
-import org.chromium.chrome.browser.ntp.snippets.SectionHeaderProperties;
-import org.chromium.chrome.browser.ntp.snippets.SectionType;
-import org.chromium.chrome.browser.ntp.snippets.ViewVisibility;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -1033,7 +1033,8 @@ public class FeedSurfaceMediator
     @Override
     public boolean isScrollViewInitialized() {
         if (mFeedEnabled) {
-            return mCoordinator.getRecyclerView().getHeight() > 0;
+            RecyclerView recyclerView = mCoordinator.getRecyclerView();
+            return recyclerView != null && recyclerView.getHeight() > 0;
         } else {
             ScrollView scrollView = mCoordinator.getScrollViewForPolicy();
             return scrollView != null && scrollView.getHeight() > 0;
@@ -1091,7 +1092,8 @@ public class FeedSurfaceMediator
             ScrollView scrollView = mCoordinator.getScrollViewForPolicy();
             Rect rect = new Rect();
             scrollView.getHitRect(rect);
-            return scrollView.getChildAt(position).getLocalVisibleRect(rect);
+            View child = scrollView.getChildAt(position);
+            return child != null && child.getLocalVisibleRect(rect);
         }
     }
 

@@ -19,10 +19,11 @@
 #include "ui/message_center/views/notification_input_container.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_observer.h"
-#include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
 class Label;
+class LabelButton;
 class ProgressBar;
 class RadioButton;
 }  // namespace views
@@ -33,39 +34,6 @@ class NotificationHeaderView;
 class ProportionalImageView;
 
 // TODO(crbug/1241983): Add metadata and builder support to these views.
-
-// NotificationTextButton extends MdText button to allow for placeholder text
-// as well as capitalizing the given label string.
-class MESSAGE_CENTER_EXPORT NotificationTextButton
-    : public views::MdTextButton {
- public:
-  METADATA_HEADER(NotificationTextButton);
-
-  NotificationTextButton(PressedCallback callback,
-                         const std::u16string& label,
-                         const absl::optional<std::u16string>& placeholder);
-  ~NotificationTextButton() override;
-
-  // views::MdTextButton:
-  void UpdateBackgroundColor() override;
-  void OnThemeChanged() override;
-
-  const absl::optional<std::u16string>& placeholder() const {
-    return placeholder_;
-  }
-  void set_placeholder(absl::optional<std::u16string> placeholder) {
-    placeholder_ = std::move(placeholder);
-  }
-  SkColor enabled_color_for_testing() const {
-    return label()->GetEnabledColor();
-  }
-
-  void OverrideTextColor(absl::optional<SkColor> text_color);
-
- private:
-  absl::optional<std::u16string> placeholder_;
-  absl::optional<SkColor> text_color_;
-};
 
 // CompactTitleMessageView shows notification title and message in a single
 // line. This view is used for NOTIFICATION_TYPE_PROGRESS.
@@ -209,6 +177,12 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   virtual std::unique_ptr<NotificationInputContainer>
   GenerateNotificationInputContainer();
 
+  // Generate a view that is a views::LabelButton, used in the `actions_row_`.
+  // The base class uses an MdTextButton, but ash does not.
+  virtual std::unique_ptr<views::LabelButton> GenerateNotificationLabelButton(
+      views::Button::PressedCallback callback,
+      const std::u16string& label) = 0;
+
   void CreateOrUpdateViews(const Notification& notification);
 
   virtual void UpdateViewForExpandedState(bool expanded);
@@ -237,15 +211,32 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
     return control_buttons_view_;
   }
   NotificationHeaderView* header_row() { return header_row_; }
+
+  views::View* content_row() { return content_row_; }
+  const views::View* content_row() const { return content_row_; }
+
   views::View* left_content() { return left_content_; }
+
   views::Label* message_view() { return message_view_; }
-  views::View* inline_settings_row() const { return settings_row_; }
+  const views::Label* message_view() const { return message_view_; }
+
+  views::View* inline_settings_row() { return settings_row_; }
+  const views::View* inline_settings_row() const { return settings_row_; }
+
   views::View* image_container_view() { return image_container_view_; }
+  const views::View* image_container_view() const {
+    return image_container_view_;
+  }
+
   views::View* action_buttons_row() { return action_buttons_row_; }
+  const views::View* action_buttons_row() const { return action_buttons_row_; }
+
+  const views::Label* status_view() const { return status_view_; }
+  const std::vector<views::View*> item_views() const { return item_views_; }
   views::RadioButton* block_all_button() { return block_all_button_; }
   bool inline_settings_enabled() const { return inline_settings_enabled_; }
 
-  bool IsExpandable() const;
+  virtual bool IsExpandable() const = 0;
 
   virtual void SetExpandButtonEnabled(bool enabled);
 
@@ -359,12 +350,17 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   views::Label* status_view_ = nullptr;
   ProportionalImageView* icon_view_ = nullptr;
   views::View* image_container_view_ = nullptr;
-  std::vector<NotificationTextButton*> action_buttons_;
+  std::vector<views::LabelButton*> action_buttons_;
   std::vector<views::View*> item_views_;
   views::ProgressBar* progress_bar_view_ = nullptr;
   CompactTitleMessageView* compact_title_message_view_ = nullptr;
   views::View* action_buttons_row_ = nullptr;
   NotificationInputContainer* inline_reply_ = nullptr;
+
+  // A map from views::LabelButton's in `action_buttons_` to their associated
+  // placeholder strings.
+  std::map<views::LabelButton*, absl::optional<std::u16string>>
+      action_button_to_placeholder_map_;
 
   // Counter for view layouting, which is used during the CreateOrUpdate*
   // phases to keep track of the view ordering. See crbug.com/901045
@@ -373,7 +369,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   // Views for inline settings.
   views::RadioButton* block_all_button_ = nullptr;
   views::RadioButton* dont_block_button_ = nullptr;
-  NotificationTextButton* settings_done_button_ = nullptr;
+  views::LabelButton* settings_done_button_ = nullptr;
 
   // Owned by views properties. Guaranteed to be not null for the lifetime of
   // |this| because views properties are the last thing cleaned up.

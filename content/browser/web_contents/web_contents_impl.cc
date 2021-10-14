@@ -3102,7 +3102,7 @@ void WebContentsImpl::RenderWidgetWasResized(
   if (!rfh || render_widget_host != rfh->GetRenderWidgetHost())
     return;
 
-  observers_.NotifyObservers(&WebContentsObserver::MainFrameWasResized,
+  observers_.NotifyObservers(&WebContentsObserver::PrimaryMainFrameWasResized,
                              width_changed);
 }
 
@@ -4296,7 +4296,7 @@ TextInputManager* WebContentsImpl::GetTextInputManager() {
   return text_input_manager_.get();
 }
 
-bool WebContentsImpl::IsWidgetForMainFrame(
+bool WebContentsImpl::IsWidgetForPrimaryMainFrame(
     RenderWidgetHostImpl* render_widget_host) {
   return render_widget_host == GetMainFrame()->GetRenderWidgetHost();
 }
@@ -9003,6 +9003,15 @@ void WebContentsImpl::NotifyPrimaryMainFrameProcessIsAlive() {
       view_->Focus();
     }
   }
+}
+
+void WebContentsImpl::UpdateBrowserControlsState(
+    cc::BrowserControlsState constraints,
+    cc::BrowserControlsState current,
+    bool animate) {
+  // Browser controls should be synchronised with the scroll state. Therefore,
+  // they are controlled from the renderer by the main RenderFrame(Host).
+  GetMainFrame()->UpdateBrowserControlsState(constraints, current, animate);
 }
 
 }  // namespace content

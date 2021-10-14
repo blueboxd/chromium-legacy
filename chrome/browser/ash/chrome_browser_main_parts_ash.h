@@ -72,7 +72,10 @@ class AccessibilityEventRewriterDelegateImpl;
 class BulkPrintersCalculatorFactory;
 namespace quick_pair {
 class QuickPairBrowserDelegateImpl;
-}  // namespace quick_pair
+}
+namespace platform_keys {
+class KeyPermissionsManager;
+}
 }  // namespace ash
 
 namespace crosapi {
@@ -112,10 +115,6 @@ namespace internal {
 class DBusServices;
 }  // namespace internal
 
-namespace platform_keys {
-class KeyPermissionsManager;
-}
-
 // ChromeBrowserMainParts implementation for chromeos specific code.
 // NOTE: Chromeos UI (Ash) support should be added to
 // ChromeBrowserMainExtraPartsAsh instead. This class should not depend on
@@ -142,6 +141,9 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
   void PostProfileInit() override;
   void PreBrowserStart() override;
   void PostBrowserStart() override;
+
+  // After initialization is finished.
+  void OnFirstIdle() override;
 
   void PostMainMessageLoopRun() override;
   void PostDestroyThreads() override;
@@ -239,7 +241,7 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<arc::data_snapshotd::ArcDataSnapshotdManager>
       arc_data_snapshotd_manager_;
 
-  std::unique_ptr<platform_keys::KeyPermissionsManager>
+  std::unique_ptr<ash::platform_keys::KeyPermissionsManager>
       system_token_key_permissions_manager_;
 
   std::unique_ptr<ash::quick_pair::QuickPairBrowserDelegateImpl>

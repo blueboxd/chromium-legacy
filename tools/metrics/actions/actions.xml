@@ -14630,6 +14630,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileFre.SignInShown">
+  <obsolete>
+    Deprecated 10/2021 since this is already recorded as part of the histogram
+    MobileFre.Progress.*.
+  </obsolete>
   <owner>aruslan@chromium.org</owner>
   <description>
     User was presented with the sign-in dialog during the First Run Experience.
@@ -29530,6 +29534,8 @@ should be able to be added at any place in this file.
       label="For video tutorial summary card."/>
   <suffix name="VideoTutorial_NTP_VoiceSearch"
       label="For voice search video tutorial."/>
+  <suffix name="VideoTutorial_TryNow"
+      label="For video tutorial Try Now feature."/>
   <suffix name="WebFeedFollow" label="For Web Feed follow recommendations."/>
   <suffix name="WebFeedPostFollowDialog"
       label="For Web Feed successful follow operations."/>

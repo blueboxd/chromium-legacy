@@ -145,6 +145,12 @@ chrome.accessibilityPrivate.SwitchAccessMenuAction = {
   SELECT: 'select',
   SETTINGS: 'settings',
   START_TEXT_SELECTION: 'startTextSelection',
+  QUICK_COMMANDS: 'quickCommands',
+  STATUS_BAR: 'statusBar',
+  SCREENSHOT: 'screenshot',
+  VOLUME_UP: 'volumeUp',
+  VOLUME_DOWN: 'volumeDown',
+  LEAVE_GROUP: 'leaveGroup',
 };
 
 /**

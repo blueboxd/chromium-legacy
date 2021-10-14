@@ -4,14 +4,18 @@
 
 #include "ash/login/ui/login_auth_factors_view.h"
 
+#include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/auth_factor_model.h"
 #include "ash/login/ui/auth_icon_view.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "base/callback.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -24,6 +28,7 @@ using AuthFactorState = AuthFactorModel::AuthFactorState;
 constexpr int kAuthFactorsViewWidthDp = 204;
 constexpr int kSpacingBetweenIconsAndLabelDp = 15;
 constexpr int kIconTopSpacingDp = 20;
+constexpr int kArrowButtonSizeDp = 32;
 
 }  // namespace
 
@@ -35,6 +40,7 @@ class AuthFactorsLabel : public views::Label {
     SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kTextColorSecondary));
     SetMultiLine(true);
+    SizeToFit(kAuthFactorsViewWidthDp);
   }
 
   AuthFactorsLabel(const AuthFactorsLabel&) = delete;
@@ -53,6 +59,13 @@ class AuthFactorsLabel : public views::Label {
         AshColorProvider::ContentLayerType::kTextColorSecondary));
   }
 
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override {
+    gfx::Size size = views::View::CalculatePreferredSize();
+    size.set_width(kAuthFactorsViewWidthDp);
+    return size;
+  }
+
   void SetAccessibleName(const std::u16string& name) {
     accessible_name_ = name;
     NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
@@ -63,7 +76,9 @@ class AuthFactorsLabel : public views::Label {
   std::u16string accessible_name_;
 };
 
-LoginAuthFactorsView::LoginAuthFactorsView() {
+LoginAuthFactorsView::LoginAuthFactorsView(
+    base::RepeatingClosure on_click_to_enter)
+    : on_click_to_enter_callback_(on_click_to_enter) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   SetBorder(views::CreateEmptyBorder(kIconTopSpacingDp, 0, 0, 0));
@@ -72,8 +87,19 @@ LoginAuthFactorsView::LoginAuthFactorsView() {
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       kSpacingBetweenIconsAndLabelDp));
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   icon_ = AddChildView(std::make_unique<AuthIconView>());
+
+  arrow_button_ = AddChildView(std::make_unique<ArrowButtonView>(
+      base::BindRepeating(&LoginAuthFactorsView::ArrowButtonPressed,
+                          base::Unretained(this)),
+      kArrowButtonSizeDp));
+  arrow_button_->SetInstallFocusRingOnFocus(true);
+  views::InstallCircleHighlightPathGenerator(arrow_button_);
+  arrow_button_->SetVisible(false);
+
   label_ = AddChildView(std::make_unique<AuthFactorsLabel>());
 }
 
@@ -83,6 +109,15 @@ void LoginAuthFactorsView::AddAuthFactor(
     std::unique_ptr<AuthFactorModel> auth_factor) {
   auth_factor->SetOnStateChangedCallback(base::BindRepeating(
       &LoginAuthFactorsView::UpdateState, base::Unretained(this)));
+  // Associate the tap or click callback to the newly added auth factor iff
+  // there was no prior auth factor in the model.
+  if (auth_factors_.empty()) {
+    // TODO(crbug.com/1233614): Associate auth factor model with correct icon
+    // when showing multiple icons.
+    icon_->set_on_tap_or_click_callback(
+        base::BindRepeating(&AuthFactorModel::OnTapOrClickEvent,
+                            base::Unretained(auth_factor.get())));
+  }
   auth_factors_.push_back(std::move(auth_factor));
   UpdateState();
 }
@@ -95,12 +130,29 @@ void LoginAuthFactorsView::UpdateState() {
 
   SetVisible(auth_factor->GetAuthFactorState() !=
              AuthFactorState::kUnavailable);
-  auth_factor->UpdateIcon(icon_);
-  label_->SetText(auth_factor->GetLabel());
-  label_->SetAccessibleName(auth_factor->GetAccessibleName());
 
-  if (auth_factor->ShouldAnnounceLabel())
+  if (auth_factor->GetAuthFactorState() == AuthFactorState::kClickRequired) {
+    icon_->SetVisible(false);
+    arrow_button_->SetVisible(true);
+    arrow_button_->EnableLoadingAnimation(false);
+    const std::u16string msg =
+        l10n_util::GetStringUTF16(IDS_AUTH_FACTOR_LABEL_CLICK_TO_ENTER);
+    label_->SetText(msg);
+    label_->SetAccessibleName(msg);
     FireAlert();
+  } else {
+    icon_->SetVisible(true);
+    arrow_button_->SetVisible(false);
+    arrow_button_->SetAccessibleName(
+        l10n_util::GetStringUTF16(auth_factor->GetAccessibleNameId()));
+    auth_factor->UpdateIcon(icon_);
+    label_->SetText(l10n_util::GetStringUTF16(auth_factor->GetLabelId()));
+    label_->SetAccessibleName(
+        l10n_util::GetStringUTF16(auth_factor->GetAccessibleNameId()));
+
+    if (auth_factor->ShouldAnnounceLabel())
+      FireAlert();
+  }
 }
 
 // views::View:
@@ -108,18 +160,6 @@ gfx::Size LoginAuthFactorsView::CalculatePreferredSize() const {
   gfx::Size size = views::View::CalculatePreferredSize();
   size.set_width(kAuthFactorsViewWidthDp);
   return size;
-}
-
-// views::View:
-void LoginAuthFactorsView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() != ui::ET_GESTURE_TAP &&
-      event->type() != ui::ET_GESTURE_TAP_DOWN)
-    return;
-
-  // TODO(crbug.com/1233614) Route tap events from respective icons instead.
-  for (const auto& factor : auth_factors_) {
-    factor->OnTapEvent();
-  }
 }
 
 // views::View:
@@ -133,6 +173,13 @@ void LoginAuthFactorsView::OnThemeChanged() {
 void LoginAuthFactorsView::FireAlert() {
   label_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
                                    /*send_native_event=*/true);
+}
+
+void LoginAuthFactorsView::ArrowButtonPressed(const ui::Event& event) {
+  if (on_click_to_enter_callback_) {
+    arrow_button_->EnableLoadingAnimation(true);
+    on_click_to_enter_callback_.Run();
+  }
 }
 
 }  // namespace ash

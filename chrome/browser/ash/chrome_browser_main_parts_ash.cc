@@ -42,6 +42,8 @@
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/branding_buildflags.h"
+#include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps.h"
+#include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps_factory.h"
 #include "chrome/browser/ash/accessibility/accessibility_event_rewriter_delegate_impl.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
@@ -115,6 +117,7 @@
 #include "chrome/browser/ash/notifications/low_disk_notification.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/pcie_peripheral/ash_usb_detector.h"
+#include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_manager_impl.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/ash/policy/handlers/lock_to_single_user_manager.h"
@@ -146,7 +149,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/ui_handler.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_manager_impl.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
@@ -640,7 +642,7 @@ int ChromeBrowserMainPartsAsh::PreMainMessageLoopRun() {
   system_token_certdb_initializer_ =
       std::make_unique<SystemTokenCertDBInitializer>();
 
-  system_token_key_permissions_manager_ = platform_keys::
+  system_token_key_permissions_manager_ = ash::platform_keys::
       KeyPermissionsManagerImpl::CreateSystemTokenKeyPermissionsManager();
 
   mojo::PendingRemote<media_session::mojom::MediaControllerManager>
@@ -1220,6 +1222,19 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
       std::move(wake_lock_provider));
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
+}
+
+void ChromeBrowserMainPartsAsh::OnFirstIdle() {
+  ChromeBrowserMainPartsLinux::OnFirstIdle();
+
+  // TODO(https://crbug.com/1225848): As a short term workaround, the
+  // implementation of Chrome Apps requires Lacros to always be running.
+  if (crosapi::browser_util::IsLacrosChromeAppsEnabled()) {
+    Profile* profile = ProfileManager::GetPrimaryUserProfile();
+    apps::StandaloneBrowserExtensionApps* chrome_apps =
+        apps::StandaloneBrowserExtensionAppsFactory::GetForProfile(profile);
+    chrome_apps->RegisterKeepAlive();
+  }
 }
 
 // Shut down services before the browser process, etc are destroyed.

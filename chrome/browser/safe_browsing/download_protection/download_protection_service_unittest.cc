@@ -158,7 +158,6 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
       const MockSafeBrowsingDatabaseManager&) = delete;
 
   MOCK_METHOD1(MatchDownloadAllowlistUrl, bool(const GURL&));
-  MOCK_METHOD1(MatchDownloadAllowlistString, bool(const std::string&));
   MOCK_METHOD2(CheckDownloadUrl,
                bool(const std::vector<GURL>& url_chain,
                     SafeBrowsingDatabaseManager::Client* client));
@@ -995,7 +994,7 @@ TEST_F(DownloadProtectionServiceTest,
   EXPECT_CALL(*binary_feature_extractor_.get(),
               ExtractImageFeatures(
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-      .Times(3);
+      .Times(1);
   // Assume http://www.allowlist.com/a.exe is on the allowlist.
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadAllowlistUrl(_))
@@ -1068,63 +1067,6 @@ TEST_F(DownloadProtectionServiceTest,
     EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
     ASSERT_TRUE(HasClientDownloadRequest());
     EXPECT_TRUE(GetClientDownloadRequest()->skipped_url_whitelist());
-    EXPECT_FALSE(GetClientDownloadRequest()->skipped_certificate_whitelist());
-    ClearClientDownloadRequest();
-  }
-
-  // Setup trusted and allowlisted certificates for test cases (5) and (6).
-  scoped_refptr<net::X509Certificate> test_cert(
-      ReadTestCertificate(testdata_path_, "test_cn.pem"));
-  ASSERT_TRUE(test_cert.get());
-  std::string test_cert_der(
-      net::x509_util::CryptoBufferAsStringPiece(test_cert->cert_buffer()));
-  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-      .WillRepeatedly(TrustSignature(test_cert_der));
-  EXPECT_CALL(*sb_service_->mock_database_manager(),
-              MatchDownloadAllowlistString(_))
-      .WillRepeatedly(Return(true));
-
-  {
-    // Case (6): is_extended_reporting && !is_incognito &&
-    //           Download matches certificate allowlist.
-    //           ClientDownloadRequest should be sent.
-    content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
-    EXPECT_CALL(
-        *sb_service_->mock_database_manager(),
-        MatchDownloadAllowlistUrl(GURL("http://www.allowlist.com/a.exe")))
-        .WillRepeatedly(Return(false));
-    RunLoop run_loop;
-    download_service_->CheckClientDownload(
-        &item,
-        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
-    ASSERT_TRUE(HasClientDownloadRequest());
-    EXPECT_FALSE(GetClientDownloadRequest()->skipped_url_whitelist());
-    EXPECT_TRUE(GetClientDownloadRequest()->skipped_certificate_whitelist());
-    ClearClientDownloadRequest();
-  }
-  {
-    // Case (7): is_extended_reporting && !is_incognito &&
-    //           Download matches both URL and certificate allowlists.
-    //           ClientDownloadRequest should be sent.
-    content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
-    EXPECT_CALL(
-        *sb_service_->mock_database_manager(),
-        MatchDownloadAllowlistUrl(GURL("http://www.allowlist.com/a.exe")))
-        .WillRepeatedly(Return(true));
-    RunLoop run_loop;
-    download_service_->CheckClientDownload(
-        &item,
-        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
-    ASSERT_TRUE(HasClientDownloadRequest());
-    EXPECT_TRUE(GetClientDownloadRequest()->skipped_url_whitelist());
-    // Since download matches URL allowlist and gets sampled, no need to
-    // do certificate allowlist checking and sampling.
     EXPECT_FALSE(GetClientDownloadRequest()->skipped_certificate_whitelist());
     ClearClientDownloadRequest();
   }
@@ -4618,6 +4560,41 @@ TEST_F(DownloadProtectionServiceTest, ESBRequestScanFalse) {
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
 
   // Testing Scenario with request_deep_scan response is false and
+  // user is enrolled in the Enhanced Protection Program.
+  safe_browsing::SetEnhancedProtectionPrefForTests(profile()->GetPrefs(),
+                                                   /*value*/ true);
+
+  content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+  RunLoop run_loop;
+  download_service_->CheckClientDownload(
+      &item,
+      base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_TRUE(IsResult(DownloadCheckResult::UNCOMMON));
+}
+
+TEST_F(DownloadProtectionServiceTest, ESBRequestScanFalseWhenTooLarge) {
+  PrepareResponse(ClientDownloadResponse::UNCOMMON, net::HTTP_OK, net::OK,
+                  /*upload_requested=*/true, /*request_deep_scan=*/true);
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
+                           "http://www.google.com/",              // referrer
+                           FILE_PATH_LITERAL("a.tmp"),            // tmp_path
+                           FILE_PATH_LITERAL("a.exe"));           // final_path
+
+  EXPECT_CALL(item, GetTotalBytes()).WillRepeatedly(Return(51 * 1024 * 1024));
+
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
+      .Times(1);
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadAllowlistUrl(_))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageFeatures(
+                  tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
+
+  // Testing Scenario with request_deep_scan response is true and
   // user is enrolled in the Enhanced Protection Program.
   safe_browsing::SetEnhancedProtectionPrefForTests(profile()->GetPrefs(),
                                                    /*value*/ true);

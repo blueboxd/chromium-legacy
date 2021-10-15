@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ChildAccountStatus;
+import org.chromium.components.signin.ChildAccountStatus.Status;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 
@@ -58,8 +59,13 @@ public abstract class FirstRunFlowSequencer  {
      */
     @VisibleForTesting
     public static class FirstRunFlowSequencerDelegate {
-        /** @return true if the sync consent promo page should be shown. */
-        boolean shouldShowSyncConsentPage(Activity activity, List<Account> accounts) {
+        /** Returns true if the sync consent promo page should be shown. */
+        boolean shouldShowSyncConsentPage(
+                Activity activity, List<Account> accounts, @Status int childAccountStatus) {
+            if (ChildAccountStatus.isChild(childAccountStatus)) {
+                // Always show the sync consent page for child account.
+                return true;
+            }
             final IdentityManager identityManager =
                     IdentityServicesProvider.get().getIdentityManager(
                             Profile.getLastUsedRegularProfile());
@@ -145,10 +151,13 @@ public abstract class FirstRunFlowSequencer  {
      * Starts determining parameters for the First Run.
      * Once finished, calls onFlowIsKnown().
      */
-    public void start() {
+    void start() {
         long childAccountStatusStart = SystemClock.elapsedRealtime();
         AccountManagerFacadeProvider.getInstance().getAccounts().then(accounts -> {
             ChildAccountService.checkChildAccountStatus(accounts, status -> {
+                RecordHistogram.recordCountHistogram(
+                        "Signin.AndroidDeviceAccountsNumberWhenEnteringFRE",
+                        Math.min(accounts.size(), 2));
                 RecordHistogram.recordTimesHistogram("MobileFre.ChildAccountStatusDuration",
                         SystemClock.elapsedRealtime() - childAccountStatusStart);
                 initializeSharedState(status, accounts);
@@ -167,7 +176,7 @@ public abstract class FirstRunFlowSequencer  {
     }
 
     private boolean shouldShowSyncConsentPage() {
-        return mDelegate.shouldShowSyncConsentPage(mActivity, mGoogleAccounts);
+        return mDelegate.shouldShowSyncConsentPage(mActivity, mGoogleAccounts, mChildAccountStatus);
     }
 
     @VisibleForTesting
@@ -175,14 +184,13 @@ public abstract class FirstRunFlowSequencer  {
         FirstRunSignInProcessor.setFirstRunFlowSignInComplete(true);
     }
 
-    @VisibleForTesting
-    void initializeSharedState(
+    private void initializeSharedState(
             @ChildAccountStatus.Status int childAccountStatus, List<Account> accounts) {
         mChildAccountStatus = childAccountStatus;
         mGoogleAccounts = accounts;
     }
 
-    void processFreEnvironmentPreNative() {
+    private void processFreEnvironmentPreNative() {
         Bundle freProperties = new Bundle();
         freProperties.putInt(SyncConsentFirstRunFragment.CHILD_ACCOUNT_STATUS, mChildAccountStatus);
 

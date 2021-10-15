@@ -216,7 +216,9 @@ LayoutObject::SetLayoutNeededForbiddenScope::~SetLayoutNeededForbiddenScope() {
 }
 #endif
 
-struct SameSizeAsLayoutObject : ImageResourceObserver, DisplayItemClient {
+struct SameSizeAsLayoutObject : public GarbageCollected<SameSizeAsLayoutObject>,
+                                ImageResourceObserver,
+                                DisplayItemClient {
   // Normally this field uses the gap between DisplayItemClient and
   // LayoutObject's other fields.
   uint8_t paint_invalidation_reason_;
@@ -359,6 +361,7 @@ void LayoutObject::Trace(Visitor* visitor) const {
   visitor->Trace(next_);
   visitor->Trace(fragment_);
   ImageResourceObserver::Trace(visitor);
+  DisplayItemClient::Trace(visitor);
 }
 
 bool LayoutObject::IsDescendantOf(const LayoutObject* obj) const {
@@ -1593,7 +1596,10 @@ bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {
     return true;
   // https://www.w3.org/TR/css-transforms-1/#containing-block-for-all-descendants
 
-  if (style->HasTransformRelatedProperty()) {
+  // For transform-style specifically, we want to consider the computed
+  // value rather than the used value.
+  if (style->HasTransformRelatedProperty() ||
+      style->TransformStyle3D() == ETransformStyle3D::kPreserve3d) {
     if (!IsInline() || IsAtomicInlineLevel())
       return true;
   }
@@ -1603,21 +1609,6 @@ bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {
        ShouldApplyLayoutContainment(*style) ||
        style->WillChangeProperties().Contains(CSSPropertyID::kContain)))
     return true;
-
-  // We intend to change behavior to set containing block based on computed
-  // rather than used style of transform-style. HasTransformRelatedProperty
-  // above will return true if the *used* value of transform-style is
-  // preserve-3d, so to estimate compat we need to count if the line below is
-  // reached.
-  if (style->TransformStyle3D() == ETransformStyle3D::kPreserve3d &&
-      (!IsInline() || IsAtomicInlineLevel())) {
-    UseCounter::Count(
-        GetDocument(),
-        WebFeature::kTransformStyleContainingBlockComputedUsedMismatch);
-    if (RuntimeEnabledFeatures::TransformInteropEnabled()) {
-      return true;
-    }
-  }
 
   return false;
 }
@@ -1644,7 +1635,7 @@ FloatRect LayoutObject::AbsoluteBoundingBoxFloatRect(
 
   FloatRect result = quads[0].BoundingBox();
   for (wtf_size_t i = 1; i < n; ++i)
-    result.Unite(quads[i].BoundingBox());
+    result.Union(quads[i].BoundingBox());
   return result;
 }
 
@@ -1660,7 +1651,7 @@ IntRect LayoutObject::AbsoluteBoundingBoxRect(MapCoordinatesFlags flags) const {
 
   IntRect result = quads[0].EnclosingBoundingBox();
   for (wtf_size_t i = 1; i < n; ++i)
-    result.Unite(quads[i].EnclosingBoundingBox());
+    result.Union(quads[i].EnclosingBoundingBox());
   return result;
 }
 
@@ -1693,7 +1684,7 @@ PhysicalRect LayoutObject::AbsoluteBoundingBoxRectForScrollIntoView() const {
 void LayoutObject::AddAbsoluteRectForLayer(IntRect& result) {
   NOT_DESTROYED();
   if (HasLayer())
-    result.Unite(AbsoluteBoundingBoxRect());
+    result.Union(AbsoluteBoundingBoxRect());
   for (LayoutObject* current = SlowFirstChild(); current;
        current = current->NextSibling())
     current->AddAbsoluteRectForLayer(result);
@@ -3264,7 +3255,7 @@ FloatQuad LayoutObject::AncestorToLocalQuad(
   NOT_DESTROYED();
   TransformState transform_state(
       TransformState::kUnapplyInverseTransformDirection,
-      quad.BoundingBox().Center(), quad);
+      quad.BoundingBox().CenterPoint(), quad);
   MapAncestorToLocal(ancestor, transform_state, mode);
   transform_state.Flatten();
   return transform_state.LastPlanarQuad();
@@ -3318,17 +3309,11 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   // them.
   bool use_transforms = !(mode & kIgnoreTransforms);
 
-  const bool container_preserves_3d =
-      container->StyleRef().Preserves3D() ||
-      (!RuntimeEnabledFeatures::TransformInteropEnabled() &&
-       !PaintPropertyTreeBuilder::NeedsTransform(*container,
-                                                 CompositingReasons()));
+  const bool container_preserves_3d = container->StyleRef().Preserves3D();
   // Just because container and this have preserve-3d doesn't mean all
   // the DOM elements between them do.  (We know they don't have a
   // transform, though, since otherwise they'd be the container.)
-  const bool path_preserves_3d =
-      !RuntimeEnabledFeatures::TransformInteropEnabled() ||
-      container == NearestAncestorForElement();
+  const bool path_preserves_3d = container == NearestAncestorForElement();
   const bool preserve3d = use_transforms && container_preserves_3d &&
                           !container->IsText() && path_preserves_3d;
 
@@ -3385,16 +3370,11 @@ void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
   // Just because container and this have preserve-3d doesn't mean all
   // the DOM elements between them do.  (We know they don't have a
   // transform, though, since otherwise they'd be the container.)
-  if (RuntimeEnabledFeatures::TransformInteropEnabled() &&
-      container != NearestAncestorForElement()) {
+  if (container != NearestAncestorForElement()) {
     transform_state.Move(PhysicalOffset(), TransformState::kFlattenTransform);
   }
 
-  const bool preserve3d =
-      use_transforms && (StyleRef().Preserves3D() ||
-                         (!RuntimeEnabledFeatures::TransformInteropEnabled() &&
-                          !PaintPropertyTreeBuilder::NeedsTransform(
-                              *this, CompositingReasons())));
+  const bool preserve3d = use_transforms && StyleRef().Preserves3D();
   if (use_transforms && ShouldUseTransformFromContainer(container)) {
     TransformationMatrix t;
     GetTransformFromContainer(container, container_offset, t);
@@ -3459,9 +3439,7 @@ void LayoutObject::GetTransformFromContainer(
   bool has_perspective = container_object && container_object->HasLayer() &&
                          container_object->StyleRef().HasPerspective();
   if (has_perspective && container_object != NearestAncestorForElement()) {
-    if (RuntimeEnabledFeatures::TransformInteropEnabled()) {
-      has_perspective = false;
-    }
+    has_perspective = false;
 
     if (StyleRef().Preserves3D() || transform.M13() != 0.0 ||
         transform.M23() != 0.0 || transform.M43() != 0.0) {
@@ -3480,8 +3458,8 @@ void LayoutObject::GetTransformFromContainer(
     TransformationMatrix perspective_matrix;
     perspective_matrix.ApplyPerspective(
         container_object->StyleRef().UsedPerspective());
-    perspective_matrix.ApplyTransformOrigin(perspective_origin.X(),
-                                            perspective_origin.Y(), 0);
+    perspective_matrix.ApplyTransformOrigin(perspective_origin.x(),
+                                            perspective_origin.y(), 0);
 
     transform = perspective_matrix * transform;
   }
@@ -3534,7 +3512,7 @@ bool LayoutObject::LocalToAncestorRectFastPath(
   // FirstFragment().PaintOffset() is relative to the transform space defined by
   // FirstFragment().LocalBorderBoxProperties() (if this == property_container)
   // or property_container->FirstFragment().ContentsProperties().
-  mapping_rect.Move(FloatSize(FirstFragment().PaintOffset()));
+  mapping_rect.Offset(FloatSize(FirstFragment().PaintOffset()));
 
   if (property_container != ancestor) {
     GeometryMapper::SourceToDestinationRect(
@@ -3542,7 +3520,7 @@ bool LayoutObject::LocalToAncestorRectFastPath(
         ancestor->FirstFragment().ContentsProperties().Transform(),
         mapping_rect);
   }
-  mapping_rect.Move(-FloatSize(ancestor->FirstFragment().PaintOffset()));
+  mapping_rect.Offset(-FloatSize(ancestor->FirstFragment().PaintOffset()));
 
   result = PhysicalRect::EnclosingRect(mapping_rect);
   return true;
@@ -3571,7 +3549,8 @@ FloatQuad LayoutObject::LocalToAncestorQuad(
   // as the reference point to decide which column's transform to apply in
   // multiple-column blocks.
   TransformState transform_state(TransformState::kApplyTransformDirection,
-                                 local_quad.BoundingBox().Center(), local_quad);
+                                 local_quad.BoundingBox().CenterPoint(),
+                                 local_quad);
   MapLocalToAncestor(ancestor, transform_state, mode);
   transform_state.Flatten();
 

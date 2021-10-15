@@ -570,6 +570,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppList.FileResult.ThumbnailLoadedError"
+    enum="PlatformFileError" expires_after="2022-03-31">
+  <owner>wrong@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>thanhdng@chromium.org</owner>
+  <summary>
+    Result of requesting a thumbnail icon for some types of file results in the
+    Chrome OS launcher. Emitted on each attempt to load a thumbnail, if it
+    results in an error.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppList.FileSearchProvider.Latency" units="ms"
     expires_after="M95">
   <owner>wrong@chromium.org</owner>
@@ -738,6 +750,31 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     The latency of a search in the OsSettingsProvider. Recorded each time a
     search is completed, even if it returns no results. Not recorded if the
     query is too short to perform a search at all. Chrome OS only.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppList.PersistentProto.ReadStatus"
+    enum="PersistentProtoReadStatus" expires_after="2022-03-31">
+  <owner>wrong@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>thanhdng@chromium.org</owner>
+  <summary>
+    Various error states on reading a backing file from disk, in the score
+    normalizer used by the Chrome OS launcher. Emitted once when a persistent
+    proto initially reads from disk. Some number of Missing values is expected,
+    because it is logged for each new user added to a device.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppList.PersistentProto.WriteStatus"
+    enum="PersistentProtoWriteStatus" expires_after="2022-03-31">
+  <owner>wrong@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>thanhdng@chromium.org</owner>
+  <summary>
+    Various error states on writing a backing file to disk, in the score
+    normalizer used by the Chrome OS launcher. Emitted each time a persistent
+    proto writes to disk.
   </summary>
 </histogram>
 
@@ -1904,17 +1941,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name=".FromFullRestore" summary="From full restore."/>
     <variant name=".FromInstalledNotification"
         summary="From installed notification."/>
+    <variant name=".FromIntentUrl" summary="From Intent Url."/>
     <variant name=".FromKeyboard" summary="From keyboard shortcut."/>
+    <variant name=".FromKiosk" summary="From Kiosk."/>
     <variant name=".FromLink" summary="From Link."/>
+    <variant name=".FromManagementApi" summary="From management API."/>
     <variant name=".FromMenu" summary="From menu."/>
+    <variant name=".FromNewTabPage" summary="From new tab page."/>
     <variant name=".FromOmnibox" summary="From Omnibox."/>
+    <variant name=".FromOsLogin" summary="Run on OS login."/>
     <variant name=".FromOtherApp" summary="From another app."/>
+    <variant name=".FromProtocolHandler" summary="From protocol handler."/>
     <variant name=".FromReleaseNotesNotification"
         summary="From Release Notes notification."/>
     <variant name=".FromSharesheet" summary="From sharesheet."/>
     <variant name=".FromShelf" summary="From shelf."/>
     <variant name=".FromSmartTextContextMenu"
         summary="From Smart text selection context menu."/>
+    <variant name=".FromUrlHandler" summary="From URL hanlder."/>
   </token>
 </histogram>
 

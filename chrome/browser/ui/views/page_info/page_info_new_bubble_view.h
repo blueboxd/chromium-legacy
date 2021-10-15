@@ -38,6 +38,7 @@ class PageInfoNewBubbleView : public PageInfoBubbleViewBase,
   void OpenMainPage() override;
   void OpenSecurityPage() override;
   void OpenPermissionPage(ContentSettingsType type) override;
+  void OpenAboutThisSitePage() override;
   void CloseBubble() override;
 
   // WebContentsObserver:
@@ -47,6 +48,7 @@ class PageInfoNewBubbleView : public PageInfoBubbleViewBase,
   friend class PageInfoBubbleViewBrowserTest;
   friend class PageInfoBubbleViewDialogBrowserTest;
   friend class test::PageInfoBubbleViewTestApi;
+  friend class TrustSafetySentimentServiceBrowserTest;
 
   // PageInfoBubbleViewBase:
   gfx::Size CalculatePreferredSize() const override;

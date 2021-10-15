@@ -108,6 +108,7 @@ class DiagnosticsProxy {
      * @const
      */
     this.enumToStatus_ = new Map([
+      [statusEnum.kUnknown, 'unknonwn'],
       [statusEnum.kReady, 'ready'],
       [statusEnum.kRunning, 'running'],
       [statusEnum.kWaiting, 'waiting'],
@@ -134,6 +135,7 @@ class DiagnosticsProxy {
      * @const
      */
     this.enumToUserMessage_ = new Map([
+      [userMessageEnum.kUnknown, 'unknonwn'],
       [userMessageEnum.kUnplugACPower, 'unplug-ac-power'],
       [userMessageEnum.kPlugInACPower, 'plug-in-ac-power'],
     ]);

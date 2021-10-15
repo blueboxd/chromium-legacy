@@ -3667,7 +3667,7 @@
   },
   {
     "name": "media-app-handles-audio",
-    "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
+    "owners": [ "//ash/webui/media_app_ui/OWNERS" ],
     "expiry_milestone": 100
   },
   {
@@ -4680,16 +4680,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "restore-gaia-cookies-if-deleted",
-    "owners": [ "fernandex", "chrome-signin-team" ],
-    "expiry_milestone": 99
-  },
-  {
-    "name": "restore-gaia-cookies-on-user-action",
-    "owners": ["fernandex", "chrome-signin-team" ],
-    "expiry_milestone": 99
-  },
-  {
     "name": "restore-session-from-cache",
     "owners": [ "justincohen", "gambard", "bling-flags@google.com" ],
     // Needed for manual testing of native session restore flow on iOS.
@@ -5503,11 +5493,6 @@
     "name": "video-tutorials-instant-fetch",
     "owners": [ "shaktisahu"],
     "expiry_milestone": 98
-  },
-  {
-    "name": "vm-status-page",
-    "owners": [ "lxj@google.com", "joelhockey", "timloh" ],
-    "expiry_milestone": 94
   },
   {
     "name": "voice-button-in-top-toolbar",

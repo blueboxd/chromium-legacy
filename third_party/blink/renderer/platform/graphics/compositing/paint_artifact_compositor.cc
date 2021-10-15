@@ -591,7 +591,7 @@ void PaintArtifactCompositor::LayerizeGroup(
 }
 
 void PaintArtifactCompositor::CollectPendingLayers(
-    const Vector<PreCompositedLayerInfo>& pre_composited_layers) {
+    const HeapVector<PreCompositedLayerInfo>& pre_composited_layers) {
   // Shrink, but do not release the backing. Re-use it from the last frame.
   pending_layers_.Shrink(0);
   for (auto& layer : pre_composited_layers) {
@@ -632,8 +632,8 @@ void SynthesizedClip::UpdateLayer(bool needs_layer,
       GeometryMapper::SourceToDestinationProjection(clip.LocalTransformSpace(),
                                                     transform);
   new_translation_2d_or_matrix.MapRect(layer_bounds);
-  new_translation_2d_or_matrix.PostTranslate(-layer_bounds.X(),
-                                             -layer_bounds.Y());
+  new_translation_2d_or_matrix.PostTranslate(-layer_bounds.x(),
+                                             -layer_bounds.y());
 
   if (!path && new_translation_2d_or_matrix.IsIdentityOr2DTranslation()) {
     const auto& translation = new_translation_2d_or_matrix.Translation2D();
@@ -653,8 +653,8 @@ void SynthesizedClip::UpdateLayer(bool needs_layer,
     layer_->SetNeedsDisplay();
 
   layer_->SetOffsetToTransformParent(
-      gfx::Vector2dF(layer_bounds.X(), layer_bounds.Y()));
-  layer_->SetBounds(ToGfxSize(layer_bounds.Size()));
+      gfx::Vector2dF(layer_bounds.x(), layer_bounds.y()));
+  layer_->SetBounds(ToGfxSize(layer_bounds.size()));
   rrect_ = new_rrect;
   path_ = path;
 }
@@ -762,7 +762,7 @@ static void UpdateCompositorViewportProperties(
 }
 
 void PaintArtifactCompositor::Update(
-    const Vector<PreCompositedLayerInfo>& pre_composited_layers,
+    const HeapVector<PreCompositedLayerInfo>& pre_composited_layers,
     const ViewportProperties& viewport_properties,
     const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes,
     Vector<std::unique_ptr<cc::DocumentTransitionRequest>>
@@ -1002,7 +1002,7 @@ class PreCompositedLayerPaintChunkFinder {
 
  public:
   explicit PreCompositedLayerPaintChunkFinder(
-      Vector<PreCompositedLayerInfo>& pre_composited_layers)
+      HeapVector<PreCompositedLayerInfo>& pre_composited_layers)
       : pre_composited_layers_(pre_composited_layers),
         pre_composited_layer_it_(pre_composited_layers_.begin()),
         subset_iterator_(pre_composited_layer_it_->chunks.begin()) {}
@@ -1035,15 +1035,15 @@ class PreCompositedLayerPaintChunkFinder {
   }
 
  private:
-  Vector<PreCompositedLayerInfo>& pre_composited_layers_;
-  Vector<PreCompositedLayerInfo>::iterator pre_composited_layer_it_;
+  HeapVector<PreCompositedLayerInfo>& pre_composited_layers_;
+  HeapVector<PreCompositedLayerInfo>::iterator pre_composited_layer_it_;
   PaintChunkSubset::Iterator subset_iterator_;
 };
 
 }  // namespace
 
 void PaintArtifactCompositor::UpdateRepaintedLayers(
-    Vector<PreCompositedLayerInfo>& pre_composited_layers) {
+    HeapVector<PreCompositedLayerInfo>& pre_composited_layers) {
   // |Update| should be used for full updates.
   DCHECK(!needs_update_);
 

@@ -58,8 +58,11 @@ enum DiskReadRoutineTypeEnum {
 };
 
 // Enumeration of each of the possible statuses for a diagnostics routine.
+//
+// NextMinVersion: 1, NextIndex: 13
 [Extensible]
 enum DiagnosticRoutineStatusEnum {
+  [Default] kUnknown = 12,
   kReady = 0,  // Routine is ready to start.
   kRunning = 1,  // Routine is currently running.
   kWaiting = 2,  // Routine needs user input to continue.
@@ -78,15 +81,21 @@ enum DiagnosticRoutineStatusEnum {
 
 // Enumeration of each of the messages a diagnostics routine can pass back.
 // These messages prompt interaction from the user of the routine.
+//
+// NextMinVersion: 1, NextIndex: 3
 [Extensible]
 enum DiagnosticRoutineUserMessageEnum {
+  [Default] kUnknown = 2,
   kUnplugACPower = 0,  // The user needs to unplug the AC power cord.
   kPlugInACPower = 1,  // The user needs to plug in the AC power cord.
 };
 
 // Enumeration of the possible commands to send a diagnostics routine.
+//
+// NextMinVersion: 1, NextIndex: 5
 [Extensible]
 enum DiagnosticRoutineCommandEnum {
+  [Default] kUnknown = 4,
   kContinue = 0,  // Resume a routine that is waiting.
   kCancel = 1,  // Cancelled routines must still be removed before the routine
                 // is destroyed.

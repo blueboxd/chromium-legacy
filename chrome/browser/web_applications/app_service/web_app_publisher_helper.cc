@@ -582,13 +582,22 @@ content::WebContents* WebAppPublisherHelper::Launch(
     case apps::mojom::LaunchSource::kFromFullRestore:
     case apps::mojom::LaunchSource::kFromSmartTextContextMenu:
     case apps::mojom::LaunchSource::kFromDiscoverTabNotification:
+    case apps::mojom::LaunchSource::kFromManagementApi:
+    case apps::mojom::LaunchSource::kFromKiosk:
+    case apps::mojom::LaunchSource::kFromCommandLine:
+    case apps::mojom::LaunchSource::kFromBackgroundMode:
+    case apps::mojom::LaunchSource::kFromNewTabPage:
+    case apps::mojom::LaunchSource::kFromIntentUrl:
+    case apps::mojom::LaunchSource::kFromOsLogin:
+    case apps::mojom::LaunchSource::kFromProtocolHandler:
+    case apps::mojom::LaunchSource::kFromUrlHandler:
       break;
   }
 
   DisplayMode display_mode = registrar().GetAppEffectiveDisplayMode(app_id);
 
   apps::AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
-      web_app->app_id(), event_flags, apps::GetAppLaunchSource(launch_source),
+      web_app->app_id(), event_flags, launch_source,
       window_info ? window_info->display_id : display::kInvalidDisplayId,
       /*fallback_container=*/
       ConvertDisplayModeToAppLaunchContainer(display_mode));
@@ -604,8 +613,7 @@ content::WebContents* WebAppPublisherHelper::LaunchAppWithFiles(
     apps::mojom::FilePathsPtr file_paths) {
   DisplayMode display_mode = registrar().GetAppEffectiveDisplayMode(app_id);
   apps::AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
-      app_id, event_flags, apps::GetAppLaunchSource(launch_source),
-      display::kInvalidDisplayId,
+      app_id, event_flags, launch_source, display::kInvalidDisplayId,
       /*fallback_container=*/
       ConvertDisplayModeToAppLaunchContainer(display_mode));
   if (file_paths) {
@@ -1174,7 +1182,7 @@ content::WebContents* WebAppPublisherHelper::LaunchAppWithIntentImpl(
   }
 
   auto params = apps::CreateAppLaunchParamsForIntent(
-      app_id, event_flags, apps::GetAppLaunchSource(launch_source), display_id,
+      app_id, event_flags, launch_source, display_id,
       ConvertDisplayModeToAppLaunchContainer(
           registrar().GetAppEffectiveDisplayMode(app_id)),
       std::move(intent));

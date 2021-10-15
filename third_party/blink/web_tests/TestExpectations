@@ -1750,7 +1750,6 @@ crbug.com/1045672 fast/forms/select/listbox-tap.html [ Failure ]
 
 ### sheriff 2019-07-16
 crbug.com/983799 [ Win ] http/tests/navigation/redirect-on-back-updates-history-item.html [ Pass Timeout ]
-crbug.com/983789 [ Win7 ] http/tests/cookies/js-set-null.html [ Failure Pass ]
 
 ### sheriff 2018-05-28
 
@@ -2330,6 +2329,14 @@ crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-naviga
 crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-navigations-and-traversals/tentative/cross-document-traversal-same-document-nav.html [ Failure Timeout ]
 crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-navigations-and-traversals/tentative/same-document-traversal-same-document-nav.html [ Failure Timeout ]
 
+# Disabling test to checkin associated frontend changes on DevTools
+crbug.com/1252049 http/tests/devtools/forced-layout-in-microtask.js [ Failure Pass ]
+crbug.com/1252049 [ Linux ] http/tests/devtools/tracing/timeline-js/timeline-script-id.js [ Failure Pass ]
+crbug.com/1252049 [ Win ] http/tests/devtools/tracing/timeline-js/timeline-script-id.js [ Failure Pass ]
+crbug.com/1252049 http/tests/devtools/tracing/timeline-layout/timeline-layout.js [ Failure Pass ]
+crbug.com/1252049 http/tests/devtools/tracing/timeline-misc/timeline-animation-frame.js [ Failure Pass ]
+crbug.com/1252049 http/tests/devtools/tracing/timeline-network/timeline-network-resource-details.js [ Failure Pass ]
+crbug.com/1252049 http/tests/devtools/tracing/timeline-time/timeline-timer.js [ Failure Pass ]
 
 crbug.com/876485 fast/performance/performance-measure-null-exception.html [ Failure ]
 
@@ -5335,22 +5342,6 @@ crbug.com/1008483 external/wpt/css/css-transforms/backface-visibility-hidden-004
 crbug.com/1008483 external/wpt/css/css-transforms/backface-visibility-hidden-005.tentative.html [ Failure ]
 crbug.com/1008483 external/wpt/css/css-transforms/backface-visibility-hidden-animated-002.html [ Failure ]
 
-crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/3d-rendering-context-behavior.html [ Failure ]
-crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/preserve-3d-flat-grouping-properties-containing-block.html [ Failure ]
-crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/3d-rendering-context-and-abspos.html [ Failure ]
-crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/3d-rendering-context-and-fixpos.html [ Failure ]
-crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/3d-rendering-context-and-inline.html [ Failure ]
-crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform3d-sorting-004.html [ Failure ]
-crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform-table-008.html [ Failure ]
-
-# 3d-point-mapping-2 tests incorrect (pre-TransformInterop) behavior,
-# but we should keep testing that until TransformInterop is shipped.
-# 3d-point-mapping-2-transforminterop tests the new behavior.
-crbug.com/1008483 transforms/3d/point-mapping/3d-point-mapping-2.html [ Failure ]
-crbug.com/1008483 [ Linux ] virtual/transform-interop-disabled/transforms/3d/point-mapping/3d-point-mapping-2.html [ Pass ]
-crbug.com/1008483 [ Win ] virtual/transform-interop-disabled/transforms/3d/point-mapping/3d-point-mapping-2.html [ Pass ]
-crbug.com/1008483 [ Mac ] virtual/transform-interop-disabled/transforms/3d/point-mapping/3d-point-mapping-2.html [ Failure Pass ]
-
 crbug.com/1008483 virtual/backface-visibility-interop/external/wpt/css/css-transforms/backface-visibility-hidden-004.tentative.html [ Pass ]
 crbug.com/1008483 virtual/backface-visibility-interop/external/wpt/css/css-transforms/backface-visibility-hidden-005.tentative.html [ Pass ]
 crbug.com/1008483 virtual/backface-visibility-interop/external/wpt/css/css-transforms/backface-visibility-hidden-animated-002.html [ Pass ]
@@ -5362,12 +5353,6 @@ crbug.com/1008483 virtual/backface-visibility-interop/external/wpt/css/css-trans
 crbug.com/1008483 virtual/backface-visibility-interop/compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ Failure ]
 crbug.com/1008483 virtual/backface-visibility-interop/paint/invalidation/stacking-context-lost.html [ Failure ]
 crbug.com/1008483 virtual/backface-visibility-interop/paint/invalidation/multicol/multicol-as-paint-container.html [ Failure ]
-
-crbug.com/943503 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform3d-perspective-003.html [ Failure ]
-crbug.com/943503 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform3d-perspective-004.html [ Failure ]
-crbug.com/943503 virtual/transform-interop-disabled/external/wpt/css/css-transforms/perspective-children-only-abspos.html [ Failure ]
-crbug.com/943503 virtual/transform-interop-disabled/external/wpt/css/css-transforms/perspective-children-only-fixpos.html [ Failure ]
-crbug.com/943503 virtual/transform-interop-disabled/external/wpt/css/css-transforms/perspective-children-only-inline.html [ Failure ]
 
 # Swiftshader issue.
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-innerwidth.html [ Crash Skip Timeout ]
@@ -6376,8 +6361,6 @@ external/wpt/css/css-transforms/transform-fixed-bg-004.html [ Failure ]
 external/wpt/css/css-transforms/transform-fixed-bg-005.html [ Failure ]
 external/wpt/css/css-transforms/transform-fixed-bg-006.html [ Failure ]
 external/wpt/css/css-transforms/transform-fixed-bg-007.html [ Failure ]
-crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform-table-006.html [ Failure ]
-crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform-table-007.html [ Failure ]
 # Started failing after rolling new version of check-layout-th.js
 css3/flexbox/perpendicular-writing-modes-inside-flex-item.html [ Failure ]
 
@@ -7006,6 +6989,9 @@ crbug.com/1249176 [ Mac11-arm64 ] external/wpt/css/css-shapes/shape-outside/shap
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-014.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/multiple-redirects-TAO.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] virtual/scalefactor200/external/wpt/largest-contentful-paint/multiple-redirects-TAO.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] external/wpt/largest-contentful-paint/multiple-redirects-TAO.html [ Failure Pass ]
+crbug.com/1249176 [ Mac11-arm64 ] virtual/background-svg-in-lcp/external/wpt/largest-contentful-paint/multiple-redirects-TAO.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/split.https.html [ Pass Timeout ]
 
 # mac-arm CI 10-01-2021
@@ -7187,3 +7173,6 @@ crbug.com/1259749 [ Mac11.0 ] http/tests/eventsource/eventsource-cors-non-http.h
 
 # Data URL navigation within Fenced Frames currently crashed in the MPArch implementation.
 crbug.com/1243568 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/window-data-url-navigation.html [ Crash ]
+
+# Sheriff 2021-10-15
+crbug.com/crbug.com/1256763 [ Linux ] virtual/gpu-rasterization/images/color-profile-image-pseudo-content.html [ Failure Pass ]

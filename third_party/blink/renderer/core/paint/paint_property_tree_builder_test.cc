@@ -500,15 +500,15 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRLMulticol) {
     ASSERT_EQ(2u, NumFragments(flow_thread));
     const auto* fragment_clip0 =
         FragmentAt(flow_thread, 0).PaintProperties()->FragmentClip();
-    EXPECT_EQ(410, fragment_clip0->LayoutClipRect().Rect().X());
-    EXPECT_EQ(410, fragment_clip0->PaintClipRect().Rect().X());
+    EXPECT_EQ(410, fragment_clip0->LayoutClipRect().Rect().x());
+    EXPECT_EQ(410, fragment_clip0->PaintClipRect().Rect().x());
     EXPECT_EQ(PhysicalOffset(360, 10),
               FragmentAt(flow_thread, 0).PaintOffset());
 
     const auto* fragment_clip1 =
         FragmentAt(flow_thread, 1).PaintProperties()->FragmentClip();
-    EXPECT_EQ(460, fragment_clip1->LayoutClipRect().Rect().MaxX());
-    EXPECT_EQ(460, fragment_clip1->PaintClipRect().Rect().MaxX());
+    EXPECT_EQ(460, fragment_clip1->LayoutClipRect().Rect().right());
+    EXPECT_EQ(460, fragment_clip1->PaintClipRect().Rect().right());
     EXPECT_EQ(PhysicalOffset(410, 210),
               FragmentAt(flow_thread, 1).PaintOffset());
   };
@@ -832,7 +832,6 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeContents) {
 
 TEST_P(PaintPropertyTreeBuilderTest,
        BackfaceVisibilityWithPseudoStacking3DChildren) {
-  ScopedTransformInteropForTest ti_enabled(true);
   ScopedBackfaceVisibilityInteropForTest bfi_enabled(true);
   // TODO(chrishtr, dbaron): implement for CAP. This entails computing
   // has_backface_invisible_ancestor_in_same_3d_context in the pre-paint tree
@@ -3026,8 +3025,6 @@ TEST_P(PaintPropertyTreeBuilderTest, Preserve3DCreatesSharedRenderingContext) {
 
 TEST_P(PaintPropertyTreeBuilderTest,
        IntermediateElementPreventsSharedRenderingContext) {
-  ScopedTransformInteropForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='transform-style: preserve-3d'>
       <div>
@@ -3070,8 +3067,6 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
 TEST_P(PaintPropertyTreeBuilderTest,
        IntermediateElementWithPropertiesPreventsSharedRenderingContext) {
-  ScopedTransformInteropForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='transform-style: preserve-3d'>
       <div style="overflow: hidden">
@@ -5454,7 +5449,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameBorderRadius) {
 TEST_P(PaintPropertyTreeBuilderTest, NoPropertyForSVGTextWithReflection) {
   SetBodyInnerHTML(R"HTML(
     <svg>
-      <text id='target' style='-webkit-box-reflect: below 2px'>X</text>
+      <text id='target' style='-webkit-box-reflect: below 2px'>x</text>
     </svg>
   )HTML");
   EXPECT_FALSE(PaintPropertiesForElement("target"));

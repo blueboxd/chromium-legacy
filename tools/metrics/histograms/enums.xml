@@ -1463,6 +1463,17 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="InferenceExecutionFailed"/>
 </enum>
 
+<enum name="AllowedUsersPoliciesInvalidState">
+  <summary>
+    For recording which of the 4 disallowed combinations of allow_new_users and
+    user_allowlist policies occured.
+  </summary>
+  <int value="0" label="AllowlistNotPresentAndAllowNewUsersTrue"/>
+  <int value="1" label="AllowlistNotPresentAndAllowNewUsersFalse"/>
+  <int value="2" label="AllowlistEmptyAndAllowNewUsersNotPresent"/>
+  <int value="3" label="AllowlistNonEmptyAndAllowNewUsersNotPresent"/>
+</enum>
+
 <enum name="AllPasswordsBottomSheetActions">
   <int value="0" label="Credential selected"/>
   <int value="1" label="Sheet dismissed"/>
@@ -11900,6 +11911,7 @@ histogram as enum -->
   <int value="3" label="Cancelled by user pressing Esc key"/>
   <int value="4" label="Launch Web app"/>
   <int value="5" label="Launch Drive share action"/>
+  <int value="6" label="Launch Copy share action"/>
 </enum>
 
 <enum name="ChromeOSSharesheetFormFactor">
@@ -34932,7 +34944,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4057" label="FlexboxAlignSingleLineDifference"/>
   <int value="4058" label="ExternalProtocolBlockedBySandbox"/>
   <int value="4059" label="WebAssemblyDynamicTiering"/>
-  <int value="4060" label="DeferredShapingTallerIfc"/>
+  <int value="4060" label="OBSOLETE_DeferredShapingTallerIfc"/>
   <int value="4061" label="ReadOrWriteWebDatabase"/>
 </enum>
 
@@ -46543,6 +46555,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="20" label="Full restore"/>
   <int value="21" label="Smart text selection context menu"/>
   <int value="22" label="Discover Tab Notification"/>
+  <int value="23" label="Management API"/>
+  <int value="24" label="Kiosk"/>
+  <int value="25" label="CommandLine"/>
+  <int value="26" label="Background mode"/>
+  <int value="27" label="New tab page"/>
+  <int value="28" label="Intent Url"/>
+  <int value="29" label="Run on OS login"/>
+  <int value="30" label="Protocol handler"/>
+  <int value="31" label="URL handler"/>
 </enum>
 
 <enum name="LaunchType">
@@ -56959,6 +56980,7 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="FRE completed w/ user signed in and sync"/>
   <int value="5" label="FRE completed w/ user not signed in and sync"/>
   <int value="6" label="Search engine choice dialog shown"/>
+  <int value="7" label="The user started adding account from welcome screen"/>
 </enum>
 
 <enum name="MobileFreSignInChoice">
@@ -66670,6 +66692,19 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="Too much data in user defined option"/>
   <int value="9" label="Internal error"/>
   <int value="10" label="Permission denied"/>
+</enum>
+
+<enum name="PersistentProtoReadStatus">
+  <int value="0" label="Ok"/>
+  <int value="1" label="Missing"/>
+  <int value="2" label="Read error"/>
+  <int value="3" label="Parse error"/>
+</enum>
+
+<enum name="PersistentProtoWriteStatus">
+  <int value="0" label="Ok"/>
+  <int value="1" label="Write error"/>
+  <int value="2" label="Serialization error"/>
 </enum>
 
 <enum name="PhoneCollectionState">
@@ -86171,6 +86206,11 @@ Full version information for the fingerprint enum values:
   <int value="3" label="FAILED_OTHER">Failed for other reason</int>
 </enum>
 
+<enum name="V8VirtualMemoryCageMode">
+  <int value="0" label="kSecure">Using a normal, secure cage</int>
+  <int value="1" label="kInsecure">Using a fallback, insecure cage</int>
+</enum>
+
 <enum name="VaapiFunctions">
   <int value="0" label="vaBeginPicture()"/>
   <int value="1" label="vaCreateBuffer()"/>
@@ -92796,6 +92836,13 @@ Called by update_scheduler_enums.py.-->
   <int value="0" label="Success"/>
   <int value="1" label="Cancelled"/>
   <int value="2" label="Error"/>
+</enum>
+
+<enum name="ZygoteChildState">
+  <int value="0" label="Failed to create a RELRO bundle in the App Zygote"/>
+  <int value="1" label="The first usable App Zygote found"/>
+  <int value="2" label="App Zygote restarted without browser restart"/>
+  <int value="3" label="App Zygote has already been seen"/>
 </enum>
 
 </enums>

@@ -365,13 +365,6 @@ class SafetyTipPageInfoBubbleViewBrowserTest
     return AreLookalikeWarningsEnabled() ? IsUIShowing() : !IsUIShowing();
   }
 
-  const std::u16string GetPageInfoBubbleViewSummaryText() {
-    auto* label =
-        PageInfoBubbleView::GetPageInfoBubbleForTesting()->GetViewByID(
-            PageInfoViewFactory::VIEW_ID_PAGE_INFO_SECURITY_SUMMARY_LABEL);
-    return static_cast<views::StyledLabel*>(label)->GetText();
-  }
-
   std::u16string GetSafetyTipSummaryText() {
     auto* page_info = PageInfoBubbleView::GetPageInfoBubbleForTesting();
     if (base::FeatureList::IsEnabled(page_info::kPageInfoV2Desktop)) {
@@ -710,8 +703,9 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   TriggerWarningFromBlocklist(browser(), kNavigatedUrl,
                               WindowOpenDisposition::CURRENT_TAB);
   ASSERT_NO_FATAL_FAILURE(CheckNoButtons());
+  auto* page_info = PageInfoBubbleView::GetPageInfoBubbleForTesting();
   EXPECT_EQ(
-      GetSafetyTipSummaryText(),
+      page_info->GetWindowTitle(),
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE));
 }
 
@@ -1148,7 +1142,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                   WindowOpenDisposition::CURRENT_TAB);
     histogram_tester.ExpectBucketCount(
         kHistogramPrefix + "SafetyTip_BadReputation",
-        SafetyTipInteraction::kStartNewNavigation, 1);
+        SafetyTipInteraction::kChangePrimaryPage, 1);
   }
 }
 
@@ -1175,7 +1169,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     NavigateToURL(browser(), GURL("about:blank"),
                   WindowOpenDisposition::CURRENT_TAB);
     auto samples = histograms.GetAllSamples(
-        "Security.SafetyTips.OpenTime.StartNewNavigation.SafetyTip_"
+        "Security.SafetyTips.OpenTime.ChangePrimaryPage.SafetyTip_"
         "BadReputation");
     ASSERT_EQ(1u, samples.size());
     EXPECT_LE(kMinWarningTime.InMilliseconds(), samples.front().min);

@@ -235,11 +235,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '5ff51fb2e3cdb8a2d3681af8333c53512c32d2d6',
+  'skia_revision': '72602b668e229b6dc8fa102906f68cd646081f02',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '785779f6e7578a9cdf352697bd10c3b45ea7f391',
+  'v8_revision': '6fb21dbeff453687778d4719ed9b4804e82e94d9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -247,11 +247,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'e0af842a439e0259ac69b89f6a0f770461282597',
+  'swiftshader_revision': 'ce1449fd798ac55ebc1d74c95b46f6852c955a83',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'c9ab9299a9a90280092761bf76998c0e38000ac7',
+  'pdfium_revision': 'f56aac843142f13fef4f082493a11aa5fe816502',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -302,7 +302,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'e6080695798b7187caf08a26ced6828dcea59f32',
+  'catapult_revision': '59de2526fa3491a38e7aef9e3c0f4e58f89a51e2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -310,7 +310,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'e8dd4366cdbb988c26cfd262cba73923a826d81d',
+  'devtools_frontend_revision': '86eb7e41a4baf3dd4c158149ad72fb1ba0eb9389',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -350,7 +350,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'daffd22b683e6d15c9b35e961512433e62152005',
+  'dawn_revision': '35a38d85c4ef3b45345a0ab72fbed672d75f9db2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -394,7 +394,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libcxxabi_revision':    '0054d1d20c7293e08963554ab85214fcfeaef2db',
+  'libcxxabi_revision':    '198699532a52f03de77ef34b0e808f35648602f7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -824,7 +824,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_build_tools/aapt2',
-              'version': 'O9eXFyC5ZkcYvDfHRLKPO1g1Xwf7M33wT3cuJtyfc0sC',
+              'version': 'QTle7uOqwUcpHkoK4T62iuIj5-BlSM7NC9sR8su220IC',
           },
       ],
       'condition': 'checkout_android',
@@ -1010,7 +1010,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '1859b11e5c9ad5feb39c8eecfb096c10219c4ea2',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '3834fefc28ae84191c4f3204905347f2937e6b7e',
       'condition': 'checkout_chromeos',
   },
 
@@ -1030,7 +1030,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '9fe4fb87a6c18a57736d0ff5c1d9a29a3d4418c4',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '80fc559f70885392361ba7a5d73bb662f7ba29ac',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1416,7 +1416,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'fa68100f5be2459da45a73682ce35c3364c79790',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'd160778c81da4e10c194b65c4e287fc2906cef74',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1494,7 +1494,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'p92kwfZ375X6BFPjx49iy8qZR8xmAHTeCRuM0wTvYAwC'
+              'version': 'WZbCiP65KD2AkATCrSvq1_de-tM-_iUdzZBu6UT6LSYC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1634,10 +1634,10 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '9ec0bd5501c6a35eb365dc49be7618a763135a10',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'e42f534de7afea5942ecae5993d9211e258918aa',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '81dc07eb476c450d6c57bccea551e05de9727679',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '6fa9e68da9f5cf0369188b97ad453dfda5419d46',
+    Var('webrtc_git') + '/src.git' + '@' + '6f8fa5af77808849cb5f2de39c469cbe44bf91c6',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1695,7 +1695,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5f5e0a2edc4a7ffba012a0dfe18c3a3c22ba884d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d0ef0ead4112204b3a444a5e0215e25eb9693549',
     'condition': 'checkout_src_internal',
   },
 
@@ -1714,7 +1714,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'lHgufPu-ZqLR8QEcmZE_KWpmpyDitupQrSAjoofzx2EC',
+        'version': 'DHpSFr0bzcDZAeiMPCIZJC9ycA80fbXIwe7HZy9gWjUC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1725,7 +1725,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'SUBVLXhO0mPbP-HZFzb1uzHf7WC8EjwVEb5n_AdR6q0C',
+        'version': 'H8mZMJCZquFWCjIqSNOr96iRU1jxAb0yfwihdl0xWbkC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -4210,8 +4210,7 @@ hooks = [
     'name': 'checkout_telemetry_binary_dependencies',
     'condition': 'checkout_telemetry_dependencies',
     'pattern': '.',
-    # TODO(1208648): Flip to vpython3 when that is working.
-    'action': [ 'vpython',
+    'action': [ 'vpython3',
                 'src/third_party/catapult/telemetry/bin/fetch_telemetry_binary_dependencies',
     ],
   },
@@ -4232,8 +4231,7 @@ hooks = [
     'name': 'checkout_telemetry_benchmark_deps',
     'condition': 'checkout_telemetry_dependencies and checkout_win and not skip_wpr_archives_download',
     'pattern': '.',
-    # TODO(1208648): Flip to vpython3 when that is working.
-    'action': [ 'vpython',
+    'action': [ 'vpython3',
                 'src/tools/perf/fetch_benchmark_deps.py',
                 '-f',
                 '-p',
@@ -4244,8 +4242,7 @@ hooks = [
     'name': 'checkout_telemetry_benchmark_deps',
     'condition': 'checkout_telemetry_dependencies and checkout_mac and not skip_wpr_archives_download',
     'pattern': '.',
-    # TODO(1208648): Flip to vpython3 when that is working.
-    'action': [ 'vpython',
+    'action': [ 'vpython3',
                 'src/tools/perf/fetch_benchmark_deps.py',
                 '-f',
                 '-p',

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_ratio_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
@@ -571,6 +572,8 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        nullptr},
       {html_names::kOnselectstartAttr, kNoWebFeature,
        event_type_names::kSelectstart, nullptr},
+      {html_names::kOnslotchangeAttr, kNoWebFeature,
+       event_type_names::kSlotchange, nullptr},
       {html_names::kOnstalledAttr, kNoWebFeature, event_type_names::kStalled,
        nullptr},
       {html_names::kOnsubmitAttr, kNoWebFeature, event_type_names::kSubmit,
@@ -960,17 +963,16 @@ void HTMLElement::ApplyIntegerAspectRatioToStyle(
 void HTMLElement::ApplyAspectRatioToStyle(double width,
                                           double height,
                                           MutableCSSPropertyValueSet* style) {
-  CSSValue* width_val = CSSNumericLiteralValue::Create(
+  auto* width_val = CSSNumericLiteralValue::Create(
       width, CSSPrimitiveValue::UnitType::kNumber);
-  CSSValue* height_val = CSSNumericLiteralValue::Create(
+  auto* height_val = CSSNumericLiteralValue::Create(
       height, CSSPrimitiveValue::UnitType::kNumber);
-  CSSValueList* ratio_list = CSSValueList::CreateSlashSeparated();
-  ratio_list->Append(*width_val);
-  ratio_list->Append(*height_val);
+  auto* ratio_value =
+      MakeGarbageCollected<cssvalue::CSSRatioValue>(*width_val, *height_val);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
-  list->Append(*ratio_list);
+  list->Append(*ratio_value);
 
   style->SetProperty(CSSPropertyID::kAspectRatio, *list);
 }

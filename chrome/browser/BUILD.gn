@@ -1532,12 +1532,12 @@ static_library("browser") {
     "sessions/tab_restore_service_factory.h",
     "share/share_features.cc",
     "share/share_features.h",
-    "sharesheet/example_action.cc",
-    "sharesheet/example_action.h",
-    "sharesheet/share_action.cc",
-    "sharesheet/share_action.h",
-    "sharesheet/sharesheet_action_cache.cc",
-    "sharesheet/sharesheet_action_cache.h",
+    "sharesheet/share_action/example_action.cc",
+    "sharesheet/share_action/example_action.h",
+    "sharesheet/share_action/share_action.cc",
+    "sharesheet/share_action/share_action.h",
+    "sharesheet/share_action/share_action_cache.cc",
+    "sharesheet/share_action/share_action_cache.h",
     "sharesheet/sharesheet_types.cc",
     "sharesheet/sharesheet_types.h",
     "sharing/ack_message_handler.cc",
@@ -2183,6 +2183,7 @@ static_library("browser") {
     "//components/reporting/proto:record_proto",
     "//components/reporting/storage:storage_configuration",
     "//components/reporting/storage:storage_module",
+    "//components/reporting/storage:storage_module_interface",
     "//components/reporting/storage:storage_uploader_interface",
     "//components/reporting/storage_selector",
     "//components/reporting/util:backoff_settings",
@@ -2545,6 +2546,8 @@ static_library("browser") {
       "android/accessibility/font_size_prefs_android.cc",
       "android/accessibility/font_size_prefs_android.h",
       "android/android_theme_resources.h",
+      "android/autocomplete/tab_matcher_android.cc",
+      "android/autocomplete/tab_matcher_android.h",
       "android/autofill_assistant/assistant_bottom_bar_delegate.cc",
       "android/autofill_assistant/assistant_bottom_bar_delegate.h",
       "android/autofill_assistant/assistant_collect_user_data_delegate.cc",
@@ -4192,8 +4195,8 @@ static_library("browser") {
       "sharesheet/sharesheet_metrics.h",
       "sharesheet/sharesheet_service.cc",
       "sharesheet/sharesheet_service.h",
-      "sharesheet/sharesheet_service_delegate.cc",
-      "sharesheet/sharesheet_service_delegate.h",
+      "sharesheet/sharesheet_service_delegator.cc",
+      "sharesheet/sharesheet_service_delegator.h",
       "sharesheet/sharesheet_service_factory.cc",
       "sharesheet/sharesheet_service_factory.h",
       "sharesheet/sharesheet_ui_delegate.h",
@@ -4499,6 +4502,13 @@ static_library("browser") {
     }
   }
 
+  if (!is_android && !is_ios) {
+    sources += [
+      "autocomplete/tab_matcher_desktop.cc",
+      "autocomplete/tab_matcher_desktop.h",
+    ]
+  }
+
   if (is_chromeos_ash) {
     assert(enable_system_notifications)
     sources += [
@@ -4767,8 +4777,10 @@ static_library("browser") {
       "renderer_context_menu/quick_answers_menu_observer.h",
       "resource_coordinator/tab_manager_delegate_chromeos.cc",
       "resource_coordinator/tab_manager_delegate_chromeos.h",
-      "sharesheet/drive_share_action.cc",
-      "sharesheet/drive_share_action.h",
+      "sharesheet/share_action/copy_to_clipboard_share_action.cc",
+      "sharesheet/share_action/copy_to_clipboard_share_action.h",
+      "sharesheet/share_action/drive_share_action.cc",
+      "sharesheet/share_action/drive_share_action.h",
       "shell_integration_chromeos.cc",
       "speech/cros_speech_recognition_service.cc",
       "speech/cros_speech_recognition_service.h",

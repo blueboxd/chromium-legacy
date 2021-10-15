@@ -17,8 +17,6 @@ namespace features {
 // being rolled out via Finch, add a comment in the .cc file.
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kAccountManagementFlowsV2;
-COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAdjustSplitViewForVK;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kAllowAmbientEQ;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -127,6 +125,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCrostiniDiskResizing;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kCrostiniGpuSupport;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kCrostiniResetLxdDb;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kCrostiniUseLxd4;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCryptAuthV2DeviceActivityStatus;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -281,8 +280,9 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kLockScreenMediaControls;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kManagedDeviceUIRedesign;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kMediaAppHandlesAudio;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kMediaAppHandlesPdf;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kMediaAppMultiWindow;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kManagedTermsOfService;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -344,6 +344,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDisableQuickAnswersV2Translation;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kQuickAnswersV2SettingsSubToggle;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kQuickSettingsNetworkRevamp;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kQuickUnlockFingerprint;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -442,6 +444,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kWakeOnWifiAllowed;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kWallpaperWebUI;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kWallpaperFullScreenPreview;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kWallpaperGooglePhotosIntegration;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kWebApkGenerator;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kWebUITabStripTabDragIntegration;
@@ -460,7 +464,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool AreDesksTemplatesEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool AreDesksTrackpadSwipeImprovementsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool AreImprovedScreenCaptureSettingsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool DoWindowsFollowCursor();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAccountManagementFlowsV2Enabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAdjustSplitViewForVKEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAllowAmbientEQEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeDevUseProdEnabled();
@@ -562,6 +565,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsProjectorAnnotatorEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersV2Enabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersV2TranslationDisabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersV2SettingsSubToggleEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsQuickSettingsNetworkRevampEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsReduceDisplayNotificationsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsReverseScrollGesturesEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)

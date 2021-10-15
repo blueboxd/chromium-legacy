@@ -90,6 +90,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
 #include "url/gurl.h"
@@ -229,7 +230,7 @@ class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
     // TODO(https://crbug.com/794320): Remove this when the new Java Bridge code
     // is integrated into WebView.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kJavaScriptFlags, "--expose_gc");
+        blink::switches::kJavaScriptFlags, "--expose_gc");
 
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kEnableBlinkFeatures, "WebOTP");
@@ -5957,6 +5958,40 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       result.append(frame_to_label_map[ilr_ptr]);
     EXPECT_EQ(frame_to_immediate_local_roots_map[current_frame_host], result);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, GetSiblings) {
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+  // Use actual FrameTreeNode id values in URL.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?1(2,3(5),4)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* ftn1 = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* ftn2 = ftn1->child_at(0);
+  FrameTreeNode* ftn3 = ftn1->child_at(1);
+  FrameTreeNode* ftn4 = ftn1->child_at(2);
+  FrameTreeNode* ftn5 = ftn3->child_at(0);
+
+  // Check root node.
+  EXPECT_EQ(ftn1->current_frame_host()->NextSibling(), nullptr);
+  EXPECT_EQ(ftn1->current_frame_host()->PreviousSibling(), nullptr);
+
+  // Check first child of root (leaf node).
+  EXPECT_EQ(ftn2->current_frame_host()->NextSibling(), ftn3);
+  EXPECT_EQ(ftn2->current_frame_host()->PreviousSibling(), nullptr);
+
+  // Check second child of root (has child).
+  EXPECT_EQ(ftn3->current_frame_host()->NextSibling(), ftn4);
+  EXPECT_EQ(ftn3->current_frame_host()->PreviousSibling(), ftn2);
+
+  // Check third child of root (leaf).
+  EXPECT_EQ(ftn4->current_frame_host()->NextSibling(), nullptr);
+  EXPECT_EQ(ftn4->current_frame_host()->PreviousSibling(), ftn3);
+
+  // Check deepest node in tree (leaf with no siblings).
+  EXPECT_EQ(ftn5->current_frame_host()->NextSibling(), nullptr);
+  EXPECT_EQ(ftn5->current_frame_host()->PreviousSibling(), nullptr);
 }
 
 // Helpers for the DestructorLifetime test case.

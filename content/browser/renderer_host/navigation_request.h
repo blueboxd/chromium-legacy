@@ -351,7 +351,7 @@ class CONTENT_EXPORT NavigationRequest
   void SetSilentlyIgnoreErrors() override;
   network::mojom::WebSandboxFlags SandboxFlagsToCommit() override;
   bool IsWaitingToCommit() override;
-  bool WasEarlyHintsPreloadLinkHeaderReceived() override;
+  bool WasResourceHintsReceived() override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
   bool SetNavigationTimeout(base::TimeDelta timeout) override;
 
@@ -1453,8 +1453,6 @@ class CONTENT_EXPORT NavigationRequest
   // Note: |commit_params_->is_browser_initiated| and |common_params_| may be
   // mutated by ContentBrowserClient::OverrideNavigationParams at construction
   // time (i.e. before we actually kick off the navigation).
-  // |commit_params_->is_browser_initiated| will always be true for history
-  // navigations, even if they began in the renderer using the history API.
   blink::mojom::CommonNavigationParamsPtr common_params_;
   blink::mojom::BeginNavigationParamsPtr begin_params_;
   blink::mojom::CommitNavigationParamsPtr commit_params_;
@@ -1825,7 +1823,7 @@ class CONTENT_EXPORT NavigationRequest
 
   // True when at least one preload Link header was received via an Early Hints
   // response. This is set only for a main frame navigation.
-  bool was_early_hints_preload_link_header_received_ = false;
+  bool was_resource_hints_received_ = false;
 
   // Observers listening to cookie access notifications for the network requests
   // made by this navigation.

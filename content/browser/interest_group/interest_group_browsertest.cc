@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/callback_forward.h"
+#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -16,6 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -26,6 +28,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -43,8 +46,10 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "services/network/public/mojom/ip_address_space.mojom.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -62,12 +67,45 @@ namespace {
 using ::testing::Eq;
 using ::testing::Optional;
 
+// Creates ads and adComponents arrays with the provided InterestGroup::Ads.
+std::string MakeAdsArg(const std::vector<blink::InterestGroup::Ad>& ads) {
+  std::string out = "";
+  for (const auto& ad : ads) {
+    if (!out.empty())
+      out += ",";
+    if (ad.metadata) {
+      // Since ad.metadata is JSON, it shouldn't be wrapped in quotes, so can't
+      // use JsReplace.
+      out += base::StringPrintf("{renderUrl : '%s', metadata: %s}",
+                                ad.render_url.spec().c_str(),
+                                ad.metadata->c_str());
+    } else {
+      out += JsReplace("{renderUrl : $1}", ad.render_url);
+    }
+  }
+  return "[" + out + "]";
+}
+
+// Creates ads and adComponents arrays with the provided render URLs and null
+// metadata.
+std::string MakeAdsArg(const std::vector<GURL>& urls) {
+  std::vector<blink::InterestGroup::Ad> ads;
+  for (const auto& url : urls) {
+    ads.emplace_back(blink::InterestGroup::Ad{url, absl::nullopt});
+  }
+  return MakeAdsArg(ads);
+}
+
 class AllowlistedOriginContentBrowserClient : public TestContentBrowserClient {
  public:
   explicit AllowlistedOriginContentBrowserClient() = default;
 
   void SetAllowList(base::flat_set<url::Origin>&& allow_list) {
     allow_list_ = allow_list;
+  }
+
+  void AddToAllowList(const std::vector<url::Origin>& add_to_allow_list) {
+    allow_list_.insert(add_to_allow_list.begin(), add_to_allow_list.end());
   }
 
   // ContentBrowserClient overrides:
@@ -263,14 +301,14 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
     return interest_group_owners;
   }
 
-  std::vector<BiddingInterestGroup> GetInterestGroupsForOwner(
+  std::vector<StorageInterestGroup> GetInterestGroupsForOwner(
       const url::Origin& owner) {
-    std::vector<BiddingInterestGroup> interest_groups;
+    std::vector<StorageInterestGroup> interest_groups;
     base::RunLoop run_loop;
     manager_->GetInterestGroupsForOwner(
         owner, base::BindLambdaForTesting(
                    [&run_loop, &interest_groups](
-                       std::vector<BiddingInterestGroup> groups) {
+                       std::vector<StorageInterestGroup> groups) {
                      interest_groups = std::move(groups);
                      run_loop.Quit();
                    }));
@@ -282,8 +320,8 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
     std::vector<std::pair<url::Origin, std::string>> interest_groups;
     for (const auto& owner : GetAllInterestGroupsOwners()) {
       for (const auto& interest_group : GetInterestGroupsForOwner(owner)) {
-        interest_groups.emplace_back(interest_group.group->group.owner,
-                                     interest_group.group->group.name);
+        interest_groups.emplace_back(interest_group.bidding_group->group.owner,
+                                     interest_group.bidding_group->group.name);
       }
     }
     return interest_groups;
@@ -291,8 +329,8 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
 
   int GetJoinCount(const url::Origin& owner, const std::string& name) {
     for (const auto& interest_group : GetInterestGroupsForOwner(owner)) {
-      if (interest_group.group->group.name == name) {
-        return interest_group.group->signals->join_count;
+      if (interest_group.bidding_group->group.name == name) {
+        return interest_group.bidding_group->signals->join_count;
       }
     }
     return 0;
@@ -324,6 +362,24 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
     }
 
     return true;
+  }
+
+  // Simplified method to join an interest group for tests that only care about
+  // a few fields.
+  bool JoinInterestGroupAndWaitInJs(const url::Origin& owner,
+                                    const std::string& name,
+                                    const GURL& bidding_url,
+                                    const std::string& ads = std::string()) {
+    return JoinInterestGroupAndWaitInJs(
+        blink::InterestGroup(
+            /*expiry=*/base::Time(), owner, name, bidding_url,
+            /*update_url=*/absl::nullopt,
+            /*trusted_bidding_signals_url=*/absl::nullopt,
+            /*trusted_bidding_signals_keys=*/absl::nullopt,
+            /*user_bidding_signals=*/absl::nullopt,
+            /*ads=*/absl::nullopt,
+            /*ad_components=*/absl::nullopt),
+        ads);
   }
 
   bool LeaveInterestGroupAndWait(const url::Origin& owner,
@@ -390,7 +446,7 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
   // Waits until the `condition` callback over the interest groups returns true.
   void WaitForInterestGroupsSatisfying(
       const url::Origin& owner,
-      base::RepeatingCallback<bool(const std::vector<BiddingInterestGroup>&)>
+      base::RepeatingCallback<bool(const std::vector<StorageInterestGroup>&)>
           condition) {
     while (true) {
       if (condition.Run(GetInterestGroupsForOwner(owner)))
@@ -423,6 +479,12 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
   void ClearReceivedRequests() {
     base::AutoLock auto_lock(requests_lock_);
     received_https_test_server_requests_.clear();
+  }
+
+  bool HasServerSeenUrl(const GURL& url) {
+    base::AutoLock auto_lock(requests_lock_);
+    return received_https_test_server_requests_.find(url) !=
+           received_https_test_server_requests_.end();
   }
 
  protected:
@@ -566,6 +628,50 @@ class InterestGroupFencedFrameBrowserTest
   }
 
  protected:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Make sure that FLEDGE has protections against making local network requests..
+class InterestGroupPrivateNetworkBrowserTest : public InterestGroupBrowserTest {
+ protected:
+  InterestGroupPrivateNetworkBrowserTest()
+      : remote_test_server_(net::test_server::EmbeddedTestServer::TYPE_HTTPS) {
+    feature_list_.InitAndEnableFeature(
+        features::kPrivateNetworkAccessRespectPreflightResults);
+
+    remote_test_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+    remote_test_server_.AddDefaultHandlers(GetTestDataFilePath());
+    remote_test_server_.RegisterRequestMonitor(base::BindRepeating(
+        &InterestGroupBrowserTest::OnHttpsTestServerRequestMonitor,
+        base::Unretained(this)));
+    EXPECT_TRUE(remote_test_server_.Start());
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        network::switches::kIpAddressSpaceOverrides,
+        base::StringPrintf(
+            "%s=public",
+            remote_test_server_.host_port_pair().ToString().c_str()));
+  }
+
+  void SetUpOnMainThread() override {
+    InterestGroupBrowserTest::SetUpOnMainThread();
+
+    // Extend allow list to include the remote server.
+    content_browser_client_.AddToAllowList(
+        {url::Origin::Create(remote_test_server_.GetURL("a.test", "/")),
+         url::Origin::Create(remote_test_server_.GetURL("b.test", "/")),
+         url::Origin::Create(remote_test_server_.GetURL("c.test", "/"))});
+  }
+
+ protected:
+  // Test server which is treated as remote, due to command line options. Can't
+  // use "Content-Security-Policy: treat-as-public-address", because that would
+  // block all local requests, including loading the seller script, even if the
+  // seller script had the same header.
+  net::test_server::EmbeddedTestServer remote_test_server_;
+
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -2000,18 +2106,22 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionMultipleAuctions) {
   // have no `prev_wins`.
   const url::Origin origin = url::Origin::Create(test_url);
   const url::Origin origin2 = url::Origin::Create(test_url2);
-  std::vector<BiddingInterestGroup> bidding_interest_groups =
+  std::vector<StorageInterestGroup> storage_interest_groups =
       GetInterestGroupsForOwner(origin);
-  EXPECT_EQ(bidding_interest_groups.size(), 1u);
-  EXPECT_EQ(bidding_interest_groups.front().group->signals->prev_wins.size(),
-            0u);
-  EXPECT_EQ(bidding_interest_groups.front().group->signals->bid_count, 0);
-  std::vector<BiddingInterestGroup> bidding_interest_groups2 =
+  EXPECT_EQ(storage_interest_groups.size(), 1u);
+  EXPECT_EQ(
+      storage_interest_groups.front().bidding_group->signals->prev_wins.size(),
+      0u);
+  EXPECT_EQ(storage_interest_groups.front().bidding_group->signals->bid_count,
+            0);
+  std::vector<StorageInterestGroup> storage_interest_groups2 =
       GetInterestGroupsForOwner(origin2);
-  EXPECT_EQ(bidding_interest_groups2.size(), 1u);
-  EXPECT_EQ(bidding_interest_groups2.front().group->signals->prev_wins.size(),
-            0u);
-  EXPECT_EQ(bidding_interest_groups2.front().group->signals->bid_count, 0);
+  EXPECT_EQ(storage_interest_groups2.size(), 1u);
+  EXPECT_EQ(
+      storage_interest_groups2.front().bidding_group->signals->prev_wins.size(),
+      0u);
+  EXPECT_EQ(storage_interest_groups2.front().bidding_group->signals->bid_count,
+            0);
 
   std::string auction_config = JsReplace(
       R"({
@@ -2027,36 +2137,44 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionMultipleAuctions) {
   EXPECT_EQ("https://stop_bidding_after_win.com/render",
             RunAuctionAndWait(auction_config));
   // `prev_wins` of `test_url`'s interest group cars is updated in storage.
-  bidding_interest_groups = GetInterestGroupsForOwner(origin);
-  bidding_interest_groups2 = GetInterestGroupsForOwner(origin2);
-  EXPECT_EQ(bidding_interest_groups.front().group->signals->prev_wins.size(),
-            1u);
-  EXPECT_EQ(bidding_interest_groups2.front().group->signals->prev_wins.size(),
-            0u);
+  storage_interest_groups = GetInterestGroupsForOwner(origin);
+  storage_interest_groups2 = GetInterestGroupsForOwner(origin2);
   EXPECT_EQ(
-      bidding_interest_groups.front()
-          .group->signals->prev_wins.front()
+      storage_interest_groups.front().bidding_group->signals->prev_wins.size(),
+      1u);
+  EXPECT_EQ(
+      storage_interest_groups2.front().bidding_group->signals->prev_wins.size(),
+      0u);
+  EXPECT_EQ(
+      storage_interest_groups.front()
+          .bidding_group->signals->prev_wins.front()
           ->ad_json,
       R"({"render_url":"https://stop_bidding_after_win.com/render","metadata":{"ad":"metadata","here":[1,2]}})");
-  EXPECT_EQ(bidding_interest_groups.front().group->signals->bid_count, 1);
-  EXPECT_EQ(bidding_interest_groups2.front().group->signals->bid_count, 1);
+  EXPECT_EQ(storage_interest_groups.front().bidding_group->signals->bid_count,
+            1);
+  EXPECT_EQ(storage_interest_groups2.front().bidding_group->signals->bid_count,
+            1);
 
   // Run auction again. Interest group shoes of owner `test_url2` wins.
   EXPECT_EQ("https://example.com/render", RunAuctionAndWait(auction_config));
   // `test_url2`'s interest group shoes has one `prev_wins` in storage.
-  bidding_interest_groups = GetInterestGroupsForOwner(origin);
-  bidding_interest_groups2 = GetInterestGroupsForOwner(origin2);
-  EXPECT_EQ(bidding_interest_groups.front().group->signals->prev_wins.size(),
-            1u);
-  EXPECT_EQ(bidding_interest_groups2.front().group->signals->prev_wins.size(),
-            1u);
-  EXPECT_EQ(bidding_interest_groups2.front()
-                .group->signals->prev_wins.front()
+  storage_interest_groups = GetInterestGroupsForOwner(origin);
+  storage_interest_groups2 = GetInterestGroupsForOwner(origin2);
+  EXPECT_EQ(
+      storage_interest_groups.front().bidding_group->signals->prev_wins.size(),
+      1u);
+  EXPECT_EQ(
+      storage_interest_groups2.front().bidding_group->signals->prev_wins.size(),
+      1u);
+  EXPECT_EQ(storage_interest_groups2.front()
+                .bidding_group->signals->prev_wins.front()
                 ->ad_json,
             R"({"render_url":"https://example.com/render"})");
   // First interest group didn't bid this time.
-  EXPECT_EQ(bidding_interest_groups.front().group->signals->bid_count, 1);
-  EXPECT_EQ(bidding_interest_groups2.front().group->signals->bid_count, 2);
+  EXPECT_EQ(storage_interest_groups.front().bidding_group->signals->bid_count,
+            1);
+  EXPECT_EQ(storage_interest_groups2.front().bidding_group->signals->bid_count,
+            2);
 
   // Run auction third time, and only interest group "shoes" bids this time.
   EXPECT_EQ(
@@ -2071,19 +2189,23 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionMultipleAuctions) {
           https_server_->GetURL("b.test", "/interest_group/decision_logic.js")
               .spec())));
   // `test_url2`'s interest group shoes has two `prev_wins` in storage.
-  bidding_interest_groups = GetInterestGroupsForOwner(origin);
-  bidding_interest_groups2 = GetInterestGroupsForOwner(origin2);
-  EXPECT_EQ(bidding_interest_groups.front().group->signals->prev_wins.size(),
-            1u);
-  EXPECT_EQ(bidding_interest_groups2.front().group->signals->prev_wins.size(),
-            2u);
-  EXPECT_EQ(bidding_interest_groups2.front()
-                .group->signals->prev_wins.back()
+  storage_interest_groups = GetInterestGroupsForOwner(origin);
+  storage_interest_groups2 = GetInterestGroupsForOwner(origin2);
+  EXPECT_EQ(
+      storage_interest_groups.front().bidding_group->signals->prev_wins.size(),
+      1u);
+  EXPECT_EQ(
+      storage_interest_groups2.front().bidding_group->signals->prev_wins.size(),
+      2u);
+  EXPECT_EQ(storage_interest_groups2.front()
+                .bidding_group->signals->prev_wins.back()
                 ->ad_json,
             R"({"render_url":"https://example.com/render"})");
   // First interest group didn't bid this time.
-  EXPECT_EQ(bidding_interest_groups.front().group->signals->bid_count, 1);
-  EXPECT_EQ(bidding_interest_groups2.front().group->signals->bid_count, 3);
+  EXPECT_EQ(storage_interest_groups.front().bidding_group->signals->bid_count,
+            1);
+  EXPECT_EQ(storage_interest_groups2.front().bidding_group->signals->bid_count,
+            3);
 }
 
 // Adding an interest group and then immediately running the ad acution, without
@@ -2647,10 +2769,10 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, UpdateAllUpdatableFields) {
   WaitForInterestGroupsSatisfying(
       test_origin,
       base::BindLambdaForTesting(
-          [](const std::vector<BiddingInterestGroup>& groups) {
+          [](const std::vector<StorageInterestGroup>& groups) {
             if (groups.size() != 1)
               return false;
-            const auto& group = groups[0].group->group;
+            const auto& group = groups[0].bidding_group->group;
             return group.name == "cars" && group.bidding_url.has_value() &&
                    group.bidding_url->path() ==
                        "/interest_group/new_bidding_logic.js" &&
@@ -2721,10 +2843,10 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   WaitForInterestGroupsSatisfying(
       test_origin,
       base::BindLambdaForTesting(
-          [](const std::vector<BiddingInterestGroup>& groups) {
+          [](const std::vector<StorageInterestGroup>& groups) {
             if (groups.size() != 1)
               return false;
-            const auto& group = groups[0].group->group;
+            const auto& group = groups[0].bidding_group->group;
             return group.name == "cars" && group.bidding_url.has_value() &&
                    group.bidding_url->path() ==
                        "/interest_group/bidding_logic.js" &&
@@ -3049,6 +3171,232 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, FinalizeAdWorks) {
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
   EXPECT_EQ("NotSupportedError: finalizeAd API not yet implemented",
             FinalizeAdAndWait());
+}
+
+// The bidder worklet is served from a private network, everything else from a
+// public network. The auction should fail.
+IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
+                       BidderOnPrivateNetwork) {
+  // Learn the bidder IG, served from the local server.
+  GURL bidder_url =
+      https_server_->GetURL("b.test", "/interest_group/bidding_logic.js");
+  ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("b.test", "/echo")));
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      /*owner=*/url::Origin::Create(bidder_url.GetOrigin()),
+      /*name=*/"Cthulhu", bidder_url,
+      /*ads=*/MakeAdsArg({GURL("https://example.com/render")})));
+  URLLoaderMonitor url_loader_monitor;
+
+  // Use `remote_test_server_` for all other URLs.
+  GURL test_url = remote_test_server_.GetURL("a.test", "/echo");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+
+  EXPECT_EQ(nullptr, RunAuctionAndWait(JsReplace(
+                         R"(
+{
+  seller: $1,
+  decisionLogicUrl: $2,
+  interestGroupBuyers: [$3]
+}
+                         )",
+                         url::Origin::Create(test_url),
+                         remote_test_server_.GetURL(
+                             "a.test", "/interest_group/decision_logic.js"),
+                         url::Origin::Create(bidder_url))));
+
+  // The URLLoaderMonitor should have seen a request for the bidder URL, which
+  // should have been made from a public address space.
+  absl::optional<network::ResourceRequest> bidder_request =
+      url_loader_monitor.GetRequestInfo(bidder_url);
+  ASSERT_TRUE(bidder_request);
+  EXPECT_EQ(
+      network::mojom::IPAddressSpace::kPublic,
+      bidder_request->trusted_params->client_security_state->ip_address_space);
+}
+
+IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
+                       SellerOnPrivateNetwork) {
+  GURL seller_url =
+      https_server_->GetURL("b.test", "/interest_group/decision_logic.js");
+
+  // Use `remote_test_server_` for all URLs except the seller worklet.
+  GURL test_url = remote_test_server_.GetURL("a.test", "/echo");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      /*owner=*/url::Origin::Create(test_url.GetOrigin()),
+      /*name=*/"Cthulhu",
+      /*bidding_url=*/
+      remote_test_server_.GetURL("a.test", "/interest_group/bidding_logic.js"),
+      /*ads=*/MakeAdsArg({GURL("https://example.com/render")})));
+
+  URLLoaderMonitor url_loader_monitor;
+  EXPECT_EQ(nullptr, RunAuctionAndWait(JsReplace(
+                         R"(
+{
+  seller: $1,
+  decisionLogicUrl: $2,
+  interestGroupBuyers: [$3]
+}
+                         )",
+                         url::Origin::Create(seller_url), seller_url,
+                         url::Origin::Create(test_url))));
+
+  // The URLLoaderMonitor should have seen a request for the seller URL. The
+  // request should have gone through the renderer's URLLoader, and inherited
+  // its IPAddressSpace, instead of passing its own.
+  absl::optional<network::ResourceRequest> seller_request =
+      url_loader_monitor.GetRequestInfo(seller_url);
+  ASSERT_TRUE(seller_request);
+  EXPECT_FALSE(seller_request->trusted_params);
+}
+
+// Have the auction and worklets server from public IPs, but send reports to a
+// private network. The reports should be blocked.
+IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
+                       ReportToPrivateNetwork) {
+  // Use `remote_test_server_` exclusively with hostname "a.test" for root page
+  // and script URLs.
+  GURL test_url = remote_test_server_.GetURL("a.test", "/echo");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+
+  // Use `https_server_` exclusively with hostname "b.test" for reports.
+  GURL bidder_report_to_url = https_server_->GetURL("b.test", "/bidder_report");
+  GURL seller_report_to_url = https_server_->GetURL("b.test", "/seller_report");
+  URLLoaderMonitor url_loader_monitor;
+  ;
+
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      /*owner=*/url::Origin::Create(test_url.GetOrigin()),
+      /*name=*/bidder_report_to_url.spec(),
+      /*bidding_url=*/
+      remote_test_server_.GetURL(
+          "a.test", "/interest_group/bidding_logic_report_to_name.js"),
+      /*ads=*/MakeAdsArg({GURL("https://example.com/render")})));
+
+  EXPECT_EQ(
+      "https://example.com/render",
+      RunAuctionAndWait(JsReplace(
+          R"(
+{
+  seller: $1,
+  decisionLogicUrl: $2,
+  interestGroupBuyers: [$1],
+  sellerSignals: {reportTo: $3},
+}
+          )",
+          url::Origin::Create(test_url),
+          remote_test_server_.GetURL(
+              "a.test",
+              "/interest_group/decision_logic_report_to_seller_signals.js"),
+          seller_report_to_url)));
+
+  // Wait for both requests to be completed, and check their IPAddressSpace and
+  // make sure that they failed.
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
+            url_loader_monitor.WaitForUrl(bidder_report_to_url)
+                .trusted_params->client_security_state->ip_address_space);
+  EXPECT_EQ(net::ERR_FAILED,
+            url_loader_monitor.WaitForRequestCompletion(bidder_report_to_url)
+                .error_code);
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
+            url_loader_monitor.WaitForUrl(seller_report_to_url)
+                .trusted_params->client_security_state->ip_address_space);
+  EXPECT_EQ(net::ERR_FAILED,
+            url_loader_monitor.WaitForRequestCompletion(seller_report_to_url)
+                .error_code);
+
+  // The reporting requests should have been blocked before the test server say
+  // them.
+  EXPECT_FALSE(
+      HasServerSeenUrl(https_server_->GetURL(bidder_report_to_url.path())));
+  EXPECT_FALSE(
+      HasServerSeenUrl(https_server_->GetURL(seller_report_to_url.path())));
+}
+
+// Have all requests for an auction served from a public network, and all
+// reports send there as well. The auction should succeed, and all reports
+// should be sent.
+IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
+                       ReportToPublicNetwork) {
+  // Use `remote_test_server_` exclusively with hostname "a.test" for root page
+  // and script URLs.
+  GURL test_url = remote_test_server_.GetURL("a.test", "/echo");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+
+  GURL bidder_url = remote_test_server_.GetURL(
+      "a.test", "/interest_group/bidding_logic_report_to_name.js");
+  GURL trusted_bidding_signals_url = remote_test_server_.GetURL(
+      "a.test", "/interest_group/trusted_bidding_signals.json");
+  GURL trusted_bidding_signals_url_with_query = remote_test_server_.GetURL(
+      "a.test",
+      "/interest_group/trusted_bidding_signals.json?hostname=a.test&keys=key1");
+
+  GURL seller_url = remote_test_server_.GetURL(
+      "a.test", "/interest_group/decision_logic_report_to_seller_signals.js");
+
+  // While reports should should be made to these URLs in this test, their
+  // results don't matter, so there's no need for a test server respond to for
+  // these URLs with anything other than errors.
+  GURL bidder_report_to_url =
+      remote_test_server_.GetURL("a.test", "/bidder_report");
+  GURL seller_report_to_url =
+      remote_test_server_.GetURL("a.test", "/seller_report");
+  URLLoaderMonitor url_loader_monitor;
+
+  ASSERT_TRUE(JoinInterestGroupAndWaitInJs(
+      blink::InterestGroup(
+          /*expiry=*/base::Time(),
+          /*owner=*/url::Origin::Create(test_url.GetOrigin()),
+          /*name=*/bidder_report_to_url.spec(), bidder_url,
+          /*update_url=*/absl::nullopt, trusted_bidding_signals_url,
+          /*trusted_bidding_signals_keys=*/absl::nullopt,
+          /*user_bidding_signals=*/absl::nullopt,
+          /*ads=*/absl::nullopt,
+          /*ad_components=*/absl::nullopt),
+      /*ads=*/MakeAdsArg({GURL("https://example.com/render")}),
+      /*trusted_bidding_signals_keys=*/"['key1']"));
+
+  EXPECT_EQ(
+      "https://example.com/render",
+      RunAuctionAndWait(JsReplace(
+          R"(
+{
+  seller: $1,
+  decisionLogicUrl: $2,
+  interestGroupBuyers: [$1],
+  sellerSignals: {reportTo: $3},
+}
+          )",
+          url::Origin::Create(test_url.GetOrigin()),
+          remote_test_server_.GetURL(
+              "a.test",
+              "/interest_group/decision_logic_report_to_seller_signals.js"),
+          seller_report_to_url)));
+
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
+            url_loader_monitor.WaitForUrl(bidder_url)
+                .trusted_params->client_security_state->ip_address_space);
+  EXPECT_EQ(
+      network::mojom::IPAddressSpace::kPublic,
+      url_loader_monitor.WaitForUrl(trusted_bidding_signals_url_with_query)
+          .trusted_params->client_security_state->ip_address_space);
+  // Unlike the others, the request for the seller URL has an empty
+  // `trusted_params`, since it uses the renderer's untrusted URLLoader.
+  EXPECT_FALSE(url_loader_monitor.WaitForUrl(seller_url).trusted_params);
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
+            url_loader_monitor.WaitForUrl(seller_report_to_url)
+                .trusted_params->client_security_state->ip_address_space);
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
+            url_loader_monitor.GetRequestInfo(bidder_report_to_url)
+                ->trusted_params->client_security_state->ip_address_space);
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
+            url_loader_monitor.GetRequestInfo(seller_report_to_url)
+                ->trusted_params->client_security_state->ip_address_space);
+
+  // Check that both reports reached the server.
+  WaitForURL(remote_test_server_.GetURL(bidder_report_to_url.path()));
+  WaitForURL(remote_test_server_.GetURL(seller_report_to_url.path()));
 }
 
 }  // namespace

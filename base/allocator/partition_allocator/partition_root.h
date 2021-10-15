@@ -318,14 +318,6 @@ struct alignas(64) BASE_EXPORT PartitionRoot {
   // can be decommitted at any time.
   size_t empty_slot_spans_dirty_bytes GUARDED_BY(lock_) = 0;
 
-  // Only tolerate up to |total_size_of_committed_pages >>
-  // max_empty_slot_spans_dirty_bytes_shift| dirty bytes in empty slot
-  // spans. That is, the default value of 3 tolerates up to 1/8. Since
-  // |empty_slot_spans_dirty_bytes| is never strictly larger than
-  // total_size_of_committed_pages, setting this to 0 removes the cap. This is
-  // useful to make tests deterministic and easier to reason about.
-  int max_empty_slot_spans_dirty_bytes_shift = 3;
-
   char* next_super_page = nullptr;
   char* next_partition_page = nullptr;
   char* next_partition_page_end = nullptr;
@@ -449,7 +441,9 @@ struct alignas(64) BASE_EXPORT PartitionRoot {
   // Same as |Free()|, bypasses the allocator hooks.
   ALWAYS_INLINE static void FreeNoHooks(void* ptr);
   // Immediately frees the pointer bypassing the quarantine.
-  ALWAYS_INLINE void FreeNoHooksImmediate(void* ptr, SlotSpan* slot_span);
+  ALWAYS_INLINE void FreeNoHooksImmediate(void* ptr,
+                                          SlotSpan* slot_span,
+                                          void* slot_start);
 
   ALWAYS_INLINE static size_t GetUsableSize(void* ptr);
 
@@ -459,10 +453,6 @@ struct alignas(64) BASE_EXPORT PartitionRoot {
   // Frees memory from this partition, if possible, by decommitting pages or
   // even etnire slot spans. |flags| is an OR of base::PartitionPurgeFlags.
   void PurgeMemory(int flags);
-
-  // Reduces the size of the empty slot spans ring, until the dirty size is <=
-  // |limit|.
-  void ShrinkEmptySlotSpansRing(size_t limit) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   void DumpStats(const char* partition_name,
                  bool is_light_dump,
@@ -624,14 +614,6 @@ struct alignas(64) BASE_EXPORT PartitionRoot {
 #else
     return false;
 #endif
-  }
-
-  // To make tests deterministic, it is necessary to uncap the amount of memory
-  // waste incurred by empty slot spans. Otherwise, the size of various
-  // freelists, and committed memory becomes harder to reason about (and
-  // brittle) with a single thread, and non-deterministic with several.
-  void UncapEmptySlotSpanMemoryForTesting() {
-    max_empty_slot_spans_dirty_bytes_shift = 0;
   }
 
  private:
@@ -803,12 +785,13 @@ ALWAYS_INLINE void* PartitionAllocGetSlotStartInBRPPool(void* ptr) {
   uintptr_t slot_span_start = reinterpret_cast<uintptr_t>(
       internal::SlotSpanMetadata<internal::ThreadSafe>::ToSlotSpanStartPtr(
           slot_span));
+  PA_DCHECK(slot_span_start == memory::UnmaskPtr(slot_span_start));
   size_t offset_in_slot_span = ptr_addr - slot_span_start;
 
   auto* bucket = slot_span->bucket;
-  return reinterpret_cast<void*>(
+  return memory::RemaskPtr(reinterpret_cast<void*>(
       slot_span_start +
-      bucket->slot_size * bucket->GetSlotNumber(offset_in_slot_span));
+      bucket->slot_size * bucket->GetSlotNumber(offset_in_slot_span)));
 }
 
 // Checks whether a given pointer stays within the same allocation slot after
@@ -1028,25 +1011,36 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooks(void* ptr) {
   PA_DCHECK(IsValidSlotSpan(slot_span));
   PA_DCHECK(FromSlotSpan(slot_span) == root);
 
+  const size_t slot_size = slot_span->bucket->slot_size;
+  void* slot_start = root->AdjustPointerForExtrasSubtract(ptr);
+  if (LIKELY(slot_size <= kMaxMemoryTaggingSize)) {
+    // Incrementing the memory range returns the true underlying tag, so
+    // RemaskPtr is not required here.
+    slot_start = memory::TagMemoryRangeIncrement(slot_start, slot_size);
+    ptr = memory::RemaskPtr(ptr);
+  }
+
   // TODO(bikineev): Change the condition to LIKELY once PCScan is enabled by
   // default.
   if (UNLIKELY(root->IsQuarantineEnabled())) {
     // PCScan safepoint. Call before potentially scheduling scanning task.
     PCScan::JoinScanIfNeeded();
     if (LIKELY(internal::IsManagedByNormalBuckets(ptr))) {
-      PCScan::MoveToQuarantine(ptr, slot_span->GetUsableSize(root),
+      PCScan::MoveToQuarantine(memory::UnmaskPtr(ptr),
+                               slot_span->GetUsableSize(root),
                                slot_span->bucket->slot_size);
       return;
     }
   }
 
-  root->FreeNoHooksImmediate(ptr, slot_span);
+  root->FreeNoHooksImmediate(ptr, slot_span, slot_start);
 }
 
 template <bool thread_safe>
 ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
     void* ptr,
-    SlotSpan* slot_span) {
+    SlotSpan* slot_span,
+    void* slot_start) {
   // The thread cache is added "in the middle" of the main allocator, that is:
   // - After all the cookie/ref-count management
   // - Before the "raw" allocator.
@@ -1074,7 +1068,6 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
   //
   // For more context, see the other "Layout inside the slot" comment below.
 
-  void* slot_start = AdjustPointerForExtrasSubtract(ptr);
 
 #if DCHECK_IS_ON()
   if (allow_cookie) {
@@ -1234,6 +1227,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::RawFreeLocked(void* slot_start) {
 template <bool thread_safe>
 ALWAYS_INLINE bool PartitionRoot<thread_safe>::IsValidSlotSpan(
     SlotSpan* slot_span) {
+  slot_span = memory::UnmaskPtr(slot_span);
   PartitionRoot* root = FromSlotSpan(slot_span);
   return root->inverted_self == ~reinterpret_cast<uintptr_t>(root);
 }
@@ -1305,7 +1299,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::RecommitSystemPagesForData(
     size_t length,
     PageAccessibilityDisposition accessibility_disposition) {
   internal::ScopedSyscallTimer<thread_safe> timer{this};
-  RecommitSystemPages(address, length, PageReadWrite,
+  RecommitSystemPages(address, length, PageReadWriteTagged,
                       accessibility_disposition);
   IncreaseCommittedPages(length);
 }
@@ -1316,7 +1310,7 @@ ALWAYS_INLINE bool PartitionRoot<thread_safe>::TryRecommitSystemPagesForData(
     size_t length,
     PageAccessibilityDisposition accessibility_disposition) {
   internal::ScopedSyscallTimer<thread_safe> timer{this};
-  bool ok = TryRecommitSystemPages(address, length, PageReadWrite,
+  bool ok = TryRecommitSystemPages(address, length, PageReadWriteTagged,
                                    accessibility_disposition);
   if (ok)
     IncreaseCommittedPages(length);

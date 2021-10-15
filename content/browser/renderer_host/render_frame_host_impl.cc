@@ -3496,9 +3496,12 @@ void RenderFrameHostImpl::DidNavigate(
   navigation_request->frame_tree_node()->SetCurrentURL(params.url);
   SetLastCommittedOrigin(params.origin);
 
-  // For urn: resources served from WebBundles, use the Bundle's origin.
+  // For uuid-in-package: and urn: resources served from WebBundles, use the
+  // Bundle's origin.
+  // TODO(https://crbug.com/1257045): Remove urn: scheme support.
   url::Origin origin =
-      (params.url.SchemeIs(url::kUrnScheme) &&
+      ((params.url.SchemeIs(url::kUrnScheme) ||
+        params.url.SchemeIs(url::kUuidInPackageScheme)) &&
        navigation_request->GetWebBundleURL().is_valid())
           ? url::Origin::Create(navigation_request->GetWebBundleURL())
           : GetLastCommittedOrigin();
@@ -6230,16 +6233,15 @@ void RenderFrameHostImpl::ShowContextMenu(
   // directly, don't show them in the context menu.
   ContextMenuParams validated_params(params);
   validated_params.page_url = GetMainFrame()->GetLastCommittedURL();
-  if (GetParent())  // Only populate |frame_url| for subframes.
-    validated_params.frame_url = GetLastCommittedURL();
+  // Only populate |frame_url| if `this` is actually a subframe.
+  validated_params.frame_url = GetParent() ? GetLastCommittedURL() : GURL();
 
   // We don't validate |unfiltered_link_url| so that this field can be used
-  // when users want to copy the original link URL.
+  // when users want to copy the original link URL.  We also don't filter the
+  // URLs based on trustworthy data (e.g. `page_url` and `frame_url`).
   RenderProcessHost* process = GetProcess();
   process->FilterURL(true, &validated_params.link_url);
   process->FilterURL(true, &validated_params.src_url);
-  process->FilterURL(false, &validated_params.page_url);
-  process->FilterURL(true, &validated_params.frame_url);
 
   // It is necessary to transform the coordinates to account for nested
   // RenderWidgetHosts, such as with out-of-process iframes.
@@ -6980,10 +6982,12 @@ void RenderFrameHostImpl::BeginNavigation(
     }
   }
 
-  // Only urn: URL is allowed for navigation to a resource in
-  // <link rel="webbundle">.
+  // Only uuid-in-package: or urn: URL are allowed for navigation to a resource
+  // in Subresource WebBundles.
+  // TODO(https://crbug.com/1257045): Remove urn: scheme support.
   if (begin_params->web_bundle_token &&
-      !common_params->url.SchemeIs(url::kUrnScheme)) {
+      !(common_params->url.SchemeIs(url::kUrnScheme) ||
+        common_params->url.SchemeIs(url::kUuidInPackageScheme))) {
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::WEB_BUNDLE_INVALID_NAVIGATION_URL);
     return;
@@ -8720,6 +8724,36 @@ size_t RenderFrameHostImpl::GetProxyCount() {
 
 bool RenderFrameHostImpl::HasSelection() {
   return has_selection_;
+}
+
+FrameTreeNode* RenderFrameHostImpl::PreviousSibling() const {
+  return GetSibling(-1);
+}
+
+FrameTreeNode* RenderFrameHostImpl::NextSibling() const {
+  return GetSibling(1);
+}
+
+FrameTreeNode* RenderFrameHostImpl::GetSibling(int relative_offset) const {
+  if (!parent_ || !parent_->child_count())
+    return nullptr;
+
+  for (size_t i = 0; i < parent_->child_count(); ++i) {
+    // Frame tree node id will only be known for subframes, and will therefore
+    // be accessible in this iteration, as all children are subframes.
+    if (parent_->child_at(i)->frame_tree_node_id() != GetFrameTreeNodeId()) {
+      continue;
+    }
+
+    if (i + relative_offset < 0 ||
+        i + relative_offset >= parent_->child_count()) {
+      return nullptr;
+    }
+    return parent_->child_at(i + relative_offset);
+  }
+
+  NOTREACHED() << "FrameTreeNode not found in its parent's children.";
+  return nullptr;
 }
 
 RenderFrameHostImpl* RenderFrameHostImpl::GetMainFrame() {

@@ -1585,13 +1585,6 @@ const char kJourneysOmniboxActionName[] = "History Journeys Omnibox Action";
 const char kJourneysOmniboxActionDescription[] =
     "Enables the History Journeys Omnibox Action.";
 
-const char kLegacyTLSEnforcedName[] =
-    "Enforce deprecation of legacy TLS versions";
-const char kLegacyTLSEnforcedDescription[] =
-    "Enable connection errors and interstitials for sites that use legacy TLS "
-    "versions (TLS 1.0 and TLS 1.1), which are deprecated and will be removed "
-    " in the future.";
-
 const char kLensCameraAssistedSearchName[] =
     "Google Lens in Omnibox and New Tab Page";
 const char kLensCameraAssistedSearchDescription[] =
@@ -1636,13 +1629,6 @@ const char kMediaSessionWebRTCDescription[] =
 const char kMetricsSettingsAndroidName[] = "Metrics Settings on Android";
 const char kMetricsSettingsAndroidDescription[] =
     "Enables the new design of metrics settings.";
-
-const char kMixedFormsDisableAutofillName[] =
-    "Disable autofill for mixed forms";
-const char kMixedFormsDisableAutofillDescription[] =
-    "If enabled, autofill is not allowed for mixed forms (forms on HTTPS sites "
-    "that submit over HTTP), and a warning bubble will be shown instead. "
-    "Autofill for passwords is not affected by this setting.";
 
 const char kMixedFormsInterstitialName[] = "Mixed forms interstitial";
 const char kMixedFormsInterstitialDescription[] =
@@ -2286,11 +2272,15 @@ const char kShoppingListName[] = "Shopping List";
 const char kShoppingListDescription[] = "Enable shopping list in bookmarks.";
 
 const char kSidePanelFlagId[] = "side-panel";
-
 const char kSidePanelName[] = "Side panel";
 const char kSidePanelDescription[] =
     "Enables a browser-level side panel for a useful and persistent way to "
     "access your Reading List and Bookmarks.";
+
+const char kSidePanelBorderFlagId[] = "side-panel-border";
+const char kSidePanelBorderName[] = "Side panel border";
+const char kSidePanelBorderDescription[] =
+    "Enables a border around the side panel.";
 
 const char kSidePanelDragAndDropFlagId[] = "side-panel-drag-and-drop";
 const char kSidePanelDragAndDropName[] = "Side panel drag and drop";
@@ -3999,13 +3989,6 @@ const char kUseAngleGL[] = "OpenGL";
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
-const char kAccountManagementFlowsV2Name[] =
-    "Enable redesign of account management flows";
-const char kAccountManagementFlowsV2Description[] =
-    "Enables redesign of account management flows and Account Manager page in "
-    "Settings. "
-    "See go/betterAM";
-
 const char kAcceleratedMjpegDecodeName[] =
     "Hardware-accelerated mjpeg decode for captured frame";
 const char kAcceleratedMjpegDecodeDescription[] =
@@ -4289,6 +4272,12 @@ const char kCrostiniUseDlcDescription[] =
 const char kCrostiniResetLxdDbName[] = "Crostini Reset LXD DB on launch";
 const char kCrostiniResetLxdDbDescription[] =
     "Recreates the LXD database every time we launch it";
+
+const char kCrostiniUseLxd4Name[] =
+    "Use LXD 4 instead of the default - Irreversible";
+const char kCrostiniUseLxd4Description[] =
+    "Uses LXD version 4 instead of the default version. WARNING: Once this is "
+    "set you can't unset it without deleting your entire container";
 
 const char kDisableBufferBWCompressionName[] =
     "Disable buffer bandwidth compression";
@@ -4894,13 +4883,13 @@ const char kLockScreenNotificationName[] = "Lock screen notification";
 const char kLockScreenNotificationDescription[] =
     "Enable notifications on the lock screen.";
 
+const char kMediaAppHandlesAudioName[] = "Media App Handles Audio";
+const char kMediaAppHandlesAudioDescription[] =
+    "Enables opening audio files by default in chrome://media-app";
+
 const char kMediaAppHandlesPdfName[] = "Media App Handles PDF";
 const char kMediaAppHandlesPdfDescription[] =
     "Enables opening PDF files by default in chrome://media-app";
-
-const char kMediaAppMultiWindowName[] = "Media App Multi Window";
-const char kMediaAppMultiWindowDescription[] =
-    "Enables opening multiple instances of chrome://media-app";
 
 const char kMeteredShowToggleName[] = "Show Metered Toggle";
 const char kMeteredShowToggleDescription[] =
@@ -5121,6 +5110,12 @@ const char kSystemLatinPhysicalTypingName[] =
 const char kSystemLatinPhysicalTypingDescription[] =
     "Use the system input engine instead of the Chrome extension for physical "
     "typing in languages based on latin script.";
+
+const char kQuickSettingsNetworkRevampName[] =
+    "Enables the Quick Settings Network revamp.";
+const char kQuickSettingsNetworkRevampDescription[] =
+    "Enables the Quick Settings Network revamp, which updates Network Quick "
+    "Settings UI and related infrastructure. See https://crbug.com/1169479.";
 
 const char kPluginVmFullscreenName[] = "Plugin VM Fullscreen";
 const char kPluginVmFullscreenDescription[] =

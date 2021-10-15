@@ -76,7 +76,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/autofill/core/common/autofill_features.h"
 #include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/common/content_settings_agent.mojom.h"
@@ -1083,9 +1082,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentWithSamePageNavigation) {
   // secure sites with an insecure form.
   security_state::SecurityLevel expected_level =
       base::FeatureList::IsEnabled(
-          security_interstitials::kInsecureFormSubmissionInterstitial) &&
-              base::FeatureList::IsEnabled(
-                  autofill::features::kAutofillPreventMixedFormsFilling)
+          security_interstitials::kInsecureFormSubmissionInterstitial)
           ? security_state::SECURE
           : security_state::NONE;
 
@@ -2416,9 +2413,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureForm) {
   // secure sites with an insecure form.
   security_state::SecurityLevel expected_level =
       base::FeatureList::IsEnabled(
-          security_interstitials::kInsecureFormSubmissionInterstitial) &&
-              base::FeatureList::IsEnabled(
-                  autofill::features::kAutofillPreventMixedFormsFilling)
+          security_interstitials::kInsecureFormSubmissionInterstitial)
           ? security_state::SECURE
           : security_state::NONE;
 
@@ -7890,23 +7885,8 @@ IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, WarningTLS1) {
                                  "*should enable TLS 1.2 or later*"));
 }
 
-class LegacyTLSInterstitialTest : public TLSLegacyVersionSSLUITest {
- public:
-  LegacyTLSInterstitialTest() {
-    feature_list_.InitAndEnableFeature(net::features::kLegacyTLSEnforced);
-  }
-
-  LegacyTLSInterstitialTest(const LegacyTLSInterstitialTest&) = delete;
-  LegacyTLSInterstitialTest& operator=(const LegacyTLSInterstitialTest&) =
-      delete;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// When kLegacyTLSEnforcement is enabled, visiting a legacy TLS page should
-// show the legacy TLS specific interstitial.
-IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, ShowsInterstitial) {
+// Visiting a legacy TLS page should show the legacy TLS specific interstitial.
+IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, ShowsInterstitial) {
   SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1);
   ASSERT_TRUE(https_server()->Start());
   base::HistogramTester histograms;
@@ -7946,7 +7926,7 @@ IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, ShowsInterstitial) {
 // Test that attempting to set the SSLVersionMin enterprise policy to "tls1"
 // (which is no longer supported) does not prevent the legacy TLS interstitial
 // from being shown.
-IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest,
+IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest,
                        PolicyDoesNotOverrideInterstitial) {
   // Attempt to set the SSLVersionMin policy.
   base::Value policy_value("tls1");  // TLS 1.0
@@ -7966,7 +7946,7 @@ IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest,
 
 // Check that if we have bypassed the legacy TLS error previously and then the
 // server responded with TLS 1.2, we drop the error exception.
-IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, FixedServerDropsBypass) {
+IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, FixedServerDropsBypass) {
   GURL kSiteWithLegacyTLS("https://example.test/legacy-tls");
   GURL kSiteWithModernTLS("https://example.test/modern-tls");
 
@@ -8020,7 +8000,7 @@ IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, FixedServerDropsBypass) {
 
 // Check that cliking the "back to safety" button works for the legacy TLS
 // interstitial.
-IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, BackToSafety) {
+IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, BackToSafety) {
   base::HistogramTester histograms;
 
   // Connect over TLS 1.0 and don't proceed through the interstitial.
@@ -8063,7 +8043,7 @@ class CacheNavigationObserver : public content::WebContentsObserver {
 };
 
 // Tests that resources loaded over legacy TLS should not be cached.
-IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, LegacyTLSPagesNotCached) {
+IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, LegacyTLSPagesNotCached) {
   // Connect over TLS 1.0 and proceed through the interstitial to set an error
   // bypass.
   SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1);
@@ -8091,7 +8071,7 @@ IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, LegacyTLSPagesNotCached) {
 
 // Tests that a page with legacy TLS and HSTS shows a bypassable interstitial
 // rather than a hard non-bypassable HSTS warning.
-IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, LegacyTLSNotFatal) {
+IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, LegacyTLSNotFatal) {
   // Set HSTS for the test page.
   ssl_test_util::SetHSTSForHostName(browser()->profile(), kHstsTestHostName);
 

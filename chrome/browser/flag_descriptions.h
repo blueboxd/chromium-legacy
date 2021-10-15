@@ -909,9 +909,6 @@ extern const char kJourneysDescription[];
 extern const char kJourneysOmniboxActionName[];
 extern const char kJourneysOmniboxActionDescription[];
 
-extern const char kLegacyTLSEnforcedName[];
-extern const char kLegacyTLSEnforcedDescription[];
-
 extern const char kLensCameraAssistedSearchName[];
 extern const char kLensCameraAssistedSearchDescription[];
 
@@ -938,9 +935,6 @@ extern const char kMediaSessionWebRTCDescription[];
 
 extern const char kMetricsSettingsAndroidName[];
 extern const char kMetricsSettingsAndroidDescription[];
-
-extern const char kMixedFormsDisableAutofillName[];
-extern const char kMixedFormsDisableAutofillDescription[];
 
 extern const char kMixedFormsInterstitialName[];
 extern const char kMixedFormsInterstitialDescription[];
@@ -1301,9 +1295,12 @@ extern const char kShoppingListName[];
 extern const char kShoppingListDescription[];
 
 extern const char kSidePanelFlagId[];
-
 extern const char kSidePanelName[];
 extern const char kSidePanelDescription[];
+
+extern const char kSidePanelBorderFlagId[];
+extern const char kSidePanelBorderName[];
+extern const char kSidePanelBorderDescription[];
 
 extern const char kSidePanelDragAndDropFlagId[];
 extern const char kSidePanelDragAndDropName[];
@@ -2293,9 +2290,6 @@ extern const char kUseAngleGL[];
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
-extern const char kAccountManagementFlowsV2Name[];
-extern const char kAccountManagementFlowsV2Description[];
-
 extern const char kAcceleratedMjpegDecodeName[];
 extern const char kAcceleratedMjpegDecodeDescription[];
 
@@ -2457,6 +2451,9 @@ extern const char kCrostiniUseDlcDescription[];
 
 extern const char kCrostiniResetLxdDbName[];
 extern const char kCrostiniResetLxdDbDescription[];
+
+extern const char kCrostiniUseLxd4Name[];
+extern const char kCrostiniUseLxd4Description[];
 
 extern const char kDisableBufferBWCompressionName[];
 extern const char kDisableBufferBWCompressionDescription[];
@@ -2817,11 +2814,11 @@ extern const char kLockScreenMediaControlsDescription[];
 extern const char kLockScreenNotificationName[];
 extern const char kLockScreenNotificationDescription[];
 
+extern const char kMediaAppHandlesAudioName[];
+extern const char kMediaAppHandlesAudioDescription[];
+
 extern const char kMediaAppHandlesPdfName[];
 extern const char kMediaAppHandlesPdfDescription[];
-
-extern const char kMediaAppMultiWindowName[];
-extern const char kMediaAppMultiWindowDescription[];
 
 extern const char kMeteredShowToggleName[];
 extern const char kMeteredShowToggleDescription[];
@@ -2947,6 +2944,9 @@ extern const char kSystemKoreanPhysicalTypingDescription[];
 
 extern const char kSystemLatinPhysicalTypingName[];
 extern const char kSystemLatinPhysicalTypingDescription[];
+
+extern const char kQuickSettingsNetworkRevampName[];
+extern const char kQuickSettingsNetworkRevampDescription[];
 
 extern const char kTerminalSSHName[];
 extern const char kTerminalSSHDescription[];

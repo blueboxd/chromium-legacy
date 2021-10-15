@@ -59,6 +59,8 @@ static_library("test_support") {
   sources = [
     "fake_fast_pair_repository.cc",
     "fake_fast_pair_repository.h",
+    "mock_fast_pair_repository.cc",
+    "mock_fast_pair_repository.h",
     "mock_http_fetcher.cc",
     "mock_http_fetcher.h",
   ]
@@ -69,6 +71,7 @@ static_library("test_support") {
     "//ash/quick_pair/proto:fastpair_proto",
     "//base",
     "//base/test:test_support",
+    "//device/bluetooth",
     "//net/traffic_annotation:test_support",
     "//testing/gtest",
     "//url",

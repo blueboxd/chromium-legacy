@@ -918,16 +918,17 @@ ci.android_builder(
     ),
 )
 
+# TODO(crbug/1255748): Remove this once all try builds are finished
 ci.android_builder(
     name = "android-lollipop-arm-rel",
     branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
-        category = "on_cq",
+        category = "depre",
         short_name = "L",
     ),
     cq_mirrors_console_view = "mirrors",
     main_console_view = main_console_if_on_branch(),
-    tree_closing = True,
+    tree_closing = False,
     os = os.LINUX_BIONIC_REMOVE,
 )
 
@@ -1507,6 +1508,17 @@ ci.chromium_builder(
     cores = 32,
     main_console_view = "main",
     os = os.LINUX_BIONIC_REMOVE,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "android-archive-rel.json",
+            ],
+        },
+    },
 )
 
 ci.chromium_builder(
@@ -3070,6 +3082,9 @@ ci.fuzz_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 5,
     ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.fuzz_builder(

@@ -743,7 +743,7 @@
   {
     "name": "clipboard-custom-formats",
     "owners": ["mek", "snianu@microsoft.com"],
-    "expiry_milestone": 96
+    "expiry_milestone": 98
   },
   {
     "name": "closed-tab-cache",
@@ -951,6 +951,11 @@
     "name": "crostini-use-dlc",
     "owners": [ "sidereal", "davidmunro@google.com", "nverne" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "crostini-use-lxd-4",
+    "owners": [ "sidereal", "davidmunro@google.com", "nverne" ],
+    "expiry_milestone": 110
   },
   {
     "name": "cups-ipp-printing-backend",
@@ -3617,11 +3622,6 @@
     "expiry_milestone": 96
   },
   {
-    "name": "legacy-tls-enforced",
-    "owners": [ "cthomp" ],
-    "expiry_milestone": 92
-  },
-  {
     "name": "legacy-tls-interstitial",
     "owners": [ "cthomp" ],
     "expiry_milestone": 92
@@ -3664,6 +3664,11 @@
     "name": "mbi-mode",
     "owners": [ "dom", "blink-isolation-dev@chromium.org" ],
     "expiry_milestone": 103
+  },
+  {
+    "name": "media-app-handles-audio",
+    "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
+    "expiry_milestone": 100
   },
   {
     "name": "media-app-handles-pdf",
@@ -3809,11 +3814,6 @@
       "chrome-friendly-settings@google.com"
     ],
     "expiry_milestone": 95
-  },
-  {
-    "name": "mice-web-signin",
-    "owners": [ "fernandex", "jlebel" ],
-    "expiry_milestone": 99
   },
   {
     "name": "microphone-mute-notifications",
@@ -4157,32 +4157,32 @@
   {
     "name": "omnibox-rich-autocompletion",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 105
   },
   {
     "name": "omnibox-rich-autocompletion-min-char",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 105
   },
   {
     "name": "omnibox-rich-autocompletion-prefer-urls-over-prefixes",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 105
   },
   {
     "name": "omnibox-rich-autocompletion-promising",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 105
   },
   {
     "name": "omnibox-rich-autocompletion-show-additional-text",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 105
   },
   {
     "name": "omnibox-rich-autocompletion-split",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 105
   },
   {
     "name": "omnibox-short-bookmark-suggestions",
@@ -4546,6 +4546,11 @@
   {
     "name": "query-tiles-swap-trending",
     "owners": [ "qinmin" ],
+    "expiry_milestone": 100
+  },
+  {
+    "name": "quick-settings-network-revamp",
+    "owners": [ "chadduffin", "khorimoto", "cros-connectivity@google.com" ],
     "expiry_milestone": 100
   },
   {
@@ -5018,6 +5023,11 @@
   },
   {
     "name" : "side-panel",
+    "owners": [ "chrome-desktop-ui-sea@google.com", "pbos" ],
+    "expiry_milestone" : 101
+  },
+  {
+    "name" : "side-panel-border",
     "owners": [ "chrome-desktop-ui-sea@google.com", "pbos" ],
     "expiry_milestone" : 101
   },

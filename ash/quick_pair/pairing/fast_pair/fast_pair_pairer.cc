@@ -15,6 +15,7 @@
 #include "ash/services/quick_pair/public/cpp/fast_pair_message_type.h"
 #include "base/callback.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/public/cpp/bluetooth_address.h"
 #include "third_party/boringssl/src/include/openssl/rand.h"
 
@@ -81,7 +82,7 @@ FastPairPairer::FastPairPairer(
       pairing_procedure_complete_(std::move(pairing_procedure_complete)) {
   fast_pair_gatt_service_client_ =
       FastPairGattServiceClientImpl::Factory::Create(
-          adapter_->GetDevice(device_->address), adapter_,
+          adapter_->GetDevice(device_->ble_address), adapter_,
           base::BindRepeating(&FastPairPairer::OnGattClientInitializedCallback,
                               weak_ptr_factory_.GetWeakPtr()));
 }
@@ -113,11 +114,11 @@ void FastPairPairer::OnDataEncryptorCreateAsync(
   fast_pair_data_encryptor_ = std::move(fast_pair_data_encryptor);
   QP_LOG(VERBOSE) << "Fast Pair GATT service client initialization successful.";
 
-  DCHECK(!device_->address.empty());
+  DCHECK(!device_->ble_address.empty());
   fast_pair_gatt_service_client_->WriteRequestAsync(
       /*message_type=*/0x00,
       /*flags=*/0x00,
-      /*provider_address=*/device_->address,
+      /*provider_address=*/device_->ble_address,
       /*seekers_address=*/"", fast_pair_data_encryptor_.get(),
       base::BindOnce(&FastPairPairer::OnWriteResponse,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -158,10 +159,13 @@ void FastPairPairer::OnParseDecryptedResponse(
   // address and add ourselves as a pairing delegate.
   std::string device_address =
       device::CanonicalizeBluetoothAddress(response->address_bytes);
+  device_->set_classic_address(device_address);
+
   device::BluetoothDevice* device = adapter_->GetDevice(device_address);
   QP_LOG(VERBOSE) << "Key-based pairing changed. Address: " << device_address
                   << ". Found device: " << ((device != nullptr) ? "Yes" : "No")
                   << ".";
+
   if (device) {
     device->Pair(this, base::BindOnce(&FastPairPairer::OnPairConnected,
                                       weak_ptr_factory_.GetWeakPtr()));

@@ -6,6 +6,7 @@
 
 #include "ash/quick_pair/proto/fastpair.pb.h"
 #include "base/strings/string_util.h"
+#include "device/bluetooth/bluetooth_device.h"
 
 namespace ash {
 namespace quick_pair {
@@ -65,11 +66,13 @@ void FakeFastPairRepository::CheckAccountKeys(
 void FakeFastPairRepository::AssociateAccountKey(
     scoped_refptr<Device> device,
     const std::vector<uint8_t>& account_key) {
-  saved_account_keys_[device->address] = account_key;
+  saved_account_keys_[device->ble_address] = account_key;
 }
 
-void FakeFastPairRepository::DeleteAssociatedDevice(
-    const device::BluetoothDevice* device) {}
+bool FakeFastPairRepository::DeleteAssociatedDevice(
+    const device::BluetoothDevice* device) {
+  return saved_account_keys_.erase(device->GetAddress()) == 1;
+}
 
 }  // namespace quick_pair
 }  // namespace ash

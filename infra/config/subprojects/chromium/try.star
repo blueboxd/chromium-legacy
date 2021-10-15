@@ -371,7 +371,6 @@ try_.chromium_android_builder(
     cores = 16 if settings.is_main else 8,
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
-    tryjob = try_.job(),
     # TODO(crbug/1202741)
     os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
@@ -889,6 +888,7 @@ try_.chromium_chromiumos_builder(
 
 try_.chromium_chromiumos_builder(
     name = "linux-lacros-rel",
+    branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
     cores = 16,
     ssd = True,
@@ -1313,7 +1313,7 @@ try_.chromium_linux_builder(
     name = "linux-rel",
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
-    cores = 4,
+    cores = "2|4",
     executable = "recipe:chromium/orchestrator",
     main_list_view = "try",
     use_clang_coverage = True,

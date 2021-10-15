@@ -19,21 +19,6 @@
             ]
         }
     ],
-    "AccountManagementFlowsV2": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AccountManagementFlowsV2"
-                    ]
-                }
-            ]
-        }
-    ],
     "AccountPoliciesLoadedWithoutSync": [
         {
             "platforms": [
@@ -747,6 +732,42 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ArcEnableThrottlingNotification"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ArcGuestZram": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledGroup128MB_20211005",
+                    "params": {
+                        "size": "134217728"
+                    },
+                    "enable_features": [
+                        "ArcGuestZram"
+                    ]
+                },
+                {
+                    "name": "EnabledGroup256MB_20211005",
+                    "params": {
+                        "size": "268435456"
+                    },
+                    "enable_features": [
+                        "ArcGuestZram"
+                    ]
+                },
+                {
+                    "name": "EnabledGroup512MB_20211005",
+                    "params": {
+                        "size": "536870912"
+                    },
+                    "enable_features": [
+                        "ArcGuestZram"
                     ]
                 }
             ]
@@ -1654,21 +1675,6 @@
             ]
         }
     ],
-    "CanvasOutOfProcessRasterization": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CanvasOopRasterization"
-                    ]
-                }
-            ]
-        }
-    ],
     "CctClientDataHeader": [
         {
             "platforms": [
@@ -1699,6 +1705,19 @@
                     "params": {
                         "impl": "3"
                     },
+                    "enable_features": [
+                        "CertDualVerificationTrial"
+                    ]
+                }
+            ]
+        },
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
                     "enable_features": [
                         "CertDualVerificationTrial"
                     ]
@@ -2698,13 +2717,26 @@
     "DefaultPassthroughCommandDecoder": [
         {
             "platforms": [
-                "linux",
-                "mac"
+                "linux"
             ],
             "experiments": [
                 {
                     "name": "Enabled_20191004",
                     "enable_features": [
+                        "DefaultPassthroughCommandDecoder"
+                    ]
+                }
+            ]
+        },
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_with_OOPR_Canvas",
+                    "enable_features": [
+                        "CanvasOopRasterization",
                         "DefaultPassthroughCommandDecoder"
                     ]
                 }
@@ -3340,6 +3372,22 @@
             ]
         }
     ],
+    "EnableDrDc": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableDrDc"
+                    ]
+                }
+            ]
+        }
+    ],
     "EnableDuplicateDownloadDialog": [
         {
             "platforms": [
@@ -3710,7 +3758,7 @@
             ]
         }
     ],
-    "GoogleLensDesktopAndRegionSearchContextMenuSearch": [
+    "GoogleLensDesktopContextMenuSearch": [
         {
             "platforms": [
                 "chromeos",
@@ -4095,8 +4143,8 @@
             ],
             "experiments": [
                 {
-                    "name": "Disabled",
-                    "disable_features": [
+                    "name": "Enabled",
+                    "enable_features": [
                         "CrashpadIOSEnabler"
                     ]
                 }
@@ -7110,6 +7158,25 @@
             ]
         }
     ],
+    "ShareMenu": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ShareMenu"
+                    ]
+                }
+            ]
+        }
+    ],
     "ShareUsageRanking": [
         {
             "platforms": [
@@ -8689,8 +8756,8 @@
                         "clipped_level_step": "15",
                         "clipped_ratio_threshold": "0.1",
                         "clipped_wait_frames": "300",
-                        "clipping_threshold": "-1",
-                        "crest_factor_margin": "3",
+                        "clipping_threshold": "-1.0",
+                        "crest_factor_margin": "3.0",
                         "mode": "0",
                         "reference_window_delay": "5",
                         "reference_window_length": "5",
@@ -9003,21 +9070,6 @@
                     "enable_features": [
                         "WebViewSurfaceControl",
                         "WebViewZeroCopyVideo"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WebnotesStylize": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WebNotesStylize"
                     ]
                 }
             ]

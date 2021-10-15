@@ -71,7 +71,7 @@ void RetroactivePairingDetectorImpl::NotifyDeviceFound(
   }
 
   auto device = base::MakeRefCounted<Device>(
-      model_id, bluetooth_device->GetAddress(), Protocol::kFastPair);
+      model_id, bluetooth_device->GetAddress(), Protocol::kFastPairRetroactive);
   QP_LOG(INFO) << __func__ << ": Found device for Retroactive Pairing.";
 
   for (auto& observer : observers_)
@@ -84,9 +84,9 @@ void RetroactivePairingDetectorImpl::OnDevicePaired(
   // pairing address here so when we get the the BluetoothAdapter's
   // |DevicePairedChanged| fired, we can determine if it was the one we already
   // have paired to.
-  QP_LOG(VERBOSE) << __func__
-                  << ":  Storing Fast Pair device address: " << device->address;
-  fast_pair_addresses_.insert(device->address);
+  QP_LOG(VERBOSE) << __func__ << ":  Storing Fast Pair device address: "
+                  << device->ble_address;
+  fast_pair_addresses_.insert(device->ble_address);
 }
 
 void RetroactivePairingDetectorImpl::DevicePairedChanged(

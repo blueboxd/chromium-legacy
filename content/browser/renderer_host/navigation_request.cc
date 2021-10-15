@@ -122,9 +122,11 @@
 #include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/cpp/supports_loading_mode/supports_loading_mode_parser.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "services/network/public/mojom/supports_loading_mode.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom.h"
@@ -767,9 +769,11 @@ url::Origin GetOriginForURLLoaderFactoryUnchecked(
     return parent ? parent->GetLastCommittedOrigin() : url::Origin();
   }
 
-  // urn: subframes from WebBundles have opaque origins derived from the
-  // Bundle's origin.
-  if (common_params.url.SchemeIs(url::kUrnScheme) &&
+  // Uuid-in-package: and urn: subframes from WebBundles have opaque origins
+  // derived from the Bundle's origin.
+  // TODO(https://crbug.com/1257045): Remove urn: scheme support.
+  if ((common_params.url.SchemeIs(url::kUrnScheme) ||
+       common_params.url.SchemeIs(url::kUuidInPackageScheme)) &&
       navigation_request->GetWebBundleURL().is_valid()) {
     return url::Origin::Resolve(
         common_params.url,
@@ -915,6 +919,14 @@ const GURL& GetLastLoadingURLInRendererForNavigationReplacement(
 
   // Otherwise, return the last document URL.
   return rfh->last_document_url_in_renderer();
+}
+
+bool IsOptedInFencedFrame(const net::HttpResponseHeaders& http_headers) {
+  network::mojom::SupportsLoadingModePtr result =
+      network::ParseSupportsLoadingMode(http_headers);
+  return !result.is_null() &&
+         base::Contains(result->supported_modes,
+                        network::mojom::LoadingMode::kFencedFrame);
 }
 
 }  // namespace
@@ -2884,8 +2896,7 @@ void NavigationRequest::OnResponseStarted(
   response_body_ = std::move(response_body);
   ssl_info_ = response_head_->ssl_info;
   auth_challenge_info_ = response_head_->auth_challenge_info;
-  was_early_hints_preload_link_header_received_ =
-      early_hints.was_preload_link_header_received;
+  was_resource_hints_received_ = early_hints.was_resource_hints_received;
   early_hints_manager_ = std::move(early_hints.manager);
 
   // A request was made. Record it before we decide to block this response for
@@ -3050,6 +3061,25 @@ void NavigationRequest::OnResponseStarted(
   }
 
   const auto& url = common_params_->url;
+
+  // The root fenced frames are required to have the Supports-Loading-Mode HTTP
+  // response header "fenced-frame" to be able to load.
+  const bool should_enforce_fenced_frame_opt_in =
+      response_should_be_rendered_ && response_head_->headers &&
+      frame_tree_node_->IsFencedFrameRoot() &&
+      !(url.IsAboutBlank() || url.SchemeIsBlob() ||
+        url.SchemeIs(url::kDataScheme));
+  if (should_enforce_fenced_frame_opt_in &&
+      !IsOptedInFencedFrame(*response_head_->headers)) {
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_RESPONSE),
+        false /* skip_throttles */, absl::nullopt /* error_page_content */,
+        false /* collapse_frame */);
+    // DO NOT ADD CODE after this. The previous call to
+    // OnRequestFailedInternal has destroyed the NavigationRequest.
+    return;
+  }
+
   auto cross_origin_embedder_policy =
       CoepFromMainResponse(url, response_head_.get());
 
@@ -4225,11 +4255,15 @@ void NavigationRequest::CommitNavigation() {
 
   AddOldPageInfoToCommitParamsIfNeeded();
 
-  // For urn: resources served from WebBundles, use the Bundle's origin.
-  url::Origin origin = (common_params_->url.SchemeIs(url::kUrnScheme) &&
-                        GetWebBundleURL().is_valid())
-                           ? url::Origin::Create(GetWebBundleURL())
-                           : GetOriginToCommit();
+  // For uuid-in-package: and urn: resources served from WebBundles, use the
+  // Bundle's origin.
+  // TODO(https://crbug.com/1257045): Remove urn: scheme support.
+  url::Origin origin =
+      ((common_params_->url.SchemeIs(url::kUrnScheme) ||
+        common_params_->url.SchemeIs(url::kUuidInPackageScheme)) &&
+       GetWebBundleURL().is_valid())
+          ? url::Origin::Create(GetWebBundleURL())
+          : GetOriginToCommit();
   // TODO(crbug.com/979296): Consider changing this code to copy an origin
   // instead of creating one from a URL which lacks opacity information.
   isolation_info_for_subresources_ =
@@ -4639,10 +4673,12 @@ bool NavigationRequest::IsAllowedByCSPDirective(
     GURL::Replacements replacements;
     replacements.SetSchemeStr(url::kHttpScheme);
     url = common_params_->url.ReplaceComponents(replacements);
-  } else if (common_params_->url.SchemeIs(url::kUrnScheme) &&
+  } else if ((common_params_->url.SchemeIs(url::kUrnScheme) ||
+              common_params_->url.SchemeIs(url::kUuidInPackageScheme)) &&
              begin_params_->web_bundle_token.has_value()) {
-    // When navigating to a urn:uuid resource in a web bundle, we check the
-    // bundle URL instead of the urn:uuid URL.
+    // When navigating to a uuid-in-package: / urn: resource in a web bundle, we
+    // check the bundle URL instead of the uuid-in-package: URL.
+    // TODO(https://crbug.com/1257045): Remove urn: scheme support.
     url = begin_params_->web_bundle_token->bundle_url;
   } else {
     url = common_params_->url;
@@ -5756,8 +5792,10 @@ bool NavigationRequest::IsWaitingToCommit() {
   return state_ == READY_TO_COMMIT;
 }
 
-bool NavigationRequest::WasEarlyHintsPreloadLinkHeaderReceived() {
-  return was_early_hints_preload_link_header_received_;
+bool NavigationRequest::WasResourceHintsReceived() {
+  DCHECK_GE(state_, WILL_PROCESS_RESPONSE)
+      << "Should only be called after the response started";
+  return was_resource_hints_received_;
 }
 
 bool NavigationRequest::IsLoadDataWithBaseURL() const {

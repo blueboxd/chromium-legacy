@@ -22,6 +22,7 @@
 #include "base/bits.h"
 #include "base/feature_list.h"
 #include "base/memory/nonscannable_memory.h"
+#include "base/memory/tagging.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -229,7 +230,9 @@ static size_t PartitionPurgeSlotSpan(
   for (internal::PartitionFreelistEntry* entry = slot_span->freelist_head;
        entry;
        /**/) {
-    size_t slot_index = (reinterpret_cast<char*>(entry) - ptr) / slot_size;
+    size_t slot_index =
+        (reinterpret_cast<char*>(base::memory::UnmaskPtr(entry)) - ptr) /
+        slot_size;
     PA_DCHECK(slot_index < num_slots);
     slot_usage[slot_index] = 0;
     entry = entry->GetNext(slot_size);
@@ -503,7 +506,11 @@ template <bool thread_safe>
 
 template <bool thread_safe>
 void PartitionRoot<thread_safe>::DecommitEmptySlotSpans() {
-  ShrinkEmptySlotSpansRing(0);
+  for (SlotSpan*& slot_span : global_empty_slot_span_ring) {
+    if (slot_span)
+      slot_span->DecommitIfPossible(this);
+    slot_span = nullptr;
+  }
   // Just decommitted everything, and holding the lock, should be exactly 0.
   PA_DCHECK(empty_slot_spans_dirty_bytes == 0);
 }
@@ -514,6 +521,10 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
     ScopedGuard guard{lock_};
     if (initialized)
       return;
+
+    // Swaps out the active no-op tagging intrinsics with MTE-capable ones, if
+    // running on the right hardware.
+    memory::InitializeMTESupportIfNeeded();
 
 #if defined(PA_HAS_64_BITS_POINTERS)
     // Reserve address space for partition alloc.
@@ -938,7 +949,7 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
   }
 
   memcpy(ret, ptr, std::min(old_usable_size, new_size));
-  Free(ptr);
+  Free(ptr);  // Implicitly protects the old ptr on MTE systems.
   return ret;
 #endif
 }
@@ -960,31 +971,6 @@ void PartitionRoot<thread_safe>::PurgeMemory(int flags) {
         if (bucket.slot_size >= SystemPageSize())
           internal::PartitionPurgeBucket(&bucket);
       }
-    }
-  }
-}
-
-template <bool thread_safe>
-void PartitionRoot<thread_safe>::ShrinkEmptySlotSpansRing(size_t limit) {
-  int16_t index = global_empty_slot_span_ring_index;
-  int16_t starting_index = index;
-  while (empty_slot_spans_dirty_bytes > limit) {
-    SlotSpan* slot_span = global_empty_slot_span_ring[index];
-    // The ring is not always full, may be nullptr.
-    if (slot_span) {
-      slot_span->DecommitIfPossible(this);
-      global_empty_slot_span_ring[index] = nullptr;
-    }
-    index += 1;
-    if (index == kMaxFreeableSpans)
-      index = 0;
-
-    // Went around the whole ring, since this is locked,
-    // empty_slot_spans_dirty_bytes should be exactly 0.
-    if (index == starting_index) {
-      PA_DCHECK(empty_slot_spans_dirty_bytes == 0);
-      // Metrics issue, don't crash, return.
-      break;
     }
   }
 }

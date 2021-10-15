@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value.h"
+#include "third_party/blink/renderer/core/css/css_ratio_value.h"
 #include "third_party/blink/renderer/core/css/css_ray_value.h"
 #include "third_party/blink/renderer/core/css/css_shadow_value.h"
 #include "third_party/blink/renderer/core/css/css_string_value.h"
@@ -664,17 +665,6 @@ class MathFunctionParser {
     return result;
   }
 
-  CSSPrimitiveValue* ConsumeNumber() {
-    if (!calc_value_)
-      return nullptr;
-    source_range_ = range_;
-    CSSPrimitiveValue::UnitType unit_type =
-        calc_value_->IsInt() ? CSSPrimitiveValue::UnitType::kInteger
-                             : CSSPrimitiveValue::UnitType::kNumber;
-    return CSSNumericLiteralValue::Create(calc_value_->GetDoubleValue(),
-                                          unit_type);
-  }
-
   bool ConsumeNumberRaw(double& result) {
     if (!calc_value_ || calc_value_->Category() != kCalcNumber)
       return false;
@@ -701,14 +691,14 @@ CSSPrimitiveValue* ConsumeInteger(CSSParserTokenRange& range,
         range.ConsumeIncludingWhitespace().NumericValue(),
         CSSPrimitiveValue::UnitType::kInteger);
   }
-  MathFunctionParser math_parser(range, context);
+  CSSPrimitiveValue::ValueRange value_range =
+      minimum_value == 1 ? CSSPrimitiveValue::ValueRange::kPositiveInteger
+                         : CSSPrimitiveValue::ValueRange::kInteger;
+  MathFunctionParser math_parser(range, context, value_range);
   if (const CSSMathFunctionValue* math_value = math_parser.Value()) {
-    if (math_value->Category() != kCalcNumber || !math_value->IsInt())
+    if (math_value->Category() != kCalcNumber)
       return nullptr;
-    double double_value = math_value->GetDoubleValue();
-    if (double_value < minimum_value)
-      return nullptr;
-    return math_parser.ConsumeNumber();
+    return math_parser.ConsumeValue();
   }
   return nullptr;
 }
@@ -767,16 +757,11 @@ CSSPrimitiveValue* ConsumeNumber(CSSParserTokenRange& range,
     return CSSNumericLiteralValue::Create(
         range.ConsumeIncludingWhitespace().NumericValue(), token.GetUnitType());
   }
-  MathFunctionParser math_parser(range, context,
-                                 CSSPrimitiveValue::ValueRange::kAll);
+  MathFunctionParser math_parser(range, context, value_range);
   if (const CSSMathFunctionValue* calculation = math_parser.Value()) {
-    // TODO(rwlbuis) Calcs should not be subject to parse time range checks.
-    // spec: https://drafts.csswg.org/css-values-3/#calc-range
-    if (calculation->Category() != kCalcNumber ||
-        (value_range == CSSPrimitiveValue::ValueRange::kNonNegative &&
-         calculation->IsNegative()))
+    if (calculation->Category() != kCalcNumber)
       return nullptr;
-    return math_parser.ConsumeNumber();
+    return math_parser.ConsumeValue();
   }
   return nullptr;
 }
@@ -1089,6 +1074,31 @@ CSSPrimitiveValue* ConsumeResolution(CSSParserTokenRange& range) {
         range.ConsumeIncludingWhitespace().NumericValue(), unit);
   }
   return nullptr;
+}
+
+// https://drafts.csswg.org/css-values-4/#ratio-value
+//
+// <ratio> = <number [0,+inf]> [ / <number [0,+inf]> ]?
+CSSValue* ConsumeRatio(CSSParserTokenRange& range,
+                       const CSSParserContext& context) {
+  CSSPrimitiveValue* first = ConsumeNumber(
+      range, context, CSSPrimitiveValue::ValueRange::kNonNegative);
+  if (!first)
+    return nullptr;
+
+  CSSPrimitiveValue* second = nullptr;
+
+  if (css_parsing_utils::ConsumeSlashIncludingWhitespace(range)) {
+    second = ConsumeNumber(range, context,
+                           CSSPrimitiveValue::ValueRange::kNonNegative);
+    if (!second)
+      return nullptr;
+  } else {
+    second = CSSNumericLiteralValue::Create(
+        1, CSSPrimitiveValue::UnitType::kInteger);
+  }
+
+  return MakeGarbageCollected<cssvalue::CSSRatioValue>(*first, *second);
 }
 
 CSSIdentifierValue* ConsumeIdent(CSSParserTokenRange& range) {

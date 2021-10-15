@@ -2768,7 +2768,6 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Fail
 
 # Various css-values WPT failures
 crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
-crbug.com/931216 external/wpt/css/css-values/calc-positive-fraction-001.html [ Failure ]
 crbug.com/759914 external/wpt/css/css-values/ch-unit-011.html [ Failure ]
 crbug.com/965366 external/wpt/css/css-values/ch-unit-017.html [ Failure ]
 crbug.com/937101 external/wpt/css/css-values/ic-unit-010.html [ Failure ]
@@ -5453,8 +5452,6 @@ crbug.com/476553 virtual/scroll-unification-prefer_compositing_to_lcd_text/scrol
 crbug.com/476553 virtual/scroll-unification-prefer_compositing_to_lcd_text/scrollbars/scrollbar-buttons.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification-prefer_compositing_to_lcd_text/scrollbars/scrollbar-corner-colors.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification-prefer_compositing_to_lcd_text/scrollbars/scrollbar-orientation.html [ Crash Failure Pass Timeout ]
-crbug.com/476553 virtual/scroll-unification-wheel-event-regions/fast/events/platform-wheelevent-paging-xy-in-scrolling-div.html [ Crash Failure Pass Timeout ]
-crbug.com/476553 virtual/scroll-unification-wheel-event-regions/fast/events/wheel/wheel-latched-scroll-node-removed.html [ Crash Failure Pass Timeout ]
 
 crbug.com/1253630 [ Win ] virtual/scroll-unification-overlay-scrollbar/plugin-overlay-scrollbar-mouse-capture.html [ Failure Pass ]
 crbug.com/1098383 [ Mac ] fast/events/scrollbar-double-click.html [ Failure Pass ]
@@ -6374,41 +6371,13 @@ crbug.com/1199522 http/tests/devtools/layers/layers-3d-view-hit-testing.js [ Fai
 # Failing css-transforms-2 web platform tests.
 crbug.com/753080 external/wpt/css/css-transforms/transform3d-sorting-002.html [ Failure ]
 
-external/wpt/css/css-transforms/2d-rotate-001.html [ Failure ]
-external/wpt/css/css-transforms/css-skew-002.html [ Failure ]
-external/wpt/css/css-transforms/group/svg-transform-nested-009.html [ Failure ]
-external/wpt/css/css-transforms/rotate_45deg.html [ Failure ]
-external/wpt/css/css-transforms/skew-test1.html [ Failure ]
-external/wpt/css/css-transforms/transform-background-001.html [ Failure ]
-external/wpt/css/css-transforms/transform-background-002.html [ Failure ]
-external/wpt/css/css-transforms/transform-background-007.html [ Failure ]
-external/wpt/css/css-transforms/transform-background-008.html [ Failure ]
 external/wpt/css/css-transforms/transform-fixed-bg-002.html [ Failure ]
-external/wpt/css/css-transforms/transform-fixed-bg-003.html [ Failure ]
 external/wpt/css/css-transforms/transform-fixed-bg-004.html [ Failure ]
 external/wpt/css/css-transforms/transform-fixed-bg-005.html [ Failure ]
 external/wpt/css/css-transforms/transform-fixed-bg-006.html [ Failure ]
 external/wpt/css/css-transforms/transform-fixed-bg-007.html [ Failure ]
-external/wpt/css/css-transforms/transform-image-001.html [ Failure ]
-external/wpt/css/css-transforms/transform-input-012.html [ Failure ]
-external/wpt/css/css-transforms/transform-input-016.html [ Failure ]
-external/wpt/css/css-transforms/transform-origin/svg-origin-length-cm-001.html [ Failure ]
-external/wpt/css/css-transforms/transform-origin/svg-origin-length-cm-002.html [ Failure ]
-external/wpt/css/css-transforms/transform-origin/svg-origin-length-cm-003.html [ Failure ]
-external/wpt/css/css-transforms/transform-origin/svg-origin-length-cm-004.html [ Failure ]
-external/wpt/css/css-transforms/transform-origin/svg-origin-length-cm-005.html [ Failure ]
-external/wpt/css/css-transforms/transform-origin/svg-origin-length-pt-001.html [ Failure ]
-external/wpt/css/css-transforms/transform-origin/svg-origin-length-pt-002.html [ Failure ]
-external/wpt/css/css-transforms/transform-origin/svg-origin-length-pt-003.html [ Failure ]
-external/wpt/css/css-transforms/transform-origin/svg-origin-length-pt-004.html [ Failure ]
-external/wpt/css/css-transforms/transform-origin/svg-origin-length-pt-005.html [ Failure ]
-external/wpt/css/css-transforms/transform-percent-008.html [ Failure ]
-external/wpt/css/css-transforms/transform-rotate-007.html [ Failure ]
 crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform-table-006.html [ Failure ]
 crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform-table-007.html [ Failure ]
-external/wpt/css/css-transforms/transforms-rotate-degree-45.html [ Failure ]
-external/wpt/css/css-transforms/ttwf-transform-skewx-001.html [ Failure ]
-external/wpt/css/css-transforms/ttwf-transform-skewy-001.html [ Failure ]
 # Started failing after rolling new version of check-layout-th.js
 css3/flexbox/perpendicular-writing-modes-inside-flex-item.html [ Failure ]
 
@@ -7212,3 +7181,9 @@ crbug.com/1259277 [ Debug Linux ] virtual/scroll-unification/fast/events/message
 crbug.com/1259652 [ Mac10.13 ] external/wpt/streams/readable-streams/tee.any.html [ Failure Pass ]
 crbug.com/1259652 [ Mac10.13 ] external/wpt/streams/readable-streams/tee.any.serviceworker.html [ Failure Pass ]
 crbug.com/1259652 [ Mac10.13 ] external/wpt/streams/readable-streams/tee.any.sharedworker.html [ Failure Pass ]
+
+# Sheriff 2021-10-14
+crbug.com/1259749 [ Mac11.0 ] http/tests/eventsource/eventsource-cors-non-http.html [ Failure Pass ]
+
+# Data URL navigation within Fenced Frames currently crashed in the MPArch implementation.
+crbug.com/1243568 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/window-data-url-navigation.html [ Crash ]

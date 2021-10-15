@@ -23,11 +23,6 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 
 }  // namespace
 
-// Enables redesign of account management flows.
-// https://crbug.com/1132472
-const base::Feature kAccountManagementFlowsV2{"AccountManagementFlowsV2",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Adjusts portrait mode split view to avoid the input field in the bottom
 // window being occluded by the virtual keyboard.
 const base::Feature kAdjustSplitViewForVK{"AdjustSplitViewForVK",
@@ -297,6 +292,10 @@ const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",
 // Force enable recreating the LXD DB at LXD launch.
 const base::Feature kCrostiniResetLxdDb{"CrostiniResetLxdDb",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Do we use the default LXD version or try LXD 4?
+const base::Feature kCrostiniUseLxd4{"CrostiniUseLxd4",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use DLC instead of component updater for managing the Termina image if set
 // (and component updater instead of DLC if not).
@@ -738,13 +737,13 @@ const base::Feature kLockScreenMediaControls{"LockScreenMediaControls",
 const base::Feature kManagedDeviceUIRedesign{"ManagedDeviceUIRedesign",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Whether audio files are opened by default in the ChromeOS media app.
+const base::Feature kMediaAppHandlesAudio{"MediaAppHandlesAudio",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Whether PDF files are opened by default in the ChromeOS media app.
 const base::Feature kMediaAppHandlesPdf{"MediaAppHandlesPdf",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Whether to allow the ChromeOS media app to open with multiple windows.
-const base::Feature kMediaAppMultiWindow{"MediaAppMultiWindow",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables notification of when a microphone-using app is launched while the
 // microphone is muted.
@@ -911,6 +910,11 @@ const base::Feature kProjectorAnnotator{"ProjectorAnnotator",
 // Controls whether to enable quick answers V2 settings sub-toggles.
 const base::Feature kQuickAnswersV2SettingsSubToggle{
     "QuickAnswersV2SettingsSubToggle", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the Quick Settings Network revamp, which updates Network
+// Quick Settings UI and related infrastructure. See https://crbug.com/1169479.
+const base::Feature kQuickSettingsNetworkRevamp{
+    "QuickSettingsNetworkRevamp", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables fingerprint quick unlock.
 const base::Feature kQuickUnlockFingerprint{"QuickUnlockFingerprint",
@@ -1181,6 +1185,11 @@ const base::Feature kWallpaperWebUI{"WallpaperWebUI",
 const base::Feature kWallpaperFullScreenPreview{
     "WallpaperFullScreenPreview", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable Google Photos integration in the new wallpaper experience. Note that
+// this feature flag does not have any effect if `kWallpaperWebUI` is disabled.
+const base::Feature kWallpaperGooglePhotosIntegration{
+    "WallpaperGooglePhotosIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Generates WebAPKs representing installed PWAs and installs them inside ARC.
 const base::Feature kWebApkGenerator{"WebApkGenerator",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1243,10 +1252,6 @@ bool AreImprovedScreenCaptureSettingsEnabled() {
 
 bool DoWindowsFollowCursor() {
   return base::FeatureList::IsEnabled(kWindowsFollowCursor);
-}
-
-bool IsAccountManagementFlowsV2Enabled() {
-  return base::FeatureList::IsEnabled(kAccountManagementFlowsV2);
 }
 
 bool IsAdjustSplitViewForVKEnabled() {
@@ -1627,6 +1632,10 @@ bool IsQuickAnswersV2TranslationDisabled() {
 
 bool IsQuickAnswersV2SettingsSubToggleEnabled() {
   return base::FeatureList::IsEnabled(kQuickAnswersV2SettingsSubToggle);
+}
+
+bool IsQuickSettingsNetworkRevampEnabled() {
+  return base::FeatureList::IsEnabled(kQuickSettingsNetworkRevamp);
 }
 
 bool IsReduceDisplayNotificationsEnabled() {

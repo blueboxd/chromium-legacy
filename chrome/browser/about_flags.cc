@@ -1122,6 +1122,12 @@ const FeatureEntry::FeatureParam
         {"RichAutocompletionAutocompleteNonPrefixShortcutProvider", "true"},
         {"RichAutocompletionAutocompleteTitlesMinChar", "3"},
         {"RichAutocompletionAutocompleteNonPrefixMinChar", "5"}};
+const FeatureEntry::FeatureParam
+    kOmniboxRichAutocompletionConservativeModerate2[] = {
+        {"RichAutocompletionAutocompleteTitlesShortcutProvider", "true"},
+        {"RichAutocompletionAutocompleteNonPrefixShortcutProvider", "true"},
+        {"RichAutocompletionAutocompleteTitlesMinChar", "3"},
+        {"RichAutocompletionAutocompleteNonPrefixMinChar", "5"}};
 const FeatureEntry::FeatureParam kOmniboxRichAutocompletionConservative[] = {
     {"RichAutocompletionAutocompleteTitles", "true"},
     {"RichAutocompletionAutocompleteTitlesMinChar", "3"}};
@@ -1137,6 +1143,10 @@ const FeatureEntry::FeatureVariation
         {"Conservative Moderate - Title, Shortcut Non-Prefix, min 3/5",
          kOmniboxRichAutocompletionConservativeModerate,
          base::size(kOmniboxRichAutocompletionConservativeModerate), nullptr},
+        {"Conservative Moderate 2 - Shortcut Title, Shortcut Non-Prefix, min "
+         "3/5",
+         kOmniboxRichAutocompletionConservativeModerate2,
+         base::size(kOmniboxRichAutocompletionConservativeModerate2), nullptr},
         {"Conservative - Title, min 3", kOmniboxRichAutocompletionConservative,
          base::size(kOmniboxRichAutocompletionConservative), nullptr}};
 
@@ -3035,10 +3045,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseHDRTransferFunctionName,
      flag_descriptions::kUseHDRTransferFunctionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(display::features::kUseHDRTransferFunction)},
-    {"account-management-flows-v2",
-     flag_descriptions::kAccountManagementFlowsV2Name,
-     flag_descriptions::kAccountManagementFlowsV2Description, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kAccountManagementFlowsV2)},
     {"dark-light-mode", flag_descriptions::kDarkLightTestName,
      flag_descriptions::kDarkLightTestDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDarkLightMode)},
@@ -3109,6 +3115,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableOfficeEditingComponentAppName,
      flag_descriptions::kDisableOfficeEditingComponentAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kDisableOfficeEditingComponentApp)},
+    {"quick-settings-network-revamp",
+     flag_descriptions::kQuickSettingsNetworkRevampName,
+     flag_descriptions::kQuickSettingsNetworkRevampDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kQuickSettingsNetworkRevamp)},
     {"use_messages_staging_url", flag_descriptions::kUseMessagesStagingUrlName,
      flag_descriptions::kUseMessagesStagingUrlDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kUseMessagesStagingUrl)},
@@ -3582,6 +3592,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"terminal-ssh", flag_descriptions::kTerminalSSHName,
      flag_descriptions::kTerminalSSHDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kTerminalSSH)},
+    {"crostini-use-lxd-4", flag_descriptions::kCrostiniUseLxd4Name,
+     flag_descriptions::kCrostiniUseLxd4Description, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniResetLxdDb)},
 #if BUILDFLAG(USE_TCMALLOC)
     {"dynamic-tcmalloc-tuning", flag_descriptions::kDynamicTcmallocName,
      flag_descriptions::kDynamicTcmallocDescription, kOsCrOS,
@@ -4861,6 +4874,11 @@ const FeatureEntry kFeatureEntries[] = {
     {flag_descriptions::kSidePanelFlagId, flag_descriptions::kSidePanelName,
      flag_descriptions::kSidePanelDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSidePanel)},
+
+    {flag_descriptions::kSidePanelBorderFlagId,
+     flag_descriptions::kSidePanelBorderName,
+     flag_descriptions::kSidePanelBorderDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSidePanelBorder)},
 
     {flag_descriptions::kSidePanelDragAndDropFlagId,
      flag_descriptions::kSidePanelDragAndDropName,
@@ -6364,12 +6382,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHelpAppSearchServiceIntegrationName,
      flag_descriptions::kHelpAppSearchServiceIntegrationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kHelpAppSearchServiceIntegration)},
+    {"media-app-handles-audio", flag_descriptions::kMediaAppHandlesAudioName,
+     flag_descriptions::kMediaAppHandlesAudioDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kMediaAppHandlesAudio)},
     {"media-app-handles-pdf", flag_descriptions::kMediaAppHandlesPdfName,
      flag_descriptions::kMediaAppHandlesPdfDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kMediaAppHandlesPdf)},
-    {"media-app-multi-window", flag_descriptions::kMediaAppMultiWindowName,
-     flag_descriptions::kMediaAppMultiWindowDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kMediaAppMultiWindow)},
     {"release-notes-notification-all-channels",
      flag_descriptions::kReleaseNotesNotificationAllChannelsName,
      flag_descriptions::kReleaseNotesNotificationAllChannelsDescription,
@@ -6451,10 +6469,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin,
      FEATURE_VALUE_TYPE(features::kRunVideoCaptureServiceInBrowserProcess)},
 #endif  // defined(OS_WIN)
-
-    {"legacy-tls-enforced", flag_descriptions::kLegacyTLSEnforcedName,
-     flag_descriptions::kLegacyTLSEnforcedDescription, kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(net::features::kLegacyTLSEnforced)},
 
     {"double-buffer-compositing",
      flag_descriptions::kDoubleBufferCompositingName,
@@ -6721,11 +6735,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEditPasswordsInSettingsName,
      flag_descriptions::kEditPasswordsInSettingsDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kEditPasswordsInSettings)},
-
-    {"mixed-forms-disable-autofill",
-     flag_descriptions::kMixedFormsDisableAutofillName,
-     flag_descriptions::kMixedFormsDisableAutofillDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillPreventMixedFormsFilling)},
 
     {"mixed-forms-interstitial", flag_descriptions::kMixedFormsInterstitialName,
      flag_descriptions::kMixedFormsInterstitialDescription, kOsAll,

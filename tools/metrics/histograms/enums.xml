@@ -26641,6 +26641,7 @@ Called by update_document_policy_enum.py.-->
   <int value="913" label="SandboxExternalProtocol"/>
   <int value="914" label="ReportDeviceNetworkTelemetryCollectionRateMs"/>
   <int value="915" label="ReportDeviceNetworkTelemetryEventCheckingRateMs"/>
+  <int value="916" label="KioskCRXManifestUpdateURLIgnored"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -34932,6 +34933,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4058" label="ExternalProtocolBlockedBySandbox"/>
   <int value="4059" label="WebAssemblyDynamicTiering"/>
   <int value="4060" label="DeferredShapingTallerIfc"/>
+  <int value="4061" label="ReadOrWriteWebDatabase"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -49547,6 +49549,7 @@ from previous Chrome versions.
   <int value="-879055117" label="ClipboardContentSetting:enabled"/>
   <int value="-879031960" label="FetchKeepaliveTimeoutSetting:disabled"/>
   <int value="-879024703" label="pwa-update-dialog-for-name-and-icon:enabled"/>
+  <int value="-878580380" label="CrostiniUseLxd4:enabled"/>
   <int value="-876773120" label="TabbedAppOverflowMenuActionBar:enabled"/>
   <int value="-876148583" label="ArcBootCompletedBroadcast:disabled"/>
   <int value="-875217114"
@@ -49603,6 +49606,7 @@ from previous Chrome versions.
   <int value="-837473047" label="AutofillEnableStickyPaymentsBubble:disabled"/>
   <int value="-836123854" label="wallet-service-use-sandbox"/>
   <int value="-835672415" label="PointerEventV1SpecCapturing:disabled"/>
+  <int value="-835627918" label="QuickSettingsNetworkRevamp:enabled"/>
   <int value="-835331907" label="TabOutlinesInLowContrastThemes:disabled"/>
   <int value="-835242361" label="OmniboxAdaptiveSuggestionsCount:enabled"/>
   <int value="-834661509" label="ModalPermissionPrompts:disabled"/>
@@ -51396,6 +51400,7 @@ from previous Chrome versions.
   <int value="559695461" label="UseChimeAndroidSdk:enabled"/>
   <int value="561374433" label="SCTAuditing:disabled"/>
   <int value="561951500" label="GlobalMediaControlsCastStartStop:enabled"/>
+  <int value="562111126" label="SidePanelBorder:enabled"/>
   <int value="562979188" label="DesktopIOSPromotion:enabled"/>
   <int value="564355877" label="OopRasterizationDDL:disabled"/>
   <int value="564522013" label="Av1Decoder:disabled"/>
@@ -51443,6 +51448,7 @@ from previous Chrome versions.
   <int value="603988014" label="NetworkService:enabled"/>
   <int value="604334859" label="Prerender2:enabled"/>
   <int value="605150752" label="WebUSB:disabled"/>
+  <int value="605332010" label="SidePanelBorder:disabled"/>
   <int value="605672144" label="PwaUpdateDialogForNameAndIcon:disabled"/>
   <int value="606288133" label="enable-print-preview-register-promos"/>
   <int value="606512202" label="AutofillCreditCardPopupLayout:enabled"/>
@@ -52711,6 +52717,7 @@ from previous Chrome versions.
   <int value="1579461102" label="MemoryCoordinator:disabled"/>
   <int value="1581002467" label="enable-explicit-dma-fences"/>
   <int value="1582400283" label="VideoTutorials:enabled"/>
+  <int value="1583543236" label="QuickSettingsNetworkRevamp:disabled"/>
   <int value="1584039096" label="highlight-all-webviews"/>
   <int value="1584425198" label="NtpModules:enabled"/>
   <int value="1584536816" label="LimitAltTabToActiveDesk:enabled"/>
@@ -52718,6 +52725,7 @@ from previous Chrome versions.
   <int value="1586022426" label="AutofillCreditCardAssist:enabled"/>
   <int value="1586251544" label="VoiceButtonInTopToolbar:disabled"/>
   <int value="1587521886" label="SSLCommittedInterstitials:enabled"/>
+  <int value="1588716465" label="CrostiniUseLxd4:disabled"/>
   <int value="1589341623" label="disable-easy-unlock"/>
   <int value="1590278995"
       label="AutofillSendExperimentIdsInPaymentsRPCs:enabled"/>
@@ -53022,6 +53030,7 @@ from previous Chrome versions.
   <int value="1814671708" label="disable-password-manager-reauthentication"/>
   <int value="1816174635" label="RequestUnbufferedDispatch:enabled"/>
   <int value="1816723085" label="SchemefulSameSite:enabled"/>
+  <int value="1816816375" label="MediaAppHandlesAudio:disabled"/>
   <int value="1816843861" label="ServiceWorkerServicification:enabled"/>
   <int value="1817312143" label="num-raster-threads"/>
   <int value="1817420759" label="CpuAffinityRestrictToLittleCores:disabled"/>
@@ -53172,6 +53181,7 @@ from previous Chrome versions.
   <int value="1925627218" label="FullscreenToolbarReveal:disabled"/>
   <int value="1926524951" label="SystemWebApps:disabled"/>
   <int value="1927218315" label="ShelfNewUi:disabled"/>
+  <int value="1927254377" label="MediaAppHandlesAudio:enabled"/>
   <int value="1927259098" label="TranslateLanguageByULP:enabled"/>
   <int value="1927374573" label="EnterpriseRealtimeExtensionRequest:enabled"/>
   <int value="1928944156" label="ReadLaterNewBadgePromo:disabled"/>
@@ -56488,6 +56498,8 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="Unknown"/>
   <int value="1" label="Navigate to same domain"/>
   <int value="2" label="Navigate to different domain"/>
+  <int value="3" label="Message context is no longer valid"/>
+  <int value="4" label="Switch to different webcontents"/>
 </enum>
 
 <enum name="MessageDismissReason">
@@ -66711,6 +66723,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="Notification inline reply response"/>
   <int value="13" label="Show notification access setup request"/>
   <int value="14" label="Show notification access setup response"/>
+  <int value="15" label="Fetch camera roll items request"/>
+  <int value="16" label="Fetch camera roll items response"/>
+  <int value="17" label="Fetch camera roll item data request"/>
+  <int value="18" label="Fetch camera roll item data response"/>
+  <int value="19" label="Initiate camera roll item transfer request"/>
 </enum>
 
 <enum name="PhoneHubNotificationAccessSetupStatus">

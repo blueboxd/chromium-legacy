@@ -235,7 +235,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '1cb3f3666ca37da868af1950c85afeb5d9503c20',
+  'skia_revision': '4021b947f7b0bc28813d664f840b4e368b7e087c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -251,7 +251,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'f56aac843142f13fef4f082493a11aa5fe816502',
+  'pdfium_revision': '877b5b9170f101e4aec980e3807dbb787a3f6fa4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -302,7 +302,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '59de2526fa3491a38e7aef9e3c0f4e58f89a51e2',
+  'catapult_revision': '95a9079d7bee0a1426f42f1cd302bae46a34d4b2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -310,7 +310,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'cb4676e2559a26fc42f7eaf168ab9741fe92d396',
+  'devtools_frontend_revision': 'd58ab63bd91e4a358624cfd5c615ededf5d3a15e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -350,7 +350,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'c11a14f4131219f09df8cbf181dbdba26499073c',
+  'dawn_revision': '1085d4f418e9dbdcab27f40749309787e6faacb0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.

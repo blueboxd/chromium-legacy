@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
-#include "base/task/task_runner_util_forward.h"
+#include "base/task/task_runner_util.h"
 #include "build/build_config.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation_service.h"
@@ -159,9 +159,6 @@ void SyncEngineImpl::Initialize(InitParams params) {
 
   const SyncTransportDataStartupState state =
       ValidateSyncTransportData(*prefs_, params.authenticated_account_info);
-
-  base::UmaHistogramEnumeration("Sync.LocalSyncTransportDataStartupState",
-                                state);
 
   if (state != SyncTransportDataStartupState::kValidData) {
     // The local data is either uninitialized or corrupt, so let's throw

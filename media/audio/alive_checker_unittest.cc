@@ -7,7 +7,7 @@
 
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/sequenced_task_runner_forward.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "media/audio/alive_checker.h"
@@ -60,6 +60,9 @@ class AliveCheckerTest : public testing::Test {
                              base::WaitableEvent::InitialState::NOT_SIGNALED) {
     alive_checker_thread_.StartAndWaitForTesting();
   }
+
+  AliveCheckerTest(const AliveCheckerTest&) = delete;
+  AliveCheckerTest& operator=(const AliveCheckerTest&) = delete;
 
   void OnDetectedDead() {
     EXPECT_TRUE(alive_checker_thread_.task_runner()->BelongsToCurrentThread());
@@ -212,8 +215,6 @@ class AliveCheckerTest : public testing::Test {
 
   // Event to signal that we got a dead detection callback.
   base::WaitableEvent detected_dead_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(AliveCheckerTest);
 };
 
 // Start and Stop the checker, verify that we get no dead detection.

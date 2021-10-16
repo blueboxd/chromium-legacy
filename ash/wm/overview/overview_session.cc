@@ -685,8 +685,8 @@ void OverviewSession::OnStartingAnimationComplete(bool canceled,
 
   // Create this after the desks bar widget. This will try to update the desks
   // templates button on the desks bar views during construction.
-  if (desks_templates_util::AreDesksTemplatesEnabled()) {
-    DCHECK(!desks_templates_presenter_);
+  if (desks_templates_util::AreDesksTemplatesEnabled() &&
+      !desks_templates_presenter_) {
     desks_templates_presenter_ =
         std::make_unique<DesksTemplatesPresenter>(this);
     desks_templates_dialog_controller_ =
@@ -941,7 +941,8 @@ bool OverviewSession::IsWindowActiveWindowBeforeOverview(
 
 void OverviewSession::ShowDesksTemplatesGrids() {
   for (auto& grid : grid_list_)
-    grid->ShowDesksTemplatesGrid(desks_templates_presenter_->desk_templates());
+    grid->ShowDesksTemplatesGrid();
+  desks_templates_presenter_->GetAllEntries();
   UpdateNoWindowsWidgetOnEachGrid();
 }
 

@@ -17,7 +17,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/single_thread_task_runner_forward.h"
+#include "base/task/single_thread_task_runner.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_device_delegate.h"
 #include "media/capture/video/chromeos/mojom/camera3.mojom.h"
@@ -50,10 +50,16 @@ class CAPTURE_EXPORT StreamBufferManager final {
  public:
   using Buffer = VideoCaptureDevice::Client::Buffer;
 
+  StreamBufferManager() = delete;
+
   StreamBufferManager(
       CameraDeviceContext* device_context,
       bool video_capture_use_gmb,
       std::unique_ptr<CameraBufferFactory> camera_buffer_factory);
+
+  StreamBufferManager(const StreamBufferManager&) = delete;
+  StreamBufferManager& operator=(const StreamBufferManager&) = delete;
+
   ~StreamBufferManager();
 
   void ReserveBuffer(StreamType stream_type);
@@ -173,8 +179,6 @@ class CAPTURE_EXPORT StreamBufferManager final {
   std::unique_ptr<CameraBufferFactory> camera_buffer_factory_;
 
   base::WeakPtrFactory<StreamBufferManager> weak_ptr_factory_{this};
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(StreamBufferManager);
 };
 
 }  // namespace media

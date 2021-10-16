@@ -26,7 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "base/task/task_runner_util_forward.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/timer/elapsed_timer.h"
@@ -476,7 +476,7 @@ void WebApkInstaller::SendRequest(
   request->load_flags = net::LOAD_DISABLE_CACHE;
   request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   loader_ = network::SimpleURLLoader::Create(std::move(request),
-                                             NO_TRAFFIC_ANNOTATION_YET);
+                                             MISSING_TRAFFIC_ANNOTATION);
   loader_->AttachStringForUpload(*serialized_proto, kProtoMimeType);
   loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       GetURLLoaderFactory(browser_context_),

@@ -12,7 +12,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
-#include "base/task/task_runner_forward.h"
+#include "base/task/task_runner.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_types.h"
@@ -76,10 +76,6 @@ void PolicyStatisticsCollector::RecordPolicyUse(int id, Condition condition) {
   base::UmaHistogramSparse("Enterprise.Policies" + suffix, id);
 }
 
-void PolicyStatisticsCollector::RecordPolicyGroupWithConflicts(int id) {
-  base::UmaHistogramSparse("Enterprise.Policies.SourceConflicts", id);
-}
-
 void PolicyStatisticsCollector::CollectStatistics() {
   const PolicyMap& policies = policy_service_->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
@@ -118,9 +114,6 @@ void PolicyStatisticsCollector::CollectStatistics() {
           NOTREACHED();
       }
     }
-
-    if (group_has_conflicts)
-      RecordPolicyGroupWithConflicts(group.id);
   }
 
   // Take care of next update.

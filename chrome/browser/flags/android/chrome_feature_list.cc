@@ -124,6 +124,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &shared_highlighting::kSharedHighlightingV2,
     &shared_highlighting::kSharedHighlightingAmp,
     &features::kElasticOverscroll,
+    &features::kElideTabPreloadAtStartup,
     &features::kGiveJavaUiThreadDefaultTaskTraitsUserBlockingPriority,
     &features::kPrivacyReview,
     &features::kPrioritizeBootstrapTasks,
@@ -237,7 +238,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kImmersiveUiMode,
     &kIncognitoReauthenticationForAndroid,
     &kIncognitoScreenshot,
-    &kInlineUpdateFlow,
     &kInstanceSwitcher,
     &kInstantStart,
     &kKitKatSupported,
@@ -627,9 +627,6 @@ const base::Feature kIncognitoReauthenticationForAndroid{
 
 const base::Feature kIncognitoScreenshot{"IncognitoScreenshot",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kInlineUpdateFlow{"InlineUpdateFlow",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kInstantStart{"InstantStart",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

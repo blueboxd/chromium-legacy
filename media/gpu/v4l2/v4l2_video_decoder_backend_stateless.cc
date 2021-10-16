@@ -16,7 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/task/sequenced_task_runner_forward.h"
+#include "base/task/sequenced_task_runner.h"
 #include "media/base/decode_status.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
@@ -54,6 +54,9 @@ struct V4L2StatelessVideoDecoderBackend::OutputRequest {
     return OutputRequest(kChangeResolutionFence);
   }
 
+  OutputRequest(const OutputRequest&) = delete;
+  OutputRequest& operator=(const OutputRequest&) = delete;
+
   bool IsReady() const {
     return (type != OutputRequestType::kSurface) || surface->decoded();
   }
@@ -83,8 +86,6 @@ struct V4L2StatelessVideoDecoderBackend::OutputRequest {
   OutputRequest(scoped_refptr<V4L2DecodeSurface> s, base::TimeDelta t)
       : type(kSurface), surface(std::move(s)), timestamp(t) {}
   explicit OutputRequest(OutputRequestType t) : type(t) {}
-
-  DISALLOW_COPY_AND_ASSIGN(OutputRequest);
 };
 
 V4L2StatelessVideoDecoderBackend::DecodeRequest::DecodeRequest(

@@ -868,7 +868,7 @@ void AppsGridView::ViewHierarchyChanged(
     if (selected_view_ == details.child)
       selected_view_ = nullptr;
 
-    if (app_list_features::IsAppGridGhostEnabled()) {
+    if (features::IsProductivityLauncherEnabled()) {
       if (current_ghost_view_ == details.child)
         current_ghost_view_ = nullptr;
       if (last_ghost_view_ == details.child)
@@ -1993,6 +1993,15 @@ bool AppsGridView::IsPointWithinDragBuffer(const gfx::Point& point) const {
   return rect.Contains(point);
 }
 
+void AppsGridView::ScheduleLayout(const gfx::Size& previous_grid_size) {
+  if (GetTileGridSize() != previous_grid_size) {
+    PreferredSizeChanged();  // Calls InvalidateLayout() internally.
+  } else {
+    InvalidateLayout();
+  }
+  DCHECK(needs_layout());
+}
+
 void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
   const gfx::Size initial_grid_size = GetTileGridSize();
 
@@ -2022,11 +2031,8 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
     UpdatePulsingBlockViews();
   }
 
-  // TODO(https://crbug.com/1260018): Investigate removing Layout() to improve
-  // performance.
-  Layout();
-  if (GetTileGridSize() != initial_grid_size)
-    PreferredSizeChanged();
+  // Schedule a layout, since the grid items may need their bounds updated.
+  ScheduleLayout(initial_grid_size);
 }
 
 void AppsGridView::OnListItemRemoved(size_t index, AppListItem* item) {
@@ -2048,11 +2054,8 @@ void AppsGridView::OnListItemRemoved(size_t index, AppListItem* item) {
     UpdatePulsingBlockViews();
   }
 
-  // TODO(https://crbug.com/1260018): Investigate removing Layout() to improve
-  // performance.
-  Layout();
-  if (GetTileGridSize() != initial_grid_size)
-    PreferredSizeChanged();
+  // Schedule a layout, since the grid items may need their bounds updated.
+  ScheduleLayout(initial_grid_size);
 }
 
 void AppsGridView::OnListItemMoved(size_t from_index,
@@ -2493,7 +2496,7 @@ void AppsGridView::AnnounceReorder(const GridIndex& target_index) {
 }
 
 void AppsGridView::CreateGhostImageView() {
-  if (!app_list_features::IsAppGridGhostEnabled())
+  if (!features::IsProductivityLauncherEnabled())
     return;
   if (!drag_item_)
     return;
@@ -2538,7 +2541,7 @@ void AppsGridView::CreateGhostImageView() {
 }
 
 void AppsGridView::BeginHideCurrentGhostImageView() {
-  if (!app_list_features::IsAppGridGhostEnabled())
+  if (!features::IsProductivityLauncherEnabled())
     return;
 
   current_ghost_location_ = GridIndex();

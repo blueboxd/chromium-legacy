@@ -327,6 +327,7 @@ public abstract class ChromeFeatureList {
     public static final String DYNAMIC_COLOR_ANDROID = "DynamicColorAndroid";
     public static final String EDIT_PASSWORDS_IN_SETTINGS = "EditPasswordsInSettings";
     public static final String EARLY_LIBRARY_LOAD = "EarlyLibraryLoad";
+    public static final String ELIDE_TAB_PRELOAD_AT_STARTUP = "ElideTabPreloadAtStartup";
     public static final String ENABLE_DANGEROUS_DOWNLOAD_DIALOG = "EnableDangerousDownloadDialog";
     public static final String ENABLE_DUPLICATE_DOWNLOAD_DIALOG = "EnableDuplicateDownloadDialog";
     public static final String ENHANCED_PROTECTION_PROMO_CARD = "EnhancedProtectionPromoCard";
@@ -362,7 +363,6 @@ public abstract class ChromeFeatureList {
     public static final String INCOGNITO_REAUTHENTICATION_FOR_ANDROID =
             "IncognitoReauthenticationForAndroid";
     public static final String INCOGNITO_SCREENSHOT = "IncognitoScreenshot";
-    public static final String INLINE_UPDATE_FLOW = "InlineUpdateFlow";
     public static final String INSTALLABLE_AMBIENT_BADGE_INFOBAR = "InstallableAmbientBadgeInfoBar";
     public static final String INSTANCE_SWITCHER = "InstanceSwitcher";
     public static final String INSTANT_START = "InstantStart";

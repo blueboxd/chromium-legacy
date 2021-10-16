@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/task/sequenced_task_runner_forward.h"
-#include "base/task/single_thread_task_runner_forward.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/sequence_bound.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_preferences.h"
@@ -66,6 +66,9 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
       GetD3D11DeviceCB get_d3d11_device_cb,
       SupportedConfigs supported_configs,
       bool is_hdr_supported);
+
+  D3D11VideoDecoder(const D3D11VideoDecoder&) = delete;
+  D3D11VideoDecoder& operator=(const D3D11VideoDecoder&) = delete;
 
   // VideoDecoder implementation:
   VideoDecoderType GetDecoderType() const override;
@@ -308,8 +311,6 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   uint8_t bit_depth_ = 8u;
 
   base::WeakPtrFactory<D3D11VideoDecoder> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(D3D11VideoDecoder);
 };
 
 }  // namespace media

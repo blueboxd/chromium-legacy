@@ -1469,23 +1469,6 @@ ci.angle_thin_tester(
     triggered_by = ["win-angle-x64-builder"],
 )
 
-ci.angle_windows_builder(
-    name = "win-angle-x86-builder",
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|Builder|ANGLE",
-        short_name = "x86",
-    ),
-)
-
-ci.angle_thin_tester(
-    name = "win7-angle-x86-amd",
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|Win7-AMD|ANGLE",
-        short_name = "x86",
-    ),
-    triggered_by = ["win-angle-x86-builder"],
-)
-
 ci.chromium_builder(
     name = "android-archive-dbg",
     # Bump to 32 if needed.
@@ -2007,6 +1990,17 @@ ci.chromiumos_builder(
         short_name = "ful",
     ),
     main_console_view = "main",
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "linux-chromiumos-full.json",
+            ],
+        },
+    },
 )
 
 ci.chromiumos_builder(
@@ -4313,21 +4307,6 @@ ci.fyi_builder(
     ),
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 1,
-    ),
-    goma_backend = None,
-    reclient_jobs = 250,
-    reclient_instance = rbe_instance.DEFAULT,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "ASAN Release (reclient shadow)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux asan",
-        short_name = "rel",
-    ),
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 5,
     ),
     goma_backend = None,
     reclient_jobs = 250,

@@ -1385,11 +1385,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "enable-app-grid-ghost",
-    "owners": [ "mmourgos" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "enable-arc-unified-audio-focus",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 82
@@ -5592,11 +5587,6 @@
   },
   {
     "name": "webpage-default-zoom-from-dynamic-type",
-    "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 91
-  },
-  {
-    "name": "webpage-text-accessibility",
     "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 91
   },

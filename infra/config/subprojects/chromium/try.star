@@ -769,12 +769,6 @@ try_.chromium_angle_builder(
     executable = "recipe:angle_chromium_trybot",
 )
 
-try_.chromium_angle_builder(
-    name = "win-angle-x86-try",
-    os = os.WINDOWS_ANY,
-    executable = "recipe:angle_chromium_trybot",
-)
-
 try_.chromium_chromiumos_builder(
     name = "chromeos-amd64-generic-cfi-thin-lto-rel",
 )
@@ -1657,6 +1651,37 @@ try_.chromium_mac_builder(
     main_list_view = "try",
     os = os.MAC_DEFAULT,
     tryjob = try_.job(),
+)
+
+try_.chromium_mac_builder(
+    name = "mac-rel-orchestrator",
+    builderless = True,
+    cores = 2,
+    executable = "recipe:chromium/orchestrator",
+    use_clang_coverage = True,
+    main_list_view = "try",
+    os = os.LINUX_BIONIC,
+    properties = {
+        "$build/chromium_orchestrator": {
+            "compilator": "mac-rel-compilator",
+            "compilator_watcher_git_revision": compilator_watcher_git_revision,
+        },
+    },
+    service_account = "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
+)
+
+try_.chromium_mac_builder(
+    name = "mac-rel-compilator",
+    builderless = False,
+    cores = 24,
+    executable = "recipe:chromium/compilator",
+    goma_jobs = goma.jobs.J150,
+    properties = {
+        "orchestrator": {
+            "builder_name": "mac-rel-orchestrator",
+            "builder_group": "tryserver.chromium.mac",
+        },
+    },
 )
 
 try_.chromium_mac_builder(

@@ -1661,8 +1661,8 @@ void CopyPasswordDetailWithID(int detail_id) {
       performAction:grey_tap()];
 }
 
-// Checks the 'Add Password' button is disabled when the enable password toggle
-// is turned off.
+// Checks the 'Add Password' button is enabled when the passwords screen is
+// presented irrespective of the enable password toggle.
 - (void)testToolbarAddPasswordButton {
   SaveExamplePasswordForm();
   OpenPasswordSettings();
@@ -1686,15 +1686,9 @@ void CopyPasswordDetailWithID(int detail_id) {
                                              !expectedState),
         kGREYDirectionUp) assertWithMatcher:grey_sufficientlyVisible()];
 
-    if (!expectedState) {
       // Expect the button to be enabled.
-      [[EarlGrey selectElementWithMatcher:AddPasswordButton()]
-          assertWithMatcher:grey_sufficientlyVisible()];
-    } else {
-      // Expect the button to be disabled.
-      [[EarlGrey selectElementWithMatcher:AddPasswordButton()]
-          assertWithMatcher:grey_not(grey_enabled())];
-    }
+    [[EarlGrey selectElementWithMatcher:AddPasswordButton()]
+        assertWithMatcher:grey_sufficientlyVisible()];
   }
 }
 
@@ -1889,8 +1883,28 @@ void CopyPasswordDetailWithID(int detail_id) {
                                               UIAccessibilityTraitButton),
                                           nullptr)] performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:grey_textFieldValue(@"concrete password")]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
+      performAction:grey_replaceText(@"new username")];
+
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:EditConfirmationButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
+      assertWithMatcher:grey_textFieldValue(@"new username")];
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+
+  [GetInteractionForPasswordEntry(@"example.com, new username")
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests that the error message is shown when the top-level domain is missing

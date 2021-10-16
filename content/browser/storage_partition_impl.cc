@@ -23,8 +23,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/run_loop.h"
-#include "base/task/sequenced_task_runner_forward.h"
-#include "base/task/single_thread_task_runner_forward.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/default_clock.h"
@@ -1235,8 +1235,8 @@ void StoragePartitionImpl::Initialize(
   native_io_context_->Initialize(
       path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy);
 
-  shared_worker_service_ = std::make_unique<SharedWorkerServiceImpl>(
-      this, service_worker_context_, appcache_service_);
+  shared_worker_service_ =
+      std::make_unique<SharedWorkerServiceImpl>(this, service_worker_context_);
 
   push_messaging_context_ = std::make_unique<PushMessagingContext>(
       browser_context_, service_worker_context_);

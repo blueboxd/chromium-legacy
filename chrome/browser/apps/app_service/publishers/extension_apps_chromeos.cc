@@ -687,6 +687,8 @@ apps::mojom::AppPtr ExtensionAppsChromeOs::Convert(
     app->show_in_search = apps::mojom::OptionalBool::kFalse;
     app->show_in_shelf = apps::mojom::OptionalBool::kFalse;
   }
+  if (disable_for_lacros)
+    app->show_in_management = apps::mojom::OptionalBool::kFalse;
 
   // Add file_handlers.
   base::Extend(app->intent_filters,
@@ -795,8 +797,9 @@ void ExtensionAppsChromeOs::RegisterInstance(extensions::AppWindow* app_window,
 content::WebContents* ExtensionAppsChromeOs::LaunchImpl(
     AppLaunchParams&& params) {
   AppLaunchParams params_for_restore(
-      params.app_id, params.container, params.disposition, params.source,
-      params.display_id, params.launch_files, params.intent);
+      params.app_id, params.container, params.disposition,
+      GetLaunchSource(params.source), params.display_id, params.launch_files,
+      params.intent);
 
   auto* web_contents = ExtensionAppsBase::LaunchImpl(std::move(params));
 

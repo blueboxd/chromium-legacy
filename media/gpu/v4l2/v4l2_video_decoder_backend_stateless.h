@@ -10,7 +10,7 @@
 #include "base/containers/small_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/task/sequenced_task_runner_forward.h"
+#include "base/task/sequenced_task_runner.h"
 #include "media/base/decode_status.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
@@ -86,13 +86,14 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
                   VideoDecoder::DecodeCB cb,
                   int32_t id);
 
+    DecodeRequest(const DecodeRequest&) = delete;
+    DecodeRequest& operator=(const DecodeRequest&) = delete;
+
     // Allow move, but not copy
     DecodeRequest(DecodeRequest&&);
     DecodeRequest& operator=(DecodeRequest&&);
 
     ~DecodeRequest();
-
-    DISALLOW_COPY_AND_ASSIGN(DecodeRequest);
   };
 
   // The reason the decoding is paused.

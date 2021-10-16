@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/sequenced_task_runner_forward.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
@@ -401,7 +401,7 @@ FieldInfoStore* PasswordStoreImpl::GetFieldInfoStore() {
 }
 
 std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
-PasswordStoreImpl::CreateSyncControllerDelegateFactory() {
+PasswordStoreImpl::CreateSyncControllerDelegate() {
   DCHECK(!was_shutdown_);
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   // Note that a callback is bound for

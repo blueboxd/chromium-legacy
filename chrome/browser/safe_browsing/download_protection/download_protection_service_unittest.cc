@@ -28,7 +28,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/single_thread_task_runner_forward.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -370,8 +370,6 @@ class DownloadProtectionServiceTestBase
                          .AppendASCII("safe_browsing")
                          .AppendASCII("download_protection");
 
-    ASSERT_TRUE(profile()->CreateHistoryService());
-
     // Setup a directory to place test files in.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -421,8 +419,12 @@ class DownloadProtectionServiceTestBase
   }
 
   TestingProfile::TestingFactories GetTestingFactories() const override {
-    return IdentityTestEnvironmentProfileAdaptor::
-        GetIdentityTestEnvironmentFactories();
+    TestingProfile::TestingFactories factories =
+        IdentityTestEnvironmentProfileAdaptor::
+            GetIdentityTestEnvironmentFactories();
+    factories.emplace_back(HistoryServiceFactory::GetInstance(),
+                           HistoryServiceFactory::GetDefaultFactory());
+    return factories;
   }
 
   void EnableFeatures(const std::vector<base::Feature>& features) {

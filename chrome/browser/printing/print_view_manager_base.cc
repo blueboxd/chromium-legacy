@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
-#include "base/task/single_thread_task_runner_forward.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -369,14 +369,10 @@ bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
   // go in `ReleasePrintJob()`.
 
   SetPrintingRFH(rfh);
+  GetPrintRenderFrame(rfh)->PrintRequestedPages();
 
-  // The observers are used in tests, so trigger them before calls to the
-  // renderer. This makes it less likely for problems caused by the renderer
-  // to affect the tests (see crbug.com/1258561).
   for (auto& observer : GetObservers())
     observer.OnPrintNow(rfh);
-
-  GetPrintRenderFrame(rfh)->PrintRequestedPages();
 
   return true;
 }

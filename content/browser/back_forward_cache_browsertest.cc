@@ -3840,6 +3840,11 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Events) {
               static_cast<int>(
                   blink::EventPageShowPersisted::
                       kYesInBrowser_BackForwardCache_RestoreEntry_Succeed),
+              1),
+          base::Bucket(
+              static_cast<int>(
+                  blink::EventPageShowPersisted::
+                      kYesInBrowser_RenderFrameHostManager_CommitPending),
               1)));
 }
 
@@ -11905,7 +11910,7 @@ class BackForwardCacheBrowserTestWithMediaSessionPlaybackStateChangeSupported
 
 // This test is flaky on Linux.
 // See https://crbug.com/1253200
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_CacheWhenMediaSessionServiceIsNotUsed \
   DISABLED_CacheWhenMediaSessionServiceIsNotUsed
 #else

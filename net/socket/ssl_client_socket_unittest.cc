@@ -24,7 +24,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
-#include "base/task/single_thread_task_runner_forward.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -3508,27 +3508,9 @@ TEST_F(SSLClientSocketTest, 3DES) {
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
-  // 3DES is disabled by default.
+  // 3DES is always disabled.
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
-
-  // Disabling 3DES at both the context and disable_legacy_crypto still disables
-  // 3DES.
-  SSLConfig config_no_legacy_crypto;
-  config_no_legacy_crypto.disable_legacy_crypto = true;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config_no_legacy_crypto, &rv));
-  EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
-
-  // It may be re-enabled at the context.
-  SSLContextConfig context_config;
-  context_config.triple_des_enabled = true;
-  ssl_config_service_->UpdateSSLConfigAndNotify(context_config);
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  EXPECT_THAT(rv, IsOk());
-
-  // disable_legacy_crypto still disables 3DES when the context enables it.
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config_no_legacy_crypto, &rv));
   EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
 }
 

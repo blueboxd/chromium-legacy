@@ -17,7 +17,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "base/task/single_thread_task_runner_forward.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -354,6 +354,13 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
 
   DownloadPrefs* download_prefs() {
     return download_prefs_.get();
+  }
+
+ protected:
+  // ChromeRenderViewHostTestHarness overrides.
+  TestingProfile::TestingFactories GetTestingFactories() const override {
+    return {{HistoryServiceFactory::GetInstance(),
+             HistoryServiceFactory::GetDefaultFactory()}};
   }
 
  private:
@@ -1193,9 +1200,6 @@ TEST_F(DownloadTargetDeterminerTest, VisitedReferrer) {
   ASSERT_EQ(DownloadFileType::ALLOW_ON_USER_GESTURE,
             safe_browsing::FileTypePolicies::GetInstance()->GetFileDangerLevel(
                 base::FilePath(FILE_PATH_LITERAL("foo.kindabad"))));
-
-  // First the history service must exist.
-  ASSERT_TRUE(profile()->CreateHistoryService());
 
   GURL url("http://visited.example.com/visited-link.html");
   // The time of visit is picked to be several seconds prior to the most recent

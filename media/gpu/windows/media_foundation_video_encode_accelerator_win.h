@@ -16,7 +16,7 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/single_thread_task_runner_forward.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "media/base/bitrate.h"
 #include "media/base/win/dxgi_device_manager.h"
@@ -40,6 +40,11 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // systems, which may impact the performance or quality of the output.
   explicit MediaFoundationVideoEncodeAccelerator(bool compatible_with_win7,
                                                  bool enable_async_mft);
+
+  MediaFoundationVideoEncodeAccelerator(
+      const MediaFoundationVideoEncodeAccelerator&) = delete;
+  MediaFoundationVideoEncodeAccelerator& operator=(
+      const MediaFoundationVideoEncodeAccelerator&) = delete;
 
   // VideoEncodeAccelerator implementation.
   VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
@@ -203,8 +208,6 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // other destructors run.
   base::WeakPtrFactory<MediaFoundationVideoEncodeAccelerator>
       encoder_task_weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MediaFoundationVideoEncodeAccelerator);
 };
 
 }  // namespace media

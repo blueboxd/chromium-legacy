@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/task/sequenced_task_runner_forward.h"
-#include "base/task/sequenced_task_runner_helpers_forward.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner_helpers.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "media/gpu/media_gpu_export.h"
@@ -46,6 +46,9 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   // CommandBufferHelpers can be created before a stub is available.
   static scoped_refptr<CommandBufferHelper> Create(
       gpu::CommandBufferStub* stub);
+
+  CommandBufferHelper(const CommandBufferHelper&) = delete;
+  CommandBufferHelper& operator=(const CommandBufferHelper&) = delete;
 
   // Gets the associated GLContext.
   //
@@ -152,8 +155,6 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
  private:
   friend class base::DeleteHelper<CommandBufferHelper>;
   friend class base::RefCountedDeleteOnSequence<CommandBufferHelper>;
-
-  DISALLOW_COPY_AND_ASSIGN(CommandBufferHelper);
 };
 
 }  // namespace media

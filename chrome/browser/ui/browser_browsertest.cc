@@ -27,7 +27,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/task/single_thread_task_runner_forward.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1391,7 +1391,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
               extension_app->id(),
               apps::mojom::LaunchContainer::kLaunchContainerWindow,
               WindowOpenDisposition::NEW_WINDOW,
-              apps::mojom::AppLaunchSource::kSourceTest));
+              apps::mojom::LaunchSource::kFromTest));
   ASSERT_TRUE(app_window);
 
   DevToolsWindow* devtools_window =
@@ -1574,7 +1574,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
               extension_app->id(),
               apps::mojom::LaunchContainer::kLaunchContainerWindow,
               WindowOpenDisposition::NEW_WINDOW,
-              apps::mojom::AppLaunchSource::kSourceTest));
+              apps::mojom::LaunchSource::kFromTest));
   ASSERT_TRUE(app_window);
 
   // Apps launched in a window from the NTP have an extensions tab helper with

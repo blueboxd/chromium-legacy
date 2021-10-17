@@ -9,6 +9,7 @@
 #include <queue>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/policy/messaging_layer/upload/upload_client.h"
 #include "chrome/browser/policy/messaging_layer/upload/upload_provider.h"
@@ -31,19 +32,8 @@ namespace reporting {
 class ReportingClient : public ReportQueueProvider {
  public:
   using CreateReportQueueResponse = StatusOr<std::unique_ptr<ReportQueue>>;
-
   using CreateReportQueueCallback =
       base::OnceCallback<void(CreateReportQueueResponse)>;
-
-  ReportQueueProvider::InitializingContext* InstantiateInitializingContext(
-      InitCompleteCallback init_complete_cb,
-      scoped_refptr<InitializationStateTracker> init_state_tracker) override;
-
-  StatusOr<std::unique_ptr<ReportQueue>> CreateNewQueue(
-      std::unique_ptr<ReportQueueConfiguration> config) override;
-
-  StatusOr<std::unique_ptr<ReportQueue, base::OnTaskRunnerDeleter>>
-  CreateNewSpeculativeQueue() override;
 
   // RAII class for testing ReportingClient - substitutes reporting files
   // location, signature verification public key and a cloud policy client
@@ -58,6 +48,7 @@ class ReportingClient : public ReportQueueProvider {
     ~TestEnvironment();
 
    private:
+    StorageModuleCreateCallback saved_storage_create_cb_;
     GetCloudPolicyClientCallback saved_build_cloud_policy_client_cb_;
     std::unique_ptr<EncryptedReportingUploadProvider> saved_upload_provider_;
   };
@@ -67,7 +58,6 @@ class ReportingClient : public ReportQueueProvider {
   ReportingClient& operator=(const ReportingClient& other) = delete;
 
  private:
-  class ClientInitializingContext;
   class Uploader;
 
   friend class TestEnvironment;
@@ -98,23 +88,11 @@ class ReportingClient : public ReportQueueProvider {
   std::unique_ptr<EncryptedReportingUploadProvider> GetDefaultUploadProvider(
       GetCloudPolicyClientCallback build_cloud_policy_client_cb);
 
-  // Local storage parameters.
-  base::FilePath reporting_path_;
-  std::string verification_key_;
-
-  // Storage module associated with the client. Protected by
-  // client_sequenced_task_runner_.
-  scoped_refptr<StorageModuleInterface> storage_;
-
   // Cloud policy client (set by constructor, may only be changed for tests).
   GetCloudPolicyClientCallback build_cloud_policy_client_cb_;
 
   // Upload provider (if enabled).
   std::unique_ptr<EncryptedReportingUploadProvider> upload_provider_;
-
-  // Task runner used for guarding the client state.
-  scoped_refptr<base::SequencedTaskRunner> client_sequenced_task_runner_;
-  SEQUENCE_CHECKER(client_sequence_checker_);
 };
 }  // namespace reporting
 

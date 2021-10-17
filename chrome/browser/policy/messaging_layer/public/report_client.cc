@@ -50,6 +50,21 @@ namespace {
 const base::FilePath::CharType kReportingDirectory[] =
     FILE_PATH_LITERAL("reporting");
 
+void CreateLocalStorageModule(
+    const base::FilePath& local_reporting_path,
+    base::StringPiece verification_key,
+    CompressionInformation::CompressionAlgorithm compression_algorithm,
+    UploaderInterface::AsyncStartUploaderCb async_start_upload_cb,
+    base::OnceCallback<void(StatusOr<scoped_refptr<StorageModuleInterface>>)>
+        cb) {
+  LOG(WARNING) << "Store reporting data locally";
+  StorageModule::Create(
+      StorageOptions()
+          .set_directory(local_reporting_path)
+          .set_signature_verification_public_key(verification_key),
+      std::move(async_start_upload_cb), EncryptionModule::Create(),
+      CompressionModule::Create(512, compression_algorithm), std::move(cb));
+}
 }  // namespace
 
 // Uploader is passed to Storage in order to upload messages using the
@@ -174,92 +189,36 @@ void ReportingClient::Uploader::Helper::Completed(Status final_status) {
   }
 }
 
-class ReportingClient::ClientInitializingContext
-    : public ReportQueueProvider::InitializingContext {
- public:
-  ClientInitializingContext(
-      UploaderInterface::AsyncStartUploaderCb async_start_upload_cb,
-      InitCompleteCallback init_complete_cb,
-      ReportingClient* client,
-      scoped_refptr<InitializationStateTracker> init_state_tracker)
-      : ReportQueueProvider::InitializingContext(std::move(init_complete_cb),
-                                                 std::move(init_state_tracker)),
-        async_start_upload_cb_(std::move(async_start_upload_cb)),
-        client_(client) {}
-
- private:
-  // Destructor only called from Complete().
-  // The class runs a series of callbacks each of which may invoke
-  // either the next callback or Complete(). Thus eventually Complete()
-  // is always called and InitializingContext instance is self-destruct.
-  ~ClientInitializingContext() override = default;
-
-  // Begins the process of configuring the ReportingClient.
-  void OnStart() override {
-    auto cb = base::BindPostTask(
-        client_->client_sequenced_task_runner_,
-        base::BindOnce(&ClientInitializingContext::OnStorageModuleConfigured,
-                       base::Unretained(this)));
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-    if (StorageSelector::is_use_missive()) {
-      StorageSelector::CreateMissiveStorageModule(std::move(cb));
-      return;
-    }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-    StorageSelector::CreateLocalStorageModule(
-        client_->reporting_path_, client_->verification_key_,
-        CompressionInformation::COMPRESSION_SNAPPY,
-        std::move(async_start_upload_cb_), std::move(cb));
-  }
-
-  // Handles StorageModuleInterface instantiation for ReportingClient to refer
-  // to.
-  void OnStorageModuleConfigured(
-      StatusOr<scoped_refptr<StorageModuleInterface>> storage_result) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(client_->client_sequence_checker_);
-    if (!storage_result.ok()) {
-      Complete(storage_result.status());
-      return;
-    }
-    DCHECK(!client_->storage_) << "Storage module already recorded";
-    client_->storage_ = storage_result.ValueOrDie();
-    Complete(Status::StatusOK());
-  }
-
-  // Finally updates client with the elements of the configuration into the
-  // ReportingClient, if the configuration process succeeded.
-  void OnCompleted() override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(client_->client_sequence_checker_);
-  }
-
-  UploaderInterface::AsyncStartUploaderCb async_start_upload_cb_;
-  ReportingClient* const client_;
-};
-
-ReportQueueProvider::InitializingContext*
-ReportingClient::InstantiateInitializingContext(
-    InitCompleteCallback init_complete_cb,
-    scoped_refptr<InitializationStateTracker> init_state_tracker) {
-  return new ClientInitializingContext(
-      base::BindRepeating(&ReportingClient::AsyncStartUploader),
-      std::move(init_complete_cb), this, init_state_tracker);
-}
-
 ReportingClient::ReportingClient()
-    : verification_key_(SignatureVerifier::VerificationKey()),
-      build_cloud_policy_client_cb_(GetCloudPolicyClientCb()),
-      client_sequenced_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
-          {base::TaskPriority::BEST_EFFORT, base::MayBlock()})) {
-  // Storage location in the local file system (if local storage is enabled).
-  base::FilePath user_data_dir;
-  const auto res =
-      base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  DCHECK(res) << "Could not retrieve base path";
+    : ReportQueueProvider(base::BindRepeating(
+          [](base::OnceCallback<void(
+                 StatusOr<scoped_refptr<StorageModuleInterface>>)>
+                 storage_created_cb) {
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+            if (StorageSelector::is_use_missive()) {
+              StorageSelector::CreateMissiveStorageModule(
+                  std::move(storage_created_cb));
+              return;
+            }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+
+            // Storage location in the local file system (if local storage is
+            // enabled).
+            base::FilePath reporting_path;
+            const auto res =
+                base::PathService::Get(chrome::DIR_USER_DATA, &reporting_path);
+            DCHECK(res) << "Could not retrieve base path";
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  user_data_dir = user_data_dir.Append("user");
+            reporting_path = reporting_path.Append("user");
 #endif
-  reporting_path_ = user_data_dir.Append(kReportingDirectory);
-  DETACH_FROM_SEQUENCE(client_sequence_checker_);
+            reporting_path = reporting_path.Append(kReportingDirectory);
+            CreateLocalStorageModule(
+                reporting_path, SignatureVerifier::VerificationKey(),
+                CompressionInformation::COMPRESSION_SNAPPY,
+                base::BindRepeating(&ReportingClient::AsyncStartUploader),
+                std::move(storage_created_cb));
+          })),
+      build_cloud_policy_client_cb_(GetCloudPolicyClientCb()) {
 }
 
 ReportingClient::~ReportingClient() = default;
@@ -277,16 +236,6 @@ ReportQueueProvider* ReportQueueProvider::GetInstance() {
   return ReportingClient::GetInstance();
 }
 
-StatusOr<std::unique_ptr<ReportQueue>> ReportingClient::CreateNewQueue(
-    std::unique_ptr<ReportQueueConfiguration> config) {
-  return ReportQueueImpl::Create(std::move(config), storage_);
-}
-
-StatusOr<std::unique_ptr<ReportQueue, base::OnTaskRunnerDeleter>>
-ReportingClient::CreateNewSpeculativeQueue() {
-  return SpeculativeReportQueueImpl::Create();
-}
-
 // static
 void ReportingClient::AsyncStartUploader(
     UploaderInterface::UploadReason reason,
@@ -298,13 +247,12 @@ void ReportingClient::AsyncStartUploader(
 void ReportingClient::DeliverAsyncStartUploader(
     UploaderInterface::UploadReason reason,
     UploaderInterface::UploaderInterfaceResultCb start_uploader_cb) {
-  client_sequenced_task_runner_->PostTask(
+  sequenced_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           [](UploaderInterface::UploadReason reason,
              UploaderInterface::UploaderInterfaceResultCb start_uploader_cb,
              ReportingClient* instance) {
-            DCHECK_CALLED_ON_VALID_SEQUENCE(instance->client_sequence_checker_);
             if (!instance->upload_provider_) {
               // If non-missived uploading is enabled, it will need upload
               // provider, In case of missived Uploader will be provided by
@@ -340,9 +288,9 @@ void ReportingClient::DeliverAsyncStartUploader(
                       return Status::StatusOK();
                     },
                     base::BindOnce(&StorageModuleInterface::ReportSuccess,
-                                   instance->storage_),
+                                   instance->storage()),
                     base::BindOnce(&StorageModuleInterface::UpdateEncryptionKey,
-                                   instance->storage_),
+                                   instance->storage()),
                     base::Unretained(instance->upload_provider_.get())));
             std::move(start_uploader_cb).Run(std::move(uploader));
           },
@@ -352,7 +300,6 @@ void ReportingClient::DeliverAsyncStartUploader(
 std::unique_ptr<EncryptedReportingUploadProvider>
 ReportingClient::GetDefaultUploadProvider(
     GetCloudPolicyClientCallback build_cloud_policy_client_cb) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   return std::make_unique<::reporting::EncryptedReportingUploadProvider>(
       build_cloud_policy_client_cb);
 }
@@ -361,11 +308,23 @@ ReportingClient::TestEnvironment::TestEnvironment(
     const base::FilePath& reporting_path,
     base::StringPiece verification_key,
     policy::CloudPolicyClient* client)
-    : saved_build_cloud_policy_client_cb_(std::move(
+    : saved_storage_create_cb_(
+          std::move(ReportingClient::GetInstance()->storage_create_cb_)),
+      saved_build_cloud_policy_client_cb_(std::move(
           ReportingClient::GetInstance()->build_cloud_policy_client_cb_)) {
-  ReportingClient::GetInstance()->reporting_path_ = reporting_path;
-  ReportingClient::GetInstance()->verification_key_.assign(
-      verification_key.data(), verification_key.size());
+  ReportingClient::GetInstance()->storage_create_cb_ = base::BindRepeating(
+      [](const base::FilePath& reporting_path,
+         base::StringPiece verification_key,
+         base::OnceCallback<void(
+             StatusOr<scoped_refptr<StorageModuleInterface>>)>
+             storage_created_cb) {
+        CreateLocalStorageModule(
+            reporting_path, verification_key,
+            CompressionInformation::COMPRESSION_SNAPPY,
+            base::BindRepeating(&ReportingClient::AsyncStartUploader),
+            std::move(storage_created_cb));
+      },
+      reporting_path, verification_key);
   ReportingClient::GetInstance()->build_cloud_policy_client_cb_ =
       base::BindRepeating(
           [](policy::CloudPolicyClient* client,
@@ -376,6 +335,8 @@ ReportingClient::TestEnvironment::TestEnvironment(
 }
 
 ReportingClient::TestEnvironment::~TestEnvironment() {
+  ReportingClient::GetInstance()->storage_create_cb_ =
+      std::move(saved_storage_create_cb_);
   ReportingClient::GetInstance()->build_cloud_policy_client_cb_ =
       std::move(saved_build_cloud_policy_client_cb_);
   base::Singleton<ReportingClient>::OnExit(nullptr);

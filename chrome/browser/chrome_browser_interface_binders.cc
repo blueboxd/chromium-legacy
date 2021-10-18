@@ -174,6 +174,8 @@
 #endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/webui/camera_app_ui/camera_app_helper.mojom.h"
+#include "ash/webui/camera_app_ui/camera_app_ui.h"
 #include "ash/webui/diagnostics_ui/diagnostics_ui.h"
 #include "ash/webui/diagnostics_ui/mojom/input_data_provider.mojom.h"
 #include "ash/webui/diagnostics_ui/mojom/network_health_provider.mojom.h"
@@ -186,6 +188,8 @@
 #include "ash/webui/help_app_ui/search/search.mojom.h"
 #include "ash/webui/media_app_ui/media_app_ui.h"
 #include "ash/webui/media_app_ui/media_app_ui.mojom.h"
+#include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
+#include "ash/webui/personalization_app/personalization_app_ui.h"
 #include "ash/webui/print_management/mojom/printing_manager.mojom.h"
 #include "ash/webui/print_management/print_management_ui.h"
 #include "ash/webui/scanning/mojom/scanning.mojom.h"
@@ -225,15 +229,11 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/user_action_recorder.mojom.h"
-#include "chromeos/components/camera_app_ui/camera_app_helper.mojom.h"
-#include "chromeos/components/camera_app_ui/camera_app_ui.h"
 #include "chromeos/components/connectivity_diagnostics/connectivity_diagnostics_ui.h"
 #include "chromeos/components/eche_app_ui/eche_app_ui.h"
 #include "chromeos/components/eche_app_ui/mojom/eche_app.mojom.h"
 #include "chromeos/components/local_search_service/public/mojom/index.mojom.h"
 #include "chromeos/components/multidevice/debug_webui/proximity_auth_ui.h"
-#include "chromeos/components/personalization_app/mojom/personalization_app.mojom.h"
-#include "chromeos/components/personalization_app/personalization_app_ui.h"
 #include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom.h"

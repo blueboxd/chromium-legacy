@@ -77,10 +77,6 @@ const base::Feature kBackgroundFetch{"BackgroundFetch",
 const base::Feature kBackForwardCache{"BackForwardCache",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Allows pages with a media play to stay eligible the back/forward cache.
-const base::Feature kBackForwardCacheMediaPlay{
-    "BackForwardCacheMediaPlay", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Allows pages that created a MediaSession service to stay eligible for the
 // back/forward cache.
 const base::Feature kBackForwardCacheMediaSessionService{
@@ -570,12 +566,6 @@ const base::Feature kProcessSharingWithStrictSiteInstances{
 // local frame interface which will handle the messages at a higher priority.
 const base::Feature kHighPriorityBeforeUnload{
     "HighPriorityBeforeUnload", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Under this flag bootstrap (aka startup) tasks will be prioritized. This flag
-// is used by various modules to determine whether special scheduling
-// arrangements need to be made to prioritize certain tasks.
-const base::Feature kPrioritizeBootstrapTasks = {
-    "PrioritizeBootstrapTasks", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Requires that CORS preflight requests succeed before sending private network
 // requests. This flag implies `kPrivateNetworkAccessSendPreflights`.

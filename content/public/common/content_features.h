@@ -31,7 +31,6 @@ CONTENT_EXPORT extern const base::Feature kAudioServiceSandbox;
 CONTENT_EXPORT extern const base::Feature kBackgroundFetch;
 CONTENT_EXPORT extern const base::Feature kBackForwardCache;
 CONTENT_EXPORT extern const base::Feature kBackForwardCacheSameSiteForBots;
-CONTENT_EXPORT extern const base::Feature kBackForwardCacheMediaPlay;
 CONTENT_EXPORT extern const base::Feature kBackForwardCacheMemoryControls;
 CONTENT_EXPORT extern const base::Feature kBackForwardCacheMediaSessionService;
 CONTENT_EXPORT extern const base::Feature kBlockCredentialedSubresources;
@@ -145,7 +144,6 @@ CONTENT_EXPORT extern const base::Feature kPepper3DImageChromium;
 CONTENT_EXPORT extern const base::Feature kPepperCrossOriginRedirectRestriction;
 CONTENT_EXPORT extern const base::Feature kPlzServiceWorker;
 CONTENT_EXPORT extern const base::Feature kHighPriorityBeforeUnload;
-CONTENT_EXPORT extern const base::Feature kPrioritizeBootstrapTasks;
 CONTENT_EXPORT extern const base::Feature
     kPrivateNetworkAccessRespectPreflightResults;
 CONTENT_EXPORT extern const base::Feature kPrivateNetworkAccessSendPreflights;

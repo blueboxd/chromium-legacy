@@ -44,23 +44,10 @@ VaapiVideoEncoderDelegate::EncodeJob::EncodeJob(
 
 VaapiVideoEncoderDelegate::EncodeJob::~EncodeJob() = default;
 
-void VaapiVideoEncoderDelegate::EncodeJob::AddSetupCallback(
-    base::OnceClosure cb) {
-  DCHECK(!cb.is_null());
-  setup_callbacks_.push(std::move(cb));
-}
-
 void VaapiVideoEncoderDelegate::EncodeJob::AddReferencePicture(
     scoped_refptr<CodecPicture> ref_pic) {
   DCHECK(ref_pic);
   reference_pictures_.push_back(ref_pic);
-}
-
-void VaapiVideoEncoderDelegate::EncodeJob::ExecuteSetupCallbacks() {
-  while (!setup_callbacks_.empty()) {
-    std::move(setup_callbacks_.front()).Run();
-    setup_callbacks_.pop();
-  }
 }
 
 const scoped_refptr<VideoFrame>&
@@ -146,8 +133,6 @@ VaapiVideoEncoderDelegate::Encode(std::unique_ptr<EncodeJob> encode_job) {
     return nullptr;
   }
 
-  encode_job->ExecuteSetupCallbacks();
-
   if (!vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(va_surface_id)) {
     VLOGF(1) << "Failed to execute encode";
     return nullptr;
@@ -164,34 +149,6 @@ VaapiVideoEncoderDelegate::Encode(std::unique_ptr<EncodeJob> encode_job) {
 
   auto metadata = GetMetadata(*encode_job, encoded_chunk_size);
   return std::make_unique<EncodeResult>(std::move(encode_job), metadata);
-}
-
-void VaapiVideoEncoderDelegate::SubmitBuffer(
-    VABufferType type,
-    scoped_refptr<base::RefCountedBytes> buffer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!vaapi_wrapper_->SubmitBuffer(type, buffer->size(), buffer->front()))
-    error_cb_.Run();
-}
-
-void VaapiVideoEncoderDelegate::SubmitVAEncMiscParamBuffer(
-    VAEncMiscParameterType type,
-    scoped_refptr<base::RefCountedBytes> buffer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  const size_t temp_size = sizeof(VAEncMiscParameterBuffer) + buffer->size();
-  std::vector<uint8_t> temp(temp_size);
-
-  auto* const va_buffer =
-      reinterpret_cast<VAEncMiscParameterBuffer*>(temp.data());
-  va_buffer->type = type;
-  memcpy(va_buffer->data, buffer->front(), buffer->size());
-
-  if (!vaapi_wrapper_->SubmitBuffer(VAEncMiscParameterBufferType, temp_size,
-                                    temp.data())) {
-    error_cb_.Run();
-  }
 }
 
 }  // namespace media

@@ -379,6 +379,15 @@ const base::Feature kEarlyLibraryLoad{"EarlyLibraryLoad",
 #endif
 
 #if defined(OS_ANDROID)
+// Under this flag Java bootstrap (aka startup) tasks that are run before native
+// initialization will not be specially prioritized by being posted at the front
+// of the Looper's queue.
+const base::Feature kElidePrioritizationOfPreNativeBootstrapTasks = {
+    "ElidePrioritizationOfPreNativeBootstrapTasks",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
+#if defined(OS_ANDROID)
 // Under this flag tab preloading at startup will be elided (i.e., not
 // performed).
 const base::Feature kElideTabPreloadAtStartup = {
@@ -514,22 +523,30 @@ const base::Feature kHappinessTrackingSurveysForDesktopPrivacyReview{
 const base::Feature kHappinessTrackingSurveysForDesktopPrivacySandbox{
     "HappinessTrackingSurveysForDesktopPrivacySandbox",
     base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysForDesktopPrivacySandboxTime{
+        &kHappinessTrackingSurveysForDesktopPrivacySandbox, "settings-time",
+        base::Seconds(20)};
 
 // Enables or disables the Happiness Tracking System for Desktop Chrome
 // Settings.
 const base::Feature kHappinessTrackingSurveysForDesktopSettings{
     "HappinessTrackingSurveysForDesktopSettings",
     base::FEATURE_DISABLED_BY_DEFAULT};
-const base::FeatureParam<bool>
-    kHappinessTrackingSurveysForDesktopSettingsPrivacyNoSandbox{
-        &kHappinessTrackingSurveysForDesktopSettingsPrivacy, "no-sandbox",
-        false};
 
 // Enables or disables the Happiness Tracking System for Desktop Chrome
 // Privacy Settings.
 const base::Feature kHappinessTrackingSurveysForDesktopSettingsPrivacy{
     "HappinessTrackingSurveysForDesktopSettingsPrivacy",
     base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<bool>
+    kHappinessTrackingSurveysForDesktopSettingsPrivacyNoSandbox{
+        &kHappinessTrackingSurveysForDesktopSettingsPrivacy, "no-sandbox",
+        false};
+const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysForDesktopSettingsPrivacyTime{
+        &kHappinessTrackingSurveysForDesktopSettingsPrivacy, "settings-time",
+        base::Seconds(20)};
 
 // Enables or disables the Happiness Tracking System for Desktop Chrome
 // NTP Modules.

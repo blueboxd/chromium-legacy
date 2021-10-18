@@ -29,6 +29,12 @@ template("ash_generated_grit") {
   }
 }
 
+# Resources used by chrome://camera-app.
+ash_generated_grit("camera_app_resources") {
+  source = "$root_gen_dir/ash/webui/camera_app_ui/ash_camera_app_resources.grd"
+  deps = [ "//ash/webui/camera_app_ui:build_grd" ]
+}
+
 # Resources used by chrome://os-feedback
 ash_generated_grit("os_feedback_resources") {
   os_feedback_gen_dir = "$root_gen_dir/ash/webui/os_feedback_ui/resources"
@@ -52,6 +58,12 @@ ash_generated_grit("shimless_rma_resources") {
       "$root_gen_dir/ash/webui/shimless_rma/resources"
   source = "$shimless_rma_resource_gen_dir/ash_shimless_rma_resources.grd"
   deps = [ "//ash/webui/shimless_rma/resources:build_grd" ]
+}
+
+# Resources used by chrome://personalization SWA.
+ash_generated_grit("personalization_app_resources") {
+  source = "$root_gen_dir/ash/webui/personalization_app/resources/ash_personalization_app_resources.grd"
+  deps = [ "//ash/webui/personalization_app/resources:build_grd" ]
 }
 
 if (!is_official_build) {

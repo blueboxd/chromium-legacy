@@ -514,7 +514,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                ui::ToString(dst->role), "id", dst->id);
 
   if (accessibility_mode_.has_mode(ui::AXMode::kPDF)) {
-    SerializeNameAndDescriptionAttributes(src, dst);
     // Return early. None of the following attributes are needed for PDFs.
     return;
   }
@@ -528,19 +527,10 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   // verbalizations can be made if they actually receive focus.
   if (src.AccessibilityIsIgnored() &&
       !dst->HasState(ax::mojom::State::kFocusable)) {
-    // The name is important for exposing the selection around ignored nodes.
-    // TODO(accessibility) Remove this and still pass this content_browsertest:
-    // All/DumpAccessibilityTreeTest.AccessibilityIgnoredSelection/blink
-    if (src.Role() == ax::mojom::Role::kStaticText)
-      SerializeNameAndDescriptionAttributes(src, dst);
     return;
   }
 
-  SerializeNameAndDescriptionAttributes(src, dst);
-
   if (accessibility_mode_.has_mode(ui::AXMode::kScreenReader)) {
-    if (src.IsInLiveRegion())
-      SerializeLiveRegionAttributes(src, dst);
     SerializeOtherScreenReaderAttributes(src, dst);
   }
 
@@ -564,51 +554,6 @@ void BlinkAXTreeSource::SerializeBoundingBoxAttributes(
   if (src.IsLineBreakingObject()) {
     dst->AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
                           true);
-  }
-}
-
-void BlinkAXTreeSource::SerializeNameAndDescriptionAttributes(
-    WebAXObject src,
-    ui::AXNodeData* dst) const {
-  ax::mojom::NameFrom name_from;
-  blink::WebVector<WebAXObject> name_objects;
-  blink::WebString web_name = src.GetName(name_from, name_objects);
-  if ((!web_name.IsEmpty() && !web_name.IsNull()) ||
-      name_from == ax::mojom::NameFrom::kAttributeExplicitlyEmpty) {
-    int max_length = dst->role == ax::mojom::Role::kStaticText
-                         ? kMaxStaticTextLength
-                         : kMaxStringAttributeLength;
-    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kName,
-                                  web_name.Utf8(), max_length);
-    dst->SetNameFrom(name_from);
-    AddIntListAttributeFromWebObjects(
-        ax::mojom::IntListAttribute::kLabelledbyIds, name_objects, dst);
-  }
-
-  ax::mojom::DescriptionFrom description_from;
-  blink::WebVector<WebAXObject> description_objects;
-  blink::WebString web_description =
-      src.Description(name_from, description_from, description_objects);
-  if (!web_description.IsEmpty()) {
-    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kDescription,
-                                  web_description.Utf8());
-    dst->SetDescriptionFrom(description_from);
-    AddIntListAttributeFromWebObjects(
-        ax::mojom::IntListAttribute::kDescribedbyIds, description_objects, dst);
-  }
-
-  blink::WebString web_title = src.Title(name_from);
-  if (!web_title.IsEmpty()) {
-    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kTooltip,
-                                  web_title.Utf8());
-  }
-
-  if (accessibility_mode_.has_mode(ui::AXMode::kScreenReader)) {
-    blink::WebString web_placeholder = src.Placeholder(name_from);
-    if (!web_placeholder.IsEmpty())
-      TruncateAndAddStringAttribute(dst,
-                                    ax::mojom::StringAttribute::kPlaceholder,
-                                    web_placeholder.Utf8());
   }
 }
 
@@ -643,37 +588,6 @@ void BlinkAXTreeSource::SerializeListMarkerAttributes(
                            src_word_starts.ReleaseVector());
   dst->AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
                            src_word_ends.ReleaseVector());
-}
-
-void BlinkAXTreeSource::SerializeLiveRegionAttributes(
-    WebAXObject src,
-    ui::AXNodeData* dst) const {
-  DCHECK(src.IsInLiveRegion());
-
-  dst->AddBoolAttribute(ax::mojom::BoolAttribute::kLiveAtomic,
-                        src.LiveRegionAtomic());
-  if (!src.LiveRegionStatus().IsEmpty()) {
-    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kLiveStatus,
-                                  src.LiveRegionStatus().Utf8());
-  }
-  TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kLiveRelevant,
-                                src.LiveRegionRelevant().Utf8());
-  // If we are not at the root of an atomic live region.
-  if (src.ContainerLiveRegionAtomic() && !src.LiveRegionRoot().IsDetached() &&
-      !src.LiveRegionAtomic()) {
-    dst->AddIntAttribute(ax::mojom::IntAttribute::kMemberOfId,
-                         src.LiveRegionRoot().AxID());
-  }
-  dst->AddBoolAttribute(ax::mojom::BoolAttribute::kContainerLiveAtomic,
-                        src.ContainerLiveRegionAtomic());
-  dst->AddBoolAttribute(ax::mojom::BoolAttribute::kContainerLiveBusy,
-                        src.ContainerLiveRegionBusy());
-  TruncateAndAddStringAttribute(
-      dst, ax::mojom::StringAttribute::kContainerLiveStatus,
-      src.ContainerLiveRegionStatus().Utf8());
-  TruncateAndAddStringAttribute(
-      dst, ax::mojom::StringAttribute::kContainerLiveRelevant,
-      src.ContainerLiveRegionRelevant().Utf8());
 }
 
 void BlinkAXTreeSource::SerializeOtherScreenReaderAttributes(

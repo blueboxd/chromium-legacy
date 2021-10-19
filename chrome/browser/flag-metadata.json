@@ -938,6 +938,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "crostini-multi-container",
+    "owners": [ "sidereal", "davidmunro@google.com", "nverne" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "crostini-reset-lxd-db",
     "owners": [ "davidmunro@google.com", "nverne", "sidereal" ],
     "expiry_milestone": 110
@@ -3602,11 +3607,6 @@
     "expiry_milestone": 104
   },
   {
-    "name": "launcher-query-highlighting",
-    "owners": ["wrong", "tby", "thanhdng"],
-    "expiry_milestone": 95
-  },
-  {
     "name": "launcher-search-normalization",
     "owners": ["wrong", "tby"],
     "expiry_milestone": 96
@@ -4262,6 +4262,11 @@
     "name": "overscroll-history-navigation",
     "owners": [ "mohsen", "jinsukkim" ],
     "expiry_milestone": 105
+  },
+  {
+    "name": "ozone-platform-hint",
+    "owners": [ "rjkroege", "thomasanderson", "msisov@igalia.com", "nickdiego@igalia.com", "adunaev@igalia.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "page-content-annotations",

@@ -116,24 +116,21 @@ const ExtensionTabUtil::ScrubTabBehavior kDontScrubBehavior = {
     ExtensionTabUtil::kDontScrubTab, ExtensionTabUtil::kDontScrubTab};
 
 int GetTabId(base::DictionaryValue* tab) {
-  int id = kUndefinedId;
-  if (tab)
-    tab->GetInteger(keys::kIdKey, &id);
-  return id;
+  if (!tab)
+    return kUndefinedId;
+  return tab->FindIntKey(keys::kIdKey).value_or(kUndefinedId);
 }
 
 int GetTabWindowId(base::DictionaryValue* tab) {
-  int id = kUndefinedId;
-  if (tab)
-    tab->GetInteger(keys::kWindowIdKey, &id);
-  return id;
+  if (!tab)
+    return kUndefinedId;
+  return tab->FindIntKey(keys::kWindowIdKey).value_or(kUndefinedId);
 }
 
 int GetWindowId(base::DictionaryValue* window) {
-  int id = kUndefinedId;
-  if (window)
-    window->GetInteger(keys::kIdKey, &id);
-  return id;
+  if (!window)
+    return kUndefinedId;
+  return window->FindIntKey(keys::kIdKey).value_or(kUndefinedId);
 }
 
 }  // namespace
@@ -1186,12 +1183,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
     // Make sure the returned tab is the correct one.
     int tab_id_a = ExtensionTabUtil::GetTabId(web_contents_a);
 
-    int id = -1;
     base::Value* tab = nullptr;
     EXPECT_TRUE(result->Get(0, &tab));
-    utils::ToDictionary(tab)->GetInteger(keys::kIdKey, &id);
 
-    EXPECT_EQ(tab_id_a, id);
+    EXPECT_EQ(tab_id_a, utils::ToDictionary(tab)->FindIntKey(keys::kIdKey));
   }
 
   // Discards another created tab.
@@ -1207,12 +1202,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
     int tab_id_c =
         ExtensionTabUtil::GetTabId(tab_strip_model->GetWebContentsAt(0));
 
-    int id = -1;
     base::Value* tab = nullptr;
     EXPECT_TRUE(result->Get(0, &tab));
-    utils::ToDictionary(tab)->GetInteger(keys::kIdKey, &id);
 
-    EXPECT_EQ(tab_id_c, id);
+    EXPECT_EQ(tab_id_c, utils::ToDictionary(tab)->FindIntKey(keys::kIdKey));
   }
 
   // Get discarded tabs after discarding two created tabs.
@@ -1418,11 +1411,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, AutoDiscardableProperty) {
   EXPECT_EQ(1u, query_result->GetList().size());
 
   // Make sure the returned tab is the correct one.
-  int id = -1;
   base::Value* tab = nullptr;
   EXPECT_TRUE(query_result->Get(0, &tab));
-  utils::ToDictionary(tab)->GetInteger(keys::kIdKey, &id);
-  EXPECT_EQ(tab_id_a, id);
+  EXPECT_EQ(tab_id_a, utils::ToDictionary(tab)->FindIntKey(keys::kIdKey));
 
   // Update the auto-discardable state of web contents B.
   int tab_id_b = ExtensionTabUtil::GetTabId(web_contents_b);
@@ -1437,12 +1428,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, AutoDiscardableProperty) {
   EXPECT_EQ(1u, query_result->GetList().size());
 
   // Make sure the returned tab is the correct one.
-  id = -1;
   tab = nullptr;
   EXPECT_TRUE(query_result->Get(0, &tab));
-  utils::ToDictionary(tab)->GetInteger(keys::kIdKey, &id);
   EXPECT_EQ(ExtensionTabUtil::GetTabId(tab_strip_model->GetWebContentsAt(0)),
-            id);
+            utils::ToDictionary(tab)->FindIntKey(keys::kIdKey));
 
   // Get auto-discardable tabs after changing the status of both created tabs.
   query_result.reset(RunQueryFunction(kNonAutoDiscardableQueryInfo));

@@ -56,8 +56,8 @@ class WebViewPasswordManagerClientTest : public PlatformTest {
     pref_service_.registry()->RegisterDictionaryPref(
         password_manager::prefs::kAccountStoragePerAccountSettings);
 
-    profile_store_->Init(&pref_service_);
-    account_store_->Init(&pref_service_);
+    profile_store_->Init(&pref_service_, /*affiliated_match_helper=*/nullptr);
+    account_store_->Init(&pref_service_, /*affiliated_match_helper=*/nullptr);
 
     password_manager_client_ = std::make_unique<WebViewPasswordManagerClient>(
         &web_state_, &sync_service_, &pref_service_,
@@ -101,7 +101,7 @@ TEST_F(WebViewPasswordManagerClientTest, NoPromptIfNotOptedInToAccountStorage) {
       .WillOnce(Return(false));
   CoreAccountInfo account_info;
   account_info.gaia = "1337";
-  sync_service_.SetAuthenticatedAccountInfo(account_info);
+  sync_service_.SetAccountInfo(account_info);
 
   EXPECT_FALSE(password_manager_client_->PromptUserToSaveOrUpdatePassword(
       std::move(password_manager_for_ui), /*update_password=*/false));
@@ -116,7 +116,7 @@ TEST_F(WebViewPasswordManagerClientTest, PromptIfAllConditionsPass) {
 
   CoreAccountInfo account_info;
   account_info.gaia = "1337";
-  sync_service_.SetAuthenticatedAccountInfo(account_info);
+  sync_service_.SetAccountInfo(account_info);
   password_manager::features_util::OptInToAccountStorage(&pref_service_,
                                                          &sync_service_);
 

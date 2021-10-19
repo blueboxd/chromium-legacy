@@ -75,6 +75,7 @@
 #include "chromeos/crosapi/mojom/metrics_reporting.mojom.h"
 #include "chromeos/crosapi/mojom/network_settings_service.mojom.h"
 #include "chromeos/crosapi/mojom/networking_attributes.mojom.h"
+#include "chromeos/crosapi/mojom/policy_service.mojom.h"
 #include "chromeos/crosapi/mojom/power.mojom.h"
 #include "chromeos/crosapi/mojom/prefs.mojom.h"
 #include "chromeos/crosapi/mojom/remoting.mojom.h"
@@ -312,6 +313,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::NativeThemeService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::NetworkingAttributes>(),
     MakeInterfaceVersionEntry<crosapi::mojom::NetworkSettingsService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::PolicyService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Power>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Prefs>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Remoting>(),
@@ -407,7 +409,7 @@ Channel GetStatefulLacrosChannel() {
 }
 
 static_assert(
-    crosapi::mojom::Crosapi::Version_ == 55,
+    crosapi::mojom::Crosapi::Version_ == 56,
     "if you add a new crosapi, please add it to kInterfaceVersionEntries");
 static_assert(!HasDuplicatedUuid(),
               "Each Crosapi Mojom interface should have unique UUID.");
@@ -716,7 +718,8 @@ base::flat_map<base::Token, uint32_t> GetInterfaceVersions() {
 
 mojom::BrowserInitParamsPtr GetBrowserInitParams(
     EnvironmentProvider* environment_provider,
-    InitialBrowserAction initial_browser_action) {
+    InitialBrowserAction initial_browser_action,
+    bool is_keep_alive_enabled) {
   auto params = mojom::BrowserInitParams::New();
   params->crosapi_version = crosapi::mojom::Crosapi::Version_;
   params->deprecated_ash_metrics_enabled_has_value = true;
@@ -820,6 +823,12 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
 
   params->standalone_browser_is_only_browser = !IsAshWebBrowserEnabled();
   params->publish_chrome_apps = browser_util::IsLacrosChromeAppsEnabled();
+
+  // Keep-alive mojom API is now used by the current ash-chrome.
+  params->initial_keep_alive =
+      is_keep_alive_enabled
+          ? crosapi::mojom::BrowserInitParams::InitialKeepAlive::kEnabled
+          : crosapi::mojom::BrowserInitParams::InitialKeepAlive::kDisabled;
   return params;
 }
 
@@ -846,9 +855,11 @@ InitialBrowserAction& InitialBrowserAction::operator=(InitialBrowserAction&&) =
 InitialBrowserAction::~InitialBrowserAction() = default;
 
 base::ScopedFD CreateStartupData(EnvironmentProvider* environment_provider,
-                                 InitialBrowserAction initial_browser_action) {
+                                 InitialBrowserAction initial_browser_action,
+                                 bool is_keep_alive_enabled) {
   auto data = GetBrowserInitParams(environment_provider,
-                                   std::move(initial_browser_action));
+                                   std::move(initial_browser_action),
+                                   is_keep_alive_enabled);
   std::vector<uint8_t> serialized =
       crosapi::mojom::BrowserInitParams::Serialize(&data);
 

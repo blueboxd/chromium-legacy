@@ -40,6 +40,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/ash/crosapi/browser_data_migrator_util.h"
 #include "chrome/browser/ash/crosapi/browser_loader.h"
 #include "chrome/browser/ash/crosapi/browser_service_host_ash.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -47,7 +48,6 @@
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/environment_provider.h"
 #include "chrome/browser/ash/crosapi/test_mojo_connection_manager.h"
-#include "chrome/browser/ash/crosapi/user_data_stats_recorder.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
 #include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
@@ -468,7 +468,7 @@ void BrowserManager::InitializeAndStart() {
   // inside the profile data directory.
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&user_data_stats_recorder::RecordUserDataSizes,
+      base::BindOnce(&ash::browser_data_migrator_util::RecordUserDataSizes,
                      ProfileManager::GetPrimaryUserProfile()->GetPath()));
 }
 
@@ -746,7 +746,8 @@ void BrowserManager::StartWithLogFile(
   }
 
   base::ScopedFD startup_fd = browser_util::CreateStartupData(
-      environment_provider_.get(), std::move(initial_browser_action));
+      environment_provider_.get(), std::move(initial_browser_action),
+      !keep_alive_features_.empty());
   if (startup_fd.is_valid()) {
     // Hardcoded to use FD 3 to make the ash-chrome's behavior more predictable.
     // Lacros-chrome should not depend on the hardcoded value though. Instead
@@ -824,6 +825,12 @@ void BrowserManager::OnBrowserServiceConnected(
 
   DCHECK_EQ(state_, State::STARTING);
   SetState(State::RUNNING);
+
+  // There can be a chance that keep_alive status is updated between the
+  // process launching timing (where initial_keep_alive is set) and the
+  // crosapi mojo connection timing (i.e., this function).
+  // So, send it to lacros-chrome to update to fill the possible gap.
+  UpdateKeepAliveInBrowserIfNecessary(!keep_alive_features_.empty());
 }
 
 void BrowserManager::OnBrowserServiceDisconnected(
@@ -983,12 +990,18 @@ void BrowserManager::StartKeepAlive(Feature feature) {
       << "Features should never be double registered.";
 
   keep_alive_features_.insert(feature);
+  // If this is first KeepAlive instance, update the keep-alive in the browser.
+  if (keep_alive_features_.size() == 1) {
+    // If browser is not running, we have to launch it.
+    LaunchForKeepAliveIfNecessary();
+    UpdateKeepAliveInBrowserIfNecessary(true);
+  }
 }
 
 void BrowserManager::StopKeepAlive(Feature feature) {
   keep_alive_features_.erase(feature);
   if (keep_alive_features_.empty())
-    UnlauchForKeepAlive();
+    UpdateKeepAliveInBrowserIfNecessary(false);
 }
 
 void BrowserManager::LaunchForKeepAliveIfNecessary() {
@@ -1000,8 +1013,14 @@ void BrowserManager::LaunchForKeepAliveIfNecessary() {
   }
 }
 
-void BrowserManager::UnlauchForKeepAlive() {
-  // TODO(https://crbug.com/1194187): Implement this.
+void BrowserManager::UpdateKeepAliveInBrowserIfNecessary(bool enabled) {
+  if (!browser_service_.has_value() ||
+      browser_service_->interface_version <
+          crosapi::mojom::BrowserService::kUpdateKeepAliveMinVersion) {
+    // Browser is not running now, or Lacros is too old. Just give up.
+    return;
+  }
+  browser_service_->service->UpdateKeepAlive(enabled);
 }
 
 void BrowserManager::RecordLacrosLaunchMode() {

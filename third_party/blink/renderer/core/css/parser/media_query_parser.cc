@@ -205,14 +205,8 @@ void MediaQueryParser::ReadFeatureColon(CSSParserTokenType type,
 void MediaQueryParser::ReadFeatureValue(CSSParserTokenType type,
                                         const CSSParserToken& token,
                                         CSSParserTokenRange& range) {
-  if (type == kDimensionToken &&
-      token.GetUnitType() == CSSPrimitiveValue::UnitType::kUnknown) {
-    range.Consume();
-    state_ = kSkipUntilComma;
-  } else {
-    media_query_data_.AddExpression(range, execution_context_);
-    state_ = kReadFeatureEnd;
-  }
+  media_query_data_.AddExpression(range, execution_context_);
+  state_ = kReadFeatureEnd;
 }
 
 void MediaQueryParser::ReadFeatureEnd(CSSParserTokenType type,
@@ -254,18 +248,11 @@ void MediaQueryParser::Done(CSSParserTokenType type,
                             const CSSParserToken& token,
                             CSSParserTokenRange& range) {}
 
-void MediaQueryParser::HandleBlocks(const CSSParserToken& token) {
-  if (token.GetBlockType() == CSSParserToken::kBlockStart &&
-      (token.GetType() != kLeftParenthesisToken || block_watcher_.BlockLevel()))
-    state_ = kSkipUntilBlockEnd;
-}
-
 void MediaQueryParser::ProcessToken(const CSSParserToken& token,
                                     CSSParserTokenRange& range) {
   CSSParserTokenType type = token.GetType();
 
   if (state_ != kReadFeatureValue || type == kWhitespaceToken) {
-    HandleBlocks(token);
     block_watcher_.HandleToken(token);
     range.Consume();
   }

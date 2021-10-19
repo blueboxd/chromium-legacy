@@ -780,6 +780,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Apps.AppList.ScoreNormalizer.L2ErrorDecreased" enum="Boolean"
     expires_after="2022-01-31">
+  <obsolete>
+    Removed October 2021.
+  </obsolete>
   <owner>adafang@google.com</owner>
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
@@ -791,6 +794,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Apps.AppList.ScoreNormalizer.ReadPrefsError"
     enum="BooleanError" expires_after="2022-01-31">
+  <obsolete>
+    Removed October 2021.
+  </obsolete>
   <owner>adafang@google.com</owner>
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
@@ -804,6 +810,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Apps.AppList.ScoreNormalizer.SearchResultsCount" units="count"
     expires_after="2022-01-31">
+  <obsolete>
+    Removed October 2021.
+  </obsolete>
   <owner>adafang@google.com</owner>
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
@@ -2080,6 +2089,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Apps.LauncherSearchQueryLengthJumped" enum="Boolean"
     expires_after="2021-10-25">
+  <obsolete>
+    Removed October 2021.
+  </obsolete>
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <summary>
@@ -2821,7 +2833,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="Apps.StateTransition.Drag.PresentationTime.MaxLatency" units="ms"
-    expires_after="2022-02-06">
+    expires_after="2022-04-17">
 <!-- Name completed by histogram_suffixes
      name="TabletOrClamshellMode" -->
 

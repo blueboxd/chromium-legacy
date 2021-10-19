@@ -3512,6 +3512,12 @@ Unknown properties are collapsed to zero. -->
   <int value="16" label="Storage turned off"/>
   <int value="17" label="Printing turned on"/>
   <int value="18" label="Printing turned off"/>
+  <int value="19" label="Resize Lock turned on"/>
+  <int value="20" label="Resize Lock turned off"/>
+  <int value="21" label="Preferred App turned on"/>
+  <int value="22" label="Preferred App turned off"/>
+  <int value="23" label="Supported Links list shown"/>
+  <int value="24" label="Overlapping apps dialog shown"/>
 </enum>
 
 <enum name="AppMenuHighlightItem">
@@ -48863,6 +48869,7 @@ from previous Chrome versions.
   <int value="-1423193305"
       label="AutofillRationalizeRepeatedServerPredictions:enabled"/>
   <int value="-1421676705" label="force-webxr-runtime"/>
+  <int value="-1420848224" label="WebViewForceDarkModeMatchTheme:enabled"/>
   <int value="-1420542268" label="AutofillEnableAccountWalletStorage:disabled"/>
   <int value="-1419788257" label="enable-experimental-hotwording"/>
   <int value="-1419449681" label="PermissionChipRequestTypeSensitive:enabled"/>
@@ -50314,6 +50321,7 @@ from previous Chrome versions.
   <int value="-304777110" label="PreconnectToSearch:disabled"/>
   <int value="-303992327" label="SwipeToMoveCursor:disabled"/>
   <int value="-302407285" label="WipeDataOnChildAccountSignin:disabled"/>
+  <int value="-302083217" label="WebViewDarkModeMatchTheme:enabled"/>
   <int value="-301689561" label="PermissionQuietChip:disabled"/>
   <int value="-301228557" label="PageInfoDiscoverability:disabled"/>
   <int value="-300018686" label="disable-cloud-import"/>
@@ -51109,6 +51117,7 @@ from previous Chrome versions.
   <int value="319683583" label="ContentSuggestionsDebugLog:enabled"/>
   <int value="320121752" label="DelegateOverscrollSwipes:disabled"/>
   <int value="321366101" label="WebXRARDOMOverlay:enabled"/>
+  <int value="322249981" label="CrostiniMultiContainer:enabled"/>
   <int value="323605372" label="ui-disable-compositor-animation-timelines"/>
   <int value="324060906"
       label="enable-experimental-accessibility-language-detection"/>
@@ -51364,6 +51373,7 @@ from previous Chrome versions.
   <int value="501477022" label="DrawOcclusion:enabled"/>
   <int value="501899677" label="SystemEmojiPicker:enabled"/>
   <int value="502551931" label="IncognitoStrings:enabled"/>
+  <int value="502769956" label="ozone-platform-hint"/>
   <int value="503189154" label="ViewsBrowserWindows:disabled"/>
   <int value="503245473" label="disable-translate-new-ux"/>
   <int value="504549229" label="WebViewDisplayCutout:disabled"/>
@@ -52195,6 +52205,7 @@ from previous Chrome versions.
   <int value="1139363314" label="disable-supervised-user-blacklist"/>
   <int value="1139756271" label="WebOTPCrossDevice:enabled"/>
   <int value="1140541604" label="WinrtGeolocationImplementation:enabled"/>
+  <int value="1140776731" label="WebViewForceDarkModeMatchTheme:disabled"/>
   <int value="1140903063" label="FuseBox:enabled"/>
   <int value="1141918949" label="ContextualSearchLongpressPanelHelp:enabled"/>
   <int value="1142515376" label="enable-nacl"/>
@@ -52279,6 +52290,7 @@ from previous Chrome versions.
   <int value="1206140820" label="RelatedSearchesInBar:disabled"/>
   <int value="1210298193" label="FontAccessPersistent:enabled"/>
   <int value="1210343926" label="enable-drop-sync-credential"/>
+  <int value="1210958725" label="WebViewDarkModeMatchTheme:disabled"/>
   <int value="1211284676" label="V8NoTurbo:enabled"/>
   <int value="1211756417"
       label="SessionRestorePrioritizesBackgroundUseCases:disabled"/>
@@ -53079,6 +53091,7 @@ from previous Chrome versions.
   <int value="1819256299" label="disable-webrtc-hw-decoding"/>
   <int value="1819536169" label="disable-cast-streaming-hw-encoding"/>
   <int value="1820317896" label="NTPShowGoogleGInOmnibox:disabled"/>
+  <int value="1820442907" label="CrostiniMultiContainer:disabled"/>
   <int value="1820451991" label="enable-offline-auto-reload"/>
   <int value="1821723343" label="disable-saml-signin"/>
   <int value="1823102966" label="disable-ipc-flooding-protection"/>

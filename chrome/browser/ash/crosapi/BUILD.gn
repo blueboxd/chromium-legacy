@@ -14,6 +14,8 @@ source_set("crosapi") {
     "automation_ash.h",
     "browser_data_migrator.cc",
     "browser_data_migrator.h",
+    "browser_data_migrator_util.cc",
+    "browser_data_migrator_util.h",
     "browser_loader.cc",
     "browser_loader.h",
     "browser_manager.cc",
@@ -81,6 +83,8 @@ source_set("crosapi") {
     "message_center_ash.h",
     "metrics_reporting_ash.cc",
     "metrics_reporting_ash.h",
+    "migration_progress_tracker.cc",
+    "migration_progress_tracker.h",
     "native_theme_service_ash.cc",
     "native_theme_service_ash.h",
     "network_settings_service_ash.cc",
@@ -88,6 +92,8 @@ source_set("crosapi") {
     "network_settings_translation.h",
     "networking_attributes_ash.cc",
     "networking_attributes_ash.h",
+    "policy_service_ash.cc",
+    "policy_service_ash.h",
     "power_ash.cc",
     "power_ash.h",
     "prefs_ash.cc",
@@ -112,8 +118,6 @@ source_set("crosapi") {
     "translate_proxy_config_to_crosapi.cc",
     "url_handler_ash.cc",
     "url_handler_ash.h",
-    "user_data_stats_recorder.cc",
-    "user_data_stats_recorder.h",
     "video_capture_device_ash.cc",
     "video_capture_device_ash.h",
     "video_capture_device_factory_ash.cc",
@@ -216,12 +220,14 @@ source_set("unit_tests") {
 
   sources = [
     "browser_data_migrator_unittest.cc",
+    "browser_data_migrator_util_unittest.cc",
     "browser_loader_unittest.cc",
     "browser_manager_unittest.cc",
     "browser_util_unittest.cc",
     "browser_version_service_ash_unittest.cc",
     "chrome_app_window_tracker_ash_unittest.cc",
     "download_controller_ash_unittest.cc",
+    "fake_migration_progress_tracker.h",
     "field_trial_service_ash_unittest.cc",
     "geolocation_service_ash_unittest.cc",
     "keystore_service_ash_unittest.cc",
@@ -234,7 +240,6 @@ source_set("unit_tests") {
     "test_local_printer_ash.cc",
     "test_local_printer_ash.h",
     "test_mojo_connection_manager_unittest.cc",
-    "user_data_stats_recorder_unittest.cc",
   ]
 
   deps = [

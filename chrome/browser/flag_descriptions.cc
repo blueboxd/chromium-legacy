@@ -4257,6 +4257,10 @@ const char kCrostiniUseLxd4Description[] =
     "Uses LXD version 4 instead of the default version. WARNING: Once this is "
     "set you can't unset it without deleting your entire container";
 
+const char kCrostiniMultiContainerName[] = "Allow multiple Crostini containers";
+const char kCrostiniMultiContainerDescription[] =
+    "Experimental UI for creating and managing multiple Crostini containers";
+
 const char kDisableBufferBWCompressionName[] =
     "Disable buffer bandwidth compression";
 const char kDisableBufferBWCompressionDescription[] =
@@ -4825,11 +4829,6 @@ const char kLacrosSupportDescription[] =
     "first restart can take some time to setup lacros-chrome. Please DO NOT "
     "attempt to turn off the device during the restart.";
 
-const char kLauncherQueryHighlightingName[] = "Launcher query highlighting";
-const char kLauncherQueryHighlightingDescription[] =
-    "Enables highlighting occurrences of the search query in launcher search "
-    "result titles.";
-
 const char kLimitShelfItemsToActiveDeskName[] =
     "Limit Shelf items to active desk";
 const char kLimitShelfItemsToActiveDeskDescription[] =
@@ -5335,6 +5334,18 @@ const char kWebShareDescription[] =
     "Enables the Web Share (navigator.share) APIs on experimentally supported "
     "platforms.";
 #endif  // defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_MAC)
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+const char kOzonePlatformHintChoiceDefault[] = "Default";
+const char kOzonePlatformHintChoiceAuto[] = "Auto";
+const char kOzonePlatformHintChoiceX11[] = "X11";
+const char kOzonePlatformHintChoiceWayland[] = "Wayland";
+
+const char kOzonePlatformHintName[] = "Preferred Ozone platform";
+const char kOzonePlatformHintDescription[] =
+    "Selects the preferred platform backend used on Linux. The default one is "
+    "\"X11\". \"Auto\" selects Wayland if possible, X11 otherwise. ";
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 // Feature flags --------------------------------------------------------------
 

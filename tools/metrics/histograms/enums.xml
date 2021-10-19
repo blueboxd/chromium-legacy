@@ -34954,6 +34954,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4059" label="WebAssemblyDynamicTiering"/>
   <int value="4060" label="OBSOLETE_DeferredShapingTallerIfc"/>
   <int value="4061" label="ReadOrWriteWebDatabase"/>
+  <int value="4062" label="AutoDarkMode"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -66736,6 +66737,30 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Phone Collected, WebOTP Used, OTC Used"/>
 </enum>
 
+<enum name="PhoneHubCameraRollContentClicked">
+  <int value="11" label="Single Click to context menu media 1"/>
+  <int value="21" label="Single Click to context menu media 2"/>
+  <int value="31" label="Single Click to context menu media 3"/>
+  <int value="41" label="Single Click to context menu media 4"/>
+  <int value="51" label="Single Click to context menu media &gt;=5"/>
+</enum>
+
+<enum name="PhoneHubCameraRollContentShown">
+  <int value="1" label="Content Shown : media 1"/>
+  <int value="2" label="Content Shown : media 2"/>
+  <int value="3" label="Content Shown : media 3"/>
+  <int value="4" label="Content Shown : media 4"/>
+  <int value="5" label="Content Shown : media &gt;=5"/>
+</enum>
+
+<enum name="PhoneHubCameraRollContextMenuDownload">
+  <int value="111" label="Click on download in context menu media 1"/>
+  <int value="211" label="Click on download in context menu media 2"/>
+  <int value="311" label="Click on download in context menu media 3"/>
+  <int value="411" label="Click on download in context menu media 4"/>
+  <int value="511" label="Click on download in context menu media &gt;=5"/>
+</enum>
+
 <enum name="PhoneHubFeatureStatus">
   <int value="0" label="Not eligible for feature"/>
   <int value="1" label="Eligible phone but not set up"/>
@@ -66839,6 +66864,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Synced browser tab opened"/>
   <int value="5" label="Notification dismissed"/>
   <int value="6" label="Notification inline reply attempted"/>
+  <int value="7" label="Camera Roll download attempted"/>
 </enum>
 
 <enum name="PhoneNumberRegexVariantResult">
@@ -68855,6 +68881,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Cancelled by printer"/>
   <int value="4" label="Lost track of job"/>
   <int value="5" label="Filter failed"/>
+  <int value="6" label="Cancelled due to client unauthorized"/>
 </enum>
 
 <enum name="PrintManagementAppEntryPoint">
@@ -77652,6 +77679,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="SigninRemoveLocalAccountOutcome">
+  <obsolete>
+    Removed 2021-10
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="AccountsStale">
     Not removed because the account list was stale.
@@ -78707,6 +78737,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="42" label="UMA_WEB_FEED_UNFOLLOW_FAILURE"/>
   <int value="43" label="UMA_LANGUAGE_SPLIT_RESTART"/>
   <int value="44" label="UMA_AUTOFILL_VIRTUAL_CARD_FILLED"/>
+  <int value="45" label="UMA_WINDOW_ERROR"/>
+  <int value="46" label="UMA_MODULE_INSTALL_FAILURE"/>
 </enum>
 
 <enum name="SnapshotItemId">

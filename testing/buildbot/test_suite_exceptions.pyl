@@ -180,7 +180,13 @@
     'modifications': {
       'android-11-x86-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.base_unittests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.base_unittests.filter',
+        ],
+      },
+      'android-12-x64-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.base_unittests.filter',
+          '--gtest_filter=-ModuleCacheTest.CheckAgainstProcMaps',  # crbug.com/1260521
         ],
       },
       'fuchsia-code-coverage': {
@@ -880,11 +886,6 @@
           'shards': 25,
         },
       },
-      'android-lollipop-arm-rel-swarming': {
-        'swarming': {
-          'service_account': 'chrome-gold-dev@chops-service-accounts.iam.gserviceaccount.com'
-        },
-      },
       'android-marshmallow-arm64-rel-swarming': {
         'swarming': {
           'service_account': 'chrome-gold-dev@chops-service-accounts.iam.gserviceaccount.com'
@@ -1038,6 +1039,16 @@
   'chrome_sizes': {
     'modifications': {
       'lacros-amd64-generic-chrome': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cpu': 'x86-64',
+              'os': 'Ubuntu-18.04',
+            },
+          ],
+        },
+      },
+      'lacros-arm-generic-chrome': {
         'swarming': {
           'dimension_sets': [
             {
@@ -2855,12 +2866,6 @@
           '--jobs=1',
         ],
       },
-      'linux-chromium-tests-staging-tests': {
-        'args': [
-          '--xvfb',
-          '--jobs=1',
-        ],
-      },
       'linux-trusty-rel': {
         'args': [
           '--xvfb',
@@ -3276,7 +3281,12 @@
       },
       'android-11-x86-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.blink_unittests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.blink_unittests.filter',
+        ],
+      },
+      'android-12-x64-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.blink_unittests.filter',
         ],
       },
       'linux-blink-heap-concurrent-marking-tsan-rel': {
@@ -3423,7 +3433,6 @@
 
       # On chromium.swarm, this should possibly be being run (or removed
       # from android-marshmallow-arm64-rel-swarming).
-      'android-lollipop-arm-rel-swarming',
       # https://crbug.com/1147531 - covered on pie
       'android-marshmallow-arm64-rel',
     ],

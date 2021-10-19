@@ -232,8 +232,8 @@
     },
 
     'chromium.fuzz': {
-      'ASAN Debug': 'asan_lsan_debug_bot',
-      'ASAN Release Media': 'asan_lsan_fuzzer_v8_heap_chromeos_codecs_release_bot',
+      'ASAN Debug': 'asan_lsan_debug_bot_reclient',
+      'ASAN Release Media': 'asan_lsan_fuzzer_v8_heap_chromeos_codecs_release_bot_reclient',
       'ASAN Release': 'asan_lsan_fuzzer_v8_heap_release_bot_reclient',
       'ASan Debug (32-bit x86 with V8-ARM)': 'asan_v8_heap_debug_bot_hybrid',
       'ASan Release (32-bit x86 with V8-ARM)': 'asan_fuzzer_v8_heap_release_bot_hybrid',
@@ -257,8 +257,8 @@
       'MSAN Release (no origins)': 'msan_no_origins_release_bot',
       'Mac ASAN Release Media': 'asan_disable_nacl_fuzzer_v8_heap_chrome_with_codecs_release_bot',
       'Mac ASAN Release': 'asan_disable_nacl_fuzzer_v8_heap_release_bot',
-      'TSAN Debug': 'tsan_disable_nacl_debug_bot',
-      'TSAN Release': 'tsan_disable_nacl_release_bot',
+      'TSAN Debug': 'tsan_disable_nacl_debug_bot_reclient',
+      'TSAN Release': 'tsan_disable_nacl_release_bot_reclient',
       'UBSan Release': 'ubsan_release_bot',
       'UBSan vptr Release': 'ubsan_vptr_release_bot',
       'Win ASan Release Media': 'asan_fuzzer_v8_heap_chrome_with_codecs_release_bot',
@@ -296,6 +296,8 @@
       'linux-lacros-tester-fyi-rel': 'lacros_on_linux_release_bot',
       # TODO(crbug.com/1244441): remove this after the migration.
       'Mac Builder (reclient)': 'gpu_tests_release_bot_minimal_symbols_reclient',
+      # TODO(crbug.com/1260232): remove this after the migration.
+      'Mac Builder (reclient compare)': 'gpu_tests_release_bot_minimal_symbols_reclient',
       'Mac Builder Next': 'gpu_tests_release_bot_minimal_symbols',
       'Mac deterministic': 'release_bot_mac_strip_minimal_symbols',
       'Mac deterministic (dbg)': 'debug_bot',
@@ -350,7 +352,6 @@
       'linux-blink-v8-oilpan': 'release_bot_enable_v8_oilpan_dcheck_always_on',
       'linux-chromeos-code-coverage': 'chromeos_with_codecs_release_bot_coverage',
       'linux-chromeos-js-code-coverage': 'chromeos_with_codecs_release_bot_javascript_coverage',
-      'linux-chromium-tests-staging-builder': 'release_bot',
       'linux-code-coverage': 'clang_code_coverage',
       'linux-exp-code-coverage': 'clang_code_coverage',
       'linux-example-builder': 'release_bot',
@@ -626,9 +627,6 @@
     },
 
     'chromium.dev': {
-      # This should be the same with 'android-lollipop-arm-rel'.
-      'android-lollipop-arm-rel-swarming': 'android_release_bot_minimal_symbols_webview_google',
-
       # This should be the same with 'android-marshmallow-arm64-rel'.
       'android-marshmallow-arm64-rel-swarming':  'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild',
 
@@ -1466,11 +1464,6 @@
       'strip_debug_info', 'webview_google',
     ],
 
-    'android_release_bot_minimal_symbols_webview_google': [
-      'android', 'release_bot', 'minimal_symbols', 'strip_debug_info',
-      'webview_google',
-    ],
-
     'android_release_bot_minimal_symbols_x64_fastbuild_webview_google': [
       'android', 'release_bot', 'minimal_symbols', 'x64',
       'strip_debug_info', 'android_fastbuild', 'webview_google',
@@ -1723,16 +1716,8 @@
       'asan', 'lsan', 'chromeos', 'release_trybot',
     ],
 
-    'asan_lsan_debug_bot': [
-      'asan', 'lsan', 'debug_bot',
-    ],
-
     'asan_lsan_debug_bot_reclient': [
       'asan', 'lsan', 'debug_bot_reclient',
-    ],
-
-    'asan_lsan_fuzzer_v8_heap_chromeos_codecs_release_bot': [
-      'asan', 'lsan', 'v8_heap', 'chromeos_codecs', 'release_bot',
     ],
 
     'asan_lsan_fuzzer_v8_heap_chromeos_codecs_release_bot_reclient': [
@@ -2945,10 +2930,6 @@
     'release_bot_x86_minimal_symbols_no_clang_cxx11': [
       'release_bot', 'x86', 'minimal_symbols', 'no_clang', 'use_cxx11',
       'no_goma',
-    ],
-
-    'tsan_disable_nacl_debug_bot': [
-      'tsan', 'disable_nacl', 'debug_bot',
     ],
 
     'tsan_disable_nacl_debug_bot_reclient': [

@@ -144,6 +144,10 @@ class IntegrationTest : public ::testing::Test {
     test_commands_->ExpectLegacyUpdate3WebSucceeds(app_id);
   }
 
+  void ExpectLegacyProcessLauncherSucceeds() {
+    test_commands_->ExpectLegacyProcessLauncherSucceeds();
+  }
+
 #endif  // OS_WIN
 
   void SetupFakeUpdaterHigherVersion() {
@@ -217,6 +221,8 @@ class IntegrationTest : public ::testing::Test {
     test_commands_->ExpectUpdateSequence(test_server, app_id, from_version,
                                          to_version);
   }
+
+  void StressUpdateService() { test_commands_->StressUpdateService(); }
 
   scoped_refptr<IntegrationTestCommands> test_commands_;
 
@@ -413,6 +419,12 @@ TEST_F(IntegrationTest, LegacyUpdate3Web) {
 
   Uninstall();
 }
+
+TEST_F(IntegrationTest, LegacyProcessLauncher) {
+  Install();
+  ExpectLegacyProcessLauncherSucceeds();
+  Uninstall();
+}
 #endif  // OS_WIN
 
 TEST_F(IntegrationTest, UnregisterUninstalledApp) {
@@ -486,6 +498,13 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
   Uninstall();
 }
 #endif  // defined(OS_MAC)
+
+TEST_F(IntegrationTest, UpdateServiceStress) {
+  Install();
+  ExpectInstalled();
+  StressUpdateService();
+  Uninstall();
+}
 
 #endif  // defined(OS_WIN) || !defined(COMPONENT_BUILD)
 

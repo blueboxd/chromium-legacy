@@ -7,6 +7,7 @@
 #include <memory>
 #include <dlfcn.h>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/memory/shared_memory_mapping.h"
@@ -395,6 +396,7 @@ void VTVideoEncodeAccelerator::SetAdjustedConstantBitrate(int32_t bitrate) {
           encoder_set_bitrate_ / kBitsPerByte, 1.0f));
   DLOG_IF(ERROR, !rv)
       << "Couldn't change bitrate parameters of encode session.";
+  ALLOW_UNUSED_LOCAL(rv);
 }
 
 void VTVideoEncodeAccelerator::SetVariableBitrate(const Bitrate& bitrate) {
@@ -411,6 +413,7 @@ void VTVideoEncodeAccelerator::SetVariableBitrate(const Bitrate& bitrate) {
                                         bitrate.peak() / kBitsPerByte, 1.0f));
   DLOG_IF(ERROR, !rv)
       << "Couldn't change bitrate parameters of encode session.";
+  ALLOW_UNUSED_LOCAL(rv);
 }
 
 void VTVideoEncodeAccelerator::DestroyTask() {

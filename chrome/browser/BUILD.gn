@@ -1503,6 +1503,8 @@ static_library("browser") {
     "security_events/security_event_sync_bridge.h",
     "security_events/security_event_sync_bridge_impl.cc",
     "security_events/security_event_sync_bridge_impl.h",
+    "segmentation_platform/chrome_browser_main_extra_parts_segmentation_platform.cc",
+    "segmentation_platform/chrome_browser_main_extra_parts_segmentation_platform.h",
     "segmentation_platform/segmentation_platform_config.cc",
     "segmentation_platform/segmentation_platform_config.h",
     "segmentation_platform/segmentation_platform_profile_observer.cc",
@@ -2491,6 +2493,7 @@ static_library("browser") {
       "//components/session_manager/core",
       "//device/vr/public/mojom:isolated_xr_service",
     ]
+    public_deps += [ "//ui/lottie" ]
     if (!is_official_build) {
       deps += [
         "//ash/webui/demo_mode_app_ui",
@@ -4784,10 +4787,6 @@ static_library("browser") {
       "renderer_context_menu/quick_answers_menu_observer.h",
       "resource_coordinator/tab_manager_delegate_chromeos.cc",
       "resource_coordinator/tab_manager_delegate_chromeos.h",
-      "sharesheet/share_action/copy_to_clipboard_share_action.cc",
-      "sharesheet/share_action/copy_to_clipboard_share_action.h",
-      "sharesheet/share_action/drive_share_action.cc",
-      "sharesheet/share_action/drive_share_action.h",
       "shell_integration_chromeos.cc",
       "speech/cros_speech_recognition_service.cc",
       "speech/cros_speech_recognition_service.h",

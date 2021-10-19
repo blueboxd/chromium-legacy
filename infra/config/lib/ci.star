@@ -116,14 +116,6 @@ def ci_builder(
         branches.value({branches.STANDARD_BRANCHES: "chrome_browser_release"}),
     )
 
-    experiments = dict(experiments or {})
-
-    # TODO(crbug.com/1249938) Promote out of experiment for all builders
-    experiments.setdefault("chromium.chromium_tests.use_gitiles_trigger", 100)
-
-    # TODO(crbug.com/1135718): Promote out of experiment for all builders.
-    experiments.setdefault("chromium.chromium_tests.use_rdb_results", 100)
-
     goma_enable_ats = defaults.get_value_from_kwargs("goma_enable_ats", kwargs)
     if goma_enable_ats == args.COMPUTE:
         os = defaults.get_value_from_kwargs("os", kwargs)
@@ -436,9 +428,6 @@ def fyi_builder(
         **kwargs):
     kwargs.setdefault("os", os.LINUX_BIONIC_REMOVE)
 
-    # TODO(crbug.com/1135718): Promote out of experiment for all builders.
-    kwargs.setdefault("experiments", {})
-    kwargs["experiments"].setdefault("chromium.chromium_tests.use_rdb_results", 100)
     return ci.builder(
         name = name,
         builder_group = "chromium.fyi",

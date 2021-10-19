@@ -1777,10 +1777,6 @@ void BrowserView::FocusInactivePopupForAccessibility() {
     infobar_container_->SetPaneFocusAndFocusDefault();
 }
 
-void BrowserView::FocusHelpBubble() {
-  FeaturePromoBubbleOwnerImpl::GetInstance()->ActivateBubbleForAccessibility();
-}
-
 void BrowserView::FocusAppMenu() {
   // Chrome doesn't have a traditional menu bar, but it has a menu button in the
   // main toolbar that plays the same role.  If the user presses a key that
@@ -1816,6 +1812,10 @@ void BrowserView::FocusWebContentsPane() {
 }
 
 bool BrowserView::ActivateFirstInactiveBubbleForAccessibility() {
+  auto* const feature_bubble_owner = FeaturePromoBubbleOwnerImpl::GetInstance();
+  if (feature_bubble_owner->ToggleFocusForAccessibility())
+    return true;
+
   if (GetLocationBarView()->ActivateFirstInactiveBubbleForAccessibility())
     return true;
 
@@ -1825,15 +1825,17 @@ bool BrowserView::ActivateFirstInactiveBubbleForAccessibility() {
   if (toolbar_ && toolbar_->app_menu_button()) {
     views::DialogDelegate* bubble =
         toolbar_->app_menu_button()->GetProperty(views::kAnchoredDialogKey);
-    if (!bubble && GetLocationBarView())
+    if ((!bubble || feature_bubble_owner->IsPromoBubble(bubble)) &&
+        GetLocationBarView())
       bubble = GetLocationBarView()->GetProperty(views::kAnchoredDialogKey);
-    if (!bubble && toolbar_button_provider_ &&
+    if ((!bubble || feature_bubble_owner->IsPromoBubble(bubble)) &&
+        toolbar_button_provider_ &&
         toolbar_button_provider_->GetAvatarToolbarButton()) {
       bubble = toolbar_button_provider_->GetAvatarToolbarButton()->GetProperty(
           views::kAnchoredDialogKey);
     }
 
-    if (bubble) {
+    if (bubble && !feature_bubble_owner->IsPromoBubble(bubble)) {
       View* focusable = bubble->GetInitiallyFocusedView();
 
       // A PermissionPromptBubbleView will explicitly return nullptr due to
@@ -1855,10 +1857,7 @@ bool BrowserView::ActivateFirstInactiveBubbleForAccessibility() {
     return true;
   }
 
-  // Activate an in-product help bubble last, if there's no other bubbles to
-  // activate.
-  return FeaturePromoBubbleOwnerImpl::GetInstance()
-      ->ActivateBubbleForAccessibility();
+  return false;
 }
 
 void BrowserView::TryNotifyWindowBoundsChanged(const gfx::Rect& widget_bounds) {

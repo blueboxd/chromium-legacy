@@ -54,7 +54,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/compute_pressure/compute_pressure_manager.h"
-#include "content/browser/contacts/contacts_manager_impl.h"
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
@@ -2759,6 +2758,7 @@ void RenderFrameHostImpl::RenderProcessExited(
   // Reset state for the current RenderFrameHost once the FrameTreeNode has been
   // reset.
   RenderFrameDeleted();
+  InvalidateMojoConnection();
   broker_receiver_.reset();
   SetLastCommittedUrl(GURL());
   renderer_url_info_ = RendererURLInfo();
@@ -3136,7 +3136,6 @@ void RenderFrameHostImpl::RenderFrameDeleted() {
   if (was_created) {
     delegate_->RenderFrameDeleted(this);
   }
-  InvalidateMojoConnection();
 
   if (web_ui_) {
     web_ui_->RenderFrameDeleted();
@@ -9586,11 +9585,6 @@ void RenderFrameHostImpl::CreateAppCacheBackend(
 void RenderFrameHostImpl::GetAudioContextManager(
     mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver) {
   AudioContextManagerImpl::Create(this, std::move(receiver));
-}
-
-void RenderFrameHostImpl::GetContactsManager(
-    mojo::PendingReceiver<blink::mojom::ContactsManager> receiver) {
-  ContactsManagerImpl::Create(this, std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetFileSystemManager(

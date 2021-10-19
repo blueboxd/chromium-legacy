@@ -492,7 +492,9 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.base_unittests.filter",
+          "--gtest_filter=-ModuleCacheTest.CheckAgainstProcMaps"
         ],
         "merge": {
           "args": [
@@ -772,7 +774,8 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.blink_unittests.filter"
         ],
         "merge": {
           "args": [
@@ -5442,6 +5445,7 @@
   "android-pie-arm64-wpt-rel-non-cq": {
     "isolated_scripts": [
       {
+        "experiment_percentage": 100,
         "isolate_name": "system_webview_wpt",
         "merge": {
           "args": [
@@ -5481,6 +5485,7 @@
         "test_id_prefix": "ninja://android_webview/test:system_webview_wpt/"
       },
       {
+        "experiment_percentage": 100,
         "isolate_name": "weblayer_shell_wpt",
         "merge": {
           "args": [
@@ -5527,6 +5532,7 @@
         "args": [
           "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
         ],
+        "experiment_percentage": 100,
         "isolate_name": "chrome_public_wpt",
         "merge": {
           "args": [
@@ -5782,7 +5788,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M95",
-              "revision": "version:95.0.4638.56"
+              "revision": "version:95.0.4638.57"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -5869,7 +5875,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M96",
-              "revision": "version:96.0.4664.13"
+              "revision": "version:96.0.4664.15"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -6043,7 +6049,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M95",
-              "revision": "version:95.0.4638.56"
+              "revision": "version:95.0.4638.57"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -6130,7 +6136,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M96",
-              "revision": "version:96.0.4664.13"
+              "revision": "version:96.0.4664.15"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -6189,6 +6195,7 @@
         "args": [
           "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
         ],
+        "experiment_percentage": 100,
         "isolate_name": "weblayer_shell_wpt",
         "merge": {
           "args": [
@@ -6255,6 +6262,7 @@
           "--default-exclude",
           "--include-file=../../third_party/blink/web_tests/android/WPTSmokeTestCases"
         ],
+        "experiment_percentage": 100,
         "isolate_name": "weblayer_shell_wpt",
         "merge": {
           "args": [
@@ -6320,6 +6328,7 @@
           "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
           "--log-wptreport"
         ],
+        "experiment_percentage": 100,
         "isolate_name": "system_webview_wpt",
         "merge": {
           "args": [

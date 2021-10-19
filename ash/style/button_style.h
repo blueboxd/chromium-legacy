@@ -32,7 +32,11 @@ class PillButton : public views::LabelButton {
     kIconlessAccent,
     // PillButton without an icon, default text color and
     // `kControlBackgroundColorActive` as the background color.
-    kIconlessProminent
+    kIconlessProminent,
+    // `kIconless` button without background.
+    kIconlessFloating,
+    // `kIconlessAccent` button without background.
+    kIconlessAccentFloating,
   };
 
   // TODO: Move this function outside of PillButton after we built up more
@@ -59,7 +63,6 @@ class PillButton : public views::LabelButton {
 
  private:
   const Type type_;
-  gfx::Size button_size_;
   const gfx::VectorIcon* const icon_;
 };
 

@@ -771,7 +771,7 @@ const base::Feature kMultilingualTyping{"MultilingualTyping",
 // Enables Nearby Connections to specificy KeepAlive interval and timeout while
 // also making the Nearby Connections WebRTC defaults longer.
 const base::Feature kNearbyKeepAliveFix{"NearbyKeepAliveFix",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether new Lockscreen reauth layout is shown or not.
 const base::Feature kNewLockScreenReauthLayout{
@@ -1724,6 +1724,11 @@ bool IsWallpaperWebUIEnabled() {
 bool IsWallpaperFullScreenPreviewEnabled() {
   return IsWallpaperWebUIEnabled() &&
          base::FeatureList::IsEnabled(kWallpaperFullScreenPreview);
+}
+
+bool IsWallpaperGooglePhotosIntegrationEnabled() {
+  return IsWallpaperWebUIEnabled() &&
+         base::FeatureList::IsEnabled(kWallpaperGooglePhotosIntegration);
 }
 
 bool IsWebUITabStripTabDragIntegrationEnabled() {

@@ -287,7 +287,7 @@ are declared in tools/grit/grit_rule.gni.
       <part file="media_router_strings.grdp" />
 
       <!-- Global Media Controls specific strings -->
-      <part file="global_media_controls_strings.grdp" />
+      <part file="gmc_strings.grdp" />
 
       <!-- Profiles specific strings -->
       <part file="profiles_strings.grdp" />
@@ -521,6 +521,12 @@ are declared in tools/grit/grit_rule.gni.
             This dialog is not currently focused. Press Alt-Shift A to focus this dialog.
           </message>
         </if>
+        <message name="IDS_FOCUS_HELP_BUBBLE_DESCRIPTION" is_accessibility_with_no_ui="true" desc="Message announced to screen reader users when a general help bubble is shown.">
+          Press |<ph name="ACCELERATOR">$1<ex>F6</ex></ph>| to focus this help bubble.
+        </message>
+        <message name="IDS_FOCUS_HELP_BUBBLE_TOGGLE_DESCRIPTION" is_accessibility_with_no_ui="true" desc="Message announced to screen reader when a help bubble pointing to a specific element is shown.">
+          Press |<ph name="ACCELERATOR">$1<ex>F6</ex></ph>| to toggle focus between this help bubble and the element it is pointing to.
+        </message>
       </if>
 
        <!-- content area context menus. Android does not use it -->

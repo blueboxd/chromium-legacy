@@ -198,6 +198,8 @@ void AppTestHelper::FirstTaskRun() {
         {"expect_legacy_update3web_succeeds",
          WithSwitch("app_id",
                     WithSystemScope(Wrap(&ExpectLegacyUpdate3WebSucceeds)))},
+        {"expect_legacy_process_launcher_succeeds",
+         WithSystemScope(Wrap(&ExpectLegacyProcessLauncherSucceeds))},
 #endif  // OS_WIN
         {"expect_version_active",
          WithSwitch("version", WithSystemScope(Wrap(&ExpectVersionActive)))},
@@ -219,6 +221,7 @@ void AppTestHelper::FirstTaskRun() {
          WithSystemScope(Wrap(&SetupFakeUpdaterLowerVersion))},
         {"set_first_registration_counter",
          WithSwitch("value", WithSystemScope(Wrap(&SetServerStarts)))},
+        {"stress_update_service", WithSystemScope(Wrap(&StressUpdateService))},
         {"uninstall", WithSystemScope(Wrap(&Uninstall))},
       };
 

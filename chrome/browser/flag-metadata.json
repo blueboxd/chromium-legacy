@@ -1876,7 +1876,7 @@
   {
     "name": "enable-experimental-accessibility-dictation-extension",
     "owners": [ "akihiroota", "katie" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 99
   },
   {
     "name": "enable-experimental-accessibility-dictation-offline",
@@ -3958,12 +3958,12 @@
   {
     "name": "ntp-realbox-pedals",
     "owners": [ "mahmadi", "mfacey" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 100
   },
   {
     "name": "ntp-realbox-suggestion-answers",
     "owners": [ "mahmadi", "mfacey" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 100
   },
   {
     "name": "ntp-recipe-tasks-module",

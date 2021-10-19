@@ -459,6 +459,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PRINT_MANAGEMENT_FILTERED_FAILED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their printer's filter has failed.">
         Failed - Filter failed
       </message>
+      <message name="IDS_PRINT_MANAGEMENT_CLIENT_UNAUTHORIZED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their authorization with printer has failed.">
+        Failed - Authorization Failed
+      </message>
       <message name="IDS_PRINT_MANAGEMENT_UNKNOWN_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed due to an unknown error.">
         Failed - Unknown error
       </message>
@@ -1870,6 +1873,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_PERSONALIZATION_APP_CURRENTLY_SET" desc="Label for the currently set user wallpaper section.">
         Currently set
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS" desc="Label for the Google Photos page in the wallpaper app.">
+        Google Photos
       </message>
       <message name="IDS_PERSONALIZATION_APP_MY_IMAGES" desc="Label for the local images page in wallpaper app.">
         My Images

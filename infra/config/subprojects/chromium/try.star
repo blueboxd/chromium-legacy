@@ -1644,12 +1644,13 @@ try_.chromium_mac_builder(
 
 try_.chromium_mac_builder(
     name = "mac-rel-orchestrator",
-    builderless = True,
+    builderless = False,
     cores = 2,
     executable = "recipe:chromium/orchestrator",
     use_clang_coverage = True,
     main_list_view = "try",
     os = os.LINUX_BIONIC,
+    ssd = None,
     properties = {
         "$build/chromium_orchestrator": {
             "compilator": "mac-rel-compilator",
@@ -1665,6 +1666,7 @@ try_.chromium_mac_builder(
     cores = 24,
     executable = "recipe:chromium/compilator",
     goma_jobs = goma.jobs.J150,
+    use_clang_coverage = True,
     properties = {
         "orchestrator": {
             "builder_name": "mac-rel-orchestrator",

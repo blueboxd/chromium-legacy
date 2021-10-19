@@ -2369,20 +2369,6 @@
     'name': 'chromium.dev',
     'mixins': ['chromium-tester-dev-service-account'],
     'machines': {
-      'android-lollipop-arm-rel-swarming': {
-        'mixins': [
-          'lollipop',
-          'hammerhead',
-          'has_native_resultdb_integration',
-        ],
-        'test_suites': {
-           'gtest_tests': 'chromium_swarm_android_gtests',
-        },
-        'swarming': {
-          'expiration': 10800,
-        },
-        'os_type': 'android',
-      },
       'android-marshmallow-arm64-rel-swarming': {
         'mixins': [
           'has_native_resultdb_integration',
@@ -2636,6 +2622,15 @@
         'additional_compile_targets': [
           'chromium_builder_asan',
         ],
+      },
+      # TODO(crbug.com/1260232): remove this after the migration.
+      'Mac Builder (reclient compare)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'scripts': 'chromium_mac_scripts',
+        }
       },
       # TODO(crbug.com/1244441): remove this after the migration.
       'Mac Builder (reclient)': {
@@ -3024,6 +3019,9 @@
       },
       # TODO(crbug.com/1254986): remove this after the migration.
       'ios-reclient': {
+        'additional_compile_targets': [
+          'all',
+        ],
         'mixins': [
           'has_native_resultdb_integration',
           'mac_11_x64',
@@ -3284,23 +3282,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'js_code_coverage_browser_tests'
-        },
-      },
-      'linux-chromium-tests-staging-builder': {
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'scripts': 'chromium_linux_scripts',
-        },
-      },
-      'linux-chromium-tests-staging-tests': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
         },
       },
       'linux-code-coverage': {

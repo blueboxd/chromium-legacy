@@ -64,8 +64,12 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
 
     const gfx::VectorIcon* body_icon = nullptr;
     std::u16string body_text;
-    absl::optional<std::u16string> title_text;
-    absl::optional<std::u16string> screenreader_text;
+    std::u16string title_text;
+    std::u16string screenreader_text;
+
+    // Additional message to be read to screen reader users to aid in
+    // navigation.
+    std::u16string keyboard_navigation_hint;
 
     std::vector<ButtonParams> buttons;
 
@@ -90,7 +94,7 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
 
     // Used to call feature specific logic on dismiss.
     // (TODO) dpenning: move to using a OnceClosure.
-    absl::optional<base::RepeatingClosure> dismiss_callback;
+    base::RepeatingClosure dismiss_callback;
 
     // Used to call feature specific logic on timeout.
     // (TODO) dpenning: move to using a OnceClosure.

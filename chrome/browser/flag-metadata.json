@@ -56,7 +56,7 @@
   {
     "name": "adaptive-button-in-top-toolbar-customization",
     "owners": [ "bttk", "chrome-segmentation-platform@google.com" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 102
   },
   {
     "name": "add-passwords-in-settings",
@@ -66,7 +66,7 @@
   {
     "name": "add-to-homescreen-iph",
     "owners": [ "shaktisahu" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 100
   },
   {
     "name": "align-font-display-auto-lcp",
@@ -382,11 +382,6 @@
     "name": "autofill-enable-merchant-bound-virtual-cards",
     "owners": [ "siashah", "siyua" ],
     "expiry_milestone": 98
-  },
-  {
-    "name": "autofill-enable-offer-notification",
-    "owners": [ "siyua", "jsaul@google.com" ],
-    "expiry_milestone": 100
   },
   {
     "name": "autofill-enable-offer-notification-cross-tab-tracking",
@@ -1291,7 +1286,7 @@
   {
     "name": "download-progress-message",
     "owners": [ "shaktisahu" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 100
   },
   {
     "name": "download-shelf-webui",
@@ -2075,6 +2070,11 @@
     "name": "enable-hostname-setting",
     "owners": [ "khorimoto", "cros-connectivity@google.com" ],
     "expiry_milestone": 97
+  },
+  {
+    "name": "enable-idle-inhibit",
+    "owners": [ "aswolfers" ],
+    "expiry_milestone": 100
   },
   {
     "name": "enable-image-reader",
@@ -3422,7 +3422,7 @@
   {
     "name": "in-product-help-snooze",
     "owners": [ "shaktisahu", "haileywang" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 100
   },
   {
     "name": "incognito-brand-consistency-for-android",
@@ -4217,7 +4217,7 @@
   {
     "name": "optimization-guide-push-notifications",
     "owners": [ "robertogden", "chrome-intelligence-core@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "os-settings-app-notifications-page",
@@ -4295,13 +4295,13 @@
   },
   {
     "name": "paint-preview-demo",
-    "owners": [ "ckitagawa", "fredmello", "mahmoudi" ],
-    "expiry_milestone": 96
+    "owners": [ "ckitagawa", "fredmello", "yashard" ],
+    "expiry_milestone": 98
   },
   {
     "name": "paint-preview-startup",
-    "owners": [ "ckitagawa", "fredmello", "mahmoudi" ],
-    "expiry_milestone": 96
+    "owners": [ "ckitagawa", "fredmello", "yashard" ],
+    "expiry_milestone": 98
   },
   {
     "name": "partitioned-cookies",
@@ -5056,7 +5056,7 @@
   {
     "name": "smart-suggestion-for-large-downloads",
     "owners": [ "shaktisahu" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 100
   },
   {
     "name": "smooth-scrolling",
@@ -5482,12 +5482,12 @@
   {
     "name": "video-tutorials",
     "owners": [ "shaktisahu"],
-    "expiry_milestone": 98
+    "expiry_milestone": 102
   },
   {
     "name": "video-tutorials-instant-fetch",
     "owners": [ "shaktisahu"],
-    "expiry_milestone": 98
+    "expiry_milestone": 102
   },
   {
     "name": "voice-button-in-top-toolbar",
@@ -5539,6 +5539,11 @@
     "name": "web-feed",
     "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "web-feed-ios",
+    "owners": [ "adamta", "sczs", "tinazwang" ],
+    "expiry_milestone": 105
   },
   {
     "name": "web-feed-sort",

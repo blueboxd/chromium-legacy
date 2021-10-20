@@ -204,8 +204,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // offset will be calculated as normal.
   void AddResult(const NGLayoutResult&,
                  const LogicalOffset,
-                 absl::optional<LogicalOffset> relative_offset = absl::nullopt,
-                 bool propagate_oof_descendants = true);
+                 absl::optional<LogicalOffset> relative_offset = absl::nullopt);
 
   void AddChild(
       const NGPhysicalFragment&,
@@ -367,6 +366,10 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   void SetIsAtBlockEnd() { is_at_block_end_ = true; }
   bool IsAtBlockEnd() const { return is_at_block_end_; }
+
+  void SetDisableOOFDescendantsPropagation() {
+    disable_oof_descendants_propagation_ = true;
+  }
 
   // See |NGPhysicalBoxFragment::InflowBounds|.
   void SetInflowBounds(const LogicalRect& inflow_bounds) {
@@ -571,8 +574,10 @@ class CORE_EXPORT NGBoxFragmentBuilder final
       LayoutUnit fragmentainer_consumed_block_size = LayoutUnit()) const;
 
  private:
-  // Update whether we have fragmented in this flow.
-  void PropagateBreak(const NGLayoutResult&);
+  // Propagate fragmentation details. This includes checking whether we have
+  // fragmented in this flow, break appeal, column spanner detection, and column
+  // balancing hints.
+  void PropagateBreakInfo(const NGLayoutResult&);
 
   void SetHasForcedBreak() {
     has_forced_break_ = true;
@@ -605,6 +610,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool is_math_fraction_ = false;
   bool is_math_operator_ = false;
   bool is_at_block_end_ = false;
+  bool disable_oof_descendants_propagation_ = false;
   LayoutUnit consumed_block_size_;
   LayoutUnit consumed_block_size_legacy_adjustment_;
   LayoutUnit block_offset_for_additional_columns_;

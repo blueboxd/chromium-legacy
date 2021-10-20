@@ -39,19 +39,10 @@ class VP8VaapiVideoEncoderDelegate : public VaapiVideoEncoderDelegate {
     // Framerate in FPS.
     uint32_t framerate;
 
-    // Bitrate window size in ms.
-    unsigned int cpb_window_size_ms;
-
-    // Coded picture buffer size in bits.
-    unsigned int cpb_size_bits;
-
     // Quantization parameter. They are vp8 ac/dc indices and their ranges are
     // 0-127.
-    uint8_t initial_qp;
     uint8_t min_qp;
     uint8_t max_qp;
-
-    bool error_resilient_mode;
   };
 
   VP8VaapiVideoEncoderDelegate(scoped_refptr<VaapiWrapper> vaapi_wrapper,
@@ -74,7 +65,7 @@ class VP8VaapiVideoEncoderDelegate : public VaapiVideoEncoderDelegate {
 
  private:
   void InitializeFrameHeader();
-  void UpdateFrameHeader(bool keyframe);
+  void SetFrameHeader(VP8Picture& picture, bool keyframe);
   void UpdateReferenceFrames(scoped_refptr<VP8Picture> picture);
   void Reset();
 
@@ -96,7 +87,6 @@ class VP8VaapiVideoEncoderDelegate : public VaapiVideoEncoderDelegate {
 
   EncodeParams current_params_;
 
-  Vp8FrameHeader current_frame_hdr_;
   Vp8ReferenceFrameVector reference_frames_;
 
   using VP8RateControl = VPXRateControl<libvpx::VP8RateControlRtcConfig,

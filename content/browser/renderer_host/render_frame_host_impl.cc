@@ -46,7 +46,6 @@
 #include "content/browser/about_url_loader_factory.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/render_accessibility_host.h"
-#include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
@@ -3289,6 +3288,9 @@ void RenderFrameHostImpl::RendererDidActivateForPrerendering() {
 
 void RenderFrameHostImpl::SetCrossOriginOpenerPolicyReporter(
     std::unique_ptr<CrossOriginOpenerPolicyReporter> coop_reporter) {
+  // Set reporting source to current document's reporting source.
+  if (coop_reporter)
+    coop_reporter->set_reporting_source(GetReportingSource());
   coop_access_report_manager_.set_coop_reporter(std::move(coop_reporter));
 }
 
@@ -3552,15 +3554,6 @@ void RenderFrameHostImpl::DidNavigate(
       !navigation_request->IsPageActivation() && !was_within_same_document;
   if (did_create_new_document)
     DidCommitNewDocument(params, navigation_request);
-
-  // Reporting API: If a Reporting-Endpoints header was received with this
-  // document, send it to the network service to configure the endpoints in the
-  // reporting cache.
-  if (!reporting_endpoints_.empty()) {
-    GetStoragePartition()->GetNetworkContext()->SetDocumentReportingEndpoints(
-        GetReportingSource(), params.origin, isolation_info_,
-        reporting_endpoints_);
-  }
 
   // When the frame hosts a different document, its state must be replicated
   // via its proxies to the other processes where it appears as remote.
@@ -7796,15 +7789,6 @@ void RenderFrameHostImpl::CommitNavigation(
       response_head ? std::move(response_head)
                     : network::mojom::URLResponseHead::New();
 
-  if (navigation_request->appcache_handle()) {
-    // AppCache may create a subresource URLLoaderFactory later, so make sure it
-    // has the correct origin to use when calling
-    // ContentBrowserClient::WillCreateURLLoaderFactory().
-    navigation_request->appcache_handle()
-        ->host()
-        ->set_origin_for_url_loader_factory(
-            navigation_request->GetOriginToCommit());
-  }
   std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
       subresource_loader_factories;
   if ((!is_same_document || is_first_navigation) && !is_srcdoc) {
@@ -10344,10 +10328,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
 
   UpdateSiteURL(params->url, navigation_request->DidEncounterError());
 
-  // TODO(arthursonzogni): Updating this flag for same-document or bfcache
-  // navigation isn't right. This should be moved to DidCommitNewDocument().
-  appcache_handle_ = navigation_request->TakeAppCacheHandle();
-
   isolation_info_ = navigation_request->isolation_info_for_subresources();
 
   // Navigations in the same document and page activations do not create a new
@@ -10632,11 +10612,16 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
   reporting_endpoints_.clear();
   DCHECK(navigation_request);
 
-  if (navigation_request->response() &&
-      navigation_request->response()->parsed_headers &&
+  const url::Origin& origin = GetLastCommittedOrigin();
+  // Reporting API: If a Reporting-Endpoints header was received with this
+  // document over secure connection, send it to the network service to
+  // configure the endpoints in the reporting cache.
+  if (GURL::SchemeIsCryptographic(origin.scheme()) &&
+      navigation_request->response() &&
       navigation_request->response()->parsed_headers->reporting_endpoints) {
-    reporting_endpoints_ =
-        *(navigation_request->response()->parsed_headers->reporting_endpoints);
+    GetStoragePartition()->GetNetworkContext()->SetDocumentReportingEndpoints(
+        GetReportingSource(), origin, isolation_info_,
+        *(navigation_request->response()->parsed_headers->reporting_endpoints));
   }
 
   // We move the PolicyContainerHost of |navigation_request| into the

@@ -3566,7 +3566,6 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           false /* was_discarded */, is_view_source_mode,
           params.should_clear_history_list,
           blink::mojom::NavigationTiming::New(),
-          absl::nullopt /* appcache_host_id */,
           blink::mojom::WasActivatedOption::kUnknown,
           base::UnguessableToken::Create() /* navigation_token */,
           std::vector<blink::mojom::PrefetchedSignedExchangeInfoPtr>(),
@@ -3801,7 +3800,8 @@ void NavigationControllerImpl::LoadIfNecessary() {
   }
 }
 
-void NavigationControllerImpl::LoadPostCommitErrorPage(
+base::WeakPtr<NavigationHandle>
+NavigationControllerImpl::LoadPostCommitErrorPage(
     RenderFrameHost* render_frame_host,
     const GURL& url,
     const std::string& error_page_html,
@@ -3819,7 +3819,7 @@ void NavigationControllerImpl::LoadPostCommitErrorPage(
   // pages, cancel prerendering.
   if (rfhi->IsInactiveAndDisallowActivation(
           DisallowActivationReasonId::kLoadPostCommitErrorPage)) {
-    return;
+    return nullptr;
   }
 
   FrameTreeNode* node = rfhi->frame_tree_node();
@@ -3855,7 +3855,12 @@ void NavigationControllerImpl::LoadPostCommitErrorPage(
   navigation_request->set_net_error(error);
   node->CreatedNavigationRequest(std::move(navigation_request));
   DCHECK(node->navigation_request());
+
+  // Calling BeginNavigation may destroy the NavigationRequest.
+  base::WeakPtr<NavigationRequest> created_navigation_request(
+      node->navigation_request()->GetWeakPtr());
   node->navigation_request()->BeginNavigation();
+  return created_navigation_request;
 }
 
 void NavigationControllerImpl::NotifyEntryChanged(NavigationEntry* entry) {

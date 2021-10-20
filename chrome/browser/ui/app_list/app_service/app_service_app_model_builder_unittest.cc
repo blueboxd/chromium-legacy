@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/login/demo_mode/demo_mode_test_helper.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
@@ -71,6 +73,7 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -598,14 +601,11 @@ TEST_F(ExtensionAppTest, LoadCompressedIcon) {
       apps::IconType::kCompressed,
       ash::SharedAppListConfig::instance().default_grid_icon_dimension(),
       profile(), kPackagedApp1Id, icon_effects,
-      base::BindOnce(
-          [](apps::mojom::IconValuePtr* output_icon,
-             base::OnceClosure load_app_icon_callback,
-             apps::mojom::IconValuePtr icon) {
-            *output_icon = std::move(icon);
-            std::move(load_app_icon_callback).Run();
-          },
-          &dst_icon, run_loop.QuitClosure()));
+      apps::IconValueToMojomIconValueCallback(
+          base::BindLambdaForTesting([&](apps::mojom::IconValuePtr icon) {
+            dst_icon = std::move(icon);
+            run_loop.Quit();
+          })));
   run_loop.Run();
 
   ASSERT_FALSE(dst_icon.is_null());
@@ -644,6 +644,54 @@ TEST_F(WebAppBuilderTest, LoadGeneratedIcon) {
   WaitForIconUpdates(item);
 
   VerifyIcon(src_image_skia, item->icon());
+}
+
+class WebAppBuilderDemoModeTest : public WebAppBuilderTest {
+ protected:
+  ~WebAppBuilderDemoModeTest() override = default;
+
+  void SetUp() override {
+    WebAppBuilderTest::SetUp();
+    CreateBuilder();
+
+    // Fake Demo Mode.
+    demo_mode_test_helper_ = std::make_unique<ash::DemoModeTestHelper>();
+    demo_mode_test_helper_->InitializeSession();
+
+    app_service_test_.SetUp(profile_.get());
+    RemoveApps(apps::mojom::AppType::kWeb, profile(), model_updater_.get());
+  }
+
+  void TearDown() override {
+    demo_mode_test_helper_.reset();
+
+    WebAppBuilderTest::TearDown();
+  }
+
+ private:
+  std::unique_ptr<ash::DemoModeTestHelper> demo_mode_test_helper_;
+};
+
+// This test adds a web app to the app list for demo mode when online.
+TEST_F(WebAppBuilderDemoModeTest, WebAppListOnline) {
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
+
+  const std::string kAppName = "https://test.com";
+  CreateWebApp(kAppName);
+
+  EXPECT_EQ(1u, model_updater_->ItemCount());
+}
+
+// This test adds a web app to the app list for demo mode when offline.
+TEST_F(WebAppBuilderDemoModeTest, WebAppListOffline) {
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_NONE);
+
+  const std::string kAppName = "https://test.com";
+  CreateWebApp(kAppName);
+
+  EXPECT_EQ(0u, model_updater_->ItemCount());
 }
 
 class CrostiniAppTest : public AppServiceAppModelBuilderTest {

@@ -500,26 +500,6 @@
       "chromium_builder_asan"
     ]
   },
-  "TSAN Release (deps-cache) (reclient)": {
-    "additional_compile_targets": [
-      "chromium_builder_asan"
-    ]
-  },
-  "TSAN Release (g-ip) (reclient)": {
-    "additional_compile_targets": [
-      "chromium_builder_asan"
-    ]
-  },
-  "TSAN Release (j-250) (reclient)": {
-    "additional_compile_targets": [
-      "chromium_builder_asan"
-    ]
-  },
-  "TSAN Release (reclient)": {
-    "additional_compile_targets": [
-      "chromium_builder_asan"
-    ]
-  },
   "UBSan Release (reclient)": {
     "additional_compile_targets": [
       "chromium_builder_asan"
@@ -88489,6 +88469,9 @@
         "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
+        "args": [
+          "--coverage-continuous-mode=1"
+        ],
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -88889,6 +88872,9 @@
         "test_id_prefix": "ninja://headless:headless_unittests/"
       },
       {
+        "args": [
+          "--coverage-continuous-mode=1"
+        ],
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -89422,6 +89408,9 @@
         "test_id_prefix": "ninja://storage:storage_unittests/"
       },
       {
+        "args": [
+          "--coverage-continuous-mode=1"
+        ],
         "isolate_profile_data": true,
         "merge": {
           "args": [],

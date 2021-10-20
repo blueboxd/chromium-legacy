@@ -3953,6 +3953,34 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Ndk-translation"/>
 </enum>
 
+<enum name="ArcNearbyShareDataHandlingResult">
+  <int value="0" label="Directory does not exists."/>
+  <int value="1" label="Unexpected null g_browser_process."/>
+  <int value="2" label="Invalid profile."/>
+  <int value="3" label="Base directory is empty."/>
+  <int value="4" label="Failed to create unique temp directory."/>
+  <int value="5" label="External urls are empty."/>
+  <int value="6" label="Invalid size provided for file name."/>
+  <int value="7" label="Invalid FileSystemURL from handle."/>
+  <int value="8" label="FileSystemURL is not of external file type."/>
+  <int value="9" label="Invalid destination file descriptor."/>
+  <int value="10" label="Invalid destination file at path."/>
+  <int value="11" label="Failed to prepare temp directory and stream files."/>
+  <int value="12" label="Failed to stream file IO data."/>
+  <int value="13" label="Invalid number of bytes read."/>
+  <int value="14" label="Timeout."/>
+</enum>
+
+<enum name="ArcNearbyShareIOErrorResult">
+  <int value="0" label="Failed to create FileStreamReader."/>
+  <int value="1" label="Failed to wait for data pipe."/>
+  <int value="2" label="Unexpected close of data pipe."/>
+  <int value="3" label="Failed to write to data pipe."/>
+  <int value="4" label="Reached EOF even though there are remaining bytes."/>
+  <int value="5" label="Read failed."/>
+  <int value="6" label="Could not find valid endpoint for streamed data."/>
+</enum>
+
 <enum name="ArcNetworkError">
 <!-- ArcNetworkError values from components/arc/mojom/metrics.mojom -->
 
@@ -6562,6 +6590,26 @@ others/histograms.xml -->
   <int value="0" label="User closed infobar via OK button"/>
   <int value="1" label="User closed infobar via corner X"/>
   <int value="2" label="User did not interact with the infobar"/>
+</enum>
+
+<enum name="AutofillOtpAuthEvent">
+  <int value="0" label="Unknown result"/>
+  <int value="1" label="OTP auth succeeded"/>
+  <int value="2" label="OTP auth failed due to flow being cancelled"/>
+  <int value="3"
+      label="OTP auth failed due to generic error in SelectChallengeOption
+             request"/>
+  <int value="4"
+      label="OTP auth failed due to virtual card retrieval error in
+             SelectChallengeOption request"/>
+  <int value="5"
+      label="OTP auth failed due to auth error in UnmaskCard request"/>
+  <int value="6"
+      label="OTP auth failed due to virtual card retrieval error in
+             UnmaskCard request"/>
+  <int value="7" label="OTP auth temporarily failed due to OTP being expired"/>
+  <int value="8"
+      label="OTP auth temporarily failed due to OTP being incorrect"/>
 </enum>
 
 <enum name="AutofillPredictionSource">
@@ -41113,6 +41161,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="16" label="HaTS Service rejected request to load survey"/>
 </enum>
 
+<enum name="HapticClickSensitivity">
+  <int value="1" label="1"/>
+  <int value="2" label="2"/>
+  <int value="3" label="3"/>
+  <int value="4" label="4"/>
+  <int value="5" label="5"/>
+</enum>
+
 <enum name="HardwareVerifierQualificationStatus">
   <summary>
     List of the possible qualification status of a component. This is defined in
@@ -51101,6 +51157,7 @@ from previous Chrome versions.
   <int value="306565540" label="UseOfHashAffiliationFetcher:enabled"/>
   <int value="306641800" label="AndroidSiteSettingsUIRefresh:disabled"/>
   <int value="306834044" label="webui-tab-strip"/>
+  <int value="307531490" label="EnableIdleInhibit:enabled"/>
   <int value="307543404" label="disable-team-drives"/>
   <int value="307670929"
       label="enable-ambient-authentication-in-guest-session"/>
@@ -52916,6 +52973,7 @@ from previous Chrome versions.
   <int value="1690248203" label="HelpAppV2:enabled"/>
   <int value="1690837904" label="save-previous-document-resources"/>
   <int value="1691568199" label="AndroidSpellCheckerNonLowEnd:disabled"/>
+  <int value="1692463816" label="EnableIdleInhibit:disabled"/>
   <int value="1692847616" label="ArcEnableWebAppShare:enabled"/>
   <int value="1693094211" label="FilesNG:disabled"/>
   <int value="1693658048" label="AppsShortcutDefaultOff:enabled"/>
@@ -58128,6 +58186,11 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Utility process disconnected Connections mojo pipe"/>
 </enum>
 
+<enum name="NearbyShareArcBridgeFailResult">
+  <int value="0" label="Instance is null."/>
+  <int value="1" label="Instance already exists."/>
+</enum>
+
 <enum name="NearbyShareAttachmentType">
   <int value="0" label="Unknown File Type"/>
   <int value="1" label="Unknown Text Type"/>
@@ -63303,6 +63366,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="435" label="Pointing Stick: Speed"/>
   <int value="436" label="Pointing Stick: Acceleration"/>
   <int value="437" label="Pointing Stick: Swap Primary Buttons"/>
+  <int value="438" label="Touchpad: Haptic Feedback"/>
   <int value="500" label="Open Wallpaper"/>
   <int value="501" label="Ambient Mode On/Off"/>
   <int value="502" label="Ambient Mode Source"/>

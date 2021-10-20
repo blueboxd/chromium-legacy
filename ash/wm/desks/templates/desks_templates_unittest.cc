@@ -139,7 +139,8 @@ class DesksTemplatesTest : public OverviewTestBase {
                 const std::string& name,
                 base::Time created_time) {
     auto desk_template = std::make_unique<DeskTemplate>(
-        uuid.AsLowercaseString(), name, created_time);
+        uuid.AsLowercaseString(), DeskTemplateSource::kUser, name,
+        created_time);
     desk_template->set_desk_restore_data(
         std::make_unique<app_restore::RestoreData>());
 
@@ -238,6 +239,8 @@ class DesksTemplatesTest : public OverviewTestBase {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     desk_model_ = std::make_unique<desks_storage::LocalDeskDataManager>(
         temp_dir_.GetPath());
+    // Ensure the model is ready for tests.
+    desk_model_->EnsureCacheIsLoaded();
 
     // This will call `AshTestBase::SetUp()`.
     SetUpInternal(std::make_unique<CustomTestShellDelegate>(desk_model_.get()));

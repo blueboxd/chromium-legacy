@@ -369,12 +369,6 @@ static_library("extensions") {
     "api/storage/syncable_settings_storage.h",
     "api/streams_private/streams_private_api.cc",
     "api/streams_private/streams_private_api.h",
-    "api/system_indicator/system_indicator_api.cc",
-    "api/system_indicator/system_indicator_api.h",
-    "api/system_indicator/system_indicator_manager.cc",
-    "api/system_indicator/system_indicator_manager.h",
-    "api/system_indicator/system_indicator_manager_factory.cc",
-    "api/system_indicator/system_indicator_manager_factory.h",
     "api/system_private/system_private_api.cc",
     "api/system_private/system_private_api.h",
     "api/tab_capture/tab_capture_api.cc",
@@ -952,6 +946,17 @@ static_library("extensions") {
     "//url",
   ]
 
+  if (is_linux || is_mac || is_win) {
+    sources += [
+      "api/system_indicator/system_indicator_api.cc",
+      "api/system_indicator/system_indicator_api.h",
+      "api/system_indicator/system_indicator_manager.cc",
+      "api/system_indicator/system_indicator_manager.h",
+      "api/system_indicator/system_indicator_manager_factory.cc",
+      "api/system_indicator/system_indicator_manager_factory.h",
+    ]
+  }
+
   if (is_chromeos_ash) {
     deps += [
       "//ash/webui/resources:media_app_bundle_resources_grit",
@@ -1060,6 +1065,8 @@ static_library("extensions") {
       "api/networking_private/networking_private_ui_delegate_chromeos.h",
       "api/quick_unlock_private/quick_unlock_private_api.cc",
       "api/quick_unlock_private/quick_unlock_private_api.h",
+      "api/quick_unlock_private/quick_unlock_private_ash_utils.cc",
+      "api/quick_unlock_private/quick_unlock_private_ash_utils.h",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.cc",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.cc",

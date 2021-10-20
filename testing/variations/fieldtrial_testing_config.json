@@ -3330,22 +3330,6 @@
             ]
         }
     ],
-    "EnableDrDc": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EnableDrDc"
-                    ]
-                }
-            ]
-        }
-    ],
     "EnableDuplicateDownloadDialog": [
         {
             "platforms": [
@@ -3577,6 +3561,33 @@
                     "name": "Enabled",
                     "enable_features": [
                         "FixFirstInputDelayForDesktop"
+                    ]
+                }
+            ]
+        }
+    ],
+    "FocusHelpBubbleScreenReaderPromo": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "availability": "any",
+                        "event_actual": "name:focus_help_bubble_accelerator_promo_read;comparator:<10;window:365;storage:365",
+                        "event_trigger": "name:focus_help_bubble_accelerator_promo_triggered;comparator:Any;window:365;storage:365",
+                        "event_used": "name:focus_help_bubble_accelerator_pressed;comparator:<1;window:365;storage:365",
+                        "session_rate": "any",
+                        "session_rate_impact": "none"
+                    },
+                    "enable_features": [
+                        "IPH_FocusHelpBubbleScreenReaderPromo"
                     ]
                 }
             ]
@@ -4660,21 +4671,6 @@
             ]
         }
     ],
-    "MICEWebSignIn": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MICEWebSignIn"
-                    ]
-                }
-            ]
-        }
-    ],
     "ManagedSigninPopup": [
         {
             "platforms": [
@@ -5711,24 +5707,6 @@
                         "IPH_PageInfoStoreInfo"
                     ],
                     "disable_features": []
-                }
-            ]
-        }
-    ],
-    "PageInfoV2Desktop": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PageInfoV2Desktop"
-                    ]
                 }
             ]
         }
@@ -6813,25 +6791,6 @@
             ]
         }
     ],
-    "SafeBrowsingEnterpriseCsd": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows",
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "SafeBrowsingEnterpriseCsd",
-                    "enable_features": [
-                        "SafeBrowsingDisableConsumerCsdForEnterprise",
-                        "SafeBrowsingEnterpriseCsd"
-                    ]
-                }
-            ]
-        }
-    ],
     "SafeBrowsingOmitNonUserGesturesFromReferrerChain": [
         {
             "platforms": [
@@ -7770,6 +7729,21 @@
             ]
         }
     ],
+    "TriggerNetworkDataMigration": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "TriggerNetworkDataMigration",
+                    "enable_features": [
+                        "TriggerNetworkDataMigration"
+                    ]
+                }
+            ]
+        }
+    ],
     "TrimWebCacheOnMemoryPressureOnly": [
         {
             "platforms": [
@@ -8511,21 +8485,6 @@
             ]
         }
     ],
-    "WebAuthenticationCableSecondFactorV2": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WebAuthenticationCableSecondFactor"
-                    ]
-                }
-            ]
-        }
-    ],
     "WebFeedsMVP": [
         {
             "platforms": [
@@ -9062,6 +9021,9 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "ChromeWhatsNewUIFeedbackButton": "true"
+                    },
                     "enable_features": [
                         "ChromeWhatsNewUI"
                     ]

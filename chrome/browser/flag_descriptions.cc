@@ -320,12 +320,6 @@ const char kAutofillEnableMerchantBoundVirtualCardsDescription[] =
     "When enabled, Autofill will offer to use merchant bound virtual cards in "
     "payment forms.";
 
-const char kAutofillEnableOfferNotificationName[] =
-    "Enable Autofill offers and rewards notification";
-const char kAutofillEnableOfferNotificationDescription[] =
-    "When enabled, a notification will be displayed on page navigation if the "
-    "domain has an eligible credit card linked offer or reward.";
-
 const char kAutofillEnableOfferNotificationCrossTabTrackingName[] =
     "Enable cross tab status tracking for Autofill offer notification";
 const char kAutofillEnableOfferNotificationCrossTabTrackingDescription[] =
@@ -4546,6 +4540,10 @@ const char kEcheSWAResizingDescription[] =
 
 const char kEcheSWADebugModeName[] = "Enable Eche Debug Mode";
 const char kEcheSWADebugModeDescription[] = "Enable the Debug Mode of the Eche";
+
+const char kEnableIdleInhibitName[] = "Enable Idle Inhibit Protocol";
+const char kEnableIdleInhibitDescription[] =
+    "Enables the Wayland idle-inhibit-unstable-v1 protocol";
 
 const char kEnableNetworkingInDiagnosticsAppName[] =
     "Enable networking cards in the Diagnostics App";

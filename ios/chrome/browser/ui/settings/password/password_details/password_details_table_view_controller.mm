@@ -668,11 +668,13 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
   if (duplicateFound) {
     [self
         performBatchTableViewUpdates:^{
-          NSUInteger indexForInsertion = self.isTLDMissingMessageShown ? 3 : 2;
+          NSUInteger passwordSectionIndex = [self.tableViewModel
+              sectionForSectionIdentifier:SectionIdentifierPassword];
           [model insertSectionWithIdentifier:SectionIdentifierDuplicate
-                                     atIndex:indexForInsertion];
+                                     atIndex:passwordSectionIndex + 1];
           [self.tableView
-                insertSections:[NSIndexSet indexSetWithIndex:indexForInsertion]
+                insertSections:[NSIndexSet
+                                   indexSetWithIndex:passwordSectionIndex + 1]
               withRowAnimation:UITableViewRowAnimationTop];
           [model addItem:[self duplicatePasswordMessageItem]
               toSectionWithIdentifier:SectionIdentifierDuplicate];
@@ -734,9 +736,15 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
     }
   }
 
+  // TODO(crbug.com/1226006): Figure out what this code is supposed to do and
+  // remove the #pragma here.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wbitwise-instead-of-logical"
   self.shouldEnableSave = [self checkIfValidSite] &
                           [self checkIfValidUsername] &
                           [self checkIfValidPassword];
+#pragma GCC diagnostic pop
+
   [self toggleNavigationBarRightButtonItem];
 
   if (self.credentialType == CredentialTypeNew) {
@@ -748,7 +756,8 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
   // Check if the item is equal to the current username or password item as when
   // editing finished reloadData is called.
   if (tableViewItem == self.websiteTextItem) {
-    if ([self.delegate isTLDMissing]) {
+    if ([self.websiteTextItem.textFieldValue length] > 0 &&
+        [self.delegate isTLDMissing]) {
       [self showTLDMissingSection];
     }
     [self reconfigureCellsForItems:@[ self.websiteTextItem ]];
@@ -768,7 +777,8 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
 
 // Handles Save button tap on adding new credentials.
 - (void)didTapSaveButton:(id)sender {
-  if ([self.delegate isTLDMissing]) {
+  if ([self.websiteTextItem.textFieldValue length] > 0 &&
+      [self.delegate isTLDMissing]) {
     [self showTLDMissingSection];
     return;
   }

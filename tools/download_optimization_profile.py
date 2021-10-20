@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env vpython3
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -51,7 +51,7 @@ def CheckCallOrExit(cmd):
   proc = subprocess.Popen(cmd,
                           stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE,
-                          text=True)
+                          encoding='utf-8')
   stdout, stderr = proc.communicate()
   exit_code = proc.wait()
   if not exit_code:

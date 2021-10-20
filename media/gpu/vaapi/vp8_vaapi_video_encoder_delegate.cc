@@ -20,17 +20,12 @@ namespace {
 // Keyframe period.
 constexpr size_t kKFPeriod = 3000;
 
-// Arbitrarily chosen bitrate window size for rate control, in ms.
-constexpr int kCPBWindowSizeMs = 1500;
-
 // Quantization parameter. They are vp8 ac/dc indices and their ranges are
 // 0-127. Based on WebRTC's defaults.
 constexpr uint8_t kMinQP = 4;
 // b/110059922, crbug.com/1001900: Tuned 112->117 for bitrate issue in a lower
 // resolution (180p).
 constexpr uint8_t kMaxQP = 117;
-// This stands for 32 as a real ac value (see rfc 14.1. table ac_qlookup).
-constexpr uint8_t kDefaultQP = 28;
 
 // The upper limitation of the quantization parameter for the software rate
 // controller. This is larger than |kMaxQP| because a driver might ignore the
@@ -114,24 +109,49 @@ scoped_refptr<VP8Picture> GetVP8Picture(
   return base::WrapRefCounted(
       reinterpret_cast<VP8Picture*>(job.picture().get()));
 }
+
+Vp8FrameHeader GetDefaultVp8FrameHeader(bool keyframe,
+                                        const gfx::Size& visible_size) {
+  Vp8FrameHeader hdr;
+  DCHECK(!visible_size.IsEmpty());
+  hdr.width = visible_size.width();
+  hdr.height = visible_size.height();
+  hdr.show_frame = true;
+  hdr.frame_type =
+      keyframe ? Vp8FrameHeader::KEYFRAME : Vp8FrameHeader::INTERFRAME;
+
+  // TODO(sprang): Make this dynamic. Value based on reference implementation
+  // in libyami (https://github.com/intel/libyami).
+
+  // Sets the highest loop filter level.
+  // TODO(b/188853141): Set a loop filter level computed by a rate controller
+  // every frame once the rate controller supports it.
+  hdr.loopfilter_hdr.level = 63;
+
+  // A VA-API driver recommends to set forced_lf_adjustment on keyframe.
+  // Set loop_filter_adj_enable to 1 here because forced_lf_adjustment is read
+  // only when a macroblock level loop filter adjustment.
+  hdr.loopfilter_hdr.loop_filter_adj_enable = true;
+
+  // Set mb_no_skip_coeff to 1 that some decoders (e.g. kepler) could not decode
+  // correctly a stream encoded with mb_no_skip_coeff=0. It also enables an
+  // encoder to produce a more optimized stream than when mb_no_skip_coeff=0.
+  hdr.mb_no_skip_coeff = true;
+
+  return hdr;
+}
 }  // namespace
 
 VP8VaapiVideoEncoderDelegate::EncodeParams::EncodeParams()
     : kf_period_frames(kKFPeriod),
       framerate(0),
-      cpb_window_size_ms(kCPBWindowSizeMs),
-      cpb_size_bits(0),
-      initial_qp(kDefaultQP),
       min_qp(kMinQP),
-      max_qp(kMaxQP),
-      error_resilient_mode(false) {}
+      max_qp(kMaxQP) {}
 
 void VP8VaapiVideoEncoderDelegate::Reset() {
   current_params_ = EncodeParams();
   reference_frames_.Clear();
   frame_num_ = 0;
-
-  InitializeFrameHeader();
 }
 
 VP8VaapiVideoEncoderDelegate::VP8VaapiVideoEncoderDelegate(
@@ -225,14 +245,13 @@ bool VP8VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob& encode_job) {
   scoped_refptr<VP8Picture> picture = GetVP8Picture(encode_job);
   DCHECK(picture);
 
-  UpdateFrameHeader(encode_job.IsKeyframeRequested());
-  *picture->frame_hdr = current_frame_hdr_;
+  SetFrameHeader(*picture, encode_job.IsKeyframeRequested());
 
   // We only use |last_frame| for a reference frame. This follows the behavior
   // of libvpx encoder in chromium webrtc use case.
   std::array<bool, kNumVp8ReferenceBuffers> ref_frames_used{true, false, false};
 
-  if (current_frame_hdr_.IsKeyframe()) {
+  if (picture->frame_hdr->IsKeyframe()) {
     // A driver should ignore |ref_frames_used| values if keyframe is requested.
     // But we fill false in |ref_frames_used| just in case.
     std::fill(std::begin(ref_frames_used), std::end(ref_frames_used), false);
@@ -278,63 +297,30 @@ bool VP8VaapiVideoEncoderDelegate::UpdateRates(
   current_params_.bitrate_allocation = bitrate_allocation;
   current_params_.framerate = framerate;
 
-  base::CheckedNumeric<uint32_t> cpb_size_bits(bitrate);
-  cpb_size_bits /= 1000;
-  cpb_size_bits *= current_params_.cpb_window_size_ms;
-  if (!cpb_size_bits.AssignIfValid(&current_params_.cpb_size_bits)) {
-    VLOGF(1) << "Too large bitrate: " << bitrate_allocation.GetSumBps();
-    return false;
-  }
-
   rate_ctrl_->UpdateRateControl(CreateRateControlConfig(
       visible_size_, current_params_, bitrate_allocation));
 
   return true;
 }
 
-void VP8VaapiVideoEncoderDelegate::InitializeFrameHeader() {
+void VP8VaapiVideoEncoderDelegate::SetFrameHeader(VP8Picture& picture,
+                                                  bool keyframe) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  current_frame_hdr_ = {};
-  DCHECK(!visible_size_.IsEmpty());
-  current_frame_hdr_.width = visible_size_.width();
-  current_frame_hdr_.height = visible_size_.height();
-  current_frame_hdr_.show_frame = true;
-  // TODO(sprang): Make this dynamic. Value based on reference implementation
-  // in libyami (https://github.com/intel/libyami).
-
-  // A VA-API driver recommends to set forced_lf_adjustment on keyframe.
-  // Set loop_filter_adj_enable to 1 here because forced_lf_adjustment is read
-  // only when a macroblock level loop filter adjustment.
-  current_frame_hdr_.loopfilter_hdr.loop_filter_adj_enable = true;
-
-  // Set mb_no_skip_coeff to 1 that some decoders (e.g. kepler) could not decode
-  // correctly a stream encoded with mb_no_skip_coeff=0. It also enables an
-  // encoder to produce a more optimized stream than when mb_no_skip_coeff=0.
-  current_frame_hdr_.mb_no_skip_coeff = true;
-}
-
-void VP8VaapiVideoEncoderDelegate::UpdateFrameHeader(bool keyframe) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
+ *picture.frame_hdr = GetDefaultVp8FrameHeader(keyframe, visible_size_);
+  picture.frame_hdr->refresh_last = true;
   if (keyframe) {
-    current_frame_hdr_.frame_type = Vp8FrameHeader::KEYFRAME;
-    current_frame_hdr_.refresh_last = true;
-    current_frame_hdr_.refresh_golden_frame = true;
-    current_frame_hdr_.refresh_alternate_frame = true;
-    current_frame_hdr_.copy_buffer_to_golden =
+    picture.frame_hdr->refresh_golden_frame = true;
+    picture.frame_hdr->refresh_alternate_frame = true;
+    picture.frame_hdr->copy_buffer_to_golden =
         Vp8FrameHeader::NO_GOLDEN_REFRESH;
-    current_frame_hdr_.copy_buffer_to_alternate =
+    picture.frame_hdr->copy_buffer_to_alternate =
         Vp8FrameHeader::NO_ALT_REFRESH;
   } else {
-    current_frame_hdr_.frame_type = Vp8FrameHeader::INTERFRAME;
-    // TODO(sprang): Add temporal layer support.
-    current_frame_hdr_.refresh_last = true;
-    current_frame_hdr_.refresh_golden_frame = false;
-    current_frame_hdr_.refresh_alternate_frame = false;
-    current_frame_hdr_.copy_buffer_to_golden =
+    picture.frame_hdr->refresh_golden_frame = false;
+    picture.frame_hdr->refresh_alternate_frame = false;
+    picture.frame_hdr->copy_buffer_to_golden =
         Vp8FrameHeader::COPY_LAST_TO_GOLDEN;
-    current_frame_hdr_.copy_buffer_to_alternate =
+    picture.frame_hdr->copy_buffer_to_alternate =
         Vp8FrameHeader::COPY_GOLDEN_TO_ALT;
   }
 
@@ -344,9 +330,9 @@ void VP8VaapiVideoEncoderDelegate::UpdateFrameHeader(bool keyframe) {
   frame_params.temporal_layer_id = 0;
 
   rate_ctrl_->ComputeQP(frame_params);
-  current_frame_hdr_.quantization_hdr.y_ac_qi = rate_ctrl_->GetQP();
+  picture.frame_hdr->quantization_hdr.y_ac_qi = rate_ctrl_->GetQP();
   DVLOGF(4) << "qp="
-            << static_cast<int>(current_frame_hdr_.quantization_hdr.y_ac_qi);
+            << static_cast<int>(picture.frame_hdr->quantization_hdr.y_ac_qi);
 }
 
 void VP8VaapiVideoEncoderDelegate::UpdateReferenceFrames(

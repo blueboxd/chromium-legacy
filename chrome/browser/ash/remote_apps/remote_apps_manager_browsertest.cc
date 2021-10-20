@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -36,6 +37,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -313,20 +315,18 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddApp) {
   apps::IconEffects icon_effects = apps::IconEffects::kCrOsStandardIcon;
 
   base::RunLoop run_loop;
-  apps::mojom::IconValuePtr output_data = apps::mojom::IconValue::New();
-  apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
-  iv->icon_type = apps::mojom::IconType::kStandard;
+  std::unique_ptr<apps::IconValue> output_data =
+      std::make_unique<apps::IconValue>();
+  std::unique_ptr<apps::IconValue> iv = std::make_unique<apps::IconValue>();
+  iv->icon_type = apps::IconType::kStandard;
   iv->uncompressed = icon;
   iv->is_placeholder_icon = true;
-  apps::ApplyIconEffects(icon_effects, 64, std::move(iv),
-                         base::BindOnce(
-                             [](apps::mojom::IconValuePtr* result,
-                                base::OnceClosure load_app_icon_callback,
-                                apps::mojom::IconValuePtr icon) {
-                               *result = std::move(icon);
-                               std::move(load_app_icon_callback).Run();
-                             },
-                             &output_data, run_loop.QuitClosure()));
+  apps::ApplyIconEffects(
+      icon_effects, 64, std::move(iv),
+      base::BindLambdaForTesting([&](std::unique_ptr<apps::IconValue> icon) {
+        output_data = std::move(icon);
+        run_loop.Quit();
+      }));
   run_loop.Run();
   CheckIconsEqual(output_data->uncompressed, item->GetDefaultIcon());
 }

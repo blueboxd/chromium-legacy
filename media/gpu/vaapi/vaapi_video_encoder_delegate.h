@@ -65,6 +65,27 @@ class VaapiVideoEncoderDelegate {
     BitrateControl bitrate_control = BitrateControl::kConstantBitrate;
   };
 
+  // EncodeResult owns the necessary resource to keep the encoded buffer. The
+  // encoded buffer can be downloaded with the EncodeResult, for example, by
+  // calling VaapiWrapper::DownloadFromVABuffer().
+  class EncodeResult {
+   public:
+    EncodeResult(scoped_refptr<VASurface> surface,
+                 std::unique_ptr<ScopedVABuffer> coded_buffer,
+                 const BitstreamBufferMetadata& metadata);
+    ~EncodeResult();
+
+    VASurfaceID input_surface_id() const;
+    VABufferID coded_buffer_id() const;
+
+    const BitstreamBufferMetadata& metadata() const;
+
+   private:
+    const scoped_refptr<VASurface> surface_;
+    const std::unique_ptr<ScopedVABuffer> coded_buffer_;
+    const BitstreamBufferMetadata metadata_;
+  };
+
   // An abstraction of an encode job for one frame. Parameters required for an
   // EncodeJob to be executed are prepared by an VaapiVideoEncoderDelegate,
   // while the accelerator-specific callbacks required to set up and execute it
@@ -89,6 +110,12 @@ class VaapiVideoEncoderDelegate {
 
     ~EncodeJob();
 
+    // Creates EncodeResult with |metadata|. This passes ownership of the
+    // resources owned by EncodeJob and therefore must be called with
+    // std::move().
+    std::unique_ptr<EncodeResult> CreateEncodeResult(
+        const BitstreamBufferMetadata& metadata) &&;
+
     // Requests this job to produce a keyframe; requesting a keyframe may not
     // always result in one being produced by the encoder (e.g. if it would
     // not fit in the bitrate budget).
@@ -97,8 +124,7 @@ class VaapiVideoEncoderDelegate {
     // Returns true if this job has been requested to produce a keyframe.
     bool IsKeyframeRequested() const { return keyframe_; }
 
-    // Returns the timestamp associated with this job.
-    base::TimeDelta timestamp() const { return timestamp_; }
+    base::TimeDelta timestamp() const;
 
     const scoped_refptr<VideoFrame>& input_frame() const;
 
@@ -111,9 +137,6 @@ class VaapiVideoEncoderDelegate {
     // Input VideoFrame to be encoded.
     const scoped_refptr<VideoFrame> input_frame_;
 
-    // Source timestamp for |input_frame_|.
-    const base::TimeDelta timestamp_;
-
     // True if this job is to produce a keyframe.
     bool keyframe_;
 
@@ -122,26 +145,7 @@ class VaapiVideoEncoderDelegate {
     const scoped_refptr<VASurface> input_surface_;
     const scoped_refptr<CodecPicture> picture_;
     // Buffer that will contain the output bitstream data for this frame.
-    const std::unique_ptr<ScopedVABuffer> coded_buffer_;
-  };
-
-  // EncodeResult owns the necessary resource to keep the encoded buffer. The
-  // encoded buffer can be downloaded with the EncodeResult, for example, by
-  // calling VaapiWrapper::DownloadFromVABuffer().
-  class EncodeResult {
-   public:
-    EncodeResult(std::unique_ptr<EncodeJob> encode_job,
-                 const BitstreamBufferMetadata& metadata);
-    ~EncodeResult();
-
-    VASurfaceID input_surface_id() const;
-    VABufferID coded_buffer_id() const;
-
-    const BitstreamBufferMetadata& metadata() const;
-
-   private:
-    const std::unique_ptr<EncodeJob> encode_job_;
-    const BitstreamBufferMetadata metadata_;
+    std::unique_ptr<ScopedVABuffer> coded_buffer_;
   };
 
   // Initializes the encoder with requested parameter set |config| and

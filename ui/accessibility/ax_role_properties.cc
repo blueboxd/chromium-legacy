@@ -39,6 +39,8 @@ bool HasPresentationalChildren(const ax::mojom::Role role) {
     case ax::mojom::Role::kButton:
     case ax::mojom::Role::kCheckBox:
     case ax::mojom::Role::kMath:
+    // Return false for kMathMLMath, since the children of a <math> tag should
+    // be exposed to make MathML accessible.
     case ax::mojom::Role::kMenuItemCheckBox:
     case ax::mojom::Role::kMenuItemRadio:
     case ax::mojom::Role::kMenuListOption:
@@ -91,6 +93,7 @@ bool IsCellOrTableHeader(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kCell:
     case ax::mojom::Role::kColumnHeader:
+    case ax::mojom::Role::kMathMLTableCell:
     case ax::mojom::Role::kRowHeader:
       return true;
     case ax::mojom::Role::kLayoutTableCell:
@@ -513,8 +516,9 @@ bool IsReadOnlySupported(const ax::mojom::Role role) {
     // Therefore, [...] user agents SHOULD NOT expose either property to
     // assistive technologies unless the columnheader descends from a grid.
     case ax::mojom::Role::kCell:
-    case ax::mojom::Role::kRowHeader:
     case ax::mojom::Role::kColumnHeader:
+    case ax::mojom::Role::kMathMLTableCell:
+    case ax::mojom::Role::kRowHeader:
       return false;
     default:
       return false;
@@ -570,6 +574,8 @@ bool IsSection(const ax::mojom::Role role) {
     case ax::mojom::Role::kLog:
     case ax::mojom::Role::kMarquee:
     case ax::mojom::Role::kMath:
+    case ax::mojom::Role::kMathMLMath:
+    case ax::mojom::Role::kMathMLTableCell:
     case ax::mojom::Role::kNote:
     case ax::mojom::Role::kProgressIndicator:  // Subclass of kStatus.
     case ax::mojom::Role::kRow:                // Subclass of kGroup.
@@ -645,6 +651,7 @@ bool IsSelectSupported(const ax::mojom::Role role) {
     case ax::mojom::Role::kCell:
     case ax::mojom::Role::kColumnHeader:
     case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kMathMLTableCell:
     case ax::mojom::Role::kMenuListOption:
     case ax::mojom::Role::kRow:
     case ax::mojom::Role::kRowHeader:

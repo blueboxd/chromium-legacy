@@ -92,15 +92,21 @@ bool ProcessEndpoint(ReportingDelegate* delegate,
   endpoint_info_out->url = std::move(endpoint_url);
 
   int priority = ReportingEndpoint::EndpointInfo::kDefaultPriority;
-  if (dict->HasKey(kPriorityKey) && !dict->GetInteger(kPriorityKey, &priority))
-    return false;
+  if (const base::Value* value = dict->FindKey(kPriorityKey)) {
+    if (!value->is_int())
+      return false;
+    priority = value->GetInt();
+  }
   if (priority < 0)
     return false;
   endpoint_info_out->priority = priority;
 
   int weight = ReportingEndpoint::EndpointInfo::kDefaultWeight;
-  if (dict->HasKey(kWeightKey) && !dict->GetInteger(kWeightKey, &weight))
-    return false;
+  if (const base::Value* value = dict->FindKey(kWeightKey)) {
+    if (!value->is_int())
+      return false;
+    weight = value->GetInt();
+  }
   if (weight < 0)
     return false;
   endpoint_info_out->weight = weight;
@@ -133,11 +139,7 @@ bool ProcessEndpointGroup(ReportingDelegate* delegate,
                                       group_name);
   parsed_endpoint_group_out->group_key = group_key;
 
-  int ttl_sec = -1;
-  if (!dict->HasKey(kMaxAgeKey))
-    return false;
-  if (!dict->GetInteger(kMaxAgeKey, &ttl_sec))
-    return false;
+  int ttl_sec = dict->FindIntKey(kMaxAgeKey).value_or(-1);
   if (ttl_sec < 0)
     return false;
   // max_age: 0 signifies removal of the endpoint group.
@@ -223,14 +225,14 @@ bool ProcessEndpoint(ReportingDelegate* delegate,
 bool ProcessV1Endpoint(ReportingDelegate* delegate,
                        ReportingCache* cache,
                        const base::UnguessableToken& reporting_source,
-                       const IsolationInfo& isolation_info,
+                       const NetworkIsolationKey& network_isolation_key,
                        const url::Origin& origin,
                        const std::string& endpoint_name,
                        const std::string& endpoint_url_string,
                        ReportingEndpoint& parsed_endpoint_out) {
   DCHECK(!reporting_source.is_empty());
-  ReportingEndpointGroupKey group_key(isolation_info.network_isolation_key(),
-                                      reporting_source, origin, endpoint_name);
+  ReportingEndpointGroupKey group_key(network_isolation_key, reporting_source,
+                                      origin, endpoint_name);
   parsed_endpoint_out.group_key = group_key;
 
   ReportingEndpoint::EndpointInfo parsed_endpoint;
@@ -326,11 +328,14 @@ void ReportingHeaderParser::ProcessParsedReportingEndpointsHeader(
     ReportingContext* context,
     const base::UnguessableToken& reporting_source,
     const IsolationInfo& isolation_info,
+    const NetworkIsolationKey& network_isolation_key,
     const url::Origin& origin,
     base::flat_map<std::string, std::string> header) {
   DCHECK(base::FeatureList::IsEnabled(net::features::kDocumentReporting));
   DCHECK(GURL::SchemeIsCryptographic(origin.scheme()));
   DCHECK(!reporting_source.is_empty());
+  DCHECK(network_isolation_key.IsEmpty() ||
+         network_isolation_key == isolation_info.network_isolation_key());
 
   ReportingDelegate* delegate = context->delegate();
   ReportingCache* cache = context->cache();
@@ -339,9 +344,9 @@ void ReportingHeaderParser::ProcessParsedReportingEndpointsHeader(
 
   for (const auto& member : header) {
     ReportingEndpoint parsed_endpoint;
-    if (ProcessV1Endpoint(delegate, cache, reporting_source, isolation_info,
-                          origin, member.first, member.second,
-                          parsed_endpoint)) {
+    if (ProcessV1Endpoint(delegate, cache, reporting_source,
+                          network_isolation_key, origin, member.first,
+                          member.second, parsed_endpoint)) {
       parsed_header.push_back(std::move(parsed_endpoint));
     }
   }

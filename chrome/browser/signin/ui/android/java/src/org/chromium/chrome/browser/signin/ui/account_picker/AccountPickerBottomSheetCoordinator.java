@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.signin.ui.account_picker;
 
-import android.app.Activity;
 import android.view.View;
 
 import androidx.annotation.MainThread;
@@ -13,10 +12,12 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.chrome.browser.signin.services.SigninMetricsUtils;
 import org.chromium.chrome.browser.signin.services.SigninPreferencesManager;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.signin.metrics.AccountConsistencyPromoAction;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
@@ -29,23 +30,24 @@ public class AccountPickerBottomSheetCoordinator {
     private final BottomSheetController mBottomSheetController;
     private final BottomSheetObserver mBottomSheetObserver = new EmptyBottomSheetObserver() {
         @Override
-        public void onSheetClosed(@StateChangeReason int reason) {
-            super.onSheetClosed(reason);
-            if (reason == StateChangeReason.SWIPE) {
-                logOnDismissMetrics(AccountConsistencyPromoAction.DISMISSED_SWIPE_DOWN);
-            } else if (reason == StateChangeReason.BACK_PRESS) {
-                logOnDismissMetrics(AccountConsistencyPromoAction.DISMISSED_BACK);
-            } else if (reason == StateChangeReason.TAP_SCRIM) {
-                logOnDismissMetrics(AccountConsistencyPromoAction.DISMISSED_SCRIM);
-            }
-        }
-
-        @Override
-        public void onSheetStateChanged(int newState, int reason) {
+        public void onSheetStateChanged(@SheetState int newState, @StateChangeReason int reason) {
             super.onSheetStateChanged(newState, reason);
-            if (newState == BottomSheetController.SheetState.HIDDEN) {
-                AccountPickerBottomSheetCoordinator.this.destroy();
+            if (newState != BottomSheetController.SheetState.HIDDEN) {
+                return;
             }
+
+            if (reason == StateChangeReason.SWIPE) {
+                logMetricAndIncrementActiveDismissalCount(
+                        AccountConsistencyPromoAction.DISMISSED_SWIPE_DOWN);
+            } else if (reason == StateChangeReason.BACK_PRESS) {
+                logMetricAndIncrementActiveDismissalCount(
+                        AccountConsistencyPromoAction.DISMISSED_BACK);
+            } else if (reason == StateChangeReason.TAP_SCRIM) {
+                logMetricAndIncrementActiveDismissalCount(
+                        AccountConsistencyPromoAction.DISMISSED_SCRIM);
+            }
+
+            AccountPickerBottomSheetCoordinator.this.destroy();
         }
     };
 
@@ -54,14 +56,15 @@ public class AccountPickerBottomSheetCoordinator {
      * bottom sheet on the screen.
      */
     @MainThread
-    public AccountPickerBottomSheetCoordinator(Activity activity,
+    public AccountPickerBottomSheetCoordinator(WindowAndroid windowAndroid,
             BottomSheetController bottomSheetController,
             AccountPickerDelegate accountPickerDelegate) {
         SigninMetricsUtils.logAccountConsistencyPromoAction(AccountConsistencyPromoAction.SHOWN);
 
         mAccountPickerBottomSheetMediator = new AccountPickerBottomSheetMediator(
-                activity, accountPickerDelegate, this::dismissBottomSheet);
-        mView = new AccountPickerBottomSheetView(activity, mAccountPickerBottomSheetMediator);
+                windowAndroid, accountPickerDelegate, this::onDismissButtonClicked);
+        mView = new AccountPickerBottomSheetView(
+                windowAndroid.getActivity().get(), mAccountPickerBottomSheetMediator);
         mAccountPickerCoordinator = new AccountPickerCoordinator(
                 mView.getAccountListView(), mAccountPickerBottomSheetMediator);
 
@@ -84,13 +87,14 @@ public class AccountPickerBottomSheetCoordinator {
     }
 
     @MainThread
-    private void dismissBottomSheet() {
-        logOnDismissMetrics(AccountConsistencyPromoAction.DISMISSED_BUTTON);
+    private void onDismissButtonClicked() {
+        logMetricAndIncrementActiveDismissalCount(AccountConsistencyPromoAction.DISMISSED_BUTTON);
         mBottomSheetController.hideContent(mView, true);
     }
 
     @MainThread
-    private void logOnDismissMetrics(@AccountConsistencyPromoAction int promoAction) {
+    private void logMetricAndIncrementActiveDismissalCount(
+            @AccountConsistencyPromoAction int promoAction) {
         SigninMetricsUtils.logAccountConsistencyPromoAction(promoAction);
         SigninPreferencesManager.getInstance()
                 .incrementAccountPickerBottomSheetActiveDismissalCount();

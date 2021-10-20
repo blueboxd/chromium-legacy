@@ -25,7 +25,6 @@ VaapiVideoEncoderDelegate::EncodeJob::EncodeJob(
     scoped_refptr<CodecPicture> picture,
     std::unique_ptr<ScopedVABuffer> coded_buffer)
     : input_frame_(input_frame),
-      timestamp_(input_frame->timestamp()),
       keyframe_(keyframe),
       input_surface_(input_surface),
       picture_(std::move(picture)),
@@ -38,11 +37,20 @@ VaapiVideoEncoderDelegate::EncodeJob::EncodeJob(
 VaapiVideoEncoderDelegate::EncodeJob::EncodeJob(
     scoped_refptr<VideoFrame> input_frame,
     bool keyframe)
-    : input_frame_(input_frame),
-      timestamp_(input_frame->timestamp()),
-      keyframe_(keyframe) {}
+    : input_frame_(input_frame), keyframe_(keyframe) {}
 
 VaapiVideoEncoderDelegate::EncodeJob::~EncodeJob() = default;
+
+std::unique_ptr<VaapiVideoEncoderDelegate::EncodeResult>
+VaapiVideoEncoderDelegate::EncodeJob::CreateEncodeResult(
+    const BitstreamBufferMetadata& metadata) && {
+  return std::make_unique<EncodeResult>(input_surface_,
+                                        std::move(coded_buffer_), metadata);
+}
+
+base::TimeDelta VaapiVideoEncoderDelegate::EncodeJob::timestamp() const {
+  return input_frame_->timestamp();
+}
 
 const scoped_refptr<VideoFrame>&
 VaapiVideoEncoderDelegate::EncodeJob::input_frame() const {
@@ -64,18 +72,21 @@ VaapiVideoEncoderDelegate::EncodeJob::picture() const {
 }
 
 VaapiVideoEncoderDelegate::EncodeResult::EncodeResult(
-    std::unique_ptr<EncodeJob> encode_job,
+    scoped_refptr<VASurface> surface,
+    std::unique_ptr<ScopedVABuffer> coded_buffer,
     const BitstreamBufferMetadata& metadata)
-    : encode_job_(std::move(encode_job)), metadata_(metadata) {}
+    : surface_(std::move(surface)),
+      coded_buffer_(std::move(coded_buffer)),
+      metadata_(metadata) {}
 
 VaapiVideoEncoderDelegate::EncodeResult::~EncodeResult() = default;
 
 VASurfaceID VaapiVideoEncoderDelegate::EncodeResult::input_surface_id() const {
-  return encode_job_->input_surface()->id();
+  return surface_->id();
 }
 
 VABufferID VaapiVideoEncoderDelegate::EncodeResult::coded_buffer_id() const {
-  return encode_job_->coded_buffer_id();
+  return coded_buffer_->id();
 }
 
 const BitstreamBufferMetadata&
@@ -142,7 +153,7 @@ VaapiVideoEncoderDelegate::Encode(std::unique_ptr<EncodeJob> encode_job) {
   BitrateControlUpdate(encoded_chunk_size);
 
   auto metadata = GetMetadata(*encode_job, encoded_chunk_size);
-  return std::make_unique<EncodeResult>(std::move(encode_job), metadata);
+  return std::move(*encode_job).CreateEncodeResult(metadata);
 }
 
 }  // namespace media

@@ -1714,6 +1714,7 @@ crbug.com/1158554 external/wpt/css/css-conditional/css-supports-042.xht [ Failur
 crbug.com/1145970 wpt_internal/css/css-conditional/container-queries/* [ Skip ]
 crbug.com/1146092 wpt_internal/css/css-contain/* [ Skip ]
 crbug.com/1145970 virtual/container-queries/* [ Pass ]
+crbug.com/1245689 virtual/container-queries/wpt_internal/css/css-conditional/container-queries/svg-layout-root-crash.html [ Crash ]
 crbug.com/829028 virtual/container-queries/wpt_internal/css/css-contain/multicol-block-size.html [ Failure ]
 crbug.com/829028 virtual/container-queries/wpt_internal/css/css-contain/multicol-inline-size.html [ Failure ]
 
@@ -4460,26 +4461,17 @@ crbug.com/1052642 external/wpt/service-workers/service-worker/unregister-immedia
 
 # known bug of SubresourceWebBundles
 crbug.com/1244483 external/wpt/web-bundle/subresource-loading/link-non-utf8-query-encoding-encoded-src.https.tentative.html [ Failure ]
-# <script type=webbundle> is not implemented
+# <script type=webbundle> is under development
 crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-accept-header.https.tentative.html [ Skip ]
-crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-coep.https.tentative.html [ Skip ]
-crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-corp.https.tentative.html [ Skip ]
-crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-element-removal.https.tentative.html [ Skip ]
 crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-nested-bundle.https.tentative.html [ Skip ]
 crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-network-error.https.tentative.html [ Skip ]
-crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-not-found.https.tentative.html [ Skip ]
-crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-path-restriction.https.tentative.html [ Skip ]
-crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-relative-url-in-web-bundle-cors.https.tentative.sub.html [ Skip ]
 crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-relative-url-in-web-bundle.https.tentative.html [ Skip ]
-crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-relative-url.https.tentative.html [ Skip ]
 crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-relative-url-with-base.https.tentative.html [ Skip ]
+crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-relative-url.https.tentative.html [ Skip ]
 crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-request-destination.https.tentative.html [ Skip ]
-crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-resource-timing-attributes-consistent.https.tentative.html [ Skip ]
-crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-resource-timing.https.tentative.html [ Skip ]
 crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-service-worker-controlled.https.tentative.html [ Skip ]
 crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-static-element.https.tentative.sub.html [ Skip ]
 crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-static-element-with-base.https.tentative.sub.html [ Skip ]
-crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-subframe-from-web-bundle.https.tentative.html [ Skip ]
 crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-subresource-load.https.tentative.sub.html [ Skip ]
 
 # Sheriff failures 2017-07-03
@@ -5117,6 +5109,22 @@ crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/3_tracks.html [ Failure ]
 crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/class_object/class_white-space_normal_wrapped.html [ Failure ]
 crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/class_object/class_white-space_pre-line_wrapped.html [ Failure ]
+
+# Temporarily disabled to land https://crrev.com/c/3234177
+crbug.com/1073064 http/tests/devtools/console/console-format-classes.js [ Skip ]
+crbug.com/1073064 http/tests/devtools/console/console-linkify-relative-links.js [ Skip ]
+crbug.com/1073064 http/tests/devtools/console/console-log-linkify-stack-in-errors.js [ Skip ]
+crbug.com/1073064 http/tests/devtools/console/console-message-from-inline-with-url.js [ Skip ]
+crbug.com/1073064 http/tests/devtools/console/console-repeat-count.js [ Skip ]
+crbug.com/1073064 http/tests/devtools/console/console-stack-overflow.js [ Skip ]
+crbug.com/1073064 http/tests/devtools/console/console-uncaught-exception-in-eval.js [ Skip ]
+crbug.com/1073064 http/tests/devtools/console/console-uncaught-exception.js [ Skip ]
+crbug.com/1073064 http/tests/devtools/console/console-worker-nested-imports-syntax-error.js [ Skip ]
+crbug.com/1073064 http/tests/devtools/console/exception-objects.js [ Skip ]
+crbug.com/1073064 http/tests/devtools/sources/debugger/rethrow-error-from-bindings-crash.js [ Skip ]
+crbug.com/1073064 http/tests/devtools/sources/debugger-async/async-callstack-in-console.js [ Skip ]
+crbug.com/1073064 http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.js [ Skip ]
+crbug.com/1073064 http/tests/devtools/sources/debugger-pause/debugger-eval-while-paused-throws.js [ Skip ]
 
 # Sheriff 2019-06-04
 crbug.com/970135 [ Mac ] virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-interested-element-indicated.html [ Failure ]
@@ -7219,9 +7227,6 @@ crbug.com/1222126 http/tests/devtools/network/network-choose-preview-view.js [ S
 crbug.com/1222126 http/tests/devtools/network/json-preview.js [ Skip ]
 crbug.com/1215072 http/tests/devtools/elements/copy-styles.js [ Skip ]
 
-# Temporarily disable to allow updating DevTools experiment name
-crbug.com/1161439 http/tests/devtools/tracing/timeline-js/timeline-js-ignore-list.js [ Failure Pass ]
-
 # Skip devtools test hitting an unexpected tracing infrastructure exception 2021-10-04
 crbug.com/1255679 http/tests/devtools/service-workers/service-workers-wasm-test.js [ Skip ]
 
@@ -7288,3 +7293,8 @@ crbug.com/1256763 [ Linux ] images/color-profile-background-clip-text.html [ Fai
 crbug.com/1256763 [ Linux ] virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ Failure Pass ]
 crbug.com/1259277 [ Mac ] fast/events/message-port-multi.html [ Failure Pass ]
 crbug.com/1261457 [ Mac11-arm64 ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemDirectoryHandle-move-manual.https.html [ Failure Pass ]
+
+# Sheriff 2021-10-20
+crbug.com/1261744 [ Mac11-arm64 ] external/wpt/url/a-element-origin.html [ Failure Pass ]
+crbug.com/1261770 crbug.com/1245166 [ Linux ] external/wpt/web-bundle/subresource-loading/script-relative-url-in-web-bundle-cors.https.tentative.sub.html [ Failure Pass ]
+crbug.com/1261770 crbug.com/1245166 [ Linux ] virtual/wbn-from-network/external/wpt/web-bundle/subresource-loading/script-relative-url-in-web-bundle-cors.https.tentative.sub.html [ Failure Pass ]

@@ -1527,7 +1527,8 @@ void AXObject::SerializeHTMLAttributes(ui::AXNodeData* node_data) {
 // TODO(nektar): Turn off kHTMLAccessibilityMode for automation and Mac
 // and remove ifdef.
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
-  if (node_data->role == ax::mojom::blink::Role::kMath &&
+  if ((node_data->role == ax::mojom::blink::Role::kMath ||
+       node_data->role == ax::mojom::blink::Role::kMathMLMath) &&
       element->innerHTML().length()) {
     TruncateAndAddStringAttribute(node_data,
                                   ax::mojom::blink::StringAttribute::kInnerHtml,
@@ -5639,6 +5640,28 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kLog:
     case ax::mojom::blink::Role::kMain:
     case ax::mojom::blink::Role::kMarquee:
+    case ax::mojom::blink::Role::kMathMLFraction:
+    case ax::mojom::blink::Role::kMathMLIdentifier:
+    case ax::mojom::blink::Role::kMathMLMath:
+    case ax::mojom::blink::Role::kMathMLMultiscripts:
+    case ax::mojom::blink::Role::kMathMLNoneScript:
+    case ax::mojom::blink::Role::kMathMLNumber:
+    case ax::mojom::blink::Role::kMathMLOperator:
+    case ax::mojom::blink::Role::kMathMLOver:
+    case ax::mojom::blink::Role::kMathMLPrescriptDelimiter:
+    case ax::mojom::blink::Role::kMathMLRoot:
+    case ax::mojom::blink::Role::kMathMLRow:
+    case ax::mojom::blink::Role::kMathMLSquareRoot:
+    case ax::mojom::blink::Role::kMathMLStringLiteral:
+    case ax::mojom::blink::Role::kMathMLSub:
+    case ax::mojom::blink::Role::kMathMLSubSup:
+    case ax::mojom::blink::Role::kMathMLSup:
+    case ax::mojom::blink::Role::kMathMLTable:
+    case ax::mojom::blink::Role::kMathMLTableCell:
+    case ax::mojom::blink::Role::kMathMLTableRow:
+    case ax::mojom::blink::Role::kMathMLText:
+    case ax::mojom::blink::Role::kMathMLUnder:
+    case ax::mojom::blink::Role::kMathMLUnderOver:
     case ax::mojom::blink::Role::kMenuListPopup:
     case ax::mojom::blink::Role::kMenu:
     case ax::mojom::blink::Role::kMenuBar:

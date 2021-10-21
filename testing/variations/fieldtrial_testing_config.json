@@ -2322,21 +2322,6 @@
             ]
         }
     ],
-    "CompositingBasedThrottling": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "CompositingBasedThrottling",
-                    "enable_features": [
-                        "CompositingBasedThrottling"
-                    ]
-                }
-            ]
-        }
-    ],
     "ConsumeCodeCacheOffThread": [
         {
             "platforms": [
@@ -5038,6 +5023,27 @@
             ]
         }
     ],
+    "NavigationNetworkResponseQueue": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NavigationNetworkResponseQueue"
+                    ]
+                }
+            ]
+        }
+    ],
     "NavigationPredictor": [
         {
             "platforms": [
@@ -5192,22 +5198,6 @@
                     "enable_features": [
                         "OfflineIndicatorV2"
                     ]
-                }
-            ]
-        }
-    ],
-    "OfflineMeasurementsBackgroundTask": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20210728",
-                    "enable_features": [
-                        "OfflineMeasurementsBackgroundTask"
-                    ],
-                    "min_os_version": "6.0.0"
                 }
             ]
         }

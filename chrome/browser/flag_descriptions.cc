@@ -3058,6 +3058,11 @@ const char kCriticalPersistedTabDataDescription[] =
     "A new method of persisting Tab data across restarts has been devised "
     "and implemented. This actives the new approach.";
 
+const char kContextMenuPopupStyleName[] = "Context menu popup style";
+const char kContextMenuPopupStyleDescription[] =
+    "Enable the popup style context menu, where the context menu will be"
+    "anchored around the touch point.";
+
 const char kContextualSearchDebugName[] = "Contextual Search debug";
 const char kContextualSearchDebugDescription[] =
     "Enables internal debugging of Contextual Search behavior on the client "
@@ -3141,6 +3146,13 @@ const char kEnableAutofillRefreshStyleName[] =
     "Enable Autofill refresh style (Android)";
 const char kEnableAutofillRefreshStyleDescription[] =
     "Enable modernized style for Autofill on Android";
+
+const char kChromeManagementPageAndroidName[] =
+    "Enable chrome://management page on Android";
+const char kChromeManagementPageAndroidDescription[] =
+    "Enable chrome://management page on Android, which aims to inform the user "
+    "if their browser is managed by their employer along with other useful "
+    "information.";
 
 const char kEnableCommandLineOnNonRootedName[] =
     "Enable command line on non-rooted devices";
@@ -3460,6 +3472,10 @@ const char kShareUsageRankingFixedMoreDescription[] =
     "When enabled with #share-usage-ranking, forces the 'More' option to "
     "occupy the right-most slot on the screen instead of moving depending on "
     "the length of the target list.";
+const char kSwapAndroidShareHubRowsName[] = "Swap Android share hub rows.";
+const char kSwapAndroidShareHubRowsDescription[] =
+    "Swap the order of the first-party and third-party rows in the Android "
+    "share hub.";
 
 const char kRequestDesktopSiteForTabletsName[] =
     "Request desktop site for tablets on Android";

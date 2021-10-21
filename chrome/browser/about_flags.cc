@@ -230,9 +230,11 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "components/app_restore/features.h"
 #include "components/arc/arc_features.h"
@@ -242,6 +244,11 @@
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #include "ui/events/ozone/features.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/lacros_url_handling.h"
+#include "chrome/common/webui_url_constants.h"
+#endif
 
 #if defined(OS_MAC)
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -3666,7 +3673,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNavigationPredictorDescription,
      kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(blink::features::kNavigationPredictor)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || OS_LINUX
+#endif  // BUILDFLAG(IS_CHROMEOS) || OS_LINUX
     {"enable-preconnect-to-search",
      flag_descriptions::kEnablePreconnectToSearchName,
      flag_descriptions::kEnablePreconnectToSearchDescription, kOsAll,
@@ -7556,6 +7563,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShareUsageRankingFixedMoreName,
      flag_descriptions::kShareUsageRankingFixedMoreDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kShareUsageRankingFixedMore)},
+    {"swap-android-share-hub-rows",
+     flag_descriptions::kSwapAndroidShareHubRowsName,
+     flag_descriptions::kSwapAndroidShareHubRowsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(share::kSwapAndroidShareHubRows)},
 #endif
 
 #if !defined(OS_ANDROID)
@@ -7751,6 +7762,17 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableIdleInhibitDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnableIdleInhibit)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(OS_ANDROID)
+    {"enable-chrome-management-page-android",
+     flag_descriptions::kChromeManagementPageAndroidName,
+     flag_descriptions::kChromeManagementPageAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(policy::features::kChromeManagementPageAndroid)},
+
+    {"context-menu-popup-style", flag_descriptions::kContextMenuPopupStyleName,
+     flag_descriptions::kContextMenuPopupStyleDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kContextMenuPopupStyle)},
+#endif  // defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
@@ -7963,6 +7985,18 @@ void RemoveFlagsSwitches(base::CommandLine::SwitchMap* switch_list) {
 void ResetAllFlags(flags_ui::FlagsStorage* flags_storage) {
   FlagsStateSingleton::GetFlagsState()->ResetAllFlags(flags_storage);
 }
+
+#if defined(OS_CHROMEOS)
+void CrosUrlFlagsRedirect() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  lacros_url_handling::NavigateInAsh(GURL(chrome::kChromeUIFlagsURL));
+#else
+  // Note: This will only be called by the UI when Lacros is available.
+  DCHECK(crosapi::BrowserManager::Get());
+  crosapi::BrowserManager::Get()->OpenUrl(GURL(chrome::kChromeUIFlagsURL));
+#endif
+}
+#endif
 
 void RecordUMAStatistics(flags_ui::FlagsStorage* flags_storage,
                          const std::string& histogram_name) {

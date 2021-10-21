@@ -25,6 +25,7 @@ class Origin;
 namespace content {
 
 class AggregatableReportSender;
+class AggregatableReportAssembler;
 
 struct PublicKey;
 
@@ -34,7 +35,9 @@ class TestAggregationServiceImpl : public AggregatableReportManager,
  public:
   // `clock` must be a non-null pointer to TestAggregationServiceImpl that is
   // valid as long as this object.
-  explicit TestAggregationServiceImpl(const base::Clock* clock);
+  TestAggregationServiceImpl(
+      const base::Clock* clock,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   TestAggregationServiceImpl(const TestAggregationServiceImpl& other) = delete;
   TestAggregationServiceImpl& operator=(
       const TestAggregationServiceImpl& other) = delete;
@@ -49,8 +52,9 @@ class TestAggregationServiceImpl : public AggregatableReportManager,
   void SetPublicKeys(const url::Origin& origin,
                      const std::string& json_string,
                      base::OnceCallback<void(bool)> callback) override;
-  void SetURLLoaderFactory(scoped_refptr<network::SharedURLLoaderFactory>
-                               url_loader_factory) override;
+  void AssembleReport(
+      AssembleRequest request,
+      base::OnceCallback<void(base::Value::DictStorage)> callback) override;
   void SendReport(const GURL& url,
                   const base::Value& contents,
                   base::OnceCallback<void(bool)> callback) override;
@@ -64,6 +68,7 @@ class TestAggregationServiceImpl : public AggregatableReportManager,
 
   base::SequenceBound<AggregationServiceKeyStorage> storage_;
   std::unique_ptr<AggregatableReportSender> sender_;
+  std::unique_ptr<AggregatableReportAssembler> assembler_;
 };
 
 }  // namespace content

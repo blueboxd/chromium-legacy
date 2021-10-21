@@ -1746,6 +1746,9 @@ extern const char kCloseTabSuggestionsDescription[];
 extern const char kCriticalPersistedTabDataName[];
 extern const char kCriticalPersistedTabDataDescription[];
 
+extern const char kContextMenuPopupStyleName[];
+extern const char kContextMenuPopupStyleDescription[];
+
 extern const char kContextualSearchDebugName[];
 extern const char kContextualSearchDebugDescription[];
 
@@ -1787,6 +1790,9 @@ extern const char kAutofillManualFallbackAndroidDescription[];
 
 extern const char kEnableAutofillRefreshStyleName[];
 extern const char kEnableAutofillRefreshStyleDescription[];
+
+extern const char kChromeManagementPageAndroidName[];
+extern const char kChromeManagementPageAndroidDescription[];
 
 extern const char kEnableCommandLineOnNonRootedName[];
 extern const char kEnableCommandLineOnNoRootedDescription[];
@@ -1981,6 +1987,8 @@ extern const char kShareUsageRankingName[];
 extern const char kShareUsageRankingDescription[];
 extern const char kShareUsageRankingFixedMoreName[];
 extern const char kShareUsageRankingFixedMoreDescription[];
+extern const char kSwapAndroidShareHubRowsName[];
+extern const char kSwapAndroidShareHubRowsDescription[];
 
 extern const char kSingleTouchSelectName[];
 extern const char kSingleTouchSelectDescription[];

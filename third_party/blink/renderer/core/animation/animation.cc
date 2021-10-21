@@ -344,8 +344,8 @@ Document* Animation::GetDocument() const {
   return document_;
 }
 
-absl::optional<double> Animation::TimelineTime() const {
-  return timeline_ ? timeline_->CurrentTimeMilliseconds() : absl::nullopt;
+absl::optional<AnimationTimeDelta> Animation::TimelineTime() const {
+  return timeline_ ? timeline_->CurrentTime() : absl::nullopt;
 }
 
 bool Animation::ConvertCSSNumberishToTime(
@@ -520,11 +520,14 @@ V8CSSNumberish* Animation::startTime() const {
 }
 
 V8CSSNumberish* Animation::ConvertTimeToCSSNumberish(
-    AnimationTimeDelta time) const {
-  if (timeline_ && timeline_->IsScrollTimeline()) {
-    return To<ScrollTimeline>(*timeline_).ConvertTimeToProgress(time);
+    absl::optional<AnimationTimeDelta> time) const {
+  if (time) {
+    if (timeline_ && timeline_->IsScrollTimeline()) {
+      return To<ScrollTimeline>(*timeline_).ConvertTimeToProgress(time.value());
+    }
+    return MakeGarbageCollected<V8CSSNumberish>(time.value().InMillisecondsF());
   }
-  return MakeGarbageCollected<V8CSSNumberish>(time.InMillisecondsF());
+  return nullptr;
 }
 
 // https://drafts.csswg.org/web-animations/#the-current-time-of-an-animation
@@ -2231,6 +2234,44 @@ bool Animation::HasActiveAnimationsOnCompositor() {
   return keyframe_effect->HasActiveAnimationsOnCompositor();
 }
 
+bool Animation::AtScrollTimelineBoundary() {
+  // Based on changed defined in: https://github.com/w3c/csswg-drafts/pull/6702
+  // 1.  If any of the following conditions are true:
+  //     * the associated animation's timeline is not a progress-based timeline,
+  //     or
+  //     * the associated animation's timeline duration is unresolved or zero,
+  //     or
+  //     * the animation's playback rate is zero
+  //     return false
+  absl::optional<AnimationTimeDelta> timeline_duration =
+      timeline_ ? timeline_->GetDuration() : absl::nullopt;
+  if (!timeline_ || !timeline_->IsScrollTimeline() || !timeline_duration ||
+      timeline_duration->is_zero() || playback_rate_ == 0)
+    return false;
+
+  // 2.  Let effective start time be the animation's start time if resolved, or
+  // zero otherwise.
+  AnimationTimeDelta effective_start_time =
+      start_time_.value_or(AnimationTimeDelta());
+  // 3.  Let effective timeline time be (animation's current time / animation's
+  // playback rate) + effective start time
+  AnimationTimeDelta effective_timeline_time =
+      (CurrentTimeInternal().value_or(AnimationTimeDelta()) / playback_rate_) +
+      effective_start_time;
+  // 4.  Let effective timeline progress be (effective timeline time / timeline
+  // duration)
+  // 5.  If effective timeline progress is 0 or 1, return true,
+  // We avoid the division here but it is effectively the same as 4 & 5 above.
+  return effective_timeline_time.is_zero() ||
+         IsWithinAnimationTimeTolerance(effective_timeline_time,
+                                        timeline_duration.value());
+
+  // Issue: This procedure is not strictly correct for a paused
+  // animation if the animation's current time is explicitly set, as this can
+  // introduce a lead or lag, between the timeline's current time and
+  // animation's current time.
+}
+
 // Update current time of the animation. Refer to step 1 in:
 // https://drafts.csswg.org/web-animations/#update-animations-and-send-events
 bool Animation::Update(TimingUpdateReason reason) {
@@ -2262,7 +2303,8 @@ bool Animation::Update(TimingUpdateReason reason) {
     }
 
     content_->UpdateInheritedTime(inherited_time, inherited_phase,
-                                  playback_rate_, reason);
+                                  AtScrollTimelineBoundary(), playback_rate_,
+                                  reason);
 
     // After updating the animation time if the animation is no longer current
     // blink will no longer composite the element (see
@@ -2297,14 +2339,8 @@ bool Animation::Update(TimingUpdateReason reason) {
 void Animation::QueueFinishedEvent() {
   const AtomicString& event_type = event_type_names::kFinish;
   if (GetExecutionContext() && HasEventListeners(event_type)) {
-    absl::optional<AnimationTimeDelta> event_current_time =
-        CurrentTimeInternal();
-    absl::optional<double> event_current_time_ms;
-    if (event_current_time)
-      event_current_time_ms = event_current_time.value().InMillisecondsF();
-    // TODO(crbug.com/916117): Handle NaN values for scroll-linked animations.
     pending_finished_event_ = MakeGarbageCollected<AnimationPlaybackEvent>(
-        event_type, event_current_time_ms, TimelineTime());
+        event_type, currentTime(), ConvertTimeToCSSNumberish(TimelineTime()));
     pending_finished_event_->SetTarget(this);
     pending_finished_event_->SetCurrentTarget(this);
     document_->EnqueueAnimationFrameEvent(pending_finished_event_);
@@ -2366,11 +2402,8 @@ void Animation::cancel() {
 
     const AtomicString& event_type = event_type_names::kCancel;
     if (GetExecutionContext() && HasEventListeners(event_type)) {
-      absl::optional<double> event_current_time = absl::nullopt;
-      // TODO(crbug.com/916117): Handle NaN values for scroll-linked
-      // animations.
       pending_cancelled_event_ = MakeGarbageCollected<AnimationPlaybackEvent>(
-          event_type, event_current_time, TimelineTime());
+          event_type, nullptr, ConvertTimeToCSSNumberish(TimelineTime()));
       pending_cancelled_event_->SetTarget(this);
       pending_cancelled_event_->SetCurrentTarget(this);
       document_->EnqueueAnimationFrameEvent(pending_cancelled_event_);
@@ -2679,13 +2712,8 @@ void Animation::RemoveReplacedAnimation() {
   replace_state_ = kRemoved;
   const AtomicString& event_type = event_type_names::kRemove;
   if (GetExecutionContext() && HasEventListeners(event_type)) {
-    absl::optional<AnimationTimeDelta> event_current_time =
-        CurrentTimeInternal();
-    absl::optional<double> event_current_time_ms;
-    if (event_current_time)
-      event_current_time_ms = event_current_time.value().InMillisecondsF();
     pending_remove_event_ = MakeGarbageCollected<AnimationPlaybackEvent>(
-        event_type, event_current_time_ms, TimelineTime());
+        event_type, currentTime(), ConvertTimeToCSSNumberish(TimelineTime()));
     pending_remove_event_->SetTarget(this);
     pending_remove_event_->SetCurrentTarget(this);
     document_->EnqueueAnimationFrameEvent(pending_remove_event_);

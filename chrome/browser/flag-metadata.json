@@ -798,6 +798,11 @@
       "expiry_milestone":100
   },
   {
+    "name": "context-menu-popup-style",
+    "owners": [ "wenyufu", "clank-app-team@google.com" ],
+    "expiry_milestone": 104
+  },
+  {
     "name": "context-menu-search-and-shop-with-google-lens",
     "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "lens-chrome@google.com" ],
     "expiry_milestone": 96
@@ -1511,6 +1516,11 @@
     "name": "enable-cast-streaming-vp9",
     "owners": [ "jophba@google.com", "openscreen-eng@google.com" ],
     "expiry_milestone": 105
+  },
+  {
+    "name": "enable-chrome-management-page-android",
+    "owners": [ "ogastorga", "ftirelo" ],
+    "expiry_milestone": 107
   },
   {
     "name": "enable-close-tab-suggestions",
@@ -4042,7 +4052,7 @@
   {
     "name": "omnibox-document-provider-aso",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 105
   },
   {
     "name": "omnibox-drive-suggestions",
@@ -5112,6 +5122,11 @@
     "name": "subframe-shutdown-delay",
     "owners": [ "jessemckenna@google.com", "olivierli" ],
     "expiry_milestone": 97
+  },
+  {
+    "name": "swap-android-share-hub-rows",
+    "owners": [ "ellyjones", "chrome-sharing-eng@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "sync-autofill-wallet-offer-data",

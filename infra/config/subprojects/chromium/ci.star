@@ -645,30 +645,6 @@ ci.android_builder(
 )
 
 ci.android_builder(
-    name = "Lollipop Phone Tester",
-    console_view_entry = consoles.console_view_entry(
-        category = "tester|phone",
-        short_name = "L",
-    ),
-    # We have limited phone capacity and thus limited ability to run
-    # tests in parallel, hence the high timeout.
-    execution_timeout = 6 * time.hour,
-    triggered_by = ["ci/Android arm Builder (dbg)"],
-)
-
-ci.android_builder(
-    name = "Lollipop Tablet Tester",
-    console_view_entry = consoles.console_view_entry(
-        category = "tester|tablet",
-        short_name = "L",
-    ),
-    # We have limited tablet capacity and thus limited ability to run
-    # tests in parallel, hence the high timeout.
-    execution_timeout = 20 * time.hour,
-    triggered_by = ["ci/Android arm Builder (dbg)"],
-)
-
-ci.android_builder(
     name = "Marshmallow 64 bit Tester",
     branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
@@ -3137,6 +3113,9 @@ ci.fuzz_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
     ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.fuzz_builder(
@@ -3148,6 +3127,9 @@ ci.fuzz_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
     ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.fuzz_builder(
@@ -3215,6 +3197,9 @@ ci.fuzz_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
     ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.fuzz_builder(
@@ -3226,6 +3211,9 @@ ci.fuzz_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
     ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.fuzz_builder(

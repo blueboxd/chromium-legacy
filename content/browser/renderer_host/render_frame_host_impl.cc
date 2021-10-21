@@ -2757,8 +2757,6 @@ void RenderFrameHostImpl::RenderProcessExited(
   // Reset state for the current RenderFrameHost once the FrameTreeNode has been
   // reset.
   RenderFrameDeleted();
-  InvalidateMojoConnection();
-  broker_receiver_.reset();
   SetLastCommittedUrl(GURL());
   renderer_url_info_ = RendererURLInfo();
   web_bundle_handle_.reset();
@@ -3135,6 +3133,7 @@ void RenderFrameHostImpl::RenderFrameDeleted() {
   if (was_created) {
     delegate_->RenderFrameDeleted(this);
   }
+  InvalidateMojoConnection();
 
   if (web_ui_) {
     web_ui_->RenderFrameDeleted();
@@ -3370,10 +3369,6 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     SCOPED_CRASH_KEY_STRING256("NoRVH", "target_site_info",
                                target_si->GetSiteInfo().GetDebugString());
     SCOPED_CRASH_KEY_BOOL(
-        "NoRVH", "target_si_in_bfcache",
-        back_forward_cache.IsSiteInstanceInBackForwardCacheForDebugging(
-            target_si->GetId()));
-    SCOPED_CRASH_KEY_BOOL(
         "NoRVH", "target_bi_in_bfcache",
         back_forward_cache.IsBrowsingInstanceInBackForwardCacheForDebugging(
             target_si->GetBrowsingInstanceId()));
@@ -3393,10 +3388,6 @@ void RenderFrameHostImpl::OnCreateChildFrame(
               ->frame_tree_node()
               ->render_manager()
               ->GetProxyHostWithoutRenderViewHostForDebugging());
-    SCOPED_CRASH_KEY_BOOL(
-        "NoRVH", "main_frame_si_in_bfcache",
-        back_forward_cache.IsSiteInstanceInBackForwardCacheForDebugging(
-            main_frame_si->GetId()));
 
     SiteInstanceImpl* proxy_si =
         static_cast<SiteInstanceImpl*>(proxy->GetSiteInstance());
@@ -3414,10 +3405,6 @@ void RenderFrameHostImpl::OnCreateChildFrame(
         "NoRVH", "proxy_bi_in_bfcache",
         back_forward_cache.IsBrowsingInstanceInBackForwardCacheForDebugging(
             proxy_si->GetBrowsingInstanceId()));
-    SCOPED_CRASH_KEY_BOOL(
-        "NoRVH", "proxy_si_in_bfcache",
-        back_forward_cache.IsSiteInstanceInBackForwardCacheForDebugging(
-            proxy_si->GetId()));
     SCOPED_CRASH_KEY_BOOL(
         "NoRVH", "proxy_in_bfcache",
         back_forward_cache.IsProxyInBackForwardCacheForDebugging(proxy));
@@ -6364,8 +6351,9 @@ void RenderFrameHostImpl::BindDomOperationControllerHostReceiver(
     mojo::PendingAssociatedReceiver<mojom::DomAutomationControllerHost>
         receiver) {
   DCHECK(receiver.is_valid());
-  // DOM automation controller is reinstalled after a cross-document navigation,
-  // which can reuse the frame.
+  // In the renderer side, the remote is document-associated so the receiver on
+  // the browser side can be reused after a cross-document navigation.
+  // TODO(dcheng): Make this document-associated?
   dom_automation_controller_receiver_.reset();
   dom_automation_controller_receiver_.Bind(std::move(receiver));
   dom_automation_controller_receiver_.SetFilter(
@@ -8348,30 +8336,38 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
 }
 
 void RenderFrameHostImpl::InvalidateMojoConnection() {
-  frame_.reset();
-  frame_bindings_control_.reset();
-  frame_host_associated_receiver_.reset();
-  back_forward_cache_controller_host_associated_receiver_.reset();
-  local_frame_.reset();
-  local_main_frame_.reset();
-  high_priority_local_frame_.reset();
-  find_in_page_.reset();
-  render_accessibility_.reset();
-
-  // Disconnect with ImageDownloader Mojo service in Blink.
-  mojo_image_downloader_.reset();
-
-  // The geolocation service and sensor provider proxy may attempt to cancel
-  // permission requests so they must be reset before the routing_id mapping is
-  // removed.
+  // While not directly Mojo endpoints, both `geolocation_service_` and
+  // `sensor_provider_proxy_` may attempt to cancel permission requests.
   geolocation_service_.reset();
   sensor_provider_proxy_.reset();
 
-  render_accessibility_host_.Reset();
+  associated_registry_.reset();
 
+  mojo_image_downloader_.reset();
+  find_in_page_.reset();
+  local_frame_.reset();
+  local_main_frame_.reset();
+  high_priority_local_frame_.reset();
+
+  frame_host_associated_receiver_.reset();
+  back_forward_cache_controller_host_associated_receiver_.reset();
+  frame_.reset();
+  frame_bindings_control_.reset();
   local_frame_host_receiver_.reset();
   local_main_frame_host_receiver_.reset();
-  associated_registry_.reset();
+
+  broker_receiver_.reset();
+
+  render_accessibility_.reset();
+  render_accessibility_host_.Reset();
+
+  dom_automation_controller_receiver_.reset();
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  pepper_host_receiver_.reset();
+  pepper_instance_map_.clear();
+  pepper_hung_detectors_.Clear();
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 }
 
 bool RenderFrameHostImpl::IsFocused() {
@@ -9540,28 +9536,6 @@ void RenderFrameHostImpl::BindHasTrustTokensAnswerer(
 
   GetProcess()->GetStoragePartition()->CreateHasTrustTokensAnswerer(
       std::move(receiver), ComputeTopFrameOrigin(GetLastCommittedOrigin()));
-}
-
-void RenderFrameHostImpl::CreateAppCacheBackend(
-    mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(StoragePartition::IsAppCacheEnabled());
-  SCOPED_CRASH_KEY_STRING64(
-      "CreateAppCacheBackend", "data",
-      base::StringPrintf(
-          "f=%d br=%d irfl=%d iiand=%d fid=%d", frame_.is_bound(),
-          broker_receiver_.is_bound(), IsRenderFrameLive(),
-          GetProcess()->IsInitializedAndNotDead(),
-          RenderProcessHost::FromID(GetProcess()->GetID()) != nullptr));
-
-  auto* storage_partition_impl =
-      static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition());
-  auto* appcache_service = storage_partition_impl->GetAppCacheService();
-  // CreateAppCacheBackend should only be called if AppCache is enabled
-  // (which implies the service exists).
-  DCHECK(appcache_service);
-  appcache_service->CreateBackend(GetProcess()->GetID(), routing_id_,
-                                  std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetAudioContextManager(

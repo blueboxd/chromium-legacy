@@ -29,7 +29,7 @@
 #include "base/process/kill.h"
 #include "base/strings/string_piece.h"
 #include "base/supports_user_data.h"
-#include "base/task/sequenced_task_runner_forward.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -1620,9 +1620,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Set the `frame_` for sending messages to the renderer process.
   void SetMojomFrameRemote(mojo::PendingAssociatedRemote<mojom::Frame>);
-
-  void CreateAppCacheBackend(
-      mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver);
 
   void GetAudioContextManager(
       mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver);
@@ -3494,6 +3491,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // already exists it will still be used.
   bool no_create_browser_accessibility_manager_for_testing_ = false;
 
+  // Remotes must be reset in InvalidateMojoConnection().
   // Holder of Mojo connection with ImageDownloader service in Blink.
   mojo::Remote<blink::mojom::ImageDownloader> mojo_image_downloader_;
 

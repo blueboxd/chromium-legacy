@@ -578,6 +578,9 @@ crbug.com/1207960 [ Linux ] compositing/perspective-interest-rect.html [ Failure
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg.html [ Failure ]
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg-clip.html [ Failure ]
 
+crbug.com/1261905 external/wpt/css/css-transforms/backface-visibility-hidden-child-will-change-transform.html [ Failure ]
+crbug.com/1261905 virtual/backface-visibility-interop/external/wpt/css/css-transforms/backface-visibility-hidden-child-translate.html [ Failure ]
+
 # Fixed in CompositeAfterPaint.
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested-2.html [ Crash Failure Pass ]
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Failure ]
@@ -1714,7 +1717,6 @@ crbug.com/1158554 external/wpt/css/css-conditional/css-supports-042.xht [ Failur
 crbug.com/1145970 wpt_internal/css/css-conditional/container-queries/* [ Skip ]
 crbug.com/1146092 wpt_internal/css/css-contain/* [ Skip ]
 crbug.com/1145970 virtual/container-queries/* [ Pass ]
-crbug.com/1245689 virtual/container-queries/wpt_internal/css/css-conditional/container-queries/svg-layout-root-crash.html [ Crash ]
 crbug.com/829028 virtual/container-queries/wpt_internal/css/css-contain/multicol-block-size.html [ Failure ]
 crbug.com/829028 virtual/container-queries/wpt_internal/css/css-contain/multicol-inline-size.html [ Failure ]
 
@@ -2345,15 +2347,6 @@ crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-naviga
 # while other bots give actual timeouts.
 crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-navigations-and-traversals/tentative/cross-document-traversal-same-document-nav.html [ Failure Timeout ]
 crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-navigations-and-traversals/tentative/same-document-traversal-same-document-nav.html [ Failure Timeout ]
-
-# Disabling test to checkin associated frontend changes on DevTools
-crbug.com/1252049 http/tests/devtools/forced-layout-in-microtask.js [ Failure Pass ]
-crbug.com/1252049 [ Linux ] http/tests/devtools/tracing/timeline-js/timeline-script-id.js [ Failure Pass ]
-crbug.com/1252049 [ Win ] http/tests/devtools/tracing/timeline-js/timeline-script-id.js [ Failure Pass ]
-crbug.com/1252049 http/tests/devtools/tracing/timeline-layout/timeline-layout.js [ Failure Pass ]
-crbug.com/1252049 http/tests/devtools/tracing/timeline-misc/timeline-animation-frame.js [ Failure Pass ]
-crbug.com/1252049 http/tests/devtools/tracing/timeline-network/timeline-network-resource-details.js [ Failure Pass ]
-crbug.com/1252049 http/tests/devtools/tracing/timeline-time/timeline-timer.js [ Failure Pass ]
 
 crbug.com/876485 fast/performance/performance-measure-null-exception.html [ Failure ]
 
@@ -3845,7 +3838,6 @@ crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-enco
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=x-cp1251 [ Failure Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=utf8 [ Failure Timeout ]
 
-crbug.com/626703 external/wpt/css/css-transforms/transform-box/view-box-mutation-001.html [ Failure ]
 crbug.com/626703 external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/843084 external/wpt/css/css-masking/clip-path-svg-content/clip-path-shape-circle-003.svg [ Failure ]
 crbug.com/843084 external/wpt/css/css-masking/clip-path-svg-content/clip-path-shape-circle-004.svg [ Failure ]
@@ -5109,22 +5101,6 @@ crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/3_tracks.html [ Failure ]
 crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/class_object/class_white-space_normal_wrapped.html [ Failure ]
 crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/class_object/class_white-space_pre-line_wrapped.html [ Failure ]
-
-# Temporarily disabled to land https://crrev.com/c/3234177
-crbug.com/1073064 http/tests/devtools/console/console-format-classes.js [ Skip ]
-crbug.com/1073064 http/tests/devtools/console/console-linkify-relative-links.js [ Skip ]
-crbug.com/1073064 http/tests/devtools/console/console-log-linkify-stack-in-errors.js [ Skip ]
-crbug.com/1073064 http/tests/devtools/console/console-message-from-inline-with-url.js [ Skip ]
-crbug.com/1073064 http/tests/devtools/console/console-repeat-count.js [ Skip ]
-crbug.com/1073064 http/tests/devtools/console/console-stack-overflow.js [ Skip ]
-crbug.com/1073064 http/tests/devtools/console/console-uncaught-exception-in-eval.js [ Skip ]
-crbug.com/1073064 http/tests/devtools/console/console-uncaught-exception.js [ Skip ]
-crbug.com/1073064 http/tests/devtools/console/console-worker-nested-imports-syntax-error.js [ Skip ]
-crbug.com/1073064 http/tests/devtools/console/exception-objects.js [ Skip ]
-crbug.com/1073064 http/tests/devtools/sources/debugger/rethrow-error-from-bindings-crash.js [ Skip ]
-crbug.com/1073064 http/tests/devtools/sources/debugger-async/async-callstack-in-console.js [ Skip ]
-crbug.com/1073064 http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.js [ Skip ]
-crbug.com/1073064 http/tests/devtools/sources/debugger-pause/debugger-eval-while-paused-throws.js [ Skip ]
 
 # Sheriff 2019-06-04
 crbug.com/970135 [ Mac ] virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-interested-element-indicated.html [ Failure ]
@@ -6448,13 +6424,15 @@ crbug.com/1210199 http/tests/devtools/elements/elements-panel-restore-selection-
 crbug.com/1199522 http/tests/devtools/layers/layers-3d-view-hit-testing.js [ Failure Pass ]
 
 # Failing css-transforms-2 web platform tests.
-crbug.com/753080 external/wpt/css/css-transforms/transform3d-sorting-002.html [ Failure ]
+crbug.com/847356 external/wpt/css/css-transforms/transform-box/view-box-mutation-001.html [ Failure ]
 
-external/wpt/css/css-transforms/transform-fixed-bg-002.html [ Failure ]
-external/wpt/css/css-transforms/transform-fixed-bg-004.html [ Failure ]
-external/wpt/css/css-transforms/transform-fixed-bg-005.html [ Failure ]
-external/wpt/css/css-transforms/transform-fixed-bg-006.html [ Failure ]
-external/wpt/css/css-transforms/transform-fixed-bg-007.html [ Failure ]
+crbug.com/1261895 external/wpt/css/css-transforms/transform3d-sorting-002.html [ Failure ]
+
+crbug.com/1261900 external/wpt/css/css-transforms/transform-fixed-bg-002.html [ Failure ]
+crbug.com/1261900 external/wpt/css/css-transforms/transform-fixed-bg-004.html [ Failure ]
+crbug.com/1261900 external/wpt/css/css-transforms/transform-fixed-bg-005.html [ Failure ]
+crbug.com/1261900 external/wpt/css/css-transforms/transform-fixed-bg-006.html [ Failure ]
+crbug.com/1261900 external/wpt/css/css-transforms/transform-fixed-bg-007.html [ Failure ]
 # Started failing after rolling new version of check-layout-th.js
 css3/flexbox/perpendicular-writing-modes-inside-flex-item.html [ Failure ]
 
@@ -7176,14 +7154,7 @@ crbug.com/1250534 external/wpt/file-system-access/sandboxed_FileSystemDirectoryH
 crbug.com/1250534 external/wpt/file-system-access/sandboxed_FileSystemDirectoryHandle-rename.https.any.html [ Failure ]
 crbug.com/1250534 external/wpt/file-system-access/sandboxed_FileSystemDirectoryHandle-move.https.any.worker.html [ Failure ]
 crbug.com/1250534 external/wpt/file-system-access/sandboxed_FileSystemDirectoryHandle-rename.https.any.worker.html [ Failure ]
-crbug.com/1250534 [ Fuchsia ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemDirectoryHandle-move-manual.https.html [ Failure ]
-crbug.com/1250534 [ Linux ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemDirectoryHandle-move-manual.https.html [ Failure ]
-crbug.com/1250534 [ Mac10.12 ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemDirectoryHandle-move-manual.https.html [ Failure ]
-crbug.com/1250534 [ Mac10.13 ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemDirectoryHandle-move-manual.https.html [ Failure ]
-crbug.com/1250534 [ Mac10.14 ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemDirectoryHandle-move-manual.https.html [ Failure ]
-crbug.com/1250534 [ Mac10.15 ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemDirectoryHandle-move-manual.https.html [ Failure ]
-crbug.com/1250534 [ Mac11.0 ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemDirectoryHandle-move-manual.https.html [ Failure ]
-crbug.com/1250534 [ Win ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemDirectoryHandle-move-manual.https.html [ Failure ]
+crbug.com/1250534 virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemDirectoryHandle-move-manual.https.html [ Failure ]
 crbug.com/1250534 virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemDirectoryHandle-rename-manual.https.html [ Failure ]
 crbug.com/1250534 virtual/fsa-incognito/external/wpt/file-system-access/sandboxed_FileSystemDirectoryHandle-move.https.any.html [ Failure ]
 crbug.com/1250534 virtual/fsa-incognito/external/wpt/file-system-access/sandboxed_FileSystemDirectoryHandle-rename.https.any.html [ Failure ]
@@ -7292,7 +7263,6 @@ crbug.com/1256763 [ Linux ] images/color-profile-background-image-cross-fade.htm
 crbug.com/1256763 [ Linux ] images/color-profile-background-clip-text.html [ Failure Pass ]
 crbug.com/1256763 [ Linux ] virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ Failure Pass ]
 crbug.com/1259277 [ Mac ] fast/events/message-port-multi.html [ Failure Pass ]
-crbug.com/1261457 [ Mac11-arm64 ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemDirectoryHandle-move-manual.https.html [ Failure Pass ]
 
 # Sheriff 2021-10-20
 crbug.com/1261744 [ Mac11-arm64 ] external/wpt/url/a-element-origin.html [ Failure Pass ]

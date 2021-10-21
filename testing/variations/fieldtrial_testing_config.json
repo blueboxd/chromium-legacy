@@ -3152,6 +3152,8 @@
     "DownloadBufferSize": [
         {
             "platforms": [
+                "android",
+                "chromeos",
                 "linux",
                 "mac",
                 "windows"
@@ -7745,6 +7747,26 @@
                     "enable_features": [
                         "TranslateRankerEnforcement",
                         "TranslateRankerQuery"
+                    ]
+                }
+            ]
+        }
+    ],
+    "TreatPreconnectAsDefault": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TreatPreconnectAsDefault"
                     ]
                 }
             ]

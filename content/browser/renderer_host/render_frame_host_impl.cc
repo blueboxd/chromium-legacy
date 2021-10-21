@@ -3463,6 +3463,16 @@ void RenderFrameHostImpl::CreateChildFrame(
     return;
   }
 
+  // Documents create iframes, iframes host new documents. Both are associated
+  // with sandbox flags. They are required to be stricter or equal to their
+  // owner when they are created, as we go down.
+  if (frame_policy.sandbox_flags !=
+      (frame_policy.sandbox_flags | active_sandbox_flags())) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_CREATE_CHILD_FRAME_SANDBOX_FLAGS);
+    return;
+  }
+
   // TODO(crbug.com/1145708). The interface exposed to tests should
   // match the mojo interface.
   OnCreateChildFrame(new_routing_id, std::move(frame_remote),
@@ -3985,7 +3995,7 @@ void RenderFrameHostImpl::CancelInitialHistoryLoad() {
   NOTIMPLEMENTED();
 }
 
-void RenderFrameHostImpl::DidChangeActiveSchedulerTrackedFeatures(
+void RenderFrameHostImpl::DidChangeBackForwardCacheDisablingFeatures(
     uint64_t features_mask) {
   renderer_reported_bfcache_disabling_features_ =
       BackForwardCacheDisablingFeatures::FromEnumBitmask(features_mask);

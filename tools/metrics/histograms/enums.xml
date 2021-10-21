@@ -4046,6 +4046,9 @@ Unknown properties are collapsed to zero. -->
   <int value="30" label="Forget WiFi network (WifiManager)"/>
   <int value="31" label="Register scan result listener (WifiManager)"/>
   <int value="32" label="Add WiFi network suggestion (WifiManager)"/>
+  <int value="33" label="Enable TDLS offload to local peer (WifiManager)"/>
+  <int value="34" label="Start local hotspot (WifiManager)"/>
+  <int value="35" label="Add Passpoint configuration (WifiManager)"/>
 </enum>
 
 <enum name="ArcNoWindowReason">
@@ -7980,6 +7983,7 @@ Called by update_bad_message_reasons.py.-->
       label="OBSOLETE_RFH_CHILD_FRAME_UNEXPECTED_OWNER_ELEMENT_TYPE"/>
   <int value="252" label="RFH_POPUP_REQUEST_WHILE_PRERENDERING"/>
   <int value="253" label="RFH_INTERECEPT_DOWNLOAD_WHILE_INACTIVE"/>
+  <int value="254" label="RFH_CREATE_CHILD_FRAME_SANDBOX_FLAGS"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -10395,6 +10399,11 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BooleanYesNo">
   <int value="0" label="No"/>
   <int value="1" label="Yes"/>
+</enum>
+
+<enum name="BootstrapTaskRunnerType">
+  <int value="0" label="Posts at back of queue"/>
+  <int value="1" label="Posts at front of queue"/>
 </enum>
 
 <enum name="BorealisGetDiskInfoResult">
@@ -26714,7 +26723,7 @@ Called by update_document_policy_enum.py.-->
   <int value="910" label="DeskTemplatesEnabled"/>
   <int value="911" label="PreconfiguredDeskTemplates"/>
   <int value="912" label="FastPairEnabled"/>
-  <int value="913" label="SandboxExternalProtocol"/>
+  <int value="913" label="SandboxExternalProtocolBlocked"/>
   <int value="914" label="ReportDeviceNetworkTelemetryCollectionRateMs"/>
   <int value="915" label="ReportDeviceNetworkTelemetryEventCheckingRateMs"/>
   <int value="916" label="KioskCRXManifestUpdateURLIgnored"/>
@@ -26722,6 +26731,7 @@ Called by update_document_policy_enum.py.-->
   <int value="918" label="QuickAnswersDefinitionEnabled"/>
   <int value="919" label="QuickAnswersTranslationEnabled"/>
   <int value="920" label="QuickAnswersUnitConverstionEnabled"/>
+  <int value="921" label="CORSNonWildcardRequestHeadersSupport"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -45019,6 +45029,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="12" label="No results in response"/>
   <int value="13" label="JSON parse failure"/>
   <int value="14" label="JSON conversion failure"/>
+  <int value="15" label="Post launch update ignored"/>
 </enum>
 
 <enum name="JavaJsBridgeMethodInvocationError">
@@ -68176,6 +68187,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="file not found"/>
   <int value="2" label="file read failed"/>
   <int value="3" label="parse proto failed"/>
+</enum>
+
+<enum name="PreNativeTaskPostType">
+  <int value="0" label="Posted at back of queue"/>
+  <int value="1" label="Posted at front of queue"/>
+  <int value="2" label="Deferred to native init"/>
 </enum>
 
 <enum name="PrerenderCancelledInterface">

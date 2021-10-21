@@ -11,6 +11,7 @@ import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
+import("//tools/typescript/ts_definitions.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
 import("//ui/webui/webui_features.gni")
@@ -214,23 +215,6 @@ if (include_js_tests) {
       "$root_gen_dir/chrome/test/data/webui/signin/test_manage_profiles_browser_proxy.js",
       "$root_gen_dir/ui/webui/resources/js/load_time_data.js",
     ]
-
-    if (enable_print_preview) {
-      deps += [ "print_preview:preprocess" ]
-      data += [
-        "$root_gen_dir/chrome/test/data/webui/print_preview/destination_settings_test.js",
-        "$root_gen_dir/chrome/test/data/webui/print_preview/destination_store_test.js",
-        "$root_gen_dir/chrome/test/data/webui/print_preview/invalid_settings_browsertest.js",
-        "$root_gen_dir/chrome/test/data/webui/print_preview/key_event_test.js",
-        "$root_gen_dir/chrome/test/data/webui/print_preview/policy_test.js",
-        "$root_gen_dir/chrome/test/data/webui/print_preview/preview_generation_test.js",
-        "$root_gen_dir/chrome/test/data/webui/print_preview/print_button_test.js",
-        "$root_gen_dir/chrome/test/data/webui/print_preview/print_preview_app_test.js",
-        "$root_gen_dir/chrome/test/data/webui/print_preview/print_preview_sidebar_test.js",
-        "$root_gen_dir/chrome/test/data/webui/print_preview/restore_state_test.js",
-        "$root_gen_dir/chrome/test/data/webui/print_preview/user_manager_test.js",
-      ]
-    }
 
     if (is_chromeos_ash || is_win) {
       deps += [ "inline_login:preprocess" ]
@@ -657,4 +641,27 @@ generate_grd("build_grd") {
 
   deps = [ ":build_chai_grdp" ]
   grdp_files = [ "$target_gen_dir/chai_resources.grdp" ]
+
+  if (enable_print_preview) {
+    deps += [ "print_preview:build_grdp" ]
+    grdp_files += [ "$target_gen_dir/print_preview/resources.grdp" ]
+  }
+
+  if (!is_chromeos_ash && !is_android) {
+    deps += [ "welcome:build_grdp" ]
+    grdp_files += [ "$target_gen_dir/welcome/resources.grdp" ]
+  }
+}
+
+# TypeScript related targets
+
+ts_definitions("generate_definitions") {
+  root_dir = "./"
+  out_dir = "$target_gen_dir/tsc"
+  js_files = [
+    "chai_assert.js",
+    "test_browser_proxy.js",
+    "test_util.js",
+  ]
+  extra_deps = [ "//ui/webui/resources:generate_definitions" ]
 }

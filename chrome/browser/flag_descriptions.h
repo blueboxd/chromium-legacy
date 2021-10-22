@@ -259,6 +259,9 @@ extern const char kBackForwardCacheDescription[];
 extern const char kBentoBarName[];
 extern const char kBentoBarDescription[];
 
+extern const char kDragWindowToNewDeskName[];
+extern const char kDragWindowToNewDeskDescription[];
+
 extern const char kBiometricReauthForPasswordFillingName[];
 extern const char kBiometricReauthForPasswordFillingDescription[];
 
@@ -2904,9 +2907,6 @@ extern const char kShowFeedbackReportQuestionnaireDescription[];
 
 extern const char kBluetoothSessionizedMetricsName[];
 extern const char kBluetoothSessionizedMetricsDescription[];
-
-extern const char kShowDateInTrayName[];
-extern const char kShowDateInTrayDescription[];
 
 extern const char kShowTapsName[];
 extern const char kShowTapsDescription[];

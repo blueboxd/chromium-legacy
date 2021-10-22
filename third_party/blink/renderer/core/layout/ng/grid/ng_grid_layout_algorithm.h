@@ -17,6 +17,7 @@
 namespace blink {
 
 class NGGridPlacement;
+struct GridItemOffsets;
 struct NGGridProperties;
 
 using SetOffsetData = NGGridData::SetData;
@@ -39,15 +40,6 @@ enum class GridItemContributionType {
 enum class BaselineType : uint8_t {
   kMajor,
   kMinor,
-};
-
-struct GridItemOffsets {
-  GridItemOffsets(const LogicalOffset offset,
-                  const LogicalOffset relative_offset)
-      : offset(offset), relative_offset(relative_offset) {}
-
-  LogicalOffset offset;
-  LogicalOffset relative_offset;
 };
 
 struct GridItemIndices {
@@ -226,8 +218,7 @@ struct GridItemIndices {
     explicit NGGridLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
     scoped_refptr<const NGLayoutResult> Layout() override;
-    MinMaxSizesResult ComputeMinMaxSizes(
-        const MinMaxSizesFloatInput&) const override;
+    MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesFloatInput&) override;
 
     // Computes the containing block rect of out of flow items from stored data
     // in |NGGridData|.
@@ -390,13 +381,17 @@ struct GridItemIndices {
     const NGConstraintSpace CreateConstraintSpace(
         const GridItemData& grid_item,
         const LogicalSize& containing_grid_area_size,
+        NGCacheSlot cache_slot,
         absl::optional<LayoutUnit> opt_fixed_block_size,
-        NGCacheSlot cache_slot) const;
+        absl::optional<LayoutUnit> opt_fragment_relative_block_offset =
+            absl::nullopt) const;
 
     const NGConstraintSpace CreateConstraintSpaceForLayout(
         const NGGridGeometry& grid_geometry,
         const GridItemData& grid_item,
-        LogicalRect* containing_grid_area) const;
+        LogicalRect* containing_grid_area,
+        absl::optional<LayoutUnit> opt_fragment_relative_block_offset =
+            absl::nullopt) const;
 
     const NGConstraintSpace CreateConstraintSpaceForMeasure(
         const NGGridGeometry& grid_geometry,
@@ -414,6 +409,15 @@ struct GridItemIndices {
     void PlaceGridItems(const GridItems& grid_items,
                         const NGGridGeometry& grid_geometry,
                         Vector<GridItemOffsets>* out_offsets = nullptr);
+
+    // Layout the |grid_items| for fragmentation (when there is a known
+    // fragmentainer size).
+    //
+    // This will go through all the grid_items and place fragments which belong
+    // within this fragmentainer.
+    void PlaceGridItemsForFragmentation(const GridItems& grid_items,
+                                        const NGGridGeometry& grid_geometry,
+                                        const Vector<GridItemOffsets>& offsets);
 
     // Computes the static position, grid area and its offset of out of flow
     // elements in the grid.

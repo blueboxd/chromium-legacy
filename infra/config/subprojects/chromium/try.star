@@ -691,11 +691,6 @@ try_.chromium_angle_builder(
 )
 
 try_.chromium_angle_builder(
-    name = "android_angle_deqp_rel_ng",
-    os = os.LINUX_BIONIC_REMOVE,
-)
-
-try_.chromium_angle_builder(
     name = "android_angle_rel_ng",
     os = os.LINUX_BIONIC_REMOVE,
 )
@@ -720,11 +715,6 @@ try_.chromium_angle_builder(
     name = "linux-angle-chromium-try",
     os = os.LINUX_BIONIC_REMOVE,
     executable = "recipe:angle_chromium_trybot",
-)
-
-try_.chromium_angle_builder(
-    name = "linux_angle_deqp_rel_ng",
-    os = os.LINUX_BIONIC_REMOVE,
 )
 
 try_.chromium_angle_builder(
@@ -857,6 +847,26 @@ try_.chromium_chromiumos_builder(
     use_clang_coverage = True,
     os = os.LINUX_BIONIC_REMOVE,
     coverage_test_types = ["unit", "overall"],
+)
+
+try_.chromium_chromiumos_builder(
+    name = "linux-chromeos-rel-compilator",
+    branch_selector = branches.CROS_LTS_MILESTONE,
+    builderless = not settings.is_main,
+    cores = 32,
+    executable = "recipe:chromium/compilator",
+    goma_jobs = goma.jobs.J300,
+    main_list_view = "try",
+    use_clang_coverage = True,
+    os = os.LINUX_BIONIC_REMOVE,
+    coverage_test_types = ["unit", "overall"],
+    ssd = True,
+    properties = {
+        "orchestrator": {
+            "builder_name": "linux-chromeos-rel",
+            "builder_group": "tryserver.chromium.chromiumos",
+        },
+    },
 )
 
 try_.chromium_chromiumos_builder(
@@ -1435,6 +1445,37 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
+    name = "linux_chromium_asan_rel_ng-orchestrator",
+    builderless = False,
+    cores = 2,
+    executable = "recipe:chromium/orchestrator",
+    main_list_view = "try",
+    properties = {
+        "$build/chromium_orchestrator": {
+            "compilator": "linux_chromium_asan_rel_ng-compilator",
+            "compilator_watcher_git_revision": compilator_watcher_git_revision,
+        },
+    },
+    service_account = "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
+)
+
+try_.chromium_linux_builder(
+    name = "linux_chromium_asan_rel_ng-compilator",
+    builderless = False,
+    cores = 16,
+    executable = "recipe:chromium/compilator",
+    goma_jobs = goma.jobs.J150,
+    main_list_view = "try",
+    ssd = True,
+    properties = {
+        "orchestrator": {
+            "builder_name": "linux_chromium_asan_rel_ng-orchestrator",
+            "builder_group": "tryserver.chromium.linux",
+        },
+    },
+)
+
+try_.chromium_linux_builder(
     name = "linux_chromium_asan_rel_ng_rts",
     goma_jobs = goma.jobs.J150,
     ssd = True,
@@ -1526,6 +1567,37 @@ try_.chromium_linux_builder(
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(),
+)
+
+try_.chromium_linux_builder(
+    name = "linux_chromium_tsan_rel_ng-orchestrator",
+    builderless = False,
+    cores = 2,
+    executable = "recipe:chromium/orchestrator",
+    main_list_view = "try",
+    properties = {
+        "$build/chromium_orchestrator": {
+            "compilator": "linux_chromium_tsan_rel_ng-compilator",
+            "compilator_watcher_git_revision": compilator_watcher_git_revision,
+        },
+    },
+    service_account = "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
+)
+
+try_.chromium_linux_builder(
+    name = "linux_chromium_tsan_rel_ng-compilator",
+    builderless = False,
+    cores = 16,
+    executable = "recipe:chromium/compilator",
+    goma_jobs = goma.jobs.J150,
+    main_list_view = "try",
+    ssd = True,
+    properties = {
+        "orchestrator": {
+            "builder_name": "linux_chromium_tsan_rel_ng-orchestrator",
+            "builder_group": "tryserver.chromium.linux",
+        },
+    },
 )
 
 try_.chromium_linux_builder(

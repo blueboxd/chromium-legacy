@@ -65,16 +65,16 @@ source_set("chromeos") {
   ]
 
   deps = [
+    ":add_remove_user_event_proto",
     ":attestation_proto",
     ":device_configuration_proto",
     ":device_policy_remover_generated",
     ":dlp_policy_event_proto",
     ":key_permissions_proto",
-    ":login_logout_record_proto",
+    ":login_logout_event_proto",
     ":print_job_info_proto",
     ":screen_brightness_event_proto",
     ":user_activity_event_proto",
-    ":user_added_removed_record_proto",
     ":user_charging_event_proto",
     "../ash/guest_os:guest_os_diagnostics_mojom",
     "//apps",
@@ -115,12 +115,16 @@ source_set("chromeos") {
     "//ash/webui/personalization_app/proto",
     "//ash/webui/print_management",
     "//ash/webui/print_management/mojom",
+    "//ash/webui/projector_app",
     "//ash/webui/resources:diagnostics_app_resources_grit",
     "//ash/webui/resources:help_app_resources_grit",
     "//ash/webui/resources:media_app_resources_grit",
     "//ash/webui/resources:os_feedback_resources_grit",
     "//ash/webui/resources:personalization_app_resources_grit",
     "//ash/webui/resources:print_management_resources_grit",
+    "//ash/webui/resources:projector_app_bundle_resources_grit",
+    "//ash/webui/resources:projector_app_trusted_resources_grit",
+    "//ash/webui/resources:projector_app_untrusted_resources_grit",
     "//ash/webui/resources:scanning_app_resources_grit",
     "//ash/webui/resources:shimless_rma_resources_grit",
     "//ash/webui/resources:shortcut_customization_app_resources_grit",
@@ -185,7 +189,6 @@ source_set("chromeos") {
     "//chromeos/components/multidevice/logging",
     "//chromeos/components/phonehub",
     "//chromeos/components/phonehub/proto",
-    "//chromeos/components/projector_app",
     "//chromeos/components/proximity_auth",
     "//chromeos/components/remote_apps/mojom",
     "//chromeos/components/sensors",
@@ -277,9 +280,6 @@ source_set("chromeos") {
     "//chromeos/network",
     "//chromeos/resources:connectivity_diagnostics_resources_grit",
     "//chromeos/resources:eche_bundle_resources_grit",
-    "//chromeos/resources:projector_app_bundle_resources_grit",
-    "//chromeos/resources:projector_app_trusted_resources_grit",
-    "//chromeos/resources:projector_app_untrusted_resources_grit",
     "//chromeos/services/assistant/public/cpp",
     "//chromeos/services/bluetooth_config:in_process_bluetooth_config",
     "//chromeos/services/cros_healthd/public/cpp",
@@ -2590,8 +2590,8 @@ source_set("chromeos") {
     "../ash/policy/reporting/install_event_logger_base.h",
     "../ash/policy/reporting/metrics_reporting/network/https_latency_sampler.cc",
     "../ash/policy/reporting/metrics_reporting/network/https_latency_sampler.h",
-    "../ash/policy/reporting/metrics_reporting/network/network_sampler.cc",
-    "../ash/policy/reporting/metrics_reporting/network/network_sampler.h",
+    "../ash/policy/reporting/metrics_reporting/network/network_telemetry_sampler.cc",
+    "../ash/policy/reporting/metrics_reporting/network/network_telemetry_sampler.h",
     "../ash/policy/reporting/single_arc_app_install_event_log.cc",
     "../ash/policy/reporting/single_arc_app_install_event_log.h",
     "../ash/policy/reporting/single_extension_install_event_log.cc",
@@ -4293,7 +4293,7 @@ source_set("unit_tests") {
     "../ash/policy/reporting/extension_install_event_logger_unittest.cc",
     "../ash/policy/reporting/install_event_log_util_unittest.cc",
     "../ash/policy/reporting/metrics_reporting/network/https_latency_sampler_unittest.cc",
-    "../ash/policy/reporting/metrics_reporting/network/network_sampler_unittest.cc",
+    "../ash/policy/reporting/metrics_reporting/network/network_telemetry_sampler_unittest.cc",
     "../ash/policy/reporting/single_arc_app_install_event_log_unittest.cc",
     "../ash/policy/reporting/user_added_removed/user_added_removed_reporter_unittest.cc",
     "../ash/policy/reporting/user_event_reporter_helper_unittest.cc",
@@ -4743,12 +4743,10 @@ proto_library("user_activity_event_proto") {
   sources = [ "../ash/power/ml/user_activity_event.proto" ]
 }
 
-proto_library("user_added_removed_record_proto") {
-  sources = [ "../ash/policy/reporting/user_added_removed/user_added_removed_record.proto" ]
-  proto_in_dir = "//"
-  deps = [
-    "//components/reporting/proto/common_event_support:session_affiliated_user",
-  ]
+proto_library("add_remove_user_event_proto") {
+  sources =
+      [ "../policy/messaging_layer/proto/synced/add_remove_user_event.proto" ]
+  deps = [ ":session_affiliated_user" ]
 }
 
 proto_library("device_configuration_proto") {
@@ -4771,12 +4769,15 @@ proto_library("print_job_info_proto") {
   sources = [ "printing/history/print_job_info.proto" ]
 }
 
-proto_library("login_logout_record_proto") {
-  sources = [ "../ash/login/reporting/login_logout_record.proto" ]
-  proto_in_dir = "//"
-  deps = [
-    "//components/reporting/proto/common_event_support:session_affiliated_user",
-  ]
+proto_library("login_logout_event_proto") {
+  sources =
+      [ "../policy/messaging_layer/proto/synced/login_logout_event.proto" ]
+  deps = [ ":session_affiliated_user" ]
+}
+
+proto_library("session_affiliated_user") {
+  sources =
+      [ "../policy/messaging_layer/proto/synced/session_affiliated_user.proto" ]
 }
 
 proto_library("user_event_reporter_testing_record_proto") {

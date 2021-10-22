@@ -10,11 +10,16 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "sandbox/policy/export.h"
-#include "sandbox/policy/sandbox_type.h"
 
 namespace base {
 class FilePath;
 }
+
+namespace sandbox {
+namespace mojom {
+enum class Sandbox;
+}  // namespace mojom
+}  // namespace sandbox
 
 namespace sandbox {
 namespace policy {
@@ -29,7 +34,7 @@ SANDBOX_POLICY_EXPORT base::FilePath GetCanonicalPath(
 // It CHECKs that the sandbox profile is a valid type, so it always returns a
 // valid result, or crashes.
 SANDBOX_POLICY_EXPORT std::string GetSandboxProfile(
-    SandboxType sandbox_type);
+    sandbox::mojom::Sandbox sandbox_type);
 
 class SANDBOX_POLICY_EXPORT SandboxMac {
  public:

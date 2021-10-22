@@ -6,19 +6,22 @@ package org.chromium.chrome.browser.page_info;
 
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.components.page_info.PageInfoControllerDelegate;
 import org.chromium.components.page_info.PageInfoMainController;
 import org.chromium.components.page_info.PageInfoRowView;
 import org.chromium.components.page_info.PageInfoSubpageController;
 import org.chromium.components.page_info.proto.AboutThisSiteMetadataProto.SiteInfo;
 import org.chromium.content_public.browser.BrowserContextHandle;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.url.GURL;
 
 /**
@@ -31,13 +34,15 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
     private final PageInfoMainController mMainController;
     private final PageInfoRowView mRowView;
     private final PageInfoControllerDelegate mDelegate;
+    private final Tab mTab;
     private final @Nullable SiteInfo mSiteInfo;
 
     public PageInfoAboutThisSiteController(PageInfoMainController mainController,
-            PageInfoRowView rowView, PageInfoControllerDelegate delegate) {
+            PageInfoRowView rowView, PageInfoControllerDelegate delegate, Tab tab) {
         mMainController = mainController;
         mRowView = rowView;
         mDelegate = delegate;
+        mTab = tab;
         mSiteInfo = getSiteInfo();
         setupRow();
     }
@@ -48,8 +53,8 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
 
     @Override
     public String getSubpageTitle() {
-        // TODO(crbug.com/1250653): Add translated string.
-        return "About this site";
+        return mRowView.getContext().getResources().getString(
+                R.string.page_info_about_this_site_title);
     }
 
     @Override
@@ -58,8 +63,14 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
         // is populated.
         assert mSiteInfo != null;
         assert mSiteInfo.hasDescription();
-        TextView view = new TextView(parent.getContext());
-        view.setText(mSiteInfo.getDescription().getDescription());
+        AboutThisSiteView view = new AboutThisSiteView(parent.getContext(), null);
+
+        view.setSiteInfo(mSiteInfo, () -> {
+            new TabDelegate(mDelegate.isIncognito())
+                    .createNewTab(
+                            new LoadUrlParams(mSiteInfo.getDescription().getSource().getUrl()),
+                            TabLaunchType.FROM_CHROME_UI, mTab);
+        });
         return view;
     }
 
@@ -74,8 +85,10 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
         }
 
         // TODO(crbug.com/1250653): Add translated string.
-        rowParams.title = "Site info";
+        rowParams.title = mRowView.getContext().getResources().getString(
+                R.string.page_info_about_this_site_title);
         rowParams.subtitle = subtitle;
+        rowParams.singleLineSubTitle = true;
         rowParams.visible =
                 subtitle != null && mDelegate.isSiteSettingsAvailable() && !mDelegate.isIncognito();
         rowParams.iconResId = R.drawable.ic_info_outline_grey_24dp;

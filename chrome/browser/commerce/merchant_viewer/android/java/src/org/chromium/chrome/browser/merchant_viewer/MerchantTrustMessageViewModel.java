@@ -14,7 +14,7 @@ import android.text.style.StyleSpan;
 import androidx.core.content.res.ResourcesCompat;
 
 import org.chromium.chrome.browser.merchant_viewer.RatingStarSpan.RatingStarType;
-import org.chromium.chrome.browser.merchant_viewer.proto.MerchantTrustSignalsOuterClass.MerchantTrustSignals;
+import org.chromium.chrome.browser.merchant_viewer.proto.MerchantTrustSignalsOuterClass.MerchantTrustSignalsV2;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.messages.DismissReason;
 import org.chromium.components.messages.MessageBannerProperties;
@@ -43,10 +43,11 @@ class MerchantTrustMessageViewModel {
          * @param trustSignals The signal associated with this message.
          * @param messageAssociatedUrl The url associated with this message context.
          */
-        void onMessagePrimaryAction(MerchantTrustSignals trustSignals, String messageAssociatedUrl);
+        void onMessagePrimaryAction(
+                MerchantTrustSignalsV2 trustSignals, String messageAssociatedUrl);
     }
 
-    public static PropertyModel create(Context context, MerchantTrustSignals trustSignals,
+    public static PropertyModel create(Context context, MerchantTrustSignalsV2 trustSignals,
             String messageAssociatedUrl, MessageActionsHandler actionsHandler) {
         return new PropertyModel.Builder(MessageBannerProperties.ALL_KEYS)
                 .with(MessageBannerProperties.MESSAGE_IDENTIFIER, MessageIdentifier.MERCHANT_TRUST)
@@ -70,7 +71,10 @@ class MerchantTrustMessageViewModel {
     }
 
     public static Spannable getMessageDescription(
-            Context context, MerchantTrustSignals trustSignals) {
+            Context context, MerchantTrustSignalsV2 trustSignals) {
+        // The zero rating value means we have no rating data for the merchant, under which
+        // condition we shouldn't call this method to generate the description.
+        assert trustSignals.getMerchantStarRating() > 0;
         // Only keep one decimal to avoid inaccurate double value.
         double ratingValue = Math.round(trustSignals.getMerchantStarRating() * 10) / 10.0;
         SpannableStringBuilder builder = new SpannableStringBuilder();
@@ -88,10 +92,15 @@ class MerchantTrustMessageViewModel {
                     Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         }
         builder.append(" ");
-        builder.append(context.getResources().getQuantityString(
-                R.plurals.merchant_viewer_message_description_reviews,
-                trustSignals.getMerchantCountRating(),
-                numberFormatter.format(trustSignals.getMerchantCountRating())));
+        if (trustSignals.getMerchantCountRating() > 0) {
+            builder.append(context.getResources().getQuantityString(
+                    R.plurals.merchant_viewer_message_description_reviews,
+                    trustSignals.getMerchantCountRating(),
+                    numberFormatter.format(trustSignals.getMerchantCountRating())));
+        } else {
+            builder.append(context.getResources().getString(
+                    R.string.page_info_store_info_description_with_no_review));
+        }
         return builder;
     }
 

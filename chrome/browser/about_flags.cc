@@ -2680,7 +2680,7 @@ const FeatureEntry::FeatureParam kReadLaterUseRootBookmarkAsDefault[] = {
     {"use_root_bookmark_as_default", "true"}};
 const FeatureEntry::FeatureParam kReadLaterInAppMenu[] = {
     {"use_root_bookmark_as_default", "true"},
-    {"add_to_reading_list_in_app_menu", "true"}};
+    {"reading_list_in_app_menu", "true"}};
 
 const FeatureEntry::FeatureVariation kReadLaterVariations[] = {
     {"(use root bookmark as default)", kReadLaterUseRootBookmarkAsDefault,
@@ -2691,17 +2691,15 @@ const FeatureEntry::FeatureVariation kReadLaterVariations[] = {
 const FeatureEntry::FeatureParam kBookmarksRefreshVisuals[] = {
     {"bookmark_visuals_enabled", "true"}};
 const FeatureEntry::FeatureParam kBookmarksRefreshAppMenu[] = {
-    {"add_bookmark_in_app_menu", "true"},
-    {"edit_bookmark_in_app_menu", "true"}};
+    {"bookmark_in_app_menu", "true"}};
 const FeatureEntry::FeatureParam kBookmarksRefreshWithEverything[] = {
     {"bookmark_visuals_enabled", "true"},
-    {"add_bookmark_in_app_menu", "true"},
-    {"edit_bookmark_in_app_menu", "true"}};
+    {"bookmark_in_app_menu", "true"}};
 
 const FeatureEntry::FeatureVariation kBookmarksRefreshVariations[] = {
     {"(manager visuals only)", kBookmarksRefreshVisuals,
      base::size(kBookmarksRefreshVisuals), nullptr},
-    {"(app menu)", kBookmarksRefreshAppMenu,
+    {"(bookmark in app menu)", kBookmarksRefreshAppMenu,
      base::size(kBookmarksRefreshAppMenu), nullptr},
     {"(everything)", kBookmarksRefreshWithEverything,
      base::size(kBookmarksRefreshWithEverything), nullptr}};
@@ -3077,6 +3075,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"ash-bento-bar", flag_descriptions::kBentoBarName,
      flag_descriptions::kBentoBarDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kBentoBar)},
+    {"ash-drag-window-to-new-desk", flag_descriptions::kDragWindowToNewDeskName,
+     flag_descriptions::kDragWindowToNewDeskDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kDragWindowToNewDesk)},
     {"ash-overview-button", flag_descriptions::kOverviewButtonName,
      flag_descriptions::kOverviewButtonDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kOverviewButton)},
@@ -7174,12 +7175,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsLinux | kOsMac | kOsCrOS | kOsAndroid,
      FEATURE_VALUE_TYPE(net::features::kSplitCacheByNetworkIsolationKey)},
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-show-date-in-tray", flag_descriptions::kShowDateInTrayName,
-     flag_descriptions::kShowDateInTrayDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kShowDateInTrayButton)},
-#endif
-
     {"autofill-address-save-prompt",
      flag_descriptions::kEnableAutofillAddressSavePromptName,
      flag_descriptions::kEnableAutofillAddressSavePromptDescription,
@@ -7546,14 +7541,11 @@ const FeatureEntry kFeatureEntries[] = {
          ash::features::kHoldingSpaceInProgressDownloadsIntegration)},
 #endif
 
-#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
-    defined(OS_MAC) || (defined(OS_ANDROID))
     {"omnibox-updated-connection-security-indicators",
      flag_descriptions::kOmniboxUpdatedConnectionSecurityIndicatorsName,
      flag_descriptions::kOmniboxUpdatedConnectionSecurityIndicatorsDescription,
      kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kUpdatedConnectionSecurityIndicators)},
-#endif
 
 #if defined(OS_ANDROID)
     {"share-usage-ranking", flag_descriptions::kShareUsageRankingName,

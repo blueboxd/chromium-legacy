@@ -84,7 +84,8 @@ void NGBoxFragmentBuilder::AddBreakBeforeChild(
 void NGBoxFragmentBuilder::AddResult(
     const NGLayoutResult& child_layout_result,
     const LogicalOffset offset,
-    absl::optional<LogicalOffset> relative_offset) {
+    absl::optional<LogicalOffset> relative_offset,
+    const NGInlineContainer<LogicalOffset>* inline_container) {
   const auto& fragment = child_layout_result.PhysicalFragment();
   const NGLayoutResult* child_box_layout_result = nullptr;
   if (fragment.IsBox()) {
@@ -115,9 +116,9 @@ void NGBoxFragmentBuilder::AddResult(
   if (!disable_oof_descendants_propagation_)
     adjustment_for_oof_propagation = BlockOffsetAdjustmentForFragmentainer();
 
-  AddChild(fragment, offset, /* inline_container */ nullptr, &end_margin_strut,
+  AddChild(fragment, offset, &end_margin_strut,
            child_layout_result.IsSelfCollapsing(), relative_offset,
-           adjustment_for_oof_propagation);
+           inline_container, adjustment_for_oof_propagation);
 
   if (UNLIKELY(has_block_fragmentation_ && child_box_layout_result))
     PropagateBreakInfo(*child_box_layout_result);
@@ -126,10 +127,10 @@ void NGBoxFragmentBuilder::AddResult(
 void NGBoxFragmentBuilder::AddChild(
     const NGPhysicalFragment& child,
     const LogicalOffset& child_offset,
-    const NGInlineContainer<LogicalOffset>* inline_container,
     const NGMarginStrut* margin_strut,
     bool is_self_collapsing,
     absl::optional<LogicalOffset> relative_offset,
+    const NGInlineContainer<LogicalOffset>* inline_container,
     absl::optional<LayoutUnit> adjustment_for_oof_propagation) {
 #if DCHECK_IS_ON()
   needs_inflow_bounds_explicitly_set_ = !!relative_offset;
@@ -415,7 +416,7 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
     if (last_inline_break_token_)
       child_break_tokens_.push_back(std::move(last_inline_break_token_));
     if (DidBreakSelf() || HasChildBreakInside())
-      break_token_ = NGBlockBreakToken::Create(*this);
+      break_token_ = NGBlockBreakToken::Create(this);
   }
 
   if (!has_floating_descendants_for_paint_ && items_builder_) {

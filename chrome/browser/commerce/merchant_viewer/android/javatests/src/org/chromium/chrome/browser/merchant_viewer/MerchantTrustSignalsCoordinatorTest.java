@@ -44,7 +44,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustMetrics.BottomSheetOpenedSource;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustMetrics.MessageClearReason;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustSignalsCoordinator.OmniboxIconController;
-import org.chromium.chrome.browser.merchant_viewer.proto.MerchantTrustSignalsOuterClass.MerchantTrustSignals;
+import org.chromium.chrome.browser.merchant_viewer.proto.MerchantTrustSignalsOuterClass.MerchantTrustSignalsV2;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -143,11 +143,12 @@ public class MerchantTrustSignalsCoordinatorTest {
     private static final String DIFFERENT_HOST = "different_host";
     private static final String FAKE_URL = "fake_url";
 
-    private MerchantTrustSignals mDummyMerchantTrustSignals = MerchantTrustSignals.newBuilder()
-                                                                      .setMerchantStarRating(4.5f)
-                                                                      .setMerchantCountRating(100)
-                                                                      .setMerchantDetailsPageUrl("")
-                                                                      .build();
+    private MerchantTrustSignalsV2 mDummyMerchantTrustSignals =
+            MerchantTrustSignalsV2.newBuilder()
+                    .setMerchantStarRating(4.5f)
+                    .setMerchantCountRating(100)
+                    .setMerchantDetailsPageUrl("")
+                    .build();
     private MerchantTrustSignalsCoordinator mCoordinator;
     private FeatureList.TestValues mTestValues;
     private String mSerializedTimestamps;
@@ -196,6 +197,10 @@ public class MerchantTrustSignalsCoordinatorTest {
                 MerchantViewerConfig.TRUST_SIGNALS_MESSAGE_DISABLED_PARAM, "false");
         mTestValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_MERCHANT_VIEWER,
                 MerchantViewerConfig.TRUST_SIGNALS_MESSAGE_RATING_THRESHOLD_PARAM, "4.0");
+        mTestValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_MERCHANT_VIEWER,
+                MerchantViewerConfig
+                        .TRUST_SIGNALS_NON_PERSONALIZED_FAMILIARITY_SCORE_THRESHOLD_PARAM,
+                "0.8");
         FeatureList.setTestValues(mTestValues);
 
         mMessageContext = new MerchantTrustMessageContext(mMockNavigationHandle, mMockWebContents);
@@ -441,7 +446,7 @@ public class MerchantTrustSignalsCoordinatorTest {
 
     @SmallTest
     @Test
-    public void testMaybeDisplayMessage_MessageDisabled() {
+    public void testMaybeDisplayMessage_MessageDisabledForAllMerchants() {
         mTestValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_MERCHANT_VIEWER,
                 MerchantViewerConfig.TRUST_SIGNALS_MESSAGE_DISABLED_PARAM, "true");
 
@@ -455,12 +460,48 @@ public class MerchantTrustSignalsCoordinatorTest {
 
     @SmallTest
     @Test
+    public void testMaybeDisplayMessage_MessageDisabledForThisMerchant() {
+        MerchantTrustSignalsV2 trustSignals = MerchantTrustSignalsV2.newBuilder()
+                                                      .setMerchantStarRating(4.5f)
+                                                      .setMerchantCountRating(100)
+                                                      .setMerchantDetailsPageUrl("")
+                                                      .setProactiveMessageDisabled(true)
+                                                      .build();
+
+        mCoordinator.maybeDisplayMessage(trustSignals, mMessageContext, false);
+
+        verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
+        verify(mMockMerchantMessageScheduler, times(0))
+                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
+                        anyLong(), any(Callback.class));
+    }
+
+    @SmallTest
+    @Test
     public void testMaybeDisplayMessage_MerchantRatingBelowThreshold() {
-        MerchantTrustSignals trustSignals = MerchantTrustSignals.newBuilder()
-                                                    .setMerchantStarRating(3.5f)
-                                                    .setMerchantCountRating(100)
-                                                    .setMerchantDetailsPageUrl("")
-                                                    .build();
+        MerchantTrustSignalsV2 trustSignals = MerchantTrustSignalsV2.newBuilder()
+                                                      .setMerchantStarRating(3.5f)
+                                                      .setMerchantCountRating(100)
+                                                      .setMerchantDetailsPageUrl("")
+                                                      .build();
+
+        mCoordinator.maybeDisplayMessage(trustSignals, mMessageContext, false);
+
+        verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
+        verify(mMockMerchantMessageScheduler, times(0))
+                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
+                        anyLong(), any(Callback.class));
+    }
+
+    @SmallTest
+    @Test
+    public void testMaybeDisplayMessage_NonPersonalizedFamiliarityScoreAboveThreshold() {
+        MerchantTrustSignalsV2 trustSignals = MerchantTrustSignalsV2.newBuilder()
+                                                      .setMerchantStarRating(4.5f)
+                                                      .setMerchantCountRating(100)
+                                                      .setMerchantDetailsPageUrl("")
+                                                      .setNonPersonalizedFamiliarityScore(0.9f)
+                                                      .build();
 
         mCoordinator.maybeDisplayMessage(trustSignals, mMessageContext, false);
 
@@ -574,7 +615,7 @@ public class MerchantTrustSignalsCoordinatorTest {
         mCoordinator.setOmniboxIconController(null);
     }
 
-    private void setMockTrustSignalsData(MerchantTrustSignals trustSignalsData) {
+    private void setMockTrustSignalsData(MerchantTrustSignalsV2 trustSignalsData) {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) {

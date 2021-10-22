@@ -196,23 +196,30 @@ class CORE_EXPORT NGBoxFragmentBuilder final
                            absl::optional<NGBreakAppeal> appeal,
                            bool is_forced_break);
 
-  // Add a layout result. This involves appending the fragment and its relative
-  // offset to the builder, but also keeping track of out-of-flow positioned
-  // descendants, propagating fragmentainer breaks, and more. In some cases,
-  // such as grid, the relative offset may need to be computed ahead of time.
-  // If so, a |relative_offset| will be passed in. Otherwise, the relative
-  // offset will be calculated as normal.
-  void AddResult(const NGLayoutResult&,
-                 const LogicalOffset,
-                 absl::optional<LogicalOffset> relative_offset = absl::nullopt);
+  // Add a layout result and propagate info from it. This involves appending the
+  // fragment and its relative offset to the builder, but also keeping track of
+  // out-of-flow positioned descendants, propagating fragmentainer breaks, and
+  // more. In some cases, such as grid, the relative offset may need to be
+  // computed ahead of time. If so, a |relative_offset| will be passed
+  // in. Otherwise, the relative offset will be calculated as normal.
+  // |inline_container| is passed when adding an OOF that is contained by a
+  // non-atomic inline.
+  void AddResult(
+      const NGLayoutResult&,
+      const LogicalOffset,
+      absl::optional<LogicalOffset> relative_offset = absl::nullopt,
+      const NGInlineContainer<LogicalOffset>* inline_container = nullptr);
 
+  // Add a child fragment and propagate info from it. Called by AddResult().
+  // Other callers should call AddResult() instead of this when possible, since
+  // there is information in the layout result that might need to be propagated.
   void AddChild(
       const NGPhysicalFragment&,
       const LogicalOffset&,
-      const NGInlineContainer<LogicalOffset>* inline_container = nullptr,
       const NGMarginStrut* margin_strut = nullptr,
       bool is_self_collapsing = false,
       absl::optional<LogicalOffset> relative_offset = absl::nullopt,
+      const NGInlineContainer<LogicalOffset>* inline_container = nullptr,
       absl::optional<LayoutUnit> adjustment_for_oof_propagation = LayoutUnit());
 
   // Manually add a break token to the builder. Note that we're assuming that
@@ -530,6 +537,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     return *grid_data_.get();
   }
 
+  void SetGridBreakTokenData(
+      std::unique_ptr<const NGGridBreakTokenData> grid_break_token_data) {
+    grid_break_token_data_ = std::move(grid_break_token_data);
+  }
+
   // The |NGFragmentItemsBuilder| for the inline formatting context of this box.
   NGFragmentItemsBuilder* ItemsBuilder() { return items_builder_; }
   void SetItemsBuilder(NGFragmentItemsBuilder* builder) {
@@ -646,6 +658,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   // Grid specific types.
   std::unique_ptr<NGGridData> grid_data_;
+  std::unique_ptr<const NGGridBreakTokenData> grid_break_token_data_;
 
   LogicalBoxSides sides_to_include_;
 

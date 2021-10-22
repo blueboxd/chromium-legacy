@@ -281,6 +281,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "ash-drag-window-to-new-desk",
+    "owners": [ "conniekxu",  "janetmac" ],
+    "expiry_milestone": 102
+  },
+  {
     "name": "ash-enable-floating-window",
     "owners": [ "shidi", "afakhry" ],
     "expiry_milestone": 100
@@ -2362,8 +2367,8 @@
   },
   {
     "name": "enable-os-feedback",
-    "owners": [ "xiangdongkong", "cros-telemetry@google.com" ],
-    "expiry_milestone": 96
+    "owners": [ "xiangdongkong", "cros-feedback-app@google.com" ],
+    "expiry_milestone": 116
   },
   {
     "name": "enable-palm-max-touch-major",
@@ -2566,11 +2571,6 @@
     "owners": [ "kolos" ],
     // Used for debugging and QA by the autofill team for the indefinite future.
     "expiry_milestone": -1
-  },
-  {
-    "name": "enable-show-date-in-tray",
-    "owners": [ "leandre" ],
-    "expiry_milestone": 96
   },
   {
     "name": "enable-site-isolation-for-password-sites",
@@ -4217,7 +4217,7 @@
   {
     "name": "omnibox-updated-connection-security-indicators",
     "owners": [ "meacer", "chrome-trusty-transport@google.com" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 98
   },
   {
     "name": "optimization-guide-model-downloading",

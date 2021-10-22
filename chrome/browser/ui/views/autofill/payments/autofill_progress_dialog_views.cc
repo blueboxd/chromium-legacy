@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/views/autofill/payments/autofill_progress_dialog_views.h"
 
 #include "chrome/browser/ui/autofill/payments/autofill_progress_dialog_controller.h"
+#include "chrome/browser/ui/autofill/payments/payments_ui_constants.h"
 #include "chrome/browser/ui/views/autofill/payments/payments_view_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
@@ -16,12 +18,6 @@
 #include "ui/views/style/typography.h"
 
 namespace autofill {
-
-namespace {
-// The delay before dismissing the dialog after the progress throber shows the
-// checkmark. This delay is for users to identify the status change.
-constexpr int kDelayBeforeDismissingDialogInSeconds = 1;
-}  // namespace
 
 AutofillProgressDialogViews::AutofillProgressDialogViews(
     AutofillProgressDialogController* controller)
@@ -51,8 +47,10 @@ AutofillProgressDialogViews::AutofillProgressDialogViews(
 }
 
 AutofillProgressDialogViews::~AutofillProgressDialogViews() {
+  // This if-statement is only entered when the user closes the dialog. In other
+  // cases, |controller_| will already be set to nullptr.
   if (controller_) {
-    controller_->OnDismissed();
+    controller_->OnDismissed(/*is_canceled_by_user=*/true);
     controller_ = nullptr;
   }
 }
@@ -70,20 +68,25 @@ AutofillProgressDialogView* AutofillProgressDialogView::CreateAndShow(
 void AutofillProgressDialogViews::Dismiss(
     bool show_confirmation_before_closing) {
   // If |show_confirmation_before_closing| is true, show the confirmation and
-  // close the widget with a delay.
+  // close the widget with a delay. |show_confirmation_before_closing| being
+  // true implies that the user did not cancel the dialog, as it is only set to
+  // true once this step in the current flow is completed without any user
+  // interaction.
   if (show_confirmation_before_closing) {
+    progress_throbber_->Stop();
     label_->SetText(controller_->GetConfirmationMessage());
     progress_throbber_->SetChecked(true);
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&AutofillProgressDialogViews::CloseWidget,
-                       weak_ptr_factory_.GetWeakPtr()),
-        base::Seconds(kDelayBeforeDismissingDialogInSeconds));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       /*is_canceled_by_user=*/false),
+        kDelayBeforeDismissingProgressDialog);
     return;
   }
 
   // Otherwise close the widget directly.
-  CloseWidget();
+  CloseWidget(/*is_canceled_by_user=*/true);
 }
 
 void AutofillProgressDialogViews::AddedToWidget() {
@@ -105,9 +108,9 @@ std::u16string AutofillProgressDialogViews::GetWindowTitle() const {
   return controller_->GetTitle();
 }
 
-void AutofillProgressDialogViews::CloseWidget() {
+void AutofillProgressDialogViews::CloseWidget(bool is_canceled_by_user) {
   if (controller_) {
-    controller_->OnDismissed();
+    controller_->OnDismissed(is_canceled_by_user);
     controller_ = nullptr;
   }
   GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);

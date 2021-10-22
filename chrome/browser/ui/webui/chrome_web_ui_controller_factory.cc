@@ -171,6 +171,8 @@
 #include "ash/webui/personalization_app/personalization_app_url_constants.h"
 #include "ash/webui/print_management/print_management_ui.h"
 #include "ash/webui/print_management/url_constants.h"
+#include "ash/webui/projector_app/public/cpp/projector_app_constants.h"  // nogncheck
+#include "ash/webui/projector_app/trusted_projector_ui.h"
 #include "ash/webui/scanning/scanning_ui.h"
 #include "ash/webui/scanning/url_constants.h"
 #include "ash/webui/shimless_rma/shimless_rma.h"
@@ -247,8 +249,6 @@
 #include "chromeos/components/eche_app_ui/url_constants.h"
 #include "chromeos/components/multidevice/debug_webui/proximity_auth_ui.h"
 #include "chromeos/components/multidevice/debug_webui/url_constants.h"
-#include "chromeos/components/projector_app/public/cpp/projector_app_constants.h"  // nogncheck
-#include "chromeos/components/projector_app/trusted_projector_ui.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"  // nogncheck
@@ -908,11 +908,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SysInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIAssistantOptInHost)
     return &NewWebUI<chromeos::AssistantOptInUI>;
-  if (url.host_piece() == chromeos::kChromeUICameraAppHost) {
+  if (url.host_piece() == ash::kChromeUICameraAppHost) {
     auto* provider = web_app::WebAppProvider::GetForSystemWebApps(profile);
     if (provider && provider->system_web_app_manager().IsAppEnabled(
                         web_app::SystemAppType::CAMERA)) {
-      return &NewComponentUI<chromeos::CameraAppUI, ChromeCameraAppUIDelegate>;
+      return &NewComponentUI<ash::CameraAppUI, ChromeCameraAppUIDelegate>;
     }
   }
   if (url.host_piece() == chrome::kChromeUINearbyInternalsHost)

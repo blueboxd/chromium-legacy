@@ -234,15 +234,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '99b3d8f8ea3a38a0c1ac8dc5cc6182f53d719189',
+  'skia_revision': '84762902f1836c3782933574a163ad35edc5a30d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '7fa135243263880d4c33a7eeb584dd7cb9f69370',
+  'v8_revision': '279c25fe4d84c786b1274ad8390c0db8631f6f80',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '7163d9e6db44ea500bfe40feafffee93a39d1b82',
+  'angle_revision': 'b823c720eb9f224dfe1a0f02e67e07166fd0492a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -309,7 +309,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '6ee740ea299f38da59cce3e8a2906fbbf7d3d33b',
+  'devtools_frontend_revision': '9f9867d3f2955e8b2d9bd4affc0ccfef8503e349',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -349,7 +349,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'c6745901f02d5e9633c32d96b8be375957882339',
+  'dawn_revision': '1ca2dd6fb6c0a97edd447ee06b14febcf7d87834',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -397,7 +397,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libunwind_revision':    '6f77fbf9fa51d9696b48151709e90f03364243de',
+  'libunwind_revision':    'fa8d4c81f6a8ca2cb66539b88121d98c93f36736',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -955,7 +955,7 @@ deps = {
   },
 
   'src/third_party/breakpad/breakpad':
-    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + 'ff5892c5da86c50af1951328215a5a3a203a9bb1',
+    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + '54d878abcb61623a71e5c2b5bb251e7f7fc8563d',
 
   'src/third_party/byte_buddy': {
       'packages': [
@@ -1597,7 +1597,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '62d7d0c928c9a040dce96aa2f16c00e7e67d59cb',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@ace3e96336b7ffdc05a5f08909eb8968f249e9f9',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@4b6798af71b971f052ce362ddb065139ed43eb9f',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'e0216a5484c8345f7d792fa16fad77ac63d89a70',
@@ -1683,7 +1683,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'rhRaADork6USXDGEk0fWwnbWVaKKc0YLzENNVBVsHkAC',
+          'version': 'Ee-Y58INmdIA4z_rfmJjvZ-ljrcn-L2tk9nMJVDkidkC',
         },
       ],
       'dep_type': 'cipd',
@@ -1694,7 +1694,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a498802082d67eced3d9364ecdd2567828762183',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@76c48fbd6ab14d470da6c503782551ba34996d54',
     'condition': 'checkout_src_internal',
   },
 
@@ -1735,7 +1735,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'pe9oNS0DhzYfKE-USeK9n9loWHCaLLWVvSB4DfVsLjoC',
+        'version': 'xs62to3tqRcF7cbmHTOzsKyAwhWOW1ICWadYJ-SFRzsC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

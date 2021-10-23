@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '279c25fe4d84c786b1274ad8390c0db8631f6f80',
+  'v8_revision': 'f614cdd8a54a9a7179cb978e6b9bf005bf7bbb27',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -309,7 +309,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '9f9867d3f2955e8b2d9bd4affc0ccfef8503e349',
+  'devtools_frontend_revision': '523cabf3aab1d104688230024be1b1692d59da21',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -397,7 +397,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libunwind_revision':    'fa8d4c81f6a8ca2cb66539b88121d98c93f36736',
+  'libunwind_revision':    '21acd3f62203c561edc54fedf549eb38da6081c5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1597,7 +1597,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '62d7d0c928c9a040dce96aa2f16c00e7e67d59cb',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@9998c8b594a864c7f11b981225a3bc92c1940ddb',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@cc091ae603e78a173eb1f2a7c93bfab7999fe943',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'e0216a5484c8345f7d792fa16fad77ac63d89a70',
@@ -1694,7 +1694,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d9ffaba7f1d0b29f41c725ed657ba5a02f1d4be3',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7afc3274c72f3c398664c89a0e8dcaf1a3cf37ce',
     'condition': 'checkout_src_internal',
   },
 
@@ -1735,7 +1735,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'xs62to3tqRcF7cbmHTOzsKyAwhWOW1ICWadYJ-SFRzsC',
+        'version': 'nuWylh_ZiIlSEpVK-DtJFHLqnvAbWrSA2OY0tnNvoJwC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

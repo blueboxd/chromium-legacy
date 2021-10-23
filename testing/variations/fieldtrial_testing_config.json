@@ -526,6 +526,21 @@
             ]
         }
     ],
+    "AndroidMessagesSaveCard": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MessagesForAndroidSaveCard"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidMessagesSavePassword": [
         {
             "platforms": [
@@ -536,6 +551,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MessagesForAndroidPasswords"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AndroidMessagesSyncError": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MessagesForAndroidSyncError"
                     ]
                 }
             ]

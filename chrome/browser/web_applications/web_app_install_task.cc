@@ -101,7 +101,7 @@ WebAppInstallTask::WebAppInstallTask(
       profile_(profile),
       registrar_(registrar) {
   if (base::FeatureList::IsEnabled(features::kRecordWebAppDebugInfo))
-    error_list_ = std::make_unique<base::Value>(base::Value::Type::LIST);
+    error_dict_ = std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
 }
 
 WebAppInstallTask::~WebAppInstallTask() = default;
@@ -149,7 +149,7 @@ void WebAppInstallTask::LoadWebAppAndCheckManifest(
       WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
       base::BindOnce(
           &WebAppInstallTask::OnWebAppUrlLoadedCheckAndRetrieveManifest,
-          base::Unretained(this), web_contents_ptr));
+          base::Unretained(this), url, web_contents_ptr));
 }
 
 void WebAppInstallTask::InstallWebAppFromManifest(
@@ -219,7 +219,7 @@ void WebAppInstallTask::LoadAndInstallWebAppFromManifestWithFallback(
       launch_url, contents,
       WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
       base::BindOnce(&WebAppInstallTask::OnWebAppUrlLoadedGetWebApplicationInfo,
-                     GetWeakPtr()));
+                     GetWeakPtr(), launch_url));
 }
 
 void UpdateFinalizerClientData(
@@ -337,7 +337,7 @@ void WebAppInstallTask::LoadAndRetrieveWebApplicationInfoWithIcons(
       start_url, web_contents(),
       WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
       base::BindOnce(&WebAppInstallTask::OnWebAppUrlLoadedGetWebApplicationInfo,
-                     GetWeakPtr()));
+                     GetWeakPtr(), start_url));
 }
 
 // static
@@ -359,11 +359,11 @@ void WebAppInstallTask::WebContentsDestroyed() {
   CallInstallCallback(AppId(), InstallResultCode::kWebContentsDestroyed);
 }
 
-base::Value WebAppInstallTask::TakeErrorList() {
-  DCHECK(error_list_);
-  base::Value error_list = std::move(*error_list_);
-  error_list_->ClearList();
-  return error_list;
+base::Value WebAppInstallTask::TakeErrorDict() {
+  DCHECK(error_dict_);
+  base::Value error_dict = std::move(*error_dict_);
+  error_dict_->DictClear();
+  return error_dict;
 }
 
 void WebAppInstallTask::SetInstallFinalizerForTesting(
@@ -416,9 +416,13 @@ bool WebAppInstallTask::ShouldStopInstall() const {
 }
 
 void WebAppInstallTask::OnWebAppUrlLoadedGetWebApplicationInfo(
+    const GURL& url_to_load,
     WebAppUrlLoader::Result result) {
   if (ShouldStopInstall())
     return;
+
+  if (result != WebAppUrlLoader::Result::kUrlLoaded)
+    LogUrlLoaderError("OnWebAppUrlLoaded", url_to_load.spec(), result);
 
   if (result == WebAppUrlLoader::Result::kRedirectedUrlLoaded) {
     CallInstallCallback(AppId(), InstallResultCode::kInstallURLRedirected);
@@ -442,10 +446,14 @@ void WebAppInstallTask::OnWebAppUrlLoadedGetWebApplicationInfo(
 }
 
 void WebAppInstallTask::OnWebAppUrlLoadedCheckAndRetrieveManifest(
+    const GURL& url_to_load,
     content::WebContents* web_contents,
     WebAppUrlLoader::Result result) {
   if (ShouldStopInstall())
     return;
+
+  if (result != WebAppUrlLoader::Result::kUrlLoaded)
+    LogUrlLoaderError("OnWebAppUrlLoaded", url_to_load.spec(), result);
 
   if (result == WebAppUrlLoader::Result::kRedirectedUrlLoaded) {
     CallInstallCallback(AppId(), InstallResultCode::kInstallURLRedirected);
@@ -972,36 +980,50 @@ void WebAppInstallTask::
       result, icons_http_results);
 }
 
-void WebAppInstallTask::LogHeaderIfLogEmpty(const std::string& start_url) {
-  if (!error_list_ || !error_list_->GetList().empty())
+void WebAppInstallTask::LogHeaderIfLogEmpty(const std::string& url) {
+  if (!error_dict_ || !error_dict_->DictEmpty())
     return;
-
-  base::Value header(base::Value::Type::DICTIONARY);
 
   // `install_source_` is kNoInstallSource for `UpdateWebAppFromInfo` and
   // `OnIconsRetrievedFinalizeUpdate`.
-  header.SetIntKey("install_source", static_cast<int>(install_source_));
-  header.SetStringKey("start_url", start_url);
+  error_dict_->SetStringKey("!url", url);
+  error_dict_->SetIntKey("install_source", static_cast<int>(install_source_));
+  error_dict_->SetBoolKey("background_installation", background_installation_);
+  error_dict_->SetKey("stages", base::Value(base::Value::Type::LIST));
 
-  error_list_->Append(std::move(header));
+  DCHECK(!error_dict_->DictEmpty());
 }
 
 void WebAppInstallTask::LogErrorObject(const char* stage,
-                                       const std::string& start_url,
+                                       const std::string& url,
                                        base::Value object) {
-  if (!error_list_)
+  if (!error_dict_)
     return;
 
-  LogHeaderIfLogEmpty(start_url);
+  LogHeaderIfLogEmpty(url);
 
   object.SetStringKey("!stage", stage);
-  error_list_->Append(std::move(object));
+  error_dict_->FindKey("stages")->Append(std::move(object));
+}
+
+void WebAppInstallTask::LogUrlLoaderError(const char* stage,
+                                          const std::string& url,
+                                          WebAppUrlLoader::Result result) {
+  if (!error_dict_)
+    return;
+
+  base::Value url_loader_error(base::Value::Type::DICTIONARY);
+
+  url_loader_error.SetStringKey("WebAppUrlLoader::Result",
+                                ConvertUrlLoaderResultToString(result));
+
+  LogErrorObject(stage, url, std::move(url_loader_error));
 }
 
 void WebAppInstallTask::LogExpectedAppIdError(const char* stage,
-                                              const std::string& start_url,
+                                              const std::string& url,
                                               const AppId& app_id) {
-  if (!error_list_ || !expected_app_id_.has_value())
+  if (!error_dict_ || !expected_app_id_.has_value())
     return;
 
   base::Value expected_app_id_error(base::Value::Type::DICTIONARY);
@@ -1010,7 +1032,7 @@ void WebAppInstallTask::LogExpectedAppIdError(const char* stage,
                                      expected_app_id_.value());
   expected_app_id_error.SetStringKey("app_id", app_id);
 
-  LogErrorObject(stage, start_url, std::move(expected_app_id_error));
+  LogErrorObject(stage, url, std::move(expected_app_id_error));
 }
 
 void WebAppInstallTask::LogDownloadedIconsErrors(
@@ -1018,7 +1040,7 @@ void WebAppInstallTask::LogDownloadedIconsErrors(
     IconsDownloadedResult icons_downloaded_result,
     const IconsMap& icons_map,
     const DownloadedIconsHttpResults& icons_http_results) {
-  if (!error_list_)
+  if (!error_dict_)
     return;
 
   base::Value icon_errors(base::Value::Type::DICTIONARY);

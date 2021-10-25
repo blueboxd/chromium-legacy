@@ -19,6 +19,10 @@ struct COMPONENT_EXPORT(APP_UPDATE) IconKey {
 
   IconKey(const IconKey&) = delete;
   IconKey& operator=(const IconKey&) = delete;
+  IconKey(IconKey&&) = default;
+  IconKey& operator=(IconKey&&) = default;
+
+  bool operator==(const IconKey& other) const;
 
   ~IconKey();
 

@@ -177,6 +177,10 @@ crbug.com/1254945 external/wpt/html/semantics/embedded-content/media-elements/tr
 crbug.com/1254945 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-enter-exit.html [ Failure Pass ]
 crbug.com/1254945 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-remove-insert-ready-state.html [ Failure Pass ]
 
+crbug.com/1262934 fast/forms/form-invalid-url.html [ Failure Pass ]
+crbug.com/1262985 fullscreen/enter-exit-full-screen-hover.html [ Failure Pass ]
+crbug.com/1262966 http/tests/security/script-onerror-crossorigin-no-cors.html [ Failure Pass ]
+
 # ====== Synchronous, budgeted HTML parser tests to here ========================
 
 # Console log messages have flaky line numbers
@@ -2145,6 +2149,7 @@ crbug.com/555703 [ Win ] virtual/media-gpu-accelerated/* [ Skip ]
 crbug.com/555703 [ Fuchsia ] virtual/media-gpu-accelerated/* [ Skip ]
 
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
+crbug.com/1262980 fast/multicol/infinitely-tall-content-in-outer-crash.html [ Pass Timeout ]
 
 crbug.com/400841 media/video-canvas-draw.html [ Failure ]
 
@@ -2985,6 +2990,14 @@ crbug.com/626703 fast/animation/scroll-animations/scrolltimeline-root-scroller-q
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/navigation-timing-extended.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCIceConnectionState-candidate-pair.https.html [ Skip Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCPeerConnection-helper-test.html [ Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Skip Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Skip Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/getstats.html [ Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/protocol/ice-state.https.html [ Skip Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-videoDetectorTest.html [ Skip Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/bundle.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/navigate-by-name.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/navigate-by-name.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/navigate-by-name.html [ Timeout ]
@@ -4887,9 +4900,6 @@ crbug.com/907862 [ Mac10.13 ] gamepad/multiple-event-listeners.html [ Failure Pa
 
 # Sheriff 2018-11-26
 crbug.com/908347 media/autoplay/webaudio-audio-context-resume.html [ Failure Pass ]
-
-# Sheriff 2018-11-29
-crbug.com/910139 http/tests/custom-elements/form-submission-file.html [ Crash Pass ]
 
 #Sheriff 2018-12-04
 crbug.com/911515 [ Mac ] transforms/shadows.html [ Failure Pass ]
@@ -6817,9 +6827,6 @@ crbug.com/1234619 external/wpt/screen-capture/permissions-policy-video.https.sub
 # Sheriff 2021-08-02
 crbug.com/1215390 [ Linux ] external/wpt/pointerevents/pointerevent_pointerId_scope.html [ Failure Pass ]
 
-# Sheriff 2021-08-04
-crbug.com/1236466 inspector-protocol/runtime/runtime-execution-contexts-events.js [ Crash Failure Pass Timeout ]
-
 # Sheriff 2021-08/05
 crbug.com/1230534 external/wpt/webrtc/simulcast/getStats.https.html [ Failure Pass Skip Timeout ]
 crbug.com/1237132 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Skip Timeout ]
@@ -6859,9 +6866,6 @@ crbug.com/1243707 [ Debug Linux ] http/tests/inspector-protocol/target/auto-atta
 
 # Sheriff 2021-08-26
 crbug.com/1243933 [ Win7 ] virtual/shared_array_buffer_on_desktop/http/tests/devtools/elements/accessibility/edit-aria-attributes.js [ Failure ]
-
-# Temporarily allow pass or failure while new WebRTC stats are added and rolled into Chromium.
-crbug.com/webrtc/12951 external/wpt/webrtc-stats/supported-stats.html [ Failure Pass ]
 
 # Sheriff 2021-09-03
 crbug.com/1246238 http/tests/devtools/security/mixed-content-sidebar.js [ Failure Pass ]
@@ -7211,7 +7215,6 @@ crbug.com/1215072 http/tests/devtools/elements/copy-styles.js [ Skip ]
 crbug.com/1255679 http/tests/devtools/service-workers/service-workers-wasm-test.js [ Skip ]
 
 # Sheriff 2021-10-05
-crbug.com/1256701 [ Debug Linux ] fast/forms/form-invalid-url.html [ Failure Pass ]
 crbug.com/1256755 http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ Failure Pass ]
 crbug.com/1256770 [ Mac ] svg/dynamic-updates/SVGFEComponentTransferElement-dom-intercept-attr.html [ Failure Pass ]
 crbug.com/1256763 [ Win ] virtual/exotic-color-space/images/color-profile-svg-fill-text.html [ Failure Pass ]

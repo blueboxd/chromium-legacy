@@ -158,7 +158,7 @@ class WebAppInstallTask : content::WebContentsObserver {
 
   // Collects install errors (unbounded) if the |kRecordWebAppDebugInfo|
   // flag is enabled to be used by: chrome://web-app-internals
-  base::Value TakeErrorList();
+  base::Value TakeErrorDict();
 
   void SetInstallFinalizerForTesting(WebAppInstallFinalizer* install_finalizer);
 
@@ -177,9 +177,11 @@ class WebAppInstallTask : content::WebContentsObserver {
   // install_callback_.
   bool ShouldStopInstall() const;
 
-  void OnWebAppUrlLoadedGetWebApplicationInfo(WebAppUrlLoader::Result result);
+  void OnWebAppUrlLoadedGetWebApplicationInfo(const GURL& url_to_load,
+                                              WebAppUrlLoader::Result result);
 
   void OnWebAppUrlLoadedCheckAndRetrieveManifest(
+      const GURL& url_to_load,
       content::WebContents* web_contents,
       WebAppUrlLoader::Result result);
   void OnWebAppInstallabilityChecked(blink::mojom::ManifestPtr opt_manifest,
@@ -260,13 +262,16 @@ class WebAppInstallTask : content::WebContentsObserver {
       IconsDownloadedResult result,
       const DownloadedIconsHttpResults& icons_http_results);
 
-  void LogHeaderIfLogEmpty(const std::string& start_url);
+  void LogHeaderIfLogEmpty(const std::string& url);
   void LogErrorObject(const char* stage,
-                      const std::string& start_url,
+                      const std::string& url,
                       base::Value object);
 
+  void LogUrlLoaderError(const char* stage,
+                         const std::string& url,
+                         WebAppUrlLoader::Result result);
   void LogExpectedAppIdError(const char* stage,
-                             const std::string& start_url,
+                             const std::string& url,
                              const AppId& app_id);
   void LogDownloadedIconsErrors(
       const WebApplicationInfo& web_app_info,
@@ -304,7 +309,7 @@ class WebAppInstallTask : content::WebContentsObserver {
   Profile* const profile_;
   WebAppRegistrar* registrar_;
 
-  std::unique_ptr<base::Value> error_list_;
+  std::unique_ptr<base::Value> error_dict_;
 
   base::WeakPtrFactory<WebAppInstallTask> weak_ptr_factory_{this};
 };

@@ -2990,6 +2990,8 @@ crbug.com/626703 fast/animation/scroll-animations/scrolltimeline-root-scroller-q
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/navigation-timing-extended.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac11.0 ] external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-background-mismatch-opaque-cross-origin.sub.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/resource-timing/object-not-found-adds-entry.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCIceConnectionState-candidate-pair.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCPeerConnection-helper-test.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Skip Timeout ]
@@ -7203,6 +7205,14 @@ crbug.com/1222126 http/tests/devtools/network/network-choose-preview-view.js [ S
 crbug.com/1222126 http/tests/devtools/network/json-preview.js [ Skip ]
 crbug.com/1215072 http/tests/devtools/elements/copy-styles.js [ Skip ]
 
+# DevTools roll
+crbug.com/1127902 http/tests/devtools/components/datagrid.js [ Skip ]
+crbug.com/1127902 http/tests/devtools/components/viewport-datagrid.js [ Skip ]
+crbug.com/1127902 http/tests/devtools/unit/datagrid-editable-longtext.js [ Skip ]
+crbug.com/1127902 http/tests/devtools/unit/datagrid-items-attached-to-dom.js [ Skip ]
+crbug.com/1127902 http/tests/devtools/unit/viewport-datagrid-items-attached-to-dom.js [ Skip ]
+crbug.com/1127902 http/tests/devtools/unit/viewport-datagrid-items-expandable-attached-to-dom.js [ Skip ]
+
 # Skip devtools test hitting an unexpected tracing infrastructure exception 2021-10-04
 crbug.com/1255679 http/tests/devtools/service-workers/service-workers-wasm-test.js [ Skip ]
 
@@ -7245,6 +7255,10 @@ crbug.com/1259188 [ Mac10.14 ] virtual/gpu-rasterization/images/color-profile-an
 crbug.com/1197465 [ Win7 ] virtual/scroll-unification/fast/events/mouse-cursor-no-mousemove.html [ Failure Pass ]
 crbug.com/1259277 [ Debug Linux ] virtual/scroll-unification/fast/events/message-port-multi.html [ Failure Pass ]
 
+# DevTools roll
+crbug.com/1127902 http/tests/devtools/local-object-properties-section.js [ Skip ]
+crbug.com/1127902 http/tests/devtools/unit/object-properties-expand-recursively.js [ Skip ]
+
 # Sheriff 2021-10-13
 crbug.com/1259652 [ Mac10.13 ] external/wpt/streams/readable-streams/tee.any.html [ Failure Pass ]
 crbug.com/1259652 [ Mac10.13 ] external/wpt/streams/readable-streams/tee.any.serviceworker.html [ Failure Pass ]
@@ -7271,3 +7285,7 @@ crbug.com/1259277 [ Mac ] fast/events/message-port-multi.html [ Failure Pass ]
 # Sheriff 2021-10-20
 crbug.com/1261770 crbug.com/1245166 [ Linux ] external/wpt/web-bundle/subresource-loading/script-relative-url-in-web-bundle-cors.https.tentative.sub.html [ Failure Pass ]
 crbug.com/1261770 crbug.com/1245166 [ Linux ] virtual/wbn-from-network/external/wpt/web-bundle/subresource-loading/script-relative-url-in-web-bundle-cors.https.tentative.sub.html [ Failure Pass ]
+
+# Sheriff 2021-10-26
+crbug.com/1263349 [ Linux ] external/wpt/resource-timing/object-not-found-after-cross-origin-redirect.html [ Failure Pass ]
+crbug.com/1263354 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-adds-entry.html [ Failure Pass ]

@@ -70,8 +70,8 @@ namespace policy {
 //     10.5.6, 10.6.0
 
 // static
-void SandboxMac::Warmup(SandboxType sandbox_type) {
-  DCHECK_EQ(sandbox_type, SandboxType::kGpu);
+void SandboxMac::Warmup(sandbox::mojom::Sandbox sandbox_type) {
+  DCHECK_EQ(sandbox_type, sandbox::mojom::Sandbox::kGpu);
 
   @autoreleasepool {
     {  // CGColorSpaceCreateWithName(), CGBitmapContextCreate() - 10.5.6
@@ -129,16 +129,16 @@ void SandboxMac::Warmup(SandboxType sandbox_type) {
 
 // Load the appropriate template for the given sandbox type.
 // Returns the template as a string or an empty string on error.
-std::string LoadSandboxTemplate(SandboxType sandbox_type) {
-  DCHECK_EQ(sandbox_type, SandboxType::kGpu);
+std::string LoadSandboxTemplate(sandbox::mojom::Sandbox sandbox_type) {
+  DCHECK_EQ(sandbox_type, sandbox::mojom::Sandbox::kGpu);
   return kSeatbeltPolicyString_gpu;
 }
 
 // Turns on the OS X sandbox for this process.
 
 // static
-bool SandboxMac::Enable(SandboxType sandbox_type) {
-  DCHECK_EQ(sandbox_type, SandboxType::kGpu);
+bool SandboxMac::Enable(sandbox::mojom::Sandbox sandbox_type) {
+  DCHECK_EQ(sandbox_type, sandbox::mojom::Sandbox::kGpu);
 
   std::string sandbox_data = LoadSandboxTemplate(sandbox_type);
   if (sandbox_data.empty())
@@ -159,7 +159,7 @@ bool SandboxMac::Enable(SandboxType sandbox_type) {
   base::FilePath home_dir_canonical =
       GetCanonicalPath(base::FilePath(home_dir));
 
-  if (sandbox_type == SandboxType::kGpu) {
+  if (sandbox_type == sandbox::mojom::Sandbox::kGpu) {
     base::FilePath bundle_path =
         GetCanonicalPath(base::mac::FrameworkBundlePath());
   }

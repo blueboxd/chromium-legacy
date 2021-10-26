@@ -43,14 +43,14 @@ class SANDBOX_POLICY_EXPORT SandboxMac {
   // Valid |sandbox_type| values are defined by the enum SandboxType, or can be
   // defined by the embedder via
   // ContentClient::GetSandboxProfileForProcessType().
-  static void Warmup(SandboxType sandbox_type);
+  static void Warmup(sandbox::mojom::Sandbox sandbox_type);
 
   // Turns on the OS X sandbox for this process.
   // |sandbox_type| - type of Sandbox to use. See SandboxWarmup() for legal
   // values.
   //
   // Returns true on success, false if an error occurred enabling the sandbox.
-  static bool Enable(SandboxType sandbox_type);
+  static bool Enable(sandbox::mojom::Sandbox sandbox_type);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SandboxMac);

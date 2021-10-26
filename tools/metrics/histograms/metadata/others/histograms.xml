@@ -15042,6 +15042,9 @@ Safe Browsing lookups, which is critical for security. -->
 
 <histogram name="SBDownloadFeedback.UploadDuration" units="ms"
     expires_after="2020-03-29">
+  <obsolete>
+    Removed 10-2021 due to lack of use.
+  </obsolete>
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -15359,9 +15362,9 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram base="true" name="SendTabToSelf.ClickResult"
-    enum="SendTabToSelfClickResult" expires_after="M97">
+    enum="SendTabToSelfClickResult" expires_after="2022-10-25">
   <owner>jeffreycohen@chromium.org</owner>
-  <owner>tgupta@chromium.org</owner>
+  <owner>ellyjones@chromium.org</owner>
   <owner>chrome-sharing-core@google.com</owner>
   <summary>
     Records user flow for SendTabToSelf feature.

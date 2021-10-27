@@ -25,7 +25,7 @@ namespace {
 
 HpsDBusClient* g_instance = nullptr;
 
-// Extracts the HPS notify data out of a DBus response.
+// Extracts snooping data out of a DBus response.
 absl::optional<bool> UnwrapHpsNotifyResult(dbus::Response* response) {
   if (response == nullptr) {
     return absl::nullopt;
@@ -60,7 +60,7 @@ class HpsDBusClientImpl : public HpsDBusClient {
   HpsDBusClientImpl(const HpsDBusClientImpl&) = delete;
   HpsDBusClientImpl& operator=(const HpsDBusClientImpl&) = delete;
 
-  // Called when the notify changed signal is received.
+  // Called when snooping signal is received.
   void HpsNotifyChangedReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     bool state = false;
@@ -133,7 +133,10 @@ void HpsDBusClient::Initialize(dbus::Bus* bus) {
 
 // static
 void HpsDBusClient::InitializeFake() {
-  new FakeHpsDBusClient();
+  // Do not create a new fake if it was initialized early in a test, to allow
+  // the test to set its own client.
+  if (!FakeHpsDBusClient::Get())
+    new FakeHpsDBusClient();
 }
 
 // static

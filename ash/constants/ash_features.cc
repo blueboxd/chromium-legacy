@@ -93,7 +93,7 @@ const base::Feature kAmbientModePhotoPreviewFeature{
 
 // Controls whether to fetch ambient mode images using new url format.
 const base::Feature kAmbientModeNewUrl{"ChromeOSAmbientModeNewUrl",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable ARC ADB sideloading support.
 const base::Feature kArcAdbSideloadingFeature{
@@ -715,6 +715,10 @@ const base::Feature kLanguageSettingsUpdate2{"LanguageSettingsUpdate2",
 const base::Feature kLauncherAppSort{"LauncherAppSort",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Uses short intervals for launcher nudge for testing if enabled.
+const base::Feature kLauncherNudgeShortInterval{
+    "LauncherNudgeShortInterval", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables new flow for license packaged devices with enterprise license.
 const base::Feature kLicensePackagedOobeFlow{"LicensePackagedOobeFlow",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
@@ -882,10 +886,6 @@ const base::Feature kPinSetupForManagedUsers{"PinSetupForManagedUsers",
 // Enables rounded corners for the Picture-in-picture window.
 const base::Feature kPipRoundedCorners{"PipRoundedCorners",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Hides shelf in immersive mode and allows esc hold to exit.
-const base::Feature kPluginVmFullscreen{"PluginVmFullscreen",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the preference of using constant frame rate for camera
 // when streaming.
@@ -1470,6 +1470,11 @@ bool IsKeyboardBasedDisplayArrangementInSettingsEnabled() {
 bool IsLauncherAppSortEnabled() {
   return IsProductivityLauncherEnabled() &&
          base::FeatureList::IsEnabled(kLauncherAppSort);
+}
+
+bool IsLauncherNudgeShortIntervalEnabled() {
+  return IsProductivityLauncherEnabled() &&
+         base::FeatureList::IsEnabled(kLauncherNudgeShortInterval);
 }
 
 bool IsLicensePackagedOobeFlowEnabled() {

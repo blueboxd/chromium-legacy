@@ -775,6 +775,12 @@ interface CSSKeywordValue : CSSStyleValue
     getter value
     method constructor
     setter value
+interface CSSLayerBlockRule : CSSGroupingRule
+    attribute @@toStringTag
+    method constructor
+interface CSSLayerStatementRule : CSSRule
+    attribute @@toStringTag
+    method constructor
 interface CSSMathInvert : CSSMathValue
     attribute @@toStringTag
     getter value
@@ -4938,6 +4944,7 @@ interface KeyframeEffect : AnimationEffect
 interface LargestContentfulPaint : PerformanceEntry
     attribute @@toStringTag
     getter element
+    getter firstAnimatedFrameTime
     getter id
     getter loadTime
     getter renderTime

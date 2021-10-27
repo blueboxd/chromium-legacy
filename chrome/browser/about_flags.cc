@@ -3573,6 +3573,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"in-product-help-snooze", flag_descriptions::kInProductHelpSnoozeName,
      flag_descriptions::kInProductHelpSnoozeDescription, kOsAll,
      FEATURE_VALUE_TYPE(feature_engagement::kIPHSnooze)},
+    {"in-product-help-use-client-config",
+     flag_descriptions::kInProductHelpUseClientConfigName,
+     flag_descriptions::kInProductHelpUseClientConfigDescription, kOsAll,
+     FEATURE_VALUE_TYPE(feature_engagement::kUseClientConfigIPH)},
     {"disable-threaded-scrolling", flag_descriptions::kThreadedScrollingName,
      flag_descriptions::kThreadedScrollingDescription, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(blink::switches::kDisableThreadedScrolling)},
@@ -3604,9 +3608,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"crostini-use-dlc", flag_descriptions::kCrostiniUseDlcName,
      flag_descriptions::kCrostiniUseDlcDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUseDlc)},
-    {"pluginvm-fullscreen", flag_descriptions::kPluginVmFullscreenName,
-     flag_descriptions::kPluginVmFullscreenDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kPluginVmFullscreen)},
     {"crostini-reset-lxd-db", flag_descriptions::kCrostiniResetLxdDbName,
      flag_descriptions::kCrostiniResetLxdDbDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniResetLxdDb)},
@@ -6703,6 +6704,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"launcher-nudge", flag_descriptions::kLauncherNudgeName,
      flag_descriptions::kLauncherNudgeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kShelfLauncherNudge)},
+    {"launcher-nudge-short-interval",
+     flag_descriptions::kLauncherNudgeShortIntervalName,
+     flag_descriptions::kLauncherNudgeShortIntervalDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kLauncherNudgeShortInterval)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

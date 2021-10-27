@@ -1561,6 +1561,10 @@ const char kInProductHelpSnoozeName[] = "In-Product Help Snooze";
 const char kInProductHelpSnoozeDescription[] =
     "Enables the snooze button on In-Product Help.";
 
+const char kInProductHelpUseClientConfigName[] = "IPH Use Client Config";
+const char kInProductHelpUseClientConfigDescription[] =
+    "Enable In-Product Help to use client side configuration.";
+
 const char kInstalledAppsInCbdName[] = "Installed Apps in Clear Browsing Data";
 const char kInstalledAppsInCbdDescription[] =
     "Adds the installed apps warning dialog to the clear browsing data flow "
@@ -5093,10 +5097,6 @@ const char kQuickSettingsNetworkRevampDescription[] =
     "Enables the Quick Settings Network revamp, which updates Network Quick "
     "Settings UI and related infrastructure. See https://crbug.com/1169479.";
 
-const char kPluginVmFullscreenName[] = "Plugin VM Fullscreen";
-const char kPluginVmFullscreenDescription[] =
-    "Hides shelf in immersive mode and allows esc hold to exit.";
-
 const char kTerminalSSHName[] = "Terminal SSH tabs";
 const char kTerminalSSHDescription[] =
     "Enables SSH tabs in the Terminal System App.";
@@ -5202,6 +5202,11 @@ const char kWindowControlMenuDescription[] =
 const char kLauncherNudgeName[] = "Enable launcher nudge";
 const char kLauncherNudgeDescription[] =
     "Enables nudges that bring new users' attention to the launcher button.";
+
+const char kLauncherNudgeShortIntervalName[] =
+    "Enable short intervals for launcher nudge";
+const char kLauncherNudgeShortIntervalDescription[] =
+    "Enables short intervals for launcher nudge for testing";
 
 // Prefer keeping this section sorted to adding new definitions down here.
 

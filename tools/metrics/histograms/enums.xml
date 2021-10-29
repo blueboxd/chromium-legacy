@@ -5509,6 +5509,9 @@ others/histograms.xml -->
   <int value="25" label="The UI was closed unexpectedly"/>
   <int value="26" label="User navigated during onboarding"/>
   <int value="27" label="User dismissed the onboarding dialog"/>
+  <int value="28"
+      label="Two or more autostartable scripts with satisfied preconditions
+             received"/>
 </enum>
 
 <enum name="AutofillAssistantFeatureModuleInstallation">
@@ -19985,6 +19988,22 @@ Called by update_debug_scenarios.py.-->
   <int value="4" label="Cellular"/>
 </enum>
 
+<enum name="DeviceTrustKeyRotationStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unable to generate a new signing key"/>
+  <int value="2" label="Unable to save the new signing key to storage"/>
+  <int value="3" label="Unable to build upload request"/>
+  <int value="4" label="Unable to upload new signing key to server"/>
+  <int value="5"
+      label="Unable to upload new signing key to server after maximum retries"/>
+  <int value="6"
+      label="Unable to upload new signing key to server and failed to restore
+             old key"/>
+  <int value="7"
+      label="Unable to upload new signing key to server after maximum retries
+             and failed to restore old key"/>
+</enum>
+
 <enum name="DevToolsAction">
   <int value="1" label="Window docked"/>
   <int value="2" label="Window undocked"/>
@@ -20617,6 +20636,9 @@ Called by update_debug_scenarios.py.-->
 </enum>
 
 <enum name="DevToolsSetting">
+  <obsolete>
+    Instrumentation was removed before M76.
+  </obsolete>
   <int value="1" label="Elements DOM wrap on"/>
   <int value="2" label="Elements DOM wrap off"/>
   <int value="3" label="Console monitor XHR on"/>
@@ -35072,6 +35094,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4064" label="V8FragmentDirective_Items_AttributeGetter"/>
   <int value="4065" label="V8FragmentDirective_CreateSelectorDirective_Method"/>
   <int value="4066" label="CSSTransitionBlockedByAnimation"/>
+  <int value="4067" label="WebAppManifestHasComments"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -48190,6 +48213,7 @@ from previous Chrome versions.
       label="PasswordsAccountStorageRevisedOptInFlow:disabled"/>
   <int value="-2011532551" label="SignedExchangeSubresourcePrefetch:disabled"/>
   <int value="-2011428140" label="RelatedSearchesAlternateUx:disabled"/>
+  <int value="-2011079494" label="Vp9kSVCHWDecoding:enabled"/>
   <int value="-2010634516" label="OmniboxLocalEntitySuggestions:disabled"/>
   <int value="-2009622663" label="WebRtcHWH264Encoding:enabled"/>
   <int value="-2009172938" label="DragToPinTabs:disabled"/>
@@ -49636,6 +49660,7 @@ from previous Chrome versions.
   <int value="-963683462" label="EnablePalmSuppression:enabled"/>
   <int value="-962030536" label="ChromeDuetLabeled:enabled"/>
   <int value="-960077963" label="EnableAuraTooltipsOnWindows:enabled"/>
+  <int value="-959746153" label="SystemExtensions:disabled"/>
   <int value="-959173180" label="AccessibilityPageZoom:disabled"/>
   <int value="-958950214" label="AllowDisableMouseAcceleration:disabled"/>
   <int value="-958372962" label="LacrosSupport:enabled"/>
@@ -50617,7 +50642,9 @@ from previous Chrome versions.
       label="EnableEphemeralGuestProfilesOnDesktop:disabled"/>
   <int value="-176524053"
       label="VmCameraMicIndicatorsAndNotifications:disabled"/>
+  <int value="-176163507" label="SystemExtensions:enabled"/>
   <int value="-175696105" label="MessagesForAndroidUpdatePassword:enabled"/>
+  <int value="-175692563" label="Vp9kSVCHWDecoding:disabled"/>
   <int value="-175666252" label="Portals:disabled"/>
   <int value="-175574799" label="finch-seed-no-charging-requirement"/>
   <int value="-174829803" label="TabOutlinesInLowContrastThemes:enabled"/>

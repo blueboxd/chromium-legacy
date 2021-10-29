@@ -89,10 +89,19 @@ class CORE_EXPORT MediaQueryParser {
   // [ not | only ]
   static MediaQuery::RestrictorType ConsumeRestrictor(CSSParserTokenRange&);
 
+  // https://drafts.csswg.org/mediaqueries-4/#typedef-media-type
+  static String ConsumeType(CSSParserTokenRange&);
+
   // https://drafts.csswg.org/mediaqueries-4/#typedef-media-feature
   //
   // Currently, only <mf-boolean> and <mf-plain> productions are supported.
   bool ConsumeFeature(CSSParserTokenRange&);
+
+  // https://drafts.csswg.org/mediaqueries-4/#typedef-media-and
+  //
+  // TODO(crbug.com/962417): This does currently not support the full grammar,
+  // and instead parses the following: [ and <media-feature> ]*
+  bool ConsumeAnd(CSSParserTokenRange&);
 
   scoped_refptr<MediaQuerySet> ParseImpl(CSSParserTokenRange);
 
@@ -105,7 +114,6 @@ class CORE_EXPORT MediaQueryParser {
   void ReadRestrictor(CSSParserTokenRange&);
   void ReadMediaNot(CSSParserTokenRange&);
   void ReadMediaType(CSSParserTokenRange&);
-  void ReadAnd(CSSParserTokenRange&);
   void ReadFeatureStart(CSSParserTokenRange&);
   void SkipUntilComma(CSSParserTokenRange&);
   void Done(CSSParserTokenRange&);
@@ -113,6 +121,7 @@ class CORE_EXPORT MediaQueryParser {
   using State = void (MediaQueryParser::*)(CSSParserTokenRange&);
 
   void SetStateAndRestrict(State, MediaQuery::RestrictorType);
+  void FinishQueryDataAndSetState(bool success, CSSParserTokenRange&);
 
   bool IsMediaFeatureAllowedInMode(const String& media_feature) const;
 
@@ -126,7 +135,6 @@ class CORE_EXPORT MediaQueryParser {
   const static State kReadRestrictor;
   const static State kReadMediaNot;
   const static State kReadMediaType;
-  const static State kReadAnd;
   const static State kReadFeatureStart;
   const static State kSkipUntilComma;
   const static State kDone;

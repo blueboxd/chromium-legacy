@@ -1938,6 +1938,22 @@
             ]
         }
     ],
+    "ChromeOSHoldingSpaceExperiment": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "HoldingSpaceInProgressDownloadsIntegration",
+                        "HoldingSpaceIncognitoProfileIntegration"
+                    ]
+                }
+            ]
+        }
+    ],
     "ChromeOSKstaled": [
         {
             "platforms": [
@@ -2074,6 +2090,8 @@
                         "hide_switch_when_no_incognito_tabs": "true",
                         "open_ntp_instead_of_start": "true",
                         "show_last_active_tab_only": "true",
+                        "signin_promo_NTP_reset_after_hours": "336",
+                        "signin_promo_NTP_since_first_time_shown_limit_hours": "672",
                         "start_surface_variation": "single",
                         "support_accessibility": "true",
                         "tab_count_button_on_start_surface": "true",
@@ -3086,8 +3104,8 @@
             ],
             "experiments": [
                 {
-                    "name": "Disabled",
-                    "disable_features": [
+                    "name": "Enabled_20211027",
+                    "enable_features": [
                         "EnableDiscoverFeedAppFlows"
                     ]
                 }
@@ -4506,26 +4524,6 @@
             ]
         }
     ],
-    "IncognitoBrandConsistencyForDesktop": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "IncognitoBrandConsistencyForDesktop",
-                        "InheritNativeThemeFromParentWidget"
-                    ]
-                }
-            ]
-        }
-    ],
     "IncompatibleApplicationsWarning": [
         {
             "platforms": [
@@ -5369,12 +5367,8 @@
             "experiments": [
                 {
                     "name": "AndroidExperiments",
-                    "params": {
-                        "OmniboxMaxZeroSuggestMatches": "15"
-                    },
                     "enable_features": [
                         "OmniboxDynamicMaxAutocomplete",
-                        "OmniboxMaxZeroSuggestMatches",
                         "OmniboxOnFocusSuggestionsContextualWebAllowSRP",
                         "QuickActionSearchWidgetAndroid",
                         "QuickActionSearchWidgetAndroidDinoVariant"

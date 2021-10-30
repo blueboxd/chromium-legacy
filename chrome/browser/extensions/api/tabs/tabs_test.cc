@@ -906,6 +906,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, ValidateCreateWindowState) {
                          keys::kInvalidWindowStateError));
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, CreatePopupWindowFromWebUI) {
+  scoped_refptr<WindowsCreateFunction> function(new WindowsCreateFunction());
+  function->SetBrowserContextForTesting(browser()->profile());
+  function->set_source_context_type(Feature::Context::WEBUI_UNTRUSTED_CONTEXT);
+
+  std::unique_ptr<base::DictionaryValue> result(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
+          function.get(), R"([{"type": "popup"}])", browser())));
+  int window_id = GetWindowId(result.get());
+  std::string error;
+  EXPECT_TRUE(ExtensionTabUtil::GetBrowserFromWindowID(
+      ChromeExtensionFunctionDetails(function.get()), window_id, &error));
+  EXPECT_TRUE(error.empty());
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
   content::OpenURLParams params(GURL(url::kAboutBlankURL), content::Referrer(),
                                 WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -2322,6 +2337,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
       browser()->tab_strip_model()->GetWebContentsAt(0), false /* is_docked */);
   scoped_refptr<WindowsCreateFunction> function = new WindowsCreateFunction();
+  scoped_refptr<const Extension> extension(ExtensionBuilder("Test").Build());
+  function->set_extension(extension.get());
 
   EXPECT_TRUE(base::MatchPattern(
       utils::RunFunctionAndReturnError(

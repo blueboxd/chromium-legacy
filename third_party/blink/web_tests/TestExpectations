@@ -2951,6 +2951,7 @@ crbug.com/626703 fast/animation/scroll-animations/scroll-timeline-snapshotting.h
 crbug.com/626703 fast/animation/scroll-animations/scrolltimeline-root-scroller-quirks-mode.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac11 ] virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCPeerConnection-getStats.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/protocol/handover-datachannel.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-createDataChannel.html [ Skip Timeout ]
@@ -5180,10 +5181,6 @@ crbug.com/989717 [ Fuchsia ] http/tests/preload/avoid_delaying_onload_link_prelo
 crbug.com/970285 external/wpt/forced-colors-mode/* [ Failure ]
 crbug.com/970285 virtual/forced-high-contrast-colors/external/wpt/forced-colors-mode/* [ Pass ]
 
-# Expected failures for dark mode tests when the corresponding flags
-# are not enabled.
-crbug.com/1090660 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/svg-as-image.html [ Pass ]
-
 # Sheriff 2019-08-14
 crbug.com/993671 [ Win ] http/tests/media/video-frame-size-change.html [ Failure Pass ]
 
@@ -6248,10 +6245,10 @@ crbug.com/1196620 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-
 # WebTransport tests should eventually run when the WebTransport WPT server is added.
 crbug.com/1201569 external/wpt/webtransport/* [ Skip ]
 # WebTransport server infra tests pass on python3 but fail on python2.
-crbug.com/1201569 external/wpt/infrastructure/server/webtransport-h3.https.sub.any.html [ Pass Failure ]
-crbug.com/1201569 external/wpt/infrastructure/server/webtransport-h3.https.sub.any.serviceworker.html [ Pass Failure ]
-crbug.com/1201569 external/wpt/infrastructure/server/webtransport-h3.https.sub.any.sharedworker.html [ Pass Failure ]
-crbug.com/1201569 external/wpt/infrastructure/server/webtransport-h3.https.sub.any.worker.html [ Pass Failure ]
+crbug.com/1201569 external/wpt/infrastructure/server/webtransport-h3.https.sub.any.html [ Failure Pass ]
+crbug.com/1201569 external/wpt/infrastructure/server/webtransport-h3.https.sub.any.serviceworker.html [ Failure Pass ]
+crbug.com/1201569 external/wpt/infrastructure/server/webtransport-h3.https.sub.any.sharedworker.html [ Failure Pass ]
+crbug.com/1201569 external/wpt/infrastructure/server/webtransport-h3.https.sub.any.worker.html [ Failure Pass ]
 
 crbug.com/1194958 fast/events/mouse-event-buttons-attribute.html [ Failure Pass ]
 
@@ -7229,3 +7226,8 @@ crbug.com/1264753 [ Mac10.13 ] external/wpt/referrer-policy/gen/srcdoc.meta/stri
 crbug.com/1264753 [ Mac10.12 ] virtual/plz-dedicated-worker/external/wpt/referrer-policy/gen/srcdoc.meta/strict-origin/iframe-tag.http.html [ Failure ]
 crbug.com/1264753 [ Mac10.13 ] virtual/plz-dedicated-worker/external/wpt/referrer-policy/gen/srcdoc.meta/strict-origin/iframe-tag.http.html [ Failure ]
 crbug.com/1264775 [ Mac11-arm64 ] external/wpt/webrtc-stats/supported-stats.html [ Failure ]
+crbug.com/1264802 [ Win7 ] fast/forms/suggestion-picker/date-suggestion-picker-appearance.html [ Failure Pass ]
+crbug.com/1264802 [ Win7 ] fast/forms/suggestion-picker/month-suggestion-picker-appearance.html [ Failure Pass ]
+crbug.com/1264802 [ Win7 ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance.html [ Failure Pass ]
+crbug.com/1264775 [ Mac10.14 ] external/wpt/webrtc-stats/supported-stats.html [ Failure ]
+crbug.com/1264979 [ Mac10.14 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/navigate-by-name.html [ Failure Pass ]

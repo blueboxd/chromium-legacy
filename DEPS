@@ -234,7 +234,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '9d24b02c2fdb5eede1054b16b9c03b5ed26dc618',
+  'skia_revision': '6ce94bbdefec53bb3c7439eb2203af3c58e79833',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'f10f06de2c0d894184322bdf9ccf8344abe1d516',
+  'catapult_revision': '05d125f274b753740fe4da60eb85d5f57c963985',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -1598,7 +1598,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '62d7d0c928c9a040dce96aa2f16c00e7e67d59cb',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@36bbe49c47eaa8df11d027f994aa3b7cef79b987',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@ee45938d0b75d2fb4fbb65101d5f7d7e71d1a6f9',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'e0216a5484c8345f7d792fa16fad77ac63d89a70',
@@ -1695,7 +1695,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@51c7141aee47cc58a9044b9fcce81556b7dd0d24',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c123633a03ff85baa6287a9387879d01fb82a713',
     'condition': 'checkout_src_internal',
   },
 
@@ -1714,7 +1714,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'Pu6biyiuS2Q5sTobyHp0PwgpgjstB7a-CKGx78lYUGEC',
+        'version': 'ffSVMYrncEY9S9zIaXi6YViJiEKq5_FwLjpAMLWqGKUC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1725,7 +1725,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '_fWINw4Gpe6I6CmF3_pR3f1PiTpy52scN2M774-x-ooC',
+        'version': 'yYNT7Q_0F-TmR0ICnVGJUR7atq1KiVbqvUyBHTpH2t8C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

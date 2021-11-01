@@ -234,7 +234,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '88b36ad61e80e13f6a85b022e3b7e068c7f6d789',
+  'skia_revision': '2d76d7760f80712bce5187070d9ce06c557b2287',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -309,7 +309,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '641505d73c8020e3d46feff2cdea238a3821d740',
+  'devtools_frontend_revision': '15f873cfa44cd9edae331344170e135266c4e6c6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1416,7 +1416,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '9eab89ac2d5f8a7ab94045694afbeabb9a8b11f1',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '72bdfd2f89bba6ef224e4b6e4f8aff12f05b8760',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1583,7 +1583,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/turbine',
-              'version': '6QYCyqU5yXkAT7T-_K3sCPvfISI8ACXF_cW4OM5v9BgC',
+              'version': 'KbLQUR_KFiUEzVt1lMTORY96bz_PbMwC3GwIb1oGJmAC',
           },
       ],
       'condition': 'checkout_android',
@@ -1695,7 +1695,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e08cd464bb233f46f1293eb274a6d0203858f3c4',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2187676b60f3964ce0dc32abb6d9d1ed7cdfe13b',
     'condition': 'checkout_src_internal',
   },
 
@@ -1736,7 +1736,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'Lbk5ci_VvPsnW2Gd8mIrkkCVoLAVWZ9gO-1l_6VC5OMC',
+        'version': '85GvO1qx31LyZ0AcZ9xGZflzgsugrgRI96_Ex9cBvHsC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

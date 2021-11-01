@@ -40,7 +40,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/optional_trace_event.h"
-#include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/download/public/common/download_url_parameters.h"
@@ -50,6 +49,7 @@
 #include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
+#include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
@@ -213,6 +213,7 @@
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
@@ -324,8 +325,6 @@ class RenderFrameHostOrProxy {
 };
 
 namespace {
-
-using perfetto::protos::pbzero::ChromeTrackEvent;
 
 constexpr int kSubframeProcessShutdownLongDelayInMSec = 8 * 1000;
 static_assert(kSubframeProcessShutdownLongDelayInMSec +
@@ -1421,8 +1420,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
 
   if (lifecycle_state_ != LifecycleStateImpl::kSpeculative) {
     // Creating a RFH in kActive state implies that it is the RFH for a
-    // newly-created FTN, which should not have committed a real load yet.
-    DCHECK(!frame_tree_node_->has_committed_real_load());
+    // newly-created FTN, which should still be on its initial empty document.
+    DCHECK(frame_tree_node_->is_on_initial_empty_document());
 
     // The initial empty document gets its sandbox flags from either:
     // 1. The parent + iframe.sandbox for <iframe>.
@@ -5862,7 +5861,11 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
 void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
     const BackForwardCacheCanStoreDocumentResult& can_store) {
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::EvictFromBackForwardCache",
-               "can_store", can_store.ToString(), "render_frame_host", this);
+               "can_store", can_store.ToString(), "rfh",
+               static_cast<void*>(this));
+  TRACE_EVENT(
+      "navigation", "RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons",
+      ChromeTrackEvent::kBackForwardCacheCanStoreDocumentResult, can_store);
   DCHECK(IsBackForwardCacheEnabled());
 
   if (is_evicted_from_back_forward_cache_)
@@ -8291,6 +8294,18 @@ void RenderFrameHostImpl::HandleRendererDebugURL(const GURL& url) {
   GetProcess()->SetIsUsed();
 }
 
+void RenderFrameHostImpl::CreateBroadcastChannelProvider(
+    mojo::PendingAssociatedReceiver<blink::mojom::BroadcastChannelProvider>
+        receiver) {
+  auto* storage_partition_impl =
+      static_cast<StoragePartitionImpl*>(GetStoragePartition());
+
+  mojo::MakeSelfOwnedAssociatedReceiver(
+      std::make_unique<BroadcastChannelProvider>(
+          storage_partition_impl->GetBroadcastChannelService(), storage_key()),
+      std::move(receiver));
+}
+
 void RenderFrameHostImpl::SetUpMojoConnection() {
   CHECK(!associated_registry_);
 
@@ -8442,6 +8457,10 @@ void RenderFrameHostImpl::SetUpMojoConnection() {
         impl->delegate()->BindScreenOrientation(impl, std::move(receiver));
       },
       base::Unretained(this)));
+
+  associated_registry_->AddInterface(
+      base::BindRepeating(&RenderFrameHostImpl::CreateBroadcastChannelProvider,
+                          base::Unretained(this)));
 
   mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
       remote_interfaces;
@@ -11016,15 +11035,15 @@ void RenderFrameHostImpl::DidCommitNavigation(
     BindBrowserInterfaceBrokerReceiver(
         std::move(interface_params->browser_interface_broker_receiver));
   } else {
-    // If there had already been a real load committed in the frame, and this is
-    // not a same-document navigation, then both the active document as well as
-    // the global object was replaced in this browsing context. The RenderFrame
+    // If the frame is no longer on the initial empty document, and this is not
+    // a same-document navigation, then both the active document as well as the
+    // global object was replaced in this browsing context. The RenderFrame
     // should have rebound its BrowserInterfaceBroker to a new pipe, but failed
     // to do so. Kill the renderer, and reset the old receiver to ensure that
     // any pending interface requests originating from the previous document,
     // hence possibly from a different security origin, will no longer be
     // dispatched.
-    if (frame_tree_node_->has_committed_real_load()) {
+    if (!frame_tree_node_->is_on_initial_empty_document()) {
       broker_receiver_.reset();
       bad_message::ReceivedBadMessage(
           process, bad_message::RFH_INTERFACE_PROVIDER_MISSING);
@@ -11888,8 +11907,6 @@ void RenderFrameHostImpl::
                         request->commit_params().original_url.EqualsIgnoringRef(
                             GetLastCommittedURL()));
 
-  SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "committed_real_load",
-                        request->frame_tree_node()->has_committed_real_load());
   SCOPED_CRASH_KEY_BOOL(
       "VerifyDidCommit", "on_initial_empty_doc",
       request->frame_tree_node()->is_on_initial_empty_document());

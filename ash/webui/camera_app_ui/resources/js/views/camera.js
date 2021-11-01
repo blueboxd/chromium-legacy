@@ -412,6 +412,9 @@ export class Camera extends View {
     state.addObserver(state.State.SCREEN_OFF_AUTO, handleScreenStateChange);
     state.addObserver(state.State.HAS_EXTERNAL_SCREEN, handleScreenStateChange);
 
+    state.addObserver(state.State.ENABLE_FULL_SIZED_VIDEO_SNAPSHOT, () => {
+      this.start();
+    });
     state.addObserver(state.State.ENABLE_MULTISTREAM_RECORDING, () => {
       this.start();
     });
@@ -711,39 +714,12 @@ export class Camera extends View {
    * @override
    */
   async handleResultDocument({blob, resolution, mimeType}, name) {
-    let docResult;
-    if (mimeType === MimeType.JPEG) {
-      docResult = metrics.DocResultType.SAVE_AS_PHOTO;
-    } else if (mimeType === MimeType.PDF) {
-      docResult = metrics.DocResultType.SAVE_AS_PDF;
-    } else {
-      throw new Error(`Unrecognized document mimeType: ${mimeType}`);
-    }
-
-    metrics.sendCaptureEvent({
-      facing: this.facingMode_,
-      resolution,
-      shutterType: this.shutterType_,
-      docResult,
-    });
     try {
       await this.resultSaver_.savePhoto(blob, name);
     } catch (e) {
       toast.show(I18nString.ERROR_MSG_SAVE_FILE_FAILED);
       throw e;
     }
-  }
-
-  /**
-   * @override
-   */
-  handleCancelDocument({resolution}) {
-    metrics.sendCaptureEvent({
-      facing: this.facingMode_,
-      resolution,
-      shutterType: this.shutterType_,
-      docResult: metrics.DocResultType.CANCELED,
-    });
   }
 
   /**
@@ -796,9 +772,40 @@ export class Camera extends View {
         let corners =
             refCorners || getDefaultScanCorners(originImage.resolution);
         let docBlob;
+        let fixType = metrics.DocFixType.NONE;
+        const sendEvent = (docResult) => {
+          metrics.sendCaptureEvent({
+            facing: this.facingMode_,
+            resolution: originImage.resolution,
+            shutterType: this.shutterType_,
+            docResult,
+            docFixType: fixType,
+          });
+        };
+
         const doRecrop = async () => {
           const {corners: newCorners, rotation} =
               await this.cropDocument_.reviewCropArea(corners);
+
+          fixType = (() => {
+            const isFixRotation = rotation !== Rotation.ANGLE_0;
+            const isFixPosition = newCorners.some(({x, y}, idx) => {
+              const {x: oldX, y: oldY} = corners[idx];
+              return Math.abs(x - oldX) * originImage.resolution.width > 1 ||
+                  Math.abs(y - oldY) * originImage.resolution.height > 1;
+            });
+            if (isFixRotation && isFixPosition) {
+              return metrics.DocFixType.FIX_BOTH;
+            }
+            if (isFixRotation) {
+              return metrics.DocFixType.FIX_ROTATION;
+            }
+            if (isFixPosition) {
+              return metrics.DocFixType.FIX_POSITION;
+            }
+            return metrics.DocFixType.NO_FIX;
+          })();
+
           corners = newCorners;
           docBlob = await (async () => {
             nav.open(ViewName.FLASH);
@@ -822,19 +829,21 @@ export class Camera extends View {
         }
 
         const positive = new review.Options(
-            new review.Option(
-                I18nString.LABEL_SAVE_PDF_DOCUMENT, {exitValue: MimeType.PDF}),
-            new review.Option(
-                I18nString.LABEL_SAVE_PHOTO_DOCUMENT,
-                {exitValue: MimeType.JPEG}),
+            new review.Option(I18nString.LABEL_SAVE_PDF_DOCUMENT, {
+              callback: () => {
+                sendEvent(metrics.DocResultType.SAVE_AS_PDF);
+              },
+              exitValue: MimeType.PDF,
+            }),
+            new review.Option(I18nString.LABEL_SAVE_PHOTO_DOCUMENT, {
+              callback: () => {
+                sendEvent(metrics.DocResultType.SAVE_AS_PHOTO);
+              },
+              exitValue: MimeType.JPEG,
+            }),
             new review.Option(I18nString.LABEL_SHARE, {
               callback: async () => {
-                metrics.sendCaptureEvent({
-                  facing: this.facingMode_,
-                  resolution: originImage.resolution,
-                  shutterType: this.shutterType_,
-                  docResult: metrics.DocResultType.SHARE,
-                });
+                sendEvent(metrics.DocResultType.SHARE);
                 const type = MimeType.JPEG;
                 const name = (new Filenamer()).newDocumentName(type);
                 await util.share(new File([docBlob], name, {type}));
@@ -846,7 +855,12 @@ export class Camera extends View {
               callback: doRecrop,
               hasPopup: true,
             }),
-            new review.Option(I18nString.LABEL_RETAKE, {exitValue: null}),
+            new review.Option(I18nString.LABEL_RETAKE, {
+              callback: () => {
+                sendEvent(metrics.DocResultType.CANCELED);
+              },
+              exitValue: null,
+            }),
         );
         const mimeType = await this.review_.startReview({positive, negative});
         assert(mimeType !== undefined);
@@ -1016,18 +1030,27 @@ export class Camera extends View {
     const deviceOperator = await DeviceOperator.getInstance();
     state.set(state.State.USE_FAKE_CAMERA, deviceOperator === null);
     let resolCandidates;
+    let photoRs;
     if (deviceOperator) {
       resolCandidates = this.modes_.getResolutionCandidates(mode, deviceId);
+      photoRs = await deviceOperator.getPhotoResolutions(deviceId);
     } else {
       resolCandidates = this.modes_.getFakeResolutionCandidates(mode, deviceId);
+      photoRs = resolCandidates;
     }
+    const maxResolution =
+        photoRs.reduce((maxR, r) => r.area > maxR.area ? r : maxR);
     for (const {resolution: captureR, previewCandidates} of resolCandidates) {
       for (const constraints of previewCandidates) {
         if (this.isSuspended()) {
           throw new CameraSuspendedError();
         }
-        this.modes_.setCaptureParams(mode, constraints, captureR);
-
+        const videoSnapshotResolution =
+            state.get(state.State.ENABLE_FULL_SIZED_VIDEO_SNAPSHOT) ?
+            maxResolution :
+            captureR;
+        this.modes_.setCaptureParams(
+            mode, constraints, captureR, videoSnapshotResolution);
         try {
           await this.modes_.prepareDevice();
           const factory = this.modes_.getModeFactory(mode);

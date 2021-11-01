@@ -1598,7 +1598,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '62d7d0c928c9a040dce96aa2f16c00e7e67d59cb',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@ee45938d0b75d2fb4fbb65101d5f7d7e71d1a6f9',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@d388b3abde67443db9ac21d726e83496fca33b6a',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'e0216a5484c8345f7d792fa16fad77ac63d89a70',
@@ -1637,7 +1637,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '7c6749771b96d008cbc9877c618bf9f9a7f127da',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '3cff17133342a6edf438c8614fe630728e88d8c0',
+    Var('webrtc_git') + '/src.git' + '@' + 'ff8caf1d569408a9cfa759e0fa58703cc67f7aae',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1695,7 +1695,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9a5776aa255795cf73a045ad8b909373f3cb6ba5',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e08cd464bb233f46f1293eb274a6d0203858f3c4',
     'condition': 'checkout_src_internal',
   },
 
@@ -1714,7 +1714,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'ffSVMYrncEY9S9zIaXi6YViJiEKq5_FwLjpAMLWqGKUC',
+        'version': 'ppTMSK0OxWFjVBly6sDtsD062L9V4BKH3oTjeMp-kj0C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1725,7 +1725,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'yYNT7Q_0F-TmR0ICnVGJUR7atq1KiVbqvUyBHTpH2t8C',
+        'version': 'ZsNIWApEsR-W8z_9xYMbCf4PhIlEHHFodC39wGUfiVwC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

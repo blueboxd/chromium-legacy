@@ -25,6 +25,7 @@
 #include "components/safe_browsing/content/browser/password_protection/password_protection_test_util.h"
 #include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/cert_test_util.h"
@@ -241,7 +242,7 @@ class PageInfoBubbleViewDialogBrowserTest : public DialogBrowserTest {
       bubble_view->GetFocusManager()->SetFocusedView(nullptr);
 
         auto* main_page = static_cast<PageInfoMainView*>(current_ui);
-        main_page->selector_rows_.clear();
+        main_page->toggle_rows_.clear();
         main_page->permissions_view_->RemoveAllChildViews();
 
       current_ui->SetPermissionInfo(permissions_list,
@@ -489,7 +490,12 @@ class PageInfoBubbleViewAboutThisSiteDialogBrowserTest
       auto* service =
           AboutThisSiteServiceFactory::GetForProfile(browser()->profile());
       bubble_view->OpenAboutThisSitePage(
-          service->GetAboutThisSiteInfo(GetUrl(kAboutThisSiteUrl)).value());
+          service
+              ->GetAboutThisSiteInfo(
+                  GetUrl(kAboutThisSiteUrl),
+                  ukm::GetSourceIdForWebContentsDocument(
+                      browser()->tab_strip_model()->GetActiveWebContents()))
+              .value());
     }
   }
 
@@ -507,7 +513,14 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewAboutThisSiteDialogBrowserTest,
   ShowAndVerifyUi();
 }
 
+// This test is flaky on Windows. https://crbug.com/1266256
+#if defined(OS_WIN)
+#define MAYBE_InvokeUi_AboutThisSiteSubpage \
+  DISABLED_InvokeUi_AboutThisSiteSubpage
+#else
+#define MAYBE_InvokeUi_AboutThisSiteSubpage InvokeUi_AboutThisSiteSubpage
+#endif
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewAboutThisSiteDialogBrowserTest,
-                       InvokeUi_AboutThisSiteSubpage) {
+                       MAYBE_InvokeUi_AboutThisSiteSubpage) {
   ShowAndVerifyUi();
 }

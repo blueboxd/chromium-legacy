@@ -14,6 +14,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantClient_jni.h"
@@ -44,6 +45,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
@@ -421,7 +423,7 @@ int ClientAndroid::FindDirectAction(const std::string& action_name) {
     if (!user_action.enabled())
       continue;
 
-    const std::set<std::string>& action_names =
+    const base::flat_set<std::string>& action_names =
         user_action.direct_action().names;
     if (action_names.count(action_name) != 0)
       return i;
@@ -638,7 +640,7 @@ void ClientAndroid::CreateController(
   controller_ = std::make_unique<Controller>(
       web_contents_, /* client= */ this, base::DefaultTickClock::GetInstance(),
       RuntimeManagerImpl::GetForWebContents(web_contents_)->GetWeakPtr(),
-      std::move(service), std::move(tts_controller));
+      std::move(service), std::move(tts_controller), ukm::UkmRecorder::Get());
   controller_->SetStatusMessage(status_message);
   if (progress_bar_config) {
     controller_->SetStepProgressBarConfiguration(*progress_bar_config);

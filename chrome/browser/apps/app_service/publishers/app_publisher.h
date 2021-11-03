@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 
@@ -21,7 +21,7 @@ namespace apps {
 // TODO(crbug.com/1253250): Add other mojom publisher functions.
 class AppPublisher {
  public:
-  explicit AppPublisher(Profile* profile);
+  explicit AppPublisher(AppServiceProxy* proxy);
   AppPublisher(const AppPublisher&) = delete;
   AppPublisher& operator=(const AppPublisher&) = delete;
   ~AppPublisher();
@@ -32,10 +32,21 @@ class AppPublisher {
                                       Readiness readiness,
                                       const std::string& name);
 
-  // Requests an icon for |app_id|, identified by |icon_key| and parameterised
-  // by |icon_type| and |size_hint_in_dp|. If |allow_placeholder_icon| is true,
-  // a default placeholder icon will be returned if no other icon is available.
-  // Calls |callback| with the result.
+  // Requests an icon for an app identified by |app_id|. The icon is identified
+  // by |icon_key| and parameterised by |icon_type| and |size_hint_in_dp|. If
+  // |allow_placeholder_icon| is true, a default placeholder icon can be
+  // returned if no other icon is available. Calls |callback| with the result.
+  //
+  // Publishers implementing this method should:
+  //  - provide an icon as closely sized to |size_hint_in_dp| as possible
+  //  - load from the specific resource ID if |icon_key.resource_id| is set
+  //  - may optionally use |icon_key|'s timeline property as a "version number"
+  //    for an icon. Alternatively, this may be ignored if there will only ever
+  //    be one version of an icon at any time.
+  //  - optionally return a placeholder default icon if |allow_placeholder_icon|
+  //    is true and when no icon is available for the app (or an icon for the
+  //    app cannot be efficiently provided). Otherwise, a null icon should be
+  //    returned.
   virtual void LoadIcon(const std::string& app_id,
                         const IconKey& icon_key,
                         apps::IconType icon_type,
@@ -55,13 +66,7 @@ class AppPublisher {
   void Publish(std::vector<std::unique_ptr<App>> apps);
 
  private:
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  AppServiceProxyChromeOs* proxy_ = nullptr;
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  AppServiceProxyLacros* proxy_ = nullptr;
-#else
   AppServiceProxy* proxy_ = nullptr;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
 }  // namespace apps

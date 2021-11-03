@@ -15,7 +15,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_source.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
@@ -80,6 +79,7 @@ AppServiceProxyBase::InnerIconLoader::LoadIconFromIconKey(
     // for the app and app requested new icon. But new icon is not delivered
     // yet and you resolve old one instead. Now new icon arrives asynchronously
     // but you no longer notify the app or do?"
+    RecordAppLaunchMetrics(IconLoadingMethod::kViaMojomCall);
     host_->app_service_->LoadIcon(app_type, app_id, std::move(icon_key),
                                   icon_type, size_hint_in_dip,
                                   allow_placeholder_icon, std::move(callback));
@@ -142,6 +142,10 @@ void AppServiceProxyBase::Initialize() {
     receivers_.Add(this, subscriber.InitWithNewPipeAndPassReceiver());
     app_service_->RegisterSubscriber(std::move(subscriber), nullptr);
   }
+
+  // Make the chrome://app-icon/ resource available.
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<apps::AppIconSource>(profile_));
 }
 
 mojo::Remote<apps::mojom::AppService>& AppServiceProxyBase::AppService() {
@@ -587,12 +591,6 @@ void AppServiceProxyBase::OnApps(std::vector<std::unique_ptr<apps::App>> deltas,
   // TODO(crbug.com/1253250): add RemovePreferredApp related code.
   app_registry_cache_.OnApps(std::move(deltas), app_type,
                              should_notify_initialized);
-}
-
-void AppServiceProxyBase::AddAppIconSource(Profile* profile) {
-  // Make the chrome://app-icon/ resource available.
-  content::URLDataSource::Add(profile,
-                              std::make_unique<apps::AppIconSource>(profile));
 }
 
 void AppServiceProxyBase::OnApps(std::vector<apps::mojom::AppPtr> deltas,

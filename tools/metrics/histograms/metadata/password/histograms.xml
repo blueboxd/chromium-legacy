@@ -111,7 +111,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="KeyboardAccessory.DisabledSavingAccessoryImpressions"
-    enum="BooleanShown" expires_after="M98">
+    enum="BooleanShown" expires_after="M102">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -124,7 +124,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="KeyboardAccessory.GenerationDialogChoice.{GenerationType}"
-    enum="GenerationDialogChoice" expires_after="M98">
+    enum="GenerationDialogChoice" expires_after="M102">
   <owner>ioanap@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2183,6 +2183,30 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="PasswordManager.PasswordStoreAndroidBackend.AddLoginAsync.Latency"
+    units="ms" expires_after="2022-06-30">
+  <owner>fhorschig@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Real-time duration of the asynchronous call to add a login to the
+    PasswordStore Android backend. Recorded when the asynchronous job has
+    returned.
+  </summary>
+</histogram>
+
+<histogram
+    name="PasswordManager.PasswordStoreAndroidBackend.AddLoginAsync.Success"
+    enum="BooleanSuccess" expires_after="2022-06-30">
+  <owner>fhorschig@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Records whether AddLoginAsync() succeeded in adding a login in the
+    PasswordStore Android backend. Recorded when the asynchronous job has
+    returned. False is emitted if an error occurs; otherwise true is emitted.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.PasswordStoreAndroidBackend.APIErros"
     enum="PasswordStoreAndroidBackendAPIError" expires_after="2022-06-30">
   <owner>fhorschig@chromium.org</owner>
@@ -2224,6 +2248,54 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records whether GetAllLoginsAsync() succeeded in retrieving all logins from
     the PasswordStore Android backend. Recorded when the asynchronous job has
+    returned. False is emitted if an error occurs; otherwise true is emitted.
+  </summary>
+</histogram>
+
+<histogram
+    name="PasswordManager.PasswordStoreAndroidBackend.RemoveLoginAsync.Latency"
+    units="ms" expires_after="2022-06-30">
+  <owner>fhorschig@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Real-time duration of the asynchronous call to remove a login from the
+    PasswordStore Android backend. Recorded when the asynchronous job has
+    returned.
+  </summary>
+</histogram>
+
+<histogram
+    name="PasswordManager.PasswordStoreAndroidBackend.RemoveLoginAsync.Success"
+    enum="BooleanSuccess" expires_after="2022-06-30">
+  <owner>fhorschig@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Records whether RemoveLoginAsync() succeeded in removing a login from the
+    PasswordStore Android backend. Recorded when the asynchronous job has
+    returned. False is emitted if an error occurs; otherwise true is emitted.
+  </summary>
+</histogram>
+
+<histogram
+    name="PasswordManager.PasswordStoreAndroidBackend.UpdateLoginAsync.Latency"
+    units="ms" expires_after="2022-06-30">
+  <owner>fhorschig@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Real-time duration of the asynchronous call to update a login in the
+    PasswordStore Android backend. Recorded when the asynchronous job has
+    returned.
+  </summary>
+</histogram>
+
+<histogram
+    name="PasswordManager.PasswordStoreAndroidBackend.UpdateLoginAsync.Success"
+    enum="BooleanSuccess" expires_after="2022-06-30">
+  <owner>fhorschig@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Records whether UpdateLoginAsync() succeeded in updating a login in the
+    PasswordStore Android backend. Recorded when the asynchronous job has
     returned. False is emitted if an error occurs; otherwise true is emitted.
   </summary>
 </histogram>
@@ -2529,6 +2601,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="PasswordManager.SaveUIOnClearedPasswordChangeFormDismissalReason"
+    enum="PasswordManagerUIDismissalReason" expires_after="2022-05-31">
+  <owner>kazinova@google.com</owner>
+  <owner>khamutov@google.com</owner>
+  <summary>
+    Why was the save password UI closed on a cleared change password form?
+    Recorded when the save bubble/infobar is dismissed.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.SavingOnUsernameFirstFlow"
     enum="SavingOnUsernameFirstFlow" expires_after="2022-05-01">
   <owner>kazinova@google.com</owner>
@@ -2767,6 +2850,17 @@ chromium-metrics-reviews@google.com.
     enum="PasswordManagerUIDismissalReason" expires_after="2022-04-24">
   <owner>vasilii@chromium.org</owner>
   <summary>Why was the update password UI (bubble or infobar) closed?</summary>
+</histogram>
+
+<histogram
+    name="PasswordManager.UpdateUIOnClearedPasswordChangeFormDismissalReason"
+    enum="PasswordManagerUIDismissalReason" expires_after="2022-05-31">
+  <owner>kazinova@google.com</owner>
+  <owner>khamutov@google.com</owner>
+  <summary>
+    Why was the update password UI closed on a cleared change password form?
+    Recorded when the update bubble/infobar is dismissed.
+  </summary>
 </histogram>
 
 <histogram name="PasswordManager.UsernameCorrectionFound"

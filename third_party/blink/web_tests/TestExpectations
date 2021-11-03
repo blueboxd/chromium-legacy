@@ -110,8 +110,6 @@ crbug.com/1254932 http/tests/preload/meta-csp.html [ Failure ]
 # Extra box in the output:
 crbug.com/1254933 css3/filters/filterRegions.html [ Failure ]
 
-crbug.com/1256612 plugins/focus-change-3-change-blur.html [ Failure Pass ]
-crbug.com/1235685 plugins/focus-change-4-change-focus-and-blur.html [ Failure Pass ]
 
 # Script preloaded: No
 crbug.com/1254940 http/tests/security/contentSecurityPolicy/nonces/scriptnonce-redirect.html [ Failure ]
@@ -159,14 +157,8 @@ crbug.com/1254945 external/wpt/html/semantics/embedded-content/media-elements/tr
 
 # ====== Synchronous, budgeted HTML parser tests to here ========================
 
-# Console log messages have flaky line numbers
-crbug.com/896194 http/tests/security/link-crossorigin-stylesheet-use-credentials.html [ Failure Pass ]
-crbug.com/896194 http/tests/security/referrer-policy-conflicting-policies.html [ Failure Pass ]
-crbug.com/896194 http/tests/security/video-poster-cross-origin-crash2.html [ Failure Pass ]
-crbug.com/896194 plugins/focus-change-2-change-focus.html [ Failure Pass ]
-crbug.com/896194 webaudio/IIRFilter/unstable-filter-warning.html [ Failure Pass ]
-crbug.com/896194 http/tests/security/referrer-policy-conflicting-policies-image-set.html [ Failure Pass ]
-crbug.com/896194 http/tests/security/script-onerror-crossorigin-no-cors.html [ Failure Pass ]
+crbug.com/1264472 plugins/focus-change-2-change-focus.html [ Failure Pass ]
+
 
 crbug.com/1197502 [ Win ] http/tests/intersection-observer/cross-origin-iframe-with-nesting.html [ Failure Pass ]
 
@@ -6100,18 +6092,11 @@ crbug.com/1173956 http/tests/xsl/xslt-transform-with-javascript-disabled.html [ 
 external/wpt/css/cssom-view/MediaQueryList-addListener-handleEvent-expected.txt [ Failure Pass ]
 external/wpt/css/cssom-view/MediaQueryList-extends-EventTarget-interop-expected.txt [ Failure Pass ]
 
-# Disabling test until https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2801092 is merged.
-crbug.com/1195224 http/tests/devtools/filtered-item-selection-dialog-rendering.js [ Failure Pass ]
-
 # No support for key combinations like Alt + c in testdriver.Actions for content_shell
 crbug.com/893480 external/wpt/uievents/interface/keyboard-accesskey-click-event.html [ Timeout ]
 
 # Timing out on Fuchsia
 crbug.com/1171283 [ Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Pass Timeout ]
-
-# Timing out on WebKit Linux Leak
-crbug.com/1176286 [ Linux ] http/tests/devtools/network/network-serviceworker-timing-view.js [ Failure Pass ]
-crbug.com/1176286 [ Linux ] http/tests/devtools/network/subresource-integrity-number-of-requests-for-stylesheet.js [ Failure Pass ]
 
 # Sheriff 2021-02-11
 crbug.com/1177573 http/tests/inspector-protocol/animation/animation-pause.js [ Failure Pass ]
@@ -7181,7 +7166,6 @@ crbug.com/1258618 virtual/portals/http/tests/devtools/portals/portals-elements-n
 crbug.com/1257298 svg/dynamic-updates/SVGFEComponentTransferElement-dom-tableValues-attr.html [ Failure Pass ]
 
 # Sheriff 2021-10-07
-crbug.com/896194 plugins/focus-change-1-no-change.html [ Failure Pass ]
 crbug.com/1257570 [ Win7 ] fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-animate.html [ Failure Pass ]
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-animate-rotate.html [ Failure Pass ]
@@ -7230,7 +7214,6 @@ crbug.com/1261770 crbug.com/1245166 [ Linux ] virtual/wbn-from-network/external/
 
 # Sheriff 2021-10-26
 crbug.com/1263349 [ Linux ] external/wpt/resource-timing/object-not-found-after-cross-origin-redirect.html [ Failure Pass ]
-crbug.com/1263354 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-adds-entry.html [ Failure Pass ]
 crbug.com/1249043 external/wpt/html/cross-origin-embedder-policy/reporting-navigation.https.html [ Failure Pass ]
 crbug.com/1249043 external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Pass ]
 crbug.com/1249043 external/wpt/html/cross-origin-embedder-policy/reporting-to-endpoint.https.html [ Failure Pass ]
@@ -7252,9 +7235,15 @@ crbug.com/1264802 [ Win7 ] fast/forms/suggestion-picker/datetimelocal-suggestion
 crbug.com/1264775 [ Mac10.14 ] external/wpt/webrtc-stats/supported-stats.html [ Failure ]
 
 # Sheriff 2021-11-02
-crbug.com/1265924 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Failure ]
+crbug.com/1265924 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Pass ]
 
 # Flaky on Windows and Mac.
 # TODO(https://crbug.com/1265311): Make the test behave the same way on all platforms
 crbug.com/1265311 [ Win7 ] http/tests/navigation/location-change-repeated-from-blank.html [ Failure Pass ]
 crbug.com/1265311 [ Mac11-arm64 ] http/tests/navigation/location-change-repeated-from-blank.html [ Failure Pass ]
+
+# Sheriff 2021-11-03
+crbug.com/1266199 [ Mac10.12 ] fast/css3-text/css3-text-decoration/text-decoration-style-wavy-font-size.html [ Failure Pass ]
+crbug.com/1266217 external/wpt/web-bundle/subresource-loading/script-reuse-web-bundle-resource.https.tentative.html [ Failure Pass ]
+crbug.com/1266221 [ Mac11-arm64 ] virtual/fsa-incognito/external/wpt/file-system-access/sandboxed_FileSystemFileHandle-create-sync-access-handle.https.tentative.window.html [ Failure Pass ]
+crbug.com/1263354 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-adds-entry.html [ Failure Pass Timeout ]

@@ -14,11 +14,13 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/apps/app_service/publishers/arc_apps.h"
 #include "chrome/browser/apps/app_service/publishers/arc_apps_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "components/arc/test/fake_app_instance.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -52,15 +54,15 @@ class PublisherTest : public extensions::ExtensionServiceTestBase {
 
   void VerifyApp(const std::string& app_id,
                  const std::string& name,
-                 apps::Readiness readiness = apps::Readiness::kUnknown) {
+                 apps::Readiness readiness) {
     AppRegistryCache& cache =
         AppServiceProxyFactory::GetForProfile(profile())->AppRegistryCache();
+
     ASSERT_NE(cache.states_.end(), cache.states_.find(app_id));
     ASSERT_TRUE(cache.states_[app_id]->name.has_value());
     EXPECT_EQ(name, cache.states_[app_id]->name.value());
     EXPECT_EQ(readiness, cache.states_[app_id]->readiness);
     ASSERT_TRUE(cache.states_[app_id]->icon_key.has_value());
-    EXPECT_GT(cache.states_[app_id]->icon_key.value().timeline, 0ul);
   }
 
   void VerifyAppIsRemoved(const std::string& app_id) {
@@ -96,16 +98,33 @@ TEST_F(PublisherTest, ArcAppsOnApps) {
     }
   }
 
-  // Recreate ArcApps to verify the init process.
-  ArcApps* arc_apps = ArcAppsFactory::GetForProfile(profile());
-  ASSERT_TRUE(arc_apps);
-  arc_apps->CreateForTesting(profile(), nullptr);
+  // Verify the initialization process again with a new ArcApps object.
+  std::unique_ptr<ArcApps> arc_apps = std::make_unique<ArcApps>(
+      AppServiceProxyFactory::GetForProfile(profile()));
+  ASSERT_TRUE(arc_apps.get());
+  arc_apps->Initialize();
 
   for (const auto& app_id : prefs->GetAppIds()) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
     if (app_info) {
       VerifyApp(app_id, app_info->name, Readiness::kReady);
     }
+  }
+
+  arc_apps->Shutdown();
+}
+
+TEST_F(PublisherTest, BuiltinAppsOnApps) {
+  // Verify Builtin apps are added to AppRegistryCache.
+  for (const auto& internal_app : app_list::GetInternalAppList(profile())) {
+    if ((internal_app.app_id == nullptr) ||
+        (internal_app.name_string_resource_id == 0) ||
+        (internal_app.icon_resource_id <= 0)) {
+      continue;
+    }
+    VerifyApp(internal_app.app_id,
+              l10n_util::GetStringUTF8(internal_app.name_string_resource_id),
+              Readiness::kReady);
   }
 }
 

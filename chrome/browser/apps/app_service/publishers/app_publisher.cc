@@ -4,12 +4,13 @@
 
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 
-#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 
 namespace apps {
 
-AppPublisher::AppPublisher(Profile* profile)
-    : proxy_(AppServiceProxyFactory::GetForProfile(profile)) {}
+AppPublisher::AppPublisher(AppServiceProxy* proxy) : proxy_(proxy) {
+  DCHECK(proxy);
+}
 
 AppPublisher::~AppPublisher() = default;
 
@@ -29,25 +30,24 @@ std::unique_ptr<App> AppPublisher::MakeApp(AppType app_type,
 }
 
 void AppPublisher::Publish(std::unique_ptr<App> app) {
-// TODO(crbug.com/1253250): Support Lacros. Remove this Lacros macro.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  return;
-#else
+  if (!proxy_) {
+    NOTREACHED();
+    return;
+  }
+
   std::vector<std::unique_ptr<App>> apps;
   apps.push_back(std::move(app));
   proxy_->OnApps(std::move(apps), apps::AppType::kUnknown,
                  false /* should_notify_initialized */);
-#endif
 }
 
 void AppPublisher::Publish(std::vector<std::unique_ptr<App>> apps) {
-// TODO(crbug.com/1253250): Support Lacros. Remove this Lacros macro.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  return;
-#else
+  if (!proxy_) {
+    NOTREACHED();
+    return;
+  }
   proxy_->OnApps(std::move(apps), AppType::kUnknown,
                  false /* should_notify_initialized */);
-#endif
 }
 
 }  // namespace apps

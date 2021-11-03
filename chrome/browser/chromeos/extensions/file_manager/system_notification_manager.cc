@@ -92,8 +92,14 @@ std::u16string GetIOTaskMessage(const ProgressStatus& status) {
           IDS_FILE_BROWSER_MOVE_FILE_NAME,
           GetDisplayableFileName16(status.sources.back().url));
     case OperationType::kDelete:
-      // TODO: Add the right message here.
-      return u"delete";
+      if (status.sources.size() > 1) {
+        return GetStringFUTF16(IDS_FILE_BROWSER_DELETE_ITEMS_REMAINING,
+                               base::NumberToString16(status.sources.size()));
+      }
+      return GetStringFUTF16(
+          IDS_FILE_BROWSER_DELETE_FILE_NAME,
+          GetDisplayableFileName16(status.sources.back().url));
+
     case OperationType::kZip:
       if (status.sources.size() > 1) {
         return GetStringFUTF16(IDS_FILE_BROWSER_ZIP_ITEMS_REMAINING,
@@ -638,15 +644,14 @@ void SystemNotificationManager::HandleIOTaskProgress(
   std::string id = base::StrCat(
       {kSwaFileOperationPrefix, base::NumberToString(status.task_id)});
 
-  // TODO(lucmult): Send the progress to feedback panels if any SWA window is
-  // open.
-  // Check if we need to remove any progress notification when there
-  // are active SWA windows.
-  // if (DoFilesSwaWindowsExist()) {
-  //  GetNotificationDisplayService()->Close(NotificationHandler::Type::TRANSIENT,
-  //                                         id);
-  //  return;
-  //}
+  // If there are any SWA windows open, we remove the progress in system
+  // notification.
+  if (DoFilesSwaWindowsExist()) {
+    GetNotificationDisplayService()->Close(NotificationHandler::Type::TRANSIENT,
+                                           id);
+    return;
+  }
+
   if (status.state == io_task::State::kError ||
       status.state == io_task::State::kCancelled ||
       status.state == io_task::State::kSuccess) {

@@ -8,6 +8,8 @@
 #include "base/scoped_observation.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -29,11 +31,14 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/page_info/about_this_site_validation.h"
 #include "components/page_info/features.h"
 #include "components/page_info/page_info.h"
+#include "components/page_info/proto/about_this_site_metadata.pb.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_test_util.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -43,11 +48,13 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -57,6 +64,8 @@
 #include "ui/events/types/event_type.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/test/widget_test.h"
+
+using ProtoValidation = page_info::about_this_site_validation::ProtoValidation;
 
 namespace {
 
@@ -125,6 +134,33 @@ const GURL OpenSiteSettingsForUrl(Browser* browser, const GURL& url) {
   return browser->tab_strip_model()
       ->GetActiveWebContents()
       ->GetLastCommittedURL();
+}
+
+void AddHintForTesting(Browser* browser,
+                       const GURL& url,
+                       page_info::proto::SiteInfo site_info) {
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  page_info::proto::AboutThisSiteMetadata metadata;
+  *metadata.mutable_site_info() = site_info;
+  optimization_metadata.SetAnyMetadataForTesting(metadata);
+
+  auto* optimization_guide_decider =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser->profile());
+  optimization_guide_decider->AddHintForTesting(
+      url, optimization_guide::proto::ABOUT_THIS_SITE, optimization_metadata);
+}
+
+page_info::proto::SiteInfo CreateValidSiteInfo() {
+  page_info::proto::SiteInfo site_info;
+  auto* description = site_info.mutable_description();
+  description->set_description(
+      "A domain used in illustrative examples in documents");
+  description->set_lang("en_US");
+  description->set_name("Example");
+  description->mutable_source()->set_url("https://example.com");
+  description->mutable_source()->set_label("Example source");
+
+  return site_info;
 }
 
 }  // namespace
@@ -804,8 +840,8 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   EXPECT_TRUE(web_contents_focus_tracker.focused());
 }
 
-#if defined(OS_MAC)
-// https://crbug.com/1029882
+#if defined(OS_MAC) || defined(OS_WIN)
+// https://crbug.com/1029882, https://crbug.com/1266254
 #define MAYBE_FocusDoesNotReturnToContentsOnReloadPrompt \
   DISABLED_FocusDoesNotReturnToContentsOnReloadPrompt
 #else
@@ -872,4 +908,110 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewPrerenderBrowserTest,
   // Ensure the bubble is still open after prerender navigation.
   EXPECT_EQ(PageInfoBubbleView::BUBBLE_PAGE_INFO,
             PageInfoBubbleView::GetShownBubbleType());
+}
+
+class PageInfoBubbleViewAboutThisSiteBrowserTest : public InProcessBrowserTest {
+ public:
+  PageInfoBubbleViewAboutThisSiteBrowserTest() {
+    feature_list.InitAndEnableFeature(page_info::kPageInfoAboutThisSite);
+  }
+
+  void SetUp() override {
+    https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+    ASSERT_TRUE(https_server_.Start());
+
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
+ protected:
+  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewAboutThisSiteBrowserTest,
+                       AboutThisSite) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
+  auto url = https_server_.GetURL("a.test", "/title1.html");
+  AddHintForTesting(browser(), url, CreateValidSiteInfo());
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  OpenPageInfoBubble(browser());
+
+  auto* page_info = PageInfoBubbleView::GetPageInfoBubbleForTesting();
+  EXPECT_TRUE(page_info->GetViewByID(
+      PageInfoViewFactory::
+          VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SECURITY_INFORMATION));
+  EXPECT_TRUE(page_info->GetViewByID(
+      PageInfoViewFactory::VIEW_ID_PAGE_INFO_ABOUT_THIS_SITE_BUTTON));
+
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::AboutThisSiteStatus::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntrySourceHasUrl(entries[0], url);
+  ukm_recorder.ExpectEntryMetric(
+      entries[0], ukm::builders::AboutThisSiteStatus::kStatusName,
+      static_cast<int>(ProtoValidation::kValid));
+}
+
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewAboutThisSiteBrowserTest,
+                       AboutThisSiteNotValid) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
+  auto url = https_server_.GetURL("a.test", "/title1.html");
+  page_info::proto::SiteInfo site_info;
+  // Incomplete description, missing source, name and lang.
+  auto* description = site_info.mutable_description();
+  description->set_description(
+      "A domain used in illustrative examples in documents");
+  AddHintForTesting(browser(), url, site_info);
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  OpenPageInfoBubble(browser());
+
+  auto* page_info = PageInfoBubbleView::GetPageInfoBubbleForTesting();
+  EXPECT_TRUE(page_info->GetViewByID(
+      PageInfoViewFactory::
+          VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SECURITY_INFORMATION));
+  EXPECT_FALSE(page_info->GetViewByID(
+      PageInfoViewFactory::VIEW_ID_PAGE_INFO_ABOUT_THIS_SITE_BUTTON));
+
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::AboutThisSiteStatus::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntrySourceHasUrl(entries[0], url);
+  ukm_recorder.ExpectEntryMetric(
+      entries[0], ukm::builders::AboutThisSiteStatus::kStatusName,
+      static_cast<int>(ProtoValidation::kIncompleteDescription));
+}
+
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewAboutThisSiteBrowserTest,
+                       AboutThisSiteNotSecure) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto url = embedded_test_server()->GetURL("a.test", "/title1.html");
+  AddHintForTesting(browser(), url, CreateValidSiteInfo());
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  OpenPageInfoBubble(browser());
+  auto* page_info = PageInfoBubbleView::GetPageInfoBubbleForTesting();
+  EXPECT_FALSE(page_info->GetViewByID(
+      PageInfoViewFactory::
+          VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SECURITY_INFORMATION));
+  // The button isn't shown because connection isn't secure...
+  EXPECT_FALSE(page_info->GetViewByID(
+      PageInfoViewFactory::VIEW_ID_PAGE_INFO_ABOUT_THIS_SITE_BUTTON));
+
+  // ...and no UKM is recoreded.
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::AboutThisSiteStatus::kEntryName);
+  EXPECT_EQ(0u, entries.size());
 }

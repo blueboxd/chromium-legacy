@@ -129,6 +129,7 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
   MOCK_CONST_METHOD0(GetWebController, WebController*());
   MOCK_CONST_METHOD0(GetEmailAddressForAccessTokenAccount, std::string());
+  MOCK_CONST_METHOD0(GetUkmRecorder, ukm::UkmRecorder*());
   MOCK_METHOD2(SetDetails,
                void(std::unique_ptr<Details> details, base::TimeDelta delay));
   MOCK_METHOD2(AppendDetails,
@@ -214,10 +215,12 @@ class MockActionDelegate : public ActionDelegate {
     return element_store_.get();
   }
 
+ protected:
+  mutable std::unique_ptr<ElementStore> element_store_;
+
  private:
   ClientSettings client_settings_;
   ProcessedActionStatusDetailsProto log_info_;
-  mutable std::unique_ptr<ElementStore> element_store_;
 
   base::WeakPtrFactory<MockActionDelegate> weak_ptr_factory_{this};
 };

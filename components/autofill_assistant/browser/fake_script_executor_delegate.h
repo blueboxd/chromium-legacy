@@ -6,10 +6,10 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_FAKE_SCRIPT_EXECUTOR_DELEGATE_H_
 
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
@@ -39,6 +39,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   WebsiteLoginManager* GetWebsiteLoginManager() override;
   content::WebContents* GetWebContents() override;
   std::string GetEmailAddressForAccessTokenAccount() override;
+  ukm::UkmRecorder* GetUkmRecorder() override;
   bool EnterState(AutofillAssistantState state) override;
   void SetTouchableElementArea(const ElementAreaProto& element) override;
   void SetStatusMessage(const std::string& message) override;
@@ -185,8 +186,9 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::unique_ptr<UserData> payment_request_info_;
   bool navigating_to_new_document_ = false;
   bool navigation_error_ = false;
-  std::set<ScriptExecutorDelegate::NavigationListener*> navigation_listeners_;
-  std::set<ScriptExecutorDelegate::Listener*> listeners_;
+  base::flat_set<ScriptExecutorDelegate::NavigationListener*>
+      navigation_listeners_;
+  base::flat_set<ScriptExecutorDelegate::Listener*> listeners_;
   ViewportMode viewport_mode_ = ViewportMode::NO_RESIZE;
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;

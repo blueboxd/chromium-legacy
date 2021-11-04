@@ -3626,7 +3626,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kTerminalSSH)},
     {"crostini-use-lxd-4", flag_descriptions::kCrostiniUseLxd4Name,
      flag_descriptions::kCrostiniUseLxd4Description, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniResetLxdDb)},
+     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUseLxd4)},
     {"crostini-multi-container", flag_descriptions::kCrostiniMultiContainerName,
      flag_descriptions::kCrostiniMultiContainerDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniMultiContainer)},
@@ -4310,9 +4310,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFillOnAccountSelectDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelect)},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"arc-allow-data-retention", flag_descriptions::kArcAllowDataRetentionName,
-     flag_descriptions::kArcAllowDataRetentionDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kArcAllowDataRetention)},
     {"arc-custom-tabs-experiment",
      flag_descriptions::kArcCustomTabsExperimentName,
      flag_descriptions::kArcCustomTabsExperimentDescription, kOsCrOS,
@@ -4843,7 +4840,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kQuickSettingsPWANotifications)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#ifdef OS_ANDROID
+#if defined(OS_ANDROID)
     {flag_descriptions::kReadLaterFlagId, flag_descriptions::kReadLaterName,
      flag_descriptions::kReadLaterDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(reading_list::switches::kReadLater,
@@ -4860,7 +4857,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReadLaterNewBadgePromoDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kReadLaterNewBadgePromo)},
 
-#ifdef OS_ANDROID
+#if defined(OS_ANDROID)
     {"read-later-reminder-notification",
      flag_descriptions::kReadLaterReminderNotificationName,
      flag_descriptions::kReadLaterReminderNotificationDescription, kOsAndroid,

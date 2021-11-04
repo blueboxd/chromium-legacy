@@ -5702,6 +5702,18 @@ others/histograms.xml -->
   <int value="3" label="Closed without user interaction"/>
 </enum>
 
+<enum name="AutofillCardUnmaskAuthenticationSelectionDialogResult">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="User canceled before selecting a challenge option"/>
+  <int value="2"
+      label="User canceled after selecting a challenge option, while the
+             dialog was in pending state"/>
+  <int value="3"
+      label="A challenge option was selected and the server returned success"/>
+  <int value="4"
+      label="A challenge option was selected and the server returned failure"/>
+</enum>
+
 <enum name="AutofillCardUploadDecision">
   <obsolete>
     Deprecated as of 2/2016, replaced by AutofillCardUploadDecisionExpanded.
@@ -49353,7 +49365,6 @@ from previous Chrome versions.
   <int value="-1337185440" label="enable-webvr"/>
   <int value="-1336110789" label="CastMediaRouteProvider:disabled"/>
   <int value="-1335017208" label="KeyboardLockAPI:enabled"/>
-  <int value="-1334976417" label="ArcAllowDataRetention:disabled"/>
   <int value="-1334909143" label="NtpModulesDragAndDrop:disabled"/>
   <int value="-1334336593" label="SystemKoreanPhysicalTyping:disabled"/>
   <int value="-1334327410" label="ash-enable-touch-view-testing"/>
@@ -53897,7 +53908,6 @@ from previous Chrome versions.
   <int value="2114843059" label="ContextualSuggestionsOptOut:enabled"/>
   <int value="2114894984" label="DelayCompetingLowPriorityRequests:enabled"/>
   <int value="2115848376" label="LacrosSupport:disabled"/>
-  <int value="2115946659" label="ArcAllowDataRetention:enabled"/>
   <int value="2118287149" label="HelpAppSearchServiceIntegration:enabled"/>
   <int value="2118374092" label="MessagesForAndroidReaderMode:disabled"/>
   <int value="2119964154" label="enable-download-resumption"/>
@@ -66459,6 +66469,7 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PasswordStoreAndroidBackendAPIError">
+  <int value="7" label="NETWORK_ERROR"/>
   <int value="8" label="INTERNAL_ERROR"/>
   <int value="17" label="API_NOT_CONNECTED"/>
   <int value="20" label="CONNECTION_SUSPENDED_DURING_CALL"/>

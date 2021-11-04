@@ -66,9 +66,9 @@ void PublisherHost::FlushMojoCallsForTesting() {
   }
 }
 
-void PublisherHost::ReInitializeCrostiniForTesting(Profile* profile) {
-  crostini_apps_->ReInitializeForTesting(  // IN-TEST
-      proxy_->AppService(), profile);
+void PublisherHost::ReInitializeCrostiniForTesting(AppServiceProxy* proxy) {
+  DCHECK(proxy);
+  crostini_apps_->Initialize(proxy->AppService());
 }
 
 void PublisherHost::Shutdown() {
@@ -87,19 +87,18 @@ void PublisherHost::Initialize() {
   auto& app_service = proxy_->AppService();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!g_omit_built_in_apps_for_testing_) {
-    built_in_chrome_os_apps_ =
-        std::make_unique<BuiltInChromeOsApps>(app_service, proxy_);
+    built_in_chrome_os_apps_ = std::make_unique<BuiltInChromeOsApps>(proxy_);
   }
   // TODO(b/170591339): Allow borealis to provide apps for the non-primary
   // profile.
   if (guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile)) {
-    borealis_apps_ = std::make_unique<BorealisApps>(app_service, profile);
+    borealis_apps_ = std::make_unique<BorealisApps>(proxy_);
   }
-  crostini_apps_ = std::make_unique<CrostiniApps>(app_service, profile);
+  crostini_apps_ = std::make_unique<CrostiniApps>(proxy_);
   extension_apps_ = std::make_unique<ExtensionAppsChromeOs>(
       app_service, profile, &proxy_->InstanceRegistry());
   if (!g_omit_plugin_vm_apps_for_testing_) {
-    plugin_vm_apps_ = std::make_unique<PluginVmApps>(app_service, profile);
+    plugin_vm_apps_ = std::make_unique<PluginVmApps>(proxy_);
   }
   // Lacros does not support multi-signin, so only create for the primary
   // profile. This also avoids creating an instance for the lock screen app

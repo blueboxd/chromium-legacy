@@ -250,7 +250,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'b089394061e6659e57dcb898cfb003abca7326a9',
+  'pdfium_revision': '31722577db9dc12a249ca6cdf2ff34e51a998360',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -281,7 +281,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': 'e6e6cbf1648d4a776da0857921872f2fbc853205',
+  'freetype_revision': '5d651faa702da095f84c805ff013cd1a7869ec31',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'b939095cc4b5bb843fa34e8d4e024351396e3562',
+  'catapult_revision': '6f6dc831c9b8d4aa0b6fd612354fbcecb2db7f82',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -309,7 +309,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '79845edb3fcd955cf4e03cad7cdca9ca29f581a2',
+  'devtools_frontend_revision': '5600da4d575a6ef3af964257dc7bccb4c897e5e7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -349,11 +349,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '2e0cd588e62404890557b81f08c471d0b087e28d',
+  'dawn_revision': 'd1f0e3c9bd1d27f92ab28497086912c51eb656d8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '1c782611f34fc2d17018e766fbcb91d956c484fc',
+  'quiche_revision': '69cbd66510dd5a04355f1b41d763ac0e353df30a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -623,7 +623,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'dc91ec8ace996ee073fa573b685164514a71d3fa',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '028e5b1cfd1df1211a399b3308ce4eec24514236',
       'condition': 'checkout_ios',
   },
 
@@ -715,7 +715,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'e__Vuyua3zZC4lJQLBk-BtXOSlDpWaGClmjLJpnsbQsC',
+          'version': 'tFG4uxLpU1_tO_SidT9oQF-FPQ5rUrZo0guhkda73J0C',
         },
       ],
       'dep_type': 'cipd',
@@ -1085,7 +1085,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/google/gemmlowp.git' + '@' + '13d57703abca3005d97b19df1f2db731607a7dc2',
 
   'src/third_party/grpc/src': {
-      'url': Var('chromium_git') + '/external/github.com/grpc/grpc.git' + '@' + '54dc182082db941aa67c7c3f93ad858c99a16d7d',
+      'url': Var('chromium_git') + '/external/github.com/grpc/grpc.git' + '@' + '09658682c93805d5114a0d638388349c4276f9a3',
   },
 
   'src/third_party/freetype/src':
@@ -3924,10 +3924,11 @@ hooks = [
                '--package=clang-tidy'],
   },
   {
-    # Should run after the clang hook.
-    'name': 'objdump/mac',
+    # Should run after the clang hook. Used on mac, as well as for orderfile
+    # generation on Android.
+    'name': 'objdump',
     'pattern': '.',
-    'condition': 'checkout_mac and host_os != "mac"',
+    'condition': 'checkout_mac or checkout_android and host_os != "mac"',
     'action': ['python3', 'src/tools/clang/scripts/update.py',
                '--package=objdump'],
   },

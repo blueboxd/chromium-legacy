@@ -1459,6 +1459,9 @@ virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/flex-container-fr
 ### Tests failing with LayoutNGFlexFragmentation enabled:
 crbug.com/660611 virtual/layout_ng_flex_frag/fast/multicol/flexbox/flexbox.html [ Failure ]
 
+### Tests passing with LayoutNGGridFragmentation enabled:
+virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-020.html [ Pass ]
+
 ### With LayoutNGPrinting enabled:
 
 crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-child-repeats-even-when-html-and-body-are-zero-height.html [ Crash Pass ]
@@ -2953,7 +2956,6 @@ crbug.com/626703 fast/animation/scroll-animations/scrolltimeline-root-scroller-q
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/navigation-timing-extended.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Mac10.14 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/navigate-by-name.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCPeerConnection-getStats.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/protocol/handover-datachannel.html [ Timeout ]
@@ -3985,6 +3987,7 @@ crbug.com/660611 external/wpt/css/css-break/flexbox/flex-container-fragmentation
 crbug.com/660611 external/wpt/css/css-break/flexbox/flex-container-fragmentation-004.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/flex-container-fragmentation-007.tentative.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/forced-break-at-fragmentainer-start-000.html [ Failure ]
+crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-020.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-012.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-029.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-030.html [ Failure ]
@@ -4469,8 +4472,6 @@ crbug.com/1052642 external/wpt/service-workers/service-worker/unregister-immedia
 
 # known bug of SubresourceWebBundles
 crbug.com/1244483 external/wpt/web-bundle/subresource-loading/link-non-utf8-query-encoding-encoded-src.https.tentative.html [ Failure ]
-# <script type=webbundle> is under development
-crbug.com/1245166 external/wpt/web-bundle/subresource-loading/script-nested-bundle.https.tentative.html [ Skip ]
 
 # Sheriff failures 2017-07-03
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Pass Skip Timeout ]
@@ -7227,6 +7228,10 @@ crbug.com/1264775 [ Mac10.14 ] external/wpt/webrtc-stats/supported-stats.html [ 
 # Sheriff 2021-11-02
 crbug.com/1265924 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Pass ]
 
+# V8 roll
+crbug.com/1257806 http/tests/devtools/console/console-external-array.js [ Skip ]
+crbug.com/1257806 http/tests/devtools/console/console-log-side-effects.js [ Skip ]
+
 # Flaky on Windows and Mac.
 # TODO(https://crbug.com/1265311): Make the test behave the same way on all platforms
 crbug.com/1265311 [ Win7 ] http/tests/navigation/location-change-repeated-from-blank.html [ Failure Pass ]
@@ -7237,3 +7242,6 @@ crbug.com/1266199 [ Mac10.12 ] fast/css3-text/css3-text-decoration/text-decorati
 crbug.com/1266217 external/wpt/web-bundle/subresource-loading/script-reuse-web-bundle-resource.https.tentative.html [ Failure Pass ]
 crbug.com/1266221 [ Mac11-arm64 ] virtual/fsa-incognito/external/wpt/file-system-access/sandboxed_FileSystemFileHandle-create-sync-access-handle.https.tentative.window.html [ Failure Pass ]
 crbug.com/1263354 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-adds-entry.html [ Failure Pass Timeout ]
+
+# Sheriff 2021-11-04
+crbug.com/1266670 [ Mac11-arm64 ] dark-mode/images/crossfade.html [ Failure ]

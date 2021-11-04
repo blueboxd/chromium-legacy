@@ -28,6 +28,7 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/dom_distiller/tab_utils.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -1344,6 +1345,12 @@ bool CanSavePage(const Browser* browser) {
           prefs::kAllowFileSelectionDialogs)) {
     return false;
   }
+  if (static_cast<DownloadPrefs::DownloadRestriction>(
+          browser->profile()->GetPrefs()->GetInteger(
+              prefs::kDownloadRestrictions)) ==
+      DownloadPrefs::DownloadRestriction::ALL_FILES) {
+    return false;
+  }
   return !browser->is_type_devtools() &&
          !(GetContentRestrictions(browser) & CONTENT_RESTRICTION_SAVE);
 }
@@ -1655,8 +1662,7 @@ void SetAndroidOsForTabletSite(content::WebContents* current_tab) {
     blink::UserAgentOverride ua_override;
     ua_override.ua_string_override = content::BuildUserAgentFromOSAndProduct(
         kOsOverrideForTabletSite, product);
-    ua_override.ua_metadata_override = embedder_support::GetUserAgentMetadata(
-        g_browser_process->local_state());
+    ua_override.ua_metadata_override = embedder_support::GetUserAgentMetadata();
     ua_override.ua_metadata_override->mobile = true;
     ua_override.ua_metadata_override->platform =
         kChPlatformOverrideForTabletSite;

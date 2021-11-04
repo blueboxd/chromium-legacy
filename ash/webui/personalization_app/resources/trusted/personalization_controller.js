@@ -85,9 +85,9 @@ async function getGooglePhotosCount(provider, store) {
   store.dispatch(action.beginLoadGooglePhotosCountAction());
 
   // TODO(dmblack): Create and wire up mojo API. For now, simulate an async
-  // request that returns a zero count of Google Photos photos.
+  // request that returns a count of 1,000 Google Photos photos.
   return new Promise(resolve => setTimeout(() => {
-                       store.dispatch(action.setGooglePhotosCountAction(0));
+                       store.dispatch(action.setGooglePhotosCountAction(1000));
                        resolve();
                      }, 1000));
 }
@@ -101,9 +101,10 @@ async function getGooglePhotosPhotos(provider, store) {
   store.dispatch(action.beginLoadGooglePhotosPhotosAction());
 
   // TODO(dmblack): Create and wire up mojo API. For now, simulate an async
-  // request that returns an empty response list of Google Photos photos.
+  // request that returns a list of 1,000 Google Photos photos.
   return new Promise(resolve => setTimeout(() => {
-                       store.dispatch(action.setGooglePhotosPhotosAction([]));
+                       store.dispatch(action.setGooglePhotosPhotosAction(
+                           Array.from({length: 1000})));
                        resolve();
                      }, 1000));
 }
@@ -187,9 +188,6 @@ export async function selectWallpaper(
   const {tabletMode} = await provider.isInTabletMode();
   const shouldPreview =
       tabletMode && loadTimeData.getBoolean('fullScreenPreviewEnabled');
-  if (shouldPreview) {
-    store.dispatch(action.setFullscreenEnabledAction(/*enabled=*/ true));
-  }
   store.endBatchUpdate();
   const {success} = await (() => {
     if (image.hasOwnProperty('assetId')) {
@@ -207,6 +205,12 @@ export async function selectWallpaper(
   })();
   store.beginBatchUpdate();
   store.dispatch(action.endSelectImageAction(image, success));
+  // Delay opening full screen preview until done loading. This looks better if
+  // the image load takes a long time, otherwise the user will see the old
+  // wallpaper image for a while.
+  if (success && shouldPreview) {
+    store.dispatch(action.setFullscreenEnabledAction(/*enabled=*/ true));
+  }
   if (!success) {
     console.warn('Error setting wallpaper');
     store.dispatch(action.setSelectedImageAction(store.data.currentSelected));

@@ -53,6 +53,13 @@ chromium-metrics-reviews@google.com.
       summary="OTP fallback from FIDO authentication"/>
 </variants>
 
+<variants name="Autofill.DialogError">
+  <variant name="WithNoTemporaryError"
+      summary="No temporary error has been shown in the dialog"/>
+  <variant name="WithPreviousTemporaryError"
+      summary="A temporary error has been shown in the dialog"/>
+</variants>
+
 <variants name="Autofill.OfferNotification.Type">
   <variant name="CardLinkedOffer"
       summary="The bubble/infobar for an offer that is linked to a credit
@@ -1264,6 +1271,57 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Autofill.FormForest.GetBrowserFormOfRendererForm.Duration"
+    units="microseconds" expires_after="2022-10-31">
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Records the time it takes to retrieve a browser form for a given renderer
+    form. (A renderer form is a single frame's form, whereas a browser form may
+    or may not transcend multiple frames.) This corresponds to the duration of
+    FormForest::GetBrowserFormOfRendererForm() and is emitted per each
+    execution. Note that histogram samples for clients without high-resolution
+    clocks are dropped.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.FormForest.GetRendererFormsOfBrowserForm.Duration"
+    units="microseconds" expires_after="2022-10-31">
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Records the time it takes to retrieve the renderer forms for a given browser
+    form. (A renderer form is a single frame's form, whereas a browser form may
+    or may not transcend multiple frames.) This corresponds to the duration of
+    FormForest::GetRendererFormsOfBrowserForm() and is emitted per each
+    execution. Note that histogram samples for clients without high-resolution
+    clocks are dropped.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.FormForest.UpdateTreeOfRendererForm.Duration"
+    units="microseconds" expires_after="2022-10-31">
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Records the time it takes to update Autofill's form/frame tree. This
+    corresponds to the duration of FormForest::UpdateTreeOfRendererForm() and is
+    emitted per each execution. Note that histogram samples for clients without
+    high-resolution clocks are dropped.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.FormForest.UpdateTreeOfRendererForm.Visits"
+    units="node-visits" expires_after="2022-10-31">
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Records nodes visited on a form/frame tree. This is emitted per each call of
+    FormForest::UpdateTreeOfRendererForm() that actually does an entire tree
+    traversal.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.FormSubmission.PerProfileType"
     enum="BrowserProfileType" expires_after="2022-04-10">
   <owner>rhalavati@chromium.org</owner>
@@ -2095,6 +2153,62 @@ chromium-metrics-reviews@google.com.
   <owner>payments-autofill-team@google.com</owner>
   <summary>
     Logs any retriable failure before the OTP authentication completes.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram name="Autofill.OtpInputDialog.{OtpAuthType}.ErrorMessageShown"
+    enum="AutofillOtpInputDialogError" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs the type of the error when any temporary error is shown in the card
+    unmask OTP dialog.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram name="Autofill.OtpInputDialog.{OtpAuthType}.NewOtpRequested"
+    enum="BooleanRequested" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Emits true when the &quot;Get New Code&quot; button is clicked and a new OTP
+    is requested. Doesn't emit any other value.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram name="Autofill.OtpInputDialog.{OtpAuthType}.Result"
+    enum="AutofillOtpInputDialogResult" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs the reason of the closure when the card unmask OTP dialog is closed.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram name="Autofill.OtpInputDialog.{OtpAuthType}.Result.{WithError}"
+    enum="AutofillOtpInputDialogResult" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs the reason of the closure when the card unmask OTP dialog is closed.
+    This breaks down on whether any temporary error happened before the card
+    unmask OTP dialog was closed.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+  <token key="WithError" variants="Autofill.DialogError"/>
+</histogram>
+
+<histogram name="Autofill.OtpInputDialog.{OtpAuthType}.Shown"
+    enum="BooleanShown" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Emits true when the card unmask OTP dialog is shown. Doesn't emit any other
+    value.
   </summary>
   <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
 </histogram>
@@ -3448,6 +3562,14 @@ chromium-metrics-reviews@google.com.
   <owner>michaelbai@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>Whether the user changed autofilled field.</summary>
+</histogram>
+
+<histogram name="Autofill.{OtpAuthType}.OtpInputDialog.Shown"
+    enum="AutofillOtpAuthEvent" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>Logs when the OTP input dialog was shown.</summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
 </histogram>
 
 </histograms>

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "apps/launcher.h"
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "base/bind.h"
@@ -17,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/cxx17_backports.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_base.h"
@@ -231,15 +229,12 @@ NoteTakingHelper::LaunchResult LaunchWebAppInternal(const std::string& app_id,
   auto* cache =
       &apps::AppServiceProxyFactory::GetForProfile(profile)->AppRegistryCache();
 
-  auto container = apps::mojom::LaunchContainer::kLaunchContainerWindow;
   bool has_note_taking_intent_filter = false;
-  cache->ForOneApp(app_id, [&container, &has_note_taking_intent_filter](
-                               const apps::AppUpdate& update) {
-    if (update.WindowMode() == apps::mojom::WindowMode::kBrowser)
-      container = apps::mojom::LaunchContainer::kLaunchContainerTab;
-    if (HasNoteTakingIntentFilter(update.IntentFilters()))
-      has_note_taking_intent_filter = true;
-  });
+  cache->ForOneApp(
+      app_id, [&has_note_taking_intent_filter](const apps::AppUpdate& update) {
+        if (HasNoteTakingIntentFilter(update.IntentFilters()))
+          has_note_taking_intent_filter = true;
+      });
 
   // Apps in 'kDefaultAllowedAppIds' might not have a note-taking intent filter.
   // They can just launch without the intent.
@@ -618,10 +613,6 @@ std::vector<std::string> NoteTakingHelper::GetNoteTakingAppIds(
         return;
       if (update.AppType() != apps::mojom::AppType::kWeb)
         return;
-      if (!base::FeatureList::IsEnabled(
-              features::kNoteTakingForEnabledWebApps)) {
-        return;
-      }
       DCHECK(!base::Contains(app_ids, update.AppId()));
       app_ids.push_back(update.AppId());
     });

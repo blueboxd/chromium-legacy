@@ -1285,6 +1285,9 @@ extern const char kSharedClipboardUIDescription[];
 extern const char kSharingDesktopScreenshotsName[];
 extern const char kSharingDesktopScreenshotsDescription[];
 
+extern const char kSharingDesktopScreenshotsEditName[];
+extern const char kSharingDesktopScreenshotsEditDescription[];
+
 extern const char kSharingHubDesktopAppMenuName[];
 extern const char kSharingHubDesktopAppMenuDescription[];
 
@@ -2869,9 +2872,6 @@ extern const char kScanAppMultiPageScanDescription[];
 
 extern const char kScanAppSearchablePdfName[];
 extern const char kScanAppSearchablePdfDescription[];
-
-extern const char kScanAppStickySettingsName[];
-extern const char kScanAppStickySettingsDescription[];
 
 extern const char kSharesheetCopyToClipboardName[];
 extern const char kSharesheetCopyToClipboardDescription[];

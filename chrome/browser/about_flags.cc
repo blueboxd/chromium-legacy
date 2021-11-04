@@ -5560,6 +5560,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSharingDesktopScreenshotsName,
      flag_descriptions::kSharingDesktopScreenshotsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(sharing_hub::kDesktopScreenshots)},
+    {"sharing-desktop-screenshots-edit",
+     flag_descriptions::kSharingDesktopScreenshotsEditName,
+     flag_descriptions::kSharingDesktopScreenshotsEditDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(share::kSharingDesktopScreenshotsEdit)},
 #endif
 
     {"sharing-prefer-vapid", flag_descriptions::kSharingPreferVapidName,
@@ -6518,9 +6522,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"scan-app-searchable-pdf", flag_descriptions::kScanAppSearchablePdfName,
      flag_descriptions::kScanAppSearchablePdfDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kScanAppSearchablePdf)},
-    {"scan-app-sticky-settings", flag_descriptions::kScanAppStickySettingsName,
-     flag_descriptions::kScanAppStickySettingsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kScanAppStickySettings)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"color-provider-redirection-for-theme-provider",

@@ -3786,6 +3786,11 @@ const char kSCTAuditingDescription[] =
     "Enables SCT auditing for users who have opted in to Safe Browsing "
     "Extended Reporting.";
 
+const char kSharingDesktopScreenshotsEditName[] =
+    "Desktop Screenshots Edit Mode";
+const char kSharingDesktopScreenshotsEditDescription[] =
+    "Enables an edit flow for users who create screenshots on desktop";
+
 #endif  // !defined(OS_ANDROID)
 
 // Windows ---------------------------------------------------------------------
@@ -4972,11 +4977,6 @@ extern const char kScanAppSearchablePdfName[] =
 extern const char kScanAppSearchablePdfDescription[] =
     "Allow selecting Searchable PDF file type in Scan app"
     " with incorporation of OCR service.";
-
-const char kScanAppStickySettingsName[] = "Enable sticky settings in Scan app";
-const char kScanAppStickySettingsDescription[] =
-    "Enables sticky settings in Scan app for automatically saving scan"
-    " settings in Chrome OS.";
 
 extern const char kSharesheetCopyToClipboardName[] =
     "Enable copy to clipboard in the Chrome OS Sharesheet.";

@@ -526,6 +526,21 @@
             ]
         }
     ],
+    "AndroidMessagesPermissionUpdate": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MessagesForAndroidPermissionUpdate"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidMessagesPopupBlocked": [
         {
             "platforms": [
@@ -564,6 +579,10 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "save_card_message_use_followup_button_text": "false",
+                        "save_card_message_use_gpay_icon": "true"
+                    },
                     "enable_features": [
                         "MessagesForAndroidSaveCard"
                     ]
@@ -6463,9 +6482,8 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "EnabledContextMenuWithRootAsDefault",
                     "params": {
-                        "reading_list_in_app_menu": "true",
                         "use_root_bookmark_as_default": "true"
                     },
                     "enable_features": [

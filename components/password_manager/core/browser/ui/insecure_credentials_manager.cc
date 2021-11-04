@@ -165,12 +165,8 @@ std::vector<CredentialWithPassword> ExtractInsecureCredentials(
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 base::flat_set<std::u16string> ExtractPasswords(
     SavedPasswordsPresenter::SavedPasswordsView password_forms) {
-  std::vector<std::u16string> passwords;
-  passwords.reserve(password_forms.size());
-  for (const auto& form : password_forms) {
-    passwords.push_back(form.password_value);
-  }
-  return base::flat_set<std::u16string>(std::move(passwords));
+  return base::MakeFlatSet<std::u16string>(password_forms, {},
+                                           &PasswordForm::password_value);
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
@@ -179,17 +175,20 @@ base::flat_set<std::u16string> ExtractPasswords(
 CredentialView::CredentialView(std::string signon_realm,
                                GURL url,
                                std::u16string username,
-                               std::u16string password)
+                               std::u16string password,
+                               base::Time last_used_time)
     : signon_realm(std::move(signon_realm)),
       url(std::move(url)),
       username(std::move(username)),
-      password(std::move(password)) {}
+      password(std::move(password)),
+      last_used_time(last_used_time) {}
 
 CredentialView::CredentialView(const PasswordForm& form)
     : signon_realm(form.signon_realm),
       url(form.url),
       username(form.username_value),
-      password(form.password_value) {}
+      password(form.password_value),
+      last_used_time(form.date_last_used) {}
 
 CredentialView::CredentialView(const CredentialView& credential) = default;
 CredentialView::CredentialView(CredentialView&& credential) = default;
@@ -212,7 +211,8 @@ CredentialWithPassword::CredentialWithPassword(
     : CredentialView(credential.signon_realm,
                      GURL(credential.signon_realm),
                      credential.username,
-                     /*password=*/{}),
+                     /*password=*/{},
+                     /*last_used_time=*/base::Time()),
       create_time(credential.create_time),
       insecure_type(ConvertInsecureType(credential.insecure_type)) {}
 

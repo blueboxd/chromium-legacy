@@ -822,11 +822,6 @@ const base::Feature kNewLockScreenReauthLayout{
 // Enables the Night Light feature.
 const base::Feature kNightLight{"NightLight", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables support for specific enabled web apps to be treated as note-taking
-// apps on Chrome OS.
-const base::Feature kNoteTakingForEnabledWebApps{
-    "NoteTakingForEnabledWebApps", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enabled notification expansion animation.
 const base::Feature kNotificationExpansionAnimation{
     "NotificationExpansionAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1012,10 +1007,6 @@ const base::Feature kScanAppMultiPageScan{"ScanAppMultiPageScan",
 // Enables or disables use of Searchable PDF file type in the Scan app.
 const base::Feature kScanAppSearchablePdf{"ScanAppSearchablePdf",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables or disables sticky settings in the Scan app.
-const base::Feature kScanAppStickySettings{"ScanAppStickySettings",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Overrides semantic colors in Chrome OS for easier debugging.
 const base::Feature kSemanticColorsDebugOverride{

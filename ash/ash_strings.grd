@@ -1517,6 +1517,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_MENU_DOWNLOAD_LABEL" desc="Label for the option to download a camera roll item from the phone hub bubble.">
         Download
       </message>
+      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_ACCESSIBLE_NAME" desc="Accessible name for notification received in Phone Hub from paired phone, containing app_name, notification_title, message, phone_name.">
+        <ph name="APP_NAME">$1<ex>Chat</ex></ph>, <ph name="NOTIFICATION_TITLE">$2<ex>+1-111-111-1111</ex></ph>: <ph name="MESSAGE">$3<ex>Hello</ex></ph>, <ph name="PHONE_NAME">$4<ex>Pixel</ex></ph>
+      </message>
       <message name="IDS_ASH_STYLUS_BATTERY_LOW_LABEL" desc="The label next to the stylus battery indicator when the battery level is below 24%">
         Low
       </message>
@@ -1605,6 +1608,30 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_BEST_MATCH" desc="Category title for the list of search result shown in launcher search that are a best match for the query in the search box.">
         Best Match
+      </message>
+      <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_APPS" desc="Category title for the list of installed apps shown in launcher search that are relevant to but not the best match for the query in the search box.">
+        Apps
+      </message>
+      <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_APP_SHORTCUTS" desc="Category title for the list of shortcut actions for installed apps shown in launcher search that are relevent to to but not the best match for the query in the search box.">
+        App Shortcuts
+      </message>
+      <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_WEB" desc="Category title for the list of webpages shown in launcher search that are relevant to but not the best match for the query in the search box.">
+        Websites
+      </message>
+      <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_FILES" desc="Category title for the list of local and Google Drive files shown in launcher search that are relevant to but not the best match for the query in the search box.">
+        Files
+      </message>
+      <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_SETTINGS" desc="Category title for the list of system settings shown in launcher search that are relevant to but not the best match for the query in the search box.">
+        Settings
+      </message>
+      <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_HELP" desc="Category title for the list of help articles from Showoff and Keyboard Shortcuts shown in launcher search that are relevant to but not the best match for the query in the search box.">
+        Help
+      </message>
+      <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_PLAY_STORE" desc="Category title for the list of play store suggestions shown in launcher search that are relevant to but not the best match for the query in the search box.">
+        Play Store
+      </message>
+      <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_SEARCH_AND_ASSISTANT" desc="Category title for the list of suggestions from the search provider and Google Assistant shown in launcher search that are relevant to but not the best match for the query in the search box.">
+        Search and Assistant
       </message>
       <message name="IDS_ASH_SEARCH_RESULT_SEPARATOR" desc="Separator between the title and details text in ash search result view.">
         ''' - '''
@@ -4209,6 +4236,15 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_SMART_LOCK_LABEL_NO_PHONE" desc="Label for the Smart Lock icon on user's lock screen when a phone eligible to unlock the Chromebook cannot be found after 15 seconds.">
         Can’t find your phone. Make sure your phone’s Bluetooth is on.
+      </message>
+      <message name="IDS_SMART_LOCK_LABEL_NO_BLUETOOTH" desc="Label for the Smart Lock icon on user's lock screen when Smart Lock cannot be used because the Chromebook's Bluetooth is turned off.">
+        Your Chromebook’s Bluetooth is off. To unlock your Chromebook, enter password.
+      </message>
+      <message name="IDS_SMART_LOCK_LABEL_NO_PHONE_LOCK_SCREEN" desc="Label for the Smart Lock icon on user's lock screen when Smart Lock cannot be used because the connected phone does not have a lock screen enabled.">
+        Your phone doesn’t have a lock screen. To unlock your Chromebook, enter password.
+      </message>
+      <message name="IDS_SMART_LOCK_LABEL_PHONE_TOO_FAR" desc="Label for the Smart Lock icon on user's lock screen when the connected phone is too far away to use Smart Lock, and must be brought closer.">
+        Your phone is too far away. Bring your phone closer.
       </message>
       <message name="IDS_AUTH_FACTOR_LABEL_UNLOCK_METHOD_SELECTION" desc="Label for the Smart Lock and Fingerprint icons on user's lock screen to select unlock method.">
         To unlock your Chromebook, use your fingerprint or unlock your phone

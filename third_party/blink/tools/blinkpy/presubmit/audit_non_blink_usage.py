@@ -311,7 +311,6 @@ _CONFIG = [
             'cc::MathUtil',
             'gfx::BoundingRect',
             'gfx::ComputeApproximateMaxScale',
-            'gfx::ComputeTransform2dScaleComponents',
             'gfx::Determinant',
             'gfx::IntersectRects',
             'gfx::PointAtOffsetFromOrigin',
@@ -343,6 +342,7 @@ _CONFIG = [
             'gfx::TransposePoint',
             'gfx::TransposeRect',
             'gfx::TransposeSize',
+            'gfx::TryComputeTransform2dScaleComponents',
             'gfx::UnionRects',
 
             # Range type.
@@ -1412,6 +1412,8 @@ _CONFIG = [
             'absl::.+',
             'base::AutoLock',
             'base::AutoUnlock',
+            # TODO(crbug.com/1266408): Temporarily added to enable splitting UMA stats based on tier.
+            'base::CPU',
             'base::LazyInstance',
             'base::Lock',
             # TODO(crbug.com/787254): Remove base::BindOnce, base::Unretained,
@@ -1437,6 +1439,8 @@ _CONFIG = [
             'media::.+',
             'net::NetworkTrafficAnnotationTag',
             'net::DefineNetworkTrafficAnnotation',
+            # TODO(crbug.com/1266408): Temporarily added to enable splitting UMA stats based on tier.
+            're2::RE2',
             'rtc::.+',
             'webrtc::.+',
             'quic::.+',

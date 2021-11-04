@@ -6655,6 +6655,26 @@ others/histograms.xml -->
       label="OTP auth temporarily failed due to OTP being incorrect"/>
 </enum>
 
+<enum name="AutofillOtpInputDialogError">
+  <int value="0" label="Unknown error"/>
+  <int value="1" label="OTP expired temporary error was shown"/>
+  <int value="2" label="OTP mismatch temporary error was shown"/>
+</enum>
+
+<enum name="AutofillOtpInputDialogResult">
+  <int value="0" label="Unknown result"/>
+  <int value="1"
+      label="User closed the OTP input dialog before pressing the OK button"/>
+  <int value="3"
+      label="User closed the OTP input dialog after pressing the OK button"/>
+  <int value="4"
+      label="OTP input dialog closed automatically after the OTP verification
+             succeeded"/>
+  <int value="5"
+      label="OTP input dialog closed automatically after a server failure
+             response"/>
+</enum>
+
 <enum name="AutofillPredictionSource">
   <int value="0" label="PREDICTION_SOURCE_UNKNOWN"/>
   <int value="1" label="PREDICTION_SOURCE_HEURISTIC"/>
@@ -11193,6 +11213,13 @@ Called by update_bad_message_reasons.py.-->
   <int value="5" label="Snip Key"/>
   <int value="6" label="Full Screenshot Accelerator"/>
   <int value="7" label="Projector app"/>
+</enum>
+
+<enum name="CaptureModeSaveToLocation">
+  <int value="0" label="Default downloads folder"/>
+  <int value="1" label="Root drive folder"/>
+  <int value="2" label="Customized folder in drive"/>
+  <int value="3" label="Local customized folder"/>
 </enum>
 
 <enum name="CapturePixelFormat">
@@ -15854,6 +15881,32 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Register"/>
   <int value="2" label="Authenticate"/>
   <int value="3" label="Version"/>
+</enum>
+
+<enum name="CrasA2dpExitCode">
+  <summary>
+    List of codes to indicate why Bluetooth A2DP audio session exits the
+    connected state. CRAS side definition in
+    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/main/cras/src/server/cras_server_metrics.h
+  </summary>
+  <int value="0" label="A2DP_EXIT_IDLE">
+    Disconnected while idle. The default exit code without anything special.
+  </int>
+  <int value="1" label="A2DP_EXIT_WHILE_STREAMING">
+    Disconnected while a2dp is streaming and audio thread didn't catch any
+    socket error.
+  </int>
+  <int value="2" label="A2DP_EXIT_CONN_RESET">
+    Disconnected while streaming and receiving ECONNRESET code.
+  </int>
+  <int value="3" label="A2DP_EXIT_LONG_TX_FAILURE">
+    CRAS request the disconnection because of longer than 5 seconds of
+    consecutive packet Tx failure.
+  </int>
+  <int value="4" label="A2DP_EXIT_TX_FATAL_ERROR">
+    CRAS request the disconnection because kernel socket returns error code that
+    CRAS treats as fatal error.
+  </int>
 </enum>
 
 <enum name="CrasClientType">
@@ -26882,6 +26935,7 @@ Called by update_document_policy_enum.py.-->
   <int value="923" label="RemoteAccessHostAllowRemoteSupportConnections"/>
   <int value="924" label="UserAgentClientHintsGREASEUpdateEnabled"/>
   <int value="925" label="DeviceI18nShortcutsEnabled"/>
+  <int value="926" label="HistoryClustersVisible"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -49532,6 +49586,7 @@ from previous Chrome versions.
   <int value="-1172572865" label="NTPShowGoogleGInOmnibox:enabled"/>
   <int value="-1172204005" label="enable-offline-auto-reload-visible-only"/>
   <int value="-1170286604" label="Commander:disabled"/>
+  <int value="-1169571217" label="SharingDesktopScreenshotsEdit:disabled"/>
   <int value="-1168910727"
       label="enable-experimental-accessibility-language-detection-dynamic"/>
   <int value="-1167992523" label="DesktopPWAsCustomTabUI:disabled"/>
@@ -51494,6 +51549,7 @@ from previous Chrome versions.
   <int value="350362421"
       label="AutofillEnableAugmentedPhoneCountryCode:enabled"/>
   <int value="350399958" label="ModuleScriptsImportMetaUrl:disabled"/>
+  <int value="350611185" label="SharingDesktopScreenshotsEdit:enabled"/>
   <int value="350635266" label="TabGroupsContinuationAndroid:enabled"/>
   <int value="351005753" label="enable-experimental-accessibility-autoclick"/>
   <int value="352191859" label="disabled-new-style-notification"/>

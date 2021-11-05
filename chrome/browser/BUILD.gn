@@ -2437,6 +2437,7 @@ static_library("browser") {
       "//ash/services/network_health/public/mojom:mojom",
       "//ash/webui/camera_app_ui",
       "//ash/webui/camera_app_ui:mojo_bindings",
+      "//ash/webui/common/mojom",
       "//ash/webui/connectivity_diagnostics",
       "//ash/webui/diagnostics_ui",
       "//ash/webui/diagnostics_ui/mojom",
@@ -7275,6 +7276,7 @@ grit("resources") {
       "//chrome/browser/resources/chromeos/emulator:web_components",
       "//chrome/browser/resources/chromeos/gaia_action_buttons:web_components",
       "//chrome/browser/resources/chromeos/parent_access:web_components",
+      "//chrome/browser/resources/chromeos/parent_access/flows:web_components",
       "//chrome/browser/resources/chromeos/set_time_dialog:web_components",
       "//chrome/browser/resources/chromeos/smb_shares:web_components",
       "//chrome/browser/resources/chromeos/vm:web_components",
@@ -7538,9 +7540,12 @@ static_library("test_support") {
       "sessions/tab_restore_service_load_waiter.h",
       "speech/fake_speech_recognition_service.cc",
       "speech/fake_speech_recognition_service.h",
+      "speech/speech_recognition_test_helper.cc",
+      "speech/speech_recognition_test_helper.h",
       "ui/tabs/tab_activity_simulator.cc",
       "ui/tabs/tab_activity_simulator.h",
     ]
+    deps += [ "//components/soda" ]
   }
 
   if (is_chromeos_ash) {

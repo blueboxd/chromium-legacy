@@ -2713,6 +2713,7 @@ ci.clang_mac_builder(
         category = "ToT Mac",
         short_name = "rel",
     ),
+    cores = None,
 )
 
 ci.clang_mac_builder(
@@ -2721,6 +2722,7 @@ ci.clang_mac_builder(
         category = "ToT Mac",
         short_name = "dbg",
     ),
+    cores = None,
 )
 
 ci.clang_mac_builder(
@@ -2729,6 +2731,7 @@ ci.clang_mac_builder(
         category = "ToT Mac",
         short_name = "asn",
     ),
+    cores = None,
 )
 
 ci.clang_mac_builder(
@@ -2738,6 +2741,7 @@ ci.clang_mac_builder(
         short_name = "mac",
     ),
     executable = "recipe:chromium_clang_coverage_tot",
+    cores = None,
 )
 
 ci.dawn_linux_builder(
@@ -4078,6 +4082,7 @@ ci.fyi_builder(
         category = "perfetto",
         short_name = "mac",
     ),
+    cores = None,
     os = os.MAC_DEFAULT,
     schedule = "with 3h interval",
     triggered_by = [],
@@ -4721,7 +4726,7 @@ ci.fyi_mac_builder(
         category = "mac",
         short_name = "herm",
     ),
-    cores = 8,
+    cores = 12,
 )
 
 ci.fyi_windows_builder(
@@ -4914,6 +4919,9 @@ ci.gpu_fyi_linux_builder(
         category = "Android|N64|NVDA",
         short_name = "STV",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu_fyi_linux_builder(
@@ -4922,6 +4930,9 @@ ci.gpu_fyi_linux_builder(
         category = "Android|L32",
         short_name = "N5",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu_fyi_linux_builder(
@@ -4930,6 +4941,9 @@ ci.gpu_fyi_linux_builder(
         category = "Android|M64|QCOM",
         short_name = "N5X",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu_fyi_linux_builder(
@@ -4938,6 +4952,9 @@ ci.gpu_fyi_linux_builder(
         category = "Android|M64|NVDA",
         short_name = "N9",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu_fyi_linux_builder(
@@ -4946,6 +4963,9 @@ ci.gpu_fyi_linux_builder(
         category = "Android|P32|QCOM",
         short_name = "P2",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu_fyi_linux_builder(
@@ -4954,6 +4974,9 @@ ci.gpu_fyi_linux_builder(
         category = "Android|R32|QCOM",
         short_name = "P4",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu_fyi_linux_builder(
@@ -4962,6 +4985,9 @@ ci.gpu_fyi_linux_builder(
         category = "Android|skgl|M64",
         short_name = "N5X",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu_fyi_linux_builder(
@@ -4970,6 +4996,9 @@ ci.gpu_fyi_linux_builder(
         category = "Android|skv|P32",
         short_name = "P2",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu_fyi_linux_builder(
@@ -5229,15 +5258,6 @@ ci.gpu_fyi_thin_tester(
     console_view_entry = consoles.console_view_entry(
         category = "Mac|Intel",
         short_name = "rel",
-    ),
-    triggered_by = ["GPU FYI Mac Builder"],
-)
-
-ci.gpu_fyi_thin_tester(
-    name = "Mac FYI Release (Intel UHD 630)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac|Intel",
-        short_name = "uhd",
     ),
     triggered_by = ["GPU FYI Mac Builder"],
 )
@@ -6291,6 +6311,7 @@ ci.memory_builder(
         category = "mac",
         short_name = "tst",
     ),
+    cores = 12,
     main_console_view = "main",
     os = os.MAC_DEFAULT,
     triggered_by = ["Mac ASan 64 Builder"],

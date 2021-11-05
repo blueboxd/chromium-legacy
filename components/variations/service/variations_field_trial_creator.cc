@@ -19,9 +19,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/notreached.h"
 #include "base/strings/pattern.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
@@ -192,9 +190,9 @@ bool VariationsFieldTrialCreator::SetUpFieldTrials(
   DCHECK(platform_field_trials);
   DCHECK(safe_seed_manager);
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  // TODO(crbug/1248239): Enable Extended Variations Safe Mode on Clank.
-  // TODO(crbug/1255305): Re-enable it on iOS.
+#if !defined(OS_ANDROID)
+  // TODO(crbug/1248239): Enable Extended Variations Safe Mode on Android
+  // Chrome.
   if (extend_variations_safe_mode &&
       !metrics_state_manager->is_background_session()) {
     // If the session is expected to be a background session, then do not extend
@@ -204,7 +202,7 @@ bool VariationsFieldTrialCreator::SetUpFieldTrials(
     // crashes.
     MaybeExtendVariationsSafeMode(metrics_state_manager);
   }
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !defined(OS_ANDROID)
 
   // TODO(crbug/1257204): Some FieldTrial-setup-related code is here and some is
   // in MetricsStateManager::InstantiateFieldTrialList(). It's not ideal that
@@ -450,7 +448,7 @@ bool VariationsFieldTrialCreator::IsOverrideResourceMapEmpty() {
   return overridden_strings_map_.empty();
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 void VariationsFieldTrialCreator::MaybeExtendVariationsSafeMode(
     metrics::MetricsStateManager* metrics_state_manager) {
   const std::string group_name =
@@ -471,7 +469,7 @@ void VariationsFieldTrialCreator::MaybeExtendVariationsSafeMode(
       /*has_session_shutdown_cleanly=*/false,
       /*write_synchronously=*/true);
 }
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !defined(OS_ANDROID)
 
 bool VariationsFieldTrialCreator::HasSeedExpired(bool is_safe_seed) {
   const base::Time fetch_time = is_safe_seed
@@ -514,17 +512,8 @@ bool VariationsFieldTrialCreator::IsSeedForFutureMilestone(bool is_safe_seed) {
   if (!seed_milestone)
     return false;
 
-  int client_milestone;
-  if (base::StringToInt(version_info::GetMajorVersionNumber(),
-                        &client_milestone)) {
-    return seed_milestone > client_milestone;
-  }
-
-  // There shouldn't be an issue parsing the major version (aka milestone) to
-  // an int because GetMajorVersionNumber() parses the milestone from a number
-  // to a string.
-  NOTREACHED();
-  return false;
+  int client_milestone = version_info::GetMajorVersionNumberAsInt();
+  return seed_milestone > client_milestone;
 }
 
 bool VariationsFieldTrialCreator::CreateTrialsFromSeed(

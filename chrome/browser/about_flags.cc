@@ -219,6 +219,7 @@
 #include "chrome/browser/webapps/android/features.h"
 #include "components/browser_ui/photo_picker/android/features.h"
 #include "components/content_creation/notes/core/note_features.h"
+#include "components/content_creation/reactions/core/reactions_features.h"
 #include "components/external_intents/android/external_intents_features.h"
 #include "components/power_scheduler/power_scheduler_features.h"
 #include "components/webapps/browser/android/features.h"
@@ -3569,6 +3570,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"webnotes-publish", flag_descriptions::kWebNotesPublishName,
      flag_descriptions::kWebNotesPublishDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(content_creation::kWebNotesPublish)},
+    {"lightweight-reactions-android",
+     flag_descriptions::kLightweightReactionsAndroidName,
+     flag_descriptions::kLightweightReactionsAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(content_creation::kLightweightReactions)},
 #endif  // OS_ANDROID
     {"in-product-help-demo-mode-choice",
      flag_descriptions::kInProductHelpDemoModeChoiceName,
@@ -5921,11 +5926,6 @@ const FeatureEntry kFeatureEntries[] = {
          "AutofillUseMobileLabelDisambiguation")},
 #endif  // defined(OS_ANDROID)
 
-    {"autofill-prune-suggestions",
-     flag_descriptions::kAutofillPruneSuggestionsName,
-     flag_descriptions::kAutofillPruneSuggestionsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillPruneSuggestions)},
-
     {"allow-sync-xhr-in-page-dismissal",
      flag_descriptions::kAllowSyncXHRInPageDismissalName,
      flag_descriptions::kAllowSyncXHRInPageDismissalDescription,
@@ -6510,9 +6510,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"scan-app-media-link", flag_descriptions::kScanAppMediaLinkName,
-     flag_descriptions::kScanAppMediaLinkDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kScanAppMediaLink)},
     {"scan-app-multi-page-scan", flag_descriptions::kScanAppMultiPageScanName,
      flag_descriptions::kScanAppMultiPageScanDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kScanAppMultiPageScan)},

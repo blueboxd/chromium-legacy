@@ -97,6 +97,12 @@ const base::Feature kAutofillEnableSupportForParsingWithSharedLabels{
 const base::Feature kAutofillDisableFilling{"AutofillDisableFilling",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to displace removed forms in both FormCache and
+// AutofillManager.
+// TODO(crbug.com/1215333): Remove the feature when the experiment is completed.
+const base::Feature kAutofillDisplaceRemovedForms{
+    "AutofillDisplaceRemovedForms", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Kill switch for Autofill address import.
 const base::Feature kAutofillDisableAddressImport{
     "AutofillDisableAddressImport", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -270,8 +276,23 @@ extern const base::Feature kAutofillLabelAffixRemoval{
 extern const base::Feature kAutofillCenterAlignedSuggestions{
     "AutofillCenterAlignedSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillPruneSuggestions{
-    "AutofillPruneSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+// Controls the maximum pixels the popup is shifted towards the center.
+// TODO(crbug/1248339): Remove once experiment is finished.
+extern const base::FeatureParam<int>
+    kAutofillMaximumPixelsToMoveSuggestionopupToCenter{
+        &kAutofillCenterAlignedSuggestions,
+        "maximum_pixels_to_move_the_suggestion_popup__towards_the_fields_"
+        "center",
+        120};
+
+// Controls the width percentage to move the popup towards the center.
+// TODO(crbug/1248339): Remove once experiment is finished.
+extern const base::FeatureParam<int>
+    kAutofillMaxiumWidthPercentageToMoveSuggestionPopupToCenter{
+        &kAutofillCenterAlignedSuggestions,
+        "width_percentage_to_shift_the_suggestion_popup_towards_the_center_of_"
+        "fields",
+        50};
 
 // When enabled, Autofill will load remote patterns via the component updater.
 // TODO(crbug/1121990): Remove once launched.
@@ -384,12 +405,6 @@ const base::Feature kAutofillUseImprovedLabelDisambiguation{
     "AutofillUseImprovedLabelDisambiguation",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether to use new form extraction function that does not leak
-// memory and uses comparison based on the FormRendererIds.
-// TODO(crbug.com/1215333): Remove the feature when the experiment is completed.
-const base::Feature kAutofillUseNewFormExtraction{
-    "AutofillUseNewFormExtraction", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether to use the same icon for the settings section in the popup
 // footer.
 const base::Feature kAutofillUseConsistentPopupSettingsIcons{
@@ -400,13 +415,6 @@ const base::Feature kAutofillUseConsistentPopupSettingsIcons{
 // implementation for section splitting or not. See https://crbug.com/1076175.
 const base::Feature kAutofillUseNewSectioningMethod{
     "AutofillUseNewSectioningMethod", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether to use only rendererID for removing duplicated old forms
-// from the extracted forms when modified.
-// TODO(crbug.com/1215333): Remove the feature when the experiment is completed.
-const base::Feature kAutofillUseOnlyFormRendererIDForOldDuplicateFormRemoval{
-    "AutofillUseOnlyFormRendererIDForOldDuplicateFormRemoval",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, to get the unowned control elements we call
 // Document::UnassociatedListedElements(). This way we can reduce the number of

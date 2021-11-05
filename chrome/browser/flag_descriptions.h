@@ -229,9 +229,6 @@ extern const char kAutofillProfileClientValidationDescription[];
 extern const char kAutofillProfileServerValidationName[];
 extern const char kAutofillProfileServerValidationDescription[];
 
-extern const char kAutofillPruneSuggestionsName[];
-extern const char kAutofillPruneSuggestionsDescription[];
-
 extern const char kAutofillSaveAndFillVPAName[];
 extern const char kAutofillSaveAndFillVPADescription[];
 
@@ -1835,6 +1832,9 @@ extern const char kInterestFeedV2ClickAndViewActionsConditionalUploadName[];
 extern const char
     kInterestFeedV2ClickAndViewActionsConditionalUploadDescription[];
 
+extern const char kLightweightReactionsAndroidName[];
+extern const char kLightweightReactionsAndroidDescription[];
+
 extern const char kMessagesForAndroidAdsBlockedName[];
 extern const char kMessagesForAndroidAdsBlockedDescription[];
 
@@ -2860,9 +2860,6 @@ extern const char kArcGhostWindowDescription[];
 
 extern const char kArcInputOverlayName[];
 extern const char kArcInputOverlayDescription[];
-
-extern const char kScanAppMediaLinkName[];
-extern const char kScanAppMediaLinkDescription[];
 
 extern const char kScanAppMultiPageScanName[];
 extern const char kScanAppMultiPageScanDescription[];

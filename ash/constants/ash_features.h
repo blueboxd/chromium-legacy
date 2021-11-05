@@ -275,6 +275,8 @@ extern const base::Feature kKeyboardBasedDisplayArrangementInSettings;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosPrimary;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosSupport;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kForceProfileMigrationCompletion;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kLanguagePacksHandwriting;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kLanguageSettingsUpdate2;
@@ -381,7 +383,6 @@ extern const base::Feature kRevenLogSource;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kReverseScrollGestures;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kScalableStatusArea;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kScanAppMediaLink;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kScanAppMultiPageScan;
 COMPONENT_EXPORT(ASH_CONSTANTS)

@@ -6,9 +6,12 @@
 
 import abc
 import enum
+import logging
 import re
 import collections
-from typing import Dict, Iterable, List, NamedTuple, Sequence, TextIO, Tuple
+import struct
+from typing import (Dict, Iterable, List, NamedTuple, Sequence, TextIO, Tuple,
+                    Union)
 
 _STACK_CFI_INIT_REGEX = re.compile(
     r'^STACK CFI INIT ([0-9a-f]+) ([0-9a-f]+) (.+)$')
@@ -320,7 +323,6 @@ class UnwindInstructionsParser(abc.ABC):
   def GetBreakpadInstructionsRegex(self) -> re.Pattern:
     pass
 
-  #
   @abc.abstractmethod
   def ParseFromMatch(self, address_offset: int, cfa_sp_offset: int,
                      match: re.Match) -> Tuple[AddressUnwind, int]:
@@ -565,6 +567,116 @@ def EncodeAddressUnwinds(address_unwinds: Tuple[AddressUnwind, ...]
   return tuple(encoded_unwinds)
 
 
+class EncodedFunctionUnwind(NamedTuple):
+  """Record representing unwind information for a function.
+
+  This structure represents the same concept as `FunctionUnwind`, but with
+  some differences:
+  - Attribute `address` is split into 2 attributes: `page_number` and
+    `page_offset`.
+  - Attribute `size` is dropped.
+  - Attribute `address_unwinds` becomes a collection of `EncodedAddressUnwind`s,
+    instead of a collection of `AddressUnwind`s.
+
+  Attributes:
+    page_number: The upper bits (17 ~ 31bits) of byte offset from text section
+      start.
+    page_offset: The lower bits (1 ~ 16bits) of instruction offset from text
+      section start.
+    address_unwinds: A collection of `EncodedAddressUnwind`s.
+
+  """
+
+  page_number: int
+  page_offset: int
+  address_unwinds: Tuple[EncodedAddressUnwind, ...]
+
+
+# The trivial unwind is defined as a single `RETURN_TO_LR` instruction
+# at the start of the function.
+TRIVIAL_UNWIND: Tuple[EncodedAddressUnwind, ...] = EncodeAddressUnwinds(
+    (AddressUnwind(address_offset=0,
+                   unwind_type=UnwindType.RETURN_TO_LR,
+                   sp_offset=0,
+                   registers=()), ))
+
+# The refuse to unwind filler unwind is used to fill the invalid space
+# before the first function in the first page and after the last function
+# in the last page.
+REFUSE_TO_UNWIND: Tuple[EncodedAddressUnwind, ...] = (EncodedAddressUnwind(
+    address_offset=0,
+    complete_instruction_sequence=bytes([0b10000000, 0b00000000])), )
+
+
+def EncodeFunctionUnwinds(function_unwinds: Iterable[FunctionUnwind]
+                          ) -> Iterable[EncodedFunctionUnwind]:
+  """Encodes the unwind state for all functions defined in the binary.
+
+  This function
+  - sorts the collection of `FunctionUnwind`s by address.
+  - fills in gaps between functions with trivial unwind.
+  - fills the space in the space in last page after last function with refuse
+    to unwind.
+
+  Note:
+    This function assumes that min function start address is the text section
+    start address.
+
+  Argument:
+    function_unwinds: An iterable of function unwind states.
+
+  Returns:
+    The encoded function unwind states with no gaps between functions, ordered
+    by ascending address.
+  """
+
+  def GetPageNumber(address: int) -> int:
+    """Calculates the page number.
+
+    Page number is calculated as byte_offset_from_text_section_start >> 17,
+    i.e. the upper bits (17 ~ 31bits) of byte offset from text section start.
+    """
+    return (address - text_section_start_address) >> 17
+
+  def GetPageOffset(address: int) -> int:
+    """Calculates the page offset.
+
+    Page offset is calculated as (byte_offset_from_text_section_start >> 1)
+    & 0xffff, i.e. the lower bits (1 ~ 16bits) of instruction offset from
+    text section start.
+    """
+    return ((address - text_section_start_address) >> 1) & 0xffff
+
+  sorted_function_unwinds: List[FunctionUnwind] = sorted(
+      function_unwinds, key=lambda function_unwind: function_unwind.address)
+
+  text_section_start_address: int = sorted_function_unwinds[0].address
+  prev_func_end_address: int = sorted_function_unwinds[0].address
+
+  for unwind in sorted_function_unwinds:
+    assert prev_func_end_address <= unwind.address, (
+        'Detected overlap between functions.')
+
+    if prev_func_end_address < unwind.address:
+      # Gaps between functions are typically filled by regions of thunks which
+      # do not alter the stack pointer. Filling these gaps with TRIVIAL_UNWIND
+      # is the appropriate unwind strategy.
+      yield EncodedFunctionUnwind(GetPageNumber(prev_func_end_address),
+                                  GetPageOffset(prev_func_end_address),
+                                  TRIVIAL_UNWIND)
+
+    yield EncodedFunctionUnwind(GetPageNumber(unwind.address),
+                                GetPageOffset(unwind.address),
+                                EncodeAddressUnwinds(unwind.address_unwinds))
+
+    prev_func_end_address = unwind.address + unwind.size
+
+  if GetPageOffset(prev_func_end_address) != 0:
+    yield EncodedFunctionUnwind(GetPageNumber(prev_func_end_address),
+                                GetPageOffset(prev_func_end_address),
+                                REFUSE_TO_UNWIND)
+
+
 def EncodeFunctionOffsetTable(
     encoded_address_unwind_sequences: Iterable[
         Tuple[EncodedAddressUnwind, ...]],
@@ -601,3 +713,173 @@ def EncodeFunctionOffsetTable(
           unwind_instruction_table_offsets[complete_instruction_sequence])
 
   return bytes(function_offset_table), offsets
+
+
+def EncodePageTableAndFunctionTable(
+    function_unwinds: Iterable[EncodedFunctionUnwind],
+    function_offset_table_offsets: Dict[Tuple[EncodedAddressUnwind, ...], int]
+) -> Tuple[bytes, bytes]:
+  """Encode page table and function table as bytes.
+
+  Page table:
+  A table that contains the mapping from page_number to the location of the
+  entry for the first function on the page in the function table.
+
+  Function table:
+  A table that contains the mapping from page_offset to the location of an entry
+  in the function offset table.
+
+  Arguments:
+    function_unwinds: All encoded function unwinds in the module.
+    function_offset_table_offsets: The offset mapping returned from
+      `EncodeFunctionOffsetTable`.
+
+  Returns:
+    A tuple containing:
+    - The page table as bytes.
+    - The function table as bytes.
+  """
+  page_function_unwinds: Dict[
+      int, List[EncodedFunctionUnwind]] = collections.defaultdict(list)
+  for function_unwind in function_unwinds:
+    page_function_unwinds[function_unwind.page_number].append(function_unwind)
+
+  raw_page_table: List[int] = []
+  function_table = bytearray()
+
+  for page_number, same_page_function_unwinds in sorted(
+      page_function_unwinds.items(), key=lambda item: item[0]):
+    # Pad empty pages.
+    # Empty pages can occur when a function spans over multiple pages.
+    # Example:
+    # A page table with a starting function that spans 3 over pages.
+    # page_table:
+    # [0, 1, 1, 1]
+    # function_table:
+    # [
+    #   # Page 0
+    #   (0, 20) # This function spans from page 0 offset 0 to page 3 offset 5.
+    #   # Page 1 is empty.
+    #   # Page 2 is empty.
+    #   # Page 3
+    #   (6, 70)
+    # ]
+    assert page_number > len(raw_page_table) - 1
+    number_of_empty_pages = page_number - len(raw_page_table)
+    raw_page_table.extend([len(function_table)] * (number_of_empty_pages + 1))
+    assert page_number == len(raw_page_table) - 1
+
+    for function_unwind in sorted(
+        same_page_function_unwinds,
+        key=lambda function_unwind: function_unwind.page_offset):
+      function_table += struct.pack(
+          'HH', function_unwind.page_offset,
+          function_offset_table_offsets[function_unwind.address_unwinds])
+
+  page_table = struct.pack(f'{len(raw_page_table)}I', *raw_page_table)
+
+  return page_table, bytes(function_table)
+
+
+ALL_PARSERS: Tuple[UnwindInstructionsParser, ...] = (
+    NullParser(),
+    PushOrSubSpParser(),
+    StoreSpParser(),
+    VPushParser(),
+)
+
+
+def ParseAddressCfi(address_cfi: AddressCfi, function_start_address: int,
+                    parsers: Tuple[UnwindInstructionsParser, ...],
+                    prev_cfa_sp_offset: int
+                    ) -> Tuple[Union[AddressUnwind, None], bool, int]:
+  """Parses address CFI with given parsers.
+
+  Arguments:
+    address_cfi: The CFI for an address in the function.
+    function_start_address: The start address of the function.
+    parsers: Available parsers to try on CFI data.
+    prev_cfa_sp_offset: Previous CFA stack pointer offset.
+
+  Returns:
+    A tuple containing:
+    - An `AddressUnwind` object when the parse is successful, None otherwise.
+    - Whether the address is in function epilogue.
+    - The new cfa_sp_offset.
+  """
+  for parser in parsers:
+    match = parser.GetBreakpadInstructionsRegex().search(
+        address_cfi.unwind_instructions)
+    if not match:
+      continue
+
+    address_unwind, cfa_sp_offset = parser.ParseFromMatch(
+        address_cfi.address - function_start_address, prev_cfa_sp_offset, match)
+
+    in_epilogue = (
+        prev_cfa_sp_offset > cfa_sp_offset
+        and address_unwind.unwind_type != UnwindType.RESTORE_SP_FROM_REGISTER)
+
+    return (address_unwind if not in_epilogue else None, in_epilogue,
+            cfa_sp_offset)
+
+  return None, False, prev_cfa_sp_offset
+
+
+def GenerateUnwinds(function_cfis: Iterable[FunctionCfi],
+                    parsers: Tuple[UnwindInstructionsParser, ...]
+                    ) -> Iterable[FunctionUnwind]:
+  """Generates parsed function unwind states from breakpad CFI data.
+
+  This function parses `FunctionCfi`s to `FunctionUnwind`s using
+  `UnwindInstructionParser`.
+
+  Argument:
+    function_cfis: An iterable of function CFI data.
+    parsers: Available parsers to try on CFI address data.
+
+  Returns:
+    An iterable of parsed function unwind states.
+  """
+  functions = 0
+  addresses = 0
+  handled_addresses = 0
+  epilogues_seen = 0
+
+  for function_cfi in function_cfis:
+    functions += 1
+    address_unwinds: List[AddressUnwind] = []
+    cfa_sp_offset = 0
+    for address_cfi in function_cfi.address_cfi:
+      addresses += 1
+
+      address_unwind, in_epilogue, cfa_sp_offset = ParseAddressCfi(
+          address_cfi, function_cfi.address_cfi[0].address, parsers,
+          cfa_sp_offset)
+
+      if address_unwind:
+        handled_addresses += 1
+        address_unwinds.append(address_unwind)
+        continue
+
+      if in_epilogue:
+        epilogues_seen += 1
+        break
+
+      logging.info('unrecognized CFI: %x %s.' %
+                   (address_cfi.address, address_cfi.unwind_instructions))
+
+    if address_unwinds:
+      # We expect that the unwind information for every function starts with a
+      # trivial unwind (RETURN_TO_LR) prior to the execution of any code in the
+      # function. This is required by the arm calling convention which involves
+      # setting lr to the return address on calling into a function.
+      assert address_unwinds[0].address_offset == 0
+      assert address_unwinds[0].unwind_type == UnwindType.RETURN_TO_LR
+
+      yield FunctionUnwind(function_cfi.address_cfi[0].address,
+                           function_cfi.size, tuple(address_unwinds))
+
+  logging.info('%d functions.', functions)
+  logging.info('%d/%d addresses handled.', handled_addresses, addresses)
+  logging.info('epilogues_seen: %d.', epilogues_seen)

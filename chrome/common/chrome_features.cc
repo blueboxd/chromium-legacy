@@ -276,16 +276,23 @@ const base::Feature kDesktopPWAsElidedExtensionsMenu{
 // Use settings instead of permissions to control access to the PWA File
 // Handling API.
 const base::Feature kDesktopPWAsFileHandlingSettingsGated{
-    "DesktopPWAsFileHandlingSettingsGated", base::FEATURE_DISABLED_BY_DEFAULT};
+  "DesktopPWAsFileHandlingSettingsGated",
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MAC)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
-// Replaces the origin text flash in web app titlebars with the name of the app.
+// Replaces the origin text flash in web app titlebars with the name of
+// the app.
 const base::Feature kDesktopPWAsFlashAppNameInsteadOfOrigin{
     "DesktopPWAsFlashAppNameInsteadOfOrigin",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Replaces the origin text flash and the icon in web app notifications with
 // the name of the app and the icon of the app.
-const base::Feature kDesktopPWAsNotificationIconAndTitle{
+const base::Feature kDesktopPWAsNotificationIconAndTitle {
   "DesktopPWAsNotificationIconAndTitle",
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -901,8 +908,13 @@ const base::Feature kScrollCapture{"ScrollCapture",
 
 // Controls whether SCT audit reports are queued and the rate at which they
 // should be sampled. Default sampling rate is 1/10,000 certificates.
+#if defined(OS_ANDROID)
+const base::Feature kSCTAuditing{"SCTAuditing",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+#else
 const base::Feature kSCTAuditing{"SCTAuditing",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
 constexpr base::FeatureParam<double> kSCTAuditingSamplingRate{
     &kSCTAuditing, "sampling_rate", 0.0001};
 
@@ -957,6 +969,10 @@ const base::Feature kSitePerProcess {
 // Enables or disables SmartDim on Chrome OS.
 const base::Feature kSmartDim{"SmartDim", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Enables prewarming a renderer when the primary profile is created.
+const base::Feature kSpareRendererOnPrimaryProfileCreation{
+    "SpareRendererOnPrimaryProfileCreation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the ability to use the sound content setting to mute a
 // website.

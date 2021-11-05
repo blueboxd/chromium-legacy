@@ -709,15 +709,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
 
 // Attempts to start a system trace while a local startup trace is active. The
 // system trace should only be started after the local trace is completed.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(crbug.com/1263376): Fails on Lacros.
-#define MAYBE_SystemTraceWhileLocalStartupTracing \
-  DISABLED_SystemTraceWhileLocalStartupTracing
-#else
-#define MAYBE_SystemTraceWhileLocalStartupTracing \
-  SystemTraceWhileLocalStartupTracing
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-TEST_F(SystemPerfettoTest, MAYBE_SystemTraceWhileLocalStartupTracing) {
+TEST_F(SystemPerfettoTest, SystemTraceWhileLocalStartupTracing) {
   // We're using mojom::kTraceEventDataSourceName for the local producer to
   // emulate starting the real TraceEventDataSource which owns startup tracing.
   auto mock_trace_event_ds = TestDataSource::CreateAndRegisterDataSource(
@@ -819,7 +811,8 @@ TEST_F(SystemPerfettoTest, MAYBE_SystemTraceWhileLocalStartupTracing) {
 }
 
 #if defined(OS_ANDROID)
-TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
+// Failed on Android bot, see crbug.com/1265954.
+TEST_F(SystemPerfettoTest, DISABLED_SystemToLowAPILevel) {
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=
       base::android::SDK_VERSION_P) {
     LOG(INFO) << "Skipping SystemToLowAPILevel test, this phone supports the "

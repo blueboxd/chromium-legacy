@@ -255,6 +255,9 @@ class InstrumentedPackageBuilder(object):
 
     self.make_install(make_args)
 
+    self.post_install()
+
+  def post_install(self):
     self.cleanup_after_install()
 
     self.fix_rpaths(self.temp_libdir())
@@ -324,18 +327,13 @@ class DebianBuilder(InstrumentedPackageBuilder):
     files_file = os.path.join(self._source_dir, 'debian/files')
 
     for line in open(files_file, 'r').read().splitlines():
+      if not line.endswith('.deb'):
+        continue
       filename, category, section = line.split(' ')
       pathname = os.path.join(self._source_dir, '..', filename)
       deb_files.append(pathname)
 
     return deb_files
-
-
-class LibcurlBuilder(DebianBuilder):
-  def build_and_install(self):
-    DebianBuilder.build_and_install(self)
-    self.shell_call('ln -rsf %s/libcurl-gnutls.so.4 %s/libcurl.so' %
-                    (self.dest_libdir(), self.dest_libdir()))
 
 
 class LibcapBuilder(InstrumentedPackageBuilder):
@@ -412,6 +410,35 @@ class Libpci3Builder(InstrumentedPackageBuilder):
     self.shell_call(
         'ln -sf libpci.so.%s %s/libpci.so.3' % (self.package_version(),
                                                 self.dest_libdir()))
+
+
+class MesonBuilder(InstrumentedPackageBuilder):
+  def build_and_install(self):
+    meson_flags = {
+      'prefix': '/usr',
+      'libdir': self._libdir,
+      'sbindir': 'bin',
+    }
+    meson_cmd = [
+      'meson',
+      'build',
+      '.',
+      ' '.join('--%s %s' % item for item in meson_flags.items()),
+      self._extra_configure_flags,
+    ]
+
+    self.shell_call(' '.join(meson_cmd),
+                    env=self._build_env, cwd=self._source_dir)
+    self.shell_call('ninja -C build', cwd=self._source_dir)
+    self.shell_call('ninja -C build install',
+                    {**self._build_env, 'DESTDIR': self.temp_dir()},
+                    cwd=self._source_dir)
+    self.post_install()
+
+  # LIBDIR is always relative to the prefix (/usr), so that needs to be added
+  # unlike when using configure.
+  def temp_libdir(self):
+    return os.path.join(self.temp_dir(), 'usr', self._libdir)
 
 
 class NSSBuilder(InstrumentedPackageBuilder):
@@ -516,12 +543,12 @@ def main():
     builder = NSSBuilder(args, clobber)
   elif args.build_method == 'custom_libcap':
     builder = LibcapBuilder(args, clobber)
-  elif args.build_method == 'custom_libcurl':
-    builder = LibcurlBuilder(args, clobber)
   elif args.build_method == 'custom_libpci3':
     builder = Libpci3Builder(args, clobber)
   elif args.build_method == 'debian':
     builder = DebianBuilder(args, clobber)
+  elif args.build_method == 'meson':
+    builder = MesonBuilder(args, clobber)
   elif args.build_method == 'stub':
     builder = StubBuilder(args, clobber)
   else:

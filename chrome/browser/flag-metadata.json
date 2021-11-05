@@ -465,11 +465,6 @@
     "expiry_milestone": 79
   },
   {
-    "name": "autofill-prune-suggestions",
-    "owners": [ "ftirelo", "tmartino" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "autofill-save-card-dismiss-on-navigation",
     "owners": [ "sczs", "bling-flags@google.com" ],
     "expiry_milestone": 82
@@ -1295,11 +1290,6 @@
     "name": "download-later-debug-on-wifi",
     "owners": [ "xingliu", "dtrainor" ],
     "expiry_milestone": 102
-  },
-  {
-    "name": "download-mobileconfig-file",
-    "owners": [ "ewannpv", "gambard" ],
-    "expiry_milestone": 95
   },
   {
     "name": "download-progress-message",
@@ -3622,6 +3612,11 @@
     "expiry_milestone": 96
   },
   {
+    "name": "lightweight-reactions-android",
+    "owners": [ "gujen", "sophey" ],
+    "expiry_milestone": 104
+  },
+  {
     "name": "list-all-display-modes",
     "owners": [ "//ui/display/OWNERS" ],
     // This flag is used for debugging and development purposes to list all
@@ -4694,11 +4689,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "scan-app-media-link",
-    "owners": [ "gavinwill", "cros-peripherals@google.com" ],
-    "expiry_milestone": 95
-  },
-  {
     "name": "scan-app-multi-page-scan",
     "owners": [ "gavinwill", "cros-peripherals@google.com" ],
     "expiry_milestone": 100
@@ -5116,6 +5106,11 @@
     "name": "sync-trusted-vault-passphrase-recovery",
     "owners": [ "mastiz", "mmoskvitin" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "synthesized-restore-session",
+    "owners": [ "justincohen", "ajuma" ],
+    "expiry_milestone": 110
   },
   {
     "name": "system-extensions",

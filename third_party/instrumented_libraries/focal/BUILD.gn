@@ -21,7 +21,6 @@ group("locally_built") {
     ":libavahi-client3",
     ":libcairo2",
     ":libcap2",
-    ":libcgmanager0",
     ":libcredentialkit_pkcs11",
     ":libcups2",
     ":libcurl3-gnutls",
@@ -157,12 +156,9 @@ template("instrumented_library") {
 }
 
 instrumented_library("atk1.0") {
-  extra_configure_flags = [
-    "--disable-static",
-
-    # See above.
-    "--disable-introspection",
-  ]
+  build_method = "meson"
+  package_ldflags = [ "-Wl,-z,undefs" ]
+  extra_configure_flags = [ "-Dintrospection=false" ]
 }
 
 instrumented_library("brltty") {
@@ -197,7 +193,6 @@ instrumented_library("dee") {
 }
 
 instrumented_library("freetype") {
-  pre_build = "scripts/pre-build/freetype.sh"
   extra_configure_flags = [ "--disable-static" ]
 }
 
@@ -233,14 +228,14 @@ instrumented_library("libasound2") {
 }
 
 instrumented_library("libatk-bridge2.0-0") {
-  extra_configure_flags = [ "--disable-static" ]
+  build_method = "meson"
+  package_ldflags = [ "-Wl,-z,undefs" ]
 }
 
 instrumented_library("libatspi2.0-0") {
-  extra_configure_flags = [
-    "--disable-static",
-    "--disable-introspection",
-  ]
+  build_method = "meson"
+  package_ldflags = [ "-Wl,-z,undefs" ]
+  extra_configure_flags = [ "-Dintrospection=no" ]
 }
 
 instrumented_library("libavahi-client3") {
@@ -254,6 +249,7 @@ instrumented_library("libavahi-client3") {
     "--disable-mono",
     "--disable-monodoc",
     "--disable-qt3",
+    "--disable-qt4",
     "--with-systemdsystemunitdir=/lib/systemd/system",
   ]
   patches = [ "patches/libavahi-client3.diff" ]
@@ -275,19 +271,11 @@ instrumented_library("libcap2") {
   build_method = "custom_libcap"
 }
 
-instrumented_library("libcgmanager0") {
-  extra_configure_flags = [ "--disable-static" ]
-
-  # Required due to autoconf version mismatch.
-  pre_build = "scripts/pre-build/autoreconf.sh"
-}
-
 instrumented_library("libcredentialkit_pkcs11") {
   build_method = "stub"
 }
 
 instrumented_library("libcups2") {
-  patches = [ "patches/libcups2.diff" ]
   extra_configure_flags = [
     "--disable-static",
 
@@ -318,9 +306,9 @@ instrumented_library("libcups2") {
 }
 
 instrumented_library("libcurl3-gnutls") {
-  build_method = "custom_libcurl"
+  build_method = "debian"
 
-  # Don't generate zsh completions.
+  # Don't generate zsh or fish completions.
   patches = [ "patches/libcurl3-gnutls.diff" ]
 }
 
@@ -385,7 +373,8 @@ instrumented_library("libdbusmenu-glib4") {
 }
 
 instrumented_library("libexpat1") {
-  extra_configure_flags = [ "--disable-static" ]
+  build_method = "debian"
+  patches = [ "patches/libexpat1.diff" ]
 }
 
 instrumented_library("libffi6") {

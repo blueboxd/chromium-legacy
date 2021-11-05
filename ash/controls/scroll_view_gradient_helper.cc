@@ -39,6 +39,11 @@ ScrollViewGradientHelper::ScrollViewGradientHelper(
 ScrollViewGradientHelper::~ScrollViewGradientHelper() = default;
 
 void ScrollViewGradientHelper::UpdateGradientZone() {
+  if (disable_count_ > 0) {
+    RemoveMaskLayer();
+    return;
+  }
+
   const gfx::Rect visible_rect = scroll_view_->GetVisibleRect();
   // Show the top gradient if the scroll view is not scrolled to the top.
   const bool show_top_gradient = visible_rect.y() > 0;
@@ -61,8 +66,7 @@ void ScrollViewGradientHelper::UpdateGradientZone() {
 
   // If no gradient is needed, remove the mask layer.
   if (top_gradient_bounds.IsEmpty() && bottom_gradient_bounds.IsEmpty()) {
-    scroll_view_->layer()->SetMaskLayer(nullptr);
-    gradient_layer_.reset();
+    RemoveMaskLayer();
     return;
   }
 
@@ -85,6 +89,27 @@ void ScrollViewGradientHelper::UpdateGradientZone() {
       {bottom_gradient_bounds, /*fade_in=*/false, /*is_horizontal=*/false});
   gradient_layer_->layer()->SetBounds(scroll_view_->layer()->bounds());
   scroll_view_->SchedulePaint();
+}
+
+void ScrollViewGradientHelper::RemoveMaskLayer() {
+  scroll_view_->layer()->SetMaskLayer(nullptr);
+  gradient_layer_.reset();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+ScopedScrollViewGradientDisabler::ScopedScrollViewGradientDisabler(
+    ScrollViewGradientHelper* helper)
+    : helper_(helper) {
+  DCHECK(helper_);
+  helper_->disable_count_++;
+  helper_->UpdateGradientZone();
+}
+
+ScopedScrollViewGradientDisabler::~ScopedScrollViewGradientDisabler() {
+  DCHECK_GT(helper_->disable_count_, 0);
+  helper_->disable_count_--;
+  helper_->UpdateGradientZone();
 }
 
 }  // namespace ash

@@ -728,6 +728,12 @@ const base::Feature kLacrosPrimary{"LacrosPrimary",
 const base::Feature kLacrosSupport{"LacrosSupport",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Pretend that profile migration has been completed regardless of the actual
+// state. Enabling this will allow users to use lacros without completing
+// profile mgiration.
+const base::Feature kForceProfileMigrationCompletion{
+    "ForceProfileMigrationCompletion", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables Language Packs for Handwriting Recognition.
 // This feature turns on the download of language-specific Handwriting models
 // via DLC.
@@ -995,10 +1001,6 @@ const base::Feature kReverseScrollGestures{"EnableReverseScrollGestures",
 // Enables the system tray to show more information in larger screen.
 const base::Feature kScalableStatusArea{"ScalableStatusArea",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables or disables showing a link to the Media app in the Scan app.
-const base::Feature kScanAppMediaLink{"ScanAppMediaLink",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables flatbed multi-page scanning.
 const base::Feature kScanAppMultiPageScan{"ScanAppMultiPageScan",

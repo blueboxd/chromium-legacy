@@ -3710,6 +3710,7 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Broadcast">ANR handling broadcast.</int>
   <int value="4" label="ContentProvider">ANR from ContentProvider.</int>
   <int value="5" label="AppRequested">ANR requested explicitly by app.</int>
+  <int value="6" label="Process">ANR in process.</int>
 </enum>
 
 <enum name="ArcAppShortcutStatus">
@@ -11378,9 +11379,14 @@ Called by update_bad_message_reasons.py.-->
 
 <enum name="CdmSystemCode">
 <!-- System Code is CDM specific. Use this as a placeholder to treat sparse
-histogram as enum -->
+histogram as enum. Values from 1000000 are reserved/reported by Chromium and are
+not CDM specific. See media/base/cdm_promise.h. -->
 
   <int value="0" label="Unknown"/>
+  <int value="1000000" label="kOk"/>
+  <int value="1000001" label="kFailure"/>
+  <int value="1000002" label="kAborted"/>
+  <int value="1000003" label="kConnectionError"/>
 </enum>
 
 <enum name="CellularConnectResult">
@@ -35262,6 +35268,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4071" label="WebCodecsVideoFrameFromImage"/>
   <int value="4072" label="WebCodecsVideoFrameFromBuffer"/>
   <int value="4073" label="OpenWebDatabaseInsecureContext"/>
+  <int value="4074" label="ScriptWebBundle"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -48490,6 +48497,7 @@ from previous Chrome versions.
   <int value="-1962749353" label="SimplifiedNTP:enabled"/>
   <int value="-1962588488" label="SpeculativePreconnect:disabled"/>
   <int value="-1961931929" label="ContextualSuggestionsBottomSheet:enabled"/>
+  <int value="-1961755742" label="LightweightReactions:enabled"/>
   <int value="-1961648833" label="show_summary"/>
   <int value="-1961102654" label="WebNotesStylize:enabled"/>
   <int value="-1961071650" label="InterestFeedV2Autoplay:disabled"/>
@@ -49797,6 +49805,7 @@ from previous Chrome versions.
   <int value="-1022165708" label="BreakingNewsPush:disabled"/>
   <int value="-1021097344" label="PolicyAtomicGroup:disabled"/>
   <int value="-1020450980" label="gesture-deletion"/>
+  <int value="-1020437363" label="LightweightReactions:disabled"/>
   <int value="-1019967332" label="VrBrowsing:enabled"/>
   <int value="-1019760093" label="PrintWithPostScriptType42Fonts:enabled"/>
   <int value="-1019492310"
@@ -70579,13 +70588,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="ProxyScheme">
-  <int value="0" label="SCHEME_INVALID"/>
-  <int value="1" label="SCHEME_DIRECT"/>
-  <int value="2" label="SCHEME_HTTP"/>
-  <int value="3" label="SCHEME_SOCKS4"/>
-  <int value="4" label="SCHEME_SOCKS5"/>
-  <int value="5" label="SCHEME_HTTPS"/>
-  <int value="6" label="SCHEME_QUIC"/>
+  <int value="1" label="SCHEME_INVALID"/>
+  <int value="2" label="SCHEME_DIRECT"/>
+  <int value="4" label="SCHEME_HTTP"/>
+  <int value="8" label="SCHEME_SOCKS4"/>
+  <int value="16" label="SCHEME_SOCKS5"/>
+  <int value="32" label="SCHEME_HTTPS"/>
+  <int value="64" label="SCHEME_QUIC"/>
 </enum>
 
 <enum name="ProxyStatus">
@@ -78262,10 +78271,10 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="8" label="User turned off sync from DICE UI.">
     User turned off sync from the Desktop Identity Consistency internals UI.
   </int>
-  <int value="9" label="[Android] Account removed from device">
+  <int value="9" label="Account removed from device">
     Signout forced because account was removed from device.
   </int>
-  <int value="10" label="Account removed from device">
+  <int value="10" label="Signout forced on profile load">
     Signout forced when profile is loaded as browser sign-in is no longer
     allowed.
   </int>

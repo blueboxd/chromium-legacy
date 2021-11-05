@@ -188,15 +188,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   WTF::HashSet<SchedulingPolicy::Feature>
   GetActiveFeaturesTrackedForBackForwardCacheMetrics() override;
 
-  // Notifies the delegate about the change in the set of active features.
-  // The scheduler calls this function when needed after each task finishes,
-  // grouping multiple OnStartedUsingFeature/OnStoppedUsingFeature into
-  // one call to the delegate (which is generally expected to upload them to
-  // the browser process).
-  // No calls will be issued to the delegate if the set of features didn't
-  // change since the previous call.
-  void ReportFeaturesToDelegate();
-
   std::unique_ptr<WebSchedulingTaskQueue> CreateWebSchedulingTaskQueue(
       WebSchedulingPriority) override;
   void OnWebSchedulingTaskQueuePriorityChanged(MainThreadTaskQueue*);
@@ -292,9 +283,8 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   // a mask instead of a set.
   uint64_t GetActiveFeaturesTrackedForBackForwardCacheMetricsMask() const;
 
-  base::WeakPtr<FrameOrWorkerScheduler> GetDocumentBoundWeakPtr() override;
-
-  void NotifyDelegateAboutFeaturesAfterCurrentTask();
+  base::WeakPtr<FrameOrWorkerScheduler> GetSchedulingAffectingFeatureWeakPtr()
+      override;
 
   void MoveTaskQueuesToCorrectWakeUpBudgetPool();
 
@@ -356,10 +346,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   BackForwardCacheDisablingFeatureTracker
       back_forward_cache_disabling_feature_tracker_;
 
-  // The last set of features passed to
-  // Delegate::UpdateBackForwardCacheDisablingFeatures.
-  uint64_t last_uploaded_bfcache_disabling_features_ = 0;
-  bool feature_report_scheduled_ = false;
   base::sequence_manager::TaskQueue::QueuePriority
       default_loading_task_priority_ =
           base::sequence_manager::TaskQueue::QueuePriority::kNormalPriority;

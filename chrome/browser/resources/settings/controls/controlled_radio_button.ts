@@ -21,7 +21,8 @@ const ControlledRadioButtonElementBase =
       new (): PolymerElement & CrRadioButtonBehavior & PrefControlMixinInterface
     };
 
-class ControlledRadioButtonElement extends ControlledRadioButtonElementBase {
+export class ControlledRadioButtonElement extends
+    ControlledRadioButtonElementBase {
   static get is() {
     return 'controlled-radio-button';
   }
@@ -49,6 +50,12 @@ class ControlledRadioButtonElement extends ControlledRadioButtonElementBase {
     // Disallow <controlled-radio-button on-click="..."> when disabled.
     e.preventDefault();
     e.stopPropagation();
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'controlled-radio-button': ControlledRadioButtonElement;
   }
 }
 

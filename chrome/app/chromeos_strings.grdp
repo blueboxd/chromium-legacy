@@ -2217,6 +2217,9 @@
   <message name="IDS_LOGIN_ERROR_TPM_FAILURE_TITLE" desc="Title of the screen notifying user about TPM error.">
     Something went wrong with signing in
   </message>
+  <message name="IDS_LOGIN_ERROR_TPM_DBUS_ERROR_TITLE" desc="Title of the screen notifying user about TPM error." translateable="false">
+    Something went wrong during TPM check
+  </message>
   <message name="IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT" desc="Suggestion to restart device in case of the TPM error.">
     Please restart your device to fix this error.
   </message>
@@ -4116,8 +4119,9 @@
   </message>
 
   <!-- Lacros data migration screen. -->
-  <message name="IDS_LACROS_DATA_MIGRATION_SCREEN_TITLE" desc="Title of the data migration screen.">
-    Updating Chrome browser
+  <!-- TODO(crbug.com/1266669): Remove translateable tag when the string is finalized. -->
+  <message translateable="false" name="IDS_LACROS_DATA_MIGRATION_SCREEN_TITLE" desc="Title of the data migration screen.">
+    Updating Chrome browser (alpha)
   </message>
   <message name="IDS_LACROS_DATA_MIGRATION_SCREEN_SUBTITLE" desc="Shows the % of progress.">
     <ph name="PERCENT">$1<ex>100</ex></ph>% completed

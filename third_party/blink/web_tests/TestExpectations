@@ -450,7 +450,6 @@ crbug.com/946762 external/wpt/css/mediaqueries/mq-gamut-004.html [ Failure ]
 crbug.com/946762 external/wpt/css/mediaqueries/mq-gamut-002.html [ Failure ]
 crbug.com/962417 external/wpt/css/mediaqueries/mq-negative-range-001.html [ Failure ]
 crbug.com/442449 external/wpt/css/mediaqueries/mq-range-001.html [ Failure ]
-crbug.com/1264962 external/wpt/css/mediaqueries/relative-units-005.html [ Failure Pass ]
 
 crbug.com/1007134 external/wpt/intersection-observer/v2/delay-test.html [ Failure Pass ]
 crbug.com/1004547 external/wpt/intersection-observer/cross-origin-iframe.sub.html [ Failure Pass ]
@@ -2962,7 +2961,6 @@ crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/protocol/handover-datachann
 crbug.com/626703 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-createDataChannel.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/candidate-exchange.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/workers/modules/shared-worker-import-csp.html [ Skip Timeout ]
-crbug.com/626703 [ Mac10.14 ] wpt_internal/fenced_frame/create-credential.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/WebCryptoAPI/generateKey/successes_AES-CTR.https.any.html [ Skip Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/WebCryptoAPI/generateKey/successes_RSA-OAEP.https.any.html?1-10 [ Skip Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/WebCryptoAPI/generateKey/successes_RSA-OAEP.https.any.worker.html?141-150 [ Skip Timeout ]
@@ -3020,7 +3018,6 @@ crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/getstats.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/protocol/ice-state.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-videoDetectorTest.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/bundle.https.html [ Timeout ]
-crbug.com/626703 [ Mac11 ] wpt_internal/fenced_frame/create-credential.https.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-box/cssbox-initial.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/css3-transform-perspective.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/parsing/translate-parsing-invalid.html [ Crash ]
@@ -7239,6 +7236,8 @@ crbug.com/1265311 [ Mac11-arm64 ] http/tests/navigation/location-change-repeated
 
 # Sheriff 2021-11-03
 crbug.com/1266199 [ Mac10.12 ] fast/css3-text/css3-text-decoration/text-decoration-style-wavy-font-size.html [ Failure Pass ]
-crbug.com/1266217 external/wpt/web-bundle/subresource-loading/script-reuse-web-bundle-resource.https.tentative.html [ Failure Pass ]
 crbug.com/1266221 [ Mac11-arm64 ] virtual/fsa-incognito/external/wpt/file-system-access/sandboxed_FileSystemFileHandle-create-sync-access-handle.https.tentative.window.html [ Failure Pass ]
 crbug.com/1263354 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-adds-entry.html [ Failure Pass Timeout ]
+
+# Sheriff 2021-11-05
+crbug.com/1266635 [ Mac ] external/wpt/html/semantics/forms/the-input-element/show-picker.tentative.html [ Failure Pass ]

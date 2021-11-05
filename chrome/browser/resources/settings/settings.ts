@@ -4,6 +4,7 @@
 
 import './settings_ui/settings_ui.js';
 
+export {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 export {CrDrawerElement} from 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
 export {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 export {CrToolbarElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
@@ -16,6 +17,9 @@ export {MultiStoreExceptionEntry} from './autofill_page/multi_store_exception_en
 export {MultiStorePasswordUiEntry} from './autofill_page/multi_store_password_ui_entry.js';
 export {PasswordCheckInteraction, PasswordCheckReferrer, PasswordManagerImpl, PasswordManagerProxy} from './autofill_page/password_manager_proxy.js';
 export {SettingsBasicPageElement} from './basic_page/basic_page.js';
+export {ControlledRadioButtonElement} from './controls/controlled_radio_button.js';
+export {ExtensionControlledIndicatorElement} from './controls/extension_controlled_indicator.js';
+export {SettingsDropdownMenuElement} from './controls/settings_dropdown_menu.js';
 export {SettingsToggleButtonElement} from './controls/settings_toggle_button.js';
 // <if expr="not chromeos and not lacros">
 export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_browser_browser_proxy.js';
@@ -25,8 +29,11 @@ export {HatsBrowserProxy, HatsBrowserProxyImpl, TrustSafetyInteraction} from './
 export {loadTimeData} from './i18n_setup.js';
 export {LifetimeBrowserProxy, LifetimeBrowserProxyImpl} from './lifetime_browser_proxy.js';
 export {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions, SafeBrowsingInteractions, SafetyCheckInteractions} from './metrics_browser_proxy.js';
-export {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.js';
-export {EDIT_STARTUP_URL_EVENT} from './on_startup_page/startup_url_entry.js';
+export {NtpExtension, OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.js';
+export {SettingsOnStartupPageElement} from './on_startup_page/on_startup_page.js';
+export {SettingsStartupUrlDialogElement} from './on_startup_page/startup_url_dialog.js';
+export {EDIT_STARTUP_URL_EVENT, SettingsStartupUrlEntryElement} from './on_startup_page/startup_url_entry.js';
+export {SettingsStartupUrlsPageElement} from './on_startup_page/startup_urls_page.js';
 export {StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl} from './on_startup_page/startup_urls_page_browser_proxy.js';
 export {OpenWindowProxy, OpenWindowProxyImpl} from './open_window_proxy.js';
 export {pageVisibility, setPageVisibilityForTesting} from './page_visibility.js';

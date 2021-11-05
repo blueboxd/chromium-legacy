@@ -6,6 +6,11 @@
 #import <XCTest/XCTest.h>
 
 #include "base/ios/ios_util.h"
+#include "base/strings/sys_string_conversions.h"
+#import "components/policy/core/common/policy_loader_ios_constants.h"
+#include "components/policy/policy_constants.h"
+#import "ios/chrome/browser/policy/policy_app_interface.h"
+#import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
@@ -38,6 +43,19 @@ using chrome_test_util::SecondarySignInButton;
 
 @implementation BookmarksPromoTestCase
 
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  if ([self isRunningTest:@selector(testSyncTypesListDisabled)]) {
+    // Configure the policy.
+    config.additional_args.push_back(
+        "-" + base::SysNSStringToUTF8(kPolicyLoaderIOSConfigurationKey));
+    config.additional_args.push_back(
+        "<dict><key>SyncTypesListDisabled</key><array><string>bookmarks</"
+        "string></array></dict>");
+  }
+  return config;
+}
+
 - (void)setUp {
   [super setUp];
 
@@ -50,6 +68,7 @@ using chrome_test_util::SecondarySignInButton;
   [super tearDown];
   [ChromeEarlGrey clearBookmarks];
   [BookmarkEarlGrey clearBookmarksPositionCache];
+  [PolicyAppInterface clearPolicies];
 }
 
 #pragma mark - BookmarksPromoTestCase Tests
@@ -232,6 +251,31 @@ using chrome_test_util::SecondarySignInButton;
   [BookmarkEarlGreyUI openBookmarks];
   [ChromeEarlGreyUI waitForAppToIdle];
   // Check that the sign-in promo is not visible anymore.
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
+}
+
+// Tests that the sign-in promo isn't shown when the SyncDisabled policy is
+// enabled.
+- (void)testSyncDisabled {
+  policy_test_utils::SetPolicy(true, policy::key::kSyncDisabled);
+
+  // Dismiss the popup.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
+                                IDS_IOS_SYNC_SYNC_DISABLED_CONTINUE)),
+                            grey_userInteractionEnabled(), nil)]
+      performAction:grey_tap()];
+
+  // Check that the sign-in promo is not visible anymore.
+  [BookmarkEarlGreyUI openBookmarks];
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
+}
+
+// Tests that the sign-in promo isn't shown when the SyncTypesListDisabled
+// bookmarks item policy is selected.
+- (void)testSyncTypesListDisabled {
+  // Check that the sign-in promo is not visible anymore.
+  [BookmarkEarlGreyUI openBookmarks];
   [SigninEarlGreyUI verifySigninPromoNotVisible];
 }
 

@@ -8236,9 +8236,10 @@ Called by update_bad_message_reasons.py.-->
   <int value="2" label="Success with device lock"/>
   <int value="3" label="Cancelled by user"/>
   <int value="4" label="Failed"/>
-  <int value="5" label="Success, but cancelled by Chrome"/>
-  <int value="6" label="Failed and cancelled by Chrome"/>
+  <int value="5" label="Success, but cancelled by Chrome. Deprecated in M97."/>
+  <int value="6" label="Failed and cancelled by Chrome. Deprecated in M97."/>
   <int value="7" label="Auth still valid"/>
+  <int value="8" label="Cancelled by Chrome"/>
 </enum>
 
 <enum name="BiometricsAvailability">
@@ -63997,6 +63998,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="803" label="Crostini Backup And Restore"/>
   <int value="804" label="Crostini Develop Android Apps"/>
   <int value="805" label="Crostini Port Forwarding"/>
+  <int value="806" label="Crostini Extra Containers"/>
   <int value="1000" label="Time Zone"/>
   <int value="1100" label="Manage Other People V2"/>
   <int value="1101" label="Security And Sign In V2"/>
@@ -90259,6 +90261,8 @@ Called by update_scheduler_enums.py.-->
   <int value="4" label="Clear Site Group Data"/>
   <int value="5" label="Clear Origin Data"/>
   <int value="6" label="Enter Site Details"/>
+  <int value="7" label="Remove Site Group"/>
+  <int value="8" label="Remove Origin"/>
 </enum>
 
 <enum name="WebsiteSettingsDiscoverabilityAction">

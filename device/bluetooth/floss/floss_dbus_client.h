@@ -83,17 +83,28 @@ struct Error {
   std::string message;
 };
 
-using ResponseCallback = base::OnceCallback<void(const absl::optional<Error>&)>;
+// Represents void return type of D-Bus (no return). Needed so that we can use
+// "void" as a type in C++ templates.
+// Needs to be exported because there are template instantiations using this.
+struct DEVICE_BLUETOOTH_EXPORT Void {};
+
+template <typename T>
+using ResponseCallback =
+    base::OnceCallback<void(const absl::optional<T>& ret,
+                            const absl::optional<Error>& err)>;
 
 // Restrict all access to DBus client initialization to FlossDBusManager so we
 // can enforce the proper ordering of initialization and shutdowns.
 class FlossDBusClient {
  public:
   // Error: No response from bus.
-  static const char kErrorNoResponse[];
+  static const char DEVICE_BLUETOOTH_EXPORT kErrorNoResponse[];
 
   // Error: Invalid parameters.
-  static const char kErrorInvalidParameters[];
+  static const char DEVICE_BLUETOOTH_EXPORT kErrorInvalidParameters[];
+
+  // Error: Invalid return.
+  static const char DEVICE_BLUETOOTH_EXPORT kErrorInvalidReturn[];
 
   FlossDBusClient(const FlossDBusClient&) = delete;
   FlossDBusClient& operator=(const FlossDBusClient&) = delete;
@@ -116,8 +127,9 @@ class FlossDBusClient {
   void LogErrorResponse(const std::string& message, dbus::ErrorResponse* error);
 
   // Default handler that runs |callback| with the callback with an optional
-  // error.
-  void DefaultResponseWithCallback(ResponseCallback callback,
+  // return and optional error.
+  template <typename T>
+  void DefaultResponseWithCallback(ResponseCallback<T> callback,
                                    dbus::Response* response,
                                    dbus::ErrorResponse* error_response);
 

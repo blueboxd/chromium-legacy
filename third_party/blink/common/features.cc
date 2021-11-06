@@ -977,6 +977,13 @@ const base::Feature kParakeet{"Parakeet", base::FEATURE_DISABLED_BY_DEFAULT};
 // Enables FLEDGE implementation. See https://crbug.com/1186444.
 const base::Feature kFledge{"Fledge", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// See https://github.com/WICG/turtledove/blob/main/FLEDGE.md
+// Changes default Permissions Policy for features join-ad-interest-group and
+// run-ad-auction to a more restricted EnableForSelf.
+const base::Feature kAdInterestGroupAPIRestrictedPolicyByDefault{
+    "AdInterestGroupAPIRestrictedPolicyByDefault",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable the ability to minimize processing in the WebRTC APM when all audio
 // tracks are disabled. If disabled, the APM in WebRTC will ignore attempts to
 // set it in a low-processing mode when all audio tracks are disabled.
@@ -1115,12 +1122,6 @@ bool IsSetTimeoutWithoutClampEnabled() {
 
 const base::Feature kTabSwitchMetrics2{"TabSwitchMetrics2",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls where third_party/blink/renderer/core/frame/deprecation.cc logs to.
-const base::Feature kDeprecationWillLogToConsole{
-    "DeprecationWillLogToConsole", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kDeprecationWillLogToDevToolsIssue{
-    "DeprecationWillLogToDevToolsIssue", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables reporting and web-exposure (respectively) of the time the first frame
 // of an animated image was painted.

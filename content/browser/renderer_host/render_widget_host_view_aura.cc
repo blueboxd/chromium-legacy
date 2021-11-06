@@ -51,6 +51,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/page_visibility_state.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
@@ -422,10 +423,6 @@ void RenderWidgetHostViewAura::InitAsPopup(
   device_scale_factor_ = GetDeviceScaleFactor();
 }
 
-void RenderWidgetHostViewAura::Show() {
-  ShowWithVisibility(Visibility::VISIBLE);
-}
-
 void RenderWidgetHostViewAura::Hide() {
   window_->Hide();
   visibility_ = Visibility::HIDDEN;
@@ -566,17 +563,20 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
   auto* visible_time_request_trigger = host_->GetVisibleTimeRequestTrigger();
   // The only way this should be null is if there is no RenderWidgetHostView.
   DCHECK(visible_time_request_trigger);
+  auto tab_switch_start_state = visible_time_request_trigger->TakeRequest();
 
   if (old_visibility == Visibility::OCCLUDED) {
-    visible_time_request_trigger->SetRecordContentToVisibleTimeRequest(
-        base::TimeTicks::Now(), false /* destination_is_loaded */,
-        false /* show_reason_tab_switching */,
-        true /* show_reason_unoccluded */,
-        false /* show_reason_bfcache_restore */);
+    // Add an unocclusion timing request. If `tab_switch_start_state` is null,
+    // this will return the new request unchanged.
+    tab_switch_start_state = VisibleTimeRequestTrigger::ConsumeAndMergeRequests(
+        std::move(tab_switch_start_state),
+        blink::mojom::RecordContentToVisibleTimeRequest::New(
+            base::TimeTicks::Now(), false /* destination_is_loaded */,
+            false /* show_reason_tab_switching */,
+            true /* show_reason_unoccluded */,
+            false /* show_reason_bfcache_restore */));
   }
 
-  auto tab_switch_start_state =
-      visible_time_request_trigger->TakeRecordContentToVisibleTimeRequest();
   bool has_saved_frame = delegated_frame_host_->HasSavedFrame();
 
   bool show_reason_bfcache_restore =
@@ -744,7 +744,7 @@ void RenderWidgetHostViewAura::RenderProcessGone() {
 }
 
 void RenderWidgetHostViewAura::ShowWithVisibility(
-    Visibility web_contents_visibility) {
+    PageVisibilityState page_visibility) {
   // Make sure we grab updated ScreenInfos before synchronizing visual
   // properties, in case they have changed or this is the initial show.
   UpdateScreenInfo();
@@ -761,7 +761,7 @@ void RenderWidgetHostViewAura::ShowWithVisibility(
   window_->Show();
   WasUnOccluded();
 #if defined(OS_WIN)
-  if (web_contents_visibility == Visibility::HIDDEN &&
+  if (page_visibility != PageVisibilityState::kVisible &&
       legacy_render_widget_host_HWND_) {
     legacy_render_widget_host_HWND_->Hide();
   }
@@ -1305,6 +1305,13 @@ gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() const {
   if (!text_input_manager_ || !text_input_manager_->GetActiveWidget())
     return gfx::Rect();
 
+  // Check selection bound first (currently populated only for EditContext)
+  const absl::optional<gfx::Rect> text_selection_bound =
+      text_input_manager_->GetTextSelectionBounds();
+  if (text_selection_bound)
+    return ConvertRectToScreen(text_selection_bound.value());
+
+  // If no selection bound, we fall back to use selection region.
   const TextInputManager::SelectionRegion* region =
       text_input_manager_->GetSelectionRegion();
   gfx::Rect caret_rect = ConvertRectToScreen(

@@ -66,6 +66,7 @@
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "components/lens/lens_features.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -163,8 +164,10 @@ using ::guest_view::GuestViewManager;
 using ::guest_view::TestGuestViewManager;
 using ::guest_view::TestGuestViewManagerFactory;
 using ::pdf_extension_test_util::ConvertPageCoordToScreenCoord;
+using ::testing::Contains;
 using ::testing::IsEmpty;
 using ::testing::MatchesRegex;
+using ::testing::Not;
 using ::testing::StartsWith;
 using ::ui::AXTreeFormatter;
 
@@ -323,9 +326,9 @@ class PDFExtensionTestWithoutUnseasonedOverride
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
-  // Sets the keyboard focus on the plugin frame by clicking on the top left
-  // corner of a PDF document.
-  void SetKeyboardFocusOnPlugin(WebContents* guest_contents) {
+  // Synchronously sets the input focus on the plugin frame by clicking on the
+  // top left corner of a PDF document.
+  void SetInputFocusOnPlugin(WebContents* guest_contents) {
     content::FocusChangedObserver focus_observer(guest_contents);
     content::SimulateMouseClickAt(
         guest_contents, blink::WebInputEvent::kNoModifiers,
@@ -1088,6 +1091,11 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionJSTest, PageChange) {
   RunTestsInJsModule("page_change_test.js", "test-bookmarks.pdf");
 }
 
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTest, ScrollWithFormFieldFocusedTest) {
+  RunTestsInJsModule("scroll_with_form_field_focused_test.js",
+                     "test-bookmarks.pdf");
+}
+
 IN_PROC_BROWSER_TEST_P(PDFExtensionJSTest, Metrics) {
   RunTestsInJsModule("metrics_test.js", "test.pdf");
 }
@@ -1616,7 +1624,7 @@ int GetViewportScrollPositionYAfterScrollEvent(
 IN_PROC_BROWSER_TEST_P(PDFExtensionKeyEventTest, ScrollWithSpaceShortcut) {
   content::WebContents* guest_contents = LoadPdfGetGuestContents(
       embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
-  SetKeyboardFocusOnPlugin(guest_contents);
+  SetInputFocusOnPlugin(guest_contents);
 
   // Get the viewport size first since the scroll distance is based on the
   // viewport height.
@@ -1647,7 +1655,7 @@ INSTANTIATE_TEST_SUITE_P(All, PDFExtensionKeyEventTest, testing::Values(true));
 IN_PROC_BROWSER_TEST_P(PDFExtensionTest, SelectAllShortcut) {
   content::WebContents* guest_contents =
       LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
-  SetKeyboardFocusOnPlugin(guest_contents);
+  SetInputFocusOnPlugin(guest_contents);
 
   content::RenderFrameHost* frame = GetPluginFrame(guest_contents);
   ASSERT_TRUE(frame);
@@ -1765,11 +1773,16 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, PrintCommand) {
   print_observer.WaitForPrintPreview();
 }
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionTest, ContextMenuPrintCommand) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest,
+                       ContextMenuPrintCommandExtensionMainFrame) {
   content::WebContents* guest_contents =
       LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
   content::RenderFrameHost* plugin_frame = GetPluginFrame(guest_contents);
   ASSERT_TRUE(plugin_frame);
+
+  // Makes sure that the correct frame invoked the context menu.
+  content::ContextMenuInterceptor menu_interceptor(
+      guest_contents->GetMainFrame());
 
   // Executes the print command as soon as the context menu is shown.
   ContextMenuNotificationObserver context_menu_observer(IDC_PRINT);
@@ -1778,6 +1791,27 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, ContextMenuPrintCommand) {
   guest_contents->GetMainFrame()->GetRenderWidgetHost()->ShowContextMenuAtPoint(
       {1, 1}, ui::MENU_SOURCE_MOUSE);
   print_observer.WaitForPrintPreview();
+  menu_interceptor.Wait();
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest, ContextMenuPrintCommandPluginFrame) {
+  content::WebContents* guest_contents =
+      LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  content::RenderFrameHost* plugin_frame = GetPluginFrame(guest_contents);
+  ASSERT_TRUE(plugin_frame);
+
+  // Makes sure that the correct frame invoked the context menu.
+  content::ContextMenuInterceptor menu_interceptor(plugin_frame);
+
+  // Executes the print command as soon as the context menu is shown.
+  ContextMenuNotificationObserver context_menu_observer(IDC_PRINT);
+
+  PrintObserver print_observer(guest_contents, plugin_frame);
+  SetInputFocusOnPlugin(guest_contents);
+  plugin_frame->GetRenderWidgetHost()->ShowContextMenuAtPoint(
+      {1, 1}, ui::MENU_SOURCE_MOUSE);
+  print_observer.WaitForPrintPreview();
+  menu_interceptor.Wait();
 }
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionTest, PrintButton) {
@@ -1797,6 +1831,65 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, PrintButton) {
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #endif  // BUILDFLAG(ENABLE_PRINTING)
+
+class PDFExtensionRegionSearchTest : public PDFExtensionTest {
+ protected:
+  std::vector<base::Feature> GetEnabledFeatures() const override {
+    auto enabled = PDFExtensionTest::GetEnabledFeatures();
+    enabled.push_back(lens::features::kLensRegionSearch);
+    return enabled;
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionRegionSearchTest,
+                       NoContextMenuCommandExtensionMainFrame) {
+  content::WebContents* guest_contents =
+      LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
+
+  // Makes sure that the correct frame invoked the context menu.
+  content::ContextMenuInterceptor menu_interceptor(
+      guest_contents->GetMainFrame());
+
+  // Captures the command IDs of the context menu.
+  ContextMenuWaiter menu_observer;
+
+  guest_contents->GetMainFrame()->GetRenderWidgetHost()->ShowContextMenuAtPoint(
+      {1, 1}, ui::MENU_SOURCE_MOUSE);
+
+  menu_observer.WaitForMenuOpenAndClose();
+  menu_interceptor.Wait();
+
+  EXPECT_THAT(menu_observer.GetCapturedCommandIds(),
+              Not(Contains(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH)));
+  EXPECT_THAT(menu_observer.GetCapturedCommandIds(),
+              Not(Contains(IDC_CONTENT_CONTEXT_WEB_REGION_SEARCH)));
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionRegionSearchTest,
+                       NoContextMenuCommandPluginFrame) {
+  content::WebContents* guest_contents =
+      LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
+
+  // Makes sure that the correct frame invoked the context menu.
+  content::ContextMenuInterceptor menu_interceptor(
+      GetPluginFrame(guest_contents));
+
+  // Captures the command IDs of the context menu.
+  ContextMenuWaiter menu_observer;
+
+  SetInputFocusOnPlugin(guest_contents);
+  GetPluginFrame(guest_contents)
+      ->GetRenderWidgetHost()
+      ->ShowContextMenuAtPoint({1, 1}, ui::MENU_SOURCE_MOUSE);
+
+  menu_observer.WaitForMenuOpenAndClose();
+  menu_interceptor.Wait();
+
+  EXPECT_THAT(menu_observer.GetCapturedCommandIds(),
+              Not(Contains(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH)));
+  EXPECT_THAT(menu_observer.GetCapturedCommandIds(),
+              Not(Contains(IDC_CONTENT_CONTEXT_WEB_REGION_SEARCH)));
+}
 
 namespace {
 
@@ -2058,9 +2151,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, PdfAccessibilityContextMenuAction) {
       content::FindAccessibilityNode(guest_contents, find_criteria);
   ASSERT_TRUE(pdf_root);
 
-  auto context_menu_interceptor =
-      std::make_unique<content::ContextMenuInterceptor>(
-          GetPluginFrame(guest_contents));
+  content::ContextMenuInterceptor context_menu_interceptor(
+      GetPluginFrame(guest_contents));
 
   ContextMenuWaiter menu_waiter;
   // Invoke kShowContextMenu accessibility action on the node with the kPdfRoot
@@ -2070,9 +2162,9 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, PdfAccessibilityContextMenuAction) {
   pdf_root->AccessibilityPerformAction(data);
   menu_waiter.WaitForMenuOpenAndClose();
 
-  context_menu_interceptor->Wait();
+  context_menu_interceptor.Wait();
   blink::UntrustworthyContextMenuParams params =
-      context_menu_interceptor->get_params();
+      context_menu_interceptor.get_params();
 
   // Validate the context menu params for selection.
   EXPECT_EQ(blink::mojom::ContextMenuDataMediaType::kPlugin, params.media_type);
@@ -3181,8 +3273,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, ContextMenuCoordinates) {
 
   // Observe context menu IPC.
   content::RenderFrameHost* plugin_frame = GetPluginFrame(guest_contents);
-  auto context_menu_interceptor =
-      std::make_unique<content::ContextMenuInterceptor>(plugin_frame);
+  content::ContextMenuInterceptor context_menu_interceptor(plugin_frame);
 
   ContextMenuWaiter menu_observer;
 
@@ -3199,9 +3290,9 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, ContextMenuCoordinates) {
   ASSERT_EQ(context_menu_position.y(), menu_observer.params().y);
 
   // We expect the IPC, received from the renderer, to be using local coords.
-  context_menu_interceptor->Wait();
+  context_menu_interceptor.Wait();
   blink::UntrustworthyContextMenuParams params =
-      context_menu_interceptor->get_params();
+      context_menu_interceptor.get_params();
   gfx::Point received_context_menu_position =
       plugin_frame->GetRenderWidgetHost()
           ->GetView()
@@ -4100,6 +4191,7 @@ INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionJSTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionContentSettingJSTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionWebUICodeCacheJSTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionServiceWorkerJSTest);
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionRegionSearchTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionLinkClickTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionInternalLinkClickTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionSaveTest);

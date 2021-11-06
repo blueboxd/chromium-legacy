@@ -1021,7 +1021,6 @@ interface OffscreenCanvasRenderingContext2D
     method lineTo
     method measureText
     method moveTo
-    method perspective
     method putImageData
     method quadraticCurveTo
     method rect
@@ -1029,8 +1028,6 @@ interface OffscreenCanvasRenderingContext2D
     method resetTransform
     method restore
     method rotate
-    method rotate3d
-    method rotateAxis
     method roundRect
     method save
     method scale
@@ -2999,6 +2996,7 @@ interface WorkerGlobalScope : EventTarget
     method reportError
     method setInterval
     method setTimeout
+    method structuredClone
     setter onerror
     setter onlanguagechange
     setter onrejectionhandled

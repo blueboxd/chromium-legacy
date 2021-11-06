@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/time/time_to_iso8601.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database.h"
@@ -39,7 +40,7 @@
 #include "ui/base/l10n/time_format.h"
 
 #if BUILDFLAG(BUILD_WITH_ON_DEVICE_CLUSTERING_BACKEND)
-#include "components/history_clusters/internal/on_device_clustering_backend.h"
+#include "components/history_clusters/core/on_device_clustering_backend.h"
 #endif
 
 namespace history_clusters {
@@ -614,9 +615,14 @@ void HistoryClustersService::OnGotClusters(
   base::UmaHistogramTimes("History.Clusters.Backend.GetClustersLatency",
                           base::TimeTicks::Now() - cluster_start_time);
 
+  base::ElapsedTimer timer;
   auto filtered_raw_clusters = FilterClustersMatchingQuery(query, clusters);
   result.clusters = CollapseDuplicateVisits(filtered_raw_clusters);
   result.clusters = SortClusters(result.clusters);
+
+  base::TimeDelta clustering_duration = timer.Elapsed();
+  base::UmaHistogramLongTimes("History.Clusters.ProcessClustersDuration",
+                              clustering_duration);
 
   base::UmaHistogramCounts1000("History.Clusters.Backend.NumClustersReturned",
                                static_cast<int>(clusters.size()));

@@ -1714,6 +1714,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_DESKS_TEMPLATES_SAVE_DESK_AS_TEMPLATE_BUTTON" desc="The text of the button to save the active desk as a template.">
         Save desk as a template
       </message>
+      <message name="IDS_ASH_DESKS_TEMPLATES_USE_TEMPLATE_BUTTON" desc="The text of the button to launch the template.">
+        Use template
+      </message>
 
       <!-- Virtual Desks -->
       <message name="IDS_ASH_DESKS_NEW_DESK_BUTTON" desc="The label of the new virtual desk (a.k.a. workspaces) button.">
@@ -4282,6 +4285,14 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_CONTEXT_MENU_REMOVE" desc="Context menu option title to remove a suggestion for a task in the launcher. Tasks display in the continue section located above the app list.">
         Remove Suggestion
+      </message>
+
+      <!-- Productivity Launcher strings -->
+      <message name="IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_TITLE" desc="Title of the context menu in apps grid view in Productivity Launcher.">
+        Reorder by
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_BY_NAME" desc="Title of the context menu item in apps grid view in Productivity Launcher that contains a submenu with options describing how the apps will be reordered by their names.">
+        Name
       </message>
 
       <!-- WM -->

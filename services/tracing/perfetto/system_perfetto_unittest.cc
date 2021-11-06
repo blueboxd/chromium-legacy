@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/process/launch.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
@@ -811,8 +812,7 @@ TEST_F(SystemPerfettoTest, SystemTraceWhileLocalStartupTracing) {
 }
 
 #if defined(OS_ANDROID)
-// Failed on Android bot, see crbug.com/1265954.
-TEST_F(SystemPerfettoTest, DISABLED_SystemToLowAPILevel) {
+TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=
       base::android::SDK_VERSION_P) {
     LOG(INFO) << "Skipping SystemToLowAPILevel test, this phone supports the "

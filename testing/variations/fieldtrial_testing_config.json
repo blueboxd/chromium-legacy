@@ -4550,7 +4550,11 @@
     "IncognitoBrandConsistencyForDesktop": [
         {
             "platforms": [
-                "chromeos_lacros"
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
             ],
             "experiments": [
                 {
@@ -6965,6 +6969,27 @@
             ]
         }
     ],
+    "SafeBrowsingPageLoadToken": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingPageLoadToken"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingPasswordProtectionForSignedInUsers": [
         {
             "platforms": [
@@ -7659,25 +7684,6 @@
                     },
                     "enable_features": [
                         "TabRanker"
-                    ]
-                }
-            ]
-        }
-    ],
-    "TabRestoreSubMenus": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "TabRestoreSubMenus"
                     ]
                 }
             ]

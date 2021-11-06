@@ -2721,6 +2721,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-universal-links",
+    "owners": [ "avi", "olivierli" ],
+    "expiry_milestone": 101
+  },
+  {
     "name": "enable-unsafe-fast-js-calls",
     "owners": [ "mslekova", "enga", "v8-fast-api@google.com" ],
     "expiry_milestone": 98
@@ -4633,6 +4638,11 @@
     // This is required by test teams to verify functionality on dev/beta
     // channels on devices which have no access to commandline flags.
     "expiry_milestone": -1
+  },
+  {
+    "name": "remove-extra-ntps",
+    "owners": [ "thegreenfrog@chromium.org", "bling-team@google.org" ],
+    "expiry_milestone": 105
   },
   {
     "name": "request-desktop-site-for-tablets",

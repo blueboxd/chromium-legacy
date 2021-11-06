@@ -15,6 +15,8 @@
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/wire/capability.pb.h"
 #include "components/feed/core/proto/v2/wire/chrome_client_info.pb.h"
+#include "components/feed/core/proto/v2/wire/feed_entry_point_data.pb.h"
+#include "components/feed/core/proto/v2/wire/feed_entry_point_source.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_query.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_request.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
@@ -130,11 +132,8 @@ feedwire::Request CreateFeedQueryRequest(
       feedwire::Capability::LONG_PRESS_CARD_MENU);
   feed_request.add_client_capability(feedwire::Capability::SHARE);
 
-  // TODO(crbug.com/1225676): Enable by default once fix is launched.
-  if (!request_metadata.chrome_info.start_surface ||
-      base::FeatureList::IsEnabled(kEnableOpenInNewTabFromStartSurfaceFeed)) {
-    feed_request.add_client_capability(feedwire::Capability::OPEN_IN_TAB);
-  }
+  feed_request.add_client_capability(feedwire::Capability::OPEN_IN_TAB);
+  feed_request.add_client_capability(feedwire::Capability::OPEN_IN_INCOGNITO);
 
   for (auto capability : GetFeedConfig().experimental_capabilities)
     feed_request.add_client_capability(capability);
@@ -176,6 +175,17 @@ feedwire::Request CreateFeedQueryRequest(
       break;
     case ContentOrder::kUnspecified:
       break;
+  }
+
+  // Set the feed entry point based on the stream type.
+  feedwire::FeedEntryPointData& entry_point =
+      *query.mutable_feed_entry_point_data();
+  if (stream_type == kForYouStream) {
+    entry_point.set_feed_entry_point_source_value(
+        feedwire::FeedEntryPointSource::CHROME_DISCOVER_FEED);
+  } else if (stream_type == kWebFeedStream) {
+    entry_point.set_feed_entry_point_source_value(
+        feedwire::FeedEntryPointSource::CHROME_FOLLOWING_FEED);
   }
 
   // |consistency_token|, for action reporting, is only applicable to signed-in

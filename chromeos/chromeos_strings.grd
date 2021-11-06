@@ -2013,9 +2013,48 @@ Try tapping the mic to ask me anything.
       </message>
 
       <!-- Shimless RMA -->
+      <!-- Landing page -->
+      <message name="IDS_SHIMLESS_RMA_LANDING_PAGE_TITLE" translateable="false" desc="Title for the landing page at the start of RMA.">
+        Chromebook repair
+      </message>
+      <message name="IDS_SHIMLESS_RMA_AUTHORIZED_TECH_ONLY_WARNING" translateable="false" desc="Warning that RMA is only for qualified technicians.">
+        This repair process is intended for a trained repair technicians.
+        Start only after replacing the malfunctioning components.
+      </message>
+      <message name="IDS_SHIMLESS_RMA_VALIDATING_COMPONENTS" translateable="false" desc="Checking that device components are approved for this device.">
+        Validating components...
+      </message>
+      <message name="IDS_SHIMLESS_RMA_VALIDATED_COMPONENTS_SUCCESS" translateable="false" desc="Successfully checked that device components are approved for this device.">
+        Components are installed correctly.
+      </message>
+      <message name="IDS_SHIMLESS_RMA_VALIDATED_COMPONENTS_FAIL" translateable="false" desc="Validation check found that device components are NOT approved for this device.">
+        Components could not be validated. If you are certain you are using
+        qualified components updating Chrome OS may resolve this issue.
+      </message>
+      <!-- Choose destination page -->
+      <message name="IDS_SHIMLESS_RMA_CHOOSE_DESTINATION" desc="Title for the page shown when choosing the return destination of the device after repair.">
+        After repair, who will be using the device?
+      </message>
+      <message name="IDS_SHIMLESS_RMA_SAME_OWNER" desc="Text shown next to the return to original owner radio button.">
+        Device will go to the same owner
+      </message>
+      <message name="IDS_SHIMLESS_RMA_SAME_OWNER_DESCRIPTION" desc="Detailed description of when to choose return to same owner.">
+        Select this option if the ownership of the device isn't changing.
+        For example, the device is being transferred to a different person
+        within an organization.
+      </message>
+      <message name="IDS_SHIMLESS_RMA_NEW_OWNER" desc="Text shown next to the return to a new owner radio button.">
+        Device will go to a different owner
+      </message>
+      <message name="IDS_SHIMLESS_RMA_NEW_OWNER_DESCRIPTION" desc="Detailed description of when to choose return to a new owner.">
+        Select this option if the device is being restocked or refurbished for
+        distribution to a new customer.
+      </message>
+      <!-- Repair complete page -->
       <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED" desc="Title for the page shown when the RMA process repair process is completed.">
         Repair completed
       </message>
+      <!-- OS update page -->
       <message name="IDS_SHIMLESS_RMA_CURRENT_VERSION" translateable="false" desc="Label that shows the current installed version of Chrome OS.">
         Current version <ph name="VERSION_NUMBER">$1<ex>90.0.1234.56</ex></ph>
       </message>

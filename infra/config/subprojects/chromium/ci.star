@@ -2345,7 +2345,7 @@ ci.cipd_builder(
                 "sdk_package_name": "system-images;android-30;google_apis_playstore;x86",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-30/google_apis_playstore/x86.yaml",
             },
-            # sdkmanager don't have x86 for android-31 so use x86_64.
+            # use x86_64 since sdkmanager don't ship x86 for android-31 and above.
             {
                 "sdk_package_name": "system-images;android-31;google_apis;x86_64",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-31/google_apis/x86_64.yaml",
@@ -2353,6 +2353,16 @@ ci.cipd_builder(
             {
                 "sdk_package_name": "system-images;android-31;google_apis_playstore;x86_64",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-31/google_apis_playstore/x86_64.yaml",
+            },
+            # Preview system images for Android 12L.
+            # Should be updated once it is fully released.
+            {
+                "sdk_package_name": "system-images;android-Sv2;google_apis;x86_64",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-Sv2/google_apis/x86_64.yaml",
+            },
+            {
+                "sdk_package_name": "system-images;android-Sv2;google_apis_playstore;x86_64",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-Sv2/google_apis_playstore/x86_64.yaml",
             },
         ],
     },
@@ -3908,6 +3918,7 @@ ci.fyi_builder(
         category = "paeverywhere|mac",
         short_name = "64dbg",
     ),
+    cores = None,
     notifies = ["chrome-memory-safety"],
     os = os.MAC_ANY,
 )
@@ -3919,6 +3930,7 @@ ci.fyi_builder(
         category = "paeverywhere|mac",
         short_name = "64rel",
     ),
+    cores = None,
     notifies = ["chrome-memory-safety"],
     os = os.MAC_ANY,
 )
@@ -4576,7 +4588,16 @@ ci.fyi_ios_builder(
         short_name = "asan",
     ),
 )
-
+ci.fyi_ios_builder(
+    name = "ios-catalyst",
+    console_view_entry = [
+        consoles.console_view_entry(
+            category = "iOS",
+            short_name = "ctl",
+        ),
+    ],
+    os = os.MAC_11,
+)
 ci.fyi_ios_builder(
     name = "ios-reclient",
     console_view_entry = consoles.console_view_entry(
@@ -5668,6 +5689,9 @@ ci.linux_builder(
     ),
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.linux_builder(
@@ -5677,6 +5701,9 @@ ci.linux_builder(
         short_name = "32",
     ),
     main_console_view = "main",
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.linux_builder(
@@ -5688,6 +5715,9 @@ ci.linux_builder(
     ),
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.linux_builder(
@@ -5713,6 +5743,9 @@ ci.linux_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
     triggered_by = ["ci/Linux Builder (dbg)"],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.linux_builder(

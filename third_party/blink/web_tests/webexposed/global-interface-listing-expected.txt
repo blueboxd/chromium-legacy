@@ -1159,7 +1159,6 @@ interface CanvasRenderingContext2D
     method lineTo
     method measureText
     method moveTo
-    method perspective
     method putImageData
     method quadraticCurveTo
     method rect
@@ -1167,8 +1166,6 @@ interface CanvasRenderingContext2D
     method resetTransform
     method restore
     method rotate
-    method rotate3d
-    method rotateAxis
     method roundRect
     method save
     method scale
@@ -1215,6 +1212,11 @@ interface ChannelMergerNode : AudioNode
     method constructor
 interface ChannelSplitterNode : AudioNode
     attribute @@toStringTag
+    method constructor
+interface CharacterBoundsUpdateEvent : Event
+    attribute @@toStringTag
+    getter rangeEnd
+    getter rangeStart
     method constructor
 interface CharacterData : Node
     attribute @@toStringTag
@@ -2158,9 +2160,11 @@ interface DynamicsCompressorNode : AudioNode
     method constructor
 interface EditContext : EventTarget
     attribute @@toStringTag
+    getter characterBoundsRangeStart
     getter enterKeyHint
     getter inputMode
     getter inputPanelPolicy
+    getter oncharacterboundsupdate
     getter oncompositionend
     getter oncompositionstart
     getter ontextformatupdate
@@ -2169,13 +2173,16 @@ interface EditContext : EventTarget
     getter selectionStart
     getter text
     method attachedElements
+    method characterBounds
     method constructor
     method updateBounds
+    method updateCharacterBounds
     method updateSelection
     method updateText
     setter enterKeyHint
     setter inputMode
     setter inputPanelPolicy
+    setter oncharacterboundsupdate
     setter oncompositionend
     setter oncompositionstart
     setter ontextformatupdate
@@ -6037,7 +6044,6 @@ interface OffscreenCanvasRenderingContext2D
     method lineTo
     method measureText
     method moveTo
-    method perspective
     method putImageData
     method quadraticCurveTo
     method rect
@@ -6045,8 +6051,6 @@ interface OffscreenCanvasRenderingContext2D
     method resetTransform
     method restore
     method rotate
-    method rotate3d
-    method rotateAxis
     method roundRect
     method save
     method scale
@@ -11583,6 +11587,7 @@ namespace CSS
     method showOpenFilePicker
     method showSaveFilePicker
     method stop
+    method structuredClone
     method webkitCancelAnimationFrame
     method webkitRequestAnimationFrame
     method webkitRequestFileSystem

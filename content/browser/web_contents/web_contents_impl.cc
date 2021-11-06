@@ -3455,10 +3455,14 @@ PageVisibilityState WebContentsImpl::CalculatePageVisibilityState(
       XRRuntimeManagerImpl::GetImmersiveSessionWebContents() == this;
 #endif
 
+  // If there are entities in Picture-in-Picture mode, don't activate the
+  // "disable rendering" optimization, since it still needs to drive the video,
+  // and possibly other elements on the page like canvas, to keep the picture in
+  // picture window up to date.
   if (visibility == Visibility::VISIBLE || visible_capturer_count_ > 0 ||
       web_contents_visible_in_vr) {
     return PageVisibilityState::kVisible;
-  } else if (hidden_capturer_count_ > 0) {
+  } else if (hidden_capturer_count_ > 0 || has_picture_in_picture_video_) {
     return PageVisibilityState::kHiddenButPainting;
   }
   return PageVisibilityState::kHidden;
@@ -3474,13 +3478,10 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
   PageVisibilityState page_visibility =
       CalculatePageVisibilityState(new_visibility);
 
-  // If there are entities in Picture-in-Picture mode, don't activate the
-  // "disable rendering" optimization. A crashed frame might be covered by a sad
-  // tab. See docs on SadTabHelper exactly when it is or isn't. Either way,
-  // don't make it visible.
+  // A crashed frame might be covered by a sad tab. See docs on SadTabHelper
+  // exactly when it is or isn't. Either way, don't make it visible.
   bool view_is_visible =
-      !IsCrashed() && (page_visibility != PageVisibilityState::kHidden ||
-                       HasPictureInPictureVideo());
+      !IsCrashed() && page_visibility != PageVisibilityState::kHidden;
 
   // Prerendering relies on overriding FrameTree::Delegate::IsHidden,
   // while for other frame trees FrameTree::Delegate::IsHidden
@@ -3530,7 +3531,7 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
   if (auto* view = GetRenderWidgetHostView()) {
     if (view_is_visible) {
       static_cast<RenderWidgetHostViewBase*>(view)->ShowWithVisibility(
-          new_visibility);
+          page_visibility);
     } else if (new_visibility == Visibility::HIDDEN) {
       view->Hide();
     } else {
@@ -9170,10 +9171,10 @@ void WebContentsImpl::SetTabSwitchStartTime(base::TimeTicks start_time,
   auto* trigger = GetVisibleTimeRequestTrigger();
   if (!trigger)
     return;
-  trigger->SetRecordContentToVisibleTimeRequest(
-      start_time, destination_is_loaded, /*show_reason_tab_switching=*/true,
-      /*show_reason_unoccluded=*/false,
-      /*show_reason_bfcache_restore=*/false);
+  trigger->UpdateRequest(start_time, destination_is_loaded,
+                         /*show_reason_tab_switching=*/true,
+                         /*show_reason_unoccluded=*/false,
+                         /*show_reason_bfcache_restore=*/false);
 }
 
 VisibleTimeRequestTrigger* WebContentsImpl::GetVisibleTimeRequestTrigger() {

@@ -1137,7 +1137,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
     bool previous_document_was_activated,
     NavigationRequest* navigation_request) {
   DCHECK(navigation_request);
-  if (ShouldMaintainTrivialSessionHistory() && GetLastCommittedEntry()) {
+  if (ShouldMaintainTrivialSessionHistory(rfh->frame_tree_node()) &&
+      GetLastCommittedEntry()) {
     // Ensure that this navigation does not add a navigation entry, since
     // ShouldMaintainTrivialSessionHistory() means we should not add an entry
     // beyond the last committed one. Therefore, `should_replace_current_entry`
@@ -1172,6 +1173,21 @@ bool NavigationControllerImpl::RendererDidNavigate(
         pending_entry_->GetIsOverridingUserAgent() !=
             GetLastCommittedEntry()->GetIsOverridingUserAgent())
       overriding_user_agent_changed = true;
+#if defined(OS_ANDROID)
+    // TODO(crbug.com/1266277): Clean up the logic of setting
+    // |overriding_user_agent_changed| post-launch.
+    if (base::FeatureList::IsEnabled(features::kRequestDesktopSiteGlobal)) {
+      // Must honor user agent overrides in the |navigation_request|, such as
+      // from things like RequestDesktopSiteWebContentsObserverAndroid. As a
+      // result, besides comparing |pending_entry_|'s user agent against
+      // LastCommittedEntry's, also need to compare |navigation_request|'s user
+      // agent against LastCommittedEntry's.
+      if (navigation_request->is_overriding_user_agent() !=
+          GetLastCommittedEntry()->GetIsOverridingUserAgent()) {
+        overriding_user_agent_changed = true;
+      }
+    }
+#endif  // defined(OS_ANDROID)
   } else {
     // GetLastCommittedEntry() is null, so this is the first entry.
     details->previous_main_frame_url = GURL();
@@ -1182,6 +1198,19 @@ bool NavigationControllerImpl::RendererDidNavigate(
       // well.
       overriding_user_agent_changed = true;
     }
+#if defined(OS_ANDROID)
+    // TODO(crbug.com/1266277): Clean up the logic of setting
+    // |overriding_user_agent_changed| post-launch.
+    if (base::FeatureList::IsEnabled(features::kRequestDesktopSiteGlobal)) {
+      // Must honor user agent overrides in the |navigation_request|, such as
+      // from things like RequestDesktopSiteWebContentsObserverAndroid. As a
+      // result, besides checking |pending_entry_|'s user agent, also need to
+      // check |navigation_request|'s.
+      if (navigation_request->is_overriding_user_agent()) {
+        overriding_user_agent_changed = true;
+      }
+    }
+#endif  // defined(OS_ANDROID)
   }
 
   bool is_main_frame_navigation = !rfh->GetParent();
@@ -3139,9 +3168,10 @@ base::WeakPtr<NavigationHandle> NavigationControllerImpl::NavigateWithoutEntry(
   //
   // If there is an entry, an entry replacement must happen if the current
   // browsing context should maintain a trivial session history.
-  bool should_replace_current_entry = (params.should_replace_current_entry ||
-                                       ShouldMaintainTrivialSessionHistory()) &&
-                                      entries_.size();
+  bool should_replace_current_entry =
+      (params.should_replace_current_entry ||
+       ShouldMaintainTrivialSessionHistory(node)) &&
+      entries_.size();
 
   // Javascript URLs should not create NavigationEntries. All other navigations
   // do, including navigations to chrome renderer debug URLs.
@@ -4257,11 +4287,13 @@ void NavigationControllerImpl::NavigateToAppHistoryKey(FrameTreeNode* node,
   }
 }
 
-bool NavigationControllerImpl::ShouldMaintainTrivialSessionHistory() const {
-  // TODO(https://crbug.com/1197384): We may have to add portals and fenced
-  // frames in addition to prerender. This should be kept in sync with
+bool NavigationControllerImpl::ShouldMaintainTrivialSessionHistory(
+    const FrameTreeNode* frame_tree_node) const {
+  // TODO(https://crbug.com/1197384): We may have to add portals in addition to
+  // prerender and fenced frames. This should be kept in sync with
   // LocalFrame version, LocalFrame::ShouldMaintainTrivialSessionHistory.
-  return frame_tree_.is_prerendering();
+  return frame_tree_.is_prerendering() ||
+         frame_tree_node->IsInFencedFrameTree();
 }
 
 }  // namespace content

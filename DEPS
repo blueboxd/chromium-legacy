@@ -242,7 +242,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '5d8a89e44f97a1622a0b5d5c3caf4597362b30fc',
+  'angle_revision': 'ee8e8a68c5a9e9e0a0554d23369f76b663fbbc97',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -250,7 +250,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '3563e0b3164e01288997df29f70ed0af291100dd',
+  'pdfium_revision': 'ad00459e4b1d568ba9fee0b0fa2740e773311b8b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -349,7 +349,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '4bdf8151a5f9d25386442afbe650219e987a34f3',
+  'dawn_revision': 'eb9339bdf38f06354d1583bf11ba6dbe029b50bb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1691,7 +1691,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ab67ccb6339925fac2d00d861c7a48225ebcb979',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9935dc01603c8c056a45447c5422bfda2549bb81',
     'condition': 'checkout_src_internal',
   },
 
@@ -1710,7 +1710,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'IbujK0GOMbeGCC-PkTCp79ZEcUAqvAf19c8xojMLam4C',
+        'version': 'P5bKyt-Ht-3g7obmli0-ZVJM1fKIsAiAZK7F1Fu6hikC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1721,7 +1721,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '-WYpOMtrQuopfsVoZLW3b-3DC9BD7LjuPjsHOaq63J0C',
+        'version': '4MICakBznjZm29_pmyM5JYpmg7Hzz7h6bbLnMvUcdVQC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

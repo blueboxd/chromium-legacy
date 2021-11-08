@@ -347,4 +347,10 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase {
   // </if>
 }
 
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-about-page': SettingsAboutPageElement;
+  }
+}
+
 customElements.define(SettingsAboutPageElement.is, SettingsAboutPageElement);

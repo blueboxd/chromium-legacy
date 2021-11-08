@@ -17,6 +17,7 @@
 #include "chrome/browser/signin/signin_features.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"  // nogncheck
+#include "components/account_manager_core/chromeos/fake_account_manager_ui.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -28,7 +29,9 @@ class IdentityExtraSetUp : public ChromeBrowserMainExtraParts {
  public:
   void PreProfileInit() override {
     // Create and initialize Ash AccountManager.
-    CreateAshAccountManagerForTests();
+    scoped_ash_account_manager_ =
+        std::make_unique<ScopedAshAccountManagerForTests>(
+            std::make_unique<FakeAccountManagerUI>());
     auto* account_manager = MaybeGetAshAccountManagerForTests();
     CHECK(account_manager);
     account_manager->InitializeInEphemeralMode(
@@ -54,10 +57,20 @@ class IdentityExtraSetUp : public ChromeBrowserMainExtraParts {
       }
     }
   }
+
+ private:
+  std::unique_ptr<ScopedAshAccountManagerForTests> scoped_ash_account_manager_;
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 }  // namespace
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+FakeAccountManagerUI* IdentityBrowserTestBase::GetFakeAccountManagerUI() const {
+  return static_cast<FakeAccountManagerUI*>(
+      MaybeGetAshAccountManagerUIForTests());
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 void IdentityBrowserTestBase::CreatedBrowserMainParts(
     content::BrowserMainParts* parts) {

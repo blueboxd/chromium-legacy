@@ -1136,13 +1136,14 @@ LayoutBlockFlow DIV id="mc"
 LayoutNGBlockFlow DIV id="mc"
   +--LayoutMultiColumnFlowThread (anonymous)
   |  +--LayoutNGBlockFlow (anonymous)
-  |  |  +--LayoutInline SPAN
-  |  |  |  +--LayoutText #text "x"
-  |  +--LayoutNGBlockFlow (anonymous)
-  |  |  +--LayoutNGBlockFlow DIV id="inner"
-  |  +--LayoutNGBlockFlow (anonymous)
-  |  |  +--LayoutInline SPAN
-  |  |  |  +--LayoutText #text "y"
+  |  |  +--LayoutNGBlockFlow (anonymous)
+  |  |  |  +--LayoutInline SPAN
+  |  |  |  |  +--LayoutText #text "x"
+  |  |  +--LayoutNGBlockFlow (anonymous)
+  |  |  |  +--LayoutNGBlockFlow DIV id="inner"
+  |  |  +--LayoutNGBlockFlow (anonymous)
+  |  |  |  +--LayoutInline SPAN
+  |  |  |  |  +--LayoutText #text "y"
   +--LayoutMultiColumnSet (anonymous)
 )DUMP",
               ToSimpleLayoutTree(container));
@@ -1424,7 +1425,7 @@ LayoutListItem DIV id="mc"
 LayoutNGListItem DIV id="mc"
   +--LayoutMultiColumnFlowThread (anonymous)
   |  +--LayoutNGOutsideListMarker ::marker
-  |  |  +--LayoutText (anonymous)
+  |  |  +--LayoutText (anonymous) "\u2022 "
   +--LayoutMultiColumnSet (anonymous)
 )DUMP",
               ToSimpleLayoutTree(container));

@@ -4265,6 +4265,15 @@ const char kCrostiniMultiContainerName[] = "Allow multiple Crostini containers";
 const char kCrostiniMultiContainerDescription[] =
     "Experimental UI for creating and managing multiple Crostini containers";
 
+const char kCrostiniImeSupportName[] = "Crostini IME support";
+const char kCrostiniImeSupportDescription[] =
+    "Experimental support for IMEs (excluding VK) on Crostini.";
+
+const char kCrostiniVirtualKeyboardSupportName[] =
+    "Crostini Virtual Keyboard Support";
+const char kCrostiniVirtualKeyboardSupportDescription[] =
+    "Experimental support for the Virtual Keyboard on Crostini.";
+
 const char kDisableBufferBWCompressionName[] =
     "Disable buffer bandwidth compression";
 const char kDisableBufferBWCompressionDescription[] =
@@ -4770,11 +4779,6 @@ const char kImeMozcProtoName[] = "Enable protobuf on Japanese IME";
 const char kImeMozcProtoDescription[] =
     "Enable Japanese IME to use protobuf as interactive message format to "
     "replace JSON";
-
-const char kImeServiceDecoderName[] = "ChromeOS IME Service Decoder";
-const char kImeServiceDecoderDescription[] =
-    "Controls whether ChromeOS system IME works with the NaCl decoders or "
-    "the decoders loaded in the IME service.";
 
 const char kImeSystemEmojiPickerName[] = "System emoji picker";
 const char kImeSystemEmojiPickerDescription[] =

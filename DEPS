@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '70f3a0ff7233cfd677f818fffdabe3559a77cc89',
+  'swiftshader_revision': '4c6da56da96ce9e90654850d2cd584ffe6e29514',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -1026,7 +1026,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '650096367cd9900e499052c49179b33b68fa1ac9',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '761da53ba53fc1e7444803f9499e9092f5bb4e1a',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1691,7 +1691,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f770eed0a8372e39415a1fe50a9efe139ce02961',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@1cfa6fa28b44b081980ff4fac401be693fbb9c09',
     'condition': 'checkout_src_internal',
   },
 
@@ -1710,7 +1710,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'P5bKyt-Ht-3g7obmli0-ZVJM1fKIsAiAZK7F1Fu6hikC',
+        'version': '3s6CXUUHMHfq_rnPU7Yb3eSRAnUXACIM48LO8dtLJpYC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1721,7 +1721,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '4MICakBznjZm29_pmyM5JYpmg7Hzz7h6bbLnMvUcdVQC',
+        'version': 'O0uPSeQ8RgQvwmxkV50TbCkkkkZ1WkBqmrWH1fkFd4oC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

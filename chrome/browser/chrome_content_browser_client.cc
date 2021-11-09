@@ -584,8 +584,8 @@
 #include "chrome/browser/lacros/chrome_browser_main_extra_parts_lacros.h"
 #include "chrome/browser/speech/tts_lacros.h"
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_lacros.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/lacros/lacros_service.h"
-#include "chromeos/features/chromeos_features.h"
 #include "ui/base/ui_base_switches.h"
 #endif
 
@@ -2402,6 +2402,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       extensions::switches::kExtensionsOnChromeURLs,
       extensions::switches::kSetExtensionThrottleTestParams,  // For tests only.
       extensions::switches::kAllowlistedExtensionID,
+      extensions::switches::kDEPRECATED_AllowlistedExtensionID,
 #endif
       switches::kAllowInsecureLocalhost,
       switches::kAppsGalleryURL,
@@ -2442,6 +2443,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         extensions::switches::kEnableExperimentalExtensionApis,
         extensions::switches::kExtensionsOnChromeURLs,
         extensions::switches::kAllowlistedExtensionID,
+        extensions::switches::kDEPRECATED_AllowlistedExtensionID,
     };
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,

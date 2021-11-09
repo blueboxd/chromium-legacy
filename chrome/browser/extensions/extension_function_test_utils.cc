@@ -121,6 +121,7 @@ std::unique_ptr<base::Value> RunFunctionAndReturnSingleResult(
     Browser* browser,
     extensions::api_test_utils::RunFunctionFlags flags) {
   scoped_refptr<ExtensionFunction> function_owner(function);
+  function->preserve_results_for_testing();
   RunFunction(function, args, browser, flags);
   EXPECT_TRUE(function->GetError().empty()) << "Unexpected error: "
       << function->GetError();
@@ -154,7 +155,6 @@ bool RunFunction(ExtensionFunction* function,
       new extensions::ExtensionFunctionDispatcher(browser->profile()));
   dispatcher->set_delegate(&dispatcher_delegate);
   return extensions::api_test_utils::RunFunction(function, std::move(args),
-                                                 browser->profile(),
                                                  std::move(dispatcher), flags);
 }
 

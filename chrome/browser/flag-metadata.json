@@ -1576,7 +1576,7 @@
     "name": "enable-container-queries",
     "owners": [ "andruud", "futhark" ],
     // This flag is used to get developer feedback on the API.
-    "expiry_milestone": 97
+    "expiry_milestone": 105
   },
   {
     "name": "enable-cooperative-scheduling",
@@ -1870,6 +1870,11 @@
     "name": "enable-dns-proxy",
     "owners": [ "garrick", "jasongustaman", "cros-networking@google.com" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "enable-docked-magnifier-resizing",
+    "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 110
   },
   {
     "name": "enable-drdc",
@@ -2308,11 +2313,6 @@
     "name": "enable-notifications-revamp",
     "owners": [ "amehfooz", "newcomer" ],
     "expiry_milestone": 100
-  },
-  {
-    "name": "enable-ntp-memory-enhancement",
-    "owners": [ "adamta@google.com", "sczs" ],
-    "expiry_milestone": 96
   },
   {
     "name": "enable-oauth-ipp",
@@ -3833,11 +3833,6 @@
     "expiry_milestone": 98
   },
   {
-    "name": "mobile-pwa-install-use-bottom-sheet",
-    "owners": [ "finnur", "hartmanng", "peter" ],
-    "expiry_milestone": 94
-  },
-  {
     "name": "modern-tab-strip",
     "owners": [ "bling-flags@google.com" ],
     "expiry_milestone": 92
@@ -4334,13 +4329,18 @@
   },
   {
     "name": "pdf-unseasoned",
-    "owners": [ "dhoss", "kmoon", "nigi", "thestig"],
-    "expiry_milestone": 97
+    "owners": [ "//pdf/OWNERS" ],
+    "expiry_milestone": 103
   },
   {
     "name": "pdf-xfa-forms",
     "owners": [ "carlosil", "tsepez" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "per-desk-wallpaper",
+    "owners": ["xiaohuic", "skau", "janetmac"],
+    "expiry_milestone": 102
   },
   {
     "name": "percent-based-scrolling",
@@ -4586,6 +4586,11 @@
     "name": "reading-list-messages",
     "owners": [ "thegreenfrog@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "reading-list-time-to-read",
+    "owners": [ "thegreenfrog@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "record-snapshot-size",

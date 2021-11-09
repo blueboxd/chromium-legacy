@@ -9800,6 +9800,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Known"/>
 </enum>
 
+<enum name="BooleanLabeledRendererTask">
+  <int value="0" label="Unlabeled renderer task"/>
+  <int value="1" label="Labeled renderer task"/>
+</enum>
+
 <enum name="BooleanLargeAllocationFromFreelist">
   <int value="0" label="Allocated via IPC"/>
   <int value="1" label="Allocated via Freelist"/>
@@ -10892,7 +10897,9 @@ Called by update_bad_message_reasons.py.-->
   <int value="27" label="Too many quads"/>
   <int value="28" label="YUVVideoDrawQuad not overlay candidate"/>
   <int value="29" label="YUVVideoDrawQuad Y/UV coordinates mismatch"/>
-  <int value="30" label="YUVVideoDrawQuad has Invalid planes"/>
+  <int value="30" label="YUVVideoDrawQuad has invalid planes"/>
+  <int value="31" label="Has copy requests"/>
+  <int value="32" label="Overlay disabled"/>
 </enum>
 
 <enum name="CameraPrivacySwitchEvent">
@@ -11469,6 +11476,11 @@ not CDM specific. See media/base/cdm_promise.h. -->
   <int value="8"
       label="Ignored Differing Path After Reverifying With Trial Chain"/>
   <int value="9" label="Ignored Locally Trusted Leaf Cert"/>
+  <int value="10" label="Ignored Configuration Changed"/>
+  <int value="11" label="Ignored SHA-1 Signature Present"/>
+  <int value="12" label="Ignored Windows Rev Checking Enabled"/>
+  <int value="13" label="Ignored Authority Invalid"/>
+  <int value="14" label="Ignored Known Root"/>
 </enum>
 
 <enum name="ChangePasswordUrlFetchResult">
@@ -29921,6 +29933,7 @@ Called by update_extension_histograms.py.-->
   <int value="1598" label="WEB_AUTHENTICATION_PROXY_ATTACH"/>
   <int value="1599" label="WEB_AUTHENTICATION_PROXY_DETACH"/>
   <int value="1600" label="FILEMANAGERPRIVATE_CANCELIOTASK"/>
+  <int value="1601" label="AUTOTESTPRIVATE_GETDISPLAYSMOOTHNESS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -40365,6 +40378,19 @@ Called by update_permissions_policy_enum.py.-->
   <int value="16" label="UNAUTHENTICATED"/>
 </enum>
 
+<enum name="GoogleSearchMode">
+  <int value="0" label="UNSPECIFIED"/>
+  <int value="1" label="UNKNOWN"/>
+  <int value="2" label="WEB"/>
+  <int value="3" label="IMAGES"/>
+  <int value="4" label="NEWS"/>
+  <int value="5" label="SHOPPING"/>
+  <int value="6" label="VIDEOS"/>
+  <int value="7" label="BOOKS"/>
+  <int value="8" label="LOCAL"/>
+  <int value="9" label="FLIGHTS"/>
+</enum>
+
 <enum name="GoogleServiceAuthError">
   <int value="0" label="NONE"/>
   <int value="1" label="INVALID_GAIA_CREDENTIALS"/>
@@ -49268,6 +49294,7 @@ from previous Chrome versions.
   <int value="-1417122729"
       label="AutofillCreditCardAblationExperiment:disabled"/>
   <int value="-1416754663" label="enable-mac-views-native-app-windows"/>
+  <int value="-1416610483" label="WallpaperPerDesk:enabled"/>
   <int value="-1416184931" label="TranslateRankerEnforcement:enabled"/>
   <int value="-1415244717" label="CrostiniVirtualKeyboardSupport:disabled"/>
   <int value="-1412230070" label="query-tiles-instant-background-task"/>
@@ -49385,6 +49412,7 @@ from previous Chrome versions.
   <int value="-1334909143" label="NtpModulesDragAndDrop:disabled"/>
   <int value="-1334336593" label="SystemKoreanPhysicalTyping:disabled"/>
   <int value="-1334327410" label="ash-enable-touch-view-testing"/>
+  <int value="-1334028960" label="DockedMagnifierResizing:disabled"/>
   <int value="-1333946113" label="ContentIndexingDownloadHome:disabled"/>
   <int value="-1332267458" label="RemoveNavigationHistory:enabled"/>
   <int value="-1331831950" label="site-isolation-for-password-sites:enabled"/>
@@ -51262,6 +51290,7 @@ from previous Chrome versions.
   <int value="98134240" label="material-design-ink-drop-animation-speed"/>
   <int value="98218116" label="ContextualSearchLongpressResolve:disabled"/>
   <int value="99177659" label="OmniboxUICuesForSearchHistoryMatches:disabled"/>
+  <int value="99660832" label="DockedMagnifierResizing:enabled"/>
   <int value="103347629" label="WinrtSensorsImplementation:enabled"/>
   <int value="103932290" label="show-autofill-type-predictions"/>
   <int value="105046382" label="ParallelDownloading:disabled"/>
@@ -51452,6 +51481,7 @@ from previous Chrome versions.
   <int value="265830810" label="BackgroundTaskComponentUpdate:enabled"/>
   <int value="266322815" label="ChromeModernDesign:disabled"/>
   <int value="266702296" label="disable-plugin-power-saver"/>
+  <int value="267706621" label="WallpaperPerDesk:disabled"/>
   <int value="268535107"
       label="ash-new-touch-support-for-screen-magnification"/>
   <int value="268794953" label="MessagesForAndroidSafetyTip:disabled"/>

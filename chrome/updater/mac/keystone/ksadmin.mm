@@ -26,8 +26,8 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/updater/app/app.h"
-#include "chrome/updater/mac/keystone/ks_tickets.h"
 #include "chrome/updater/mac/mac_util.h"
+#include "chrome/updater/mac/setup/ks_tickets.h"
 #include "chrome/updater/mac/update_service_proxy.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/update_service.h"
@@ -216,7 +216,7 @@ void KSAdminApp::CheckForUpdates() {
       app_id,
       HasSwitch(kCommandUserInitiated) ? UpdateService::Priority::kForeground
                                        : UpdateService::Priority::kBackground,
-      base::BindRepeating([](UpdateService::UpdateState update_state) {
+      base::BindRepeating([](const UpdateService::UpdateState& update_state) {
         if (update_state.state == UpdateService::UpdateState::State::kUpdated) {
           printf("Finished updating (errors=%d reboot=%s)\n", 0, "YES");
         }

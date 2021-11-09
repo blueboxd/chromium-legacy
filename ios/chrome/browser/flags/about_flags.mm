@@ -684,10 +684,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncTrustedVaultPassphraseRecoveryDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(::switches::kSyncTrustedVaultPassphraseRecovery)},
-    {"enable-ntp-memory-enhancement",
-     flag_descriptions::kEnableNTPMemoryEnhancementName,
-     flag_descriptions::kEnableNTPMemoryEnhancementDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableNTPMemoryEnhancement)},
     {"enable-autofill-save-card-info-bar-account-indication-footer",
      flag_descriptions::
          kEnableAutofillSaveCardInfoBarAccountIndicationFooterName,
@@ -814,6 +810,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLazilyCreateWebStateOnRestorationDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kEnableUnrealizedWebStates)},
+    {"reading-list-time-to-read", flag_descriptions::kReadingListTimeToReadName,
+     flag_descriptions::kReadingListTimeToReadDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kReadingListTimeToRead)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

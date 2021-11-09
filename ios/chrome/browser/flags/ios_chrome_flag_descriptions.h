@@ -183,10 +183,6 @@ extern const char kEnableLongMessageDurationDescription[];
 extern const char kEnableManualPasswordGenerationName[];
 extern const char kEnableManualPasswordGenerationDescription[];
 
-// Title and description for the flag to enable the NTP memory enhancements.
-extern const char kEnableNTPMemoryEnhancementName[];
-extern const char kEnableNTPMemoryEnhancementDescription[];
-
 // Title and description for the flag to enable optimization guide.
 extern const char kEnableOptimizationGuideName[];
 extern const char kEnableOptimizationGuideDescription[];
@@ -360,6 +356,10 @@ extern const char kPasswordReuseDetectionDescription[];
 // Title and description for the flag to enable the Reading List Messages.
 extern const char kReadingListMessagesName[];
 extern const char kReadingListMessagesDescription[];
+
+// Title and description for the flag to enable Reading List Time to Read.
+extern const char kReadingListTimeToReadName[];
+extern const char kReadingListTimeToReadDescription[];
 
 // Title and description for the flag to native restore web states.
 extern const char kRestoreSessionFromCacheName[];

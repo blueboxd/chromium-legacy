@@ -81,7 +81,8 @@ void WebAppsCrosapi::LoadIcon(const std::string& app_id,
 
   const uint32_t icon_effects = icon_key->icon_effects;
   controller_->LoadIcon(
-      app_id, std::move(icon_key), icon_type, size_hint_in_dip,
+      app_id, std::move(icon_key), ConvertMojomIconTypeToIconType(icon_type),
+      size_hint_in_dip,
       base::BindOnce(&WebAppsCrosapi::OnLoadIcon, weak_factory_.GetWeakPtr(),
                      icon_effects, size_hint_in_dip, std::move(callback)));
 }
@@ -369,10 +370,10 @@ void WebAppsCrosapi::OnControllerDisconnected() {
 void WebAppsCrosapi::OnLoadIcon(uint32_t icon_effects,
                                 int size_hint_in_dip,
                                 LoadIconCallback callback,
-                                apps::mojom::IconValuePtr icon_value) {
+                                IconValuePtr icon_value) {
   // We apply the masking effect here, as masking is not implemented in Lacros.
   ApplyIconEffects(static_cast<IconEffects>(icon_effects), size_hint_in_dip,
-                   ConvertMojomIconValueToIconValue(std::move(icon_value)),
+                   std::move(icon_value),
                    IconValueToMojomIconValueCallback(std::move(callback)));
 }
 

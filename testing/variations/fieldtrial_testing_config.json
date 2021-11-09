@@ -812,6 +812,21 @@
             ]
         }
     ],
+    "ArcVmBlockSize": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledGroupA_20211105",
+                    "enable_features": [
+                        "ArcVmUseDefaultBlockSize"
+                    ]
+                }
+            ]
+        }
+    ],
     "ArcVmMemorySize": [
         {
             "platforms": [
@@ -7104,6 +7119,26 @@
             ]
         }
     ],
+    "SendAllUserInteractionLatencies": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SendAllUserInteractionLatencies"
+                    ]
+                }
+            ]
+        }
+    ],
     "SendTabToSelfV2": [
         {
             "platforms": [
@@ -9246,6 +9281,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WebViewThreadSafeMedia"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebViewUseMetricsUploadService": [
+        {
+            "platforms": [
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "WebViewUseMetricsUploadService",
+                    "enable_features": [
+                        "WebViewUseMetricsUploadService"
                     ]
                 }
             ]

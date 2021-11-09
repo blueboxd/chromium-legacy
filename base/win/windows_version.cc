@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "build/build_config.h"
 
 #if !defined(__clang__) && _MSC_FULL_VER < 191125507
 #error VS 2017 Update 3.2 or higher is required
@@ -126,7 +127,6 @@ OSInfo::OSInfo(const _OSVERSIONINFOEXW& version_info,
                const _SYSTEM_INFO& system_info,
                int os_type)
     : version_(Version::PRE_XP),
-      wow64_status_(GetWOW64StatusForProcess(GetCurrentProcess())),
       wow_process_machine_(WowProcessMachine::kUnknown),
       wow_native_machine_(WowNativeMachine::kUnknown) {
   version_number_.major = version_info.dwMajorVersion;
@@ -268,6 +268,20 @@ bool OSInfo::IsWowX86OnARM64() const {
           wow_native_machine_ == WowNativeMachine::kARM64);
 }
 
+bool OSInfo::IsWowAMD64OnARM64() const {
+#if defined(ARCH_CPU_X86_64)
+  // An AMD64 process running on an ARM64 device results in the incorrect
+  // identification of the device architecture (AMD64 is reported). However,
+  // IsWow64Process2 will return the correct device type for the native
+  // machine, even though the OS doesn't consider an AMD64 process on an ARM64
+  // processor a classic Windows-on-Windows setup.
+  return (wow_process_machine_ == WowProcessMachine::kDisabled &&
+          wow_native_machine_ == WowNativeMachine::kARM64);
+#else
+  return false;
+#endif
+}
+
 bool OSInfo::IsWowX86OnOther() const {
   return (wow_process_machine_ == WowProcessMachine::kX86 &&
           wow_native_machine_ == WowNativeMachine::kOther);
@@ -283,14 +297,6 @@ std::string OSInfo::processor_model_name() {
     processor_model_name_ = WideToUTF8(value);
   }
   return processor_model_name_;
-}
-
-// static
-OSInfo::WOW64Status OSInfo::GetWOW64StatusForProcess(HANDLE process_handle) {
-  BOOL is_wow64 = FALSE;
-  if (!::IsWow64Process(process_handle, &is_wow64))
-    return WOW64_UNKNOWN;
-  return is_wow64 ? WOW64_ENABLED : WOW64_DISABLED;
 }
 
 // With the exception of Server 2003, server variants are treated the same as
@@ -393,23 +399,25 @@ OSInfo::WowNativeMachine OSInfo::GetWowNativeMachineArchitecture(
   return OSInfo::WowNativeMachine::kOther;
 }
 
+void OSInfo::InitializeWowStatusValuesFromLegacyApi(HANDLE process_handle) {
+  BOOL is_wow64 = FALSE;
+  if (!::IsWow64Process(process_handle, &is_wow64))
+    return;
+  if (is_wow64) {
+    wow_process_machine_ = WowProcessMachine::kX86;
+    wow_native_machine_ = WowNativeMachine::kAMD64;
+  } else {
+    wow_process_machine_ = WowProcessMachine::kDisabled;
+  }
+}
+
 void OSInfo::InitializeWowStatusValuesForProcess(HANDLE process_handle) {
   static const auto is_wow64_process2 =
       reinterpret_cast<decltype(&IsWow64Process2)>(::GetProcAddress(
           ::GetModuleHandle(L"kernel32.dll"), "IsWow64Process2"));
   if (!is_wow64_process2) {
-    WOW64Status wow64_status = GetWOW64StatusForProcess(process_handle);
-    switch (wow64_status) {
-      case WOW64_DISABLED:
-        wow_process_machine_ = WowProcessMachine::kDisabled;
-        return;
-      case WOW64_ENABLED:
-        wow_process_machine_ = WowProcessMachine::kX86;
-        wow_native_machine_ = WowNativeMachine::kAMD64;
-        return;
-      case WOW64_UNKNOWN:
-        return;
-    }
+    InitializeWowStatusValuesFromLegacyApi(process_handle);
+    return;
   }
 
   USHORT process_machine = IMAGE_FILE_MACHINE_UNKNOWN;

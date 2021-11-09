@@ -915,9 +915,6 @@ extern const char kMetricsSettingsAndroidDescription[];
 extern const char kMobileIdentityConsistencyFREName[];
 extern const char kMobileIdentityConsistencyFREDescription[];
 
-extern const char kMobilePwaInstallUseBottomSheetName[];
-extern const char kMobilePwaInstallUseBottomSheetDescription[];
-
 extern const char kMojoLinuxChannelSharedMemName[];
 extern const char kMojoLinuxChannelSharedMemDescription[];
 
@@ -1428,9 +1425,6 @@ extern const char kTabHoverCardImagesDescription[];
 extern const char kTabOutlinesInLowContrastThemesName[];
 extern const char kTabOutlinesInLowContrastThemesDescription[];
 
-extern const char kTabRestoreSubMenusName[];
-extern const char kTabRestoreSubMenusDescription[];
-
 extern const char kTabSearchFuzzySearchName[];
 extern const char kTabSearchFuzzySearchDescription[];
 
@@ -1518,6 +1512,9 @@ extern const char kWallpaperWebUIDescription[];
 
 extern const char kWallpaperFullScreenPreviewName[];
 extern const char kWallpaperFullScreenPreviewDescription[];
+
+extern const char kWallpaperPerDeskName[];
+extern const char kWallpaperPerDeskDescription[];
 
 extern const char kWebBluetoothNewPermissionsBackendName[];
 extern const char kWebBluetoothNewPermissionsBackendDescription[];
@@ -2677,6 +2674,9 @@ extern const char
 
 extern const char kMagnifierContinuousMouseFollowingModeSettingName[];
 extern const char kMagnifierContinuousMouseFollowingModeSettingDescription[];
+
+extern const char kDockedMagnifierResizingName[];
+extern const char kDockedMagnifierResizingDescription[];
 
 extern const char kFilesArchivemountName[];
 extern const char kFilesArchivemountDescription[];

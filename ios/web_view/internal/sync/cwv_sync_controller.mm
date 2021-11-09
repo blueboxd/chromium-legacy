@@ -107,8 +107,19 @@ class WebViewSyncControllerObserverBridge : public syncer::SyncServiceObserver {
 }
 
 namespace {
+// Provider of trusted vault features.
+__weak id<CWVTrustedVaultProvider> gTrustedVaultProvider;
 // Data source that can provide access tokens.
 __weak id<CWVSyncControllerDataSource> gSyncDataSource;
+}
+
++ (void)setTrustedVaultProvider:
+    (id<CWVTrustedVaultProvider>)trustedVaultProvider {
+  gTrustedVaultProvider = trustedVaultProvider;
+}
+
++ (id<CWVTrustedVaultProvider>)trustedVaultProvider {
+  return gTrustedVaultProvider;
 }
 
 + (void)setDataSource:(id<CWVSyncControllerDataSource>)dataSource {
@@ -169,6 +180,16 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
 - (BOOL)isPassphraseNeeded {
   return _syncService->GetUserSettings()
       ->IsPassphraseRequiredForPreferredDataTypes();
+}
+
+- (BOOL)isTrustedVaultKeysRequired {
+  return _syncService->GetUserSettings()
+      ->IsTrustedVaultKeyRequiredForPreferredDataTypes();
+}
+
+- (BOOL)isTrustedVaultRecoverabilityDegraded {
+  return _syncService->GetUserSettings()
+      ->IsTrustedVaultRecoverabilityDegraded();
 }
 
 - (void)startSyncWithIdentity:(CWVIdentity*)identity {

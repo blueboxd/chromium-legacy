@@ -211,10 +211,6 @@ const char kEnableManualPasswordGenerationDescription[] =
     "Enable UI that allows to generate a strong password for any password "
     "field";
 
-const char kEnableNTPMemoryEnhancementName[] = "Enable NTP Memory Enhancement";
-const char kEnableNTPMemoryEnhancementDescription[] =
-    "NTP will consume less memory.";
-
 const char kEnableOptimizationGuideName[] = "Enable optimization guide";
 const char kEnableOptimizationGuideDescription[] =
     "Enables the optimization guide to provide intelligence for page loads.";
@@ -409,6 +405,11 @@ const char kReadingListMessagesName[] = "Enables Reading List Messages";
 const char kReadingListMessagesDescription[] =
     "When enabled, a Messages prompt may be presented to allow the user to "
     "save the current page to Reading List";
+
+const char kReadingListTimeToReadName[] = "Enables Reading List Time To Read";
+const char kReadingListTimeToReadDescription[] =
+    "When enabled, a Time to Read estimate is added to each Reading List "
+    "entry.";
 
 extern const char kRemoveExcessNTPsExperimentName[] =
     "Remove extra New Tab Pages";

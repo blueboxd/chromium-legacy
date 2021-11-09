@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -94,11 +95,11 @@ IN_PROC_BROWSER_TEST_F(LacrosExtensionAppsControllerTest, LoadIcon) {
 
       // Set up the LoadIconCallback which quits the nested run loop and
       // populates |output|.
-      apps::mojom::IconValuePtr output;
+      apps::IconValuePtr output;
       base::RunLoop run_loop;
       LacrosExtensionAppsController::LoadIconCallback callback = base::BindOnce(
-          [](base::RunLoop* run_loop, apps::mojom::IconValuePtr* output,
-             apps::mojom::IconValuePtr input) {
+          [](base::RunLoop* run_loop, apps::IconValuePtr* output,
+             apps::IconValuePtr input) {
             *output = std::move(input);
             run_loop->QuitClosure().Run();
           },
@@ -106,8 +107,8 @@ IN_PROC_BROWSER_TEST_F(LacrosExtensionAppsControllerTest, LoadIcon) {
 
       // Load the icon
       auto icon_key = apps::mojom::IconKey::New(0, 0, 0);
-      auto icon_type = compressed ? apps::mojom::IconType::kCompressed
-                                  : apps::mojom::IconType::kUncompressed;
+      auto icon_type = compressed ? apps::IconType::kCompressed
+                                  : apps::IconType::kUncompressed;
       LacrosExtensionAppsController controller;
       controller.LoadIcon(
           lacros_extension_apps_utility::MuxId(profile(), extension),
@@ -116,8 +117,7 @@ IN_PROC_BROWSER_TEST_F(LacrosExtensionAppsControllerTest, LoadIcon) {
       run_loop.Run();
 
       if (compressed) {
-        ASSERT_TRUE(output->compressed);
-        EXPECT_GT(output->compressed->size(), 0u);
+        EXPECT_FALSE(output->compressed.empty());
       } else {
         EXPECT_FALSE(output->uncompressed.isNull());
         EXPECT_GT(output->uncompressed.width(), 0);

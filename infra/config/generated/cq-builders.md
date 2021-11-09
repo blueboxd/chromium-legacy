@@ -390,6 +390,11 @@ builder.
   * [`//tools/clang/scripts/update.py`](https://cs.chromium.org/search?q=+file:tools/clang/scripts/update.py)
   * [`//ui/gl/.+`](https://cs.chromium.org/chromium/src/ui/gl/)
 
+* [reclient-config-deployment-verifier](https://ci.chromium.org/p/chromium/builders/try/reclient-config-deployment-verifier) ([definition](https://cs.chromium.org/search?q=+file:/try.star$+""reclient-config-deployment-verifier"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""reclient-config-deployment-verifier""))
+
+  Path regular expressions:
+  * [`//tools/clang/scripts/update.py`](https://cs.chromium.org/search?q=+file:tools/clang/scripts/update.py)
+
 * [win-updater-try-builder-dbg](https://ci.chromium.org/p/chromium/builders/try/win-updater-try-builder-dbg) ([definition](https://cs.chromium.org/search?q=+file:/try.star$+""win-updater-try-builder-dbg"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""win-updater-try-builder-dbg""))
 
   Path regular expressions:
@@ -441,9 +446,6 @@ as required builders.
 * [android-marshmallow-arm64-rel-rts](https://ci.chromium.org/p/chromium/builders/try/android-marshmallow-arm64-rel-rts) ([definition](https://cs.chromium.org/search?q=+file:/try.star$+""android-marshmallow-arm64-rel-rts"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-marshmallow-arm64-rel-rts""))
   * Experiment percentage: 5.0
 
-* [android-marshmallow-x86-rel-orchestrator](https://ci.chromium.org/p/chromium/builders/try/android-marshmallow-x86-rel-orchestrator) ([definition](https://cs.chromium.org/search?q=+file:/try.star$+""android-marshmallow-x86-rel-orchestrator"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-marshmallow-x86-rel-orchestrator""))
-  * Experiment percentage: 10.0
-
 * [android-marshmallow-x86-rel-rts](https://ci.chromium.org/p/chromium/builders/try/android-marshmallow-x86-rel-rts) ([definition](https://cs.chromium.org/search?q=+file:/try.star$+""android-marshmallow-x86-rel-rts"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-marshmallow-x86-rel-rts""))
   * Experiment percentage: 5.0
 
@@ -489,10 +491,4 @@ as required builders.
 
 * [linux_chromium_tsan_rel_ng_rts](https://ci.chromium.org/p/chromium/builders/try/linux_chromium_tsan_rel_ng_rts) ([definition](https://cs.chromium.org/search?q=+file:/try.star$+""linux_chromium_tsan_rel_ng_rts"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""linux_chromium_tsan_rel_ng_rts""))
   * Experiment percentage: 5.0
-
-* [reclient-config-deployment-verifier](https://ci.chromium.org/p/chromium/builders/try/reclient-config-deployment-verifier) ([definition](https://cs.chromium.org/search?q=+file:/try.star$+""reclient-config-deployment-verifier"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""reclient-config-deployment-verifier""))
-  * Experiment percentage: 100.0
-
-  Path regular expressions:
-  * [`//tools/clang/scripts/update.py`](https://cs.chromium.org/search?q=+file:tools/clang/scripts/update.py)
 

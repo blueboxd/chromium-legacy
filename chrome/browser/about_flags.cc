@@ -209,14 +209,13 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/features/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/notifications/chime/android/features.h"
-#include "chrome/browser/webapps/android/features.h"
 #include "components/browser_ui/photo_picker/android/features.h"
 #include "components/content_creation/notes/core/note_features.h"
 #include "components/content_creation/reactions/core/reactions_features.h"
@@ -2638,6 +2637,7 @@ constexpr char kPersonalizationHubInternalName[] = "personalization-hub";
 constexpr char kWallpaperWebUIInternalName[] = "wallpaper-webui";
 constexpr char kWallpaperFullScreenPreviewInternalName[] =
     "wallpaper-fullscreen-preview";
+constexpr char kWallpaperPerDeskName[] = "per-desk-wallpaper";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW) && defined(OS_ANDROID)
@@ -4286,6 +4286,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::
          kMagnifierContinuousMouseFollowingModeSettingDescription,
      kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         features::kMagnifierContinuousMouseFollowingModeSetting)},
+    {"enable-docked-magnifier-resizing",
+     flag_descriptions::kDockedMagnifierResizingName,
+     flag_descriptions::kDockedMagnifierResizingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(
          features::kMagnifierContinuousMouseFollowingModeSetting)},
     {"enable-system-proxy-for-system-services",
@@ -7067,13 +7072,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfV2Description, kOsAll,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfV2)},
 
-#if defined(OS_ANDROID)
-    {"mobile-pwa-install-use-bottom-sheet",
-     flag_descriptions::kMobilePwaInstallUseBottomSheetName,
-     flag_descriptions::kMobilePwaInstallUseBottomSheetDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(webapps::features::kPwaInstallUseBottomSheet)},
-#endif
-
 #if defined(OS_WIN)
     {"raw-audio-capture", flag_descriptions::kRawAudioCaptureName,
      flag_descriptions::kRawAudioCaptureDescription, kOsWin,
@@ -7110,6 +7108,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWallpaperFullScreenPreviewName,
      flag_descriptions::kWallpaperFullScreenPreviewDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kWallpaperFullScreenPreview)},
+    {kWallpaperPerDeskName, flag_descriptions::kWallpaperPerDeskName,
+     flag_descriptions::kWallpaperPerDeskDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kWallpaperPerDesk)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_CHROMEOS)
@@ -7416,10 +7417,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionWorkflowJustificationName,
      flag_descriptions::kExtensionWorkflowJustificationDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kExtensionWorkflowJustification)},
-
-    {"tab-restore-sub-menus", flag_descriptions::kTabRestoreSubMenusName,
-     flag_descriptions::kTabRestoreSubMenusDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kTabRestoreSubMenus)},
 
     {"tab-search-fuzzy-search", flag_descriptions::kTabSearchFuzzySearchName,
      flag_descriptions::kTabSearchFuzzySearchDescription, kOsDesktop,

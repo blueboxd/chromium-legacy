@@ -5,6 +5,8 @@
 #ifndef ASH_WM_DESKS_TEMPLATES_DESKS_TEMPLATES_ITEM_VIEW_H_
 #define ASH_WM_DESKS_TEMPLATES_DESKS_TEMPLATES_ITEM_VIEW_H_
 
+#include "ash/ash_export.h"
+#include "ash/wm/overview/overview_highlightable_view.h"
 #include "base/guid.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/button.h"
@@ -16,14 +18,15 @@ class Textfield;
 
 namespace ash {
 
-class DesksTemplatesDeleteButton;
+class CloseButton;
 class DesksTemplatesIconContainer;
 class DeskTemplate;
 class PillButton;
 
 // A view that represents each individual template item in the desks templates
 // grid.
-class DesksTemplatesItemView : public views::Button {
+class ASH_EXPORT DesksTemplatesItemView : public views::Button,
+                                          public OverviewHighlightableView {
  public:
   METADATA_HEADER(DesksTemplatesItemView);
 
@@ -42,15 +45,24 @@ class DesksTemplatesItemView : public views::Button {
  private:
   friend class DesksTemplatesItemViewTestApi;
 
+  void OnDeleteTemplate();
   void OnDeleteButtonPressed();
 
   void OnGridItemPressed();
+
+  // OverviewHighlightableView:
+  views::View* GetView() override;
+  void MaybeActivateHighlightedView() override;
+  void MaybeCloseHighlightedView() override;
+  void MaybeSwapHighlightedView(bool right) override;
+  void OnViewHighlighted() override;
+  void OnViewUnhighlighted() override;
 
   // Owned by the views hierarchy.
   views::Textfield* name_view_ = nullptr;
   views::Label* time_view_ = nullptr;
   DesksTemplatesIconContainer* icon_container_view_ = nullptr;
-  DesksTemplatesDeleteButton* delete_button_ = nullptr;
+  CloseButton* delete_button_ = nullptr;
   PillButton* launch_button_ = nullptr;
   // Container used for holding all the views that appear on hover.
   views::View* hover_container_ = nullptr;

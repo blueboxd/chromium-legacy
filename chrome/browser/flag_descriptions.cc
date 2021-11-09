@@ -1596,11 +1596,6 @@ const char kMobileIdentityConsistencyFREDescription[] =
     "Enables stronger identity consistency on mobile with different UIs for "
     "the First Run Experience.";
 
-const char kMobilePwaInstallUseBottomSheetName[] =
-    "Mobile PWA Installation bottom sheet";
-const char kMobilePwaInstallUseBottomSheetDescription[] =
-    "Enables use of a rich bottom sheet when offering mobile PWA installation.";
-
 const char kMojoLinuxChannelSharedMemName[] =
     "Enable Mojo Shared Memory Channel";
 const char kMojoLinuxChannelSharedMemDescription[] =
@@ -2477,11 +2472,6 @@ const char kTabOutlinesInLowContrastThemesDescription[] =
     "Expands the range of situations in which tab outline strokes are "
     "displayed, improving accessiblity in dark and incognito mode.";
 
-const char kTabRestoreSubMenusName[] = "Show app menu history sub menus";
-const char kTabRestoreSubMenusDescription[] =
-    "Show app menu history sub menus for the contents of recently closed tab "
-    "groups and windows.";
-
 const char kTabSearchFuzzySearchName[] = "Fuzzy search for Tab Search";
 const char kTabSearchFuzzySearchDescription[] =
     "Enable fuzzy search for Tab Search.";
@@ -2664,6 +2654,11 @@ const char kWallpaperFullScreenPreviewName[] =
 const char kWallpaperFullScreenPreviewDescription[] =
     "Allows users to minimize all active windows to preview their current "
     "wallpaper";
+
+const char kWallpaperPerDeskName[] =
+    "Enable setting different wallpapers per desk";
+const char kWallpaperPerDeskDescription[] =
+    "Allow users to set different wallpapers on each of their active desks";
 
 const char kWebBluetoothNewPermissionsBackendName[] =
     "Use the new permissions backend for Web Bluetooth";
@@ -4661,6 +4656,12 @@ const char kMagnifierContinuousMouseFollowingModeSettingName[] =
 const char kMagnifierContinuousMouseFollowingModeSettingDescription[] =
     "Enable feature which adds ability to choose new continuous mouse "
     "following mode in Magnifier settings.";
+
+const char kDockedMagnifierResizingName[] =
+    "Enable ability to resize Docked Magnifier";
+const char kDockedMagnifierResizingDescription[] =
+    "Enable feature which adds ability for user to grab and resize divider of"
+    "Docked Magnifier.";
 
 const char kFilesArchivemountName[] = "Archivemount in Files App";
 const char kFilesArchivemountDescription[] =

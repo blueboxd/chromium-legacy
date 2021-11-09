@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class CWVIdentity;
 @protocol CWVSyncControllerDataSource;
 @protocol CWVSyncControllerDelegate;
+@protocol CWVTrustedVaultProvider;
 
 // Used to manage syncing for autofill and password data. Usage:
 // 1. Set the |dataSource| and |delegate|.
@@ -21,6 +22,10 @@ NS_ASSUME_NONNULL_BEGIN
 // 3. Call |stopSyncAndClearIdentity| to stop syncing.
 CWV_EXPORT
 @interface CWVSyncController : NSObject
+
+// The trusted vault provider for CWVSyncController.
+@property(class, nonatomic, weak, nullable) id<CWVTrustedVaultProvider>
+    trustedVaultProvider;
 
 // The data source of CWVSyncController.
 @property(class, nonatomic, weak, nullable) id<CWVSyncControllerDataSource>
@@ -36,6 +41,23 @@ CWV_EXPORT
 // until |currentIdentity| is set and |syncControllerDidStartSync:| callback in
 // is invoked in |delegate|.
 @property(nonatomic, readonly, getter=isPassphraseNeeded) BOOL passphraseNeeded;
+
+// Whether or not trusted vault keys are required to decrypt encrypted data.
+// If required, UI should be presented to the user to fetch the required keys.
+// Not meaningful until |currentIdentity| is set and
+// |syncControllerDidStartSync:| callback in is invoked in |delegate|.
+@property(nonatomic, readonly, getter=isTrustedVaultKeysRequired)
+    BOOL trustedVaultKeysRequired;
+
+// Whether or not trusted vault recoverability is degraded.
+// Degraded recoverability refers to the state where the user is considered at
+// risk of losing access to their trusted vault. In such a scenario, UI should
+// be presented to allow the user to setup additional knowledge factors so that
+// recoverability is better ensured.
+// Not meaningful until |currentIdentity| is set and
+// |syncControllerDidStartSync:| callback in is invoked in |delegate|.
+@property(nonatomic, readonly, getter=isTrustedVaultRecoverabilityDegraded)
+    BOOL trustedVaultRecoverabilityDegraded;
 
 - (instancetype)init NS_UNAVAILABLE;
 

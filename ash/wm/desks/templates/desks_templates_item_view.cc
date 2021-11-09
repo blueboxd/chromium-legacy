@@ -12,9 +12,12 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/button_style.h"
-#include "ash/wm/desks/templates/desks_templates_delete_button.h"
+#include "ash/wm/desks/templates/desks_templates_dialog_controller.h"
 #include "ash/wm/desks/templates/desks_templates_icon_container.h"
 #include "ash/wm/desks/templates/desks_templates_presenter.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_highlight_controller.h"
+#include "ash/wm/overview/overview_session.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -22,12 +25,13 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout_view.h"
 
 namespace ash {
-
 namespace {
 
 // The padding values of the DesksTemplatesItemView.
@@ -43,7 +47,10 @@ constexpr int kCornerRadius = 16;
 // TODO(richui): Replace these temporary values once specs come out.
 constexpr gfx::Size kViewSize(250, 20);
 constexpr int kDeleteButtonMargin = 8;
-constexpr int kDeleteButtonSize = 20;
+
+// Pixel offset for the focus ring around the whole time. Positive values means
+// the focus ring sits outside of the item.
+constexpr int kFocusRingOffset = 2;
 
 constexpr char kAmPmTimeDateFmtStr[] = "%d:%02d%s, %d-%02d-%02d";
 
@@ -69,8 +76,6 @@ std::u16string GetTimeStr(base::Time timestamp) {
 
 DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
     : uuid_(desk_template->uuid()) {
-  auto delete_button_callback = base::BindRepeating(
-      &DesksTemplatesItemView::OnDeleteButtonPressed, base::Unretained(this));
   auto launch_template_callback = base::BindRepeating(
       &DesksTemplatesItemView::OnGridItemPressed, base::Unretained(this));
 
@@ -108,11 +113,7 @@ DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
                   views::Builder<views::View>().CopyAddressTo(&spacer),
                   views::Builder<DesksTemplatesIconContainer>().CopyAddressTo(
                       &icon_container_view_)),
-          views::Builder<views::View>()
-              .CopyAddressTo(&hover_container_)
-              .AddChild(views::Builder<DesksTemplatesDeleteButton>()
-                            .CopyAddressTo(&delete_button_)
-                            .SetCallback(std::move(delete_button_callback))))
+          views::Builder<views::View>().CopyAddressTo(&hover_container_))
       .BuildChildren();
 
   // TODO(crbug.com/1267470): Make `PillButton` work with views::Builder.
@@ -121,11 +122,28 @@ DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
                           base::Unretained(this)),
       l10n_util::GetStringUTF16(IDS_ASH_DESKS_TEMPLATES_USE_TEMPLATE_BUTTON),
       PillButton::Type::kIconless, /*icon=*/nullptr));
+
+  delete_button_ = hover_container_->AddChildView(std::make_unique<CloseButton>(
+      base::BindRepeating(&DesksTemplatesItemView::OnDeleteButtonPressed,
+                          base::Unretained(this)),
+      CloseButton::Type::kMedium));
+
   hover_container_->SetUseDefaultFillLayout(true);
 
   icon_container_view_->PopulateIconContainerFromTemplate(desk_template);
   card_container->SetFlexForView(spacer, 1);
   UpdateHoverButtonsVisibility();
+
+  views::FocusRing::Install(this);
+  views::FocusRing* focus_ring = views::FocusRing::Get(this);
+  focus_ring->SetHasFocusPredicate([](views::View* view) {
+    return static_cast<DesksTemplatesItemView*>(view)->IsViewHighlighted();
+  });
+  focus_ring->SetPathGenerator(
+      std::make_unique<views::RoundRectHighlightPathGenerator>(
+          gfx::Insets(-kFocusRingOffset), kCornerRadius + kFocusRingOffset));
+  focus_ring->SetColor(AshColorProvider::Get()->GetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kFocusRingColor));
 }
 
 DesksTemplatesItemView::~DesksTemplatesItemView() = default;
@@ -145,9 +163,12 @@ void DesksTemplatesItemView::UpdateHoverButtonsVisibility() {
 void DesksTemplatesItemView::Layout() {
   views::View::Layout();
 
+  const gfx::Size delete_button_size = delete_button_->GetPreferredSize();
+  DCHECK_EQ(delete_button_size.width(), delete_button_size.height());
   delete_button_->SetBoundsRect(
-      gfx::Rect(width() - kDeleteButtonSize - kDeleteButtonMargin,
-                kDeleteButtonMargin, kDeleteButtonSize, kDeleteButtonSize));
+      gfx::Rect(width() - delete_button_size.width() - kDeleteButtonMargin,
+                kDeleteButtonMargin, delete_button_size.width(),
+                delete_button_size.height()));
 
   const gfx::Size launch_button_preferred_size =
       launch_button_->CalculatePreferredSize();
@@ -157,12 +178,49 @@ void DesksTemplatesItemView::Layout() {
       launch_button_preferred_size));
 }
 
-void DesksTemplatesItemView::OnDeleteButtonPressed() {
+void DesksTemplatesItemView::OnDeleteTemplate() {
+  // Notify the highlight controller that we're going away.
+  OverviewSession* overview_session =
+      Shell::Get()->overview_controller()->overview_session();
+  DCHECK(overview_session);
+  overview_session->highlight_controller()->OnViewDestroyingOrDisabling(this);
+
   DesksTemplatesPresenter::Get()->DeleteEntry(uuid_.AsLowercaseString());
+}
+
+void DesksTemplatesItemView::OnDeleteButtonPressed() {
+  // Show the dialog to confirm the deletion.
+  auto* dialog_controller = DesksTemplatesDialogController::Get();
+  dialog_controller->ShowDeleteDialog(
+      Shell::GetPrimaryRootWindow(), name_view_->GetAccessibleName(),
+      base::BindOnce(&DesksTemplatesItemView::OnDeleteTemplate,
+                     base::Unretained(this)));
 }
 
 void DesksTemplatesItemView::OnGridItemPressed() {
   DesksTemplatesPresenter::Get()->LaunchDeskTemplate(uuid_.AsLowercaseString());
+}
+
+views::View* DesksTemplatesItemView::GetView() {
+  return this;
+}
+
+void DesksTemplatesItemView::MaybeActivateHighlightedView() {
+  OnGridItemPressed();
+}
+
+void DesksTemplatesItemView::MaybeCloseHighlightedView() {
+  OnDeleteButtonPressed();
+}
+
+void DesksTemplatesItemView::MaybeSwapHighlightedView(bool right) {}
+
+void DesksTemplatesItemView::OnViewHighlighted() {
+  views::FocusRing::Get(this)->SchedulePaint();
+}
+
+void DesksTemplatesItemView::OnViewUnhighlighted() {
+  views::FocusRing::Get(this)->SchedulePaint();
 }
 
 BEGIN_METADATA(DesksTemplatesItemView, views::Button)

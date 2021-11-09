@@ -6454,6 +6454,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="FamilyUser.ManagedSiteList.Conflict" enum="BooleanHasConflict"
+    expires_after="2022-10-07">
+  <owner>msalama@chromium.org</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    Records whether the given url has a match in both the allowlist and the
+    block list which means a conflict. This metric is recorded if the given url
+    matches at least one manual rule.
+  </summary>
+</histogram>
+
 <histogram name="FamilyUser.ManagedSiteListCount.Approved"
     units="Number of approved sites" expires_after="2022-07-28">
   <owner>agawronska@chromium.org</owner>
@@ -10165,7 +10176,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.NumWorkerProcess" units="count"
-    expires_after="2022-03-06">
+    expires_after="2022-05-08">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>
@@ -11089,7 +11100,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mojo.Channel.Linux.SharedMemWriteBytes_Fail_NoSpace"
-    units="bytes" expires_after="2022-03-06">
+    units="bytes" expires_after="2022-05-08">
   <owner>bgeffon@chromium.org</owner>
   <owner>rockot@google.com</owner>
   <summary>
@@ -11099,7 +11110,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mojo.Channel.Linux.SharedMemWriteBytes_Fail_TooLarge"
-    units="bytes" expires_after="2022-03-06">
+    units="bytes" expires_after="2022-05-08">
   <owner>bgeffon@chromium.org</owner>
   <owner>rockot@google.com</owner>
   <summary>
@@ -19881,7 +19892,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebFont.LocalFontUsed" enum="BooleanUsage"
-    expires_after="2022-03-06">
+    expires_after="2022-05-08">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>

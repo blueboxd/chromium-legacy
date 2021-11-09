@@ -2542,13 +2542,6 @@ const char kTreatInsecureOriginAsSecureDescription[] =
     "specified e.g. \"http://example.com\". For the definition of secure "
     "contexts, see https://w3c.github.io/webappsec-secure-contexts/";
 
-const char kTreatUnsafeDownloadsAsActiveName[] =
-    "Treat risky downloads over insecure connections as active mixed content";
-const char kTreatUnsafeDownloadsAsActiveDescription[] =
-    "Disallows downloads of unsafe files (files that can potentially execute "
-    "code), where the final download origin or any origin in the redirect "
-    "chain is insecure if the originating page is secure.";
-
 const char kTrustTokensName[] = "Enable Trust Tokens";
 const char kTrustTokensDescription[] =
     "Enables the prototype Trust Token API "
@@ -4766,6 +4759,11 @@ const char kImeAssistMultiWordExpandedName[] =
     "Enable expanded assistive multi word suggestions";
 const char kImeAssistMultiWordExpandedDescription[] =
     "Enable expanded assistive multi word suggestions for native IME";
+
+const char kImeAssistMultiWordLacrosSupportName[] =
+    "Multi word suggestions lacros support";
+const char kImeAssistMultiWordLacrosSupportDescription[] =
+    "Enable lacros support for assistive multi word suggestions in native IME";
 
 const char kImeAssistPersonalInfoName[] = "Enable assistive personal info";
 const char kImeAssistPersonalInfoDescription[] =

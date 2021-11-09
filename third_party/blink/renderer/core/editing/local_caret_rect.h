@@ -36,14 +36,10 @@ struct LocalCaretRect {
 };
 
 // Rect is local to the returned layoutObject
-// TODO(xiaochengh): Get rid of the default parameter.
-CORE_EXPORT LocalCaretRect LocalCaretRectOfPosition(
-    const PositionWithAffinity&,
-    LayoutUnit* /* extra_width_to_end_of_line */ = nullptr,
-    EditingBoundaryCrossingRule = kCanCrossEditingBoundary);
-CORE_EXPORT LocalCaretRect LocalCaretRectOfPosition(
-    const PositionInFlatTreeWithAffinity&,
-    EditingBoundaryCrossingRule = kCanCrossEditingBoundary);
+CORE_EXPORT LocalCaretRect
+LocalCaretRectOfPosition(const PositionWithAffinity&);
+CORE_EXPORT LocalCaretRect
+LocalCaretRectOfPosition(const PositionInFlatTreeWithAffinity&);
 
 LocalCaretRect LocalSelectionRectOfPosition(const PositionWithAffinity&);
 
@@ -57,7 +53,6 @@ CORE_EXPORT IntRect AbsoluteCaretBoundsOf(
     EditingBoundaryCrossingRule rule = kCanCrossEditingBoundary);
 
 CORE_EXPORT IntRect AbsoluteSelectionBoundsOf(const VisiblePosition&);
-CORE_EXPORT IntRect AbsoluteSelectionBoundsOf(const VisiblePositionInFlatTree&);
 
 // Exposed to tests only. Implemented in local_caret_rect_test.cc.
 bool operator==(const LocalCaretRect&, const LocalCaretRect&);

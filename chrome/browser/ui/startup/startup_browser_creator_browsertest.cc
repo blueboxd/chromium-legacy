@@ -49,7 +49,6 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/signin/identity_browser_test_base.h"
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_util.h"
@@ -1080,6 +1079,20 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
   }
   DisableWelcomePages({profile1, profile2});
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Lacros only supports syncing profiles for now.
+  // TODO(https://crbug.com/1260291): Revisit this once non-syncing profiles
+  // are allowed.
+  ProfileAttributesStorage* attributes_storage =
+      &profile_manager->GetProfileAttributesStorage();
+  attributes_storage->GetProfileAttributesWithPath(profile1->GetPath())
+      ->SetAuthInfo("gaia_id_1", u"email_1",
+                    /*is_consented_primary_account=*/true);
+  attributes_storage->GetProfileAttributesWithPath(profile2->GetPath())
+      ->SetAuthInfo("gaia_id_2", u"email_2",
+                    /*is_consented_primary_account=*/true);
+#endif
+
   // Don't delete Profiles too early.
   ScopedProfileKeepAlive profile1_keep_alive(
       profile1, ProfileKeepAliveOrigin::kBrowserWindow);
@@ -1766,6 +1779,21 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserWithWebAppTest,
         dest_path.Append(FILE_PATH_LITERAL("New Profile 2")));
     ASSERT_TRUE(profile2);
   }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Lacros only supports syncing profiles for now.
+  // TODO(https://crbug.com/1260291): Revisit this once non-syncing profiles
+  // are allowed.
+  ProfileAttributesStorage* attributes_storage =
+      &profile_manager->GetProfileAttributesStorage();
+  attributes_storage->GetProfileAttributesWithPath(profile1->GetPath())
+      ->SetAuthInfo("gaia_id_1", u"email_1",
+                    /*is_consented_primary_account=*/true);
+  attributes_storage->GetProfileAttributesWithPath(profile2->GetPath())
+      ->SetAuthInfo("gaia_id_2", u"email_2",
+                    /*is_consented_primary_account=*/true);
+#endif
+
   DisableWelcomePages({profile1, profile2});
 
   // Open some urls with the browsers, and close them.
@@ -3428,7 +3456,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorInfobarsKioskTest,
 }
 
 // Checks the correct behavior of the profile picker on startup.
-class StartupBrowserCreatorPickerTestBase : public IdentityPlatformBrowserTest {
+class StartupBrowserCreatorPickerTestBase : public InProcessBrowserTest {
  public:
   StartupBrowserCreatorPickerTestBase() {
     // This test configures command line params carefully. Make sure
@@ -3462,10 +3490,12 @@ class StartupBrowserCreatorPickerTestBase : public IdentityPlatformBrowserTest {
               .GetProfileAttributesWithPath(profile_path);
       ASSERT_NE(entry, nullptr);
       entry->SetActiveTimeToNow();
+      // Enabling sync, as Lacros only supports syncing profiles, see
+      // https://crbug.com/1260291.
       entry->SetAuthInfo(
           base::StringPrintf("gaia_id_%i", i),
           base::UTF8ToUTF16(base::StringPrintf("user%i@gmail.com", i)),
-          /*is_consented_primary_account=*/false);
+          /*is_consented_primary_account=*/true);
     }
   }
 };

@@ -4166,6 +4166,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeAssistMultiWordExpandedName,
      flag_descriptions::kImeAssistMultiWordExpandedDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kAssistMultiWordExpanded)},
+    {"enable-cros-ime-assist-multi-word-lacros",
+     flag_descriptions::kImeAssistMultiWordLacrosSupportName,
+     flag_descriptions::kImeAssistMultiWordLacrosSupportDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kAssistMultiWordLacrosSupport)},
     {"enable-cros-ime-assist-personal-info",
      flag_descriptions::kImeAssistPersonalInfoName,
      flag_descriptions::kImeAssistPersonalInfoDescription, kOsCrOS,
@@ -5356,12 +5360,6 @@ const FeatureEntry kFeatureEntries[] = {
      ORIGIN_LIST_VALUE_TYPE(
          network::switches::kUnsafelyTreatInsecureOriginAsSecure,
          "")},
-
-    {"treat-unsafe-downloads-as-active-content",
-     flag_descriptions::kTreatUnsafeDownloadsAsActiveName,
-     flag_descriptions::kTreatUnsafeDownloadsAsActiveDescription,
-     kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kTreatUnsafeDownloadsAsActive)},
 
     {"detect-target-embedding-lookalikes",
      flag_descriptions::kDetectTargetEmbeddingLookalikesName,

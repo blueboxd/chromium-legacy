@@ -1619,6 +1619,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "enable-cros-ime-assist-multi-word-lacros",
+    "owners": [ "curtismcmullan", "essential-inputs-team@google.com" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "enable-cros-ime-assist-personal-info",
     "owners": [ "jiwan", "essential-inputs-team@google.com" ],
     "expiry_milestone": 100
@@ -5292,11 +5297,6 @@
       "chrome-voice@google.com"
     ],
     "expiry_milestone": 98
-  },
-  {
-    "name": "treat-unsafe-downloads-as-active-content",
-    "owners": [ "jdeblasio", "cthomp" ],
-    "expiry_milestone": 89
   },
   {
     "name": "trim-on-memory-pressure",

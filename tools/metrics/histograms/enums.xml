@@ -9554,6 +9554,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Has collapse_key"/>
 </enum>
 
+<enum name="BooleanHasConflict">
+  <int value="0" label="No conflict"/>
+  <int value="1" label="Has conflict"/>
+</enum>
+
 <enum name="BooleanHasCrc">
   <int value="0" label="No CRC"/>
   <int value="1" label="Has CRC"/>
@@ -20490,6 +20495,7 @@ Called by update_debug_scenarios.py.-->
   <int value="57" label="CorsIssue::NoCorsRedirectModeNotFollow"/>
   <int value="58" label="QuirksModeIssue::QuirksMode"/>
   <int value="59" label="QuirksModeIssue::LimitedQuirksMode"/>
+  <int value="60" label="DeprecationIssue"/>
 </enum>
 
 <enum name="DevToolsIssuesPanelIssueExpanded">
@@ -35287,6 +35293,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4075" label="RunAdAuction"/>
   <int value="4076" label="JoinAdInterestGroup"/>
   <int value="4077" label="FileSystemUrlNavigation"/>
+  <int value="4078" label="V8Navigator_AdAuctionComponents_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35416,6 +35423,7 @@ Called by update_permissions_policy_enum.py.-->
       label="Successful attempt to use the feature. Recorded on each event."/>
   <int value="3"
       label="Failed attempt to use the feature. Recorded on each event."/>
+  <int value="4" label="Feature is accessible to user. Recorded periodically."/>
 </enum>
 
 <enum name="FeedAutoplayEvent">
@@ -51664,6 +51672,7 @@ from previous Chrome versions.
   <int value="379428799" label="security-chip-animation"/>
   <int value="380372760" label="V8Orinoco:disabled"/>
   <int value="382478170" label="SemanticColorDebugOverride:disabled"/>
+  <int value="384677240" label="AssistMultiWordLacrosSupport:enabled"/>
   <int value="385969127" label="disable-win32k-lockdown"/>
   <int value="386138870" label="DesktopPWAsOmniboxInstall:enabled"/>
   <int value="387178525" label="VideoFullscreenOrientationLock:enabled"/>
@@ -53763,6 +53772,7 @@ from previous Chrome versions.
       label="AutofillEnableFixedPaymentsBubbleLogging:enabled"/>
   <int value="1964816410" label="AndroidPayIntegrationV2:enabled"/>
   <int value="1965055310" label="SyncSetupFriendlySettings:enabled"/>
+  <int value="1965148406" label="AssistMultiWordLacrosSupport:disabled"/>
   <int value="1965534355" label="conversions-debug-mode"/>
   <int value="1965976546" label="NewOverviewAnimations:disabled"/>
   <int value="1966730288" label="disable-threaded-compositing"/>
@@ -66585,10 +66595,13 @@ Called by update_net_trust_anchors.py.-->
 <enum name="PasswordStoreAndroidBackendAPIError">
   <int value="7" label="NETWORK_ERROR"/>
   <int value="8" label="INTERNAL_ERROR"/>
+  <int value="10" label="DEVELOPER_ERROR"/>
   <int value="17" label="API_NOT_CONNECTED"/>
   <int value="20" label="CONNECTION_SUSPENDED_DURING_CALL"/>
   <int value="11000" label="PASSPHRASE_REQUIRED"/>
   <int value="11004" label="ACCESS_DENIED"/>
+  <int value="11005" label="AUTH_ERROR_RESOLVABLE"/>
+  <int value="11006" label="AUTH_ERROR_UNRESOLVABLE"/>
 </enum>
 
 <enum name="PasswordStoreAndroidBackendError">
@@ -70213,8 +70226,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
     Deprecated. The user signed out on the web, and Chrome signout was
     prohibited.
   </int>
-  <int value="6" label="Primary account is not allowed.">
+  <int value="6" label="Primary account is not allowed">
     The primary account is a managed account and is no longer allowed by policy.
+  </int>
+  <int value="7" label="Primary account was removed (Lacros only)">
+    The primary account was removed from the device on Lacros.
+  </int>
+  <int value="8" label="Signin is required with Mirror (Lacros only)">
+    The profile is not signed in, which is unsupported on Lacros.
   </int>
 </enum>
 

@@ -149,9 +149,6 @@ void OpenAccountSettingsAndSignOut(BOOL syncEnabled) {
   // sync screen changing.
   config.features_disabled = std::vector<base::Feature>{kOldSyncStringFRE};
 
-  // Enable the possibility of using the forced sign-in policy.
-  config.additional_args.push_back("--enable-forced-signin-policy");
-
   // Configure the policy to force sign-in.
   config.additional_args.push_back(
       "-" + base::SysNSStringToUTF8(kPolicyLoaderIOSConfigurationKey));
@@ -506,7 +503,7 @@ void OpenAccountSettingsAndSignOut(BOOL syncEnabled) {
   footerText = [footerText stringByReplacingOccurrencesOfString:@"END_LINK"
                                                      withString:@""];
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(footerText),
+      selectElementWithMatcher:grey_allOf(grey_text(footerText),
                                           grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_notNil()];
 }

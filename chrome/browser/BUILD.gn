@@ -2503,7 +2503,8 @@ static_library("browser") {
         "//ash/webui/demo_mode_app_ui",
         "//ash/webui/demo_mode_app_ui/mojom",
         "//ash/webui/sample_system_web_app_ui",
-        "//ash/webui/sample_system_web_app_ui/mojom",
+        "//ash/webui/sample_system_web_app_ui/mojom:shared",
+        "//ash/webui/sample_system_web_app_ui/mojom:trusted",
         "//ash/webui/telemetry_extension_ui",
         "//ash/webui/telemetry_extension_ui/mojom",
       ]
@@ -7497,17 +7498,6 @@ static_library("test_support") {
     "//ui/gfx",
     "//ui/gfx:test_support",
   ]
-
-  if (!is_android) {
-    sources += [
-      "signin/identity_browser_test_base.cc",
-      "signin/identity_browser_test_base.h",
-    ]
-    deps += [
-      "//chrome/test:test_support_ui",
-      "//components/policy/test_support",
-    ]
-  }
 
   if (is_android) {
     sources += [

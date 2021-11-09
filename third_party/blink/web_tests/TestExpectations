@@ -3237,8 +3237,6 @@ crbug.com/626703 [ Mac11 ] virtual/web-bluetooth-new-permissions-backend/wpt_int
 crbug.com/626703 external/wpt/webrtc-extensions/transfer-datachannel-service-worker.https.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc-extensions/transfer-datachannel.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/no-auto-wpt-origin-isolation/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/1-iframe/parent-no-child-yeswithparams-subdomain.sub.https.html [ Failure Timeout ]
-crbug.com/626703 [ Mac11 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Failure Skip Timeout ]
-crbug.com/626703 [ Mac11 ] external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Failure Skip Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/no-auto-wpt-origin-isolation/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/2-iframes/parent-yes-child1-yes-subdomain-child2-yes-subdomainport.sub.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/no-auto-wpt-origin-isolation/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/popups/opener-no-openee-yes-same.sub.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/no-auto-wpt-origin-isolation/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/2-iframes/parent-yes-child1-yes-subdomain-child2-no-port.sub.https.html [ Failure Timeout ]
@@ -6667,7 +6665,6 @@ crbug.com/1224804 virtual/not-site-per-process/external/wpt/wasm/serialization/m
 
 # Sheriff 2021-07-13
 crbug.com/1220114 [ Linux ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Failure Pass Timeout ]
-crbug.com/1228772 [ Linux ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Failure Pass ]
 crbug.com/1228959 [ Linux ] virtual/scroll-unification/fast/scroll-snap/snaps-after-wheel-scrolling-single-tick.html [ Failure Pass ]
 
 # A number of http/tests/inspector-protocol/network tests are flaky.
@@ -6722,7 +6719,6 @@ crbug.com/1229666 external/wpt/html/semantics/forms/form-submission-0/urlencoded
 crbug.com/1093027 http/tests/credentialmanager/credentialscontainer-create-with-virtual-authenticator.html [ Crash Failure Pass Skip Timeout ]
 # The next test was originally skipped on mac for lack of support (crbug.com/613672). It is now skipped everywhere due to flakiness.
 crbug.com/1229708 fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
-crbug.com/1229711 [ Linux ] http/tests/devtools/console-resource-errors.js [ Failure Pass ]
 crbug.com/1229725 http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Crash Failure Pass ]
 crbug.com/1085647 external/wpt/pointerevents/compat/pointerevent_mouse-pointer-preventdefault.html [ Pass Timeout ]
 crbug.com/1087232 http/tests/devtools/network/network-worker-fetch-blocked.js [ Failure Pass ]
@@ -6891,7 +6887,6 @@ crbug.com/1249176 [ Mac11-arm64 ] webaudio/AudioBufferSource/audiobuffersource-d
 crbug.com/1249176 [ Mac11-arm64 ] webaudio/AudioBufferSource/audiobuffersource-playbackrate-modulation.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] webaudio/Analyser/realtimeanalyser-freq-data.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] webaudio/Oscillator/no-dezippering.html [ Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-restartIce.https.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/overlay-scrollbar/plugin-overlay-scrollbar-mouse-capture.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/offsetparent-old-behavior/external/wpt/shadow-dom/accesskey.tentative.html [ Failure ]
@@ -7147,6 +7142,7 @@ crbug.com/1260776 http/tests/devtools/console-xhr-logging.js [ Failure Pass ]
 crbug.com/1260776 http/tests/devtools/network/script-as-text-loading-long-url.js [ Failure Pass ]
 crbug.com/1260776 http/tests/devtools/network/script-as-text-loading-with-caret.js [ Failure Pass ]
 crbug.com/1260776 http/tests/devtools/sources/debugger/async-callstack-network-initiator.js [ Failure Pass ]
+crbug.com/1260776 http/tests/devtools/console-resource-errors.js [ Failure Pass ]
 
 # DevTools roll
 crbug.com/1222126 http/tests/devtools/domdebugger/domdebugger-getEventListeners.js [ Skip ]
@@ -7262,3 +7258,14 @@ crbug.com/1267076 wpt_internal/fenced_frame/navigator-keyboard-layout-map.https.
 # Sheriff 2021-11-08
 crbug.com/1267734 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-after-TAO-cross-origin-redirect.html [ Failure Pass ]
 crbug.com/1267736 [ Win ] http/tests/devtools/bindings/jssourcemap-bindings-overlapping-sources.js [ Failure Pass ]
+
+# Temporarily disable to update DevTools Application Panel
+crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Pass Failure ]
+crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-on-navigation.js [ Pass Failure ]
+crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Pass Failure ]
+crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
+crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-websql.js [ Pass Failure ]
+
+# Sheriff 2021-11-09
+crbug.com/1268259 [ Linux ] images/color-profile-image-canvas-pattern.html [ Failure ]
+crbug.com/1268265 [ Mac10.14 ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure ]

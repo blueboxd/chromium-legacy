@@ -69,9 +69,6 @@ class MockWebController : public WebController {
                void(const ElementFinder::Result& option,
                     const ElementFinder::Result& element,
                     base::OnceCallback<void(const ClientStatus&)> callback));
-  MOCK_METHOD2(HighlightElement,
-               void(const ElementFinder::Result&,
-                    base::OnceCallback<void(const ClientStatus&)>));
   MOCK_METHOD2(SelectFieldValue,
                void(const ElementFinder::Result& element,
                     base::OnceCallback<void(const ClientStatus&)> callback));
@@ -85,6 +82,11 @@ class MockWebController : public WebController {
   MOCK_METHOD4(SendKeyboardInput,
                void(const std::vector<UChar32>& codepoints,
                     int delay_in_millisecond,
+                    const ElementFinder::Result& element,
+                    base::OnceCallback<void(const ClientStatus&)> callback));
+  MOCK_METHOD4(SendTextInput,
+               void(int key_press_delay_in_millisecond,
+                    const std::string& value,
                     const ElementFinder::Result& element,
                     base::OnceCallback<void(const ClientStatus&)> callback));
   MOCK_METHOD3(GetOuterHtml,

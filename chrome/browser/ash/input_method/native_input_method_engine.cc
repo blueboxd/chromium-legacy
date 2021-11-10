@@ -8,6 +8,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/services/ime/public/mojom/input_method.mojom.h"
 #include "base/feature_list.h"
 #include "base/i18n/i18n_constants.h"
 #include "base/i18n/icu_string_conversions.h"
@@ -28,7 +29,6 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/services/ime/public/mojom/input_method.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/ash/input_method_manager.h"
@@ -98,8 +98,7 @@ bool ShouldRouteToNativeMojoEngine(const std::string& engine_id) {
           IsJapaneseEngine(engine_id)) ||
          (features::IsSystemKoreanPhysicalTypingEnabled() &&
           IsKoreanEngine(engine_id)) ||
-         (features::IsSystemLatinPhysicalTypingEnabled() &&
-          IsFstEngine(engine_id));
+         IsFstEngine(engine_id);
 }
 
 bool IsPhysicalKeyboardAutocorrectEnabled(PrefService* prefs,

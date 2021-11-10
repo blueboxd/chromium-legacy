@@ -702,9 +702,6 @@ extern const char kEnableUseZoomForDsfChoiceDefault[];
 extern const char kEnableUseZoomForDsfChoiceEnabled[];
 extern const char kEnableUseZoomForDsfChoiceDisabled[];
 
-extern const char kEnableWebAuthenticationAuthenticatorAttachmentName[];
-extern const char kEnableWebAuthenticationAuthenticatorAttachmentDescription[];
-
 extern const char kEnableWebAuthenticationCableV2SupportName[];
 extern const char kEnableWebAuthenticationCableV2SupportDescription[];
 
@@ -827,6 +824,9 @@ extern const char kHttpsOnlyModeDescription[];
 
 extern const char kIgnoreGpuBlocklistName[];
 extern const char kIgnoreGpuBlocklistDescription[];
+
+extern const char kImprovedDesksKeyboardShortcutsName[];
+extern const char kImprovedDesksKeyboardShortcutsDescription[];
 
 extern const char kImprovedKeyboardShortcutsName[];
 extern const char kImprovedKeyboardShortcutsDescription[];
@@ -2310,9 +2310,6 @@ extern const char kArcDocumentsProviderUnknownSizeDescription[];
 extern const char kArcFilePickerExperimentName[];
 extern const char kArcFilePickerExperimentDescription[];
 
-extern const char kArcImageCopyPasteCompatName[];
-extern const char kArcImageCopyPasteCompatDescription[];
-
 extern const char kArcKeyboardShortcutHelperIntegrationName[];
 extern const char kArcKeyboardShortcutHelperIntegrationDescription[];
 
@@ -2414,12 +2411,6 @@ extern const char kCrosLanguageSettingsUpdate2Description[];
 
 extern const char kCrosOnDeviceGrammarCheckName[];
 extern const char kCrosOnDeviceGrammarCheckDescription[];
-
-extern const char kCrosRegionsModeName[];
-extern const char kCrosRegionsModeDescription[];
-extern const char kCrosRegionsModeDefault[];
-extern const char kCrosRegionsModeOverride[];
-extern const char kCrosRegionsModeHide[];
 
 extern const char kSystemExtensionsName[];
 extern const char kSystemExtensionsDescription[];
@@ -2922,9 +2913,6 @@ extern const char kSystemJapanesePhysicalTypingDescription[];
 
 extern const char kSystemKoreanPhysicalTypingName[];
 extern const char kSystemKoreanPhysicalTypingDescription[];
-
-extern const char kSystemLatinPhysicalTypingName[];
-extern const char kSystemLatinPhysicalTypingDescription[];
 
 extern const char kQuickSettingsNetworkRevampName[];
 extern const char kQuickSettingsNetworkRevampDescription[];

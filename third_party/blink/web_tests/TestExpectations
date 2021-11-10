@@ -1345,6 +1345,9 @@ virtual/layout_ng_block_frag/external/wpt/css/css-break/tall-line-in-short-fragm
 virtual/layout_ng_block_frag/external/wpt/css/css-break/tall-line-in-short-fragmentainer-002.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/trailing-child-margin-000.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/trailing-child-margin-002.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/transform-003.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/transform-004.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/transform-005.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/transform-006.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/transform-008.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-size-monolithic-002.html [ Pass ]
@@ -1448,10 +1451,8 @@ crbug.com/1066629 virtual/layout_ng_block_frag/fast/multicol/hit-test-translate-
 crbug.com/1225630 virtual/layout_ng_block_frag/fast/multicol/infinite-height-causing-fractional-row-height-crash.html [ Skip ]
 crbug.com/1225630 virtual/layout_ng_block_frag/fast/multicol/infinitely-tall-content-in-outer-crash.html [ Skip ]
 crbug.com/1225630 virtual/layout_ng_block_frag/fast/multicol/insane-column-count-and-padding-nested-crash.html [ Skip ]
-crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/mixed-opacity-test.html [ Crash Failure ]
 crbug.com/1225630 virtual/layout_ng_block_frag/fast/multicol/nested-very-tall-inside-short-crash.html [ Skip ]
 crbug.com/1242348 virtual/layout_ng_block_frag/fast/multicol/tall-line-in-short-block.html [ Failure ]
-crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/vertical-rl/composited-relpos-overlapping-will-change.html [ Failure ]
 
 # Just skip this for Mac11-arm64. It's super-flaky. Not block fragmentation-related.
 crbug.com/1262048 [ Mac11-arm64 ] virtual/layout_ng_block_frag/* [ Skip ]
@@ -3277,6 +3278,7 @@ crbug.com/626703 external/wpt/css/css-grid/grid-model/grid-areas-overflowing-gri
 crbug.com/626703 external/wpt/css/css-sizing/fit-content-length-percentage-002.html [ Failure ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/pointerevents/pointerevent_pointercapture_in_frame.html?pen [ Timeout ]
 crbug.com/626703 [ Mac11 ] external/wpt/pointerevents/pointerevent_pointercapture_in_frame.html?pen [ Timeout ]
+crbug.com/1265587 external/wpt/html/user-activation/activation-trigger-pointerevent.html?pen [ Failure ]
 crbug.com/626703 external/wpt/html/cross-origin-opener-policy/iframe-popup-same-origin-to-unsafe-none.https.html [ Skip Timeout ]
 crbug.com/626703 external/wpt/css/css-sizing/fit-content-length-percentage-006.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/fit-content-length-percentage-007.html [ Failure ]
@@ -6718,6 +6720,7 @@ crbug.com/1229666 external/wpt/html/semantics/forms/form-submission-0/urlencoded
 crbug.com/1093027 http/tests/credentialmanager/credentialscontainer-create-with-virtual-authenticator.html [ Crash Failure Pass Skip Timeout ]
 # The next test was originally skipped on mac for lack of support (crbug.com/613672). It is now skipped everywhere due to flakiness.
 crbug.com/1229708 fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
+crbug.com/1229711 [ Linux ] http/tests/devtools/console-resource-errors.js [ Failure Pass ]
 crbug.com/1229725 http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Crash Failure Pass ]
 crbug.com/1085647 external/wpt/pointerevents/compat/pointerevent_mouse-pointer-preventdefault.html [ Pass Timeout ]
 crbug.com/1087232 http/tests/devtools/network/network-worker-fetch-blocked.js [ Failure Pass ]
@@ -7136,13 +7139,6 @@ crbug.com/1255221 http/tests/devtools/elements/styles-4/svg-style.js [ Failure P
 # Sheriff 2021-10-04
 crbug.com/1226112 [ Win ] http/tests/text-autosizing/wide-iframe.html [ Pass Timeout ]
 
-# Temporarily disable to land DevTools changes
-crbug.com/1260776 http/tests/devtools/console-xhr-logging.js [ Failure Pass ]
-crbug.com/1260776 http/tests/devtools/network/script-as-text-loading-long-url.js [ Failure Pass ]
-crbug.com/1260776 http/tests/devtools/network/script-as-text-loading-with-caret.js [ Failure Pass ]
-crbug.com/1260776 http/tests/devtools/sources/debugger/async-callstack-network-initiator.js [ Failure Pass ]
-crbug.com/1260776 http/tests/devtools/console-resource-errors.js [ Failure Pass ]
-
 # DevTools roll
 crbug.com/1222126 http/tests/devtools/domdebugger/domdebugger-getEventListeners.js [ Skip ]
 crbug.com/1222126 http/tests/devtools/cache-storage/cache-live-update-list.js [ Skip ]
@@ -7242,11 +7238,8 @@ crbug.com/1265924 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [
 crbug.com/1257806 http/tests/devtools/console/console-external-array.js [ Skip ]
 crbug.com/1257806 http/tests/devtools/console/console-log-side-effects.js [ Skip ]
 
-# Flaky on Windows and Mac.
 # TODO(https://crbug.com/1265311): Make the test behave the same way on all platforms
-crbug.com/1265311 [ Win7 ] http/tests/navigation/location-change-repeated-from-blank.html [ Failure Pass ]
-crbug.com/1265311 [ Win10.20h2 ] http/tests/navigation/location-change-repeated-from-blank.html [ Failure Pass ]
-crbug.com/1265311 [ Mac11-arm64 ] http/tests/navigation/location-change-repeated-from-blank.html [ Failure Pass ]
+crbug.com/1265311 http/tests/navigation/location-change-repeated-from-blank.html [ Failure Pass ]
 
 # Sheriff 2021-11-03
 crbug.com/1266199 [ Mac10.12 ] fast/css3-text/css3-text-decoration/text-decoration-style-wavy-font-size.html [ Failure Pass ]
@@ -7259,13 +7252,6 @@ crbug.com/1267076 wpt_internal/fenced_frame/navigator-keyboard-layout-map.https.
 crbug.com/1267734 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-after-TAO-cross-origin-redirect.html [ Failure Pass ]
 crbug.com/1267736 [ Win ] http/tests/devtools/bindings/jssourcemap-bindings-overlapping-sources.js [ Failure Pass ]
 
-# Temporarily disable to update DevTools Application Panel
-crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Failure Pass ]
-crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-on-navigation.js [ Failure Pass ]
-crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass ]
-crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Failure Pass ]
-crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-websql.js [ Failure Pass ]
-
 # Sheriff 2021-11-09
 crbug.com/1268259 [ Linux ] images/color-profile-image-canvas-pattern.html [ Failure ]
 crbug.com/1268265 [ Mac10.14 ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure ]
@@ -7274,3 +7260,5 @@ crbug.com/1268439 [ Win10.20h2 ] virtual/scalefactor200/css3/filters/composited-
 crbug.com/1268518 [ Linux ] external/wpt/web-animations/interfaces/Animation/onfinish.html [ Failure Pass ]
 crbug.com/1268518 [ Mac10.12 ] external/wpt/web-animations/interfaces/Animation/onfinish.html [ Failure Pass ]
 crbug.com/1268519 [ Win10.20h2 ] virtual/scroll-unification/http/tests/misc/resource-timing-sizes-multipart.html [ Failure Pass ]
+crbug.com/1267734 [ Win7 ] css3/filters/composited-layer-bounds-after-sw-blur-animation.html [ Failure Pass ]
+crbug.com/1267734 [ Win7 ] virtual/scroll-unification/fast/forms/suggestion-picker/week-suggestion-picker-appearance.html [ Failure Pass ]

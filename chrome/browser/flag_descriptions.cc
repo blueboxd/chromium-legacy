@@ -1232,12 +1232,6 @@ const char kEnableSubresourceRedirectName[] =
 const char kEnableSubresourceRedirectDescription[] =
     "Allow subresource compression for data savings";
 
-const char kEnableWebAuthenticationAuthenticatorAttachmentName[] =
-    "Web Authentication Authenticator Attachment support";
-const char kEnableWebAuthenticationAuthenticatorAttachmentDescription[] =
-    "Enable Web Authentication to provide the Authenticator Attachment type "
-    "used on both authentication and registration success.";
-
 const char kEnableWebAuthenticationCableV2SupportName[] =
     "Web Authentication caBLE v2 support";
 const char kEnableWebAuthenticationCableV2SupportDescription[] =
@@ -1451,6 +1445,13 @@ const char kIgnoreGpuBlocklistName[] = "Override software rendering list";
 const char kIgnoreGpuBlocklistDescription[] =
     "Overrides the built-in software rendering list and enables "
     "GPU-acceleration on unsupported system configurations.";
+
+const char kImprovedDesksKeyboardShortcutsName[] =
+    "Enable improved desks keyboard shortcuts";
+const char kImprovedDesksKeyboardShortcutsDescription[] =
+    "Enable keyboard shortcuts for activating desks at specific indices and "
+    "toggling whether a window is assigned to all desks. Must be used with "
+    "the #improved-keyboard-shortcuts flag.";
 
 const char kImprovedKeyboardShortcutsName[] =
     "Enable improved keyboard shortcuts";
@@ -4014,12 +4015,6 @@ const char kArcFilePickerExperimentName[] =
 const char kArcFilePickerExperimentDescription[] =
     "Enables using Chrome OS file picker in ARC.";
 
-const char kArcImageCopyPasteCompatName[] =
-    "Enable image copy & paste compatibility mode for ARC";
-const char kArcImageCopyPasteCompatDescription[] =
-    "Allows pasting of images to Android apps through commitContent API and "
-    "share intent.";
-
 const char kArcKeyboardShortcutHelperIntegrationName[] =
     "Enable keyboard shortcut helper integration for ARC";
 const char kArcKeyboardShortcutHelperIntegrationDescription[] =
@@ -4205,13 +4200,6 @@ const char kCrosLanguageSettingsUpdate2Description[] =
 const char kCrosOnDeviceGrammarCheckName[] = "On-device Grammar Check";
 const char kCrosOnDeviceGrammarCheckDescription[] =
     "Enable new on-device grammar check component.";
-
-const char kCrosRegionsModeName[] = "Cros-regions load mode";
-const char kCrosRegionsModeDescription[] =
-    "This flag controls cros-regions load mode";
-const char kCrosRegionsModeDefault[] = "Default";
-const char kCrosRegionsModeOverride[] = "Override VPD values.";
-const char kCrosRegionsModeHide[] = "Hide VPD values.";
 
 const char kSystemExtensionsName[] = "Chrome OS System Extensions";
 const char kSystemExtensionsDescription[] =
@@ -5063,12 +5051,6 @@ const char kSystemKoreanPhysicalTypingName[] =
 const char kSystemKoreanPhysicalTypingDescription[] =
     "Use the system input engine instead of the Chrome extension for physical "
     "typing in Korean.";
-
-const char kSystemLatinPhysicalTypingName[] =
-    "Use system IME for latin-script typing";
-const char kSystemLatinPhysicalTypingDescription[] =
-    "Use the system input engine instead of the Chrome extension for physical "
-    "typing in languages based on latin script.";
 
 const char kQuickSettingsNetworkRevampName[] =
     "Enables the Quick Settings Network revamp.";

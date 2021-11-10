@@ -123,8 +123,7 @@ bool CanChangeChannel(Profile* profile) {
     bool value = false;
     // On a managed machine we delegate this setting to the affiliated users
     // only if the policy value is true.
-    ash::CrosSettings::Get()->GetBoolean(chromeos::kReleaseChannelDelegated,
-                                         &value);
+    ash::CrosSettings::Get()->GetBoolean(ash::kReleaseChannelDelegated, &value);
     if (!value)
       return false;
 
@@ -557,7 +556,7 @@ void AboutHandler::OnGetTargetChannel(std::string callback_id,
   // its value.
   std::string value;
   bool is_lts =
-      ash::CrosSettings::Get()->GetString(chromeos::kReleaseLtsTag, &value);
+      ash::CrosSettings::Get()->GetString(ash::kReleaseLtsTag, &value);
   channel_info->SetBoolean("isLts", is_lts);
 
   ResolveJavascriptCallback(base::Value(callback_id), *channel_info);
@@ -589,14 +588,14 @@ void AboutHandler::RequestUpdateOverCellular(const std::string& update_version,
 
 void AboutHandler::HandleRefreshTPMFirmwareUpdateStatus(
     const base::ListValue* args) {
-  chromeos::tpm_firmware_update::GetAvailableUpdateModes(
+  ash::tpm_firmware_update::GetAvailableUpdateModes(
       base::BindOnce(&AboutHandler::RefreshTPMFirmwareUpdateStatus,
                      weak_factory_.GetWeakPtr()),
       base::TimeDelta());
 }
 
 void AboutHandler::RefreshTPMFirmwareUpdateStatus(
-    const std::set<chromeos::tpm_firmware_update::Mode>& modes) {
+    const std::set<ash::tpm_firmware_update::Mode>& modes) {
   std::unique_ptr<base::DictionaryValue> event(new base::DictionaryValue);
   event->SetBoolean("updateAvailable", !modes.empty());
   FireWebUIListener("tpm-firmware-update-status-changed", *event);

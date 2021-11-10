@@ -6,14 +6,14 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/services/ime/public/mojom/input_engine.mojom.h"
+#include "ash/services/ime/public/mojom/input_method.mojom.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "chrome/browser/ash/input_method/stub_input_method_engine_observer.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
-#include "chromeos/services/ime/public/mojom/input_method.mojom.h"
 #include "chromeos/services/machine_learning/public/cpp/fake_service_connection.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -159,8 +159,7 @@ class NativeInputMethodEngineTest : public ::testing::Test {
         /*enabled_features=*/{features::kAssistPersonalInfo,
                               features::kAssistPersonalInfoEmail,
                               features::kAssistPersonalInfoName,
-                              features::kEmojiSuggestAddition,
-                              features::kSystemLatinPhysicalTyping},
+                              features::kEmojiSuggestAddition},
         /*disabled_features=*/{});
 
     // Needed by NativeInputMethodEngine to interact with the input field.
@@ -182,7 +181,6 @@ class NativeInputMethodEngineTest : public ::testing::Test {
                               features::kAssistPersonalInfoEmail,
                               features::kAssistPersonalInfoName,
                               features::kEmojiSuggestAddition,
-                              features::kSystemLatinPhysicalTyping,
                               features::kAssistMultiWord},
         /*disabled_features=*/{});
   }
@@ -628,8 +626,7 @@ class NativeInputMethodEngineWithRenderViewHostTest
         /*enabled_features=*/{features::kAssistPersonalInfo,
                               features::kAssistPersonalInfoEmail,
                               features::kAssistPersonalInfoName,
-                              features::kEmojiSuggestAddition,
-                              features::kSystemLatinPhysicalTyping},
+                              features::kEmojiSuggestAddition},
         /*disabled_features=*/{});
 
     // Needed by NativeInputMethodEngine to interact with the input field.

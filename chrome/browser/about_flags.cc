@@ -767,18 +767,6 @@ const FeatureEntry::Choice kLacrosSelectionChoices[] = {
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-const FeatureEntry::Choice kCrosRegionsModeChoices[] = {
-    {flag_descriptions::kCrosRegionsModeDefault, "", ""},
-    {flag_descriptions::kCrosRegionsModeOverride,
-     chromeos::switches::kCrosRegionsMode,
-     chromeos::switches::kCrosRegionsModeOverride},
-    {flag_descriptions::kCrosRegionsModeHide,
-     chromeos::switches::kCrosRegionsMode,
-     chromeos::switches::kCrosRegionsModeHide},
-};
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 const FeatureEntry::Choice kForceUIDirectionChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kForceDirectionLtr, switches::kForceUIDirection,
@@ -3230,6 +3218,10 @@ const FeatureEntry kFeatureEntries[] = {
         kOsCrOS,
         FEATURE_VALUE_TYPE(features::kNewShortcutMapping),
     },
+    {"improved-desks-keyboard-shortcuts",
+     flag_descriptions::kImprovedDesksKeyboardShortcutsName,
+     flag_descriptions::kImprovedDesksKeyboardShortcutsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kImprovedDesksKeyboardShortcuts)},
     {"improved-keyboard-shortcuts",
      flag_descriptions::kImprovedKeyboardShortcutsName,
      flag_descriptions::kImprovedKeyboardShortcutsDescription, kOsCrOS,
@@ -4017,11 +4009,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseWinrtMidiApiDescription, kOsWin,
      FEATURE_VALUE_TYPE(midi::features::kMidiManagerWinrt)},
 #endif  // OS_WIN
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"cros-regions-mode", flag_descriptions::kCrosRegionsModeName,
-     flag_descriptions::kCrosRegionsModeDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kCrosRegionsModeChoices)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
     {"enable-autofill-credit-card-upload",
      flag_descriptions::kAutofillCreditCardUploadName,
@@ -4221,10 +4208,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSystemKoreanPhysicalTypingName,
      flag_descriptions::kSystemKoreanPhysicalTypingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kSystemKoreanPhysicalTyping)},
-    {"enable-cros-system-latin-physical-typing",
-     flag_descriptions::kSystemLatinPhysicalTypingName,
-     flag_descriptions::kSystemLatinPhysicalTypingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kSystemLatinPhysicalTyping)},
     {"enable-cros-virtual-keyboard-api",
      flag_descriptions::kVirtualKeyboardApiName,
      flag_descriptions::kVirtualKeyboardApiDescription, kOsCrOS,
@@ -4349,10 +4332,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcFilePickerExperimentName,
      flag_descriptions::kArcFilePickerExperimentDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kFilePickerExperimentFeature)},
-    {"arc-image-copy-paste-compat",
-     flag_descriptions::kArcImageCopyPasteCompatName,
-     flag_descriptions::kArcImageCopyPasteCompatDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kImageCopyPasteCompatFeature)},
     {"arc-keyboard-shortcut-helper-integration",
      flag_descriptions::kArcKeyboardShortcutHelperIntegrationName,
      flag_descriptions::kArcKeyboardShortcutHelperIntegrationDescription,
@@ -5156,12 +5135,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNetworkLoggingToFileName,
      flag_descriptions::kEnableNetworkLoggingToFileDescription, kOsAll,
      SINGLE_VALUE_TYPE(network::switches::kLogNetLog)},
-
-    {"enable-web-authentication-authenticator-attachment",
-     flag_descriptions::kEnableWebAuthenticationAuthenticatorAttachmentName,
-     flag_descriptions::
-         kEnableWebAuthenticationAuthenticatorAttachmentDescription,
-     kOsAll, FEATURE_VALUE_TYPE(features::kWebAuthAuthenticatorAttachment)},
 
     {"enable-web-authentication-cable-v2-support",
      flag_descriptions::kEnableWebAuthenticationCableV2SupportName,

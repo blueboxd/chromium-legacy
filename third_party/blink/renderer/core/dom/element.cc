@@ -2837,6 +2837,10 @@ void Element::DetachLayoutTree(bool performing_reattach) {
       GetDocument().ActiveChainNodeDetached(*this);
     GetDocument().UserActionElements().DidDetach(*this);
   }
+
+  if (auto* context = GetDisplayLockContext()) {
+    context->DetachLayoutTree();
+  }
 }
 
 scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
@@ -3293,6 +3297,9 @@ StyleRecalcChange Element::RecalcOwnStyle(
         EnsureElementRareData()
             .EnsureContainerQueryData()
             .SetContainerQueryEvaluator(evaluator);
+      } else if (evaluator) {
+        DCHECK(old_style);
+        evaluator->MarkFontDirtyIfNeeded(*old_style, *new_style);
       }
     }
   }
@@ -3977,13 +3984,15 @@ void Element::ChildrenChanged(const ChildrenChange& change) {
   CheckForEmptyStyleChange(change.sibling_before_change,
                            change.sibling_after_change);
 
-  if (!change.ByParser() && change.IsChildElementChange())
+  if (!change.ByParser() && change.IsChildElementChange()) {
     CheckForSiblingStyleChanges(
         change.type == ChildrenChangeType::kElementRemoved
             ? kSiblingElementRemoved
             : kSiblingElementInserted,
         To<Element>(change.sibling_changed), change.sibling_before_change,
         change.sibling_after_change);
+    GetDocument().GetStyleEngine().ChildElementInsertedOrRemoved(this);
+  }
 
   if (ShadowRoot* shadow_root = GetShadowRoot())
     shadow_root->SetNeedsAssignmentRecalc();
@@ -3994,6 +4003,7 @@ void Element::FinishParsingChildren() {
   CheckForEmptyStyleChange(this, this);
   CheckForSiblingStyleChanges(kFinishedParsingChildren, nullptr, lastChild(),
                               nullptr);
+  GetDocument().GetStyleEngine().ChildElementInsertedOrRemoved(parentElement());
 }
 
 AttrNodeList* Element::GetAttrNodeList() {

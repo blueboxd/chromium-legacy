@@ -446,7 +446,8 @@ consoles.console_view(
     ("fuchsia-fyi-arm64-size", "fyi", "a64-size"),
     ("fuchsia-fyi-astro", "fyi", "astro"),
     ("fuchsia-builder-perf-fyi", "fyi", "builder-perf"),
-    ("fuchsia-perf-fyi", "fyi", "perf"),
+    ("fuchsia-perf-fyi", "fyi", "ast-perf"),
+    ("fuchsia-perf-sherlock-fyi", "fyi", "shk-perf"),
     ("fuchsia-x64", "ci", "x64-chrome"),
 )]
 
@@ -2041,6 +2042,16 @@ ci.chromiumos_builder(
     console_view_entry = consoles.console_view_entry(
         category = "simple|release",
         short_name = "kvn",
+    ),
+    main_console_view = "main",
+)
+
+ci.chromiumos_builder(
+    name = "linux-chromeos-annotator-rel",
+    branch_selector = branches.STANDARD_MILESTONE,
+    console_view_entry = consoles.console_view_entry(
+        category = "release",
+        short_name = "rel",
     ),
     main_console_view = "main",
 )

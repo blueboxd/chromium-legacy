@@ -200,11 +200,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "arc-image-copy-paste-compat",
-    "owners": [ "tetsui" ],
-    "expiry_milestone": 97
-  },
-  {
     "name": "arc-input-overlay",
     "owners": [ "cuicuiruan@google.com", "arc-gaming@google.com" ],
     "expiry_milestone": 99
@@ -527,7 +522,7 @@
   {
     "name": "bluetooth-advertisement-monitoring",
     "owners": [ "cvandermerwe@google.com", "hansenmichael@google.com", "chromeos-cross-device-eng@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 98
   },
   {
     "name": "bluetooth-bond-on-demand",
@@ -914,11 +909,6 @@
     "name": "credential-provider-extension-promo",
     "owners": ["ginnyhuang","bling-flags@google.com"],
     "expiry_milestone": 100
-  },
-  {
-    "name": "cros-regions-mode",
-    "owners": [ "alemate" ],
-    "expiry_milestone": 80
   },
   {
     "name": "crosh-swa",
@@ -1687,11 +1677,6 @@
     "name": "enable-cros-system-korean-physical-typing",
     "owners": [ "shend", "essential-inputs-team@google.com" ],
     "expiry_milestone": 97
-  },
-  {
-    "name": "enable-cros-system-latin-physical-typing",
-    "owners": [ "shend", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 95
   },
   {
     "name": "enable-cros-virtual-keyboard-api",
@@ -2799,11 +2784,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "enable-web-authentication-authenticator-attachment",
-    "owners": [ "ridouh@google.com", "//device/fido/OWNERS"] ,
-    "expiry_milestone" : 100
-  },
-  {
     "name": "enable-web-authentication-cable-v2-support",
     "owners": [ "webauthn-team@google.com" ],
     "expiry_milestone": 95
@@ -3400,6 +3380,11 @@
     // Previews is a baked-in feature of Chrome. This flag is used for frequent
     // testing and should not be removed.
     "expiry_milestone": -1
+  },
+  {
+    "name": "improved-desks-keyboard-shortcuts",
+    "owners": [ "chinsenj", "janetmac"],
+    "expiry_milestone": 101
   },
   {
     "name": "improved-keyboard-shortcuts",

@@ -228,8 +228,6 @@ std::vector<std::string> GenerateKernelCmdline(
                          start_params.arc_file_picker_experiment),
       base::StringPrintf("androidboot.arc_custom_tabs=%d",
                          start_params.arc_custom_tabs_experiment),
-      base::StringPrintf("androidboot.image_copy_paste_compat=%d",
-                         start_params.enable_image_copy_paste_compat),
       base::StringPrintf(
           "androidboot.keyboard_shortcut_helper_integration=%d",
           start_params.enable_keyboard_shortcut_helper_integration),
@@ -353,10 +351,16 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
 
   vm->set_kernel(file_system_status.guest_kernel_path().value());
 
+  const bool should_set_blocksize =
+      !base::FeatureList::IsEnabled(arc::kUseDefaultBlockSize);
+  constexpr uint32_t kBlockSize = 4096;
+
   // Add rootfs as /dev/vda.
   vm->set_rootfs(file_system_status.system_image_path().value());
   request.set_rootfs_writable(file_system_status.is_host_rootfs_writable() &&
                               file_system_status.is_system_image_ext_format());
+  if (should_set_blocksize)
+    request.set_rootfs_block_size(kBlockSize);
 
   // Add /vendor as /dev/block/vdb. The device name has to be consistent with
   // the one in GenerateFirstStageFstab() in platform2/arc/setup/.
@@ -365,6 +369,8 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
   disk_image->set_writable(false);
   disk_image->set_do_mount(true);
+  if (should_set_blocksize)
+    disk_image->set_block_size(kBlockSize);
 
   // Add /run/imageloader/.../android_demo_apps.squash as /dev/block/vdc if
   // needed.
@@ -374,6 +380,8 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
     disk_image->set_writable(false);
     disk_image->set_do_mount(true);
+    if (should_set_blocksize)
+      disk_image->set_block_size(kBlockSize);
   }
 
   // Add Android fstab.

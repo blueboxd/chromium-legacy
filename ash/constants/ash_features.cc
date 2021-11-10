@@ -178,7 +178,7 @@ const base::Feature kBentoBar{"BentoBar", base::FEATURE_DISABLED_BY_DEFAULT};
 // Advertisement monitoring allows applications to register low energy scanners
 // that filter low energy advertisements in a power-efficient manner.
 const base::Feature kBluetoothAdvertisementMonitoring{
-    "BluetoothAdvertisementMonitoring", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BluetoothAdvertisementMonitoring", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the usage of fixed Bluetooth A2DP packet size to improve
 // audio performance in noisy environment.
@@ -706,6 +706,11 @@ const base::Feature kImeSystemEmojiPickerClipboard{
 const base::Feature kImeStylusHandwriting{"StylusHandwriting",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables improved keyboard shortcuts for activating desks at specified indices
+// and toggling whether a window is assigned to all desks.
+const base::Feature kImprovedDesksKeyboardShortcuts{
+    "ImprovedDesksKeyboardShortcuts", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enable or disable the improved screen capture settings.
 const base::Feature kImprovedScreenCaptureSettings{
     "ImprovedScreenCaptureSettings", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1120,11 +1125,6 @@ const base::Feature kSystemJapanesePhysicalTyping{
 const base::Feature kSystemKoreanPhysicalTyping{
     "SystemKoreanPhysicalTyping", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables using the system input engine for physical typing in
-// languages based on latin script.
-const base::Feature kSystemLatinPhysicalTyping{
-    "SystemLatinPhysicalTyping", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the Chrome OS system-proxy daemon, only for system services. This
 // means that system services like tlsdate, update engine etc. can opt to be
 // authenticated to a remote HTTP web proxy via system-proxy.
@@ -1340,8 +1340,7 @@ bool IsArcNetworkDiagnosticsButtonEnabled() {
 }
 
 bool IsAssistiveMultiWordEnabled() {
-  return base::FeatureList::IsEnabled(kSystemLatinPhysicalTyping) &&
-         base::FeatureList::IsEnabled(kAssistMultiWord);
+  return base::FeatureList::IsEnabled(kAssistMultiWord);
 }
 
 bool IsAutoNightLightEnabled() {
@@ -1506,6 +1505,10 @@ bool IsSnoopingProtectionEnabled() {
 
 bool IsIdleInhibitEnabled() {
   return base::FeatureList::IsEnabled(kEnableIdleInhibit);
+}
+
+bool IsImprovedDesksKeyboardShortcutsEnabled() {
+  return base::FeatureList::IsEnabled(kImprovedDesksKeyboardShortcuts);
 }
 
 bool IsInputInDiagnosticsAppEnabled() {
@@ -1773,10 +1776,6 @@ bool IsSystemJapanesePhysicalTypingEnabled() {
 
 bool IsSystemKoreanPhysicalTypingEnabled() {
   return base::FeatureList::IsEnabled(kSystemKoreanPhysicalTyping);
-}
-
-bool IsSystemLatinPhysicalTypingEnabled() {
-  return base::FeatureList::IsEnabled(kSystemLatinPhysicalTyping);
 }
 
 bool IsTabClusterUIEnabled() {

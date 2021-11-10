@@ -4,8 +4,10 @@
 
 #include "third_party/blink/renderer/modules/screen_enumeration/screen_detailed.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_statics.h"
 #include "ui/display/screen_info.h"
@@ -28,8 +30,14 @@ const display::ScreenInfo& GetScreenInfo(LocalFrame& frame,
 
 }  // namespace
 
-ScreenDetailed::ScreenDetailed(LocalDOMWindow* window, int64_t display_id)
-    : Screen(window), display_id_(display_id) {}
+ScreenDetailed::ScreenDetailed(LocalDOMWindow* window,
+                               int64_t display_id,
+                               bool label_is_internal,
+                               uint32_t label_idx)
+    : Screen(window),
+      label_idx_(label_idx),
+      label_is_internal_(label_is_internal),
+      display_id_(display_id) {}
 
 // static
 bool ScreenDetailed::AreWebExposedScreenDetailedPropertiesEqual(
@@ -60,14 +68,24 @@ int ScreenDetailed::height() const {
   if (!DomWindow())
     return 0;
   LocalFrame* frame = DomWindow()->GetFrame();
-  return GetScreenInfo(*frame, display_id_).rect.height();
+  const display::ScreenInfo& screen_info = GetScreenInfo(*frame, display_id_);
+  if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return base::ClampRound(screen_info.rect.height() *
+                            screen_info.device_scale_factor);
+  }
+  return screen_info.rect.height();
 }
 
 int ScreenDetailed::width() const {
   if (!DomWindow())
     return 0;
   LocalFrame* frame = DomWindow()->GetFrame();
-  return GetScreenInfo(*frame, display_id_).rect.width();
+  const display::ScreenInfo& screen_info = GetScreenInfo(*frame, display_id_);
+  if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return base::ClampRound(screen_info.rect.width() *
+                            screen_info.device_scale_factor);
+  }
+  return screen_info.rect.width();
 }
 
 unsigned ScreenDetailed::colorDepth() const {
@@ -85,28 +103,48 @@ int ScreenDetailed::availLeft() const {
   if (!DomWindow())
     return 0;
   LocalFrame* frame = DomWindow()->GetFrame();
-  return GetScreenInfo(*frame, display_id_).available_rect.x();
+  const display::ScreenInfo& screen_info = GetScreenInfo(*frame, display_id_);
+  if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return base::ClampRound(screen_info.available_rect.x() *
+                            screen_info.device_scale_factor);
+  }
+  return screen_info.available_rect.x();
 }
 
 int ScreenDetailed::availTop() const {
   if (!DomWindow())
     return 0;
   LocalFrame* frame = DomWindow()->GetFrame();
-  return GetScreenInfo(*frame, display_id_).available_rect.y();
+  const display::ScreenInfo& screen_info = GetScreenInfo(*frame, display_id_);
+  if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return base::ClampRound(screen_info.available_rect.y() *
+                            screen_info.device_scale_factor);
+  }
+  return screen_info.available_rect.y();
 }
 
 int ScreenDetailed::availHeight() const {
   if (!DomWindow())
     return 0;
   LocalFrame* frame = DomWindow()->GetFrame();
-  return GetScreenInfo(*frame, display_id_).available_rect.height();
+  const display::ScreenInfo& screen_info = GetScreenInfo(*frame, display_id_);
+  if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return base::ClampRound(screen_info.available_rect.height() *
+                            screen_info.device_scale_factor);
+  }
+  return screen_info.available_rect.height();
 }
 
 int ScreenDetailed::availWidth() const {
   if (!DomWindow())
     return 0;
   LocalFrame* frame = DomWindow()->GetFrame();
-  return GetScreenInfo(*frame, display_id_).available_rect.width();
+  const display::ScreenInfo& screen_info = GetScreenInfo(*frame, display_id_);
+  if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return base::ClampRound(screen_info.available_rect.width() *
+                            screen_info.device_scale_factor);
+  }
+  return screen_info.available_rect.width();
 }
 
 bool ScreenDetailed::isExtended() const {
@@ -120,14 +158,24 @@ int ScreenDetailed::left() const {
   if (!DomWindow())
     return 0;
   LocalFrame* frame = DomWindow()->GetFrame();
-  return GetScreenInfo(*frame, display_id_).rect.x();
+  const display::ScreenInfo& screen_info = GetScreenInfo(*frame, display_id_);
+  if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return base::ClampRound(screen_info.rect.x() *
+                            screen_info.device_scale_factor);
+  }
+  return screen_info.rect.x();
 }
 
 int ScreenDetailed::top() const {
   if (!DomWindow())
     return 0;
   LocalFrame* frame = DomWindow()->GetFrame();
-  return GetScreenInfo(*frame, display_id_).rect.y();
+  const display::ScreenInfo& screen_info = GetScreenInfo(*frame, display_id_);
+  if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return base::ClampRound(screen_info.rect.y() *
+                            screen_info.device_scale_factor);
+  }
+  return screen_info.rect.y();
 }
 
 bool ScreenDetailed::isPrimary() const {
@@ -151,9 +199,13 @@ float ScreenDetailed::devicePixelRatio() const {
   return GetScreenInfo(*frame, display_id_).device_scale_factor;
 }
 
-const String& ScreenDetailed::label() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return g_empty_string;
+String ScreenDetailed::label() const {
+  // Returns a placeholder label, e.g. "Internal Display 1".
+  // These don't have to be unique, but it's nice to be able to differentiate
+  // if a user has two external screens, for example.
+  const char* prefix =
+      label_is_internal_ ? "Internal Display " : "External Display ";
+  return String(prefix) + String::Number(label_idx_);
 }
 
 int64_t ScreenDetailed::DisplayId() const {

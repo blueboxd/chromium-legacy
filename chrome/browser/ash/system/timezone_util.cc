@@ -134,7 +134,7 @@ std::u16string GetTimezoneName(const icu::TimeZone& timezone) {
   icu::UnicodeString id;
   icu::UnicodeString name;
   timezone.getID(id);
-  if (id == icu::UnicodeString(chromeos::system::kUTCTimezoneName)) {
+  if (id == icu::UnicodeString(ash::system::kUTCTimezoneName)) {
     name = icu::UnicodeString(
         l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_TIMEZONE_DISPLAY_NAME_UTC)
             .c_str());
@@ -228,8 +228,7 @@ bool HasSystemTimezonePolicy() {
 }
 
 bool IsTimezonePrefsManaged(const std::string& pref_name) {
-  DCHECK(pref_name == chromeos::kSystemTimezone ||
-         pref_name == prefs::kUserTimezone ||
+  DCHECK(pref_name == kSystemTimezone || pref_name == prefs::kUserTimezone ||
          pref_name == prefs::kResolveTimezoneByGeolocationMethod);
 
   std::string policy_timezone;
@@ -243,7 +242,7 @@ bool IsTimezonePrefsManaged(const std::string& pref_name) {
   //
   // kSystemTimezoneAutomaticDetectionPolicy (see below) controls only user
   // time zone preference, and user time zone resolve preference.
-  if (pref_name == chromeos::kSystemTimezone)
+  if (pref_name == kSystemTimezone)
     return false;
 
   const PrefService* local_state = g_browser_process->local_state();
@@ -299,7 +298,7 @@ void ApplyTimeZone(const TimeZoneResponseData* timezone) {
 
       profile->GetPrefs()->SetString(prefs::kUserTimezone,
                                      timezone->timeZoneId);
-      // For non-enterprise device, chromeos::Preferences::ApplyPreferences()
+      // For non-enterprise device, `Preferences::ApplyPreferences()`
       // will automatically change system timezone because user is primary.
       // But it may not happen for enterprise device, as policy may prevent
       // user from changing device time zone manually.

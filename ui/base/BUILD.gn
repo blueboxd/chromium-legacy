@@ -479,6 +479,8 @@ component("base") {
     sources += [
       "l10n/l10n_util_mac.h",
       "l10n/l10n_util_mac.mm",
+      "l10n/l10n_util_mac_bridge.h",
+      "l10n/l10n_util_mac_bridge.mm",
     ]
     public_deps += [ "//ui/events:event_constants" ]
     deps -= [
@@ -863,6 +865,7 @@ test("ui_base_unittests") {
     "class_property_unittest.cc",
     "clipboard/file_info_unittest.cc",
     "ime/utf_offset_unittest.cc",
+    "interaction/element_identifier_unittest.cc",
     "interaction/element_tracker_unittest.cc",
     "interaction/interaction_sequence_unittest.cc",
     "l10n/l10n_util_unittest.cc",

@@ -40,7 +40,6 @@ group("locally_built") {
     ":libidn11",
     ":libido3-0.1-0",
     ":libindicator3-7",
-    ":libjasper1",
     ":libjpeg-turbo8",
     ":libldap-2.4-2",
     ":libnih-dbus1",
@@ -495,7 +494,6 @@ instrumented_library("libido3-0.1-0") {
 }
 
 instrumented_library("libidn11") {
-  package_ldflags = [ "-Wl,-z,undefs" ]
   build_method = "debian"
   pre_build = "scripts/pre-build/libidn.sh"
 }
@@ -508,15 +506,6 @@ instrumented_library("libindicator3-7") {
     "--disable-introspection",
   ]
   pre_build = "scripts/pre-build/autogen.sh"
-}
-
-instrumented_library("libjasper1") {
-  extra_configure_flags = [
-    "--disable-static",
-
-    # From debian/rules.
-    "--enable-shared=yes",
-  ]
 }
 
 instrumented_library("libjpeg-turbo8") {

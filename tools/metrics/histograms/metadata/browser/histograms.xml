@@ -28,8 +28,16 @@ chromium-metrics-reviews@google.com.
       Deprecated as of 2021-06.
     </obsolete>
   </variant>
-  <variant name=".News"/>
-  <variant name=".Organic"/>
+  <variant name=".News">
+    <obsolete>
+      Obsoleted as of 2021-11. The experiment has ended.
+    </obsolete>
+  </variant>
+  <variant name=".Organic">
+    <obsolete>
+      Obsoleted as of 2021-11. The experiment has ended.
+    </obsolete>
+  </variant>
 </variants>
 
 <variants name="TabSwitchingType">
@@ -123,6 +131,9 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Browser.ContinuousSearch.BackNavigationToSrp{ExperimentCategory}"
     units="count" expires_after="2021-12-20">
+  <obsolete>
+    Obsoleted as of 2021-11. The experiment has ended.
+  </obsolete>
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
@@ -146,6 +157,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Browser.ContinuousSearch.DismissalCount" units="count"
     expires_after="2021-12-12">
+  <obsolete>
+    Obsoleted as of 2021-11. The experiment has ended.
+  </obsolete>
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
@@ -159,6 +173,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Browser.ContinuousSearch.NumberOfSearchResultsExtracted"
     units="count" expires_after="2022-04-17">
+  <obsolete>
+    Obsoleted as of 2021-11. The experiment has ended.
+  </obsolete>
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
@@ -171,6 +188,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Browser.ContinuousSearch.SearchResultExtractionStatus"
     enum="SearchResultExtractorClientStatus" expires_after="2022-04-10">
+  <obsolete>
+    Obsoleted as of 2021-11. The experiment has ended.
+  </obsolete>
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
@@ -204,6 +224,9 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Browser.ContinuousSearch.UI.CarouselScrolled3{ExperimentCategory}"
     enum="Boolean" expires_after="2021-12-20">
+  <obsolete>
+    Obsoleted as of 2021-11. The experiment has ended.
+  </obsolete>
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
@@ -237,6 +260,9 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Browser.ContinuousSearch.UI.ClickedItemPosition{ExperimentCategory}"
     units="position" expires_after="2021-12-20">
+  <obsolete>
+    Obsoleted as of 2021-11. The experiment has ended.
+  </obsolete>
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
@@ -250,6 +276,9 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Browser.ContinuousSearch.UI.DismissButtonClicked{ExperimentCategory}"
     enum="Boolean" expires_after="2021-12-20">
+  <obsolete>
+    Obsoleted as of 2021-11. The experiment has ended.
+  </obsolete>
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
@@ -265,6 +294,9 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Browser.ContinuousSearch.UI.ItemClickedAtLeastOnce{ExperimentCategory}"
     enum="Boolean" expires_after="2021-12-20">
+  <obsolete>
+    Obsoleted as of 2021-11. The experiment has ended.
+  </obsolete>
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
@@ -280,6 +312,9 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Browser.ContinuousSearch.UI.ProviderButtonClicked{ExperimentCategory}"
     enum="Boolean" expires_after="2021-12-20">
+  <obsolete>
+    Obsoleted as of 2021-11. The experiment has ended.
+  </obsolete>
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
@@ -305,7 +340,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Browser.PaintPreview.Capture.CompressedOnDiskSize" units="KB"
     expires_after="2022-04-03">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records the size of a compressed on-disk capture for the paint preview after
@@ -316,7 +351,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Browser.PaintPreview.Capture.NumberOfFramesCaptured"
     units="units" expires_after="2022-04-03">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records the number of frames captured by a paint preview if it succeeded.
@@ -326,7 +361,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Browser.PaintPreview.Capture.Success" enum="BooleanSuccess"
     expires_after="2022-04-03">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records a boolean indicating whether a capture attempt was successful.
@@ -336,7 +371,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Browser.PaintPreview.Capture.TotalCaptureDuration" units="ms"
     expires_after="2022-04-03">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records the total time spent capturing a paint preview of a page. This
@@ -346,6 +381,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Browser.PaintPreview.Capture.UncompressedOnDiskSize"
     units="KB" expires_after="2021-10-31">
+  <obsolete>
+    Obsoleted on 2021-11-09 as uncompressed captures were never being stored.
+  </obsolete>
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -388,7 +426,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Browser.PaintPreview.Player.CompositorProcessStartedCorrectly"
     units="BooleanSuccess" expires_after="2022-04-17">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records if the paint preview compositor process started correctly.
@@ -398,7 +436,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Browser.PaintPreview.Player.CompositorProcessStartupTime"
     units="ms" expires_after="2022-05-08">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records the time it took to start the paint preview compositor process.
@@ -408,7 +446,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Browser.PaintPreview.Player.LinkClicked"
     units="BooleanSuccess" expires_after="2022-04-10">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>Records when a link is clicked in the paint preview player.</summary>
 </histogram>
@@ -416,7 +454,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Browser.PaintPreview.Player.TimeToFirstBitmap" units="ms"
     expires_after="2022-05-08">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records the time taken to from the request to start the compositor process
@@ -427,7 +465,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Browser.PaintPreview.TabbedPlayer.CompositorFailureReason"
     enum="TabbedPaintPreviewCompositorFailureReason" expires_after="2022-04-10">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records the the reason for exiting the compositor process for the
@@ -439,7 +477,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Browser.PaintPreview.TabbedPlayer.ExitCause"
     enum="TabbedPaintPreviewExitCause" expires_after="2022-04-03">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records the the reason for exiting TabbedPaintPreviewPlayer. Recorded when
@@ -450,7 +488,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Browser.PaintPreview.TabbedPlayer.FirstPaintBeforeTabLoad"
     units="Boolean" expires_after="2022-04-10">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records whether paint preview was drawn before the tab finished loading.
@@ -461,7 +499,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Browser.PaintPreview.TabbedPlayer.HadCapture" units="Boolean"
     expires_after="2022-04-10">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records whether a paint preview exists. Recorded when attempting to show a
@@ -473,7 +511,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Browser.PaintPreview.TabbedPlayer.SnackbarCount" units="units"
     expires_after="2022-04-10">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records the number of times that the upgrade snackbar was shown in a session
@@ -484,7 +522,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Browser.PaintPreview.TabbedPlayer.TimeToFirstBitmap"
     units="ms" expires_after="2022-05-08">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records the time taken to from actvity creation to the first bitmap being
@@ -496,7 +534,7 @@ chromium-metrics-reviews@google.com.
     name="Browser.PaintPreview.TabbedPlayer.UpTime{TabbedPaintPreviewPlayerUptime}"
     units="ms" expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records the length of the time that a session of TabbedPaintPreviewPlayer
@@ -528,7 +566,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Browser.PaintPreview.TabService.DiskUsageAtStartup" units="KB"
     expires_after="2022-03-06">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records the total disk usage by the Paint Preview Tab Service at startup of

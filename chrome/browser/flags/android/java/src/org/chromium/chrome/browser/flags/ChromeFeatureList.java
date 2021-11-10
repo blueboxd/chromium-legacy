@@ -382,6 +382,7 @@ public abstract class ChromeFeatureList {
     public static final String INTEREST_FEED_V2_HEARTS = "InterestFeedV2Hearts";
     public static final String INTEREST_FEED_V2_AUTOPLAY = "InterestFeedV2Autoplay";
     public static final String KITKAT_SUPPORTED = "KitKatSupported";
+    public static final String LEAK_DETECTION_UNAUTHENTICATED = "LeakDetectionUnauthenticated";
     public static final String LIGHTWEIGHT_REACTIONS = "LightweightReactions";
     public static final String LOOKALIKE_NAVIGATION_URL_SUGGESTIONS_UI =
             "LookalikeUrlNavigationSuggestionsUI";
@@ -396,6 +397,7 @@ public abstract class ChromeFeatureList {
     public static final String MESSAGES_FOR_ANDROID_READER_MODE = "MessagesForAndroidReaderMode";
     public static final String MESSAGES_FOR_ANDROID_REDUCE_LAYOUT_CHANGES =
             "MessagesForAndroidReduceLayoutChanges";
+    public static final String MESSAGES_FOR_ANDROID_SAVE_CARD = "MessagesForAndroidSaveCard";
     public static final String MESSAGES_FOR_ANDROID_SYNC_ERROR = "MessagesForAndroidSyncError";
     public static final String MOBILE_IDENTITY_CONSISTENCY_PROMOS =
             "MobileIdentityConsistencyPromos";

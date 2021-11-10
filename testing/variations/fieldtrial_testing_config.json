@@ -2498,10 +2498,11 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20210929",
+                    "name": "Enabled_20211109",
                     "params": {
                         "delete_all_merchants_on_clear_history": "true",
-                        "trust_signals_message_delay_ms": "20000"
+                        "trust_signals_message_delay_ms": "20000",
+                        "trust_signals_site_engagement_threshold": "50"
                     },
                     "enable_features": [
                         "CommerceMerchantViewer"
@@ -5987,6 +5988,23 @@
             ]
         }
     ],
+    "PaintHoldingCrossOrigin": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20211028",
+                    "enable_features": [
+                        "PaintHoldingCrossOrigin"
+                    ]
+                }
+            ]
+        }
+    ],
     "PaintPreviewShowOnStartup": [
         {
             "platforms": [
@@ -6017,8 +6035,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Both_V2",
+                    "name": "Both_V4",
                     "enable_features": [
+                        "DelayParkingImages",
                         "ParkableImagesToDisk",
                         "UseParkableImageSegmentReader"
                     ]

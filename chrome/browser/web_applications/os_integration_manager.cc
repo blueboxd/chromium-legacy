@@ -160,6 +160,16 @@ void OsIntegrationManager::InstallOsHooks(
       &OsIntegrationManager::OnShortcutsCreated, weak_ptr_factory_.GetWeakPtr(),
       app_id, std::move(web_app_info), options, barrier);
 
+#if defined(OS_MAC)
+  // This has to happen before creating shortcuts on Mac because the shortcut
+  // creation step uses the file type associations which are marked for enabling
+  // by `RegisterFileHandlers()`.
+  if (options.os_hooks[OsHookType::kFileHandlers]) {
+    RegisterFileHandlers(app_id, barrier->CreateBarrierCallbackForType(
+                                     OsHookType::kFileHandlers));
+  }
+#endif
+
   // TODO(ortuno): Make adding a shortcut to the applications menu independent
   // from adding a shortcut to desktop.
   if (options.os_hooks[OsHookType::kShortcuts]) {
@@ -285,27 +295,6 @@ const absl::optional<GURL> OsIntegrationManager::GetMatchingFileHandlerURL(
     const std::vector<base::FilePath>& launch_files) {
   DCHECK(file_handler_manager_);
   return file_handler_manager_->GetMatchingFileHandlerURL(app_id, launch_files);
-}
-
-void OsIntegrationManager::MaybeUpdateFileHandlingOriginTrialExpiry(
-    content::WebContents* web_contents,
-    const AppId& app_id) {
-  DCHECK(file_handler_manager_);
-  return file_handler_manager_->MaybeUpdateFileHandlingOriginTrialExpiry(
-      web_contents, app_id);
-}
-
-void OsIntegrationManager::ForceEnableFileHandlingOriginTrial(
-    const AppId& app_id) {
-  DCHECK(file_handler_manager_);
-  return file_handler_manager_->ForceEnableFileHandlingOriginTrial(app_id);
-}
-
-void OsIntegrationManager::DisableForceEnabledFileHandlingOriginTrial(
-    const AppId& app_id) {
-  DCHECK(file_handler_manager_);
-  return file_handler_manager_->DisableForceEnabledFileHandlingOriginTrial(
-      app_id);
 }
 
 absl::optional<GURL> OsIntegrationManager::TranslateProtocolUrl(
@@ -739,10 +728,13 @@ void OsIntegrationManager::OnShortcutsCreated(
   if (shortcut_creation_failure)
     barrier->OnError(OsHookType::kShortcuts);
 
+#if !defined(OS_MAC)
+  // This step happens before shortcut creation on Mac.
   if (options.os_hooks[OsHookType::kFileHandlers]) {
     RegisterFileHandlers(app_id, barrier->CreateBarrierCallbackForType(
                                      OsHookType::kFileHandlers));
   }
+#endif
 
   if (options.os_hooks[OsHookType::kProtocolHandlers]) {
     RegisterProtocolHandlers(app_id, barrier->CreateBarrierCallbackForType(

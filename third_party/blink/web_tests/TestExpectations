@@ -568,7 +568,7 @@ crbug.com/1108972 fullscreen/compositor-touch-hit-rects-fullscreen-video-control
 # Cross-origin iframe layerization is buggy with empty iframes.
 crbug.com/1123189 virtual/threaded-composited-iframes/external/wpt/is-input-pending/security/cross-origin-subframe-masked-pointer-events-mixed-2.sub.html [ Failure ]
 crbug.com/1123189 virtual/threaded-composited-iframes/external/wpt/is-input-pending/security/cross-origin-subframe-complex-clip.sub.html [ Failure ]
-crbug.com/1266900 [ Mac ] fast/events/touch/gesture/right-click-gestures-set-cursor-at-correct-position.html [ Pass Crash ]
+crbug.com/1266900 [ Mac ] fast/events/touch/gesture/right-click-gestures-set-cursor-at-correct-position.html [ Crash Pass ]
 crbug.com/1267924 [ Mac ] external/wpt/css/css-contain/contain-layout-baseline-005.html [ Failure ]
 crbug.com/1267924 [ Mac ] external/wpt/css/css-contain/contain-layout-suppress-baseline-001.html [ Failure ]
 # Needs rebaseline on Fuchsia.
@@ -2970,7 +2970,6 @@ crbug.com/626703 [ Linux ] external/wpt/custom-elements/form-associated/ElementI
 crbug.com/626703 [ Mac10.15 ] external/wpt/custom-elements/form-associated/ElementInternals-validation.html [ Crash Failure ]
 crbug.com/626703 [ Win10.20h2 ] external/wpt/custom-elements/form-associated/ElementInternals-validation.html [ Crash Failure ]
 crbug.com/626703 [ Mac11 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/create-credential.https.html [ Crash ]
-crbug.com/626703 [ Fuchsia ] external/wpt/dom/historical.html [ Skip ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/html/semantics/forms/the-input-element/show-picker.tentative.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/html/semantics/forms/the-input-element/show-picker.tentative.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/html/semantics/forms/the-input-element/show-picker.tentative.html [ Timeout ]
@@ -7246,6 +7245,7 @@ crbug.com/1257806 http/tests/devtools/console/console-log-side-effects.js [ Skip
 # Flaky on Windows and Mac.
 # TODO(https://crbug.com/1265311): Make the test behave the same way on all platforms
 crbug.com/1265311 [ Win7 ] http/tests/navigation/location-change-repeated-from-blank.html [ Failure Pass ]
+crbug.com/1265311 [ Win10.20h2 ] http/tests/navigation/location-change-repeated-from-blank.html [ Failure Pass ]
 crbug.com/1265311 [ Mac11-arm64 ] http/tests/navigation/location-change-repeated-from-blank.html [ Failure Pass ]
 
 # Sheriff 2021-11-03
@@ -7260,12 +7260,17 @@ crbug.com/1267734 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/resource-ti
 crbug.com/1267736 [ Win ] http/tests/devtools/bindings/jssourcemap-bindings-overlapping-sources.js [ Failure Pass ]
 
 # Temporarily disable to update DevTools Application Panel
-crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Pass Failure ]
-crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-on-navigation.js [ Pass Failure ]
-crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Pass Failure ]
-crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
-crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-websql.js [ Pass Failure ]
+crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Failure Pass ]
+crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-on-navigation.js [ Failure Pass ]
+crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass ]
+crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Failure Pass ]
+crbug.com/1268278 http/tests/devtools/application-panel/resources-panel-websql.js [ Failure Pass ]
 
 # Sheriff 2021-11-09
 crbug.com/1268259 [ Linux ] images/color-profile-image-canvas-pattern.html [ Failure ]
 crbug.com/1268265 [ Mac10.14 ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure ]
+crbug.com/1268439 [ Linux ] virtual/scalefactor200/css3/filters/composited-layer-bounds-after-sw-blur-animation.html [ Failure Pass ]
+crbug.com/1268439 [ Win10.20h2 ] virtual/scalefactor200/css3/filters/composited-layer-bounds-after-sw-blur-animation.html [ Failure Pass ]
+crbug.com/1268518 [ Linux ] external/wpt/web-animations/interfaces/Animation/onfinish.html [ Failure Pass ]
+crbug.com/1268518 [ Mac10.12 ] external/wpt/web-animations/interfaces/Animation/onfinish.html [ Failure Pass ]
+crbug.com/1268519 [ Win10.20h2 ] virtual/scroll-unification/http/tests/misc/resource-timing-sizes-multipart.html [ Failure Pass ]

@@ -98,12 +98,13 @@ bool DevToolsProtocolTest::HasListItem(const std::string& path_to_list,
   if (!result_->GetList(path_to_list, &list))
     return false;
 
-  for (size_t i = 0; i != list->GetList().size(); i++) {
-    base::DictionaryValue* item;
-    if (!list->GetDictionary(i, &item))
+  for (const base::Value& item_value : list->GetList()) {
+    if (!item_value.is_dict())
       return false;
+    const base::DictionaryValue& item =
+        base::Value::AsDictionaryValue(item_value);
     std::string id;
-    if (!item->GetString(name, &id))
+    if (!item.GetString(name, &id))
       return false;
     if (id == value)
       return true;
@@ -156,11 +157,6 @@ DevToolsProtocolTest::WaitForNotification(const std::string& notification,
   waiting_for_notification_ = notification;
   RunLoopUpdatingQuitClosure();
   return std::move(waiting_for_notification_params_);
-}
-
-blink::SecurityStyle DevToolsProtocolTest::GetSecurityStyle(
-    content::WebContents* web_contents) {
-  return blink::SecurityStyle::kNeutral;
 }
 
 std::unique_ptr<base::DictionaryValue>

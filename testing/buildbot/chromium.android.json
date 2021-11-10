@@ -28352,6 +28352,18 @@
         "test": "weblayer_junit_tests",
         "test_id_prefix": "ninja://weblayer/browser/java:weblayer_junit_tests/"
       }
+    ],
+    "scripts": [
+      {
+        "isolate_profile_data": true,
+        "name": "check_network_annotations",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "script": "check_network_annotations.py",
+        "swarming": {}
+      }
     ]
   },
   "android-marshmallow-x86-rel": {
@@ -30223,6 +30235,21 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/android/monochrome:monochrome_public_apk_checker/"
+      }
+    ],
+    "scripts": [
+      {
+        "args": [
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
+        ],
+        "isolate_profile_data": true,
+        "name": "check_network_annotations",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "script": "check_network_annotations.py",
+        "swarming": {}
       }
     ]
   },
@@ -42217,6 +42244,17 @@
         "test": "webview_ui_test_app_test_apk",
         "test_id_prefix": "ninja://android_webview/tools/automated_ui_tests:webview_ui_test_app_test_apk/"
       }
+    ],
+    "scripts": [
+      {
+        "name": "check_network_annotations",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "script": "check_network_annotations.py",
+        "swarming": {}
+      }
     ]
   },
   "android-pie-x86-rel": {
@@ -47511,13 +47549,26 @@
         "test": "zlib_unittests",
         "test_id_prefix": "ninja://third_party/zlib:zlib_unittests/"
       }
+    ],
+    "scripts": [
+      {
+        "args": [
+          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
+        ],
+        "name": "check_network_annotations",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "script": "check_network_annotations.py",
+        "swarming": {}
+      }
     ]
   },
   "android-weblayer-marshmallow-x86-rel-tests": {
     "gtest_tests": [
       {
         "args": [
-          "--additional-apk=apks/WebLayerShellSystemWebView.apk",
           "--additional-apk=apks/ChromePublic.apk",
           "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
@@ -47606,7 +47657,6 @@
       },
       {
         "args": [
-          "--additional-apk=apks/WebLayerShellSystemWebView.apk",
           "--additional-apk=apks/ChromePublic.apk",
           "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
@@ -47695,7 +47745,6 @@
       },
       {
         "args": [
-          "--additional-apk=apks/WebLayerShellSystemWebView.apk",
           "--additional-apk=apks/ChromePublic.apk",
           "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
@@ -47731,7 +47780,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M97",
-              "revision": "version:97.0.4692.8"
+              "revision": "version:97.0.4692.9"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -47784,7 +47833,6 @@
       },
       {
         "args": [
-          "--additional-apk=apks/WebLayerShellSystemWebView.apk",
           "--additional-apk=apks/ChromePublic.apk",
           "--webview-apk-path=apks/AOSP_SystemWebView.apk",
           "--test-runner-outdir",
@@ -47873,7 +47921,6 @@
       },
       {
         "args": [
-          "--additional-apk=apks/WebLayerShellSystemWebView.apk",
           "--additional-apk=apks/ChromePublic.apk",
           "--webview-apk-path=apks/AOSP_SystemWebView.apk",
           "--test-runner-outdir",
@@ -47962,7 +48009,6 @@
       },
       {
         "args": [
-          "--additional-apk=apks/WebLayerShellSystemWebView.apk",
           "--additional-apk=apks/ChromePublic.apk",
           "--webview-apk-path=apks/AOSP_SystemWebView.apk",
           "--test-runner-outdir",
@@ -47998,7 +48044,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M97",
-              "revision": "version:97.0.4692.8"
+              "revision": "version:97.0.4692.9"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -48337,7 +48383,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M97",
-              "revision": "version:97.0.4692.8"
+              "revision": "version:97.0.4692.9"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -48601,7 +48647,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M97",
-              "revision": "version:97.0.4692.8"
+              "revision": "version:97.0.4692.9"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -48940,7 +48986,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M97",
-              "revision": "version:97.0.4692.8"
+              "revision": "version:97.0.4692.9"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -49204,7 +49250,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M97",
-              "revision": "version:97.0.4692.8"
+              "revision": "version:97.0.4692.9"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",

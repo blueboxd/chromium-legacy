@@ -65,6 +65,8 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"componentScreen", IDS_SHIMLESS_RMA_COMPONENT_SCREEN},
       {"componentKeyboard", IDS_SHIMLESS_RMA_COMPONENT_KEYBOARD},
       {"componentPowerButton", IDS_SHIMLESS_RMA_COMPONENT_POWER_BUTTON},
+      // Splash screen
+      {"shimlessSplashMessage", IDS_SHIMLESS_RMA_SPLASH_MESSAGE},
       // Landing page
       {"welcomeTitleText", IDS_SHIMLESS_RMA_LANDING_PAGE_TITLE},
       {"beginRmaWarningText", IDS_SHIMLESS_RMA_AUTHORIZED_TECH_ONLY_WARNING},
@@ -120,6 +122,11 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"rsuCodePlaceHolderText", IDS_SHIMLESS_RMA_RSU_CODE_PLACEHOLDER},
       // Repair complete page
       {"repairCompletedTitleText", IDS_SHIMLESS_RMA_REPAIR_COMPLETED},
+      // Manual disable wp page
+      {"manuallyDisableWpTitleText",
+       IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_TITLE},
+      {"manuallyDisableWpInstructionsText",
+       IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_INSTRUCTIONS},
   };
 
   html_source->AddLocalizedStrings(kLocalizedStrings);

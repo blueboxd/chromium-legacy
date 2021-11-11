@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
+#include "third_party/blink/renderer/core/fragment_directive/text_fragment_handler.h"
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
 #include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/frame_overlay.h"
@@ -124,7 +125,6 @@
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
-#include "third_party/blink/renderer/core/page/scrolling/text_fragment_handler.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
@@ -2501,6 +2501,14 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     if (needs_to_repeat_lifecycle)
       continue;
 
+    // DocumentTransition mirrors post layout transform for shared elements to
+    // UA created elements. If the transform for a shared element was updated,
+    // the style for UA created elements will be dirtied during the notification
+    // below.
+    needs_to_repeat_lifecycle = RunDocumentTransitionSteps(target_state);
+    if (needs_to_repeat_lifecycle)
+      continue;
+
     needs_to_repeat_lifecycle = RunPostLayoutIntersectionObserverSteps();
     if (!needs_to_repeat_lifecycle)
       break;
@@ -2540,6 +2548,29 @@ bool LocalFrameView::RunScrollTimelineSteps() {
                               DocumentLifecycle::kCompositingAssignmentsClean);
       });
   return re_run_lifecycles;
+}
+
+bool LocalFrameView::RunDocumentTransitionSteps(
+    DocumentLifecycle::LifecycleState target_state) {
+  DCHECK(frame_ && frame_->GetDocument());
+
+  // This step must be done after layout since it requires the element's
+  // transform computed during layout. But before paint since it can dirty style
+  // and trigger another style/layout update.
+  if (target_state != DocumentLifecycle::kPaintClean)
+    return false;
+
+  auto* document_transition_supplement =
+      DocumentTransitionSupplement::FromIfExists(*frame_->GetDocument());
+  if (!document_transition_supplement)
+    return false;
+
+  // Update the transforms for elements created for the transition to the
+  // transform on the corresponding shared element. Since this can change
+  // styles on the transition elements, it can trigger another lifecycle
+  // update.
+  document_transition_supplement->GetTransition()->UpdateTransforms();
+  return Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean;
 }
 
 bool LocalFrameView::RunResizeObserverSteps(
@@ -2951,7 +2982,6 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode,
     if (paint_controller_->ShouldForcePaintForBenchmark() ||
         GetLayoutView()->Layer()->SelfOrDescendantNeedsRepaint() ||
         visual_viewport_or_overlay_needs_repaint_) {
-      pre_composited_layers_.clear();
       GraphicsContext graphics_context(*paint_controller_);
 
       // Draw the overlay layer (video or WebXR DOM overlay) if present.

@@ -10,7 +10,6 @@
 
 #include "ash/search_box/search_box_constants.h"
 #include "base/bind.h"
-#include "base/macros.h"
 #include "ui/events/types/event_type.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -125,8 +124,8 @@ class SearchBoxViewBase : public views::View,
   // Nofifies the active status change.
   void NotifyActiveChanged();
 
-  // Updates the visibility of close button.
-  void UpdateButtonsVisisbility();
+  // Updates the visibility of the close and assistant buttons.
+  void UpdateButtonsVisibility();
 
   // Overridden from views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,

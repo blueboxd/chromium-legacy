@@ -360,6 +360,24 @@ export class FakeShimlessRmaService {
         'writeProtectManuallyDisabled', RmaState.kWaitForManualWPDisable);
   }
 
+  /**
+   * @return {!Promise<!{displayUrl: string, qrCode: ?QrCode}>}
+   */
+  getWriteProtectManuallyDisabledInstructions() {
+    return this.methods_.resolveMethod(
+        'getWriteProtectManuallyDisabledInstructions');
+  }
+
+  /**
+   * @param {string} displayUrl
+   * @param {!QrCode} qrCode
+   */
+  setGetWriteProtectManuallyDisabledInstructionsResult(displayUrl, qrCode) {
+    this.methods_.setResult(
+        'getWriteProtectManuallyDisabledInstructions',
+        {displayUrl: displayUrl, qrCode: qrCode});
+  }
+
   /** @return {!Promise<!{state: !WriteProtectDisableCompleteState}>} */
   getWriteProtectDisableCompleteState() {
     return this.methods_.resolveMethod('getWriteProtectDisableCompleteState');
@@ -1091,6 +1109,9 @@ export class FakeShimlessRmaService {
     this.methods_.register('setRsuDisableWriteProtectCode');
 
     this.methods_.register('writeProtectManuallyDisabled');
+    this.methods_.register('getWriteProtectManuallyDisabledInstructions');
+    this.methods_.register(
+        'setGetWriteProtectManuallyDisabledInstructionsResult');
 
     this.methods_.register('getWriteProtectDisableCompleteState');
     this.methods_.register('confirmManualWpDisableComplete');

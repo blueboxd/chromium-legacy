@@ -5099,6 +5099,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          download::features::kUseDownloadOfflineContentProvider)},
 
+    {"download-range", flag_descriptions::kDownloadRangeName,
+     flag_descriptions::kDownloadRangeDescription, kOsAll,
+     FEATURE_VALUE_TYPE(download::features::kDownloadRange)},
+
 #if defined(OS_ANDROID)
     {"screen-capture-android", flag_descriptions::kUserMediaScreenCapturingName,
      flag_descriptions::kUserMediaScreenCapturingDescription, kOsAndroid,
@@ -7193,9 +7197,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSubframeShutdownDelayDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSubframeShutdownDelay)},
 
-    {"composite-after-paint", flag_descriptions::kCompositeAfterPaintName,
-     flag_descriptions::kCompositeAfterPaintDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kCompositeAfterPaint)},
     {"autofill-parse-merchant-promo-code-fields",
      flag_descriptions::kAutofillParseMerchantPromoCodeFieldsName,
      flag_descriptions::kAutofillParseMerchantPromoCodeFieldsDescription,

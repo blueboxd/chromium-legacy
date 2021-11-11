@@ -2531,28 +2531,6 @@
             ]
         }
     ],
-    "CompositeAfterPaint": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CompositeAfterPaint"
-                    ]
-                }
-            ]
-        }
-    ],
     "CompositeBGColorAnimationExp4": [
         {
             "platforms": [
@@ -2998,7 +2976,8 @@
                         "NtpChromeCartModuleAbandonedCartDiscountParam": "true",
                         "NtpChromeCartModuleAbandonedCartDiscountUseUtmParam": "true",
                         "NtpChromeCartModuleHeuristicsImprovementParam": "true",
-                        "NtpModulesLoadTimeoutMillisecondsParam": "3000"
+                        "NtpModulesLoadTimeoutMillisecondsParam": "3000",
+                        "discount-fetch-delay": "1h"
                     },
                     "enable_features": [
                         "NtpChromeCartModule",
@@ -3710,6 +3689,49 @@
                     },
                     "enable_features": [
                         "ExploreSites"
+                    ]
+                }
+            ]
+        }
+    ],
+    "FeedImageMemoryCache": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ClearCache_Reduced",
+                    "params": {
+                        "image_memory_cache_size_percentage": "50"
+                    },
+                    "enable_features": [
+                        "FeedClearImageMemoryCache",
+                        "FeedImageMemoryCacheSizePercentage"
+                    ]
+                },
+                {
+                    "name": "CacheDisabled",
+                    "params": {
+                        "image_memory_cache_size_percentage": "0"
+                    },
+                    "enable_features": [
+                        "FeedImageMemoryCacheSizePercentage"
+                    ]
+                },
+                {
+                    "name": "CacheReduced",
+                    "params": {
+                        "image_memory_cache_size_percentage": "50"
+                    },
+                    "enable_features": [
+                        "FeedImageMemoryCacheSizePercentage"
+                    ]
+                },
+                {
+                    "name": "ClearCache",
+                    "enable_features": [
+                        "FeedClearImageMemoryCache"
                     ]
                 }
             ]
@@ -9146,25 +9168,6 @@
             "experiments": [
                 {
                     "name": "2_V1"
-                }
-            ]
-        }
-    ],
-    "WebRTC-Vp9DependencyDescriptor": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
                 }
             ]
         }

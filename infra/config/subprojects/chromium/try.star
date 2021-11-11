@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 load("//lib/branches.star", "branches")
-load("//lib/builders.star", "compilator_watcher_git_revision", "cpu", "goma", "os", "xcode")
+load("//lib/builders.star", "cpu", "goma", "os", "xcode")
 load("//lib/consoles.star", "consoles")
 load("//lib/try.star", "try_")
 load("//project.star", "branch_type", "settings")
@@ -474,17 +474,15 @@ try_.chromium_android_builder(
     ),
 )
 
-try_.chromium_android_builder(
+try_.chromium_android_orchestrator_pair(
     name = "android-pie-arm64-rel",
     branch_selector = branches.STANDARD_MILESTONE,
-    builderless = not settings.is_main,
-    cores = 16,
-    goma_jobs = goma.jobs.J300,
-    ssd = True,
     main_list_view = "try",
-    tryjob = try_.job(),
-    # TODO(crbug/1202741)
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
+    orchestrator_cores = 4,
+    orchestrator_tryjob = try_.job(),
+    compilator_cores = 32,
+    compilator_goma_jobs = goma.jobs.J300,
+    compilator_name = "android-pie-arm64-rel-compilator",
 )
 
 try_.chromium_android_builder(
@@ -1617,44 +1615,27 @@ try_.chromium_mac_builder(
     tryjob = try_.job(),
 )
 
-try_.chromium_mac_builder(
+try_.chromium_mac_orchestrator_pair(
     name = "mac-rel-orchestrator",
-    builderless = False,
-    cores = 2,
-    executable = "recipe:chromium/orchestrator",
-    use_clang_coverage = True,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
-    os = os.LINUX_BIONIC,
-    ssd = None,
-    properties = {
-        "$build/chromium_orchestrator": {
-            "compilator": "mac-rel-compilator",
-            "compilator_watcher_git_revision": compilator_watcher_git_revision,
-        },
-    },
-    service_account = "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
-)
-
-try_.chromium_mac_builder(
-    name = "mac-rel-compilator",
-    builderless = False,
-    cores = 24,
-    executable = "recipe:chromium/compilator",
-    goma_jobs = goma.jobs.J150,
     use_clang_coverage = True,
-    properties = {
-        "orchestrator": {
-            "builder_name": "mac-rel-orchestrator",
-            "builder_group": "tryserver.chromium.mac",
-        },
-    },
+    orchestrator_cores = 2,
+    orchestrator_tryjob = None,
+    compilator_goma_jobs = goma.jobs.J150,
+    compilator_os = os.MAC_DEFAULT,
+    compilator_name = "mac-rel-compilator",
 )
 
-try_.chromium_mac_builder(
+try_.chromium_mac_orchestrator_pair(
     name = "mac11-arm64-rel",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
-    goma_jobs = goma.jobs.J150,
-    os = os.MAC_11,
+    main_list_view = "try",
+    orchestrator_cores = 2,
+    orchestrator_tryjob = None,
+    compilator_goma_jobs = goma.jobs.J150,
+    compilator_os = os.MAC_11,
+    compilator_name = "mac11-arm64-rel-compilator",
 )
 
 # NOTE: the following trybots aren't sensitive to Mac version on which
@@ -1983,6 +1964,7 @@ try_.chromium_win_builder(
     tryjob = try_.job(
         location_regexp = [
             ".+/[+]/sandbox/win/.+",
+            ".+/[+]/sandbox/policy/win/.+",
         ],
     ),
 )

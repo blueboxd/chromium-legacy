@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2021 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -27,6 +27,7 @@ def main():
   args = parser.parse_args()
   args.out_dir = None
   args.device = 'fvdl'
+  args.cpu_cores = 4
   common_args.ConfigureLogging(args)
   with common_args.GetDeploymentTargetForArgs(args) as fvdl_target:
     if fvdl_target._with_network:

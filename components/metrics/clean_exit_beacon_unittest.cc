@@ -97,10 +97,10 @@ class BadBeaconFileTest
     : public testing::WithParamInterface<BadBeaconTestParams>,
       public CleanExitBeaconTest {};
 
-#if defined(OS_IOS)
 struct BeaconConsistencyTestParams {
   // Inputs:
   const std::string test_name;
+  absl::optional<bool> beacon_file_beacon_value;
   absl::optional<bool> platform_specific_beacon_value;
   absl::optional<bool> local_state_beacon_value;
   // Result:
@@ -109,10 +109,14 @@ struct BeaconConsistencyTestParams {
 
 // Used for testing the logic that emits CleanExitBeaconConsistency to
 // histograms.
-class BeaconConsistencyTest
+#if defined(OS_IOS)
+class BackupBeaconConsistencyTest
     : public testing::WithParamInterface<BeaconConsistencyTestParams>,
       public CleanExitBeaconTest {};
 #endif  // defined(OS_IOS)
+class BeaconFileConsistencyTest
+    : public testing::WithParamInterface<BeaconConsistencyTestParams>,
+      public CleanExitBeaconTest {};
 
 // Verify that the crash streak metric is 0 when default pref values are used.
 TEST_F(CleanExitBeaconTest, CrashStreakMetricWithDefaultPrefs) {
@@ -169,10 +173,6 @@ TEST_F(CleanExitBeaconTest,
   histogram_tester_.ExpectUniqueSample("Variations.SafeMode.Streak.Crashes", 1,
                                        1);
 }
-
-#if !defined(OS_ANDROID)
-// TODO(crbug/1248239): Run these tests on Android once the Extended Variations
-// Safe Mode experiment is enabled on Android Chrome.
 
 // Verify that (a) the client is excluded from the Extended Variations Safe Mode
 // experiment and (b) no attempt is made to read the beacon file when no user
@@ -269,6 +269,9 @@ TEST_P(BadBeaconFileTest, InitWithUnusableBeaconFile) {
       "Variations.ExtendedSafeMode.GotVariationsFileContents", false, 1);
 }
 
+// TODO(crbug/1248239): Enable these tests on Android when the Extended
+// Variations Safe Mode experiment is fully enabled on Android Chrome.
+#if !defined(OS_ANDROID)
 // Verify that successfully reading the beacon file's contents results in
 // correctly (a) setting the |did_previous_session_exit_cleanly_| field and (b)
 // recording metrics when the last session exited cleanly.
@@ -317,9 +320,92 @@ TEST_F(CleanExitBeaconTest, InitWithCrashAndBeaconFile) {
 }
 #endif  // !defined(OS_ANDROID)
 
+// The below CleanExitBeaconTest.BeaconState*ExtendedSafeMode tests verify that
+// the logic for recording UMA.CleanExitBeacon.BeaconFileConsistency is correct
+// for clients in the SignalAndWriteViaFileUtil group.
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    BeaconFileConsistencyTest,
+    ::testing::Values(
+        BeaconConsistencyTestParams{
+            .test_name = "MissingMissing",
+            .expected_consistency =
+                CleanExitBeaconConsistency::kMissingMissing},
+        BeaconConsistencyTestParams{
+            .test_name = "MissingClean",
+            .local_state_beacon_value = true,
+            .expected_consistency = CleanExitBeaconConsistency::kMissingClean},
+        BeaconConsistencyTestParams{
+            .test_name = "MissingDirty",
+            .local_state_beacon_value = false,
+            .expected_consistency = CleanExitBeaconConsistency::kMissingDirty},
+        BeaconConsistencyTestParams{
+            .test_name = "CleanMissing",
+            .beacon_file_beacon_value = true,
+            .expected_consistency = CleanExitBeaconConsistency::kCleanMissing},
+        BeaconConsistencyTestParams{
+            .test_name = "DirtyMissing",
+            .beacon_file_beacon_value = false,
+            .expected_consistency = CleanExitBeaconConsistency::kDirtyMissing},
+        BeaconConsistencyTestParams{
+            .test_name = "CleanClean",
+            .beacon_file_beacon_value = true,
+            .local_state_beacon_value = true,
+            .expected_consistency = CleanExitBeaconConsistency::kCleanClean},
+        BeaconConsistencyTestParams{
+            .test_name = "CleanDirty",
+            .beacon_file_beacon_value = true,
+            .local_state_beacon_value = false,
+            .expected_consistency = CleanExitBeaconConsistency::kCleanDirty},
+        BeaconConsistencyTestParams{
+            .test_name = "DirtyClean",
+            .beacon_file_beacon_value = false,
+            .local_state_beacon_value = true,
+            .expected_consistency = CleanExitBeaconConsistency::kDirtyClean},
+        BeaconConsistencyTestParams{
+            .test_name = "DirtyDirty",
+            .beacon_file_beacon_value = false,
+            .local_state_beacon_value = false,
+            .expected_consistency = CleanExitBeaconConsistency::kDirtyDirty}),
+    [](const ::testing::TestParamInfo<BeaconConsistencyTestParams>& params) {
+      return params.param.test_name;
+    });
+
+TEST_P(BeaconFileConsistencyTest, BeaconConsistency) {
+  // Verify that the beacon file is not present. Unless set below, this beacon
+  // is considered missing.
+  const base::FilePath user_data_dir_path = user_data_dir_.GetPath();
+  const base::FilePath temp_beacon_file_path =
+      user_data_dir_path.Append(variations::kVariationsFilename);
+  ASSERT_FALSE(base::PathExists(temp_beacon_file_path));
+  // Clear the Local State beacon. Unless set below, it is also considered
+  // missing.
+  prefs_.ClearPref(prefs::kStabilityExitedCleanly);
+
+  BeaconConsistencyTestParams params = GetParam();
+  if (params.beacon_file_beacon_value) {
+    ASSERT_LT(
+        0, base::WriteFile(
+               temp_beacon_file_path,
+               CreateWellFormedBeaconFileContents(
+                   /*exited_cleanly=*/params.beacon_file_beacon_value.value(),
+                   /*crash_streak=*/0)
+                   .data()));
+  }
+  if (params.local_state_beacon_value) {
+    prefs_.SetBoolean(prefs::kStabilityExitedCleanly,
+                      params.local_state_beacon_value.value());
+  }
+
+  TestCleanExitBeacon clean_exit_beacon(&prefs_, user_data_dir_path);
+  histogram_tester_.ExpectUniqueSample(
+      "UMA.CleanExitBeacon.BeaconFileConsistency", params.expected_consistency,
+      1);
+}
+
 #if defined(OS_ANDROID)
-// TODO(crbug/1248239, crbug/1255305): Remove this test once the Extended
-// Variations Safe Mode experiment is enabled on Android Chrome.
+// TODO(crbug/1248239): Remove this test once the Extended Variations Safe Mode
+// experiment is fully enabled on Android Chrome.
 
 // Verify that the beacon file, if any, is ignored on Android.
 TEST_F(CleanExitBeaconTest, BeaconFileIgnoredOnAndroid) {
@@ -346,15 +432,12 @@ TEST_F(CleanExitBeaconTest, BeaconFileIgnoredOnAndroid) {
 
   TestCleanExitBeacon clean_exit_beacon(&prefs_, user_data_dir_path);
 
-  // Verify that (a) the GotVariationsFileContents metric was not emitted and
-  // (b) the PrefService was used (and not the beacon file).
-  histogram_tester_.ExpectTotalCount(
-      "Variations.ExtendedSafeMode.GotVariationsFileContents", 0);
+  // Verify that the Local State beacon was used (not the beacon file beacon).
   EXPECT_TRUE(clean_exit_beacon.exited_cleanly());
   histogram_tester_.ExpectUniqueSample("Variations.SafeMode.Streak.Crashes",
                                        expected_num_crashes, 1);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // defined(OS_ANDROID)
 
 // Verify that attempting to write synchronously DCHECKs for clients that do not
 // belong to the SignalAndWriteViaFileUtil experiment group.
@@ -376,7 +459,7 @@ TEST_F(CleanExitBeaconTest, WriteBeaconValue_SynchronousWriteDcheck) {
 #if defined(OS_IOS)
 INSTANTIATE_TEST_SUITE_P(
     All,
-    BeaconConsistencyTest,
+    BackupBeaconConsistencyTest,
     ::testing::Values(
         BeaconConsistencyTestParams{
             .test_name = "MissingMissing",
@@ -422,7 +505,7 @@ INSTANTIATE_TEST_SUITE_P(
       return params.param.test_name;
     });
 
-TEST_P(BeaconConsistencyTest, BeaconState) {
+TEST_P(BackupBeaconConsistencyTest, BeaconConsistency) {
   // Clear the platform-specific and Local State beacons. Unless set below, the
   // beacons are considered missing.
   CleanExitBeacon::ResetStabilityExitedCleanlyForTesting(&prefs_);

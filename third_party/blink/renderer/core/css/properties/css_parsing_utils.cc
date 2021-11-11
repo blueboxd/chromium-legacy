@@ -2738,7 +2738,8 @@ bool IsContentPositionOrLeftOrRightKeyword(CSSValueID id) {
 
 bool IsCSSWideKeyword(CSSValueID id) {
   return id == CSSValueID::kInherit || id == CSSValueID::kInitial ||
-         id == CSSValueID::kUnset || id == CSSValueID::kRevert;
+         id == CSSValueID::kUnset || id == CSSValueID::kRevert ||
+         id == CSSValueID::kRevertLayer;
 }
 
 // https://drafts.csswg.org/css-values-4/#css-wide-keywords
@@ -3756,7 +3757,7 @@ String ConcatenateFamilyName(CSSParserTokenRange& range) {
                        IsDefaultKeyword(first_token.Value()))) {
     return String();
   }
-  return builder.ToString();
+  return builder.ReleaseString();
 }
 
 CSSValueList* CombineToRangeList(const CSSPrimitiveValue* range_start,
@@ -3964,8 +3965,7 @@ Vector<String> ParseGridTemplateAreasColumnNames(const String& grid_row_names) {
   for (unsigned i = 0; i < text.length(); ++i) {
     if (IsCSSSpace(text[i])) {
       if (!area_name.IsEmpty()) {
-        column_names.push_back(area_name.ToString());
-        area_name.Clear();
+        column_names.push_back(area_name.ReleaseString());
       }
       continue;
     }
@@ -3973,15 +3973,13 @@ Vector<String> ParseGridTemplateAreasColumnNames(const String& grid_row_names) {
       if (area_name == ".")
         continue;
       if (!area_name.IsEmpty()) {
-        column_names.push_back(area_name.ToString());
-        area_name.Clear();
+        column_names.push_back(area_name.ReleaseString());
       }
     } else {
       if (!IsNameCodePoint(text[i]))
         return Vector<String>();
       if (area_name == ".") {
-        column_names.push_back(area_name.ToString());
-        area_name.Clear();
+        column_names.push_back(area_name.ReleaseString());
       }
     }
 
@@ -3989,7 +3987,7 @@ Vector<String> ParseGridTemplateAreasColumnNames(const String& grid_row_names) {
   }
 
   if (!area_name.IsEmpty())
-    column_names.push_back(area_name.ToString());
+    column_names.push_back(area_name.ReleaseString());
 
   return column_names;
 }

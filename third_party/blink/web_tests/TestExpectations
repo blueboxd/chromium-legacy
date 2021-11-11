@@ -525,6 +525,9 @@ crbug.com/1242416 [ Debug Mac10.15 ] external/wpt/css/CSS2/backgrounds/backgroun
 crbug.com/492187 external/wpt/css/CSS2/backgrounds/background-intrinsic-004.xht [ Failure ]
 crbug.com/492187 external/wpt/css/CSS2/backgrounds/background-intrinsic-006.xht [ Failure ]
 crbug.com/767352 external/wpt/css/css-backgrounds/border-image-width-008.html [ Failure ]
+crbug.com/1268426 external/wpt/css/css-backgrounds/border-image-width-should-extend-to-padding.html [ Failure ]
+crbug.com/1268426 virtual/threaded/external/wpt/css/css-backgrounds/border-image-width-should-extend-to-padding.html [ Failure ]
+
 
 # ==== Regressions introduced by BlinkGenPropertyTrees =====
 # Reflection / mask ordering issue
@@ -1302,6 +1305,9 @@ virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-004.html [ Pass
 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-005.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-006.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/forced-break-at-fragmentainer-start-000.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/monolithic-with-overflow-lr.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/monolithic-with-overflow-rl.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/monolithic-with-overflow.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-012.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-029.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-030.html [ Pass ]
@@ -1463,6 +1469,7 @@ virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/flex-container-fr
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/flex-container-fragmentation-007.tentative.html [ Pass ]
 
 ### Tests failing with LayoutNGFlexFragmentation enabled:
+crbug.com/660611 virtual/layout_ng_flex_frag/fast/multicol/flexbox/doubly-nested-with-zero-width-flexbox-and-forced-break-crash.html [ Skip ]
 crbug.com/660611 virtual/layout_ng_flex_frag/fast/multicol/flexbox/flexbox.html [ Failure ]
 
 ### Tests passing with LayoutNGGridFragmentation enabled:
@@ -2965,8 +2972,6 @@ crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/servi
 crbug.com/626703 [ Mac10.15 ] external/wpt/page-visibility/minimize.html [ Failure Skip Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/shared_array_buffer_on_desktop/external/wpt/compression/decompression-constructor-error.tentative.any.serviceworker.html [ Timeout ]
 crbug.com/626703 [ Win10.20h2 ] external/wpt/web-locks/bfcache/abort.tentative.https.html [ Failure Skip Timeout ]
-crbug.com/626703 external/wpt/css/css-backgrounds/border-image-width-should-extend-to-padding.html [ Failure ]
-crbug.com/626703 virtual/threaded/external/wpt/css/css-backgrounds/border-image-width-should-extend-to-padding.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/custom-elements/form-associated/ElementInternals-validation.html [ Crash Failure ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/custom-elements/form-associated/ElementInternals-validation.html [ Crash Failure ]
 crbug.com/626703 [ Win10.20h2 ] external/wpt/custom-elements/form-associated/ElementInternals-validation.html [ Crash Failure ]
@@ -4004,6 +4009,9 @@ crbug.com/660611 external/wpt/css/css-break/flexbox/flex-container-fragmentation
 crbug.com/660611 external/wpt/css/css-break/flexbox/flex-container-fragmentation-007.tentative.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/forced-break-at-fragmentainer-start-000.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-020.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/monolithic-with-overflow-lr.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/monolithic-with-overflow-rl.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/monolithic-with-overflow.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-012.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-029.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-030.html [ Failure ]
@@ -6720,7 +6728,6 @@ crbug.com/1229666 external/wpt/html/semantics/forms/form-submission-0/urlencoded
 crbug.com/1093027 http/tests/credentialmanager/credentialscontainer-create-with-virtual-authenticator.html [ Crash Failure Pass Skip Timeout ]
 # The next test was originally skipped on mac for lack of support (crbug.com/613672). It is now skipped everywhere due to flakiness.
 crbug.com/1229708 fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
-crbug.com/1229711 [ Linux ] http/tests/devtools/console-resource-errors.js [ Failure Pass ]
 crbug.com/1229725 http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Crash Failure Pass ]
 crbug.com/1085647 external/wpt/pointerevents/compat/pointerevent_mouse-pointer-preventdefault.html [ Pass Timeout ]
 crbug.com/1087232 http/tests/devtools/network/network-worker-fetch-blocked.js [ Failure Pass ]
@@ -7139,6 +7146,13 @@ crbug.com/1255221 http/tests/devtools/elements/styles-4/svg-style.js [ Failure P
 # Sheriff 2021-10-04
 crbug.com/1226112 [ Win ] http/tests/text-autosizing/wide-iframe.html [ Pass Timeout ]
 
+# Temporarily disable to land DevTools changes
+crbug.com/1260776 http/tests/devtools/console-xhr-logging.js [ Failure Pass ]
+crbug.com/1260776 http/tests/devtools/network/script-as-text-loading-long-url.js [ Failure Pass ]
+crbug.com/1260776 http/tests/devtools/network/script-as-text-loading-with-caret.js [ Failure Pass ]
+crbug.com/1260776 http/tests/devtools/sources/debugger/async-callstack-network-initiator.js [ Failure Pass ]
+crbug.com/1260776 http/tests/devtools/console-resource-errors.js [ Failure Pass ]
+
 # DevTools roll
 crbug.com/1222126 http/tests/devtools/domdebugger/domdebugger-getEventListeners.js [ Skip ]
 crbug.com/1222126 http/tests/devtools/cache-storage/cache-live-update-list.js [ Skip ]
@@ -7262,3 +7276,10 @@ crbug.com/1268518 [ Mac10.12 ] external/wpt/web-animations/interfaces/Animation/
 crbug.com/1268519 [ Win10.20h2 ] virtual/scroll-unification/http/tests/misc/resource-timing-sizes-multipart.html [ Failure Pass ]
 crbug.com/1267734 [ Win7 ] css3/filters/composited-layer-bounds-after-sw-blur-animation.html [ Failure Pass ]
 crbug.com/1267734 [ Win7 ] virtual/scroll-unification/fast/forms/suggestion-picker/week-suggestion-picker-appearance.html [ Failure Pass ]
+
+# Sheriff 2021-11-10
+crbug.com/1268931 [ Win10.20h2 ] css3/filters/composited-layer-bounds-after-sw-blur-animation.html [ Failure Pass ]
+crbug.com/1268963 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-after-TAO-cross-origin-redirect.html [ Failure Pass ]
+crbug.com/1268947 [ Linux ] virtual/shared_array_buffer_on_desktop/http/tests/devtools/sources/debugger/async-callstack-network-initiator.js [ Failure Pass ]
+crbug.com/1269011 [ Mac10.14 ] virtual/scalefactor200/css3/filters/composited-layer-bounds-after-sw-blur-animation.html [ Failure Pass ]
+crbug.com/1269011 [ Mac11-arm64 ] virtual/scalefactor200/css3/filters/composited-layer-bounds-after-sw-blur-animation.html [ Failure Pass ]

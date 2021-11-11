@@ -9,9 +9,8 @@
 #include <string>
 
 #include "ash/services/ime/public/mojom/input_method.mojom.h"
-#include "base/macros.h"
 
-namespace chromeos {
+namespace ash {
 namespace ime {
 namespace rulebased {
 
@@ -70,6 +69,6 @@ class Engine {
 
 }  // namespace rulebased
 }  // namespace ime
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_IME_PUBLIC_CPP_RULEBASED_ENGINE_H_

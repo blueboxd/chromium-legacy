@@ -11,13 +11,12 @@
 #include <utility>
 
 #include "ash/services/ime/public/mojom/input_method.mojom-shared.h"
-#include "base/macros.h"
 
 namespace re2 {
 class RE2;
 }  // namespace re2
 
-namespace chromeos {
+namespace ash {
 namespace ime {
 namespace rulebased {
 
@@ -92,6 +91,6 @@ class RulesData {
 
 }  // namespace rulebased
 }  // namespace ime
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_IME_PUBLIC_CPP_RULEBASED_RULES_DATA_H_

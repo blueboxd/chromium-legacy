@@ -47,7 +47,7 @@ group("locally_built") {
     ":libpci3",
     ":libpcre3",
     ":libpixman-1-0",
-    ":libpng12-0",
+    ":libpng16-16",
     ":librtmp1",
     ":libsasl2-2",
     ":libsecret",
@@ -582,15 +582,10 @@ instrumented_library("libpixman-1-0") {
     # Avoid a clang issue. http://crbug.com/449183
     "--disable-mmx",
   ]
-  patches = [
-    "patches/libpixman-1-0.1.diff",
-
-    # Fix an incompatibility when building with clang.
-    "patches/libpixman-1-0.2.diff",
-  ]
+  patches = [ "patches/libpixman-1-0.diff" ]
 }
 
-instrumented_library("libpng12-0") {
+instrumented_library("libpng16-16") {
   extra_configure_flags = [ "--disable-static" ]
 }
 
@@ -787,8 +782,8 @@ instrumented_library("pulseaudio") {
 }
 
 instrumented_library("libudev1") {
-  build_method = "debian"
-  pre_build = "scripts/pre-build/udev.sh"
+  build_method = "meson"
+  extra_configure_flags = [ "-Db_lundef=false" ]
 }
 
 instrumented_library("zlib1g") {

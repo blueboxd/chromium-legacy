@@ -40,7 +40,7 @@ namespace input_method {
 
 namespace {
 
-namespace mojom = ::chromeos::ime::mojom;
+namespace mojom = ::ash::ime::mojom;
 
 // Returns the current input context. This may change during the session, even
 // if the IME engine does not change.
@@ -111,9 +111,13 @@ bool IsPhysicalKeyboardAutocorrectEnabled(PrefService* prefs,
   return autocorrect_setting && autocorrect_setting->GetIfInt().value_or(0) > 0;
 }
 
+bool IsLacrosEnabled() {
+  return base::FeatureList::IsEnabled(chromeos::features::kLacrosSupport);
+}
+
 bool IsPredictiveWritingEnabled(PrefService* pref_service,
                                 const std::string& engine_id) {
-  return (features::IsAssistiveMultiWordEnabled() &&
+  return (!IsLacrosEnabled() && features::IsAssistiveMultiWordEnabled() &&
           pref_service->GetBoolean(prefs::kAssistPredictiveWritingEnabled) &&
           IsUsEnglishEngine(engine_id));
 }
@@ -950,7 +954,7 @@ void NativeInputMethodEngine::ImeObserver::DisplaySuggestions(
 }
 
 void NativeInputMethodEngine::ImeObserver::UpdateCandidatesWindow(
-    chromeos::ime::mojom::CandidatesWindowPtr window) {
+    mojom::CandidatesWindowPtr window) {
   if (!GetCandidateWindowHandler()) {
     return;
   }

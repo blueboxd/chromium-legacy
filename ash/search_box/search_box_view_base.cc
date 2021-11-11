@@ -11,7 +11,6 @@
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/search_box/search_box_view_delegate.h"
 #include "base/bind.h"
-#include "base/macros.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/events/event.h"
@@ -360,7 +359,7 @@ void SearchBoxViewBase::SetSearchBoxActive(bool active,
   // Keep the current keyboard visibility if the user already started typing.
   if (event_type != ui::ET_KEY_PRESSED && event_type != ui::ET_KEY_RELEASED)
     UpdateKeyboardVisibility();
-  UpdateButtonsVisisbility();
+  UpdateButtonsVisibility();
   OnSearchBoxActiveChanged(active);
 
   NotifyActiveChanged();
@@ -429,7 +428,7 @@ void SearchBoxViewBase::ClearSearch() {
     return;
 
   search_box_->SetText(std::u16string());
-  UpdateButtonsVisisbility();
+  UpdateButtonsVisibility();
   // Updates model and fires query changed manually because SetText() above
   // does not generate ContentsChanged() notification.
   UpdateModel(false);
@@ -448,7 +447,7 @@ void SearchBoxViewBase::NotifyActiveChanged() {
   delegate_->ActiveChanged(this);
 }
 
-void SearchBoxViewBase::UpdateButtonsVisisbility() {
+void SearchBoxViewBase::UpdateButtonsVisibility() {
   DCHECK(close_button_ && assistant_button_);
 
   const bool should_show_close_button =
@@ -481,7 +480,7 @@ void SearchBoxViewBase::ContentsChanged(views::Textfield* sender,
   NotifyQueryChanged();
   if (!new_contents.empty())
     SetSearchBoxActive(true, ui::ET_KEY_PRESSED);
-  UpdateButtonsVisisbility();
+  UpdateButtonsVisibility();
 }
 
 bool SearchBoxViewBase::HandleMouseEvent(views::Textfield* sender,
@@ -508,7 +507,7 @@ void SearchBoxViewBase::SetSearchIconImage(gfx::ImageSkia image) {
 
 void SearchBoxViewBase::SetShowAssistantButton(bool show) {
   show_assistant_button_ = show;
-  UpdateButtonsVisisbility();
+  UpdateButtonsVisibility();
 }
 
 void SearchBoxViewBase::HandleSearchBoxEvent(ui::LocatedEvent* located_event) {

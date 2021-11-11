@@ -3593,6 +3593,14 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="New version is the same as cached"/>
 </enum>
 
+<enum name="AppPrimaryAbi">
+  <int value="0" label="None"/>
+  <int value="1" label="arm"/>
+  <int value="2" label="arm64"/>
+  <int value="3" label="x86"/>
+  <int value="4" label="x86_64"/>
+</enum>
+
 <enum name="AppPromoAction">
   <int value="0" label="PROMO_LAUNCH_APP"/>
   <int value="1" label="PROMO_LAUNCH_WEB_STORE"/>
@@ -14830,6 +14838,7 @@ Called by update_net_error_codes.py.-->
   <int value="37" label="Remove an highlighted text"/>
   <int value="38" label="Learn more about the shared highlighting feature"/>
   <int value="39" label="Open in new tab in group"/>
+  <int value="40" label="Open in new window"/>
 </enum>
 
 <enum name="ContextMenuOptionDesktop">
@@ -41579,6 +41588,27 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="User opened survey"/>
 </enum>
 
+<enum name="HdrnetError">
+  <int value="0" label="No error"/>
+  <int value="1" label="Initialization error"/>
+  <int value="2" label="Sync wait error"/>
+  <int value="3" label="HDRnet processor error"/>
+  <int value="4" label="Pre-processing error"/>
+  <int value="5" label="RGB pipeline error"/>
+  <int value="6" label="Post-processing error"/>
+  <int value="7" label="Camera HAL3 error"/>
+</enum>
+
+<enum name="HdrnetStreamConfiguration">
+  <int value="0" label="Single YUV stream"/>
+  <int value="1" label="Single YUV stream with BLOB"/>
+  <int value="2" label="Multiple YUV streams"/>
+  <int value="3" label="Multiple YUV streams with BLOB"/>
+  <int value="4" label="Multiple YUV streams of different aspect ratio"/>
+  <int value="5"
+      label="Multiple YUV streams of different aspect ratio with BLOB"/>
+</enum>
+
 <enum name="HeapProfilingMode">
   <int value="0" label="None"/>
   <int value="1" label="Minimal"/>
@@ -50456,6 +50486,7 @@ from previous Chrome versions.
   <int value="-589096918" label="ash-enable-fullscreen-app-list"/>
   <int value="-588669613"
       label="OmniboxClobberIsZeroSuggestEntrypoint:enabled"/>
+  <int value="-585508682" label="DownloadRange:enabled"/>
   <int value="-582870536" label="BluetoothNextHandsfreeProfile:enabled"/>
   <int value="-581236612" label="ConnectivityDiagnosticsWebUi:disabled"/>
   <int value="-580897686" label="SharedHighlightingAmp:enabled"/>
@@ -50590,6 +50621,7 @@ from previous Chrome versions.
   <int value="-474322576" label="disable-quick-unlock-pin"/>
   <int value="-473087416" label="DragTabsInTabletMode:enabled"/>
   <int value="-473052940" label="ContextualSearchLegacyHttpPolicy:enabled"/>
+  <int value="-472655983" label="AutofillDisplaceRemovedForms:enabled"/>
   <int value="-472477695" label="AutofillSaveCardImprovedUserConsent:enabled"/>
   <int value="-472014137" label="HomepageTile:disabled"/>
   <int value="-472013317" label="WebRTC-H264WithOpenH264FFmpeg:disabled"/>
@@ -50669,6 +50701,7 @@ from previous Chrome versions.
   <int value="-406475702"
       label="webview-disable-apps-package-names-allowlist-component"/>
   <int value="-405380243" label="enable-encryption-migration"/>
+  <int value="-404496301" label="DownloadRange:disabled"/>
   <int value="-403701720" label="DirectActions:enabled"/>
   <int value="-403649153" label="WebViewBrotliSupport:disabled"/>
   <int value="-402038055"
@@ -53797,6 +53830,7 @@ from previous Chrome versions.
   <int value="1957358530" label="ContextualSearchSecondTap:enabled"/>
   <int value="1957472162"
       label="AutofillUpstreamEditableExpirationDate:disabled"/>
+  <int value="1958314945" label="AutofillDisplaceRemovedForms:disabled"/>
   <int value="1958387645" label="ScanCardsInWebPayments:enabled"/>
   <int value="1959148757" label="OffMainThreadFetch:enabled"/>
   <int value="1961068026"

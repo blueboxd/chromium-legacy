@@ -2,9 +2,8 @@
 -BookmarkBarViewTest.Mutate*
 -BookmarkMenuDelegateTest.Drop*
 -BrowserReportGeneratorTest.Generate*
--BrowserUnitTest.DisablePrint*
 -ChromeDownloadManagerDelegateTest.Maybe*
--DevToolsFile*
+-DevToolsFileWatcher*
 -DevToolsUIDataSourceTest.TestDevToolsBundledU*
 -DiagnosticsController*
 -DiagnosticsModelTest.Run*
@@ -13,8 +12,6 @@
 -EnterpriseCsdDownloadTest.SkipsConsumerCsdWhenEnabled/0
 -EnterpriseHardwarePlatformAPITest.GetHardwarePlatformInfoAllowed
 -ExtensionInstalledBubbleModelTest.Extension*
--ExtensionProtocolsTest.Resource*
--ExtensionProtocolsTest.Verification*
 -ExtensionServiceTest.InstallTheme
 -ExtensionUserScriptLoaderTest.Component*
 -ExtensionsMenuViewUnitTest.ContextMenuButtonUserAction

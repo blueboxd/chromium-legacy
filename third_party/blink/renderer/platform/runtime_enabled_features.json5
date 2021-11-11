@@ -414,10 +414,6 @@
       status: "experimental",
     },
     {
-      name: "CompositeAfterPaint",
-      status: "stable",
-    },
-    {
       name: "CompositeBGColorAnimation",
       status: "experimental",
     },
@@ -801,10 +797,6 @@
     {
       name: "CSSVariables2TransformValues",
       status: "test",
-    },
-    {
-      name: "CullRectUpdate",
-      implied_by: ["CompositeAfterPaint"],
     },
     {
       name: "CustomElementDefaultStyle",
@@ -1895,6 +1887,7 @@
     },
     {
       name: "RegionCapture",
+      origin_trial_feature_name: "RegionCapture",
       status: "experimental",
     },
     {
@@ -1910,6 +1903,11 @@
     {
       name: "RemoveMobileViewportDoubleTap",
       status: "stable"
+    },
+    {
+      // The renderpriority attribute feature.
+      // https://github.com/WICG/display-locking/blob/main/explainers/update-rendering.md
+      name: "RenderPriorityAttribute"
     },
     {
       // See https://crbug.com/1012063

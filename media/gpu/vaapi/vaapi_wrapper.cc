@@ -2245,24 +2245,34 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForUserPtr(
                        base::BindOnce(&VaapiWrapper::DestroySurface, this));
 }
 
-std::unique_ptr<NativePixmapAndSizeInfo>
-VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBuf(
-    const ScopedVASurface& scoped_va_surface) {
+scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceWithUsageHints(
+    unsigned int va_rt_format,
+    const gfx::Size& size,
+    const std::vector<SurfaceUsageHint>& usage_hints) {
   CHECK(!enforce_sequence_affinity_ ||
         sequence_checker_.CalledOnValidSequence());
-  if (!scoped_va_surface.IsValid()) {
-    LOG(ERROR) << "Cannot export an invalid surface";
+  std::vector<VASurfaceID> surfaces;
+  if (!CreateSurfaces(va_rt_format, size, usage_hints, 1, &surfaces))
     return nullptr;
-  }
+  return new VASurface(surfaces[0], size, va_rt_format,
+                       base::BindOnce(&VaapiWrapper::DestroySurface, this));
+}
 
+std::unique_ptr<NativePixmapAndSizeInfo>
+VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBufUnwrapped(
+    VASurfaceID va_surface_id,
+    const gfx::Size& va_surface_size) {
+  CHECK(!enforce_sequence_affinity_ ||
+        sequence_checker_.CalledOnValidSequence());
+  DCHECK_NE(va_surface_id, VA_INVALID_SURFACE);
+  DCHECK(!va_surface_size.IsEmpty());
   VADRMPRIMESurfaceDescriptor descriptor;
   {
     base::AutoLock auto_lock(*va_lock_);
-    VAStatus va_res = vaSyncSurface(va_display_, scoped_va_surface.id());
+    VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
     VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVASyncSurface, nullptr);
     va_res = vaExportSurfaceHandle(
-        va_display_, scoped_va_surface.id(),
-        VA_SURFACE_ATTRIB_MEM_TYPE_DRM_PRIME_2,
+        va_display_, va_surface_id, VA_SURFACE_ATTRIB_MEM_TYPE_DRM_PRIME_2,
         VA_EXPORT_SURFACE_READ_ONLY | VA_EXPORT_SURFACE_SEPARATE_LAYERS,
         &descriptor);
     VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAExportSurfaceHandle,
@@ -2338,16 +2348,42 @@ VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBuf(
   exported_pixmap->byte_size =
       base::strict_cast<size_t>(descriptor.objects[0].size);
   if (!gfx::Rect(exported_pixmap->va_surface_resolution)
-           .Contains(gfx::Rect(scoped_va_surface.size()))) {
-    LOG(ERROR) << "A " << scoped_va_surface.size().ToString()
-               << " ScopedVASurface cannot be contained by a "
+           .Contains(gfx::Rect(va_surface_size))) {
+    LOG(ERROR) << "A " << va_surface_size.ToString()
+               << " surface cannot be contained by a "
                << exported_pixmap->va_surface_resolution.ToString()
                << " buffer";
     return nullptr;
   }
   exported_pixmap->pixmap = base::MakeRefCounted<gfx::NativePixmapDmaBuf>(
-      scoped_va_surface.size(), buffer_format, std::move(handle));
+      va_surface_size, buffer_format, std::move(handle));
   return exported_pixmap;
+}
+
+std::unique_ptr<NativePixmapAndSizeInfo>
+VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBuf(const VASurface& va_surface) {
+  CHECK(!enforce_sequence_affinity_ ||
+        sequence_checker_.CalledOnValidSequence());
+  if (va_surface.id() == VA_INVALID_SURFACE || va_surface.size().IsEmpty() ||
+      va_surface.format() == kInvalidVaRtFormat) {
+    LOG(ERROR) << "Cannot export an invalid surface";
+    return nullptr;
+  }
+  return ExportVASurfaceAsNativePixmapDmaBufUnwrapped(va_surface.id(),
+                                                      va_surface.size());
+}
+
+std::unique_ptr<NativePixmapAndSizeInfo>
+VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBuf(
+    const ScopedVASurface& scoped_va_surface) {
+  CHECK(!enforce_sequence_affinity_ ||
+        sequence_checker_.CalledOnValidSequence());
+  if (!scoped_va_surface.IsValid()) {
+    LOG(ERROR) << "Cannot export an invalid surface";
+    return nullptr;
+  }
+  return ExportVASurfaceAsNativePixmapDmaBufUnwrapped(scoped_va_surface.id(),
+                                                      scoped_va_surface.size());
 }
 
 bool VaapiWrapper::SyncSurface(VASurfaceID va_surface_id) {

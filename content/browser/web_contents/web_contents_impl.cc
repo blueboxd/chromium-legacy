@@ -2631,6 +2631,10 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
   prefs.canvas_2d_layers_enabled =
       command_line.HasSwitch(switches::kEnableCanvas2DLayers) ||
       base::FeatureList::IsEnabled(features::kEnableCanvas2DLayers);
+  prefs.canvas_context_lost_in_background_enabled =
+      command_line.HasSwitch(switches::kEnableCanvasContextLostInBackground) ||
+      base::FeatureList::IsEnabled(
+          features::kEnableCanvasContextLostInBackground);
   prefs.new_canvas_2d_api_enabled =
       command_line.HasSwitch(switches::kEnableNewCanvas2DAPI) ||
       base::FeatureList::IsEnabled(features::kEnableNewCanvas2DAPI);
@@ -9176,6 +9180,25 @@ VisibleTimeRequestTrigger* WebContentsImpl::GetVisibleTimeRequestTrigger() {
   if (auto* view =
           static_cast<RenderWidgetHostViewBase*>(GetRenderWidgetHostView())) {
     return view->GetVisibleTimeRequestTrigger();
+  }
+  return nullptr;
+}
+
+std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
+    const GURL& prerendering_url) {
+  // TODO(https://crbug.com/1166085): Use proper PrerenderTriggerType after the
+  // specification of Prerender2 metrics is finalized.
+  PrerenderAttributes attributes(
+      prerendering_url, PrerenderTriggerType::kSpeculationRule,
+      content::Referrer(), /*initiator_origin=*/absl::nullopt, prerendering_url,
+      content::ChildProcessHost::kInvalidUniqueID,
+      /*initiator_frame_token=*/absl::nullopt, ukm::kInvalidSourceId);
+  int frame_tree_node_id =
+      GetPrerenderHostRegistry()->CreateAndStartHost(attributes, *this);
+
+  if (frame_tree_node_id != FrameTreeNode::kFrameTreeNodeInvalidId) {
+    return std::make_unique<PrerenderHandleImpl>(
+        GetPrerenderHostRegistry()->GetWeakPtr(), frame_tree_node_id);
   }
   return nullptr;
 }

@@ -32,7 +32,7 @@ class ImeServiceConnector : public ime::mojom::PlatformAccessProvider {
 
   ~ImeServiceConnector() override;
 
-  // chromeos::ime::mojom::PlatformAccessProvider overrides:
+  // ash::ime::mojom::PlatformAccessProvider overrides:
   void DownloadImeFileTo(const GURL& url,
                          const base::FilePath& file_path,
                          DownloadImeFileToCallback callback) override;

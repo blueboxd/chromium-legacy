@@ -564,6 +564,8 @@ component("base") {
     "sampling_heap_profiler/sampling_heap_profiler.cc",
     "sampling_heap_profiler/sampling_heap_profiler.h",
     "scoped_clear_last_error.h",
+    "scoped_environment_variable_override.cc",
+    "scoped_environment_variable_override.h",
     "scoped_generic.h",
     "scoped_multi_source_observation.h",
     "scoped_native_library.cc",
@@ -1350,7 +1352,6 @@ component("base") {
     ":base_implementation",
     ":memory_tagging",
     "//build/config:precompiled_headers",
-    "//build/config/compiler:noshadowing",
     "//build/config/compiler:wglobal_constructors",
   ]
 
@@ -3734,10 +3735,7 @@ test("base_unittests") {
     ]
   }
 
-  configs += [
-    ":memory_tagging",
-    "//build/config/compiler:noshadowing",
-  ]
+  configs += [ ":memory_tagging" ]
 }
 
 action("build_date") {

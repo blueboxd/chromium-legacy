@@ -1008,12 +1008,12 @@ void WebLocalFrameImpl::RequestExecuteScript(
         {SchedulingPolicy::DisableBackForwardCache()});
   }
 
-  HeapVector<ScriptSourceCode> script_sources;
+  Vector<WebScriptSource> script_sources;
   script_sources.Append(sources.data(),
                         base::checked_cast<wtf_size_t>(sources.size()));
   auto* executor = MakeGarbageCollected<PausableScriptExecutor>(
-      GetFrame()->DomWindow(), std::move(world), script_sources, user_gesture,
-      callback);
+      GetFrame()->DomWindow(), std::move(world), std::move(script_sources),
+      user_gesture, callback);
   executor->set_wait_for_promise(promise_behavior == PromiseBehavior::kAwait);
   switch (execution_type) {
     case kAsynchronousBlockingOnload:
@@ -1965,8 +1965,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
           MakeGarbageCollected<FindInPage>(*this, interface_registry)),
       interface_registry_(interface_registry),
       input_method_controller_(*this),
-      spell_check_panel_host_client_(nullptr),
-      self_keep_alive_(PERSISTENT_FROM_HERE, this) {
+      spell_check_panel_host_client_(nullptr) {
   CHECK(client_);
   g_frame_count++;
   client_->BindToFrame(this);

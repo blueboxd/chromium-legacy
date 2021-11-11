@@ -419,7 +419,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsSandboxed(network::mojom::WebSandboxFlags flags) override;
   void FlushNetworkAndNavigationInterfacesForTesting(
       bool do_nothing_if_no_network_service_connection = false) override;
-  std::string GetBackForwardCanStoreNowDebugStringForTesting() override;
   void PrepareForInnerWebContentsAttach(
       PrepareForInnerWebContentsAttachCallback callback) override;
   blink::FrameOwnerElementType GetFrameOwnerElementType() override;
@@ -2858,10 +2857,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // for testing purposes only (see |TestRenderFrameHost|).
   WebBluetoothServiceImpl* GetWebBluetoothServiceForTesting();
 
-  // Deletes the Web Bluetooth Service owned by the frame.
-  void DeleteWebBluetoothService(
-      WebBluetoothServiceImpl* web_bluetooth_service);
-
   // Allows tests to disable the unload event timer to simulate bugs that
   // happen before it fires (to avoid flakiness).
   void DisableUnloadTimerForTesting();
@@ -3488,8 +3483,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
 
-  std::list<std::unique_ptr<WebBluetoothServiceImpl>> web_bluetooth_services_;
-
   // The object managing the accessibility tree for this frame.
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
 
@@ -4094,6 +4087,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // associated with a fenced frame root, or `this` is associated with an iframe
   // nested within a fenced frame.
   const FencedFrameStatus fenced_frame_status_;
+
+  // Used when testing to retrieve that last created Web Bluetooth service.
+  WebBluetoothServiceImpl* last_web_bluetooth_service_for_testing_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

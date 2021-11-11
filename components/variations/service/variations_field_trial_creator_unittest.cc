@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_field_trial_list_resetter.h"
@@ -1021,8 +1020,15 @@ TEST_F(FieldTrialCreatorSafeModeExperimentTest,
   ON_CALL(safe_seed_manager, ShouldRunInSafeMode())
       .WillByDefault(Return(false));
 
+// For desktop and iOS, the Extended Variations Safe Mode experiment is enabled
+// on pre-stable channels; for Android Chrome, on canary and dev.
+#if defined(OS_ANDROID)
   std::vector<version_info::Channel> channels = {version_info::Channel::BETA,
                                                  version_info::Channel::STABLE};
+#else
+  std::vector<version_info::Channel> channels = {version_info::Channel::STABLE};
+#endif  // defined(OS_ANDROID)
+
   for (const version_info::Channel channel : channels) {
     NiceMock<MockVariationsServiceClient> variations_service_client;
     ON_CALL(variations_service_client, GetChannel())

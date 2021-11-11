@@ -601,6 +601,8 @@ static_library("test_support") {
       "../browser/extensions/test_extension_prefs.h",
       "../browser/ui/web_applications/test/ssl_test_utils.cc",
       "../browser/ui/web_applications/test/ssl_test_utils.h",
+      "../browser/ui/web_applications/test/test_server_redirect_handle.cc",
+      "../browser/ui/web_applications/test/test_server_redirect_handle.h",
       "../browser/ui/web_applications/test/web_app_browsertest_util.cc",
       "../browser/ui/web_applications/test/web_app_browsertest_util.h",
       "../browser/ui/web_applications/web_app_controller_browsertest.cc",
@@ -6551,6 +6553,10 @@ test("unit_tests") {
       "../browser/ui/ash/network/network_state_notifier_unittest.cc",
       "../browser/ui/ash/network/tether_notification_presenter_unittest.cc",
       "../browser/ui/ash/notification_badge_color_cache_unittest.cc",
+      "../browser/ui/ash/quick_answers/quick_answers_controller_unittest.cc",
+      "../browser/ui/ash/quick_answers/quick_answers_state_controller_unittest.cc",
+      "../browser/ui/ash/quick_answers/quick_answers_ui_controller_unittest.cc",
+      "../browser/ui/ash/quick_answers/ui/quick_answers_view_unittest.cc",
       "../browser/ui/ash/session_controller_client_impl_unittest.cc",
       "../browser/ui/ash/sharesheet/sharesheet_bubble_view_unittest.cc",
       "../browser/ui/ash/shelf/arc_app_shelf_id_unittest.cc",
@@ -6567,6 +6573,7 @@ test("unit_tests") {
     deps += [
       "//ash:test_support",
       "//ash/app_list:test_support",
+      "//ash/components/quick_answers:quick_answers",
       "//ash/public/cpp/assistant/test_support",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/resources/vector_icons",
@@ -7926,6 +7933,8 @@ static_library("test_support_unit") {
 
   if (is_chromeos_ash) {
     sources += [
+      "../browser/ui/ash/quick_answers/test/chrome_quick_answers_test_base.cc",
+      "../browser/ui/ash/quick_answers/test/chrome_quick_answers_test_base.h",
       "base/chrome_ash_test_base.cc",
       "base/chrome_ash_test_base.h",
     ]
@@ -8309,7 +8318,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/ui/views/content_test_utils.cc",
       "../browser/ui/views/content_test_utils.h",
       "../browser/ui/views/extensions/extensions_menu_view_interactive_uitest.cc",
-      "../browser/ui/views/extensions/extensions_tabbed_menu_view_interactive_uitest.cc",
       "../browser/ui/views/extensions/extensions_toolbar_browsertest.cc",
       "../browser/ui/views/extensions/extensions_toolbar_browsertest.h",
       "../browser/ui/views/page_info/page_info_bubble_view_interactive_uitest.cc",

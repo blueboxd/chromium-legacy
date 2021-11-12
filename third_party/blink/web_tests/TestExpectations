@@ -1475,6 +1475,7 @@ crbug.com/660611 virtual/layout_ng_flex_frag/fast/multicol/flexbox/flexbox.html 
 
 ### Tests passing with LayoutNGGridFragmentation enabled:
 virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-020.html [ Pass ]
+virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-027.tentative.html [ Pass ]
 
 ### With LayoutNGPrinting enabled:
 
@@ -4011,6 +4012,7 @@ crbug.com/660611 external/wpt/css/css-break/flexbox/flex-container-fragmentation
 crbug.com/660611 external/wpt/css/css-break/flexbox/flex-container-fragmentation-007.tentative.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/forced-break-at-fragmentainer-start-000.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-020.html [ Failure ]
+crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-027.tentative.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/monolithic-with-overflow-lr.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/monolithic-with-overflow-rl.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/monolithic-with-overflow.html [ Failure ]
@@ -7250,6 +7252,9 @@ crbug.com/1265924 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [
 # V8 roll
 crbug.com/1257806 http/tests/devtools/console/console-external-array.js [ Skip ]
 crbug.com/1257806 http/tests/devtools/console/console-log-side-effects.js [ Skip ]
+
+# DevTools roll
+crbug.com/1127902 http/tests/devtools/components/flame-chart.js [ Skip ]
 
 # TODO(https://crbug.com/1265311): Make the test behave the same way on all platforms
 crbug.com/1265311 http/tests/navigation/location-change-repeated-from-blank.html [ Failure Pass ]

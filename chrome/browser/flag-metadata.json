@@ -1043,6 +1043,11 @@
     "expiry_milestone": 97
   },
   {
+    "name": "default-link-capturing-in-browser",
+    "owners": [ "tsergeant", "chromeos-apps-foundation-team@google.com"],
+    "expiry_milestone": 105
+  },
+  {
     "name": "default-user-agent",
     "owners": [ "gambard", "bling-flags@google.com" ],
     "expiry_milestone": 100
@@ -3097,6 +3102,11 @@
   },
   {
     "name": "files-archivemount",
+    "owners": [ "fdegros", "nigeltao" ],
+    "expiry_milestone": 112
+  },
+  {
+    "name": "files-archivemount2",
     "owners": [ "fdegros", "nigeltao" ],
     "expiry_milestone": 112
   },

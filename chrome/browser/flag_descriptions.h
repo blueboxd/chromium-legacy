@@ -2370,6 +2370,9 @@ extern const char kButtonARCNetworkDiagnosticsDescription[];
 extern const char kCalendarViewName[];
 extern const char kCalendarViewDescription[];
 
+extern const char kDefaultLinkCapturingInBrowserName[];
+extern const char kDefaultLinkCapturingInBrowserDescription[];
+
 extern const char kDesksTemplatesName[];
 extern const char kDesksTemplatesDescription[];
 
@@ -2674,6 +2677,9 @@ extern const char kDockedMagnifierResizingDescription[];
 
 extern const char kFilesArchivemountName[];
 extern const char kFilesArchivemountDescription[];
+
+extern const char kFilesArchivemount2Name[];
+extern const char kFilesArchivemount2Description[];
 
 extern const char kFilesBannerFrameworkName[];
 extern const char kFilesBannerFrameworkDescription[];

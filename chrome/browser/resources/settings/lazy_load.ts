@@ -102,6 +102,7 @@ export {ManageProfileBrowserProxyImpl, ProfileShortcutStatus} from './people_pag
 export {SettingsCollapseRadioButtonElement} from './privacy_page/collapse_radio_button.js';
 export {SettingsCookiesPageElement} from './privacy_page/cookies_page.js';
 export {SettingsDoNotTrackToggleElement} from './privacy_page/do_not_track_toggle.js';
+export {SettingsPersonalizationOptionsElement} from './privacy_page/personalization_options.js';
 export {PrivacyReviewStep} from './privacy_page/privacy_review/constants.js';
 export {PrivacyReviewClearOnExitFragmentElement} from './privacy_page/privacy_review/privacy_review_clear_on_exit_fragment.js';
 export {PrivacyReviewDescriptionItemElement} from './privacy_page/privacy_review/privacy_review_description_item.js';
@@ -110,11 +111,11 @@ export {PrivacyReviewMsbbFragmentElement} from './privacy_page/privacy_review/pr
 export {SettingsPrivacyReviewPageElement} from './privacy_page/privacy_review/privacy_review_page.js';
 export {SettingsSecureDnsElement} from './privacy_page/secure_dns.js';
 export {SecureDnsInputElement} from './privacy_page/secure_dns_input.js';
-export {BioEnrollDialogPage} from './privacy_page/security_keys_bio_enroll_dialog.js';
-export {Ctap2Status, SampleStatus, SecurityKeysBioEnrollProxyImpl, SecurityKeysCredentialBrowserProxyImpl, SecurityKeysPINBrowserProxyImpl, SecurityKeysResetBrowserProxyImpl} from './privacy_page/security_keys_browser_proxy.js';
-export {CredentialManagementDialogPage} from './privacy_page/security_keys_credential_management_dialog.js';
-export {ResetDialogPage} from './privacy_page/security_keys_reset_dialog.js';
-export {SetPINDialogPage} from './privacy_page/security_keys_set_pin_dialog.js';
+export {BioEnrollDialogPage, SettingsSecurityKeysBioEnrollDialogElement} from './privacy_page/security_keys_bio_enroll_dialog.js';
+export {Ctap2Status, SampleStatus, SecurityKeysBioEnrollProxy, SecurityKeysBioEnrollProxyImpl, SecurityKeysCredentialBrowserProxy, SecurityKeysCredentialBrowserProxyImpl, SecurityKeysPINBrowserProxy, SecurityKeysPINBrowserProxyImpl, SecurityKeysResetBrowserProxy, SecurityKeysResetBrowserProxyImpl} from './privacy_page/security_keys_browser_proxy.js';
+export {CredentialManagementDialogPage, SettingsSecurityKeysCredentialManagementDialogElement} from './privacy_page/security_keys_credential_management_dialog.js';
+export {ResetDialogPage, SettingsSecurityKeysResetDialogElement} from './privacy_page/security_keys_reset_dialog.js';
+export {SetPINDialogPage, SettingsSecurityKeysSetPinDialogElement} from './privacy_page/security_keys_set_pin_dialog.js';
 export {SafeBrowsingSetting, SettingsSecurityPageElement} from './privacy_page/security_page.js';
 export {SettingsOmniboxExtensionEntryElement} from './search_engines_page/omnibox_extension_entry.js';
 export {SettingsSearchEngineDialogElement} from './search_engines_page/search_engine_dialog.js';

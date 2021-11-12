@@ -4428,6 +4428,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-archivemount", flag_descriptions::kFilesArchivemountName,
      flag_descriptions::kFilesArchivemountDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesArchivemount)},
+    {"files-archivemount2", flag_descriptions::kFilesArchivemount2Name,
+     flag_descriptions::kFilesArchivemount2Description, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFilesArchivemount2)},
     {"files-banner-framework", flag_descriptions::kFilesBannerFrameworkName,
      flag_descriptions::kFilesBannerFrameworkDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesBannerFramework)},
@@ -7728,6 +7731,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-desks-templates", flag_descriptions::kDesksTemplatesName,
      flag_descriptions::kDesksTemplatesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDesksTemplates)},
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"default-link-capturing-in-browser",
+     flag_descriptions::kDefaultLinkCapturingInBrowserName,
+     flag_descriptions::kDefaultLinkCapturingInBrowserDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kDefaultLinkCapturingInBrowser)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

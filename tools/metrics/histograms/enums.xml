@@ -1170,6 +1170,7 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="kClosed"/>
   <int value="4" label="kDisabledByExperiment"/>
   <int value="5" label="kIgnore"/>
+  <int value="6" label="kPermissionRequested"/>
 </enum>
 
 <enum name="AccuracyTipStatus">
@@ -49863,6 +49864,7 @@ from previous Chrome versions.
   <int value="-1074257709" label="ScalableAppList:enabled"/>
   <int value="-1074107607" label="data-reduction-proxy-experiment"/>
   <int value="-1073479583" label="ShowArcFilesApp:disabled"/>
+  <int value="-1072337227" label="FilesArchivemount2:disabled"/>
   <int value="-1071043945" label="VerticalSnap:enabled"/>
   <int value="-1069628248" label="OmniboxZeroSuggestionsOnSERP:enabled"/>
   <int value="-1069453905" label="CCTModuleUseIntentExtras:disabled"/>
@@ -50056,6 +50058,7 @@ from previous Chrome versions.
       label="enable-defer-all-script-without-optimization-hints"/>
   <int value="-932164609"
       label="ProcessSharingWithDefaultSiteInstances:enabled"/>
+  <int value="-931494909" label="DefaultLinkCapturingInBrowser:disabled"/>
   <int value="-929944930"
       label="AutofillRationalizeRepeatedServerPredictions:disabled"/>
   <int value="-928138978" label="IPH_DemoMode:disabled"/>
@@ -53077,6 +53080,7 @@ from previous Chrome versions.
   <int value="1377056573" label="browser-side-navigation:enabled"/>
   <int value="1378310092" label="disable-suggestions-service"/>
   <int value="1379182781" label="MessagesForAndroidNearOomReduction:disabled"/>
+  <int value="1379287559" label="FilesArchivemount2:enabled"/>
   <int value="1379571437" label="ExoPointerLock:disabled"/>
   <int value="1379944457" label="EnableMessagesWebPush:disabled"/>
   <int value="1380367827" label="AllowDisableTouchpadHapticFeedback:enabled"/>
@@ -54042,6 +54046,7 @@ from previous Chrome versions.
   <int value="2098059607" label="WifiSyncAllowDeletes:disabled"/>
   <int value="2098714203" label="enable-generic-sensors"/>
   <int value="2098907258" label="UseSurfaceLayerForVideo:disabled"/>
+  <int value="2099583779" label="DefaultLinkCapturingInBrowser:enabled"/>
   <int value="2099945365" label="OmniboxAssistantVoiceSearch:enabled"/>
   <int value="2101124624" label="WebUIDownloadShelf:disabled"/>
   <int value="2101151142" label="disable-direct-write"/>
@@ -60689,7 +60694,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Disconnected"/>
 </enum>
 
-<enum name="NetworkCellularESimInstallViaQrCodeResult">
+<enum name="NetworkCellularESimInstallResult">
   <int value="0" label="Success"/>
   <int value="1" label="Inhibit failed"/>
   <int value="2" label="Hermes install failed"/>
@@ -69040,6 +69045,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="29" label="kAudioOutputDeviceRequested"/>
   <int value="30" label="kMixedContent"/>
   <int value="31" label="kTriggerBackgrounded"/>
+  <int value="32" label="kEmbedderTriggeredAndRedirected"/>
 </enum>
 
 <enum name="PrerenderHoverEvent">

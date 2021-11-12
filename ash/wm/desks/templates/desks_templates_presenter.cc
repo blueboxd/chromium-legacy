@@ -5,10 +5,10 @@
 #include "ash/wm/desks/templates/desks_templates_presenter.h"
 
 #include "ash/public/cpp/desk_template.h"
+#include "ash/public/cpp/desks_templates_delegate.h"
 #include "ash/public/cpp/toast_data.h"
 #include "ash/public/cpp/toast_manager.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_util.h"
@@ -39,7 +39,7 @@ constexpr char kMaximumDeskLaunchTemplateToastName[] =
 // usable desk model, either from chrome sync, or a local storage.
 // TODO(sammiequon): Investigate if we can cache this.
 desks_storage::DeskModel* GetDeskModel() {
-  auto* desk_model = Shell::Get()->shell_delegate()->GetDeskModel();
+  auto* desk_model = Shell::Get()->desks_templates_delegate()->GetDeskModel();
   DCHECK(desk_model);
   return desk_model;
 }
@@ -51,7 +51,7 @@ void OnNewDeskCreatedForTemplate(std::unique_ptr<DeskTemplate> desk_template,
   if (!on_create_activate_success)
     return;
 
-  Shell::Get()->shell_delegate()->LaunchAppsFromTemplate(
+  Shell::Get()->desks_templates_delegate()->LaunchAppsFromTemplate(
       std::move(desk_template));
 }
 
@@ -166,9 +166,17 @@ void DesksTemplatesPresenter::OnDeskModelDestroying() {
   desk_model_observation_.Reset();
 }
 
-void DesksTemplatesPresenter::SaveActiveDeskAsTemplate() {
-  std::unique_ptr<DeskTemplate> desk_template =
-      DesksController::Get()->CaptureActiveDeskAsTemplate();
+void DesksTemplatesPresenter::MaybeSaveActiveDeskAsTemplate() {
+  DesksController::Get()->CaptureActiveDeskAsTemplate(
+      base::BindOnce(&DesksTemplatesPresenter::SaveDeskTemplate,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DesksTemplatesPresenter::SaveDeskTemplate(
+    std::unique_ptr<DeskTemplate> desk_template) {
+  if (!desk_template)
+    return;
+
   auto desk_template_clone = desk_template->Clone();
 
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -236,10 +244,6 @@ void DesksTemplatesPresenter::OnGetTemplateForDeskLaunch(
 
 void DesksTemplatesPresenter::OnAddOrUpdateEntry(
     desks_storage::DeskModel::AddOrUpdateEntryStatus status) {
-  // TODO: Display dialog for unsupported apps using
-  // `overview_session_->desks_templates_dialog_controller()`, and update the UI
-  // to display the Templates grid after a template has been added.
-
   // Update the button here in case it has been disabled.
   const auto& grid_list = overview_session_->grid_list();
   DCHECK(!grid_list.empty());

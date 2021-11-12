@@ -244,13 +244,6 @@ const base::Feature kPreinstalledWebAppInstallation{
     "DefaultWebAppInstallation", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// Updates the default set of pinned apps in the Chrome OS shelf for new
-// profiles.
-const base::Feature kDefaultPinnedAppsUpdate2021Q2{
-    "DefaultPinnedAppsUpdate2021Q2", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_LINUX)
 // Enables Desktop PWAs shortcuts menu to be visible and executable in ChromeOS,
 // MacOS and Linux.
@@ -639,7 +632,7 @@ const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
 // When enabled, removes any theme or background customization done by the user
 // on the Incognito UI.
 const base::Feature kIncognitoBrandConsistencyForDesktop{
-    "IncognitoBrandConsistencyForDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IncognitoBrandConsistencyForDesktop", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, clear browsing data option would be enabled in Incognito which
 // upon clicking would show a dialog to close all Incognito windows.

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_ANDROID_CREDENTIAL_LEAK_CONTROLLER_ANDROID_H_
 
 #include <memory>
-#include "base/macros.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "ui/gfx/range/range.h"
 #include "url/gurl.h"
@@ -61,14 +60,6 @@ class CredentialLeakControllerAndroid {
 
   // The title of the dialog displaying the leak warning.
   std::u16string GetTitle() const;
-
-  // Checks whether the dialog should show the option to check passwords.
-  bool ShouldCheckPasswords() const;
-
-  // Checks whether the change password button should be shown.
-  // |ShouldShowChangePasswordButton()| and |ShouldCheckPasswords()| are not
-  // both true at the same time.
-  bool ShouldShowChangePasswordButton() const;
 
   // Checks whether the cancel button should be shown.
   bool ShouldShowCancelButton() const;

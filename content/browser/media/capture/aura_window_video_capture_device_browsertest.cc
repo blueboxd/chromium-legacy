@@ -6,7 +6,6 @@
 
 #include <tuple>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -319,7 +318,7 @@ class AuraWindowVideoCaptureDeviceBrowserTestWin
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kApplyNativeOcclusionToCompositor,
         {{features::kApplyNativeOcclusionToCompositorType,
-          features::kApplyNativeOcclusionToCompositorTypeApplyAndEvict}});
+          features::kApplyNativeOcclusionToCompositorTypeRelease}});
 
     AuraWindowVideoCaptureDeviceBrowserTest::SetUp();
   }

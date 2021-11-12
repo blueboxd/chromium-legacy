@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
@@ -329,6 +328,10 @@ class VolumeManager : public KeyedService,
   // pointer is valid. It is invalidated as soon as the volume is removed from
   // the volume manager.
   base::WeakPtr<Volume> FindVolumeById(const std::string& volume_id);
+
+  // Returns the volume on which an entry, identified by its local (cracked)
+  // path, is located. Returns nullptr if no volume is found.
+  base::WeakPtr<Volume> FindVolumeFromPath(const base::FilePath& path);
 
   // Add sshfs crostini volume mounted at specified path.
   void AddSshfsCrostiniVolume(const base::FilePath& sshfs_mount_path,

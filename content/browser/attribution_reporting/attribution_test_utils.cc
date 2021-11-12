@@ -27,6 +27,7 @@ using AttributionAllowedStatus =
     ::content::RateLimitTable::AttributionAllowedStatus;
 using CreateReportStatus =
     ::content::AttributionStorage::CreateReportResult::Status;
+using DeactivatedSource = ::content::AttributionStorage::DeactivatedSource;
 
 const char kDefaultImpressionOrigin[] = "https://impression.test/";
 const char kDefaultTriggerOrigin[] = "https://sub.conversion.test/";
@@ -144,6 +145,14 @@ TestAttributionManager::TestAttributionManager() = default;
 
 TestAttributionManager::~TestAttributionManager() = default;
 
+void TestAttributionManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void TestAttributionManager::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void TestAttributionManager::HandleSource(StorableSource source) {
   num_sources_++;
   last_impression_source_type_ = source.source_type();
@@ -168,18 +177,9 @@ void TestAttributionManager::GetPendingReportsForWebUI(
   std::move(callback).Run(reports_);
 }
 
-const AttributionSessionStorage& TestAttributionManager::GetSessionStorage()
-    const {
-  return session_storage_;
-}
-
 void TestAttributionManager::SendReportsForWebUI(base::OnceClosure done) {
   reports_.clear();
   std::move(done).Run();
-}
-
-AttributionSessionStorage& TestAttributionManager::GetSessionStorage() {
-  return session_storage_;
 }
 
 const AttributionPolicy& TestAttributionManager::GetAttributionPolicy() const {
@@ -193,7 +193,6 @@ void TestAttributionManager::ClearData(
     base::OnceClosure done) {
   sources_.clear();
   reports_.clear();
-  session_storage_.Reset();
   std::move(done).Run();
 }
 
@@ -205,6 +204,23 @@ void TestAttributionManager::SetActiveSourcesForWebUI(
 void TestAttributionManager::SetReportsForWebUI(
     std::vector<AttributionReport> reports) {
   reports_ = std::move(reports);
+}
+
+void TestAttributionManager::NotifySourceDeactivated(
+    const DeactivatedSource& source) {
+  for (Observer& observer : observers_)
+    observer.OnSourceDeactivated(source);
+}
+
+void TestAttributionManager::NotifyReportSent(const SentReportInfo& info) {
+  for (Observer& observer : observers_)
+    observer.OnReportSent(info);
+}
+
+void TestAttributionManager::NotifyReportDropped(
+    const AttributionStorage::CreateReportResult& result) {
+  for (Observer& observer : observers_)
+    observer.OnReportDropped(result);
 }
 
 void TestAttributionManager::Reset() {
@@ -341,7 +357,7 @@ StorableTrigger TriggerBuilder::Build() const {
 }
 
 // Custom comparator for `StorableSource` that does not take impression IDs
-// or dedup keys into account.
+// into account.
 bool operator==(const StorableSource& a, const StorableSource& b) {
   const auto tie = [](const StorableSource& impression) {
     return std::make_tuple(
@@ -349,7 +365,7 @@ bool operator==(const StorableSource& a, const StorableSource& b) {
         impression.conversion_origin(), impression.reporting_origin(),
         impression.impression_time(), impression.expiry_time(),
         impression.source_type(), impression.priority(),
-        impression.attribution_logic());
+        impression.attribution_logic(), impression.dedup_keys());
   };
   return tie(a) == tie(b);
 }
@@ -370,6 +386,14 @@ bool operator==(const AttributionReport& a, const AttributionReport& b) {
 bool operator==(const SentReportInfo& a, const SentReportInfo& b) {
   const auto tie = [](const SentReportInfo& info) {
     return std::make_tuple(info.report, info.status, info.http_response_code);
+  };
+  return tie(a) == tie(b);
+}
+
+bool operator==(const DeactivatedSource& a, const DeactivatedSource& b) {
+  const auto tie = [](const DeactivatedSource& deactivated_source) {
+    return std::make_tuple(deactivated_source.source,
+                           deactivated_source.reason);
   };
   return tie(a) == tie(b);
 }
@@ -402,6 +426,18 @@ std::ostream& operator<<(std::ostream& out, CreateReportStatus status) {
       break;
     case CreateReportStatus::kDroppedForNoise:
       out << "kDroppedForNoise";
+      break;
+  }
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out, DeactivatedSource::Reason reason) {
+  switch (reason) {
+    case DeactivatedSource::Reason::kReplacedByNewerSource:
+      out << "kReplacedByNewerSource";
+      break;
+    case DeactivatedSource::Reason::kReachedAttributionLimit:
+      out << "kReachedAttributionLimit";
       break;
   }
   return out;
@@ -527,6 +563,12 @@ std::ostream& operator<<(std::ostream& out, SentReportInfo::Status status) {
 std::ostream& operator<<(std::ostream& out, const SentReportInfo& info) {
   return out << "{report=" << info.report << ",status=" << info.status
              << ",http_response_code=" << info.http_response_code << "}";
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const DeactivatedSource& deactivated_source) {
+  return out << "{source=" << deactivated_source.source
+             << ",reason=" << deactivated_source.reason << "}";
 }
 
 std::vector<AttributionReport> GetAttributionsToReportForTesting(

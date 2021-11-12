@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_SESSIONS_CHROME_TAB_RESTORE_SERVICE_CLIENT_H_
 #define CHROME_BROWSER_SESSIONS_CHROME_TAB_RESTORE_SERVICE_CLIENT_H_
 
-#include "base/macros.h"
 #include "components/sessions/core/tab_restore_service_client.h"
 
 class Profile;
@@ -29,7 +28,8 @@ class ChromeTabRestoreServiceClient : public sessions::TabRestoreServiceClient {
       const gfx::Rect& bounds,
       ui::WindowShowState show_state,
       const std::string& workspace,
-      const std::string& user_title) override;
+      const std::string& user_title,
+      const std::map<std::string, base::Value>& extra_data) override;
   sessions::LiveTabContext* FindLiveTabContextForTab(
       const sessions::LiveTab* tab) override;
   sessions::LiveTabContext* FindLiveTabContextWithID(

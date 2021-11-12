@@ -30,7 +30,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
@@ -302,8 +301,6 @@ constexpr const Entry kLegacyUmaOobeScreenNames[] = {
     {chromeos::ArcTermsOfServiceScreenView::kScreenId, "arc_tos"},
     {chromeos::EnrollmentScreenView::kScreenId, "enroll"},
     {chromeos::WelcomeView::kScreenId, "network"},
-    {OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW_DEPRECATED,
-     "supervised-user-creation-flow"},
     {chromeos::TermsOfServiceScreenView::kScreenId, "tos"}};
 
 void RecordUMAHistogramForOOBEStepShownStatus(

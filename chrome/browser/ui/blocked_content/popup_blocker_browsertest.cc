@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -759,17 +758,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, TapGestureWithCtrlKey) {
 #else
   unsigned modifiers = blink::WebInputEvent::kControlKey;
 #endif
-
-  // The tap simulators in browser_test_utils doesn't fully reflect real tap
-  // interactions because unlike real taps, they don't sent touch/pointer events
-  // before a tap hence miss the user activation from touchend/pointerup event.
-  // To simulate the missing user activation, we are sending a no-op keypress
-  // (SPACE) right before the simulated tap.
-  SimulateKeyPress(tab, ui::DomKey::FromCharacter(' '), ui::DomCode::SPACE,
-                   ui::VKEY_SPACE,
-                   /*control=*/false, /*shift=*/false, /*alt=*/false,
-                   /*command=*/false);
-  SimulateTapWithModifiersAt(tab, modifiers, gfx::Point(350, 250));
+  content::SimulateTapWithModifiersAt(tab, modifiers, gfx::Point(350, 250));
 
   tab_add.Wait();
 

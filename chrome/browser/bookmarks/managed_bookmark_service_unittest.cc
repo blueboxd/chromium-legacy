@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -160,9 +159,12 @@ class ManagedBookmarkServiceTest : public testing::Test {
       size_t i = 0;
       return std::all_of(node->children().cbegin(), node->children().cend(),
                          [children, &i](const auto& child_node) {
-                           const base::DictionaryValue* child = nullptr;
-                           return children->GetDictionary(i++, &child) &&
-                                  NodeMatchesValue(child_node.get(), child);
+                           const base::Value& child = children->GetList()[i++];
+                           if (!child.is_dict())
+                             return false;
+                           return NodeMatchesValue(
+                               child_node.get(),
+                               &base::Value::AsDictionaryValue(child));
                          });
     }
     if (!node->is_url())

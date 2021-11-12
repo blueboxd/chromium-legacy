@@ -17,7 +17,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -851,9 +850,7 @@ ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl()
   RegisterWebSafeScheme(url::kWsScheme);
   RegisterWebSafeScheme(url::kWssScheme);
 #endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
-  RegisterWebSafeScheme(url::kFtpScheme);
   RegisterWebSafeScheme(url::kDataScheme);
-  RegisterWebSafeScheme("feed");
 
   // TODO(nick): https://crbug.com/651534 blob: and filesystem: schemes embed
   // other origins, so we should not treat them as web safe. Remove callers of
@@ -1182,7 +1179,6 @@ void ChildProcessSecurityPolicyImpl::GrantWebUIBindings(int child_id,
     return;
 
   state->second->GrantBindings(bindings);
-
 }
 
 void ChildProcessSecurityPolicyImpl::GrantReadRawCookies(int child_id) {

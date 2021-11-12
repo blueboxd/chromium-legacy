@@ -16,6 +16,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/scoped_observation.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -39,8 +40,10 @@ namespace {
 
 using CreateReportStatus =
     ::content::AttributionStorage::CreateReportResult::Status;
+using DeactivatedSource = ::content::AttributionStorage::DeactivatedSource;
 
 using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 
 constexpr base::TimeDelta kExpiredReportOffset = base::Minutes(2);
 
@@ -52,6 +55,45 @@ class ConstantStartupDelayPolicy : public AttributionPolicy {
   base::Time GetReportTimeForReportPastSendTime(base::Time now) const override {
     return now + kExpiredReportOffset;
   }
+};
+
+class TestAttributionManagerObserver : public AttributionManager::Observer {
+ public:
+  TestAttributionManagerObserver() = default;
+  ~TestAttributionManagerObserver() override = default;
+
+  const std::vector<DeactivatedSource>& deactivated_sources() const {
+    return deactivated_sources_;
+  }
+
+  const std::vector<SentReportInfo>& sent_reports() const {
+    return sent_reports_;
+  }
+
+  const std::vector<AttributionStorage::CreateReportResult>& dropped_reports()
+      const {
+    return dropped_reports_;
+  }
+
+ private:
+  // AttributionManager::Observer:
+
+  void OnSourceDeactivated(const DeactivatedSource& source) override {
+    deactivated_sources_.push_back(source);
+  }
+
+  void OnReportSent(const SentReportInfo& info) override {
+    sent_reports_.push_back(info);
+  }
+
+  void OnReportDropped(
+      const AttributionStorage::CreateReportResult& result) override {
+    dropped_reports_.push_back(result);
+  }
+
+  std::vector<DeactivatedSource> deactivated_sources_;
+  std::vector<SentReportInfo> sent_reports_;
+  std::vector<AttributionStorage::CreateReportResult> dropped_reports_;
 };
 
 // Mock reporter that tracks reports being queued by the AttributionManager.
@@ -145,8 +187,6 @@ constexpr base::TimeDelta kFirstReportingWindow = base::Days(2);
 // Give impressions a sufficiently long expiry.
 constexpr base::TimeDelta kImpressionExpiry = base::Days(30);
 
-const size_t kMaxSentReportsToStore = 3;
-
 }  // namespace
 
 class AttributionManagerImplTest : public testing::Test {
@@ -164,8 +204,7 @@ class AttributionManagerImplTest : public testing::Test {
     test_reporter_ = reporter.get();
     attribution_manager_ = AttributionManagerImpl::CreateForTesting(
         std::move(reporter), std::make_unique<ConstantStartupDelayPolicy>(),
-        task_environment_.GetMockClock(), dir_.GetPath(), mock_storage_policy_,
-        kMaxSentReportsToStore);
+        task_environment_.GetMockClock(), dir_.GetPath(), mock_storage_policy_);
     test_reporter_->SetReportSentCallback(
         base::BindRepeating(&AttributionManagerImpl::OnReportSent,
                             base::Unretained(attribution_manager_.get())));
@@ -460,9 +499,14 @@ TEST_F(AttributionManagerImplTest, QueuedReportSent_NotQueuedAgain) {
   histograms.ExpectUniqueSample("Conversion.ReportSendOutcome", 0, 1);
 }
 
-TEST_F(AttributionManagerImplTest, QueuedReportSent_SentReportInfoUpdated) {
+TEST_F(AttributionManagerImplTest, QueuedReportSent_ObserversNotified) {
   base::HistogramTester histograms;
   test_reporter_->ShouldRunReportSentCallbacks(true);
+
+  TestAttributionManagerObserver observer;
+  base::ScopedObservation<AttributionManager, AttributionManager::Observer>
+      observation(&observer);
+  observation.Observe(attribution_manager_.get());
 
   test_reporter_->SetSentReportInfoStatus(SentReportInfo::Status::kSent);
   attribution_manager_->HandleSource(SourceBuilder(clock().Now())
@@ -503,8 +547,7 @@ TEST_F(AttributionManagerImplTest, QueuedReportSent_SentReportInfoUpdated) {
   task_environment_.FastForwardBy(kFirstReportingWindow -
                                   kAttributionManagerQueueReportsInterval);
 
-  const auto& sent_reports =
-      attribution_manager_->GetSessionStorage().GetSentReports();
+  const auto& sent_reports = observer.sent_reports();
   EXPECT_EQ(2u, sent_reports.size());
   EXPECT_EQ(1u, sent_reports[0].report.impression.source_event_id());
   EXPECT_EQ(3u, sent_reports[1].report.impression.source_event_id());
@@ -517,30 +560,12 @@ TEST_F(AttributionManagerImplTest, QueuedReportSent_SentReportInfoUpdated) {
   histograms.ExpectBucketCount("Conversion.ReportSendOutcome", 2, 1);
 }
 
-TEST_F(AttributionManagerImplTest, QueuedReportSent_StoresLastN) {
-  test_reporter_->ShouldRunReportSentCallbacks(true);
+TEST_F(AttributionManagerImplTest, DroppedReport_ObserversNotified) {
+  TestAttributionManagerObserver observer;
+  base::ScopedObservation<AttributionManager, AttributionManager::Observer>
+      observation(&observer);
+  observation.Observe(attribution_manager_.get());
 
-  // Process |kMaxSentReportsToStore + 1| reports.
-  for (uint64_t i = 1; i <= 4; i++) {
-    attribution_manager_->HandleSource(SourceBuilder(clock().Now())
-                                           .SetSourceEventId(i)
-                                           .SetExpiry(kImpressionExpiry)
-                                           .Build());
-    attribution_manager_->HandleTrigger(DefaultTrigger());
-    task_environment_.FastForwardBy(kFirstReportingWindow -
-                                    kAttributionManagerQueueReportsInterval);
-  }
-
-  // Only the last |kMaxSentReportsToStore| should be stored.
-  const auto& sent_reports =
-      attribution_manager_->GetSessionStorage().GetSentReports();
-  EXPECT_EQ(3u, sent_reports.size());
-  EXPECT_EQ(2u, sent_reports[0].report.impression.source_event_id());
-  EXPECT_EQ(3u, sent_reports[1].report.impression.source_event_id());
-  EXPECT_EQ(4u, sent_reports[2].report.impression.source_event_id());
-}
-
-TEST_F(AttributionManagerImplTest, DroppedReport_StoresLastN) {
   attribution_manager_->HandleSource(
       SourceBuilder(clock().Now()).SetExpiry(kImpressionExpiry).Build());
   ExpectNumStoredImpressions(1);
@@ -551,9 +576,7 @@ TEST_F(AttributionManagerImplTest, DroppedReport_StoresLastN) {
     attribution_manager_->HandleTrigger(
         TriggerBuilder().SetPriority(i).Build());
     ExpectNumStoredReports(i);
-    EXPECT_EQ(
-        0u,
-        attribution_manager_->GetSessionStorage().GetDroppedReports().size());
+    EXPECT_EQ(0u, observer.dropped_reports().size());
   }
 
   {
@@ -561,8 +584,7 @@ TEST_F(AttributionManagerImplTest, DroppedReport_StoresLastN) {
     attribution_manager_->HandleTrigger(
         TriggerBuilder().SetPriority(4).Build());
     ExpectNumStoredReports(3);
-    const auto& dropped_reports =
-        attribution_manager_->GetSessionStorage().GetDroppedReports();
+    const auto& dropped_reports = observer.dropped_reports();
     EXPECT_EQ(1u, dropped_reports.size());
     EXPECT_EQ(1, dropped_reports[0].dropped_report()->priority);
     EXPECT_EQ(CreateReportStatus::kSuccessDroppedLowerPriority,
@@ -575,8 +597,7 @@ TEST_F(AttributionManagerImplTest, DroppedReport_StoresLastN) {
     attribution_manager_->HandleTrigger(
         TriggerBuilder().SetPriority(-5).Build());
     ExpectNumStoredReports(3);
-    const auto& dropped_reports =
-        attribution_manager_->GetSessionStorage().GetDroppedReports();
+    const auto& dropped_reports = observer.dropped_reports();
     EXPECT_EQ(2u, dropped_reports.size());
     EXPECT_EQ(1, dropped_reports[0].dropped_report()->priority);
     EXPECT_EQ(CreateReportStatus::kSuccessDroppedLowerPriority,
@@ -586,25 +607,25 @@ TEST_F(AttributionManagerImplTest, DroppedReport_StoresLastN) {
   }
 
   {
-    // These should replace the reports with priority 2 and 3 and pop the report
-    // with priority 1 from the session storage, as only
-    // `kMaxSentReportsToStore` should be stored.
+    // These should replace the reports with priority 2 and 3.
     attribution_manager_->HandleTrigger(
         TriggerBuilder().SetPriority(5).Build());
     attribution_manager_->HandleTrigger(
         TriggerBuilder().SetPriority(6).Build());
     ExpectNumStoredReports(3);
-    const auto& dropped_reports =
-        attribution_manager_->GetSessionStorage().GetDroppedReports();
-    EXPECT_EQ(3u, dropped_reports.size());
-    EXPECT_EQ(-5, dropped_reports[0].dropped_report()->priority);
-    EXPECT_EQ(CreateReportStatus::kPriorityTooLow, dropped_reports[0].status());
-    EXPECT_EQ(2, dropped_reports[1].dropped_report()->priority);
+    const auto& dropped_reports = observer.dropped_reports();
+    EXPECT_EQ(4u, dropped_reports.size());
+    EXPECT_EQ(1, dropped_reports[0].dropped_report()->priority);
     EXPECT_EQ(CreateReportStatus::kSuccessDroppedLowerPriority,
-              dropped_reports[1].status());
-    EXPECT_EQ(3, dropped_reports[2].dropped_report()->priority);
+              dropped_reports[0].status());
+    EXPECT_EQ(-5, dropped_reports[1].dropped_report()->priority);
+    EXPECT_EQ(CreateReportStatus::kPriorityTooLow, dropped_reports[1].status());
+    EXPECT_EQ(2, dropped_reports[2].dropped_report()->priority);
     EXPECT_EQ(CreateReportStatus::kSuccessDroppedLowerPriority,
               dropped_reports[2].status());
+    EXPECT_EQ(3, dropped_reports[3].dropped_report()->priority);
+    EXPECT_EQ(CreateReportStatus::kSuccessDroppedLowerPriority,
+              dropped_reports[3].status());
   }
 }
 
@@ -667,24 +688,6 @@ TEST_F(AttributionManagerImplTest, ClearData) {
     size_t expected_reports = match_url ? 0u : 1u;
     EXPECT_EQ(expected_reports, test_reporter_->num_reports());
   }
-}
-
-TEST_F(AttributionManagerImplTest, ClearData_ClearsSentReports) {
-  test_reporter_->ShouldRunReportSentCallbacks(true);
-
-  attribution_manager_->HandleSource(
-      SourceBuilder(clock().Now()).SetExpiry(kImpressionExpiry).Build());
-  attribution_manager_->HandleTrigger(DefaultTrigger());
-
-  task_environment_.FastForwardBy(kFirstReportingWindow -
-                                  kAttributionManagerQueueReportsInterval);
-  EXPECT_FALSE(
-      attribution_manager_->GetSessionStorage().GetSentReports().empty());
-
-  attribution_manager_->ClearData(clock().Now(), clock().Now(),
-                                  base::NullCallback(), base::DoNothing());
-  EXPECT_TRUE(
-      attribution_manager_->GetSessionStorage().GetSentReports().empty());
 }
 
 TEST_F(AttributionManagerImplTest, ConversionsSentFromUI_ReportedImmediately) {
@@ -929,6 +932,74 @@ TEST_F(AttributionManagerImplTest, ClearData_NoDeleteForRemovedFromQueue) {
       base::DoNothing());
 
   ExpectNumStoredReports(1u);
+}
+
+TEST_F(AttributionManagerImplTest, HandleSource_NotifiesObservers) {
+  TestAttributionManagerObserver observer;
+  base::ScopedObservation<AttributionManager, AttributionManager::Observer>
+      observation(&observer);
+  observation.Observe(attribution_manager_.get());
+
+  auto source1 = SourceBuilder(clock().Now())
+                     .SetExpiry(kImpressionExpiry)
+                     .SetSourceEventId(7)
+                     .Build();
+  attribution_manager_->HandleSource(source1);
+  ExpectNumStoredImpressions(1u);
+  EXPECT_THAT(observer.deactivated_sources(), IsEmpty());
+
+  attribution_manager_->HandleTrigger(DefaultTrigger());
+  ExpectNumStoredReports(1u);
+  EXPECT_THAT(observer.deactivated_sources(), IsEmpty());
+
+  auto source2 = SourceBuilder(clock().Now())
+                     .SetExpiry(kImpressionExpiry)
+                     .SetSourceEventId(9)
+                     .Build();
+  attribution_manager_->HandleSource(source2);
+  ExpectNumStoredImpressions(1u);
+  EXPECT_THAT(observer.deactivated_sources(),
+              ElementsAre(DeactivatedSource{
+                  source1, DeactivatedSource::Reason::kReplacedByNewerSource}));
+}
+
+TEST_F(AttributionManagerImplTest, HandleTrigger_StoresDeactivatedSources) {
+  TestAttributionManagerObserver observer;
+  base::ScopedObservation<AttributionManager, AttributionManager::Observer>
+      observation(&observer);
+  observation.Observe(attribution_manager_.get());
+
+  test_reporter_->ShouldRunReportSentCallbacks(true);
+
+  auto source1 = SourceBuilder(clock().Now())
+                     .SetExpiry(kImpressionExpiry)
+                     .SetSourceEventId(7)
+                     .Build();
+  attribution_manager_->HandleSource(source1);
+  ExpectNumStoredImpressions(1u);
+  EXPECT_THAT(observer.deactivated_sources(), IsEmpty());
+
+  // Store the maximum number of reports for the source.
+  for (size_t i = 1; i <= 3; i++) {
+    attribution_manager_->HandleTrigger(DefaultTrigger());
+    ExpectNumStoredReports(i);
+    EXPECT_THAT(observer.deactivated_sources(), IsEmpty());
+  }
+
+  // Simulate the reports being sent and removed from storage.
+  task_environment_.FastForwardBy(kFirstReportingWindow -
+                                  kAttributionManagerQueueReportsInterval);
+  ExpectNumStoredReports(0u);
+
+  // The next report should cause the source to be deactivated; the report
+  // itself shouldn't be stored as we've already reached the maximum number of
+  // conversions per source.
+  attribution_manager_->HandleTrigger(DefaultTrigger());
+  ExpectNumStoredReports(0u);
+  EXPECT_THAT(
+      observer.deactivated_sources(),
+      ElementsAre(DeactivatedSource{
+          source1, DeactivatedSource::Reason::kReachedAttributionLimit}));
 }
 
 }  // namespace content

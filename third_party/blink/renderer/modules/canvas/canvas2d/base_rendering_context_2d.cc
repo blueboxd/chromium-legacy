@@ -1513,6 +1513,8 @@ void BaseRenderingContext2D::DrawImageInternal(
     const FloatRect& dst_rect,
     const SkSamplingOptions& sampling,
     const PaintFlags* flags) {
+  cc::RecordPaintCanvas::DisableFlushCheckScope disable_flush_check_scope(
+      static_cast<cc::RecordPaintCanvas*>(c));
   int initial_save_count = c->getSaveCount();
   PaintFlags image_flags = *flags;
 
@@ -1698,7 +1700,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
         DrawImageInternal(c, image_source, image.get(), src_rect, dst_rect,
                           sampling, flags);
       },
-      [this, &dst_rect](const SkIRect& clip_bounds)  // overdraw test lambda
+      [this, dst_rect](const SkIRect& clip_bounds)  // overdraw test lambda
       { return RectContainsTransformedRect(dst_rect, clip_bounds); },
       dst_rect, CanvasRenderingContext2DState::kImagePaintType,
       image_source->IsOpaque() ? CanvasRenderingContext2DState::kOpaqueImage

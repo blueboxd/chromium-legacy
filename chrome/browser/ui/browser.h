@@ -14,7 +14,6 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -791,7 +790,7 @@ class Browser : public TabStripModelObserver,
                       bool* was_blocked) override;
   void ActivateContents(content::WebContents* contents) override;
   void LoadingStateChanged(content::WebContents* source,
-                           bool to_different_document) override;
+                           bool should_show_loading_ui) override;
   void CloseContents(content::WebContents* source) override;
   void SetContentsBounds(content::WebContents* source,
                          const gfx::Rect& bounds) override;
@@ -1037,7 +1036,7 @@ class Browser : public TabStripModelObserver,
 
   // Updates the loading state for the window and tabstrip.
   void UpdateWindowForLoadingStateChanged(content::WebContents* source,
-                                          bool to_different_document);
+                                          bool should_show_loading_ui);
 
   // Shared code between Reload() and ReloadBypassingCache().
   void ReloadInternal(WindowOpenDisposition disposition, bool bypass_cache);

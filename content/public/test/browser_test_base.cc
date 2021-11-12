@@ -22,7 +22,6 @@
 #include "base/i18n/icu_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -766,6 +765,14 @@ void BrowserTestBase::WaitUntilJavaIsReady(
 #endif
 
 void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
+  // Chrome bans unresponsive tasks just before starting the main message loop.
+  // Re-allow such tasks while for init / tear down
+  // (ScopedDisallowBlocking objects below ensure the test body is tested under
+  // the same blocking-ban as the regular main message loop).
+  // TODO(crbug.com/1253634): Remove this wide allowance in favor of localized
+  // allowances for init/teardown phases.
+  base::ScopedAllowUnresponsiveTasksForTesting allow_for_init;
+
 #if !defined(OS_ANDROID)
   // All FeatureList overrides should have been registered prior to browser test
   // SetUp(). Note that on Android, this scoper lives in SetUp() above.

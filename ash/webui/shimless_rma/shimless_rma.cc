@@ -67,6 +67,10 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"componentPowerButton", IDS_SHIMLESS_RMA_COMPONENT_POWER_BUTTON},
       // Splash screen
       {"shimlessSplashMessage", IDS_SHIMLESS_RMA_SPLASH_MESSAGE},
+      // Common buttons
+      {"cancelButtonLabel", IDS_SHIMLESS_RMA_CANCEL_BUTTON},
+      {"backButtonLabel", IDS_SHIMLESS_RMA_BACK_BUTTON},
+      {"nextButtonLabel", IDS_SHIMLESS_RMA_NEXT_BUTTON},
       // Landing page
       {"welcomeTitleText", IDS_SHIMLESS_RMA_LANDING_PAGE_TITLE},
       {"beginRmaWarningText", IDS_SHIMLESS_RMA_AUTHORIZED_TECH_ONLY_WARNING},
@@ -120,6 +124,17 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"rsuHardwareIdText", IDS_SHIMLESS_RMA_RSU_HWID},
       {"rsuCodeLabelText", IDS_SHIMLESS_RMA_RSU_CODE_LABEL},
       {"rsuCodePlaceHolderText", IDS_SHIMLESS_RMA_RSU_CODE_PLACEHOLDER},
+      // Check calibration page
+      {"checkCalibrationTitleText",
+       IDS_SHIMLESS_RMA_CHECK_CALIBRATION_PAGE_TITLE},
+      // Finalize device  page
+      {"finalizePageTitleText", IDS_SHIMLESS_RMA_FINALIZE_PAGE_TITLE},
+      {"finalizePageProgressText", IDS_SHIMLESS_RMA_FINALIZE_PROGRESS},
+      {"finalizePageCompleteText", IDS_SHIMLESS_RMA_FINALIZE_COMPLETE},
+      {"finalizePageFailedBlockingText",
+       IDS_SHIMLESS_RMA_FINALIZE_FAILED_BLOCKING},
+      {"finalizePageFailedNonBlockingText",
+       IDS_SHIMLESS_RMA_FINALIZE_FAILED_NON_BLOCKING},
       // Repair complete page
       {"repairCompletedTitleText", IDS_SHIMLESS_RMA_REPAIR_COMPLETED},
       // Manual disable wp page

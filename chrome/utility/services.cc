@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -283,8 +282,8 @@ auto RunPrintCompositor(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 auto RunImeService(
-    mojo::PendingReceiver<ash::ime::mojom::ImeService> receiver) {
-  return std::make_unique<ash::ime::ImeService>(std::move(receiver));
+    mojo::PendingReceiver<chromeos::ime::mojom::ImeService> receiver) {
+  return std::make_unique<chromeos::ime::ImeService>(std::move(receiver));
 }
 
 auto RunRecordingService(

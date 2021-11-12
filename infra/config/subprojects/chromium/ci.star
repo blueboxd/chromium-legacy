@@ -494,6 +494,9 @@ ci.android_builder(
     # build.
     execution_timeout = 4 * time.hour,
     tree_closing = True,
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.android_builder(
@@ -552,6 +555,9 @@ ci.android_builder(
         short_name = "32",
     ),
     cq_mirrors_console_view = "mirrors",
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = rbe_jobs.DEFAULT,
     execution_timeout = 4 * time.hour,
     main_console_view = main_console_if_on_branch(),
     tree_closing = True,
@@ -566,7 +572,9 @@ ci.android_builder(
         short_name = "64",
     ),
     cq_mirrors_console_view = "mirrors",
-    goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     execution_timeout = 7 * time.hour,
     main_console_view = main_console_if_on_branch(),
     tree_closing = True,
@@ -582,6 +590,9 @@ ci.android_builder(
     cq_mirrors_console_view = "mirrors",
     execution_timeout = 7 * time.hour,
     main_console_view = main_console_if_on_branch(),
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.android_builder(
@@ -594,6 +605,9 @@ ci.android_builder(
     cq_mirrors_console_view = "mirrors",
     execution_timeout = 6 * time.hour,
     main_console_view = main_console_if_on_branch(),
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.android_builder(
@@ -1026,21 +1040,6 @@ ci.android_builder(
         category = "builder|weblayer",
         short_name = "x86",
     ),
-)
-
-ci.android_fyi_builder(
-    name = "Android arm64 Builder (dbg) (reclient)",
-    console_view_entry = consoles.console_view_entry(
-        category = "builder|arm",
-        short_name = "64",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    reclient_jobs = 150,
-    execution_timeout = 5 * time.hour,
-    main_console_view = main_console_if_on_branch(),
-    reclient_instance = rbe_instance.DEFAULT,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-    schedule = "triggered",  # triggered manually via Scheduler UI
 )
 
 ci.android_fyi_builder(
@@ -2209,6 +2208,27 @@ ci.cipd_3pp_builder(
             }],
             "gclient_config": "chromium",
             "gclient_apply_config": ["android"],
+        },
+    },
+)
+
+ci.cipd_3pp_builder(
+    name = "3pp-mac-amd64-packager",
+    os = os.MAC_DEFAULT,
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "3pp|mac",
+        short_name = "amd64",
+    ),
+    cores = None,
+    notifies = ["chromium-3pp-packager"],
+    # TODO(crbug.com/1267449): Trigger builds routinely once works fine.
+    schedule = "triggered",
+    triggered_by = [],
+    properties = {
+        "$build/chromium_3pp": {
+            "platform": "mac-amd64",
+            "gclient_config": "chromium",
         },
     },
 )
@@ -4162,45 +4182,6 @@ ci.fyi_builder(
 
 # Start - Reclient migration, phase 2, block 1 shadow builders
 ci.fyi_builder(
-    name = "Linux ASan LSan Builder (reclient shadow)",
-    branch_selector = branches.STANDARD_MILESTONE,
-    console_view_entry = consoles.console_view_entry(
-        category = "linux|asan lsan",
-        short_name = "bld",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    os = os.LINUX_BIONIC,
-    ssd = True,
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "Linux Builder (dbg) (reclient shadow)",
-    branch_selector = branches.STANDARD_MILESTONE,
-    console_view_entry = consoles.console_view_entry(
-        category = "debug|builder",
-        short_name = "64",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "Linux Builder (dbg)(32) (reclient shadow)",
-    console_view_entry = consoles.console_view_entry(
-        category = "debug|builder",
-        short_name = "32",
-    ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.fyi_builder(
     name = "Linux CFI (reclient shadow)",
     console_view_entry = consoles.console_view_entry(
         category = "cfi",
@@ -4213,91 +4194,7 @@ ci.fyi_builder(
     reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     reclient_instance = rbe_instance.DEFAULT,
 )
-
-ci.fyi_builder(
-    name = "Linux MSan Builder (reclient shadow)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux|msan",
-        short_name = "bld",
-    ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "Linux TSan Builder (reclient)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux",
-        short_name = "tre",
-    ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "WebKit Linux ASAN (reclient shadow)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux|webkit",
-        short_name = "asn",
-    ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
-    os = os.LINUX_BIONIC_REMOVE,
-)
-
-ci.fyi_builder(
-    name = "WebKit Linux Leak (reclient shadow)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux|webkit",
-        short_name = "lk",
-    ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
-    os = os.LINUX_BIONIC_REMOVE,
-)
-
-ci.fyi_builder(
-    name = "WebKit Linux MSAN (reclient shadow)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux|webkit",
-        short_name = "msn",
-    ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
-    os = os.LINUX_BIONIC_REMOVE,
-)
-
-ci.fyi_builder(
-    name = "Mojo Linux (reclient shadow)",
-    console_view_entry = consoles.console_view_entry(
-        short_name = "lnx",
-    ),
-    # From mojo_builder
-    execution_timeout = 10 * time.hour,
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
-)
 # End - Reclient migration, phase 2, block 1 shadow builders
-
-ci.fyi_builder(
-    name = "VR Linux (reclient)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    main_console_view = main_console_if_on_branch(),
-    goma_backend = None,
-    reclient_jobs = 250,
-    reclient_instance = rbe_instance.DEFAULT,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
 
 ci.fyi_windows_builder(
     name = "Win x64 Builder (reclient)",

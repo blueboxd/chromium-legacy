@@ -54,7 +54,7 @@ group("locally_built") {
     ":libtasn1-6",
     ":libudev1",
     ":libunity9",
-    ":libva1",
+    ":libva2",
     ":libwayland-client0",
     ":libx11-6",
     ":libxau6",
@@ -82,6 +82,10 @@ group("locally_built") {
 
 template("instrumented_library") {
   action(target_name) {
+    # Ignore "assignment had no effect" errors when there are no variables
+    # defined inside of the instrumented_library.
+    not_needed([ "invoker" ])
+
     script = "scripts/download_build_install.py"
     build_method = "destdir"
     if (defined(invoker.build_method)) {
@@ -115,6 +119,10 @@ template("instrumented_library") {
     if (defined(invoker.deps)) {
       deps = invoker.deps
     }
+    env = []
+    if (defined(invoker.env)) {
+      env = invoker.env
+    }
     product_dir = rebase_path(root_out_dir)
     intermediate_dir = rebase_path(target_gen_dir)
     args = [
@@ -127,6 +135,7 @@ template("instrumented_library") {
       "--product-dir=${product_dir}",
       "--cflags=${package_cflags}",
       "--ldflags=${package_ldflags}",
+      "--env=${env}",
     ]
     outputs = [ "${root_out_dir}/instrumented_libraries/${target_name}.txt" ]
     inputs = []
@@ -153,7 +162,6 @@ template("instrumented_library") {
 
 instrumented_library("atk1.0") {
   build_method = "meson"
-  package_ldflags = [ "-Wl,-z,undefs" ]
   extra_configure_flags = [ "-Dintrospection=false" ]
 }
 
@@ -225,12 +233,10 @@ instrumented_library("libasound2") {
 
 instrumented_library("libatk-bridge2.0-0") {
   build_method = "meson"
-  package_ldflags = [ "-Wl,-z,undefs" ]
 }
 
 instrumented_library("libatspi2.0-0") {
   build_method = "meson"
-  package_ldflags = [ "-Wl,-z,undefs" ]
   extra_configure_flags = [ "-Dintrospection=no" ]
 }
 
@@ -421,7 +427,6 @@ instrumented_library("libgdk-pixbuf2.0-0") {
 instrumented_library("libglib2.0-0") {
   build_method = "meson"
   extra_configure_flags = [
-    "-Db_lundef=false",
     "-Dgdk_doc=false",
     "-Dman=false",
   ]
@@ -508,11 +513,6 @@ instrumented_library("libindicator3-7") {
 
 instrumented_library("libjpeg-turbo8") {
   build_method = "cmake"
-  extra_configure_flags = [
-    # The default is to set the RPATH to /lib, but we want to change it
-    # to be where the rest of the instrumented libraries live.
-    "-DCMAKE_INSTALL_RPATH=\$ORIGIN",
-  ]
 }
 
 instrumented_library("libldap-2.4-2") {
@@ -635,9 +635,8 @@ instrumented_library("libunity9") {
   pre_build = "scripts/pre-build/autogen.sh"
 }
 
-instrumented_library("libva1") {
-  extra_configure_flags = [ "--disable-static" ]
-  pre_build = "scripts/pre-build/libva1.sh"
+instrumented_library("libva2") {
+  build_method = "meson"
 }
 
 instrumented_library("libwayland-client0") {
@@ -669,6 +668,10 @@ instrumented_library("libxcb1") {
     "--disable-static",
   ]
   pre_build = "scripts/pre-build/autoreconf.sh"
+  env = [ [
+        "PYTHON",
+        "python3",
+      ] ]
 }
 
 instrumented_library("libxcomposite1") {
@@ -746,18 +749,12 @@ instrumented_library("nss") {
 }
 
 instrumented_library("pango1.0") {
+  build_method = "meson"
   extra_configure_flags = [
-    "--disable-static",
-
     # Avoid https://bugs.gentoo.org/show_bug.cgi?id=425620
-    "--enable-introspection=no",
-
-    # Pango is normally used with dynamically loaded modules. However,
-    # ensuring pango is able to find instrumented versions of those modules
-    # is a huge pain in the neck. Let's link them statically instead, and
-    # hope for the best.
-    "--with-included-modules=yes",
+    "-Dintrospection=false",
   ]
+  patches = [ "patches/pango1.0.diff" ]
 }
 
 instrumented_library("pulseaudio") {
@@ -783,10 +780,7 @@ instrumented_library("pulseaudio") {
 
 instrumented_library("libudev1") {
   build_method = "meson"
-  extra_configure_flags = [ "-Db_lundef=false" ]
 }
 
 instrumented_library("zlib1g") {
-  # --disable-static is not supported
-  patches = [ "patches/zlib1g.diff" ]
 }

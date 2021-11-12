@@ -71,11 +71,11 @@
     },
 
     'chromium.android': {
-      'Android ASAN (dbg)': 'android_clang_asan_debug_bot',
-      'Android arm Builder (dbg)': 'android_webview_google_debug_static_bot',
-      'Android arm64 Builder (dbg)': 'android_webview_google_debug_static_bot_arm64',
-      'Android x64 Builder (dbg)': 'android_debug_static_bot_x64',
-      'Android x86 Builder (dbg)': 'android_debug_static_bot_x86',
+      'Android ASAN (dbg)': 'android_clang_asan_debug_bot_reclient',
+      'Android arm Builder (dbg)': 'android_webview_google_debug_static_bot_reclient',
+      'Android arm64 Builder (dbg)': 'android_webview_google_debug_static_bot_arm64_reclient',
+      'Android x64 Builder (dbg)': 'android_debug_static_bot_x64_reclient',
+      'Android x86 Builder (dbg)': 'android_debug_static_bot_x86_reclient',
       'Cast Android (dbg)': 'android_cast_debug_static_bot',
       'Deterministic Android': 'android_without_codecs_release_bot_minimal_symbols',
       'Deterministic Android (dbg)': 'android_debug_bot',
@@ -285,14 +285,9 @@
       'Libfuzzer Upload Linux UBSan': 'libfuzzer_ubsan_release_bot',
       'Libfuzzer Upload Mac ASan': 'libfuzzer_mac_asan_shared_release_bot',
       'Libfuzzer Upload Windows ASan': 'libfuzzer_windows_asan_release_bot',
-      'Linux ASan LSan Builder (reclient shadow)': 'asan_lsan_release_trybot_reclient',
-      'Linux Builder (dbg) (reclient shadow)': 'gpu_tests_debug_bot_reclient',
-      'Linux Builder (dbg)(32) (reclient shadow)': 'gpu_tests_debug_bot_x86_reclient',
       'Linux Builder (j-500) (reclient)': 'gpu_tests_release_bot_reclient',
       'Linux CFI (reclient shadow)': 'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_reclient',
-      'Linux MSan Builder (reclient shadow)': 'msan_release_bot_reclient',
       'Linux Builder (j-500) (reclient)': 'gpu_tests_release_bot_reclient',
-      'Linux TSan Builder (reclient)': 'tsan_disable_nacl_release_bot_reclient',
       'Linux Viz': 'release_trybot_minimal_symbols',
       'lacros-amd64-generic-rel-fyi': 'chromeos_amd64-generic_lacros_rel',
       'linux-ash-chromium-builder-fyi-rel': 'chromeos_with_codecs_release_bot',
@@ -307,13 +302,8 @@
       'Mac Builder Next': 'gpu_tests_release_bot_minimal_symbols',
       'Mac deterministic': 'release_bot_mac_strip_minimal_symbols',
       'Mac deterministic (dbg)': 'debug_bot',
-      'Mojo Linux (reclient shadow)': 'release_trybot_minimal_symbols_reclient',
       'Site Isolation Android': 'android_release_bot_minimal_symbols_arm64',
       'VR Linux': 'vr_release_bot_reclient',
-      'VR Linux (reclient)': 'vr_release_bot_reclient',
-      'WebKit Linux ASAN (reclient shadow)': 'asan_lsan_release_bot_blink_reclient',
-      'WebKit Linux Leak (reclient shadow)': 'release_bot_blink_reclient',
-      'WebKit Linux MSAN (reclient shadow)': 'msan_release_bot_blink_reclient',
       'Win 10 Fast Ring': 'release_trybot_minimal_symbols',
       'Win x64 Builder (reclient)': 'gpu_tests_release_bot_minimal_symbols_reclient',
       'Win x64 Builder (reclient)(cross)': 'gpu_tests_release_bot_minimal_symbols_reclient_win_cross',
@@ -1278,10 +1268,6 @@
       'android', 'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on', 'goma',
     ],
 
-    'android_clang_asan_debug_bot': [
-      'android', 'clang', 'asan', 'debug_bot', 'strip_debug_info',
-    ],
-
     'android_clang_asan_debug_bot_reclient': [
       'android', 'clang', 'asan', 'debug_bot_reclient', 'strip_debug_info',
     ],
@@ -1398,12 +1384,12 @@
       'android', 'debug_static_bot', 'arm64',
     ],
 
-    'android_debug_static_bot_x64': [
-      'android', 'debug_static_bot', 'x64',
+    'android_debug_static_bot_x64_reclient': [
+      'android', 'debug_static_bot_reclient', 'x64',
     ],
 
-    'android_debug_static_bot_x86': [
-      'android', 'debug_static_bot', 'x86',
+    'android_debug_static_bot_x86_reclient': [
+      'android', 'debug_static_bot_reclient', 'x86',
     ],
 
     'android_debug_trybot_arm64': [
@@ -1613,12 +1599,8 @@
       'android_fastbuild', 'webview_google', 'invert_fieldtrials'
     ],
 
-    'android_webview_google_debug_static_bot': [
-      'android', 'debug_static_bot', 'webview_google',
-    ],
-
-    'android_webview_google_debug_static_bot_arm64': [
-      'android', 'debug_static_bot', 'arm64', 'webview_google',
+    'android_webview_google_debug_static_bot_reclient': [
+      'android', 'debug_static_bot_reclient', 'webview_google',
     ],
 
     'android_webview_google_debug_static_bot_arm64_reclient': [
@@ -1777,10 +1759,6 @@
 
     'asan_lsan_release_trybot': [
       'asan', 'lsan', 'release_trybot_minimal_symbols',
-    ],
-
-    'asan_lsan_release_trybot_reclient': [
-      'asan', 'lsan', 'release_trybot_reclient',
     ],
 
     'autofill_assistant_release_trybot': [

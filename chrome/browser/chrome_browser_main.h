@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/threading/hang_watcher.h"
 #include "build/build_config.h"
@@ -75,6 +74,9 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   int PreCreateThreads() override;
   void PostCreateThreads() override;
   int PreMainMessageLoopRun() override;
+#if !defined(OS_ANDROID)
+  bool ShouldInterceptMainMessageLoopRun() override;
+#endif
   void WillRunMainMessageLoop(
       std::unique_ptr<base::RunLoop>& run_loop) override;
   void OnFirstIdle() override;
@@ -201,7 +203,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 #endif
 
   Profile* profile_ = nullptr;
-  bool run_message_loop_ = true;
 
   base::FilePath user_data_dir_;
 

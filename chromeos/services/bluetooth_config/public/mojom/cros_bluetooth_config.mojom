@@ -130,6 +130,12 @@ interface SystemPropertiesObserver {
   OnPropertiesUpdated(BluetoothSystemProperties properties);
 };
 
+// Observer for changes to Bluetooth device status.
+interface BluetoothDeviceStatusObserver {
+  // Invoked when a device has been newly-paired.
+  OnDevicePaired(PairedBluetoothDeviceProperties device);
+};
+
 // Provided to the pairing UI to handle keys that have been entered
 // on the user's keyboard during a pairing attempt which requires
 // that the user types in a PIN or passkey.
@@ -237,6 +243,11 @@ interface CrosBluetoothConfig {
   // is first added, then again whenever properties are updated. To stop
   // observing, disconnect |observer|.
   ObserveSystemProperties(pending_remote<SystemPropertiesObserver> observer);
+
+  // Invokes OnDevicePaired() when a device is newly paired. To stop
+  // observing, disconnect |observer|.
+  ObserveDeviceStatusChanges(
+    pending_remote<BluetoothDeviceStatusObserver> observer);
 
   // Turns Bluetooth on or off. If Bluetooth is unavailable or if it is
   // not currently modifiable, this function is a no-op.

@@ -309,18 +309,6 @@
           'shards': 20,
         },
       },
-      'WebKit Linux ASAN (reclient shadow)': {
-        'args': [
-          '--additional-expectations',
-          '../../third_party/blink/web_tests/ASANExpectations',
-          '--time-out-ms',
-          '48000',
-          '--enable-sanitizer',
-        ],
-        'swarming': {
-          'shards': 20,
-        },
-      },
       'WebKit Linux Leak': {
         'args': [
           '--additional-expectations',
@@ -333,34 +321,7 @@
           'shards': 10,
         },
       },
-      'WebKit Linux Leak (reclient shadow)': {
-        'args': [
-          '--additional-expectations',
-          '../../third_party/blink/web_tests/LeakExpectations',
-          '--time-out-ms',
-          '48000',
-          '--enable-leak-detection',
-        ],
-        'swarming': {
-          'shards': 10,
-        },
-      },
       'WebKit Linux MSAN': {
-        'args': [
-          '--additional-expectations',
-          '../../third_party/blink/web_tests/MSANExpectations',
-          '--time-out-ms',
-          '66000',
-          '--enable-sanitizer',
-        ],
-        'swarming': {
-          'expiration': 36000,
-          'hard_timeout': 10800,
-          'io_timeout': 3600,
-          'shards': 20,
-        },
-      },
-      'WebKit Linux MSAN (reclient shadow)': {
         'args': [
           '--additional-expectations',
           '../../third_party/blink/web_tests/MSANExpectations',
@@ -918,13 +879,11 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.chrome_public_test_apk.filter',
           '--timeout-scale=2.0',
         ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'machine_type': 'e2-standard-8', # use 8-core to shorten runtime
-            },
-          ],
-        },
+      },
+      'android-12-x64-fyi-rel': {
+        'args': [
+          '--timeout-scale=2.0',
+        ],
       },
       'android-arm64-proguard-rel': {
         'swarming': {
@@ -944,11 +903,6 @@
           # TODO(crbug.com/1127110): Revisit shards and machine_type if there
           # are n2 machines available in the test pool.
           'shards': 25,
-          'dimension_sets': [
-            {
-              'machine_type': 'e2-standard-8', # use 8-core to shorten runtime
-            },
-          ],
         },
       },
       'android-pie-arm64-rel': {
@@ -963,11 +917,6 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_p.chrome_public_test_apk.filter',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'machine_type': 'e2-standard-8', # use 8-core to shorten runtime
-            },
-          ],
           # See https://crbug.com/1230192, runs of 40-60 minutes at 20 shards.
           'shards': 30,
         },
@@ -989,7 +938,7 @@
           'optional_dimensions': {
             '60': [
               {
-                'caches': 'avd_generic_playstore_android28',
+                'caches': 'avd_generic_playstore_android30',
               }
             ],
           },
@@ -1000,6 +949,31 @@
             },
             {
               'name': 'system_images_android_30_google_apis_playstore_x86',
+              'path': '.emulator_sdk',
+            },
+          ],
+        },
+      },
+      'android-12-x64-fyi-rel': {
+        'args': [
+          '--avd-config=../../tools/android/avd/proto/generic_playstore_android31.textpb',
+        ],
+        'swarming': {
+          # soft affinity so that bots with caches will be picked first
+          'optional_dimensions': {
+            '60': [
+              {
+                'caches': 'avd_generic_playstore_android31',
+              }
+            ],
+          },
+          'named_caches': [
+            {
+              'name': 'avd_generic_playstore_android31',
+              'path': '.android',
+            },
+            {
+              'name': 'system_images_android_31_google_apis_playstore_x64',
               'path': '.emulator_sdk',
             },
           ],

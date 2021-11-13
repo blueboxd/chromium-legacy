@@ -3314,7 +3314,7 @@ void DoNotAttachToOtherWindowTestStep2(
   // Get this new created window and set it to non-attachable.
   Browser* new_browser = test->browser_list->get(2);
   new_browser->window()->GetNativeWindow()->SetProperty(
-      ash::kCanAttachToAnotherWindowKey, false);
+      chromeos::kCanAttachToAnotherWindowKey, false);
 
   // Now drag to target_tab_strip.
   ASSERT_TRUE(

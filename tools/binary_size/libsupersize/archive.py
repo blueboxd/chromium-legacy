@@ -300,7 +300,6 @@ def _ExtractSourcePathsAndNormalizeObjectPaths(raw_symbols,
   if address_source_mapper:
     logging.info('Looking up source paths from dwarfdump')
     for symbol in raw_symbols:
-
       if symbol.section_name != models.SECTION_TEXT:
         continue
       source_path = address_source_mapper.FindSourceForTextAddress(
@@ -663,8 +662,8 @@ def LoadAndPostProcessDeltaSizeInfo(path, file_obj=None):
   return before_size_info, after_size_info
 
 
-def _GetModuleInfoList(minimal_apks_path):
-  module_info_list = []
+def _FindSplitNamesAndSizes(minimal_apks_path):
+  ret = []
   with zipfile.ZipFile(minimal_apks_path) as z:
     for info in z.infolist():
       # E.g.:
@@ -675,15 +674,15 @@ def _GetModuleInfoList(minimal_apks_path):
       # TODO(agrieve): Might be worth measuring a non-en locale as well.
       m = re.match(r'splits/(.*)-master\.apk', info.filename)
       if m:
-        module_info_list.append((m.group(1), info.file_size))
-  return sorted(module_info_list)
+        ret.append((m.group(1), info.file_size))
+  return sorted(ret)
 
 
-def _CollectModuleSizes(minimal_apks_path):
-  sizes_by_module = collections.defaultdict(int)
-  for module_name, file_size in _GetModuleInfoList(minimal_apks_path):
-    sizes_by_module[module_name] += file_size
-  return sizes_by_module
+def _CollectSplitSizes(minimal_apks_path):
+  sizes_by_split = collections.defaultdict(int)
+  for split_name, file_size in _FindSplitNamesAndSizes(minimal_apks_path):
+    sizes_by_split[split_name] += file_size
+  return sizes_by_split
 
 
 def _ExtendSectionRange(section_range_by_name, section_name, delta_size):
@@ -762,8 +761,8 @@ def CreateMetadata(args, linker_name, build_config):
       metadata[models.METADATA_APK_SIZE] = os.path.getsize(args.apk_file)
       metadata[models.METADATA_APK_SPLIT_NAME] = args.split_name
     else:
-      sizes_by_module = _CollectModuleSizes(args.minimal_apks_file)
-      for name, size in sizes_by_module.items():
+      sizes_by_split = _CollectSplitSizes(args.minimal_apks_file)
+      for name, size in sizes_by_split.items():
         key = models.METADATA_APK_SIZE
         if name != 'base':
           key += '-' + name
@@ -1122,35 +1121,6 @@ def _ParsePakSymbols(symbols_by_id, object_paths_by_pak_id):
   return raw_symbols
 
 
-def _ParseApkElfSectionRanges(section_ranges, metadata, apk_elf_result):
-  if metadata:
-    logging.debug('Extracting section sizes from .so within .apk')
-    apk_build_id, apk_section_ranges, elf_overhead_size = apk_elf_result.get()
-    assert apk_build_id == metadata[models.METADATA_ELF_BUILD_ID], (
-        'BuildID from apk_elf_result did not match')
-
-    packed_section_name = None
-    architecture = metadata[models.METADATA_ELF_ARCHITECTURE]
-    # Packing occurs enabled only arm32 & arm64.
-    if architecture == 'arm':
-      packed_section_name = '.rel.dyn'
-    elif architecture == 'arm64':
-      packed_section_name = '.rela.dyn'
-
-    if packed_section_name:
-      unpacked_range = section_ranges.get(packed_section_name)
-      if unpacked_range is None:
-        logging.warning('Packed section not present: %s', packed_section_name)
-      elif unpacked_range != apk_section_ranges.get(packed_section_name):
-        # These ranges are different only when using relocation_packer, which
-        # hasn't been used since switching from gold -> lld.
-        apk_section_ranges['%s (unpacked)' %
-                           packed_section_name] = unpacked_range
-  else:
-    _, apk_section_ranges, elf_overhead_size = apk_elf_result.get()
-  return apk_section_ranges, elf_overhead_size
-
-
 class _ResourcePathDeobfuscator:
 
   def __init__(self, pathmap_path):
@@ -1180,11 +1150,11 @@ class _ResourcePathDeobfuscator:
     if long_path:
       return long_path
     # if processing a .minimal.apks, we are actually just processing the base
-    # module.
+    # split.
     long_path = self._pathmap.get('base/{}'.format(path))
     if long_path:
       # The first 5 chars are 'base/', which we don't need because we are
-      # looking directly inside the base module apk.
+      # looking directly inside the base apk.
       return long_path[5:]
     return path
 
@@ -1543,8 +1513,11 @@ def CreateContainerAndSymbols(knobs=None,
         linker_name=linker_name)
 
   if apk_elf_result:
-    section_ranges, elf_overhead_size = _ParseApkElfSectionRanges(
-        section_ranges, metadata, apk_elf_result)
+    logging.debug('Extracting section sizes from .so within .apk')
+    apk_build_id, section_ranges, elf_overhead_size = apk_elf_result.get()
+    if metadata and models.METADATA_ELF_BUILD_ID in metadata:
+      assert apk_build_id == metadata[models.METADATA_ELF_BUILD_ID], (
+          'BuildID from apk_elf_result did not match')
   elif elf_path:
     # Strip ELF before capturing section information to avoid recording
     # debug sections.
@@ -1952,8 +1925,8 @@ def _DeduceNativeInfo(tentative_output_dir, apk_path, elf_path, map_path,
         map_path += '.gz'
 
   if not ignore_linker_map and not os.path.exists(map_path):
-    # Consider a missing linker map fatal only for the base module. For .so
-    # files in feature modules, allow skipping breakdowns.
+    # Consider a missing linker map fatal only for the base split. For .so
+    # files in feature splits, allow skipping breakdowns.
     on_config_error(
         'Could not find .map(.gz)? file. Ensure you have built with '
         'is_official_build=true and generate_linker_map=true, or use '
@@ -2023,9 +1996,9 @@ def _ProcessContainerArgs(top_args, sub_args, container_name, on_config_error):
       sub_args, apk_prefix)
   linker_name = None
   if opts.analyze_native:
-    is_base_module = sub_args.split_name in (None, 'base')
-    # We don't yet support analyzing .so files outside of base modules.
-    if not is_base_module:
+    is_base_split = sub_args.split_name in (None, 'base')
+    # We don't yet support analyzing .so files outside of base split.
+    if not is_base_split:
       opts.analyze_native = False
     else:
       tool_prefix_finder = path_util.ToolPrefixFinder(
@@ -2148,24 +2121,24 @@ def _IterSubArgs(top_args, on_config_error):
 
     # If needed, extract .apk file to a temp file and process that instead.
     if sub_args.minimal_apks_file:
-      for module_name, _ in _GetModuleInfoList(sub_args.minimal_apks_file):
+      for split_name, _ in _FindSplitNamesAndSizes(sub_args.minimal_apks_file):
         with zip_util.UnzipToTemp(
             sub_args.minimal_apks_file,
-            'splits/{}-master.apk'.format(module_name)) as temp:
-          module_sub_args = copy.copy(sub_args)
-          module_sub_args.apk_file = temp
-          module_sub_args.split_name = module_name
-          module_sub_args.name = '{}/{}.apk'.format(container_name, module_name)
+            'splits/{}-master.apk'.format(split_name)) as temp:
+          split_sub_args = copy.copy(sub_args)
+          split_sub_args.apk_file = temp
+          split_sub_args.split_name = split_name
+          split_sub_args.name = '{}/{}.apk'.format(container_name, split_name)
           # Make on-demand a part of the name so that:
           # * It's obvious from the name which DFMs are on-demand.
           # * Diffs that change an on-demand status show as adds/removes.
           if _IsOnDemand(temp):
-            module_sub_args.name += '?'
-          if module_name != 'base':
+            split_sub_args.name += '?'
+          if split_name != 'base':
             # TODO(crbug.com/1143690): Fix native analysis for split APKs.
-            module_sub_args.map_file = None
-          yield _ProcessContainerArgs(top_args, module_sub_args,
-                                      module_sub_args.name, on_config_error)
+            split_sub_args.map_file = None
+          yield _ProcessContainerArgs(top_args, split_sub_args,
+                                      split_sub_args.name, on_config_error)
     else:
       yield _ProcessContainerArgs(top_args, sub_args, container_name,
                                   on_config_error)

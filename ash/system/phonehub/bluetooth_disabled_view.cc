@@ -11,7 +11,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/button_style.h"
+#include "ash/style/pill_button.h"
 #include "ash/system/phonehub/phone_hub_interstitial_view.h"
 #include "ash/system/phonehub/phone_hub_metrics.h"
 #include "ash/system/phonehub/phone_hub_tray.h"
@@ -70,7 +70,7 @@ phone_hub_metrics::Screen BluetoothDisabledView::GetScreenForMetrics() const {
 void BluetoothDisabledView::LearnMoreButtonPressed() {
   LogInterstitialScreenEvent(InterstitialScreenEvent::kLearnMore);
   NewWindowDelegate::GetInstance()->OpenUrl(
-      GURL(chromeos::phonehub::kPhoneHubLearnMoreLink),
+      GURL(phonehub::kPhoneHubLearnMoreLink),
       /*from_user_interaction=*/true);
 }
 

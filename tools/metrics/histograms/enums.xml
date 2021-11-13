@@ -5700,6 +5700,23 @@ others/histograms.xml -->
   <int value="12" label="(In-Chrome) Food ordering cart, returning user"/>
 </enum>
 
+<enum name="AutofillAssistantUserDataEntryCount">
+  <int value="0" label="Zero"/>
+  <int value="1" label="One"/>
+  <int value="2" label="Two"/>
+  <int value="3" label="Three"/>
+  <int value="4" label="Four"/>
+  <int value="5" label="Five"/>
+</enum>
+
+<enum name="AutofillAssistantUserDataSelectionState">
+  <int value="0" label="No change"/>
+  <int value="1" label="Edited preselected"/>
+  <int value="2" label="Selected a different entry"/>
+  <int value="3" label="Selected a different entry and edited it"/>
+  <int value="4" label="Created new entry"/>
+</enum>
+
 <enum name="AutofillAwGSuggestionAvailability">
   <int value="0" label="No suggestion"/>
   <int value="1" label="Has suggestion, user doesn't select it"/>
@@ -43637,6 +43654,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="WebPAllDataReceivedInitially"/>
 </enum>
 
+<enum name="InDeveloperMode">
+  <summary>A boolean for whether the user is in the developer mode.</summary>
+  <int value="0" label="User is not in the developer mode"/>
+  <int value="1" label="User is in the developer mode"/>
+</enum>
+
 <enum name="IndexedDatabaseMethods">
   <obsolete>
     Deprecated as of July 2018.
@@ -48611,6 +48634,7 @@ from previous Chrome versions.
   <int value="-1969636234" label="OmniboxRefinedFocusState:disabled"/>
   <int value="-1966445414" label="StylusBatteryStatus:disabled"/>
   <int value="-1965587041" label="omnibox-tab-switch-suggestions"/>
+  <int value="-1965232124" label="TabSearchMediaTabs:disabled"/>
   <int value="-1964730371"
       label="AutofillFillMerchantPromoCodeFields:disabled"/>
   <int value="-1964261747" label="WebVrVsyncAlign:disabled"/>
@@ -50618,6 +50642,7 @@ from previous Chrome versions.
   <int value="-496119023" label="WebXR:enabled"/>
   <int value="-495585885" label="enable-spdy-proxy-dev-auth-origin"/>
   <int value="-494722408" label="ContentSuggestionsLargeThumbnail:enabled"/>
+  <int value="-494595710" label="LargeFaviconFromGoogle:disabled"/>
   <int value="-493551777" label="StaleWhileRevalidate2:disabled"/>
   <int value="-492972850" label="SettingsAppNotificationSettings:disabled"/>
   <int value="-492864618" label="NTPForeignSessionsSuggestions:disabled"/>
@@ -52456,6 +52481,7 @@ from previous Chrome versions.
   <int value="910725730" label="WebRtcHWVP9Encoding:disabled"/>
   <int value="911256399" label="GlobalMediaControlsModernUI:enabled"/>
   <int value="912119426" label="InfiniteSessionRestore:disabled"/>
+  <int value="912279548" label="TabSearchMediaTabs:enabled"/>
   <int value="913138924" label="RecurrentInterstitialFeature:disabled"/>
   <int value="913855453" label="VirtualKeyboardFloatingResizable:disabled"/>
   <int value="914708297" label="CCTResizableAllowResizeByUserGesture:enabled"/>
@@ -53339,6 +53365,7 @@ from previous Chrome versions.
   <int value="1585990408" label="AImageReader:disabled"/>
   <int value="1586022426" label="AutofillCreditCardAssist:enabled"/>
   <int value="1586251544" label="VoiceButtonInTopToolbar:disabled"/>
+  <int value="1586476635" label="LargeFaviconFromGoogle:enabled"/>
   <int value="1587521886" label="SSLCommittedInterstitials:enabled"/>
   <int value="1588716465" label="CrostiniUseLxd4:disabled"/>
   <int value="1589341623" label="disable-easy-unlock"/>
@@ -60761,6 +60788,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="NotActivated"/>
   <int value="3" label="PartiallyActivated"/>
   <int value="4" label="Unknown"/>
+</enum>
+
+<enum name="NetworkCellularResetEuiccResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Inhibit failed"/>
+  <int value="2" label="Hermes reset failed"/>
 </enum>
 
 <enum name="NetworkCellularTechnology">
@@ -75712,6 +75745,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="UPLOAD_FILE_NET_ERROR"/>
   <int value="5" label="UPLOAD_FILE_RESPONSE_ERROR"/>
   <int value="6" label="UPLOAD_COMPLETE_RESPONSE_ERROR"/>
+</enum>
+
+<enum name="SBExtensionTelemetrySignalsSignalType">
+  <int value="0" label="AnySignal"/>
+  <int value="1" label="TabsExecuteScript"/>
 </enum>
 
 <enum name="SBFileTypeUpdateResult">

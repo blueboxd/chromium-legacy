@@ -137,11 +137,6 @@ const base::Feature kTabGroupsAutoCreate{"TabGroupsAutoCreate",
 const base::Feature kTabGroupsCollapseFreezing{
     "TabGroupsCollapseFreezing", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the feedback through the tab group editor bubble.
-// https://crbug.com/1067062
-const base::Feature kTabGroupsFeedback{"TabGroupsFeedback",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Directly controls the "new" badge (as opposed to old "master switch"; see
 // https://crbug.com/1169907 for master switch deprecation and
 // https://crbug.com/968587 for the feature itself)
@@ -189,6 +184,9 @@ const char kTabSearchSearchThresholdName[] = "TabSearchSearchThreshold";
 
 const base::FeatureParam<bool> kTabSearchSearchIgnoreLocation{
     &kTabSearchFuzzySearch, "TabSearchSearchIgnoreLocation", false};
+
+const base::Feature kTabSearchMediaTabs{"TabSearchMediaTabs",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::FeatureParam<int> kTabSearchSearchDistance{
     &kTabSearchFuzzySearch, "TabSearchSearchDistance", 200};

@@ -1560,7 +1560,7 @@
   {
     "name": "enable-commerce-price-tracking",
     "owners": [ "chrome-shopping@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 102
   },
   {
     "name": "enable-component-updater-test-request",
@@ -3619,6 +3619,13 @@
     "expiry_milestone": 130
   },
   {
+    "name": "large-favicon-from-google",
+    "owners": [
+      "bttk"
+    ],
+    "expiry_milestone": 105
+  },
+  {
     "name": "launcher-nudge",
     "owners": [ "wcwang", "//ash/app_list/OWNERS" ],
     "expiry_milestone": 104
@@ -5221,6 +5228,11 @@
     "name": "tab-search-fuzzy-search",
     "owners": [ "yuhengh", "chrome-cros@google.com" ],
     "expiry_milestone": 101
+  },
+  {
+    "name": "tab-search-media-tabs",
+    "owners": ["elainechien", "romanarora"],
+    "expiry_milestone": 110
   },
   {
     "name": "tabs-bulkactions-ios",

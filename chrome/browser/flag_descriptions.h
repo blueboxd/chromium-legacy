@@ -819,6 +819,10 @@ extern const char kHeavyAdPrivacyMitigationsDescription[];
 extern const char kHeavyAdInterventionName[];
 extern const char kHeavyAdInterventionDescription[];
 
+extern const char kTabSearchMediaTabsId[];
+extern const char kTabSearchMediaTabsName[];
+extern const char kTabSearchMediaTabsDescription[];
+
 extern const char kTabSwitcherOnReturnName[];
 extern const char kTabSwitcherOnReturnDescription[];
 
@@ -893,6 +897,9 @@ extern const char kJourneysDescription[];
 
 extern const char kJourneysOmniboxActionName[];
 extern const char kJourneysOmniboxActionDescription[];
+
+extern const char kLargeFaviconFromGoogleName[];
+extern const char kLargeFaviconFromGoogleDescription[];
 
 extern const char kLensCameraAssistedSearchName[];
 extern const char kLensCameraAssistedSearchDescription[];

@@ -87,8 +87,6 @@ extern const base::Feature kTabGroupsAutoCreate;
 
 extern const base::Feature kTabGroupsCollapseFreezing;
 
-extern const base::Feature kTabGroupsFeedback;
-
 extern const base::Feature kTabGroupsNewBadgePromo;
 
 extern const base::Feature kTabGroupsSave;
@@ -136,6 +134,8 @@ extern const char kTabSearchSearchThresholdName[];
 // Setting this to true will ignore the distance parameter when finding matches.
 // This means that it will not matter where in the string the pattern occurs.
 extern const base::FeatureParam<bool> kTabSearchSearchIgnoreLocation;
+
+extern const base::Feature kTabSearchMediaTabs;
 
 // Determines how close the match must be to the beginning of the string. Eg a
 // distance of 100 and threshold of 0.8 would require a perfect match to be

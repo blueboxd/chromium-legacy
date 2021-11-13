@@ -124,9 +124,24 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"rsuHardwareIdText", IDS_SHIMLESS_RMA_RSU_HWID},
       {"rsuCodeLabelText", IDS_SHIMLESS_RMA_RSU_CODE_LABEL},
       {"rsuCodePlaceHolderText", IDS_SHIMLESS_RMA_RSU_CODE_PLACEHOLDER},
+      // Manual WP disable complete
+      {"wpDisableCompletePageTitleText",
+       IDS_SHIMLESS_RMA_WP_DISABLE_COMPLETE_PAGE_TITLE},
+      {"wpDisableSkippedText", IDS_SHIMLESS_RMA_WP_DISABLE_SKIPPED_MESSAGE},
+      {"wpDisableReassembleNowText",
+       IDS_SHIMLESS_RMA_WP_DISABLE_REASSEMBLE_NOW_MESSAGE},
+      {"wpDisableLeaveDisassembledText",
+       IDS_SHIMLESS_RMA_WP_DISABLE_LEAVE_DISASSEMBLED_MESSAGE},
       // Check calibration page
       {"checkCalibrationTitleText",
        IDS_SHIMLESS_RMA_CHECK_CALIBRATION_PAGE_TITLE},
+      // Setup calibration page
+      {"setupCalibrationTitleText",
+       IDS_SHIMLESS_RMA_SETUP_CALIBRATION_PAGE_TITLE},
+      {"calibrateBaseInstructionsText",
+       IDS_SHIMLESS_RMA_BASE_CALIBRATION_INSTRUCTIONS},
+      {"calibrateLidInstructionsText",
+       IDS_SHIMLESS_RMA_LID_CALIBRATION_INSTRUCTIONS},
       // Finalize device  page
       {"finalizePageTitleText", IDS_SHIMLESS_RMA_FINALIZE_PAGE_TITLE},
       {"finalizePageProgressText", IDS_SHIMLESS_RMA_FINALIZE_PROGRESS},
@@ -135,6 +150,28 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
        IDS_SHIMLESS_RMA_FINALIZE_FAILED_BLOCKING},
       {"finalizePageFailedNonBlockingText",
        IDS_SHIMLESS_RMA_FINALIZE_FAILED_NON_BLOCKING},
+      // Run calibration page
+      {"runCalibrationTitleText", IDS_SHIMLESS_RMA_RUN_CALIBRATION_PAGE_TITLE},
+      {"runCalibrationCompleteText", IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPLETE},
+      {"runCalibrationStartingText", IDS_SHIMLESS_RMA_RUN_CALIBRATION_STARTING},
+      {"runCalibrationComponentWaitingText",
+       IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPONENT_WAITING},
+      {"runCalibrationComponentProgressText",
+       IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPONENT_PROGRESS},
+      {"runCalibrationComponentCompleteText",
+       IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPONENT_COMPLETE},
+      {"runCalibrationComponentFailedText",
+       IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPONENT_FAILED},
+      {"runCalibrationComponentSkippedText",
+       IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPONENT_SKIPPED},
+      // Device provisioning page
+      {"provisioningPageTitleText", IDS_SHIMLESS_RMA_PROVISIONING_TITLE},
+      {"provisioningPageProgressText", IDS_SHIMLESS_RMA_PROVISIONING_PROGRESS},
+      {"provisioningPageCompleteText", IDS_SHIMLESS_RMA_PROVISIONING_COMPLETE},
+      {"provisioningPageFailedBlockingText",
+       IDS_SHIMLESS_RMA_PROVISIONING_FAILED_BLOCKING},
+      {"provisioningPageFailedNonBlockingText",
+       IDS_SHIMLESS_RMA_PROVISIONING_FAILED_NON_BLOCKING},
       // Repair complete page
       {"repairCompletedTitleText", IDS_SHIMLESS_RMA_REPAIR_COMPLETED},
       // Manual disable wp page
@@ -142,6 +179,16 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
        IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_TITLE},
       {"manuallyDisableWpInstructionsText",
        IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_INSTRUCTIONS},
+      // Restock mainboard page
+      {"restockTitleText", IDS_SHIMLESS_RMA_RESTOCK_PAGE_TITLE},
+      {"restockInstructionsText", IDS_SHIMLESS_RMA_RESTOCK_INSTRUCTIONS},
+      {"restockShutdownButtonText", IDS_SHIMLESS_RMA_RESTOCK_SHUTDOWN_BUTTON},
+      // Manual enable wp page
+      {"manuallyEnableWpTitleText", IDS_SHIMLESS_RMA_MANUALLY_ENABLE_WP_TITLE},
+      {"manuallyEnableWpInstructionsText",
+       IDS_SHIMLESS_RMA_MANUALLY_ENABLE_WP_INSTRUCTIONS},
+      {"manuallyEnabledWpMessageText",
+       IDS_SHIMLESS_RMA_MANUALLY_ENABLED_WP_MESSAGE},
   };
 
   html_source->AddLocalizedStrings(kLocalizedStrings);

@@ -39,6 +39,7 @@
 #include "components/services/storage/public/mojom/storage_service.mojom.h"
 #include "components/services/storage/storage_service_impl.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "content/browser/aggregation_service/aggregation_service_impl.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
@@ -831,8 +832,6 @@ storage::QuotaClientTypes StoragePartitionImpl::GenerateQuotaClientTypes(
   }
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_WEBSQL)
     quota_client_types.insert(storage::QuotaClientType::kDatabase);
-  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_APPCACHE)
-    quota_client_types.insert(storage::QuotaClientType::kAppcache);
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_INDEXEDDB)
     quota_client_types.insert(storage::QuotaClientType::kIndexedDatabase);
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS)
@@ -1340,6 +1339,12 @@ void StoragePartitionImpl::Initialize(
 
   font_access_manager_ = FontAccessManagerImpl::Create();
   compute_pressure_manager_ = ComputePressureManager::Create();
+
+  if (base::FeatureList::IsEnabled(
+          features::kPrivacySandboxAggregationService)) {
+    aggregation_service_ =
+        std::make_unique<AggregationServiceImpl>(is_in_memory(), path, this);
+  }
 }
 
 void StoragePartitionImpl::OnStorageServiceDisconnected() {
@@ -1642,6 +1647,11 @@ ContentIndexContextImpl* StoragePartitionImpl::GetContentIndexContext() {
 NativeIOContext* StoragePartitionImpl::GetNativeIOContext() {
   DCHECK(initialized_);
   return native_io_context_.get();
+}
+
+AggregationServiceImpl* StoragePartitionImpl::GetAggregationService() {
+  DCHECK(initialized_);
+  return aggregation_service_.get();
 }
 
 leveldb_proto::ProtoDatabaseProvider*
@@ -2373,7 +2383,6 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
 
   if (remove_mask_ & REMOVE_DATA_MASK_INDEXEDDB ||
       remove_mask_ & REMOVE_DATA_MASK_WEBSQL ||
-      remove_mask_ & REMOVE_DATA_MASK_APPCACHE ||
       remove_mask_ & REMOVE_DATA_MASK_FILE_SYSTEMS ||
       remove_mask_ & REMOVE_DATA_MASK_SERVICE_WORKERS ||
       remove_mask_ & REMOVE_DATA_MASK_CACHE_STORAGE) {

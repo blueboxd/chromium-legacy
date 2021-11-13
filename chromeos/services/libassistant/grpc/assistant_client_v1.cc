@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
-#include "chromeos/assistant/internal/buildflags.h"
 #include "chromeos/assistant/internal/grpc_transport/request_utils.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/proto/shared/proto/conversation.pb.h"
@@ -37,16 +36,9 @@
 #include "libassistant/shared/internal_api/fuchsia_api_helper.h"
 #include "libassistant/shared/internal_api/speaker_id_enrollment.h"
 #include "libassistant/shared/internal_api/voiceless_response.h"
+#include "libassistant/shared/public/alarm_timer_types.h"
 #include "libassistant/shared/public/device_state_listener.h"
 #include "libassistant/shared/public/media_manager.h"
-
-#if BUILDFLAG(BUILD_LIBASSISTANT_146S)
-#include "libassistant/shared/internal_api/alarm_timer_types.h"
-#endif  // BUILD_LIBASSISTANT_146S
-
-#if BUILDFLAG(BUILD_LIBASSISTANT_152S)
-#include "libassistant/shared/public/alarm_timer_types.h"
-#endif  // BUILD_LIBASSISTANT_152S
 
 namespace chromeos {
 namespace libassistant {
@@ -546,12 +538,10 @@ void AssistantClientV1::GetTimers(
   std::move(on_done).Run(std::move(timers));
 }
 
-void AssistantClientV1::RegisterAlarmTimerEventObserver(
-    base::WeakPtr<GrpcServicesObserver<OnAlarmTimerEventRequest>> observer) {
-  // TODO(b/189973553): Change this to observer list so that we can add more
-  // observers. It will be done in the next cl after changing the WeakPtr to
-  // pointer of the observer.
-  timer_observer_ = observer;
+void AssistantClientV1::AddAlarmTimerEventObserver(
+    GrpcServicesObserver<::assistant::api::OnAlarmTimerEventRequest>*
+        observer) {
+  timer_event_observer_list_.AddObserver(observer);
 
   // We always want to know when a timer has started ringing.
   alarm_timer_manager()->RegisterRingingStateListener(
@@ -587,9 +577,14 @@ void AssistantClientV1::GetAndNotifyTimerStatus() {
   GetTimers(base::BindOnce(
       [](const base::WeakPtr<AssistantClientV1>& self,
          const std::vector<assistant::AssistantTimer>& timers) {
-        if (self && self->timer_observer_) {
-          self->timer_observer_->OnGrpcMessage(
-              CreateOnAlarmTimerEventRequestProtoForV1(timers));
+        // Observers outlive `this`. Observers are added when
+        // `OnAssistantClientRunning()`, and destroyed when
+        // `OnDestroyingAssistantClient()`.
+        if (self) {
+          for (auto& observer : self->timer_event_observer_list_) {
+            observer.OnGrpcMessage(
+                CreateOnAlarmTimerEventRequestProtoForV1(timers));
+          }
         }
       },
       weak_factory_.GetWeakPtr()));

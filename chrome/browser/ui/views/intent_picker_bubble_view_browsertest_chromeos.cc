@@ -7,6 +7,10 @@
 #include <memory>
 #include <vector>
 
+#include "ash/components/arc/test/arc_util_test_support.h"
+#include "ash/components/arc/test/connection_holder_util.h"
+#include "ash/components/arc/test/fake_app_instance.h"
+#include "ash/components/arc/test/fake_intent_helper_instance.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -31,10 +35,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/session/arc_service_manager.h"
-#include "components/arc/test/arc_util_test_support.h"
-#include "components/arc/test/connection_holder_util.h"
-#include "components/arc/test/fake_app_instance.h"
-#include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/services/app_service/public/cpp/icon_loader.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_test_util.h"
@@ -81,20 +81,36 @@ class FakeIconLoader : public apps::IconLoader {
   ~FakeIconLoader() override = default;
 
   std::unique_ptr<apps::IconLoader::Releaser> LoadIconFromIconKey(
-      apps::mojom::AppType app_type,
+      apps::AppType app_type,
       const std::string& app_id,
-      apps::mojom::IconKeyPtr icon_key,
-      apps::mojom::IconType icon_type,
+      const apps::IconKey& icon_key,
+      apps::IconType icon_type,
       int32_t size_hint_in_dip,
       bool allow_placeholder_icon,
-      apps::mojom::Publisher::LoadIconCallback callback) override {
-    auto iv = apps::mojom::IconValue::New();
+      apps::LoadIconCallback callback) override {
+    auto iv = std::make_unique<apps::IconValue>();
     iv->icon_type = icon_type;
     iv->uncompressed = gfx::ImageSkia(gfx::ImageSkiaRep(gfx::Size(1, 1), 1.0f));
     iv->is_placeholder_icon = false;
 
     std::move(callback).Run(std::move(iv));
     return nullptr;
+  }
+
+  std::unique_ptr<apps::IconLoader::Releaser> LoadIconFromIconKey(
+      apps::mojom::AppType app_type,
+      const std::string& app_id,
+      apps::mojom::IconKeyPtr mojom_icon_key,
+      apps::mojom::IconType icon_type,
+      int32_t size_hint_in_dip,
+      bool allow_placeholder_icon,
+      apps::mojom::Publisher::LoadIconCallback callback) override {
+    auto icon_key = apps::ConvertMojomIconKeyToIconKey(mojom_icon_key);
+    return LoadIconFromIconKey(
+        apps::ConvertMojomAppTypToAppType(app_type), app_id, *icon_key,
+        apps::ConvertMojomIconTypeToIconType(icon_type), size_hint_in_dip,
+        allow_placeholder_icon,
+        apps::IconValueToMojomIconValueCallback(std::move(callback)));
   }
 };
 }  // namespace

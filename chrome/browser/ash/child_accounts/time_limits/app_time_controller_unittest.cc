@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_controller.h"
 
+#include "ash/components/arc/test/fake_app_instance.h"
 #include "ash/components/settings/timezone_settings.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -29,7 +30,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "components/arc/mojom/app.mojom.h"
-#include "components/arc/test/fake_app_instance.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/services/app_service/public/cpp/icon_loader.h"
@@ -84,16 +84,16 @@ class AppTimeControllerTest : public testing::Test {
     ~FakeIconLoader() override = default;
 
     std::unique_ptr<apps::IconLoader::Releaser> LoadIconFromIconKey(
-        apps::mojom::AppType app_type,
+        apps::AppType app_type,
         const std::string& app_id,
-        apps::mojom::IconKeyPtr icon_key,
-        apps::mojom::IconType icon_type,
+        const apps::IconKey& icon_key,
+        apps::IconType icon_type,
         int32_t size_hint_in_dip,
         bool allow_placeholder_icon,
-        apps::mojom::Publisher::LoadIconCallback callback) override {
-      auto expected_icon_type = apps::mojom::IconType::kStandard;
+        apps::LoadIconCallback callback) override {
+      auto expected_icon_type = apps::IconType::kStandard;
       EXPECT_EQ(icon_type, expected_icon_type);
-      auto iv = apps::mojom::IconValue::New();
+      auto iv = std::make_unique<apps::IconValue>();
       iv->icon_type = icon_type;
       iv->uncompressed =
           gfx::ImageSkia(gfx::ImageSkiaRep(gfx::Size(1, 1), 1.0f));
@@ -101,6 +101,22 @@ class AppTimeControllerTest : public testing::Test {
 
       std::move(callback).Run(std::move(iv));
       return nullptr;
+    }
+
+    std::unique_ptr<apps::IconLoader::Releaser> LoadIconFromIconKey(
+        apps::mojom::AppType app_type,
+        const std::string& app_id,
+        apps::mojom::IconKeyPtr mojom_icon_key,
+        apps::mojom::IconType icon_type,
+        int32_t size_hint_in_dip,
+        bool allow_placeholder_icon,
+        apps::mojom::Publisher::LoadIconCallback callback) override {
+      auto icon_key = apps::ConvertMojomIconKeyToIconKey(mojom_icon_key);
+      return LoadIconFromIconKey(
+          apps::ConvertMojomAppTypToAppType(app_type), app_id, *icon_key,
+          apps::ConvertMojomIconTypeToIconType(icon_type), size_hint_in_dip,
+          allow_placeholder_icon,
+          apps::IconValueToMojomIconValueCallback(std::move(callback)));
     }
   };
 

@@ -29,6 +29,35 @@ using ::chromeos::ime::TextSuggestionType;
 }  // namespace
 
 const char kEmojiData[] = "happy,😀;😃;😄";
+const char kUsEnglishEngineId[] = "xkb:us::eng";
+const char kSpainSpanishEngineId[] = "xkb:es::spa";
+
+class FakeSuggesterSwitch : public AssistiveSuggesterSwitch {
+ public:
+  explicit FakeSuggesterSwitch(EnabledSuggestions enabled_suggestions)
+      : enabled_suggestions_(enabled_suggestions) {}
+  ~FakeSuggesterSwitch() override = default;
+
+  // AssistiveSuggesterDelegate overrides
+  bool IsEmojiSuggestionAllowed() override {
+    return enabled_suggestions_.emoji_suggestions;
+  }
+
+  bool IsMultiWordSuggestionAllowed() override {
+    return enabled_suggestions_.multi_word_suggestions;
+  }
+
+  bool IsPersonalInfoSuggestionAllowed() override {
+    return enabled_suggestions_.personal_info_suggestions;
+  }
+
+  void GetEnabledSuggestions(GetEnabledSuggestionsCallback callback) override {
+    std::move(callback).Run(enabled_suggestions_);
+  }
+
+ private:
+  EnabledSuggestions enabled_suggestions_;
+};
 
 class AssistiveSuggesterTest : public testing::Test {
  protected:
@@ -232,32 +261,132 @@ TEST_F(AssistiveSuggesterTest, MultiWordEnabledWhenFeatureFlagAndDepsEnabled) {
   EXPECT_TRUE(assistive_suggester_->IsAssistiveFeatureEnabled());
 }
 
-class FakeSuggesterSwitch : public AssistiveSuggesterSwitch {
- public:
-  explicit FakeSuggesterSwitch(EnabledSuggestions enabled_suggestions)
-      : enabled_suggestions_(enabled_suggestions) {}
-  ~FakeSuggesterSwitch() override = default;
+TEST_F(AssistiveSuggesterTest,
+       QueriesAssistiveSuggesterSwitchWhenDeterminingIfFeatureAllowed) {
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      engine_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          FakeSuggesterSwitch::EnabledSuggestions{
+              .emoji_suggestions = true,
+              .multi_word_suggestions = true,
+              .personal_info_suggestions = true}));
 
-  // AssistiveSuggesterDelegate overrides
-  bool IsEmojiSuggestionAllowed() override {
-    return enabled_suggestions_.emoji_suggestions;
-  }
+  EXPECT_TRUE(assistive_suggester_->IsAssistiveFeatureAllowed(
+      AssistiveSuggester::AssistiveFeature::kEmojiSuggestion));
+  EXPECT_TRUE(assistive_suggester_->IsAssistiveFeatureAllowed(
+      AssistiveSuggester::AssistiveFeature::kMultiWordSuggestion));
+  EXPECT_TRUE(assistive_suggester_->IsAssistiveFeatureAllowed(
+      AssistiveSuggester::AssistiveFeature::kPersonalInfoSuggestion));
+}
 
-  bool IsMultiWordSuggestionAllowed() override {
-    return enabled_suggestions_.multi_word_suggestions;
-  }
+TEST_F(AssistiveSuggesterTest, RecordsMultiWordTextInputAsNotAllowed) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kAssistMultiWord},
+      /*disabled_features=*/{});
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      engine_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          FakeSuggesterSwitch::EnabledSuggestions{}));
 
-  bool IsPersonalInfoSuggestionAllowed() override {
-    return enabled_suggestions_.personal_info_suggestions;
-  }
+  assistive_suggester_->RecordTextInputStateMetrics(kUsEnglishEngineId);
 
-  void GetEnabledSuggestions(GetEnabledSuggestionsCallback callback) override {
-    std::move(callback).Run(enabled_suggestions_);
-  }
+  histogram_tester_.ExpectTotalCount(
+      "InputMethod.Assistive.MultiWord.InputState", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "InputMethod.Assistive.MultiWord.InputState",
+      AssistiveTextInputState::kFeatureBlockedByDenylist, 1);
+}
 
- private:
-  EnabledSuggestions enabled_suggestions_;
-};
+TEST_F(AssistiveSuggesterTest, RecordsMultiWordTextInputAsDisabledByUser) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kAssistMultiWord},
+      /*disabled_features=*/{});
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      engine_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          FakeSuggesterSwitch::EnabledSuggestions{.multi_word_suggestions =
+                                                      true}));
+  profile_->GetPrefs()->SetBoolean(prefs::kAssistPredictiveWritingEnabled,
+                                   false);
+
+  assistive_suggester_->RecordTextInputStateMetrics(kUsEnglishEngineId);
+
+  histogram_tester_.ExpectTotalCount(
+      "InputMethod.Assistive.MultiWord.InputState", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "InputMethod.Assistive.MultiWord.InputState",
+      AssistiveTextInputState::kFeatureBlockedByPreference, 1);
+}
+
+TEST_F(AssistiveSuggesterTest, RecordsMultiWordTextInputAsDisabledByLacros) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kAssistMultiWord,
+                            features::kLacrosSupport},
+      /*disabled_features=*/{});
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      engine_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          FakeSuggesterSwitch::EnabledSuggestions{.multi_word_suggestions =
+                                                      true}));
+  profile_->GetPrefs()->SetBoolean(prefs::kAssistPredictiveWritingEnabled,
+                                   true);
+
+  assistive_suggester_->RecordTextInputStateMetrics(kUsEnglishEngineId);
+
+  histogram_tester_.ExpectTotalCount(
+      "InputMethod.Assistive.MultiWord.InputState", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "InputMethod.Assistive.MultiWord.InputState",
+      AssistiveTextInputState::kUnsupportedClient, 1);
+}
+
+TEST_F(AssistiveSuggesterTest,
+       RecordMultiWordTextInputAsDisabledByUnsupportedLang) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kAssistMultiWord},
+      /*disabled_features=*/{});
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      engine_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          FakeSuggesterSwitch::EnabledSuggestions{.multi_word_suggestions =
+                                                      true}));
+  profile_->GetPrefs()->SetBoolean(prefs::kAssistPredictiveWritingEnabled,
+                                   true);
+
+  assistive_suggester_->RecordTextInputStateMetrics(kSpainSpanishEngineId);
+
+  histogram_tester_.ExpectTotalCount(
+      "InputMethod.Assistive.MultiWord.InputState", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "InputMethod.Assistive.MultiWord.InputState",
+      AssistiveTextInputState::kUnsupportedLanguage, 1);
+}
+
+TEST_F(AssistiveSuggesterTest, RecordsMultiWordTextInputAsEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kAssistMultiWord},
+      /*disabled_features=*/{});
+  assistive_suggester_ = std::make_unique<AssistiveSuggester>(
+      engine_.get(), profile_.get(),
+      std::make_unique<FakeSuggesterSwitch>(
+          FakeSuggesterSwitch::EnabledSuggestions{.multi_word_suggestions =
+                                                      true}));
+  profile_->GetPrefs()->SetBoolean(prefs::kAssistPredictiveWritingEnabled,
+                                   true);
+
+  assistive_suggester_->RecordTextInputStateMetrics(kUsEnglishEngineId);
+
+  histogram_tester_.ExpectTotalCount(
+      "InputMethod.Assistive.MultiWord.InputState", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "InputMethod.Assistive.MultiWord.InputState",
+      AssistiveTextInputState::kFeatureEnabled, 1);
+}
 
 class AssistiveSuggesterMultiWordTest : public testing::Test {
  protected:

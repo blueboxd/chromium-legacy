@@ -1310,6 +1310,8 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
                                 false);
   registry->RegisterBooleanPref(prefs::kCorsNonWildcardRequestHeadersSupport,
                                 true);
+  registry->RegisterDictionaryPref(
+      policy::policy_prefs::kCopyPreventionSettings);
 }
 
 // static
@@ -5789,7 +5791,9 @@ std::string ChromeContentBrowserClient::GetReducedUserAgent() {
 }
 
 blink::UserAgentMetadata ChromeContentBrowserClient::GetUserAgentMetadata() {
-  return embedder_support::GetUserAgentMetadata();
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return embedder_support::GetUserAgentMetadata(
+      g_browser_process->local_state());
 }
 
 absl::optional<gfx::ImageSkia> ChromeContentBrowserClient::GetProductLogo() {

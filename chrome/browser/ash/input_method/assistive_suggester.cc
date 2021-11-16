@@ -117,6 +117,51 @@ void RecordSuggestionsMatch(const std::vector<TextSuggestion>& suggestions) {
   }
 }
 
+bool IsUsEnglishEngineId(const std::string& engine_id) {
+  return engine_id == "xkb:us::eng";
+}
+
+bool IsMultiWordPrefEnabled(PrefService* pref_service) {
+  return pref_service->GetBoolean(prefs::kAssistPredictiveWritingEnabled);
+}
+
+bool IsLacrosEnabled() {
+  return base::FeatureList::IsEnabled(chromeos::features::kLacrosSupport);
+}
+
+void RecordTextInputStateMetric(AssistiveTextInputState state) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.MultiWord.InputState",
+                                state);
+}
+
+void RecordMultiWordTextInputState(PrefService* pref_service,
+                                   AssistiveSuggesterSwitch* suggester_switch,
+                                   const std::string& engine_id) {
+  if (!suggester_switch->IsMultiWordSuggestionAllowed()) {
+    RecordTextInputStateMetric(
+        AssistiveTextInputState::kFeatureBlockedByDenylist);
+    return;
+  }
+
+  if (!IsMultiWordPrefEnabled(pref_service)) {
+    RecordTextInputStateMetric(
+        AssistiveTextInputState::kFeatureBlockedByPreference);
+    return;
+  }
+
+  if (IsLacrosEnabled()) {
+    RecordTextInputStateMetric(AssistiveTextInputState::kUnsupportedClient);
+    return;
+  }
+
+  if (!IsUsEnglishEngineId(engine_id)) {
+    RecordTextInputStateMetric(AssistiveTextInputState::kUnsupportedLanguage);
+    return;
+  }
+
+  RecordTextInputStateMetric(AssistiveTextInputState::kFeatureEnabled);
+}
+
 }  // namespace
 
 AssistiveSuggester::AssistiveSuggester(
@@ -141,6 +186,20 @@ AssistiveSuggester::~AssistiveSuggester() = default;
 bool AssistiveSuggester::IsAssistiveFeatureEnabled() {
   return IsAssistPersonalInfoEnabled() || IsEmojiSuggestAdditionEnabled() ||
          IsMultiWordSuggestEnabled() || IsEnhancedEmojiSuggestEnabled();
+}
+
+bool AssistiveSuggester::IsAssistiveFeatureAllowed(
+    const AssistiveFeature& feature) {
+  switch (feature) {
+    case AssistiveFeature::kEmojiSuggestion:
+      return suggester_switch_->IsEmojiSuggestionAllowed();
+    case AssistiveFeature::kMultiWordSuggestion:
+      return suggester_switch_->IsMultiWordSuggestionAllowed();
+    case AssistiveFeature::kPersonalInfoSuggestion:
+      return suggester_switch_->IsPersonalInfoSuggestionAllowed();
+    default:
+      return false;
+  }
 }
 
 bool AssistiveSuggester::IsAssistPersonalInfoEnabled() {
@@ -312,6 +371,14 @@ void AssistiveSuggester::ProcessExternalSuggestions(
     current_suggester_ = &multi_word_suggester_;
     current_suggester_->OnExternalSuggestionsUpdated(suggestions);
     RecordAssistiveCoverage(current_suggester_->GetProposeActionType());
+  }
+}
+
+void AssistiveSuggester::RecordTextInputStateMetrics(
+    const std::string& engine_id) {
+  if (features::IsAssistiveMultiWordEnabled()) {
+    RecordMultiWordTextInputState(profile_->GetPrefs(), suggester_switch_.get(),
+                                  engine_id);
   }
 }
 

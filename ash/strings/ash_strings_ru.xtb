@@ -119,6 +119,7 @@
 <translation id="1743570585616704562">Не распознано</translation>
 <translation id="1746730358044914197">Способы ввода настраиваются администратором</translation>
 <translation id="1747827819627189109">Экранная клавиатура включена</translation>
+<translation id="1750088060796401187">Достигнуто максимальное количество рабочих столов (<ph name="MAX_DESK_LIMIT" />). Удалите рабочий стол, чтобы открыть новый.</translation>
 <translation id="1761222317188459878">Изменить настройки сетевого подключения. <ph name="STATE_TEXT" />.</translation>
 <translation id="1768366657309696705">Функция сочетания клавиш <ph name="LAUNCHER_KEY_NAME" /> + . (точка) изменилась. Чтобы использовать клавишу Insert, нажмите <ph name="LAUNCHER_KEY_NAME" /> + Shift + Backspace.</translation>
 <translation id="1771761307086386028">Вправо</translation>
@@ -352,6 +353,15 @@
 <translation id="3509391053705095206">Не удается найти ваш телефон. Убедитесь, что на нем включена функция Bluetooth.</translation>
 <translation id="3510164367642747937">Выделять указатель мыши</translation>
 <translation id="3513798432020909783">Администратор аккаунта: <ph name="MANAGER_EMAIL" /></translation>
+<translation id="3518604429872942239">Строка состояния, время <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="MIC" />,
+        <ph name="CAMERA" />,
+        <ph name="MANAGED" />
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="352245152354538528">{0,plural, =1{Перезагрузите устройство в течение 1 минуты}one{Перезагрузите устройство в течение # минуты}few{Перезагрузите устройство в течение # минут}many{Перезагрузите устройство в течение # минут}other{Перезагрузите устройство в течение # минуты}}</translation>
 <translation id="353086728817903341">Подключенных устройств: <ph name="NUM_DEVICES" /></translation>
 <translation id="3552189655002856821">Нет подключения к Wi-Fi</translation>

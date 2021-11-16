@@ -69,6 +69,24 @@ absl::optional<IconKey> IconLoader::GetIconKey(const std::string& app_id) {
 }
 
 std::unique_ptr<IconLoader::Releaser> IconLoader::LoadIcon(
+    AppType app_type,
+    const std::string& app_id,
+    const IconType& icon_type,
+    int32_t size_hint_in_dip,
+    bool allow_placeholder_icon,
+    apps::LoadIconCallback callback) {
+  auto icon_key = GetIconKey(app_id);
+  if (!icon_key.has_value()) {
+    std::move(callback).Run(std::make_unique<IconValue>());
+    return nullptr;
+  }
+
+  return LoadIconFromIconKey(app_type, app_id, icon_key.value(), icon_type,
+                             size_hint_in_dip, allow_placeholder_icon,
+                             std::move(callback));
+}
+
+std::unique_ptr<IconLoader::Releaser> IconLoader::LoadIcon(
     apps::mojom::AppType app_type,
     const std::string& app_id,
     apps::mojom::IconType icon_type,

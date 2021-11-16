@@ -119,6 +119,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="1743570585616704562">Ei tuvastatud</translation>
 <translation id="1746730358044914197">Sisestusmeetodid seadistab teie administraator.</translation>
 <translation id="1747827819627189109">Ekraanil kuvatav klaviatuur on lubatud</translation>
+<translation id="1750088060796401187">Lubatud on ainult <ph name="MAX_DESK_LIMIT" /> töölauda. Uue töölaua avamiseks eemaldage mõni olemasolev töölaud.</translation>
 <translation id="1761222317188459878">Lülitab võrguühenduse sisse või välja. <ph name="STATE_TEXT" /></translation>
 <translation id="1768366657309696705">Klaviatuuri otseteed <ph name="LAUNCHER_KEY_NAME" /> + punktiklahv on muudetud. Lisamisklahvi kasutamiseks vajutage klahvi <ph name="LAUNCHER_KEY_NAME" /> + tõstuklahvi + tagasilükkeklahvi.</translation>
 <translation id="1771761307086386028">Keri paremale</translation>
@@ -352,6 +353,15 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="3509391053705095206">Teie telefoni ei õnnestu leida. Veenduge, et telefonis oleks Bluetooth sisse lülitatud.</translation>
 <translation id="3510164367642747937">Hiirekursori esiletõstmine</translation>
 <translation id="3513798432020909783">Kontohaldur: <ph name="MANAGER_EMAIL" /></translation>
+<translation id="3518604429872942239">Olekusalv, aeg <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="MIC" />,
+        <ph name="CAMERA" />,
+        <ph name="MANAGED" />
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="352245152354538528">{0,plural, =1{Värskendage seadet 1 minuti jooksul}other{Värskendage seadet # minuti jooksul}}</translation>
 <translation id="353086728817903341">Ühendatud <ph name="NUM_DEVICES" /> seadmega</translation>
 <translation id="3552189655002856821">WiFi on välja lülitatud</translation>

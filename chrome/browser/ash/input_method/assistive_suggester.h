@@ -28,6 +28,12 @@ namespace input_method {
 // dismiss the suggestion according to the user action.
 class AssistiveSuggester : public SuggestionsSource {
  public:
+  enum AssistiveFeature {
+    kEmojiSuggestion,
+    kMultiWordSuggestion,
+    kPersonalInfoSuggestion,
+  };
+
   AssistiveSuggester(
       InputMethodEngine* engine,
       Profile* profile,
@@ -37,6 +43,10 @@ class AssistiveSuggester : public SuggestionsSource {
 
   bool IsAssistiveFeatureEnabled();
 
+  // Is the given assisitive feature blocked from being shown to a user given
+  // the current browser context.
+  bool IsAssistiveFeatureAllowed(const AssistiveFeature& feature);
+
   // SuggestionsSource overrides
   std::vector<ime::TextSuggestion> GetSuggestions() override;
 
@@ -45,6 +55,10 @@ class AssistiveSuggester : public SuggestionsSource {
 
   // Called when a text field loses focus, and suggester stops working.
   void OnBlur();
+
+  // This records any text input state metrics for each relevant assistive
+  // feature. It is called once when a text field gains focus.
+  void RecordTextInputStateMetrics(const std::string& engine_id);
 
   // Checks the text before cursor, emits metric if any assistive prefix is
   // matched.

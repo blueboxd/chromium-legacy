@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/input_method/assistive_suggester_client_filter.h"
+#include "chrome/browser/ash/input_method/assistive_suggester_switch.h"
 #include "chrome/browser/ash/input_method/autocorrect_manager.h"
 #include "chrome/browser/ash/input_method/grammar_service_client.h"
 #include "chrome/browser/ash/input_method/input_method_settings.h"
@@ -447,11 +448,27 @@ void OnError(base::Time start) {
   }
 }
 
+InputFieldContext CreateInputFieldContext(AssistiveSuggester* suggester) {
+  return InputFieldContext{
+      .lacros_enabled = IsLacrosEnabled(),
+      .multiword_enabled = features::IsAssistiveMultiWordEnabled(),
+      .multiword_allowed =
+          suggester
+              ? suggester->IsAssistiveFeatureAllowed(
+                    AssistiveSuggester::AssistiveFeature::kMultiWordSuggestion)
+              : false,
+  };
+}
+
 }  // namespace
 
 NativeInputMethodEngine::NativeInputMethodEngine() = default;
 
 NativeInputMethodEngine::~NativeInputMethodEngine() = default;
+
+NativeInputMethodEngine::NativeInputMethodEngine(
+    std::unique_ptr<AssistiveSuggesterSwitch> suggester_switch)
+    : suggester_switch_(std::move(suggester_switch)) {}
 
 void NativeInputMethodEngine::Initialize(
     std::unique_ptr<InputMethodEngineBase::Observer> observer,
@@ -460,7 +477,10 @@ void NativeInputMethodEngine::Initialize(
   // TODO(crbug/1141231): refactor the mix of unique and raw ptr here.
   std::unique_ptr<AssistiveSuggester> assistive_suggester =
       std::make_unique<AssistiveSuggester>(
-          this, profile, std::make_unique<AssistiveSuggesterClientFilter>());
+          this, profile,
+          suggester_switch_
+              ? std::move(suggester_switch_)
+              : std::make_unique<AssistiveSuggesterClientFilter>());
   assistive_suggester_ = assistive_suggester.get();
   std::unique_ptr<AutocorrectManager> autocorrect_manager =
       std::make_unique<AutocorrectManager>(this);
@@ -629,6 +649,7 @@ void NativeInputMethodEngine::ImeObserver::OnFocus(
     const IMEEngineHandlerInterface::InputContext& context) {
   if (assistive_suggester_->IsAssistiveFeatureEnabled()) {
     assistive_suggester_->OnFocus(context_id);
+    assistive_suggester_->RecordTextInputStateMetrics(engine_id);
   }
   autocorrect_manager_->OnFocus(context_id);
   if (grammar_manager_->IsOnDeviceGrammarEnabled()) {
@@ -636,6 +657,11 @@ void NativeInputMethodEngine::ImeObserver::OnFocus(
   }
   if (ShouldRouteToNativeMojoEngine(engine_id)) {
     if (input_method_.is_bound()) {
+      InputFieldContext input_field_context =
+          features::IsAssistiveMultiWordEnabled()
+              ? CreateInputFieldContext(assistive_suggester_.get())
+              : InputFieldContext{};
+
       input_method_->OnFocus(
           mojom::InputFieldInfo::New(
               TextInputTypeToMojoType(context.type),
@@ -643,7 +669,9 @@ void NativeInputMethodEngine::ImeObserver::OnFocus(
               context.should_do_learning
                   ? mojom::PersonalizationMode::kEnabled
                   : mojom::PersonalizationMode::kDisabled),
-          prefs_ ? CreateSettingsFromPrefs(*prefs_, engine_id) : nullptr);
+          prefs_
+              ? CreateSettingsFromPrefs(*prefs_, engine_id, input_field_context)
+              : nullptr);
 
       // TODO(b/202224495): Send the surrounding text as part of InputFieldInfo.
       SendSurroundingTextToNativeMojoEngine(last_surrounding_text_);

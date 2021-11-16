@@ -27119,6 +27119,7 @@ Called by update_document_policy_enum.py.-->
   <int value="925" label="DeviceI18nShortcutsEnabled"/>
   <int value="926" label="HistoryClustersVisible"/>
   <int value="927" label="ChromadToCloudMigrationEnabled"/>
+  <int value="928" label="CopyPreventionSettings"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -43474,6 +43475,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Enterprise settings off"/>
   <int value="3" label="User settings off"/>
   <int value="4" label="Url or App not allowed"/>
+</enum>
+
+<enum name="IMEAssistiveTextInputState">
+  <int value="0" label="None"/>
+  <int value="1" label="Feature disabled by blocklist"/>
+  <int value="2" label="Feature disabled by user pref"/>
+  <int value="3" label="Unsupported text input client"/>
+  <int value="4" label="Unsupported language"/>
+  <int value="5" label="Feature enabled"/>
 </enum>
 
 <enum name="IMEAutocorrectActions">
@@ -91491,17 +91501,17 @@ Called by update_scheduler_enums.py.-->
 </enum>
 
 <enum name="WebViewOpenWebScreenPortion">
-  <int value="0" label="ZeroPercent"/>
-  <int value="1" label="TenPercent"/>
-  <int value="2" label="TwentyPercent"/>
-  <int value="3" label="ThirtyPercent"/>
-  <int value="4" label="FortyPercent"/>
-  <int value="5" label="FiftyPercent"/>
-  <int value="6" label="SixtyPercent"/>
-  <int value="7" label="SeventyPercent"/>
-  <int value="8" label="EightyPercent"/>
-  <int value="9" label="NinetyPercent"/>
-  <int value="10" label="OneHundredPercent"/>
+  <int value="0" label="0-10%"/>
+  <int value="1" label="10-20%"/>
+  <int value="2" label="20-30%"/>
+  <int value="3" label="30-40%"/>
+  <int value="4" label="40-50%"/>
+  <int value="5" label="50-60%"/>
+  <int value="6" label="60-70%"/>
+  <int value="7" label="70-80%"/>
+  <int value="8" label="80-90%"/>
+  <int value="9" label="90-100%"/>
+  <int value="10" label="ExactlyOneHundredPercent"/>
   <int value="11" label="ExactlyZeroPercent"/>
 </enum>
 

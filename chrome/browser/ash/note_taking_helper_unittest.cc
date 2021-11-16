@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/arc/arc_prefs.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/note_taking_client.h"
 #include "base/bind.h"
@@ -21,7 +22,9 @@
 #include "chrome/browser/ash/arc/fileapi/arc_file_system_bridge.h"
 #include "chrome/browser/ash/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/note_taking_controller_client.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -43,7 +46,6 @@
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "components/arc/arc_prefs.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/mojom/file_system.mojom.h"
 #include "components/arc/mojom/intent_common.mojom.h"
@@ -1595,9 +1597,17 @@ TEST_F(NoteTakingHelperTest, LockScreenSupportInSecondaryProfile) {
   RegisterUserProfilePrefs(prefs->registry());
   sync_preferences::TestingPrefServiceSyncable* profile_prefs = prefs.get();
   const std::string kSecondProfileName = "second-profile";
+  const AccountId account_id(AccountId::FromUserEmail(kSecondProfileName));
+  ash::FakeChromeUserManager* fake_user_manager =
+      static_cast<ash::FakeChromeUserManager*>(
+          user_manager::UserManager::Get());
+  auto* user = fake_user_manager->AddUser(account_id);
   TestingProfile* second_profile = profile_manager()->CreateTestingProfile(
-      kSecondProfileName, std::move(prefs), u"Test profile", 1 /*avatar_id*/,
+      kSecondProfileName, std::move(prefs),
+      base::UTF8ToUTF16(kSecondProfileName), 1 /*avatar_id*/,
       std::string() /*supervised_user_id*/, TestingProfile::TestingFactories());
+  chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+      user, second_profile);
   InitExtensionService(second_profile);
 
   // Add test apps to secondary profile.

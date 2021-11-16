@@ -161,10 +161,17 @@ mojom::ResultCode PrintingContext::UpdatePrintSettings(
     return mojom::ResultCode::kSuccess;
   }
 
-  return UpdatePrinterSettings(
-      open_in_external_preview,
-      job_settings.FindBoolKey(kSettingShowSystemDialog).value_or(false),
-      job_settings.FindIntKey(kSettingPreviewPageCount).value_or(0));
+  PrinterSettings printer_settings {
+#if defined(OS_MAC)
+    .external_preview = open_in_external_preview,
+#endif
+    .show_system_dialog =
+        job_settings.FindBoolKey(kSettingShowSystemDialog).value_or(false),
+#if defined(OS_WIN)
+    .page_count = job_settings.FindIntKey(kSettingPreviewPageCount).value_or(0)
+#endif
+  };
+  return UpdatePrinterSettings(printer_settings);
 }
 
 #if defined(OS_CHROMEOS)
@@ -173,9 +180,7 @@ mojom::ResultCode PrintingContext::UpdatePrintSettingsFromPOD(
   ResetSettings();
   settings_ = std::move(job_settings);
 
-  return UpdatePrinterSettings(false /* external_preview */,
-                               false /* show_system_dialog */,
-                               0 /* page_count is only used on Android */);
+  return UpdatePrinterSettings({.show_system_dialog = false});
 }
 #endif
 

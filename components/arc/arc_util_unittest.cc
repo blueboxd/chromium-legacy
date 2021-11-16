@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/arc_util.h"
+#include "ash/components/arc/arc_util.h"
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "ash/components/arc/arc_features.h"
 #include "ash/constants/app_types.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -21,7 +22,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/dbus/upstart/fake_upstart_client.h"
 #include "components/account_id/account_id.h"
-#include "components/arc/arc_features.h"
 #include "components/arc/test/arc_util_test_support.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/prefs/testing_pref_service.h"

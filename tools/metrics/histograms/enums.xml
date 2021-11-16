@@ -6705,12 +6705,12 @@ others/histograms.xml -->
   <int value="0" label="Unknown result"/>
   <int value="1"
       label="User closed the OTP input dialog before pressing the OK button"/>
-  <int value="3"
+  <int value="2"
       label="User closed the OTP input dialog after pressing the OK button"/>
-  <int value="4"
+  <int value="3"
       label="OTP input dialog closed automatically after the OTP verification
              succeeded"/>
-  <int value="5"
+  <int value="4"
       label="OTP input dialog closed automatically after a server failure
              response"/>
 </enum>
@@ -14813,6 +14813,11 @@ Called by update_net_error_codes.py.-->
     Recorded when the alert is popped up, and user clicks the &quot;Cancel&quot;
     button on the alert. This is a subset of &quot;Waiting alert popped
     up&quot;.
+  </int>
+  <int value="6" label="URL copied">
+    Recorded when image data format is not recognized and the URL of the image
+    is copied instead of its data. This is a subset of &quot;Try copying fetched
+    image&quot;.
   </int>
 </enum>
 
@@ -27113,6 +27118,7 @@ Called by update_document_policy_enum.py.-->
   <int value="924" label="UserAgentClientHintsGREASEUpdateEnabled"/>
   <int value="925" label="DeviceI18nShortcutsEnabled"/>
   <int value="926" label="HistoryClustersVisible"/>
+  <int value="927" label="ChromadToCloudMigrationEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -42482,6 +42488,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2147219425"
       label="GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL"/>
   <int value="-2147219198" label="GOOPDATEINSTALL_E_INSTALLER_FAILED"/>
+  <int value="-2147172343" label="DRM_E_LICENSEEXPIRED"/>
+  <int value="-2147169006" label="DRM_E_TEE_INVALID_CONTEXT"/>
   <int value="-2147168255" label="ITF_E_FONTFILE_UTIL_TOO_MANY_FILES_PER_FACE"/>
   <int value="-2147168254" label="ITF_E_FONTFILE_UTIL_EMPTY_FILE_PATH"/>
   <int value="-2147167999" label="ITF_E_SCANNING_TIMEOUT"/>
@@ -42578,6 +42586,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2003283956" label="DWRITE_E_NOCOLOR"/>
   <int value="-1606219753" label="GOOPDATE_E_NON_BLOCKING_CALL_PENDING"/>
   <int value="-1606219747" label="GOOPDATE_E_APP_USING_EXTERNAL_UPDATER"/>
+  <int value="-1072860855" label="MF_E_LICENSE_OUTOFDATE"/>
   <int value="-805306212" label="STATUS_DEVICE_DATA_ERROR"/>
   <int value="-805305979" label="STATUS_IO_DEVICE_ERROR"/>
   <int value="0" label="S_OK"/>
@@ -47440,6 +47449,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="yes"/>
 </enum>
 
+<enum name="LightweightReactionsFunnel">
+  <int value="0" label="LR dialog opened"/>
+  <int value="1" label="Editing done (tapped Next)"/>
+  <int value="2" label="GIF generated"/>
+  <int value="3" label="GIF shared"/>
+</enum>
+
 <enum name="LinkGenerationCopiedLinkType">
   <int value="0" label="Copied from new right-click menu generation"/>
   <int value="1" label="Copied from existing highlight right-click menu"/>
@@ -49192,6 +49208,7 @@ from previous Chrome versions.
   <int value="-1613583483" label="UseNewAcceptLanguageHeader:enabled"/>
   <int value="-1612418793"
       label="ExperimentalAccessibilitySwitchAccessSetupGuide:enabled"/>
+  <int value="-1612253158" label="HardwareSecureDecryptionExperiment:enabled"/>
   <int value="-1611758030" label="AndroidWebContentsDarkMode:disabled"/>
   <int value="-1611357520" label="MediaAppPdfInInk:enabled"/>
   <int value="-1611305202" label="KeepPrefetchedContentSuggestions:disabled"/>
@@ -49586,6 +49603,7 @@ from previous Chrome versions.
   <int value="-1340460869" label="ShutdownSupportForKeepalive:enabled"/>
   <int value="-1340055960" label="enable-streamlined-hosted-apps"/>
   <int value="-1338306372" label="BrowserTouchBar:enabled"/>
+  <int value="-1338237485" label="HardwareSecureDecryptionExperiment:disabled"/>
   <int value="-1337185440" label="enable-webvr"/>
   <int value="-1336110789" label="CastMediaRouteProvider:disabled"/>
   <int value="-1335017208" label="KeyboardLockAPI:enabled"/>
@@ -52553,6 +52571,7 @@ from previous Chrome versions.
   <int value="913138924" label="RecurrentInterstitialFeature:disabled"/>
   <int value="913855453" label="VirtualKeyboardFloatingResizable:disabled"/>
   <int value="914708297" label="CCTResizableAllowResizeByUserGesture:enabled"/>
+  <int value="915402820" label="RequestDesktopSiteExceptions:disabled"/>
   <int value="916316159" label="disable-new-app-list-mixer"/>
   <int value="917285134" label="AutofillAddressProfileSavePrompt:enabled"/>
   <int value="917561046" label="ConversionMeasurement:disabled"/>
@@ -53060,6 +53079,7 @@ from previous Chrome versions.
   <int value="1291966558" label="ScrollAnchoring:disabled"/>
   <int value="1292091029" label="OmniboxOneClickUnelide:disabled"/>
   <int value="1292763218" label="SystemTrayUnified:disabled"/>
+  <int value="1293697921" label="RequestDesktopSiteExceptions:enabled"/>
   <int value="1294131571" label="disable-winrt-midi-api"/>
   <int value="1294306055" label="FeedInteractiveRefresh:disabled"/>
   <int value="1296878388" label="PermissionPredictions:disabled"/>
@@ -58181,6 +58201,17 @@ Called by update_use_counter_css.py.-->
   <int value="14" label="Received file paylad that wasn't registered"/>
 </enum>
 
+<enum name="MultiDeviceNearbyFileAction">
+  <int value="0" label="Registered file received"/>
+  <int value="1" label="Unexpected file received"/>
+</enum>
+
+<enum name="MultiDeviceNearbyFileTransferResult">
+  <int value="0" label="File transfer success"/>
+  <int value="1" label="File transfer failure"/>
+  <int value="2" label="File transfer canceled"/>
+</enum>
+
 <enum name="MultiDeviceNearbyMessageAction">
   <int value="0" label="Message Sent"/>
   <int value="1" label="Message Received"/>
@@ -58892,6 +58923,7 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="Settings"/>
   <int value="1" label="Tray icon/label"/>
   <int value="2" label="Share Sheet"/>
+  <int value="3" label="Nearby Device is Trying to Share Notification"/>
 </enum>
 
 <enum name="NearbyShareOnboardingFinalState">
@@ -61971,6 +62003,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Background customization unavailable due to theme"/>
   <int value="3"
       label="Background customization unavailable due to search provider"/>
+</enum>
+
+<enum name="NTPBrokenViewHierarchyRelationship">
+  <int value="0" label="ELM collection containing Content Suggestions fixed"/>
+  <int value="1" label="Discover feed containing ELM collection fixed"/>
+  <int value="2" label="Discover feed wrapper containing Discover feed fixed"/>
+  <int value="3" label="NTP containing Discover feed wrapper fixed"/>
+  <int value="4"
+      label="Content suggestions view controller not cleaned up on restart"/>
 </enum>
 
 <enum name="NTPCustomizeAction">

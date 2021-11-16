@@ -133,10 +133,7 @@ config("blink_core_pch") {
   }
 }
 
-core_config_add += [
-  ":blink_core_pch",
-  "//build/config/compiler:noshadowing",
-]
+core_config_add += [ ":blink_core_pch" ]
 
 source_set("core_common") {
   sources = [ "core_export.h" ]
@@ -1298,6 +1295,7 @@ source_set("unit_tests") {
     "fragment_directive/text_fragment_anchor_metrics_test.cc",
     "fragment_directive/text_fragment_anchor_test.cc",
     "fragment_directive/text_fragment_finder_test.cc",
+    "fragment_directive/text_fragment_generation_navigation_test.cc",
     "fragment_directive/text_fragment_handler_test.cc",
     "fragment_directive/text_fragment_selector_generator_test.cc",
     "fragment_directive/text_fragment_selector_test.cc",
@@ -1572,6 +1570,7 @@ source_set("unit_tests") {
     "//cc",
     "//components/paint_preview/common:common",
     "//components/shared_highlighting/core/common",
+    "//components/shared_highlighting/core/common:data_driven_testing",
     "//components/ukm:test_support",
     "//content/test:test_support",
     "//mojo/public/cpp/system",

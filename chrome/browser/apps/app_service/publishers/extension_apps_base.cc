@@ -334,10 +334,12 @@ ExtensionAppsBase::CallbackWrapper::~CallbackWrapper() {
     std::move(callback).Run(false);
 }
 
-void ExtensionAppsBase::Initialize(
-    const mojo::Remote<apps::mojom::AppService>& app_service) {
+void ExtensionAppsBase::Initialize() {
+  RegisterPublisher(AppType::kExtension);
+
   DCHECK(profile_);
-  PublisherBase::Initialize(app_service, apps::mojom::AppType::kExtension);
+  PublisherBase::Initialize(proxy()->AppService(),
+                            apps::mojom::AppType::kExtension);
 
   std::vector<std::unique_ptr<App>> apps;
   extensions::ExtensionRegistry* registry =
@@ -357,7 +359,7 @@ void ExtensionAppsBase::Initialize(
 
   prefs_observation_.Observe(extensions::ExtensionPrefs::Get(profile_));
   registry_observation_.Observe(extensions::ExtensionRegistry::Get(profile_));
-  app_service_ = app_service.get();
+  app_service_ = proxy()->AppService().get();
 }
 
 void ExtensionAppsBase::LoadIcon(const std::string& app_id,
@@ -636,13 +638,7 @@ void ExtensionAppsBase::OnExtensionLoaded(
           : apps::mojom::InstallSource::kChromeWebStore;
   PublisherBase::Publish(std::move(mojom_app), subscribers_);
 
-  std::unique_ptr<App> app =
-      AppPublisher::MakeApp(AppType::kExtension, extension->id(),
-                            Readiness::kReady, extension->name());
-  app->short_name = extension->short_name();
-  app->description = extension->description();
-  app->version = extension->GetVersionForDisplay();
-  AppPublisher::Publish(std::move(app));
+  AppPublisher::Publish(CreateApp(extension, Readiness::kReady));
 }
 
 void ExtensionAppsBase::OnExtensionUnloaded(

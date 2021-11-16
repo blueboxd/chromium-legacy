@@ -9,6 +9,7 @@
  */
 
 import './mojo_interface_provider.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
 import {Action} from 'chrome://resources/js/cr/ui/store.js';
 import {ActionName} from './personalization_actions.js';
 
@@ -32,7 +33,7 @@ function combineReducers(mapping) {
   function reduce(state, action) {
     const newState = Object.keys(mapping).reduce((result, key) => {
       const func = mapping[key];
-      result[key] = func(state[key], action);
+      result[key] = func(state[key], action, state);
       return result;
     }, /** @type {!PersonalizationState} */ ({}));
     const change =
@@ -45,9 +46,11 @@ function combineReducers(mapping) {
 /**
  * @param {!BackdropState} state
  * @param {!Action} action
+ * @param {!PersonalizationState} globalState - Top level personalization state,
+ * to access specific states when needed (i.e.: loading state).
  * @return {!BackdropState}
  */
-function backdropReducer(state, action) {
+function backdropReducer(state, action, globalState) {
   switch (action.name) {
     case ActionName.SET_COLLECTIONS:
       return {collections: action.collections, images: {}};
@@ -69,9 +72,11 @@ function backdropReducer(state, action) {
 /**
  * @param {!LoadingState} state
  * @param {!Action} action
+ * @param {!PersonalizationState} globalState - Top level personalization state,
+ * to access specific states when needed (i.e.: loading state).
  * @return {!LoadingState}
  */
-function loadingReducer(state, action) {
+function loadingReducer(state, action, globalState) {
   switch (action.name) {
     case ActionName.BEGIN_LOAD_IMAGES_FOR_COLLECTIONS:
       return /** @type {!LoadingState} */ ({
@@ -153,7 +158,32 @@ function loadingReducer(state, action) {
       return /** @type {!LoadingState} */ ({...state, refreshWallpaper: true});
     case ActionName.SET_UPDATED_DAILY_REFRESH_IMAGE:
       return /** @type {!LoadingState} */ ({...state, refreshWallpaper: false});
+    case ActionName.BEGIN_LOAD_GOOGLE_PHOTOS_ALBUM:
+      assert(state.googlePhotos.photosByAlbumId[action.albumId] === undefined);
+      return /** @type {!LoadingState} */ ({
+        ...state,
+        googlePhotos: {
+          ...state.googlePhotos,
+          photosByAlbumId: {
+            ...state.googlePhotos.photosByAlbumId,
+            [action.albumId]: true,
+          },
+        },
+      });
+    case ActionName.SET_GOOGLE_PHOTOS_ALBUM:
+      assert(state.googlePhotos.photosByAlbumId[action.albumId] === true);
+      return /** @type {!LoadingState} */ ({
+        ...state,
+        googlePhotos: {
+          ...state.googlePhotos,
+          photosByAlbumId: {
+            ...state.googlePhotos.photosByAlbumId,
+            [action.albumId]: false,
+          },
+        },
+      });
     case ActionName.BEGIN_LOAD_GOOGLE_PHOTOS_ALBUMS:
+      assert(state.googlePhotos.albums === false);
       return /** @type {!LoadingState} */ ({
         ...state,
         googlePhotos: {
@@ -162,6 +192,7 @@ function loadingReducer(state, action) {
         },
       });
     case ActionName.SET_GOOGLE_PHOTOS_ALBUMS:
+      assert(state.googlePhotos.albums === true);
       return /** @type {!LoadingState} */ ({
         ...state,
         googlePhotos: {
@@ -170,6 +201,7 @@ function loadingReducer(state, action) {
         },
       });
     case ActionName.BEGIN_LOAD_GOOGLE_PHOTOS_COUNT:
+      assert(state.googlePhotos.count === false);
       return /** @type {!LoadingState} */ ({
         ...state,
         googlePhotos: {
@@ -178,6 +210,7 @@ function loadingReducer(state, action) {
         },
       });
     case ActionName.SET_GOOGLE_PHOTOS_COUNT:
+      assert(state.googlePhotos.count === true);
       return /** @type {!LoadingState} */ ({
         ...state,
         googlePhotos: {
@@ -186,6 +219,7 @@ function loadingReducer(state, action) {
         },
       });
     case ActionName.BEGIN_LOAD_GOOGLE_PHOTOS_PHOTOS:
+      assert(state.googlePhotos.photos === false);
       return /** @type {!LoadingState} */ ({
         ...state,
         googlePhotos: {
@@ -194,6 +228,7 @@ function loadingReducer(state, action) {
         },
       });
     case ActionName.SET_GOOGLE_PHOTOS_PHOTOS:
+      assert(state.googlePhotos.photos === true);
       return /** @type {!LoadingState} */ ({
         ...state,
         googlePhotos: {
@@ -209,9 +244,11 @@ function loadingReducer(state, action) {
 /**
  * @param {!LocalState} state
  * @param {!Action} action
+ * @param {!PersonalizationState} globalState - Top level personalization state,
+ * to access specific states when needed (i.e.: loading state).
  * @return {!LocalState}
  */
-function localReducer(state, action) {
+function localReducer(state, action, globalState) {
   switch (action.name) {
     case ActionName.SET_LOCAL_IMAGES:
       return /** @type {!LocalState} */ ({
@@ -243,9 +280,11 @@ function localReducer(state, action) {
 /**
  * @param {?CurrentWallpaper} state
  * @param {!Action} action
+ * @param {!PersonalizationState} globalState - Top level personalization state,
+ * to access specific states when needed (i.e.: loading state).
  * @return {?CurrentWallpaper}
  */
-function currentSelectedReducer(state, action) {
+function currentSelectedReducer(state, action, globalState) {
   switch (action.name) {
     case ActionName.SET_SELECTED_IMAGE:
       return action.image;
@@ -258,16 +297,19 @@ function currentSelectedReducer(state, action) {
  * Reducer for the pending selected image. The pendingSelected state is set when
  * a user clicks on an image and before the client code is reached.
  *
- * Note: The pendingSelected state is not cleared when an image is selected i.e.
- * the ActionName.END_SELECT_IMAGE because we allow multiple concurrent requests
- * of selecting images while only keeping the latest pending image and clearing
- * it results in a unwanted jumpy motion of selected state.
+ * Note: We allow multiple concurrent requests of selecting images while only
+ * keeping the latest pending image and failing others occurred in between.
+ * The pendingSelected state should not be cleared in this scenario (of multiple
+ * concurrent requests). Otherwise, it results in a unwanted jumpy motion of
+ * selected state.
  *
  * @param {?DisplayableImage} state
  * @param {!Action} action
+ * @param {!PersonalizationState} globalState - Top level personalization state,
+ * to access specific states when needed (i.e.: loading state).
  * @return {?DisplayableImage}
  */
-function pendingSelectedReducer(state, action) {
+function pendingSelectedReducer(state, action, globalState) {
   switch (action.name) {
     case ActionName.BEGIN_SELECT_IMAGE:
       return action.image;
@@ -286,6 +328,15 @@ function pendingSelectedReducer(state, action) {
         return null;
       }
       return state;
+    case ActionName.END_SELECT_IMAGE:
+      const {success} =
+          /** @type {{name: string, success: boolean}} */ (action);
+      if (!success && globalState.loading.setImage <= 1) {
+        // Clear the pending selected state if an error occurs and
+        // there are no multiple concurrent requests of selecting images.
+        return null;
+      }
+      return state;
     default:
       return state;
   }
@@ -294,9 +345,11 @@ function pendingSelectedReducer(state, action) {
 /**
  * @param {!DailyRefreshState} state
  * @param {!Action} action
+ * @param {!PersonalizationState} globalState - Top level personalization state,
+ * to access specific states when needed (i.e.: loading state).
  * @returns {!DailyRefreshState}
  */
-function dailyRefreshReducer(state, action) {
+function dailyRefreshReducer(state, action, globalState) {
   switch (action.name) {
     case ActionName.SET_DAILY_REFRESH_COLLECTION_ID:
       return /** @type {!DailyRefreshState} */ ({
@@ -311,9 +364,11 @@ function dailyRefreshReducer(state, action) {
 /**
  * @param {?string} state
  * @param {!Action} action
+ * @param {!PersonalizationState} globalState - Top level personalization state,
+ * to access specific states when needed (i.e.: loading state).
  * @return {?string}
  */
-function errorReducer(state, action) {
+function errorReducer(state, action, globalState) {
   switch (action.name) {
     case ActionName.END_SELECT_IMAGE:
       const {success} =
@@ -342,9 +397,11 @@ function errorReducer(state, action) {
 /**
  * @param {boolean} state
  * @param {!Action} action
+ * @param {!PersonalizationState} globalState - Top level personalization state,
+ * to access specific states when needed (i.e.: loading state).
  * @return {boolean}
  */
- function fullscreenReducer(state, action) {
+function fullscreenReducer(state, action, globalState) {
   switch (action.name) {
     case ActionName.SET_FULLSCREEN_ENABLED:
       return (/** @type {{enabled: boolean}} */(action)).enabled;
@@ -356,22 +413,55 @@ function errorReducer(state, action) {
 /**
  * @param {!GooglePhotosState} state
  * @param {!Action} action
+ * @param {!PersonalizationState} globalState - Top level personalization state,
+ * to access specific states when needed (i.e.: loading state).
  * @return {!GooglePhotosState}
  */
-function googlePhotosReducer(state, action) {
+function googlePhotosReducer(state, action, globalState) {
   switch (action.name) {
+    case ActionName.BEGIN_LOAD_GOOGLE_PHOTOS_ALBUM:
+      // The list of photos for an album should be loaded only once.
+      assert(state.albums?.some(album => album.id === action.albumId));
+      assert(state.photosByAlbumId[action.albumId] === undefined);
+      return state;
+    case ActionName.SET_GOOGLE_PHOTOS_ALBUM:
+      assert(state.albums?.some(album => album.id === action.albumId));
+      assert(action.albumId !== undefined);
+      assert(action.photos !== undefined);
+      return /** @type {!GooglePhotosState} */ ({
+        ...state,
+        photosByAlbumId: {
+          ...state.photosByAlbumId,
+          [action.albumId]: action.photos,
+        },
+      });
+    case ActionName.BEGIN_LOAD_GOOGLE_PHOTOS_ALBUMS:
+      // The list of albums should be loaded only once.
+      assert(state.albums === undefined);
+      return state;
     case ActionName.SET_GOOGLE_PHOTOS_ALBUMS:
+      assert(action.albums !== undefined);
       return /** @type {!GooglePhotosState} */ ({
         ...state,
         albums: (/** @type {{albums: ?Array<WallpaperCollection>}} */ (action))
                     .albums,
       });
+    case ActionName.BEGIN_LOAD_GOOGLE_PHOTOS_COUNT:
+      // The total count of photos should be loaded only once.
+      assert(state.count === undefined);
+      return state;
     case ActionName.SET_GOOGLE_PHOTOS_COUNT:
+      assert(action.count !== undefined);
       return /** @type {!GooglePhotosState} */ ({
         ...state,
         count: (/** @type {{count: ?number}} */ (action)).count,
       });
+    case ActionName.BEGIN_LOAD_GOOGLE_PHOTOS_PHOTOS:
+      // The list of photos should be loaded only once.
+      assert(state.photos === undefined);
+      return state;
     case ActionName.SET_GOOGLE_PHOTOS_PHOTOS:
+      assert(action.photos !== undefined);
       return /** @type {!GooglePhotosState} */ ({
         ...state,
         photos: (/** @type {{photos: ?Array<undefined>}} */ (action)).photos,

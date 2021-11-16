@@ -4,8 +4,9 @@
 
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
-import 'chrome://personalization/trusted/personalization_app.mojom-webui.js';
-import {fetchLocalData, initializeBackdropData, initializeGooglePhotosData, selectWallpaper} from 'chrome://personalization/trusted/personalization_controller.js';
+import * as action from 'chrome://personalization/trusted/personalization_actions.js';
+import {WallpaperCollection} from 'chrome://personalization/trusted/personalization_app.mojom-webui.js';
+import {fetchGooglePhotosAlbum, fetchLocalData, initializeBackdropData, initializeGooglePhotosData, selectWallpaper} from 'chrome://personalization/trusted/personalization_controller.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {TestWallpaperProvider} from './test_mojo_interface_provider.js';
 import {TestPersonalizationStore} from './test_personalization_store.js';
@@ -38,7 +39,7 @@ function filterAndFlattenState(keys) {
   };
 }
 
-suite('Updating local images', () => {
+suite('Personalization app controller', () => {
   let wallpaperProvider;
   let personalizationStore;
 
@@ -48,7 +49,7 @@ suite('Updating local images', () => {
     personalizationStore.setReducersEnabled(true);
   });
 
-  test('Initializes Google Photos data in store', async () => {
+  test('initializes Google Photos data in store', async () => {
     await initializeGooglePhotosData(wallpaperProvider, personalizationStore);
 
     assertDeepEquals(
@@ -106,11 +107,13 @@ suite('Updating local images', () => {
               count: true,
               albums: false,
               photos: false,
+              photosByAlbumId: {},
             },
             googlePhotos: {
               count: undefined,
               albums: undefined,
               photos: undefined,
+              photosByAlbumId: {},
             },
           },
           // SET_GOOGLE_PHOTOS_COUNT.
@@ -119,11 +122,13 @@ suite('Updating local images', () => {
               count: false,
               albums: false,
               photos: false,
+              photosByAlbumId: {},
             },
             googlePhotos: {
               count: 1000,
               albums: undefined,
               photos: undefined,
+              photosByAlbumId: {},
             },
           },
           // BEGIN_LOAD_GOOGLE_PHOTOS_ALBUMS.
@@ -132,11 +137,13 @@ suite('Updating local images', () => {
               count: false,
               albums: true,
               photos: false,
+              photosByAlbumId: {},
             },
             googlePhotos: {
               count: 1000,
               albums: undefined,
               photos: undefined,
+              photosByAlbumId: {},
             },
           },
           // BEGIN_LOAD_GOOGLE_PHOTOS_PHOTOS.
@@ -145,11 +152,13 @@ suite('Updating local images', () => {
               count: false,
               albums: true,
               photos: true,
+              photosByAlbumId: {},
             },
             googlePhotos: {
               count: 1000,
               albums: undefined,
               photos: undefined,
+              photosByAlbumId: {},
             },
           },
           // SET_GOOGLE_PHOTOS_ALBUMS.
@@ -158,6 +167,7 @@ suite('Updating local images', () => {
               count: false,
               albums: false,
               photos: true,
+              photosByAlbumId: {},
             },
             googlePhotos: {
               count: 1000,
@@ -184,6 +194,7 @@ suite('Updating local images', () => {
                 },
               ],
               photos: undefined,
+              photosByAlbumId: {},
             },
           },
           // SET_GOOGLE_PHOTOS_PHOTOS.
@@ -192,6 +203,7 @@ suite('Updating local images', () => {
               count: false,
               albums: false,
               photos: false,
+              photosByAlbumId: {},
             },
             googlePhotos: {
               count: 1000,
@@ -218,6 +230,85 @@ suite('Updating local images', () => {
                 },
               ],
               photos: Array.from({length: 1000}),
+              photosByAlbumId: {},
+            },
+          },
+        ],
+        personalizationStore.states.map(
+            filterAndFlattenState(['googlePhotos', 'loading.googlePhotos'])));
+  });
+
+  test('sets Google Photos album in store', async () => {
+    const album = new WallpaperCollection();
+    album.id = '9bd1d7a3-f995-4445-be47-53c5b58ce1cb';
+
+    // Attempts to `fetchGooglePhotosAlbum()` will fail unless the entire list
+    // of Google Photos albums has already been fetched and saved to the store.
+    personalizationStore.dispatch(action.beginLoadGooglePhotosAlbumsAction());
+    personalizationStore.dispatch(action.setGooglePhotosAlbumsAction([album]));
+    personalizationStore.reset(personalizationStore.data);
+
+    await fetchGooglePhotosAlbum(
+        wallpaperProvider, personalizationStore, album.id);
+
+    assertDeepEquals(
+        [
+          {
+            name: 'begin_load_google_photos_album',
+            albumId: album.id,
+          },
+          {
+            name: 'set_google_photos_album',
+            albumId: album.id,
+            photos: Array.from({length: 1000}),
+          },
+        ],
+        personalizationStore.actions);
+
+    assertDeepEquals(
+        [
+          // BEGIN_LOAD_GOOGLE_PHOTOS_ALBUM
+          {
+            'loading.googlePhotos': {
+              count: false,
+              albums: false,
+              photos: false,
+              photosByAlbumId: {
+                [album.id]: true,
+              },
+            },
+            googlePhotos: {
+              count: undefined,
+              albums: [
+                {
+                  id: album.id,
+                },
+              ],
+              photos: undefined,
+              photosByAlbumId: {},
+            },
+          },
+          // SET_GOOGLE_PHOTOS_ALBUM
+          {
+            'loading.googlePhotos': {
+              count: false,
+              albums: false,
+              photos: false,
+              photosByAlbumId: {
+                [album.id]: false,
+              },
+            },
+            googlePhotos: {
+              count: undefined,
+              albums: [
+                {
+                  id: album.id,
+                },
+              ],
+              photos: undefined,
+              photosByAlbumId: {
+                [album.id]: Array.from({length: 1000}),
+              },
             },
           },
         ],
@@ -555,5 +646,131 @@ suite('full screen mode', () => {
 
           assertTrue(personalizationStore.data.fullscreen);
         }
+      });
+});
+
+suite('observes pendingState during wallpaper selection', () => {
+  let wallpaperProvider;
+  let personalizationStore;
+
+  setup(() => {
+    wallpaperProvider = new TestWallpaperProvider();
+    personalizationStore = new TestPersonalizationStore({});
+    personalizationStore.setReducersEnabled(true);
+  });
+
+  test(
+      'sets pendingState to selected image for successful operation',
+      async () => {
+        await selectWallpaper(
+            wallpaperProvider.images[0], wallpaperProvider,
+            personalizationStore);
+
+        assertDeepEquals(
+            [
+              {
+                name: 'begin_select_image',
+                image: wallpaperProvider.images[0],
+              },
+              {
+                name: 'begin_load_selected_image',
+              },
+              {
+                name: 'end_select_image',
+                image: wallpaperProvider.images[0],
+                success: true,
+              },
+              {
+                name: 'set_fullscreen_enabled',
+                enabled: true,
+              },
+            ],
+            personalizationStore.actions,
+        );
+
+        assertDeepEquals(
+            [
+              // Begin selecting image.
+              {
+                'pendingSelected': wallpaperProvider.images[0],
+              },
+              // Begin loading image.
+              {
+                'pendingSelected': wallpaperProvider.images[0],
+              },
+              // End selecting image.
+              {
+                'pendingSelected': wallpaperProvider.images[0],
+              },
+              // Set fullscreen enabled
+              {
+                'pendingSelected': wallpaperProvider.images[0],
+              },
+            ],
+            personalizationStore.states.map(
+                filterAndFlattenState(['pendingSelected'])));
+      });
+
+  test(
+      'clears pendingState when error occured and only one request',
+      async () => {
+        await selectWallpaper(
+            wallpaperProvider.localImages[0], wallpaperProvider,
+            personalizationStore);
+        // Reset the history of actions and prior states, but keep the current
+        // state.
+        personalizationStore.reset(personalizationStore.data);
+
+        loadTimeData.overrideValues({['setWallpaperError']: 'someError'});
+
+        // sets selected image without file path to force fail the operation.
+        wallpaperProvider.localImages = [{path: ''}];
+        await selectWallpaper(
+            wallpaperProvider.localImages[0], wallpaperProvider,
+            personalizationStore);
+
+        assertDeepEquals(
+            [
+              {
+                name: 'begin_select_image',
+                image: wallpaperProvider.localImages[0],
+              },
+              {
+                name: 'begin_load_selected_image',
+              },
+              {
+                name: 'end_select_image',
+                image: wallpaperProvider.localImages[0],
+                success: false,
+              },
+              {
+                name: 'set_selected_image',
+                image: personalizationStore.data.currentSelected,
+              },
+            ],
+            personalizationStore.actions,
+        );
+
+        assertDeepEquals(
+            [
+              // Begin selecting image.
+              {
+                'pendingSelected': wallpaperProvider.localImages[0],
+              },
+              // Begin loading image.
+              {
+                'pendingSelected': wallpaperProvider.localImages[0],
+              },
+              // End selecting image, pendingState is cleared.
+              {
+                'pendingSelected': null,
+              },
+              // Set selected image
+              {
+                'pendingSelected': null,
+              },
+            ],
+            personalizationStore.states.map(
+                filterAndFlattenState(['pendingSelected'])));
       });
 });

@@ -74,6 +74,12 @@ class CORE_EXPORT MediaQueryParser {
       CSSParserTokenRange&,
       ConditionMode = ConditionMode::kNormal);
 
+  // https://drafts.csswg.org/mediaqueries-4/#typedef-media-in-parens
+  //
+  // TODO(crbug.com/962417): Only a limited form of the grammar is
+  // currently supported.
+  std::unique_ptr<MediaQueryExpNode> ConsumeInParens(CSSParserTokenRange&);
+
   // https://drafts.csswg.org/mediaqueries-4/#typedef-media-query
   //
   // TODO(crbug.com/962417): Only a limited form of the grammar is
@@ -90,6 +96,9 @@ class CORE_EXPORT MediaQueryParser {
   scoped_refptr<MediaQuerySet> ParseImpl(CSSParserTokenRange);
 
   bool IsMediaFeatureAllowedInMode(const String& media_feature) const;
+
+  // True if <media-not> is enabled.
+  bool IsNotKeywordEnabled() const;
 
   ParserType parser_type_;
   scoped_refptr<MediaQuerySet> query_set_;

@@ -17,6 +17,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -55,8 +57,6 @@
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/system/core_scheduling.h"
 #include "chromeos/system/statistics_provider.h"
-#include "components/arc/arc_features.h"
-#include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/session/arc_dlc_installer.h"
 #include "components/arc/session/arc_service_manager.h"

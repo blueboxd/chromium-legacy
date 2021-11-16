@@ -70,11 +70,9 @@ struct PrintBackendServiceImpl::DocumentContainer {
   DocumentContainer(
       scoped_refptr<PrintedDocument> document,
       mojom::PrintTargetType target_type,
-      int page_count,
       mojom::PrintBackendService::StartPrintingCallback start_printing_callback)
       : document(document),
         target_type(target_type),
-        page_count(page_count),
         start_printing_callback(std::move(start_printing_callback)),
         task_runner(GetPrintingTaskRunner()) {
     // Container is created on main thread, but system calls show be on
@@ -91,7 +89,6 @@ struct PrintBackendServiceImpl::DocumentContainer {
 
   // Parameters required for the delayed call to `UpdatePrinterSettings()`.
   mojom::PrintTargetType target_type;
-  int page_count;
 
   // `start_printing_callback` is held until the document is ready for
   // printing.
@@ -362,7 +359,6 @@ void PrintBackendServiceImpl::StartPrinting(
     int document_cookie,
     const std::u16string& document_name,
     mojom::PrintTargetType target_type,
-    int page_count,
     const PrintSettings& settings,
     mojom::PrintBackendService::StartPrintingCallback callback) {
   if (!print_backend_) {
@@ -380,7 +376,7 @@ void PrintBackendServiceImpl::StartPrinting(
       document_cookie);
   documents_.push_back(
       std::make_unique<PrintBackendServiceImpl::DocumentContainer>(
-          document, target_type, page_count, std::move(callback)));
+          document, target_type, std::move(callback)));
 
 #if defined(OS_CHROMEOS) && defined(USE_CUPS)
   CupsConnectionPool* connection_pool = CupsConnectionPool::GetInstance();
@@ -425,18 +421,19 @@ mojom::ResultCode PrintBackendServiceImpl::StartPrintingReadyDocument(
   // now to our new context.
   // TODO(crbug.com/1245679)  Replumb `mojom::PrintTargetType` into
   // `PrintingContext::UpdatePrinterSettings()`.
-  bool external_preview = false;
-  bool show_system_dialog =
-      document_container.target_type == mojom::PrintTargetType::kSystemDialog;
+  PrintingContext::PrinterSettings printer_settings {
 #if defined(OS_MAC)
-  if (document_container.target_type ==
-      mojom::PrintTargetType::kExternalPreview) {
-    external_preview = true;
-  }
+    .external_preview = document_container.target_type ==
+                        mojom::PrintTargetType::kExternalPreview,
 #endif
+    .show_system_dialog =
+        document_container.target_type == mojom::PrintTargetType::kSystemDialog,
+#if defined(OS_WIN)
+    .page_count = 0,
+#endif
+  };
   context->ApplyPrintSettings(document->settings());
-  mojom::ResultCode result = context->UpdatePrinterSettings(
-      external_preview, show_system_dialog, document_container.page_count);
+  mojom::ResultCode result = context->UpdatePrinterSettings(printer_settings);
   if (result != mojom::ResultCode::kSuccess) {
     DLOG(ERROR) << "Failure updating printer settings for document "
                 << document->cookie() << ", error: " << result;

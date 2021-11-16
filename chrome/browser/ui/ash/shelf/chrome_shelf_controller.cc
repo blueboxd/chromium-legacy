@@ -9,6 +9,8 @@
 #include <set>
 #include <utility>
 
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/arc_util.h"
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
@@ -90,8 +92,6 @@
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
-#include "components/arc/arc_prefs.h"
-#include "components/arc/arc_util.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/strings/grit/components_strings.h"

@@ -46,7 +46,6 @@
       });
 
       // Once the SW sends us its ID, forward it up to the window.
-      //self.addEventListener('message', evt => {
       navigator.serviceWorker.addEventListener('message', evt => {
         window.parent.postMessage(evt.data, '*');
       });

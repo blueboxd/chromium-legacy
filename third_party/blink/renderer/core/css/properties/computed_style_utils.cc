@@ -1572,13 +1572,13 @@ FloatSize ComputedStyleUtils::UsedBoxSize(const LayoutObject& layout_object) {
 }
 
 CSSValue* ComputedStyleUtils::RenderTextDecorationFlagsToCSSValue(
-    TextDecoration text_decoration) {
+    TextDecorationLine text_decoration) {
   switch (text_decoration) {
-    case TextDecoration::kNone:
+    case TextDecorationLine::kNone:
       return CSSIdentifierValue::Create(CSSValueID::kNone);
-    case TextDecoration::kSpellingError:
+    case TextDecorationLine::kSpellingError:
       return CSSIdentifierValue::Create(CSSValueID::kSpellingError);
-    case TextDecoration::kGrammarError:
+    case TextDecorationLine::kGrammarError:
       return CSSIdentifierValue::Create(CSSValueID::kGrammarError);
     default:
       break;
@@ -1586,11 +1586,11 @@ CSSValue* ComputedStyleUtils::RenderTextDecorationFlagsToCSSValue(
 
   // Blink value is ignored.
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (EnumHasFlags(text_decoration, TextDecoration::kUnderline))
+  if (EnumHasFlags(text_decoration, TextDecorationLine::kUnderline))
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kUnderline));
-  if (EnumHasFlags(text_decoration, TextDecoration::kOverline))
+  if (EnumHasFlags(text_decoration, TextDecorationLine::kOverline))
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kOverline));
-  if (EnumHasFlags(text_decoration, TextDecoration::kLineThrough))
+  if (EnumHasFlags(text_decoration, TextDecorationLine::kLineThrough))
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kLineThrough));
 
   if (!list->length())
@@ -2463,40 +2463,40 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
   for (const auto& operation : filter_operations.Operations()) {
     FilterOperation* filter_operation = operation.Get();
     switch (filter_operation->GetType()) {
-      case FilterOperation::REFERENCE:
+      case FilterOperation::kReference:
         filter_value = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kUrl);
         filter_value->Append(*MakeGarbageCollected<CSSStringValue>(
             To<ReferenceFilterOperation>(filter_operation)->Url()));
         break;
-      case FilterOperation::GRAYSCALE:
+      case FilterOperation::kGrayscale:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kGrayscale);
         filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
-      case FilterOperation::SEPIA:
+      case FilterOperation::kSepia:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSepia);
         filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
-      case FilterOperation::SATURATE:
+      case FilterOperation::kSaturate:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSaturate);
         filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
-      case FilterOperation::HUE_ROTATE:
+      case FilterOperation::kHueRotate:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kHueRotate);
         filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kDegrees));
         break;
-      case FilterOperation::INVERT:
+      case FilterOperation::kInvert:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kInvert);
         filter_value->Append(*CSSNumericLiteralValue::Create(
@@ -2504,7 +2504,7 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
-      case FilterOperation::OPACITY:
+      case FilterOperation::kOpacity:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kOpacity);
         filter_value->Append(*CSSNumericLiteralValue::Create(
@@ -2512,7 +2512,7 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
-      case FilterOperation::BRIGHTNESS:
+      case FilterOperation::kBrightness:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kBrightness);
         filter_value->Append(*CSSNumericLiteralValue::Create(
@@ -2520,7 +2520,7 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
-      case FilterOperation::CONTRAST:
+      case FilterOperation::kContrast:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kContrast);
         filter_value->Append(*CSSNumericLiteralValue::Create(
@@ -2528,14 +2528,14 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
-      case FilterOperation::BLUR:
+      case FilterOperation::kBlur:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kBlur);
         filter_value->Append(*ZoomAdjustedPixelValue(
             To<BlurFilterOperation>(filter_operation)->StdDeviation().Value(),
             style));
         break;
-      case FilterOperation::DROP_SHADOW: {
+      case FilterOperation::kDropShadow: {
         const auto& drop_shadow_operation =
             To<DropShadowFilterOperation>(*filter_operation);
         filter_value =

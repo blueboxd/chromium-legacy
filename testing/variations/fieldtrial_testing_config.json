@@ -8244,6 +8244,21 @@
             ]
         }
     ],
+    "UseContextSnapshot": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UseContextSnapshot"
+                    ]
+                }
+            ]
+        }
+    ],
     "UseFluentLanguageModel": [
         {
             "platforms": [
@@ -9178,6 +9193,34 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WebRtcDistinctWorkerThread"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebUICodeCache": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebUICodeCache"
+                    ]
+                },
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "WebUICodeCache"
                     ]
                 }
             ]

@@ -418,6 +418,11 @@ class ComputedStyle : public ComputedStyleBase,
 
   StyleHighlightData& MutableHighlightData();
 
+  HashSet<AtomicString>* CustomHighlightNames() const {
+    return CustomHighlightNamesInternal().get();
+  }
+  void SetHasCustomHighlightName(const AtomicString&);
+
   /**
    * ComputedStyle properties
    *
@@ -2189,7 +2194,7 @@ class ComputedStyle : public ComputedStyleBase,
   void RestoreParentTextDecorations(const ComputedStyle& parent_style);
   CORE_EXPORT const Vector<AppliedTextDecoration>& AppliedTextDecorations()
       const;
-  CORE_EXPORT TextDecoration TextDecorationsInEffect() const;
+  CORE_EXPORT TextDecorationLine TextDecorationsInEffect() const;
 
   // Overflow utility functions.
 

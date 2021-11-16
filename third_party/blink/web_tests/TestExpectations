@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia Linux Mac Mac10.12 Mac10.13 Mac10.14 Mac10.15 Mac11 Mac11-arm64 Win Win7 Win10.20h2 ]
+# tags: [ Fuchsia Linux Mac Mac10.12 Mac10.13 Mac10.14 Mac10.15 Mac11 Mac11-arm64 Win Win7 Win10.20h2 ]
 # tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Skip ]
 
@@ -176,11 +176,6 @@ crbug.com/949003 http/tests/printing/cross-site-frame.html [ Failure Pass ]
 # has been well and truly enabled always.
 # ====== Oilpan-only failures until here ======
 
-# ====== Browserside navigation from here ======
-# These tests started failing when browser-side navigation was turned on.
-crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.js [ Failure ]
-# ====== Browserside navigation until here ======
-
 # ====== Paint team owned tests from here ======
 # The paint team tracks and triages its test failures, and keeping them colocated
 # makes tracking much easier.
@@ -299,11 +294,6 @@ crbug.com/1126305 wpt_internal/prerender/* [ Skip ]
 crbug.com/1126305 virtual/prerender/wpt_internal/prerender/* [ Pass ]
 crbug.com/1126305 http/tests/inspector-protocol/prerender/* [ Skip ]
 crbug.com/1126305 virtual/prerender/http/tests/inspector-protocol/prerender/* [ Pass ]
-
-## prerender test: the File System Access API is not supported on Android ##
-crbug.com/1182032 [ Android ] virtual/prerender/wpt_internal/prerender/restriction-local-file-system-access.https.html [ Skip ]
-## prerender test: Notification constructor is not supported on Android ##
-crbug.com/1198110 [ Android ] virtual/prerender/external/wpt/speculation-rules/prerender/restriction-notification.https.html [ Skip ]
 
 # These tests require BFCache, which is currently disabled by default on Desktop.
 # Keep this in sync with VirtualTestSuites.
@@ -564,7 +554,6 @@ crbug.com/1261905 virtual/backface-visibility-interop/external/wpt/css/css-trans
 # CompositeAfterPaint remaining failures
 # Outline paints incorrectly with columns. Needs LayoutNGBlockFragmentation.
 crbug.com/1047358 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
-crbug.com/1266689 compositing/gestures/gesture-tapHighlight-composited-img.html [ Failure Pass ]
 # Need to force the video to be composited in this case, or change pre-CAP
 # to match CAP behavior.
 crbug.com/1108972 fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
@@ -1477,6 +1466,10 @@ crbug.com/660611 virtual/layout_ng_flex_frag/fast/multicol/flexbox/flexbox.html 
 ### Tests passing with LayoutNGGridFragmentation enabled:
 virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-020.html [ Pass ]
 virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-027.tentative.html [ Pass ]
+virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-028.html [ Pass ]
+virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-029.html [ Pass ]
+virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-030.html [ Pass ]
+virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-031.html [ Pass ]
 
 ### With LayoutNGPrinting enabled:
 
@@ -1817,7 +1810,7 @@ crbug.com/432129 html/marquee/marquee-scroll.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ Failure Pass ]
 crbug.com/421283 html/marquee/marquee-scrollamount.html [ Failure Pass ]
 
-# TODO(oshima): Mac Android are currently not supported.
+# TODO(oshima): Mac is currently not supported.
 crbug.com/567837 [ Mac ] virtual/scalefactor200withzoom/fast/hidpi/static/* [ Skip ]
 
 # TODO(oshima): Move the event scaling code to eventSender and remove this.
@@ -2022,8 +2015,6 @@ crbug.com/1135405 http/tests/devtools/sources/debugger-pause/debugger-pause-infi
 crbug.com/1034789 [ Mac ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Pass Timeout ]
 crbug.com/1105957 [ Debug Linux ] fast/dom/cssTarget-crash.html [ Pass Timeout ]
 crbug.com/915903 http/tests/security/inactive-document-with-empty-security-origin.html [ Pass Timeout ]
-crbug.com/1146221 [ Linux ] http/tests/devtools/sources/debugger-ui/debugger-inline-values.js [ Pass Skip Timeout ]
-crbug.com/1146221 [ Mac11-arm64 ] http/tests/devtools/sources/debugger-ui/debugger-inline-values.js [ Pass Skip Timeout ]
 crbug.com/987138 [ Linux ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
 crbug.com/987138 [ Win ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
 crbug.com/1122742 http/tests/devtools/sources/debugger/source-frame-inline-breakpoint-decorations.js [ Pass Skip Timeout ]
@@ -2122,12 +2113,9 @@ crbug.com/1051044 external/wpt/css/filter-effects/effect-reference-feimage-003.h
 
 crbug.com/524160 [ Debug ] http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
 
-# On these platforms (all but Android) media tests don't currently use gpu-accelerated (proprietary) codecs, so no
-# benefit to running them again with gpu acceleration enabled.
-crbug.com/555703 [ Linux ] virtual/media-gpu-accelerated/* [ Skip ]
-crbug.com/555703 [ Mac ] virtual/media-gpu-accelerated/* [ Skip ]
-crbug.com/555703 [ Win ] virtual/media-gpu-accelerated/* [ Skip ]
-crbug.com/555703 [ Fuchsia ] virtual/media-gpu-accelerated/* [ Skip ]
+# On all platforms media tests don't currently use gpu-accelerated (proprietary)
+# codecs, so no benefit to running them again with gpu acceleration enabled.
+crbug.com/555703 virtual/media-gpu-accelerated/* [ Skip ]
 
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
 crbug.com/1262980 fast/multicol/infinitely-tall-content-in-outer-crash.html [ Pass Timeout ]
@@ -2971,6 +2959,10 @@ crbug.com/626703 fast/animation/scroll-animations/scrolltimeline-root-scroller-q
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/navigation-timing-extended.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-backgrounds/background-clip/clip-text-multi-line.html [ Failure ]
+crbug.com/626703 virtual/threaded/external/wpt/css/css-backgrounds/background-clip/clip-text-multi-line.html [ Failure ]
+crbug.com/626703 [ Mac11 ] external/wpt/secure-payment-confirmation/secure-payment-confirmation-authentication-accepted.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.15 ] wpt_internal/fenced_frame/create-credential.https.html [ Skip Timeout ]
 crbug.com/626703 external/wpt/css/css-lists/counter-list-item.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-lists/foo-counter-reversed-006a.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-lists/foo-counter-reversed-006b.html [ Failure ]
@@ -4060,6 +4052,10 @@ crbug.com/660611 external/wpt/css/css-break/flexbox/flex-container-fragmentation
 crbug.com/829028 external/wpt/css/css-break/forced-break-at-fragmentainer-start-000.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-020.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-027.tentative.html [ Failure ]
+crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-028.html [ Failure ]
+crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-029.html [ Failure ]
+crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-030.html [ Failure ]
+crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-031.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/monolithic-with-overflow-lr.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/monolithic-with-overflow-rl.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/monolithic-with-overflow.html [ Failure ]
@@ -4982,8 +4978,7 @@ crbug.com/919272 external/wpt/resource-timing/resource-timing.html [ Skip ]
 # Sheriff 2019-01-03
 crbug.com/918905 external/wpt/css/css-sizing/block-size-with-min-or-max-content-table-1b.html [ Failure Pass ]
 
-# Android doesn't support H264/AVC1 encoding.
-# Some other bots are built without H264/AVC1 encoding support.
+# Some bots are built without H264/AVC1 encoding support.
 crbug.com/719023 fast/mediarecorder/MediaRecorder-isTypeSupported-avc1.html [ Failure Pass ]
 crbug.com/719023 media_capabilities/encodingInfo-avc1.html [ Failure Pass ]
 
@@ -5099,7 +5094,6 @@ crbug.com/943969 [ Win ] inspector-protocol/css/css-get-media-queries.js [ Failu
 # Sheriff 2019-03-25
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Failure Pass ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Failure Pass Skip Timeout ]
-crbug.com/945665 http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Failure Pass ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Failure Pass ]
 
 # Tests using testRunner.useUnfortunateSynchronousResizeMode occasionally timeout,
@@ -5406,9 +5400,6 @@ crbug.com/836300 fast/css3-text/css3-text-decoration/text-decoration-skip-ink-li
 # Sheriff 2020-01-14
 crbug.com/1041973 external/wpt/html/semantics/forms/constraints/form-validation-reportValidity.html [ Failure Pass ]
 
-# Disable for landing devtools changes
-crbug.com/1006759 http/tests/devtools/console/argument-hints.js [ Failure Pass ]
-
 # Failing origin trial for css properties test
 crbug.com/1041993 http/tests/origin_trials/sample-api-script-added-after-css-declaration.html [ Failure ]
 
@@ -5509,7 +5500,6 @@ crbug.com/1006759 http/tests/devtools/profiler/heap-snapshot-loader.js [ Failure
 # Temporarily disabled to land changes in DevTools, multiple dependent CLs
 # [1] https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2049183
 # [2] https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2119670
-crbug.com/1064472 http/tests/devtools/elements/elements-tab-stops.js [ Failure Pass ]
 
 crbug.com/1049456 fast/scrolling/events/overscroll-event-fired-to-element-with-overscroll-behavior.html [ Failure Pass ]
 crbug.com/1081277 fast/scrolling/events/scrollend-event-fired-to-element-with-overscroll-behavior.html [ Failure Pass ]
@@ -6115,7 +6105,6 @@ crbug.com/1168522 external/wpt/focus/iframe-activeelement-after-focusing-out-ifr
 # DevTools roll
 crbug.com/1050549 http/tests/devtools/network/preview-searchable.js [ Failure Pass ]
 crbug.com/1050549 http/tests/devtools/console/console-correct-suggestions.js [ Failure Pass ]
-crbug.com/1050549 http/tests/devtools/extensions/extensions-timeline-api.js [ Failure Pass ]
 
 # Flaky test
 crbug.com/1173439 http/tests/devtools/service-workers/service-worker-manager.js [ Pass Skip Timeout ]
@@ -6128,9 +6117,9 @@ crbug.com/961059 fast/workers/worker-shared-asm-buffer.html [ Skip ]
 
 # Temporarily disabled to unblock https://crrev.com/c/2979697
 crbug.com/1222114 http/tests/devtools/console/console-call-getter-on-proto.js [ Failure Pass ]
+crbug.com/1222114 http/tests/devtools/console/console-dir.js [ Failure Pass ]
 crbug.com/1222114 http/tests/devtools/console/console-dir-es6.js [ Failure Pass ]
 crbug.com/1222114 http/tests/devtools/console/console-format.js [ Failure Pass ]
-crbug.com/1222114 http/tests/devtools/console/console-format-es6.js [ Failure Pass ]
 crbug.com/1222114 http/tests/devtools/console/console-functions.js [ Failure Pass ]
 crbug.com/1222114 http/tests/devtools/sources/debugger/properties-special.js [ Failure Pass ]
 
@@ -6280,9 +6269,6 @@ crbug.com/476553 virtual/scroll-unification/fast/events/mouse-event-from-touch-s
 crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/touch-gesture-fully-scrolled-iframe-propagates.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/fast/events/mouse-event-buttons-attribute.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification-unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-timing.https.sub.html [ Crash Failure Pass Timeout ]
-
-# Sheriff 2021-04-05
-crbug.com/921151 http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure Pass ]
 
 # Sheriff 2021-04-06
 crbug.com/1032451 [ Linux ] virtual/threaded/animations/stability/animation-iteration-event-destroy-renderer.html [ Failure Pass Timeout ]
@@ -6493,8 +6479,11 @@ crbug.com/1199701 http/tests/devtools/console/console-big-array.js [ Skip ]
 # Sheriff 2021-5-19
 # Flaky on Webkit Linux Leak
 crbug.com/1210731 [ Linux ] http/tests/devtools/sources/debugger-step/debugger-step-out-document-write.js [ Failure Pass ]
-crbug.com/1210731 [ Linux ] http/tests/devtools/sources/debugger/debug-inlined-scripts-fragment-id.js [ Failure Pass ]
 crbug.com/1210731 [ Linux ] http/tests/devtools/sources/debugger-breakpoints/dynamic-scripts-breakpoints.js [ Failure Pass ]
+
+# Sheriff 2021-11-15
+crbug.com/1270362 http/tests/devtools/sources/debugger-ui/debugger-inline-values.js [ Skip ]
+crbug.com/1270362 http/tests/devtools/sources/debugger/debug-inlined-scripts-fragment-id.js [ Skip ]
 
 # The wpt_flags=h2 variants of these tests fail, but the other variants pass. We
 # can't handle this difference with -expected.txt files, so we have to list them
@@ -6639,6 +6628,9 @@ crbug.com/1147859 external/wpt/css/css-highlight-api/painting/custom-highlight-p
 crbug.com/1163437 external/wpt/css/css-highlight-api/painting/custom-highlight-painting-below-grammar.html [ Failure ]
 crbug.com/1147859 external/wpt/css/css-highlight-api/painting/custom-highlight-painting-below-target-text.html [ Failure ]
 crbug.com/1147859 [ Linux ] external/wpt/css/css-highlight-api/painting/* [ Failure ]
+crbug.com/1147859 [ Linux ] virtual/css-highlight-inheritance/external/wpt/css/css-highlight-api/painting/* [ Failure ]
+crbug.com/1024156 external/wpt/css/css-highlight-api/painting/custom-highlight-painting-inheritance-* [ Failure ]
+crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-highlight-api/painting/custom-highlight-painting-inheritance-* [ Pass ]
 
 # Sheriff 2021-06-11
 crbug.com/1218667 [ Win ] virtual/portals/wpt_internal/portals/portals-dangling-markup.sub.html [ Pass Skip Timeout ]
@@ -6682,7 +6674,6 @@ crbug.com/1222097 http/tests/canvas/captureStream-on-detached-canvas.html [ Skip
 crbug.com/1222097 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/blob.https.html [ Skip ]
 crbug.com/1222097 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/worker-inheritance.sub.https.html [ Skip ]
 crbug.com/1222097 virtual/shared_array_buffer_on_desktop/http/tests/devtools/security/interstitial-sidebar.js [ Skip ]
-crbug.com/1222097 virtual/shared_array_buffer_on_desktop/http/tests/devtools/security/mixed-content-sidebar.js [ Skip ]
 crbug.com/1222097 virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Skip ]
 crbug.com/1222097 external/wpt/uievents/order-of-events/mouse-events/mouseover-out.html [ Skip ]
 
@@ -6877,7 +6868,6 @@ crbug.com/1243707 [ Debug Linux ] http/tests/inspector-protocol/target/auto-atta
 crbug.com/1243933 [ Win7 ] virtual/shared_array_buffer_on_desktop/http/tests/devtools/elements/accessibility/edit-aria-attributes.js [ Failure ]
 
 # Sheriff 2021-09-03
-crbug.com/1246238 http/tests/devtools/security/mixed-content-sidebar.js [ Failure Pass ]
 crbug.com/1246238 http/tests/devtools/security/interstitial-sidebar.js [ Failure Pass ]
 crbug.com/1246351 http/tests/misc/scroll-cross-origin-iframes-scrollbar.html [ Failure Pass Timeout ]
 

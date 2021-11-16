@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
@@ -32,8 +34,6 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/memory/memory.h"
 #include "chromeos/system/scheduler_configuration_manager_base.h"
-#include "components/arc/arc_features.h"
-#include "components/arc/arc_util.h"
 #include "components/arc/enterprise/arc_data_snapshotd_manager.h"
 #include "components/arc/session/arc_bridge_host_impl.h"
 #include "components/user_manager/user_manager.h"

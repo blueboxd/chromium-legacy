@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -69,8 +71,6 @@
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/arc_prefs.h"
-#include "components/arc/arc_util.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/mojom/compatibility_mode.mojom.h"
@@ -1120,19 +1120,31 @@ class ArcAppModelIconTest : public ArcAppModelBuilderRecreate,
     }
 
     // Update the icon key to fetch the new icon and avoid icon catch,
+    // TODO(crbug.com/1253250): Remove apps::mojom related code.
     apps_util::IncrementingIconKeyFactory icon_key_factory;
-    std::vector<apps::mojom::AppPtr> apps;
+    std::vector<apps::mojom::AppPtr> mojom_apps;
+    std::vector<std::unique_ptr<apps::App>> apps;
     for (const auto& app_id : app_ids) {
-      apps::mojom::AppPtr app = apps::mojom::App::New();
-      app->app_type = apps::mojom::AppType::kArc;
-      app->app_id = app_id;
-      app->icon_key = icon_key_factory.MakeIconKey(apps::IconEffects::kNone);
-      apps.push_back(app.Clone());
+      apps::mojom::AppPtr mojom_app = apps::mojom::App::New();
+      mojom_app->app_type = apps::mojom::AppType::kArc;
+      mojom_app->app_id = app_id;
+      mojom_app->icon_key =
+          icon_key_factory.MakeIconKey(apps::IconEffects::kNone);
+      mojom_apps.push_back(mojom_app.Clone());
+
+      auto app = std::make_unique<apps::App>(apps::AppType::kArc, app_id);
+      app->icon_key =
+          std::move(*icon_key_factory.CreateIconKey(apps::IconEffects::kNone));
+      apps.push_back(std::move(app));
     }
 
     apps::AppServiceProxyFactory::GetForProfile(profile())
         ->AppRegistryCache()
-        .OnApps(std::move(apps), apps::mojom::AppType::kArc,
+        .OnApps(std::move(mojom_apps), apps::mojom::AppType::kArc,
+                false /* should_notify_initialized */);
+    apps::AppServiceProxyFactory::GetForProfile(profile())
+        ->AppRegistryCache()
+        .OnApps(std::move(apps), apps::AppType::kArc,
                 false /* should_notify_initialized */);
   }
 

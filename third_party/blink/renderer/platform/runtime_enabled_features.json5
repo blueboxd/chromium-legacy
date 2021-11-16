@@ -556,7 +556,7 @@
       // Support the 'only' keyword for the color-scheme property.
       name: "CSSColorSchemeOnly",
       origin_trial_feature_name: "AutoDarkMode",
-      status: "test",
+      status: "stable",
     },
     {
       name: "CSSColorTypedOM",
@@ -1525,10 +1525,6 @@
       name: "NavigatorLanguageInInsecureContext",
       settable_from_internals: true,
       status: "stable",
-    },
-    {
-      // Controlled by blink::features::kNavigatorPluginsFixed.
-      name: "NavigatorPluginsFixed",
     },
     {
       name: "NetInfoDownlinkMax",

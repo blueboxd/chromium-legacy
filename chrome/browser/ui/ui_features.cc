@@ -28,8 +28,14 @@ const base::Feature kChromeTipsInMainMenuNewBadge{
 #endif
 
 // Enables "Chrome What's New" UI.
-const base::Feature kChromeWhatsNewUI{"ChromeWhatsNewUI",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kChromeWhatsNewUI {
+  "ChromeWhatsNewUI",
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Whether to show a feedback button in the What's New UI.
 const base::FeatureParam<bool> kChromeWhatsNewUIFeedbackButton{
@@ -148,7 +154,6 @@ const base::Feature kTabGroupsNewBadgePromo{"TabGroupsNewBadgePromo",
 // https://crbug.com/1223929
 const base::Feature kTabGroupsSave{"TabGroupsSave",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
-const char kTabGroupsSaveUIVariationsParameterName[] = "UI variation";
 
 // Enables preview images in tab-hover cards.
 // https://crbug.com/928954

@@ -3422,6 +3422,13 @@ const char kRelatedSearchesUiDescription[] =
     "regardless of whether they are safe or useful. This requires the Related "
     "Searches feature flag to also be enabled.";
 
+const char kRequestDesktopSiteExceptionsName[] =
+    "Per-site setting to request desktop site on Android.";
+const char kRequestDesktopSiteExceptionsDescription[] =
+    "An option in `Site settings` to request the desktop version of websites "
+    "based on site level settings. Flag request-desktop-site-global "
+    "needs to be enabled when enabling this flag.";
+
 const char kRequestDesktopSiteGlobalName[] =
     "Global setting to request desktop site on Android.";
 const char kRequestDesktopSiteGlobalDescription[] =
@@ -3826,6 +3833,12 @@ const char kHardwareSecureDecryptionName[] = "Hardware Secure Decryption";
 const char kHardwareSecureDecryptionDescription[] =
     "Enable/Disable the use of hardware secure Content Decryption Module (CDM) "
     "for protected content playback.";
+
+const char kHardwareSecureDecryptionExperimentName[] =
+    "Hardware Secure Decryption Experiment";
+const char kHardwareSecureDecryptionExperimentDescription[] =
+    "Enable/Disable the use of hardware secure Content Decryption Module (CDM) "
+    "for experimental protected content playback.";
 
 const char kMediaFoundationClearName[] = "MediaFoundation for Clear";
 const char kMediaFoundationClearDescription[] =

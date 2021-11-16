@@ -1,0 +1,94 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("prefs") {
+  sources = [
+    "arc_export.h",
+    "arc_prefs.cc",
+    "arc_prefs.h",
+  ]
+
+  defines = [ "ARC_IMPLEMENTATION" ]
+
+  deps = [
+    "//build:chromeos_buildflags",
+    "//components/arc/session:arc_base_enums",
+    "//components/guest_os:prefs",
+    "//components/prefs",
+  ]
+}
+
+source_set("arc_features") {
+  sources = [
+    "arc_features.cc",
+    "arc_features.h",
+  ]
+
+  deps = [ "//base" ]
+}
+
+static_library("arc_base_utils") {
+  sources = [
+    "arc_util.cc",
+    "arc_util.h",
+  ]
+
+  public_deps = [ ":arc_features" ]
+  deps = [
+    "//ash/constants",
+    "//ash/public/cpp",
+    "//base",
+    "//chromeos/dbus:concierge_proto",
+    "//chromeos/dbus:dbus",
+    "//chromeos/dbus/session_manager",
+    "//chromeos/dbus/upstart:upstart",
+    "//components/exo",
+    "//ui/aura",
+  ]
+}
+
+static_library("arc_base") {
+  # TODO(hidehiko): Revisit here and move back some files to "arc"
+  # on completion to move ArcSession task to ArcSessionManager.
+  sources = [
+    "arc_browser_context_keyed_service_factory_base.h",
+    "arc_features_parser.cc",
+    "arc_features_parser.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/account_id",
+    "//components/keyed_service/content",
+  ]
+
+  public_deps = [
+    ":arc_base_utils",
+    "//components/arc/mojom",
+    "//components/arc/session",
+    "//components/arc/session:arc_base_enums",
+    "//components/arc/session:connection_holder",
+    "//dbus",
+  ]
+}
+
+static_library("compat_mode_test_support") {
+  testonly = true
+  sources = [
+    "compat_mode/test/compat_mode_test_base.cc",
+    "compat_mode/test/compat_mode_test_base.h",
+  ]
+
+  deps = [
+    "//ash/constants",
+    "//ash/public/cpp",
+    "//base",
+    "//components/arc:arc",
+    "//ui/aura",
+    "//ui/display:test_support",
+    "//ui/events:test_support",
+    "//ui/views",
+    "//ui/views:test_support",
+  ]
+}

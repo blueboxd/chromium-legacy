@@ -10,16 +10,21 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_cache.h"
 #include "components/services/app_service/public/cpp/icon_coalescer.h"
+#include "components/services/app_service/public/cpp/icon_loader.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -77,8 +82,13 @@ class AppServiceProxyBase : public KeyedService,
 
   apps::PreferredAppsListHandle& PreferredApps();
 
+  // Registers `publisher` with the App Service as exclusively publishing apps
+  // of type `app_type`. `publisher` must have a lifetime equal to or longer
+  // than this object.
+  void RegisterPublisher(AppType app_type, AppPublisher* publisher);
+
   // apps::IconLoader overrides.
-  apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override;
+  absl::optional<IconKey> GetIconKey(const std::string& app_id) override;
   std::unique_ptr<IconLoader::Releaser> LoadIconFromIconKey(
       apps::mojom::AppType app_type,
       const std::string& app_id,
@@ -270,7 +280,7 @@ class AppServiceProxyBase : public KeyedService,
     explicit InnerIconLoader(AppServiceProxyBase* host);
 
     // apps::IconLoader overrides.
-    apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override;
+    absl::optional<IconKey> GetIconKey(const std::string& app_id) override;
     std::unique_ptr<IconLoader::Releaser> LoadIconFromIconKey(
         apps::mojom::AppType app_type,
         const std::string& app_id,
@@ -327,6 +337,8 @@ class AppServiceProxyBase : public KeyedService,
       apps::mojom::AppType app_type,
       const std::string& app_id,
       apps::mojom::UninstallSource uninstall_source);
+
+  base::flat_map<AppType, AppPublisher*> publishers_;
 
   // This proxy privately owns its instance of the App Service. This should not
   // be exposed except through the Mojo interface connected to |app_service_|.

@@ -1972,6 +1972,9 @@ extern const char kRelatedSearchesSimplifiedUxDescription[];
 extern const char kRelatedSearchesUiName[];
 extern const char kRelatedSearchesUiDescription[];
 
+extern const char kRequestDesktopSiteExceptionsName[];
+extern const char kRequestDesktopSiteExceptionsDescription[];
+
 extern const char kRequestDesktopSiteGlobalName[];
 extern const char kRequestDesktopSiteGlobalDescription[];
 
@@ -2197,6 +2200,9 @@ extern const char kEnableMediaFoundationVideoCaptureDescription[];
 
 extern const char kHardwareSecureDecryptionName[];
 extern const char kHardwareSecureDecryptionDescription[];
+
+extern const char kHardwareSecureDecryptionExperimentName[];
+extern const char kHardwareSecureDecryptionExperimentDescription[];
 
 extern const char kMediaFoundationClearName[];
 extern const char kMediaFoundationClearDescription[];

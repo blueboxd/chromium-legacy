@@ -123,6 +123,7 @@
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_controls_collection.h"
 #include "third_party/blink/renderer/core/html/forms/html_options_collection.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_menu_element.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
@@ -1559,6 +1560,13 @@ double Element::scrollTop() {
   if (GetDocument().ScrollingElementNoLayout() == this) {
     if (GetDocument().domWindow())
       return GetDocument().domWindow()->scrollY();
+    return 0;
+  }
+
+  // Don't disclose scroll position in preview state. See crbug.com/1261689.
+  auto* select_element = DynamicTo<HTMLSelectElement>(this);
+  if (select_element && !select_element->UsesMenuList() &&
+      !select_element->SuggestedValue().IsEmpty()) {
     return 0;
   }
 
@@ -3180,7 +3188,7 @@ StyleRecalcChange Element::RecalcOwnStyle(
     if (new_style->HasPseudoElementStyle(kPseudoIdSelection)) {
       StyleHighlightData& highlights = new_style->MutableHighlightData();
       const ComputedStyle* highlight_parent =
-          parent_highlights ? parent_highlights->Selection().get() : nullptr;
+          parent_highlights ? parent_highlights->Selection() : nullptr;
       StyleRequest style_request{kPseudoIdSelection, highlight_parent};
       highlights.SetSelection(
           StyleForPseudoElement(style_recalc_context, style_request));
@@ -3189,7 +3197,7 @@ StyleRecalcChange Element::RecalcOwnStyle(
     if (new_style->HasPseudoElementStyle(kPseudoIdTargetText)) {
       StyleHighlightData& highlights = new_style->MutableHighlightData();
       const ComputedStyle* highlight_parent =
-          parent_highlights ? parent_highlights->TargetText().get() : nullptr;
+          parent_highlights ? parent_highlights->TargetText() : nullptr;
       StyleRequest style_request{kPseudoIdTargetText, highlight_parent};
       highlights.SetTargetText(
           StyleForPseudoElement(style_recalc_context, style_request));
@@ -3198,8 +3206,7 @@ StyleRecalcChange Element::RecalcOwnStyle(
     if (new_style->HasPseudoElementStyle(kPseudoIdSpellingError)) {
       StyleHighlightData& highlights = new_style->MutableHighlightData();
       const ComputedStyle* highlight_parent =
-          parent_highlights ? parent_highlights->SpellingError().get()
-                            : nullptr;
+          parent_highlights ? parent_highlights->SpellingError() : nullptr;
       StyleRequest style_request{kPseudoIdSpellingError, highlight_parent};
       highlights.SetSpellingError(
           StyleForPseudoElement(style_recalc_context, style_request));
@@ -3208,13 +3215,32 @@ StyleRecalcChange Element::RecalcOwnStyle(
     if (new_style->HasPseudoElementStyle(kPseudoIdGrammarError)) {
       StyleHighlightData& highlights = new_style->MutableHighlightData();
       const ComputedStyle* highlight_parent =
-          parent_highlights ? parent_highlights->GrammarError().get() : nullptr;
+          parent_highlights ? parent_highlights->GrammarError() : nullptr;
       StyleRequest style_request{kPseudoIdGrammarError, highlight_parent};
       highlights.SetGrammarError(
           StyleForPseudoElement(style_recalc_context, style_request));
     }
 
-    // TODO(crbug.com/1024156): implement ::highlight() case
+    if (new_style->HasPseudoElementStyle(kPseudoIdHighlight)) {
+      StyleHighlightData& highlights = new_style->MutableHighlightData();
+
+      const HashSet<AtomicString>* custom_highlight_names =
+          new_style->CustomHighlightNames();
+      if (custom_highlight_names) {
+        for (const AtomicString& custom_highlight_name :
+             *custom_highlight_names) {
+          const ComputedStyle* highlight_parent =
+              parent_highlights
+                  ? parent_highlights->CustomHighlight(custom_highlight_name)
+                  : nullptr;
+          StyleRequest style_request{kPseudoIdHighlight, highlight_parent,
+                                     custom_highlight_name};
+          highlights.SetCustomHighlight(
+              custom_highlight_name,
+              StyleForPseudoElement(style_recalc_context, style_request));
+        }
+      }
+    }
   }
 
   ComputedStyle::Difference diff =
@@ -5586,9 +5612,7 @@ const ComputedStyle* Element::CachedStyleForPseudoElement(
     const AtomicString& pseudo_argument) {
   // Highlight pseudos are resolved into StyleHighlightData during originating
   // style recalc, and should never be stored in StyleCachedData.
-  // TODO(crbug.com/1024156): remove middle case after impl for ::highlight
   DCHECK(!RuntimeEnabledFeatures::HighlightInheritanceEnabled() ||
-         pseudo_id == kPseudoIdHighlight ||
          !IsHighlightPseudoElement(pseudo_id));
 
   const ComputedStyle* style = GetComputedStyle();
@@ -5613,9 +5637,7 @@ scoped_refptr<ComputedStyle> Element::UncachedStyleForPseudoElement(
     const StyleRequest& request) {
   // Highlight pseudos are resolved into StyleHighlightData during originating
   // style recalc, where we have the actual StyleRecalcContext.
-  // TODO(crbug.com/1024156): remove middle case after impl for ::highlight
   DCHECK(!RuntimeEnabledFeatures::HighlightInheritanceEnabled() ||
-         request.pseudo_id == kPseudoIdHighlight ||
          !IsHighlightPseudoElement(request.pseudo_id));
 
   // TODO(crbug.com/1145970): Use actual StyleRecalcContext.

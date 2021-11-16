@@ -4348,6 +4348,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcKeyboardShortcutHelperIntegrationDescription,
      kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kKeyboardShortcutHelperIntegrationFeature)},
+    {"arc-mouse-wheel-smooth-scroll",
+     flag_descriptions::kArcMouseWheelSmoothScrollName,
+     flag_descriptions::kArcMouseWheelSmoothScrollDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kMouseWheelSmoothScroll)},
     {"arc-native-bridge-toggle", flag_descriptions::kArcNativeBridgeToggleName,
      flag_descriptions::kArcNativeBridgeToggleDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kNativeBridgeToggleFeature)},
@@ -4356,15 +4360,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcNativeBridge64BitSupportExperimentDescription,
      kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kNativeBridge64BitSupportExperimentFeature)},
+    {"arc-right-click-long-press",
+     flag_descriptions::kArcRightClickLongPressName,
+     flag_descriptions::kArcRightClickLongPressDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kRightClickLongPress)},
     {"arc-rt-vcpu-dual-core", flag_descriptions::kArcRtVcpuDualCoreName,
      flag_descriptions::kArcRtVcpuDualCoreDesc, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kRtVcpuDualCore)},
     {"arc-rt-vcpu-quad-core", flag_descriptions::kArcRtVcpuQuadCoreName,
      flag_descriptions::kArcRtVcpuQuadCoreDesc, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kRtVcpuQuadCore)},
-    {"arc-touch-mode-mouse", flag_descriptions::kArcTouchModeMouseName,
-     flag_descriptions::kArcTouchModeMouseDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kTouchModeMouse)},
     {"arc-usb-device-attach-to-vm-experiment",
      flag_descriptions::kArcUsbDeviceDefaultAttachToVmName,
      flag_descriptions::kArcUsbDeviceDefaultAttachToVmDescription, kOsCrOS,
@@ -7757,6 +7762,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kLargeFaviconFromGoogle,
                                     kLargeFaviconFromGoogleVariations,
                                     "LargeFaviconFromGoogle")},
+#if defined(OS_ANDROID)
+    {"web-bluetooth-request-larger-mtu",
+     flag_descriptions::kWebBluetoothRequestLargerMtuName,
+     flag_descriptions::kWebBluetoothRequestLargerMtuDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kWebBluetoothRequestLargerMtu)},
+#endif  // defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

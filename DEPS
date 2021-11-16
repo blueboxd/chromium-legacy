@@ -202,7 +202,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:4cf9fa8105d30e3a6855bbfca50c5d6f88efb6b2',
+  'luci_go': 'git_revision:0e76392e6557cc3ff8d95c3bc012540e0dbc128a',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -234,15 +234,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'eecf0af951e488d4d972e846eef4f8df8bf04f6f',
+  'skia_revision': 'cf7be0f3a7ae4d682b5ca2d3dd213c8d4fb7c657',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'ab0597a8607c29532a8b0d7fa9524e9b1b8bfaa6',
+  'v8_revision': '391f21f5dead448c67a5d83ceff946b73c7b1a74',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'ae3f67ab4a3a5d81e3b9a4963406cbfbee851bd5',
+  'angle_revision': 'a05e6a7c0cf44cd4521edf4e1204c4243cde7148',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'a7ad5b5c96b3ec2d70ea5c173a15ef45cacaf07a',
+  'catapult_revision': '45cccc688e22fc5ad1673f18becba5773e623fee',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -349,7 +349,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '12e51f6efaaa4cf03a1e9b144a180747c8f942bf',
+  'dawn_revision': 'c38c4d32f405c9b07dab4060f3e8ec955c4d0767',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1021,12 +1021,12 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'dc331c6a71134e6f5a64a7fd0dc46af8334792cf',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '872da22a4f476694892a8d8ab0c487448811e2c3',
       'condition': 'checkout_linux',
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '3fca89bbc87dda9d7fcb72cda23af4aa313d90d9',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '7b3351443198f4e7d068999b169385b55a43679a',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1412,7 +1412,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '5ed467a2907bb3e252982db51a033bad81db1d09',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '52f14a3aa8e499ac872e3d95c172198c2da82594',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1691,7 +1691,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f8fa5066e7044b0f23720ad83f24d319c2599110',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c491a37eec8667d4f4936eb8d37d8eb58b4f47ba',
     'condition': 'checkout_src_internal',
   },
 
@@ -1732,7 +1732,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'nbRt9_SAcaDDoA0EgLrkpXYdu_D7rL-4FrxTK4s7e1YC',
+        'version': 'fBDEq_dZVmOoQQZ_EogV1hFtR0qWFl85i1j_V7eDSqAC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

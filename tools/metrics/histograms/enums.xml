@@ -7341,6 +7341,68 @@ others/histograms.xml -->
   <int value="2" label="enablePowerScheduler"/>
 </enum>
 
+<enum name="AXEventType">
+  <int value="0" label="None"/>
+  <int value="1" label="ActiveDescendantChanged"/>
+  <int value="2" label="Alert"/>
+  <int value="3" label="AriaAttributeChanged"/>
+  <int value="4" label="AutocorrectionOccured"/>
+  <int value="5" label="Blur"/>
+  <int value="6" label="CheckedStateChanged"/>
+  <int value="7" label="ChildrenChanged"/>
+  <int value="8" label="Clicked"/>
+  <int value="9" label="ControlsChanged"/>
+  <int value="10" label="DocumentSelectionChanged"/>
+  <int value="11" label="DocumentTitleChanged"/>
+  <int value="12" label="EndOfTest"/>
+  <int value="13" label="ExpandedChanged"/>
+  <int value="14" label="Focus"/>
+  <int value="15" label="FocusAfterMenuClose"/>
+  <int value="16" label="FocusContext"/>
+  <int value="17" label="Hide"/>
+  <int value="18" label="HitTestResult"/>
+  <int value="19" label="Hover"/>
+  <int value="20" label="ImageFrameUpdated"/>
+  <int value="21" label="LayoutComplete"/>
+  <int value="22" label="LiveRegionCreated"/>
+  <int value="23" label="LiveRegionChanged"/>
+  <int value="24" label="LoadComplete"/>
+  <int value="25" label="LoadStart"/>
+  <int value="26" label="LocationChanged"/>
+  <int value="27" label="MediaStartedPlaying"/>
+  <int value="28" label="MediaStoppedPlaying"/>
+  <int value="29" label="MenuEnd"/>
+  <int value="30" label="MenuListValueChanged"/>
+  <int value="31" label="MenuPopupEnd"/>
+  <int value="32" label="MenuPopupStart"/>
+  <int value="33" label="MenuStart"/>
+  <int value="34" label="MouseCanceled"/>
+  <int value="35" label="MouseDragged"/>
+  <int value="36" label="MouseMoved"/>
+  <int value="37" label="MousePressed"/>
+  <int value="38" label="MouseReleased"/>
+  <int value="39" label="RowCollapsed"/>
+  <int value="40" label="RowCountChanged"/>
+  <int value="41" label="RowExpanded"/>
+  <int value="42" label="ScrollPositionChanged"/>
+  <int value="43" label="ScrolledToAnchor"/>
+  <int value="44" label="SelectedChildrenChanged"/>
+  <int value="45" label="Selection"/>
+  <int value="46" label="SelectionAdd"/>
+  <int value="47" label="SelectionRemove"/>
+  <int value="48" label="Show"/>
+  <int value="49" label="StateChanged"/>
+  <int value="50" label="TextChanged"/>
+  <int value="51" label="TextSelectionChanged"/>
+  <int value="52" label="TooltipClosed"/>
+  <int value="53" label="TooltipOpened"/>
+  <int value="54" label="TreeChanged"/>
+  <int value="55" label="ValueChanged"/>
+  <int value="56" label="WindowActivated"/>
+  <int value="57" label="WindowDeactivated"/>
+  <int value="58" label="WindowVisibilityChanged"/>
+</enum>
+
 <enum name="BackForwardCacheActionAfterPagehide">
   <int value="0" label="Navigation"/>
   <int value="1" label="Sent postMessage"/>
@@ -31659,7 +31721,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="528" label="MixedContentPrivateIPInPublicWebsiteActive"/>
   <int value="529" label="XMLExternalResourceLoad"/>
   <int value="530" label="MixedContentPrivateHostnameInPublicHostname"/>
-  <int value="531" label="LegacyProtocolEmbeddedAsSubresource"/>
+  <int value="531" label="OBSOLETE_LegacyProtocolEmbeddedAsSubresource"/>
   <int value="532" label="RequestedSubresourceWithEmbeddedCredentials"/>
   <int value="533" label="NotificationCreated"/>
   <int value="534" label="NotificationClosed"/>
@@ -35372,6 +35434,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4077" label="FileSystemUrlNavigation"/>
   <int value="4078" label="V8Navigator_AdAuctionComponents_Method"/>
   <int value="4079" label="ClientHintsUAFullVersionList"/>
+  <int value="4080" label="WebAppManifestLaunchHandler"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -48613,6 +48676,7 @@ from previous Chrome versions.
   <int value="-1988127107" label="UseNotificationCompatBuilder:enabled"/>
   <int value="-1987939098"
       label="AutofillEnablePasswordInfoBarAccountIndicationFooter:enabled"/>
+  <int value="-1987881259" label="ArcRightClickLongPress:enabled"/>
   <int value="-1985452239" label="SmartDim20190221:disabled"/>
   <int value="-1985239289" label="AutofillRichMetadataQueries:enabled"/>
   <int value="-1985025593" label="file-manager-enable-new-gallery"/>
@@ -50105,6 +50169,7 @@ from previous Chrome versions.
   <int value="-909905655" label="AllowAllSitesToInitiateMirroring:disabled"/>
   <int value="-909351661" label="OmniboxOnFocusSuggestions:disabled"/>
   <int value="-908421850" label="PointerEvent:enabled"/>
+  <int value="-907481658" label="ArcMouseWheelSmoothScroll:enabled"/>
   <int value="-907234795" label="NewAudioRenderingMixingStrategy:disabled"/>
   <int value="-905538983" label="SimplifyHttpsIndicator:disabled"/>
   <int value="-903359589" label="CrOSEnforceSystemAec:enabled"/>
@@ -50487,6 +50552,7 @@ from previous Chrome versions.
   <int value="-617452890" label="media-router"/>
   <int value="-616818899" label="SameSiteByDefaultCookies:enabled"/>
   <int value="-616508634" label="DisableCryptAuthV1DeviceSync:enabled"/>
+  <int value="-615974325" label="ArcMouseWheelSmoothScroll:disabled"/>
   <int value="-615254902" label="SystemJapanesePhysicalTyping:enabled"/>
   <int value="-614223913"
       label="ClickToCallContextMenuForSelectedText:enabled"/>
@@ -50857,6 +50923,7 @@ from previous Chrome versions.
   <int value="-323508281" label="VrWebInputEditing:disabled"/>
   <int value="-322937746" label="disable-desktop-capture-picker-new-ui"/>
   <int value="-322827131" label="tab-management-experiment-type-basil"/>
+  <int value="-322684763" label="WebBluetoothRequestLargerMtu:disabled"/>
   <int value="-320820051" label="enable-zero-copy"/>
   <int value="-319235277" label="ShareMenu:disabled"/>
   <int value="-319002650" label="ArcUsbStorageUI:enabled"/>
@@ -51599,6 +51666,7 @@ from previous Chrome versions.
   <int value="261245835" label="ContextualSearchLiteralTapSearch:disabled"/>
   <int value="262382944" label="GuestViewCrossProcessFrames:disabled"/>
   <int value="265140282" label="Prerender2:disabled"/>
+  <int value="265449858" label="WebBluetoothRequestLargerMtu:enabled"/>
   <int value="265830810" label="BackgroundTaskComponentUpdate:enabled"/>
   <int value="266322815" label="ChromeModernDesign:disabled"/>
   <int value="266702296" label="disable-plugin-power-saver"/>
@@ -53825,6 +53893,7 @@ from previous Chrome versions.
   <int value="1925346911" label="AssistEmojiEnhanced:enabled"/>
   <int value="1925627218" label="FullscreenToolbarReveal:disabled"/>
   <int value="1926524951" label="SystemWebApps:disabled"/>
+  <int value="1926548060" label="ArcRightClickLongPress:disabled"/>
   <int value="1927218315" label="ShelfNewUi:disabled"/>
   <int value="1927254377" label="MediaAppHandlesAudio:enabled"/>
   <int value="1927259098" label="TranslateLanguageByULP:enabled"/>

@@ -1139,6 +1139,7 @@ crbug.com/1240236 external/wpt/css/css-fonts/system-ui-ja.html [ Failure ]
 crbug.com/1240236 external/wpt/css/css-fonts/system-ui-ur-vs-ar.html [ Failure ]
 crbug.com/1240236 external/wpt/css/css-fonts/system-ui-zh.html [ Failure ]
 crbug.com/1071114 [ Win7 ] external/wpt/css/css-fonts/variations/font-opentype-collections.html [ Timeout ]
+crbug.com/1269537 [ Mac ] fast/css-generated-content/quotes-lang.html [ Failure Pass ]
 
 # ====== Layout team owned tests to here ======
 
@@ -2970,6 +2971,44 @@ crbug.com/626703 fast/animation/scroll-animations/scrolltimeline-root-scroller-q
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/navigation-timing-extended.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-lists/counter-list-item.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/foo-counter-reversed-006a.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/foo-counter-reversed-006b.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/foo-counter-reversed-006c.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/foo-counter-reversed-006d.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-lists/foo-counter-reversed-006e.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-lists/foo-counter-reversed-006e.html [ Failure ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-lists/foo-counter-reversed-006e.html [ Failure ]
+crbug.com/626703 [ Mac10.14 ] external/wpt/css/css-lists/foo-counter-reversed-006e.html [ Failure ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-lists/foo-counter-reversed-006e.html [ Failure ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-lists/foo-counter-reversed-006e.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-lists/foo-counter-reversed-006e.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/foo-counter-reversed-007a.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/foo-counter-reversed-007b.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/foo-counter-reversed-008a.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/foo-counter-reversed-008b.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-lists/foo-counter-reversed-009a.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-lists/foo-counter-reversed-009a.html [ Failure ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-lists/foo-counter-reversed-009a.html [ Failure ]
+crbug.com/626703 [ Mac10.14 ] external/wpt/css/css-lists/foo-counter-reversed-009a.html [ Failure ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-lists/foo-counter-reversed-009a.html [ Failure ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-lists/foo-counter-reversed-009a.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-lists/foo-counter-reversed-009a.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/foo-counter-reversed-009b.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/li-value-reversed-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/li-value-reversed-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/li-value-reversed-003.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/li-value-reversed-006a.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/li-value-reversed-006b.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/li-value-reversed-006c.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/li-value-reversed-006d.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/li-value-reversed-006e.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/li-value-reversed-007a.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/li-value-reversed-007b.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/li-value-reversed-008a.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/li-value-reversed-008b.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/li-value-reversed-009a.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/li-value-reversed-009b.html [ Failure ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-004.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-layout-019.html [ Failure ]
 crbug.com/626703 [ Linux ] virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-layout-019.html [ Failure ]
@@ -4407,12 +4446,17 @@ crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-dat
 # Test timing out when SharedArrayBuffer is disabled by default.
 # See https://crbug.com/1194557
 crbug.com/1194557 http/tests/devtools/sources/debugger-breakpoints/set-breakpoint-while-blocking-main-thread.js [ Skip Timeout ]
-crbug.com/1194557 virtual/shared_array_buffer_on_desktop/http/tests/devtools/sources/debugger-breakpoints/set-breakpoint-while-blocking-main-thread.js [ Pass ]
 
 # Test output varies depending on the bot. A single expectation file doesn't
 # work.
 crbug.com/1194557 fast/beacon/beacon-basic.html [ Failure Pass ]
 crbug.com/1194557 virtual/shared_array_buffer_on_desktop/fast/beacon/beacon-basic.html [ Pass ]
+
+# Tests are failing on CodeMirror 6 update, temporarily disable to re-open the tree.
+# Restore set-breakpoint-while-blocking-main-thread.js test to previous state [ Pass ] with
+# crbug.com/1194557 annotation as soon as crbug.com/1270207 has been fixed.
+crbug.com/1270207 virtual/shared_array_buffer_on_desktop/http/tests/devtools/sources/debugger-breakpoints/set-breakpoint-while-blocking-main-thread.js [ Skip ]
+crbug.com/1270207 virtual/portals/http/tests/devtools/portals/portals-sources-activate.js [ Skip ]
 
 # This test passes only when the JXL feature is enabled.
 crbug.com/1161994 http/tests/inspector-protocol/emulation/emulation-set-disabled-image-types-jxl.js [ Failure Pass ]
@@ -5222,7 +5266,6 @@ crbug.com/994034 [ Win ] http/tests/devtools/elements/styles-3/styles-add-new-ru
 crbug.com/995669 [ Win ] http/tests/media/video-throttled-load-metadata.html [ Crash Failure Pass ]
 
 # Sheriff 2019-08-26
-crbug.com/997669 [ Win ] http/tests/devtools/search/sources-search-scope-in-files.js [ Crash Pass ]
 crbug.com/626703 external/wpt/css/css-paint-api/custom-property-animation-on-main-thread.https.html [ Failure Pass ]
 
 crbug.com/1015130 external/wpt/largest-contentful-paint/first-paint-equals-lcp-text.html [ Failure Pass ]
@@ -6085,7 +6128,6 @@ crbug.com/961059 fast/workers/worker-shared-asm-buffer.html [ Skip ]
 
 # Temporarily disabled to unblock https://crrev.com/c/2979697
 crbug.com/1222114 http/tests/devtools/console/console-call-getter-on-proto.js [ Failure Pass ]
-crbug.com/1222114 http/tests/devtools/console/console-dir.js [ Failure Pass ]
 crbug.com/1222114 http/tests/devtools/console/console-dir-es6.js [ Failure Pass ]
 crbug.com/1222114 http/tests/devtools/console/console-format.js [ Failure Pass ]
 crbug.com/1222114 http/tests/devtools/console/console-format-es6.js [ Failure Pass ]
@@ -6738,6 +6780,7 @@ crbug.com/1229666 external/wpt/html/semantics/forms/form-submission-0/urlencoded
 crbug.com/1093027 http/tests/credentialmanager/credentialscontainer-create-with-virtual-authenticator.html [ Crash Failure Pass Skip Timeout ]
 # The next test was originally skipped on mac for lack of support (crbug.com/613672). It is now skipped everywhere due to flakiness.
 crbug.com/1229708 fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
+crbug.com/1229711 [ Linux ] http/tests/devtools/console-resource-errors.js [ Failure Pass ]
 crbug.com/1229725 http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Crash Failure Pass ]
 crbug.com/1085647 external/wpt/pointerevents/compat/pointerevent_mouse-pointer-preventdefault.html [ Pass Timeout ]
 crbug.com/1087232 http/tests/devtools/network/network-worker-fetch-blocked.js [ Failure Pass ]
@@ -7155,13 +7198,6 @@ crbug.com/1255221 http/tests/devtools/elements/styles-4/svg-style.js [ Failure P
 # Sheriff 2021-10-04
 crbug.com/1226112 [ Win ] http/tests/text-autosizing/wide-iframe.html [ Pass Timeout ]
 
-# Temporarily disable to land DevTools changes
-crbug.com/1260776 http/tests/devtools/console-xhr-logging.js [ Failure Pass ]
-crbug.com/1260776 http/tests/devtools/network/script-as-text-loading-long-url.js [ Failure Pass ]
-crbug.com/1260776 http/tests/devtools/network/script-as-text-loading-with-caret.js [ Failure Pass ]
-crbug.com/1260776 http/tests/devtools/sources/debugger/async-callstack-network-initiator.js [ Failure Pass ]
-crbug.com/1260776 http/tests/devtools/console-resource-errors.js [ Failure Pass ]
-
 # DevTools roll
 crbug.com/1222126 http/tests/devtools/domdebugger/domdebugger-getEventListeners.js [ Skip ]
 crbug.com/1222126 http/tests/devtools/cache-storage/cache-live-update-list.js [ Skip ]
@@ -7248,11 +7284,11 @@ crbug.com/1264753 [ Mac10.12 ] external/wpt/referrer-policy/gen/srcdoc.meta/stri
 crbug.com/1264753 [ Mac10.13 ] external/wpt/referrer-policy/gen/srcdoc.meta/strict-origin/iframe-tag.http.html [ Failure ]
 crbug.com/1264753 [ Mac10.12 ] virtual/plz-dedicated-worker/external/wpt/referrer-policy/gen/srcdoc.meta/strict-origin/iframe-tag.http.html [ Failure ]
 crbug.com/1264753 [ Mac10.13 ] virtual/plz-dedicated-worker/external/wpt/referrer-policy/gen/srcdoc.meta/strict-origin/iframe-tag.http.html [ Failure ]
-# crbug.com/1264775 [ Mac11-arm64 ] external/wpt/webrtc-stats/supported-stats.html [ Failure ]
+crbug.com/1264775 [ Mac11-arm64 ] external/wpt/webrtc-stats/supported-stats.html [ Failure ]
 crbug.com/1264802 [ Win7 ] fast/forms/suggestion-picker/date-suggestion-picker-appearance.html [ Failure Pass ]
 crbug.com/1264802 [ Win7 ] fast/forms/suggestion-picker/month-suggestion-picker-appearance.html [ Failure Pass ]
 crbug.com/1264802 [ Win7 ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance.html [ Failure Pass ]
-# crbug.com/1264775 [ Mac10.14 ] external/wpt/webrtc-stats/supported-stats.html [ Failure ]
+crbug.com/1264775 [ Mac10.14 ] external/wpt/webrtc-stats/supported-stats.html [ Failure ]
 
 # Sheriff 2021-11-02
 crbug.com/1265924 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Pass ]
@@ -7287,10 +7323,11 @@ crbug.com/1267734 [ Win7 ] virtual/scroll-unification/fast/forms/suggestion-pick
 crbug.com/1268963 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-after-TAO-cross-origin-redirect.html [ Failure Pass ]
 crbug.com/1268947 [ Linux ] virtual/shared_array_buffer_on_desktop/http/tests/devtools/sources/debugger/async-callstack-network-initiator.js [ Failure Pass ]
 
-# Temporarily disable to unblock a WebRTC roll
-crbug.com/webrtc/13377 external/wpt/webrtc-stats/supported-stats.html [ Failure Pass ]
-
 # Sheriff 2021-11-12
 crbug.com/1268594 [ Linux ] css3/filters/composited-layer-bounds-after-sw-blur-animation.html [ Failure Pass ]
 crbug.com/1268594 [ Mac ] css3/filters/composited-layer-bounds-after-sw-blur-animation.html [ Failure Pass ]
 crbug.com/1268594 [ Win ] css3/filters/composited-layer-bounds-after-sw-blur-animation.html [ Failure Pass ]
+
+# Sheriff 2021-11-15
+crbug.com/1270295 [ Mac11 ] external/wpt/css/css-lists/foo-counter-reversed-009a.html [ Failure Pass ]
+crbug.com/1270295 [ Mac11 ] external/wpt/css/css-lists/foo-counter-reversed-006e.html [ Failure Pass ]

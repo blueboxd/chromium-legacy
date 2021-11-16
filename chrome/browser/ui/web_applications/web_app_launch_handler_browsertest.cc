@@ -13,6 +13,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "third_party/blink/public/common/features.h"
@@ -23,10 +24,10 @@ namespace web_app {
 using RouteTo = LaunchHandler::RouteTo;
 using NavigateExistingClient = LaunchHandler::NavigateExistingClient;
 
-class WebAppLaunchHanderBrowserTest : public InProcessBrowserTest {
+class WebAppLaunchHandlerBrowserTest : public InProcessBrowserTest {
  public:
-  WebAppLaunchHanderBrowserTest() = default;
-  ~WebAppLaunchHanderBrowserTest() override = default;
+  WebAppLaunchHandlerBrowserTest() = default;
+  ~WebAppLaunchHandlerBrowserTest() override = default;
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
@@ -38,6 +39,21 @@ class WebAppLaunchHanderBrowserTest : public InProcessBrowserTest {
 
  protected:
   Profile* profile() { return browser()->profile(); }
+
+  AppId InstallTestWebApp(const char* test_file_path,
+                          bool await_metric = true) {
+    page_load_metrics::PageLoadMetricsTestWaiter metrics_waiter(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    if (await_metric) {
+      metrics_waiter.AddWebFeatureExpectation(
+          blink::mojom::WebFeature::kWebAppManifestLaunchHandler);
+    }
+    AppId app_id = InstallWebAppFromPage(
+        browser(), embedded_test_server()->GetURL(test_file_path));
+    if (await_metric)
+      metrics_waiter.Wait();
+    return app_id;
+  }
 
   const WebApp* GetWebApp(const AppId& app_id) {
     return WebAppProvider::GetForTest(profile())->registrar().GetAppById(
@@ -65,9 +81,9 @@ class WebAppLaunchHanderBrowserTest : public InProcessBrowserTest {
       OsIntegrationManager::ScopedSuppressOsHooksForTesting()};
 };
 
-IN_PROC_BROWSER_TEST_F(WebAppLaunchHanderBrowserTest, RouteToEmpty) {
-  AppId app_id = InstallWebAppFromPage(
-      browser(), embedded_test_server()->GetURL("/web_apps/basic.html"));
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, RouteToEmpty) {
+  AppId app_id =
+      InstallTestWebApp("/web_apps/basic.html", /*await_metric=*/false);
   EXPECT_EQ(GetLaunchHandler(app_id), absl::nullopt);
 
   Browser* browser_1 = LaunchWebAppBrowser(profile(), app_id);
@@ -75,10 +91,9 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHanderBrowserTest, RouteToEmpty) {
   EXPECT_NE(browser_1, browser_2);
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppLaunchHanderBrowserTest, RouteToAuto) {
-  AppId app_id = InstallWebAppFromPage(
-      browser(), embedded_test_server()->GetURL(
-                     "/web_apps/get_manifest.html?route_to_auto.json"));
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, RouteToAuto) {
+  AppId app_id =
+      InstallTestWebApp("/web_apps/get_manifest.html?route_to_auto.json");
   EXPECT_EQ(GetLaunchHandler(app_id),
             (LaunchHandler{RouteTo::kAuto, NavigateExistingClient::kAlways}));
 
@@ -93,10 +108,9 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHanderBrowserTest, RouteToAuto) {
   EXPECT_NE(browser_1, browser_2);
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppLaunchHanderBrowserTest, RouteToNewClient) {
-  AppId app_id = InstallWebAppFromPage(
-      browser(), embedded_test_server()->GetURL(
-                     "/web_apps/get_manifest.html?route_to_new_client.json"));
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, RouteToNewClient) {
+  AppId app_id =
+      InstallTestWebApp("/web_apps/get_manifest.html?route_to_new_client.json");
   EXPECT_EQ(
       GetLaunchHandler(app_id),
       (LaunchHandler{RouteTo::kNewClient, NavigateExistingClient::kAlways}));
@@ -112,12 +126,10 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHanderBrowserTest, RouteToNewClient) {
   EXPECT_NE(browser_1, browser_2);
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppLaunchHanderBrowserTest, RouteToExistingClient) {
-  AppId app_id = InstallWebAppFromPage(
-      browser(),
-      embedded_test_server()->GetURL(
-          "/web_apps/"
-          "get_manifest.html?route_to_existing_client_navigate_empty.json"));
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, RouteToExistingClient) {
+  AppId app_id = InstallTestWebApp(
+      "/web_apps/"
+      "get_manifest.html?route_to_existing_client_navigate_empty.json");
   EXPECT_EQ(GetLaunchHandler(app_id),
             (LaunchHandler{RouteTo::kExistingClient,
                            NavigateExistingClient::kAlways}));
@@ -144,9 +156,9 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHanderBrowserTest, RouteToExistingClient) {
   EXPECT_EQ(browser_1, browser_2);
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppLaunchHanderBrowserTest, GlobalLaunchQueue) {
-  AppId app_id = InstallWebAppFromPage(
-      browser(), embedded_test_server()->GetURL("/web_apps/basic.html"));
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, GlobalLaunchQueue) {
+  AppId app_id =
+      InstallTestWebApp("/web_apps/basic.html", /*await_metric=*/false);
 
   Browser* app_browser = LaunchWebAppBrowser(profile(), app_id);
   content::WebContents* web_contents =
@@ -157,13 +169,13 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHanderBrowserTest, GlobalLaunchQueue) {
   EXPECT_TRUE(EvalJs(web_contents, "!!window.LaunchParams").ExtractBool());
 }
 
-class WebAppLaunchHanderDisabledBrowserTest : public InProcessBrowserTest {
+class WebAppLaunchHandlerDisabledBrowserTest : public InProcessBrowserTest {
  public:
-  WebAppLaunchHanderDisabledBrowserTest() {
+  WebAppLaunchHandlerDisabledBrowserTest() {
     feature_list_.InitAndDisableFeature(
         blink::features::kWebAppEnableLaunchHandler);
   }
-  ~WebAppLaunchHanderDisabledBrowserTest() override = default;
+  ~WebAppLaunchHandlerDisabledBrowserTest() override = default;
 
   Profile* profile() { return browser()->profile(); }
 
@@ -181,7 +193,7 @@ class WebAppLaunchHanderDisabledBrowserTest : public InProcessBrowserTest {
       OsIntegrationManager::ScopedSuppressOsHooksForTesting()};
 };
 
-IN_PROC_BROWSER_TEST_F(WebAppLaunchHanderDisabledBrowserTest, NoLaunchQueue) {
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerDisabledBrowserTest, NoLaunchQueue) {
   AppId app_id = InstallWebAppFromPage(
       browser(), embedded_test_server()->GetURL("/web_apps/basic.html"));
 

@@ -513,7 +513,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 getFullscreenManager(), mCompositorViewHolderSupplier,
                 getTabContentManagerSupplier(), getOverviewModeBehaviorSupplier(),
                 this::getSnackbarManager, getActivityType(), this::isInOverviewMode,
-                this::isWarmOnResume, /* appMenuDelegate= */ this,
+                this::shouldShowOverviewPageOnStart, this::isWarmOnResume,
+                /* appMenuDelegate= */ this,
                 /* statusBarColorProvider= */ this, getIntentRequestTracker(),
                 mTabReparentingControllerSupplier, false);
         // clang-format on
@@ -1774,6 +1775,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return false;
     }
 
+    /**
+     * Returns whether grid Tab switcher or the Start surface should be shown at startup.
+     */
+    public boolean shouldShowOverviewPageOnStart() {
+        return false;
+    }
+
     @CallSuper
     @Override
     public boolean canShowAppMenu() {
@@ -2556,7 +2564,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             boolean usingDesktopUserAgent =
                     currentTab.getWebContents().getNavigationController().getUseDesktopUserAgent();
             usingDesktopUserAgent = !usingDesktopUserAgent;
-            if (ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_GLOBAL)) {
+            if (ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_EXCEPTIONS)) {
                 Profile profile = getCurrentTabModel().getProfile();
                 RequestDesktopUtils.setRequestDesktopSiteContentSettingsForUrl(
                         profile, currentTab.getUrl(), usingDesktopUserAgent);

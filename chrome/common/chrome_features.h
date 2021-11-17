@@ -180,7 +180,8 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPreinstalledWebAppInstallation;
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_FUCHSIA)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsAppIconShortcutsMenuUI;
 #endif
@@ -301,10 +302,6 @@ extern const base::Feature kFlashDeprecationWarning;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kFocusMode;
-
-#if defined(OS_WIN)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kGdiTextPrinting;
-#endif
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kGeoLanguage;
 

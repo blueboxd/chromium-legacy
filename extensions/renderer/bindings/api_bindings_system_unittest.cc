@@ -10,7 +10,7 @@
 #include "base/cxx17_backports.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "extensions/common/event_filtering_info.h"
+#include "extensions/common/mojom/event_dispatcher.mojom.h"
 #include "extensions/renderer/bindings/api_binding.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
 #include "extensions/renderer/bindings/api_binding_hooks_test_delegate.h"
@@ -98,11 +98,9 @@ const char kGammaAPISpec[] = R"(
 const char kCustomCallbackHook[] = R"(
     (function(hooks) {
       hooks.setCustomCallback(
-          'functionWithCallback', (name, request, originalCallback,
+          'functionWithCallback', (name, originalCallback,
                                    firstResult, secondResult) => {
         this.methodName = name;
-        // TODO(devlin): Currently, we don't actually pass anything useful in
-        // for the |request| object. If/when we do, we should test it.
         this.results = [firstResult, secondResult];
         originalCallback(secondResult);
       });
@@ -110,7 +108,7 @@ const char kCustomCallbackHook[] = R"(
 const char kCustomCallbackThrowHook[] = R"(
     (function(hooks) {
       hooks.setCustomCallback(
-          'functionWithCallback', (name, request, originalCallback,
+          'functionWithCallback', (name, originalCallback,
                                    firstResult, secondResult) => {
         throw new Error('Custom callback threw');
       });

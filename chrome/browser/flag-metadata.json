@@ -1671,7 +1671,7 @@
   {
     "name": "enable-cros-language-settings-update-2",
     "owners": [ "cros-borders@google.com" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 100
   },
   {
     "name": "enable-cros-multilingual-typing",
@@ -3290,11 +3290,6 @@
     "name": "fuse-box",
     "owners": [ "noel", "simmonsjosh@google.com" ],
     "expiry_milestone": 104
-  },
-  {
-    "name": "gdi-text-printing",
-    "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 89
   },
   {
     "name": "gesture-properties-dbus-service",

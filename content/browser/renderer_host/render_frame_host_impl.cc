@@ -87,6 +87,7 @@
 #include "content/browser/prerender/prerender_host_registry.h"
 #include "content/browser/prerender/prerender_metrics.h"
 #include "content/browser/presentation/presentation_service_impl.h"
+#include "content/browser/process_lock.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/back_forward_cache_disable.h"
@@ -2077,7 +2078,7 @@ RenderFrameHostImpl::GetWebExposedIsolationLevel() {
   if (process_lock.is_invalid())
     return RenderFrameHost::WebExposedIsolationLevel::kNotIsolated;
 
-  WebExposedIsolationInfo info = process_lock.web_exposed_isolation_info();
+  WebExposedIsolationInfo info = process_lock.GetWebExposedIsolationInfo();
   if (info.is_isolated_application()) {
     // TODO(crbug.com/1159832): Check the document policy once it's available to
     // find out if this frame is actually isolated.

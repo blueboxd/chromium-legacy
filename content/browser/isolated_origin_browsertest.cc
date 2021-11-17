@@ -17,6 +17,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/origin_agent_cluster_isolation_state.h"
+#include "content/browser/process_lock.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -5728,7 +5729,7 @@ IN_PROC_BROWSER_TEST_F(COOPIsolationTest, COOPAndCOEP) {
   EXPECT_TRUE(coop_instance->RequiresDedicatedProcess());
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   auto lock = policy->GetProcessLock(coop_instance->GetProcess()->GetID());
-  EXPECT_TRUE(lock.web_exposed_isolation_info().is_isolated());
+  EXPECT_TRUE(lock.GetWebExposedIsolationInfo().is_isolated());
   EXPECT_TRUE(lock.is_locked_to_site());
   EXPECT_TRUE(
       lock.MatchesOrigin(url::Origin::Create(GURL("https://coop.com"))));

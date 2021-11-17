@@ -118,7 +118,9 @@ void SideSearchTabContentsHelper::SetSidePanelContentsForTesting(
 
 SideSearchTabContentsHelper::SideSearchTabContentsHelper(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<SideSearchTabContentsHelper>(*web_contents) {
+}
 
 SideSearchSideContentsHelper*
 SideSearchTabContentsHelper::GetSideContentsHelper() {
@@ -137,8 +139,6 @@ void SideSearchTabContentsHelper::CreateSidePanelContents() {
 
   // Sets helpers required for the side contents.
   PrefsTabHelper::CreateForWebContents(side_panel_contents_.get());
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      side_panel_contents_.get());
   extensions::TabHelper::CreateForWebContents(side_panel_contents_.get());
 
   SideSearchSideContentsHelper::CreateForWebContents(

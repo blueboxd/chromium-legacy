@@ -682,6 +682,9 @@ static_library("ui") {
       "//chrome/browser/ui/webui/connectors_internals:mojo_bindings",
     ]
   }
+  if (is_chromeos) {
+    deps += [ "//chromeos/crosapi/cpp:cpp" ]
+  }
 
   if (!is_fuchsia) {
     deps += [ "//components/crash/core/app" ]
@@ -2139,8 +2142,6 @@ static_library("ui") {
       "ash/network/tether_notification_presenter.h",
       "ash/notification_badge_color_cache.cc",
       "ash/notification_badge_color_cache.h",
-      "ash/projector/pending_screencast_manager.cc",
-      "ash/projector/pending_screencast_manager.h",
       "ash/projector/projector_app_client_impl.cc",
       "ash/projector/projector_app_client_impl.h",
       "ash/projector/projector_client_impl.cc",
@@ -2932,6 +2933,7 @@ static_library("ui") {
       "//chromeos/components/proximity_auth",
       "//chromeos/components/string_matching",
       "//chromeos/components/tether",
+      "//chromeos/constants",
       "//chromeos/crosapi/cpp",
       "//chromeos/cryptohome",
       "//chromeos/dbus",
@@ -4453,8 +4455,8 @@ static_library("ui") {
       "views/sharing_hub/sharing_hub_bubble_view_impl.h",
       "views/sharing_hub/sharing_hub_icon_view.cc",
       "views/sharing_hub/sharing_hub_icon_view.h",
-      "views/side_panel.cc",
-      "views/side_panel.h",
+      "views/side_panel/side_panel.cc",
+      "views/side_panel/side_panel.h",
       "views/ssl_client_certificate_selector.cc",
       "views/ssl_client_certificate_selector.h",
       "views/status_bubble_views.cc",

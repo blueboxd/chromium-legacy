@@ -30,7 +30,6 @@ namespace web_app {
 
 class AppRegistrarObserver;
 class WebApp;
-class OsIntegrationManager;
 
 using Registry = std::map<AppId, std::unique_ptr<WebApp>>;
 
@@ -186,9 +185,8 @@ class WebAppRegistrar : public ProfileManagerObserver {
 
   bool GetWindowControlsOverlayEnabled(const AppId& app_id) const;
 
+  // Gets the IDs for all apps in `GetApps()`.
   std::vector<AppId> GetAppIds() const;
-
-  void SetSubsystems(OsIntegrationManager* os_integration_manager);
 
   // Returns the "scope" field from the app manifest, or infers a scope from the
   // "start_url" field if unavailable. Returns an invalid GURL iff the |app_id|
@@ -356,9 +354,6 @@ class WebAppRegistrar : public ProfileManagerObserver {
 
  protected:
   Profile* profile() const { return profile_; }
-  OsIntegrationManager& os_integration_manager() {
-    return *os_integration_manager_;
-  }
 
   void NotifyWebAppProfileWillBeDeleted(const AppId& app_id);
   void NotifyAppRegistrarShutdown();
@@ -370,13 +365,15 @@ class WebAppRegistrar : public ProfileManagerObserver {
 
   void CountMutation();
 
+  // Gets the IDs for all apps in `app_set`.
+  std::vector<AppId> GetAppIdsForAppSet(const AppSet& app_set) const;
+
   bool registry_profile_being_deleted_ = false;
 
  private:
   Profile* const profile_;
 
   base::ObserverList<AppRegistrarObserver, /*check_empty=*/true> observers_;
-  OsIntegrationManager* os_integration_manager_ = nullptr;
 
   Registry registry_;
 #if DCHECK_IS_ON()

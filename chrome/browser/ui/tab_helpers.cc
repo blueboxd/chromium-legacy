@@ -184,7 +184,6 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics_tab_helper.h"
@@ -334,7 +333,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   prerender::NoStatePrefetchTabHelper::CreateForWebContents(web_contents);
   RecentlyAudibleHelper::CreateForWebContents(web_contents);
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kRequestDesktopSiteGlobal)) {
+  if (base::FeatureList::IsEnabled(features::kRequestDesktopSiteExceptions)) {
     RequestDesktopSiteWebContentsObserverAndroid::CreateForWebContents(
         web_contents);
   }
@@ -496,8 +495,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   extensions::SetViewType(web_contents,
                           extensions::mojom::ViewType::kTabContents);
 
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      web_contents);
   extensions::TabHelper::CreateForWebContents(web_contents);
   extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);
   if (web_app::AreWebAppsEnabled(profile))

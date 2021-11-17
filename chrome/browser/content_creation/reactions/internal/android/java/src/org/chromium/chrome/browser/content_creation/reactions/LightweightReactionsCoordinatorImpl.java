@@ -12,9 +12,11 @@ import android.os.Build;
 import android.view.View;
 
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.content_creation.reactions.LightweightReactionsMediator.GifGeneratorHost;
+import org.chromium.chrome.browser.content_creation.reactions.internal.R;
 import org.chromium.chrome.browser.content_creation.reactions.scene.SceneCoordinator;
 import org.chromium.chrome.browser.content_creation.reactions.toolbar.ToolbarControlsDelegate;
 import org.chromium.chrome.browser.content_creation.reactions.toolbar.ToolbarCoordinator;
@@ -45,6 +47,7 @@ public class LightweightReactionsCoordinatorImpl extends BaseScreenshotCoordinat
         implements LightweightReactionsCoordinator, ToolbarControlsDelegate {
     private static final String GIF_MIME_TYPE = "image/gif";
 
+    private final FragmentManager mFragmentManager;
     private final ReactionService mReactionService;
     private final LightweightReactionsMediator mMediator;
     private final LightweightReactionsDialog mDialog;
@@ -78,6 +81,7 @@ public class LightweightReactionsCoordinatorImpl extends BaseScreenshotCoordinat
         super(activity, tab, shareUrl, chromeOptionShareCallback, sheetController);
         mDialogViewCreated = false;
         mAssetsFetched = false;
+        mFragmentManager = ((FragmentActivity) activity).getSupportFragmentManager();
         mReactionService = reactionService;
 
         Profile profile = Profile.fromWebContents(tab.getWebContents());
@@ -144,6 +148,14 @@ public class LightweightReactionsCoordinatorImpl extends BaseScreenshotCoordinat
     }
 
     /**
+     * Returns the localized temporary filename with the current timestamp appended.
+     */
+    private String getFileName() {
+        return mActivity.getString(R.string.lightweight_reactions_filename_prefix,
+                String.valueOf(System.currentTimeMillis()));
+    }
+
+    /**
      * Creates the share sheet title based on a localized title and the current date formatted for
      * the user's preferred locale.
      */
@@ -151,8 +163,8 @@ public class LightweightReactionsCoordinatorImpl extends BaseScreenshotCoordinat
         Date now = new Date(System.currentTimeMillis());
         String currentDateString =
                 DateFormat.getDateInstance(DateFormat.SHORT, getPreferredLocale()).format(now);
-        // TODO(crbug.com/1213923): get final string from UX, and localize it here.
-        return "Generated GIF " + currentDateString;
+        return mActivity.getString(
+                R.string.lightweight_reactions_title_for_share, currentDateString);
     }
 
     /**
@@ -177,8 +189,7 @@ public class LightweightReactionsCoordinatorImpl extends BaseScreenshotCoordinat
         mDialogOpenedTime = System.currentTimeMillis();
         LightweightReactionsMetrics.recordDialogOpened();
 
-        FragmentActivity fragmentActivity = (FragmentActivity) mActivity;
-        mDialog.show(fragmentActivity.getSupportFragmentManager(), null);
+        mDialog.show(mFragmentManager, /*tag=*/null);
     }
 
     // BaseScreenshotCoordinator implementation.
@@ -221,8 +232,12 @@ public class LightweightReactionsCoordinatorImpl extends BaseScreenshotCoordinat
 
         mSceneCoordinator.clearSelection();
         mGenerationStartTime = System.currentTimeMillis();
-        mMediator.generateGif(gifHost, mSceneCoordinator.getFrameCount(),
-                mSceneCoordinator.getWidth(), mSceneCoordinator.getHeight(), (imageUri) -> {
+        LightweightReactionsProgressDialog progressDialog =
+                new LightweightReactionsProgressDialog();
+        progressDialog.show(mFragmentManager, /*tag=*/null);
+
+        mMediator.generateGif(
+                gifHost, getFileName(), mSceneCoordinator, progressDialog, (imageUri) -> {
                     LightweightReactionsMetrics.recordGifGenerated(getTimeSinceOpened(),
                             imageUri != null, System.currentTimeMillis() - mGenerationStartTime);
                     final String sheetTitle = getShareSheetTitle();
@@ -250,7 +265,8 @@ public class LightweightReactionsCoordinatorImpl extends BaseScreenshotCoordinat
                     ChromeShareExtras extras =
                             new ChromeShareExtras.Builder().setSkipPageSharingActions(true).build();
 
-                    // Dismiss current dialog before showing the share sheet.
+                    // Dismiss progress dialog and scene dialog before showing the share sheet.
+                    progressDialog.dismiss();
                     mDialog.dismiss();
                     mChromeOptionShareCallback.showShareSheet(params, extras, shareStartTime);
                 });

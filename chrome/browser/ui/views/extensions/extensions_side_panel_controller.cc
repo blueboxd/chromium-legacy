@@ -7,11 +7,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/side_panel.h"
+#include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -127,10 +126,6 @@ void ExtensionsSidePanelController::SetNewWebContents() {
   DCHECK(!web_contents_);
   web_contents_ = content::WebContents::Create(
       content::WebContents::CreateParams(browser_view_->GetProfile()));
-
-  // Enable the hosted WebContents to leverage extensions APIs.
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      web_contents_.get());
 
   // Set the side panel as type kExtensionPopup given this most closely
   // represents how we intend to use the extension for the side panel.

@@ -45,6 +45,7 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/scheduler/browser_task_executor.h"
+#include "content/common/content_export.h"
 #include "content/common/frame.mojom-forward.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host.h"
@@ -1391,8 +1392,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // storing a callback so that they can be updated if
   // RequestPresentationTimeForNextFrame is called while waiting.
   struct PendingShowParams {
-    PendingShowParams(base::TimeTicks show_request_timestamp,
-                      bool is_evicted,
+    PendingShowParams(bool is_evicted,
                       blink::mojom::RecordContentToVisibleTimeRequestPtr
                           visible_time_request);
     ~PendingShowParams();
@@ -1400,7 +1400,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     PendingShowParams(const PendingShowParams&) = delete;
     PendingShowParams& operator=(const PendingShowParams&) = delete;
 
-    base::TimeTicks show_request_timestamp;
     bool is_evicted;
     blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request;
   };

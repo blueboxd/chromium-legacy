@@ -120,8 +120,13 @@ struct NET_EXPORT SSLServerConfig {
   std::vector<uint8_t> signed_cert_timestamp_list;
 
   // If specified, called at the start of each connection with the ClientHello.
-  base::RepeatingCallback<void(const SSL_CLIENT_HELLO*)>
+  // Returns true to continue the handshake and false to fail it.
+  base::RepeatingCallback<bool(const SSL_CLIENT_HELLO*)>
       client_hello_callback_for_testing;
+
+  // If specified, causes the specified alert to be sent immediately after the
+  // handshake.
+  absl::optional<uint8_t> alert_after_handshake_for_testing;
 
   // This is a workaround for BoringSSL's scopers not being copyable. See
   // https://crbug.com/boringssl/431.

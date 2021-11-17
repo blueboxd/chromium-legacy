@@ -371,8 +371,9 @@ SSLServerContextImpl::SocketImpl::SelectCertificateCallback(
     const SSL_CLIENT_HELLO* client_hello) {
   SSLServerContextImpl::SocketImpl* socket = FromSSL(client_hello->ssl);
   const SSLServerConfig& config = socket->context_->ssl_server_config_;
-  if (!config.client_hello_callback_for_testing.is_null()) {
-    config.client_hello_callback_for_testing.Run(client_hello);
+  if (!config.client_hello_callback_for_testing.is_null() &&
+      !config.client_hello_callback_for_testing.Run(client_hello)) {
+    return ssl_select_cert_error;
   }
   return ssl_select_cert_success;
 }
@@ -728,7 +729,6 @@ int SSLServerContextImpl::SocketImpl::DoHandshake() {
   int net_error = OK;
   int rv = SSL_do_handshake(ssl_.get());
   if (rv == 1) {
-    completed_handshake_ = true;
     const STACK_OF(CRYPTO_BUFFER)* certs =
         SSL_get0_peer_certificates(ssl_.get());
     if (certs) {
@@ -745,6 +745,15 @@ int SSLServerContextImpl::SocketImpl::DoHandshake() {
                               alpn_len);
       negotiated_protocol_ = NextProtoFromString(proto);
     }
+
+    if (context_->ssl_server_config_.alert_after_handshake_for_testing) {
+      SSL_send_fatal_alert(ssl_.get(),
+                           context_->ssl_server_config_
+                               .alert_after_handshake_for_testing.value());
+      return ERR_FAILED;
+    }
+
+    completed_handshake_ = true;
   } else {
     int ssl_error = SSL_get_error(ssl_.get(), rv);
 

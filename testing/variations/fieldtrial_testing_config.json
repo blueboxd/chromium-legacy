@@ -2697,24 +2697,6 @@
             ]
         }
     ],
-    "ContextMenuSearchWithGoogleLens": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledWithUpdatedMenuItemString_20210325",
-                    "params": {
-                        "useSearchImageWithGoogleLensItemName": "true"
-                    },
-                    "enable_features": [
-                        "ContextMenuSearchWithGoogleLens"
-                    ]
-                }
-            ]
-        }
-    ],
     "ContextMenuShopWithGoogleLens": [
         {
             "platforms": [
@@ -7434,23 +7416,6 @@
             ]
         }
     ],
-    "SharingHubDesktop": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SharingHubDesktopOmnibox"
-                    ]
-                }
-            ]
-        }
-    ],
     "SharingHubLinkToggle": [
         {
             "platforms": [
@@ -8263,21 +8228,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "UpdateHistoryEntryPointsInIncognito"
-                    ]
-                }
-            ]
-        }
-    ],
-    "UseContextSnapshot": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UseContextSnapshot"
                     ]
                 }
             ]

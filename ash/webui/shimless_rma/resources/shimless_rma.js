@@ -47,7 +47,7 @@ export const ButtonState = {
  *  componentIs: string,
  *  requiresReloadWhenShown: boolean,
  *  buttonNext: !ButtonState,
- *  buttonNextLabel: string,
+ *  buttonNextLabelKey: ?string,
  *  buttonCancel: !ButtonState,
  *  buttonBack: !ButtonState,
  * }}
@@ -69,6 +69,7 @@ const StateComponentMapping = {
     componentIs: 'onboarding-landing-page',
     requiresReloadWhenShown: false,
     buttonNext: ButtonState.DISABLED,
+    buttonNextLabelKey: 'getStartedButtonLabel',
     buttonCancel: ButtonState.HIDDEN,
     buttonBack: ButtonState.HIDDEN,
   },
@@ -290,6 +291,16 @@ export class ShimlessRma extends ShimlessRmaBase {
       // Allow polymer to observe the changed state.
       this.notifyPath('currentPage_.buttonNext');
     };
+
+    /**
+     * The setNextButtonLabelCallback callback is used by page elements to set
+     * the text label for the 'Next' button.
+     * @private {?Function}
+     */
+    this.setNextButtonLabelCallback_ = (e) => {
+      this.currentPage_.buttonNextLabelKey = e.detail;
+      this.notifyPath('currentPage_.buttonNextLabelKey');
+    };
   }
 
   /** @override */
@@ -298,6 +309,8 @@ export class ShimlessRma extends ShimlessRmaBase {
     window.addEventListener('transition-state', this.transitionState_);
     window.addEventListener(
         'disable-next-button', this.disableNextButtonCallback_);
+    window.addEventListener(
+        'set-next-button-label', this.setNextButtonLabelCallback_);
   }
 
   /** @override */
@@ -306,6 +319,8 @@ export class ShimlessRma extends ShimlessRmaBase {
     window.removeEventListener('transition-state', this.transitionState_);
     window.removeEventListener(
         'disable-next-button', this.disableNextButtonCallback_);
+    window.removeEventListener(
+        'set-next-button-label', this.setNextButtonLabelCallback_);
   }
 
   /** @override */
@@ -459,6 +474,17 @@ export class ShimlessRma extends ShimlessRmaBase {
     this.allButtonsDisabled_ = true;
     this.shimlessRmaService_.abortRma().then(
         (result) => this.handleError_(result.error));
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getNextButtonLabel_() {
+    return this.i18n(
+        this.currentPage_.buttonNextLabelKey ?
+            this.currentPage_.buttonNextLabelKey :
+            'nextButtonLabel');
   }
 }
 

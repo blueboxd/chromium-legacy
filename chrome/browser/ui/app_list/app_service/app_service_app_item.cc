@@ -24,6 +24,8 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
+#include "chrome/common/chrome_features.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 
 // static
 const char AppServiceAppItem::kItemType[] = "AppServiceAppItem";
@@ -151,9 +153,10 @@ const char* AppServiceAppItem::GetItemType() const {
   return AppServiceAppItem::kItemType;
 }
 
-void AppServiceAppItem::GetContextMenuModel(GetMenuModelCallback callback) {
-  context_menu_ = std::make_unique<AppServiceContextMenu>(this, profile(), id(),
-                                                          GetController());
+void AppServiceAppItem::GetContextMenuModel(bool add_sort_options,
+                                            GetMenuModelCallback callback) {
+  context_menu_ = std::make_unique<AppServiceContextMenu>(
+      this, profile(), id(), GetController(), add_sort_options);
 
   context_menu_->GetMenuModel(std::move(callback));
 }
@@ -181,18 +184,26 @@ void AppServiceAppItem::Launch(int event_flags,
 }
 
 void AppServiceAppItem::CallLoadIcon(bool allow_placeholder_icon) {
-  auto icon_type = apps::mojom::IconType::kStandard;
-  apps::AppServiceProxyFactory::GetForProfile(profile())->LoadIcon(
-      app_type_, id(), icon_type,
-      ash::SharedAppListConfig::instance().default_grid_icon_dimension(),
-      allow_placeholder_icon,
-      base::BindOnce(&AppServiceAppItem::OnLoadIcon,
-                     weak_ptr_factory_.GetWeakPtr()));
+  if (base::FeatureList::IsEnabled(features::kAppServiceLoadIconWithoutMojom)) {
+    apps::AppServiceProxyFactory::GetForProfile(profile())->LoadIcon(
+        apps::ConvertMojomAppTypToAppType(app_type_), id(),
+        apps::IconType::kStandard,
+        ash::SharedAppListConfig::instance().default_grid_icon_dimension(),
+        allow_placeholder_icon,
+        base::BindOnce(&AppServiceAppItem::OnLoadIcon,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    apps::AppServiceProxyFactory::GetForProfile(profile())->LoadIcon(
+        app_type_, id(), apps::mojom::IconType::kStandard,
+        ash::SharedAppListConfig::instance().default_grid_icon_dimension(),
+        allow_placeholder_icon,
+        apps::MojomIconValueToIconValueCallback(base::BindOnce(
+            &AppServiceAppItem::OnLoadIcon, weak_ptr_factory_.GetWeakPtr())));
+  }
 }
 
-void AppServiceAppItem::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
-  auto icon_type = apps::mojom::IconType::kStandard;
-  if (icon_value->icon_type != icon_type) {
+void AppServiceAppItem::OnLoadIcon(apps::IconValuePtr icon_value) {
+  if (!icon_value || icon_value->icon_type != apps::IconType::kStandard) {
     return;
   }
   SetIcon(icon_value->uncompressed);

@@ -349,7 +349,51 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
+    name = "android-cronet-arm64-dbg",
+)
+
+try_.chromium_android_builder(
+    name = "android-cronet-arm64-rel",
+)
+
+try_.chromium_android_builder(
+    name = "android-cronet-asan-arm-rel",
+)
+
+try_.chromium_android_builder(
+    name = "android-cronet-kitkat-arm-rel",
+)
+
+try_.chromium_android_builder(
+    name = "android-cronet-lollipop-arm-rel",
+)
+
+try_.chromium_android_builder(
     name = "android-cronet-marshmallow-arm64-rel",
+)
+
+try_.chromium_android_builder(
+    name = "android-cronet-x86-dbg",
+)
+
+try_.chromium_android_builder(
+    name = "android-cronet-x86-rel",
+)
+
+try_.chromium_android_builder(
+    name = "android-cronet-x86-dbg-10-tests",
+)
+
+try_.chromium_android_builder(
+    name = "android-cronet-x86-dbg-11-tests",
+)
+
+try_.chromium_android_builder(
+    name = "android-cronet-x86-dbg-oreo-tests",
+)
+
+try_.chromium_android_builder(
+    name = "android-cronet-x86-dbg-pie-tests",
 )
 
 try_.chromium_android_builder(
@@ -1084,7 +1128,7 @@ try_.chromium_linux_builder(
         },
     },
     tryjob = try_.job(
-        experiment_percentage = 5,
+        experiment_percentage = 20,
     ),
 )
 
@@ -1225,7 +1269,6 @@ try_.chromium_linux_builder(
     name = "linux-clang-tidy-rel",
     executable = "recipe:tricium_clang_tidy_wrapper",
     goma_jobs = goma.jobs.J150,
-    experiments = {"luci.recipes.use_python3": 100},
 )
 
 try_.chromium_linux_builder(
@@ -1608,7 +1651,9 @@ try_.chromium_mac_orchestrator_pair(
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     orchestrator_cores = 2,
-    orchestrator_tryjob = None,
+    orchestrator_tryjob = try_.job(
+        experiment_percentage = 50,
+    ),
     compilator_goma_jobs = goma.jobs.J150,
     compilator_os = os.MAC_11,
     compilator_name = "mac11-arm64-rel-compilator",

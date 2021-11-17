@@ -3882,10 +3882,6 @@ const char kUseWinrtMidiApiDescription[] =
     "later).";
 
 #if BUILDFLAG(ENABLE_PRINTING)
-const char kGdiTextPrinting[] = "GDI Text Printing";
-const char kGdiTextPrintingDescription[] =
-    "Use GDI to print text as simply text";
-
 const char kPrintWithPostScriptType42FontsName[] =
     "Print with PostScript Type 42 fonts";
 const char kPrintWithPostScriptType42FontsDescription[] =
@@ -4518,11 +4514,6 @@ const char kEnableLauncherSearchNormalizationName[] =
 const char kEnableLauncherSearchNormalizationDescription[] =
     "Enable normalization of scores from different providers to the "
     "launcher.";
-
-const char kNewDragSpecInLauncherName[] = "Enable Launcher App Paging";
-const char kNewDragSpecInLauncherDescription[] =
-    "Show visual affordance of launcher app pages and enable page previews "
-    "when dragging apps.";
 
 const char kEnableNeuralStylusPalmRejectionName[] =
     "Enable Neural Palm Detection";
@@ -5319,7 +5310,8 @@ const char kSettingsLandingPageRedesignDescription[] =
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_FUCHSIA)
 
 const char kCommanderName[] = "Commander";
 const char kCommanderDescription[] =
@@ -5335,7 +5327,8 @@ const char kDesktopDetailedLanguageSettingsName[] =
 const char kDesktopDetailedLanguageSettingsDescription[] =
     "Enable the new detailed language settings page";
 
-#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
+        // defined(OS_FUCHSIA)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #if BUILDFLAG(USE_TCMALLOC)
@@ -5478,7 +5471,7 @@ const char kElasticOverscrollDescription[] =
 #endif  // defined(OS_WIN) || defined(OS_ANDROID)
 
 #if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
-    defined(OS_MAC)
+    defined(OS_MAC) || defined(OS_FUCHSIA)
 const char kUIDebugToolsName[] = "Debugging tools for UI";
 const char kUIDebugToolsDescription[] =
     "Enables additional keyboard shortcuts to help debugging.";

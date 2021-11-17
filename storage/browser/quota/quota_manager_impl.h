@@ -330,9 +330,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   // bucket. Used by the Storage Bucket API for bucket deletion. If no bucket is
   // found, it will return QuotaStatusCode::kOk since it has no bucket data to
   // delete.
-  void FindAndDeleteBucketData(const blink::StorageKey& storage_key,
-                               const std::string& bucket_name,
-                               StatusCallback callback);
+  virtual void FindAndDeleteBucketData(const blink::StorageKey& storage_key,
+                                       const std::string& bucket_name,
+                                       StatusCallback callback);
 
   // Instructs each QuotaClient to remove possible traces of deleted
   // data on the disk.
@@ -605,6 +605,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   void PostTaskAndReplyWithResultForDBThread(
       base::OnceCallback<QuotaErrorOr<ValueType>(QuotaDatabase*)> task,
       base::OnceCallback<void(QuotaErrorOr<ValueType>)> reply,
+      const base::Location& from_here = base::Location::Current());
+
+  void PostTaskAndReplyWithResultForDBThread(
+      base::OnceCallback<QuotaError(QuotaDatabase*)> task,
+      base::OnceCallback<void(QuotaError)> reply,
       const base::Location& from_here = base::Location::Current());
 
   static std::tuple<int64_t, int64_t> CallGetVolumeInfo(

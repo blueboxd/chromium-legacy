@@ -83,24 +83,6 @@ class BaseTestServer {
       CERT_TEST_NAMES,
     };
 
-    // NOTE: the values of these enumerators are passed to the the Python test
-    // server. Do not change them.
-    enum TLSIntolerantLevel {
-      TLS_INTOLERANT_NONE = 0,
-      TLS_INTOLERANT_ALL = 1,     // Intolerant of all TLS versions.
-      TLS_INTOLERANT_TLS1_1 = 2,  // Intolerant of TLS 1.1 or higher.
-      TLS_INTOLERANT_TLS1_2 = 3,  // Intolerant of TLS 1.2 or higher.
-      TLS_INTOLERANT_TLS1_3 = 4,  // Intolerant of TLS 1.3 or higher.
-    };
-
-    // Values which control how the server reacts in response to a ClientHello
-    // it is intolerant of.
-    enum TLSIntoleranceType {
-      TLS_INTOLERANCE_ALERT = 0,  // Send a handshake_failure alert.
-      TLS_INTOLERANCE_CLOSE = 1,  // Close the connection.
-      TLS_INTOLERANCE_RESET = 2,  // Send a TCP reset.
-    };
-
     enum TLSMaxVersion {
       TLS_MAX_VERSION_DEFAULT = 0,
       TLS_MAX_VERSION_TLS1_0 = 1,
@@ -140,19 +122,8 @@ class BaseTestServer {
     // CertificateRequest.
     std::vector<SSLClientCertType> client_cert_types;
 
-    // If not TLS_INTOLERANT_NONE, the server will abort any handshake that
-    // negotiates an intolerant TLS version in order to test version fallback.
-    TLSIntolerantLevel tls_intolerant = TLS_INTOLERANT_NONE;
-
-    // If |tls_intolerant| is not TLS_INTOLERANT_NONE, how the server reacts to
-    // an intolerant TLS version.
-    TLSIntoleranceType tls_intolerance_type = TLS_INTOLERANCE_ALERT;
-
     // The maximum TLS version to support.
     TLSMaxVersion tls_max_version = TLS_MAX_VERSION_DEFAULT;
-
-    // Whether to send a fatal alert immediately after completing the handshake.
-    bool alert_after_handshake = false;
 
     // If true, sends the TLS 1.3 to TLS 1.2 downgrade signal in the ServerHello
     // random.

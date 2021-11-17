@@ -1065,7 +1065,6 @@ crbug.com/1270481 external/wpt/css/css-lists/content-property/marker-text-matche
 # [css-counter-styles-3]
 crbug.com/1176323 external/wpt/css/css-counter-styles/counter-style-prefix-suffix-syntax.html [ Failure ]
 crbug.com/1176323 external/wpt/css/css-counter-styles/counter-style-symbols-syntax.html [ Failure ]
-crbug.com/1218280 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
 crbug.com/1168277 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/disclosure-styles.html [ Failure ]
 crbug.com/1176315 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function.html [ Failure ]
 
@@ -1722,6 +1721,8 @@ crbug.com/1068610 external/wpt/css/css-color/xyz-004.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/xyz-005.html [ Failure ]
 
 # @supports
+crbug.com/1269580 external/wpt/css/css-conditional/at-supports-namespace-001.html [ Failure ]
+crbug.com/1269580 external/wpt/css/css-conditional/at-supports-namespace-002.html [ Failure ]
 crbug.com/1158554 external/wpt/css/css-conditional/css-supports-040.xht [ Failure ]
 crbug.com/1158554 external/wpt/css/css-conditional/css-supports-041.xht [ Failure ]
 crbug.com/1158554 external/wpt/css/css-conditional/css-supports-042.xht [ Failure ]
@@ -3008,8 +3009,6 @@ crbug.com/626703 [ Mac10.14 ] virtual/layout_ng_block_frag/external/wpt/css/css-
 crbug.com/626703 [ Mac10.15 ] virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-layout-019.html [ Failure ]
 crbug.com/626703 [ Mac11 ] virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-layout-019.html [ Failure ]
 crbug.com/626703 [ Win ] virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-layout-019.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-conditional/at-supports-namespace-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-conditional/at-supports-namespace-002.html [ Failure ]
 crbug.com/626703 [ Linux ] wpt_internal/webcodecs/reconfiguring_encoder.https.any.worker.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/page-visibility/minimize.html [ Failure Skip Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/shared_array_buffer_on_desktop/external/wpt/compression/decompression-constructor-error.tentative.any.serviceworker.html [ Timeout ]
@@ -5341,7 +5340,6 @@ crbug.com/834302 external/wpt/permissions-policy/permissions-policy-opaque-origi
 
 # Temporary suppression to allow devtools-frontend changes
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Failure Pass Skip Timeout ]
-crbug.com/1030258 http/tests/devtools/network/network-cookies-pane.js [ Failure Pass ]
 crbug.com/1041830 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile.js [ Failure Pass ]
 
 # Sheriff 2019-12-13
@@ -5688,11 +5686,6 @@ crbug.com/v8/10556 external/wpt/wasm/jsapi/instance/constructor-caching.any.work
 crbug.com/v8/11992 external/wpt/wasm/jsapi/exception/* [ Skip ]
 crbug.com/v8/11992 external/wpt/wasm/jsapi/tag/* [ Skip ]
 
-# Disabled for landing DevTools change
-crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-response-type-blob.js [ Failure Pass ]
-crbug.com/1011811 http/tests/devtools/network/download.js [ Failure Pass ]
-crbug.com/1011811 http/tests/devtools/sxg/sxg-disable-cache.js [ Failure Pass ]
-
 crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-offset.html [ Failure Pass ]
 crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-offset-clamp.html [ Failure Pass ]
 
@@ -5952,8 +5945,6 @@ crbug.com/1123116 external/wpt/feature-policy/reporting/xr-reporting.https.html 
 
 crbug.com/1159445 [ Mac ] paint/invalidation/repaint-overlay/layers-overlay.html [ Failure ]
 
-crbug.com/1140329 http/tests/devtools/network/network-filter-service-worker.js [ Failure Pass Skip Timeout ]
-
 #Sheriff 2020-10-21
 crbug.com/1141206 scrollbars/overflow-scrollbar-combinations.html [ Failure Pass ]
 
@@ -6077,7 +6068,6 @@ crbug.com/1167309 fast/canvas/canvas-createImageBitmap-drawImage.html [ Failure 
 crbug.com/1168522 external/wpt/focus/iframe-activeelement-after-focusing-out-iframes.html [ Failure Pass ]
 
 # DevTools roll
-crbug.com/1050549 http/tests/devtools/network/preview-searchable.js [ Failure Pass ]
 crbug.com/1050549 http/tests/devtools/console/console-correct-suggestions.js [ Failure Pass ]
 
 # Flaky test
@@ -7274,7 +7264,6 @@ crbug.com/1267734 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/resource-ti
 crbug.com/1267736 [ Win ] http/tests/devtools/bindings/jssourcemap-bindings-overlapping-sources.js [ Failure Pass ]
 
 # Sheriff 2021-11-09
-crbug.com/1268259 [ Linux ] images/color-profile-image-canvas-pattern.html [ Failure ]
 crbug.com/1268265 [ Mac10.14 ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure ]
 crbug.com/1268518 [ Linux ] external/wpt/web-animations/interfaces/Animation/onfinish.html [ Failure Pass ]
 crbug.com/1268518 [ Mac10.12 ] external/wpt/web-animations/interfaces/Animation/onfinish.html [ Failure Pass ]

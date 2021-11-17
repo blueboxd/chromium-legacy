@@ -1208,6 +1208,7 @@ void AppListControllerImpl::OpenSearchResult(
     switch (launched_from) {
       case AppListLaunchedFrom::kLaunchedFromSearchBox:
       case AppListLaunchedFrom::kLaunchedFromSuggestionChip:
+      case AppListLaunchedFrom::kLaunchedFromRecentApps:
         RecordAppLaunched(launched_from);
         break;
       case AppListLaunchedFrom::kLaunchedFromGrid:
@@ -1321,9 +1322,11 @@ void AppListControllerImpl::ActivateItem(const std::string& id,
 
 void AppListControllerImpl::GetContextMenuModel(
     const std::string& id,
+    bool add_sort_options,
     GetContextMenuModelCallback callback) {
   if (client_)
-    client_->GetContextMenuModel(profile_id_, id, std::move(callback));
+    client_->GetContextMenuModel(profile_id_, id, add_sort_options,
+                                 std::move(callback));
 }
 
 ui::ImplicitAnimationObserver* AppListControllerImpl::GetAnimationObserver(

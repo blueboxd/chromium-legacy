@@ -16,6 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/process_lock.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -381,7 +382,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, SharedWorkerInCOEPRequireCorpDocument) {
   RenderFrameHostImpl* page_rfh = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
   auto page_lock = page_rfh->GetSiteInstance()->GetProcessLock();
-  EXPECT_TRUE(page_lock.web_exposed_isolation_info().is_isolated());
+  EXPECT_TRUE(page_lock.GetWebExposedIsolationInfo().is_isolated());
   EXPECT_GT(page_rfh->GetWebExposedIsolationLevel(),
             RenderFrameHost::WebExposedIsolationLevel::kNotIsolated);
 
@@ -408,7 +409,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, SharedWorkerInCOEPRequireCorpDocument) {
   RenderProcessHost* worker_rph = host->GetProcessHost();
   EXPECT_NE(worker_rph, page_rfh->GetProcess());
   auto worker_lock = host->site_instance()->GetProcessLock();
-  EXPECT_FALSE(worker_lock.web_exposed_isolation_info().is_isolated());
+  EXPECT_FALSE(worker_lock.GetWebExposedIsolationInfo().is_isolated());
 
   // COEP:credentialless
   EXPECT_EQ("Worker connected.", EvalJs(shell(), R"(
@@ -430,7 +431,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, SharedWorkerInCOEPRequireCorpDocument) {
   // Cross-origin isolation is not yet supported in COEP:credentialless
   // SharedWorker.
   EXPECT_FALSE(
-      worker_lock_credentialless.web_exposed_isolation_info().is_isolated());
+      worker_lock_credentialless.GetWebExposedIsolationInfo().is_isolated());
 
   // COEP:require-corp
   EXPECT_EQ("Worker connected.", EvalJs(shell(), R"(
@@ -451,7 +452,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, SharedWorkerInCOEPRequireCorpDocument) {
   // Cross-origin isolation is not yet supported in COEP:require-corp
   // SharedWorker.
   EXPECT_FALSE(
-      worker_lock_require_corp.web_exposed_isolation_info().is_isolated());
+      worker_lock_require_corp.GetWebExposedIsolationInfo().is_isolated());
 }
 
 // Create a SharedWorker from a COEP:credentialless document.
@@ -466,7 +467,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, SharedWorkerInCOEPCredentiallessDocument) {
   RenderFrameHostImpl* page_rfh = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
   auto page_lock = page_rfh->GetSiteInstance()->GetProcessLock();
-  EXPECT_TRUE(page_lock.web_exposed_isolation_info().is_isolated());
+  EXPECT_TRUE(page_lock.GetWebExposedIsolationInfo().is_isolated());
 
   // Create a SharedWorker from the cross-origin-isolated page.
 
@@ -491,7 +492,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, SharedWorkerInCOEPCredentiallessDocument) {
   RenderProcessHost* worker_rph = host->GetProcessHost();
   EXPECT_NE(worker_rph, page_rfh->GetProcess());
   auto worker_lock = host->site_instance()->GetProcessLock();
-  EXPECT_FALSE(worker_lock.web_exposed_isolation_info().is_isolated());
+  EXPECT_FALSE(worker_lock.GetWebExposedIsolationInfo().is_isolated());
 
   // COEP:credentialless
   EXPECT_EQ("Worker connected.", EvalJs(shell(), R"(
@@ -513,7 +514,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, SharedWorkerInCOEPCredentiallessDocument) {
   // Cross-origin isolation is not yet supported in COEP:credentialless
   // SharedWorker.
   EXPECT_FALSE(
-      worker_lock_credentialless.web_exposed_isolation_info().is_isolated());
+      worker_lock_credentialless.GetWebExposedIsolationInfo().is_isolated());
 
   // COEP:require-corp
   EXPECT_EQ("Worker connected.", EvalJs(shell(), R"(
@@ -534,7 +535,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, SharedWorkerInCOEPCredentiallessDocument) {
   // Cross-origin isolation is not yet supported in COEP:require-corp
   // SharedWorker.
   EXPECT_FALSE(
-      worker_lock_require_corp.web_exposed_isolation_info().is_isolated());
+      worker_lock_require_corp.GetWebExposedIsolationInfo().is_isolated());
 }
 
 // http://crbug.com/96435

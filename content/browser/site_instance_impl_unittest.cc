@@ -20,6 +20,7 @@
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/isolated_origin_util.h"
+#include "content/browser/process_lock.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -145,17 +146,6 @@ class SiteInstanceTest : public testing::Test {
 
     SetBrowserClientForTesting(old_browser_client_);
     RenderProcessHostImpl::set_render_process_host_factory_for_testing(nullptr);
-
-    // http://crbug.com/143565 found SiteInstanceTest leaking an
-    // AppCacheDatabase. This happens because some part of the test indirectly
-    // calls StoragePartitionImplMap::PostCreateInitialization(), which posts
-    // a task to the IO thread to create the AppCacheDatabase. Since the
-    // message loop is not running, the AppCacheDatabase ends up getting
-    // created when DrainMessageLoop() gets called at the end of a test case.
-    // Immediately after, the test case ends and the AppCacheDatabase gets
-    // scheduled for deletion. Here, call DrainMessageLoop() again so the
-    // AppCacheDatabase actually gets deleted.
-    DrainMessageLoop();
   }
 
   void set_privileged_process_id(int process_id) {
@@ -1969,6 +1959,28 @@ TEST_F(SiteInstanceTest, RelatedSitesInheritStoragePartitionConfig) {
             static_cast<SiteInstanceImpl*>(related_instance.get())
                 ->GetSiteInfo()
                 .storage_partition_config());
+}
+
+TEST_F(SiteInstanceTest, GetNonOriginKeyedEquivalentPreservesIsPdf) {
+  auto origin_isolation_request = static_cast<UrlInfo::OriginIsolationRequest>(
+      UrlInfo::OriginIsolationRequest::kOriginAgentCluster |
+      UrlInfo::OriginIsolationRequest::kRequiresOriginKeyedProcess);
+  UrlInfo url_info_pdf_with_oac(
+      UrlInfoInit(GURL("https://foo.com/test.pdf"))
+          .WithOriginIsolationRequest(origin_isolation_request)
+          .WithIsPdf(true));
+  SiteInfo site_info_pdf_with_origin_key =
+      SiteInfo::Create(IsolationContext(context()), url_info_pdf_with_oac);
+  SiteInfo site_info_pdf_no_origin_key =
+      site_info_pdf_with_origin_key.GetNonOriginKeyedEquivalentForMetrics(
+          IsolationContext(context()));
+
+  // Verify that the non-origin-keyed equivalent still has the is_pdf flag set
+  // but has the is_origin_keyed flag cleared.
+  EXPECT_TRUE(site_info_pdf_with_origin_key.is_pdf());
+  EXPECT_TRUE(site_info_pdf_no_origin_key.is_pdf());
+  EXPECT_TRUE(site_info_pdf_with_origin_key.requires_origin_keyed_process());
+  EXPECT_FALSE(site_info_pdf_no_origin_key.requires_origin_keyed_process());
 }
 
 }  // namespace content

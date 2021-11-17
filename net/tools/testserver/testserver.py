@@ -102,7 +102,6 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
 
   def __init__(self, server_address, request_hander_class, pem_cert_and_key,
                ssl_client_auth, ssl_client_cas, ssl_client_cert_types,
-               tls_intolerant, tls_intolerance_type, alert_after_handshake,
                simulate_tls13_downgrade, simulate_tls12_downgrade,
                tls_max_version):
     self.cert_chain = tlslite.api.X509CertChain()
@@ -134,11 +133,6 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
     self.ssl_handshake_settings = tlslite.api.HandshakeSettings()
     # Enable SSLv3 for testing purposes.
     self.ssl_handshake_settings.minVersion = (3, 0)
-    if tls_intolerant != 0:
-      self.ssl_handshake_settings.tlsIntolerant = (3, tls_intolerant)
-      self.ssl_handshake_settings.tlsIntoleranceType = tls_intolerance_type
-    if alert_after_handshake:
-      self.ssl_handshake_settings.alertAfterHandshake = True
     if simulate_tls13_downgrade:
       self.ssl_handshake_settings.simulateTLS13Downgrade = True
     if simulate_tls12_downgrade:
@@ -412,9 +406,7 @@ class ServerRunner(testserver_base.TestServerRunner):
         server = HTTPSServer(
             (host, port), TestPageHandler, pem_cert_and_key,
             self.options.ssl_client_auth, self.options.ssl_client_ca,
-            self.options.ssl_client_cert_type, self.options.tls_intolerant,
-            self.options.tls_intolerance_type,
-            self.options.alert_after_handshake,
+            self.options.ssl_client_cert_type,
             self.options.simulate_tls13_downgrade,
             self.options.simulate_tls12_downgrade, self.options.tls_max_version)
         print('HTTPS server started on https://%s:%d...' %
@@ -503,21 +495,6 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   'path to the file containing the certificate '
                                   'and private key for the server in PEM '
                                   'format')
-    self.option_parser.add_option('--tls-intolerant', dest='tls_intolerant',
-                                  default='0', type='int',
-                                  help='If nonzero, certain TLS connections '
-                                  'will be aborted in order to test version '
-                                  'fallback. 1 means all TLS versions will be '
-                                  'aborted. 2 means TLS 1.1 or higher will be '
-                                  'aborted. 3 means TLS 1.2 or higher will be '
-                                  'aborted. 4 means TLS 1.3 or higher will be '
-                                  'aborted.')
-    self.option_parser.add_option('--tls-intolerance-type',
-                                  dest='tls_intolerance_type',
-                                  default="alert",
-                                  help='Controls how the server reacts to a '
-                                  'TLS version it is intolerant to. Valid '
-                                  'values are "alert", "close", and "reset".')
     self.option_parser.add_option('--ssl-client-auth', action='store_true',
                                   help='Require SSL client auth on every '
                                   'connection.')
@@ -544,11 +521,6 @@ class ServerRunner(testserver_base.TestServerRunner):
     self.option_parser.add_option('--ws-basic-auth', action='store_true',
                                   dest='ws_basic_auth',
                                   help='Enable basic-auth for WebSocket')
-    self.option_parser.add_option('--alert-after-handshake',
-                                  dest='alert_after_handshake',
-                                  default=False, action='store_true',
-                                  help='If set, the server will send a fatal '
-                                  'alert immediately after the handshake.')
     self.option_parser.add_option('--simulate-tls13-downgrade',
                                   action='store_true')
     self.option_parser.add_option('--simulate-tls12-downgrade',

@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_view_class_properties.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/side_panel.h"
+#include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -50,7 +50,6 @@ class ReadLaterSidePanelWebView : public views::WebView,
             GURL(chrome::kChromeUIReadLaterURL),
             browser->profile(),
             IDS_READ_LATER_TITLE,
-            /*enable_extension_apis=*/true,
             /*webui_resizes_host=*/false,
             /*esc_closes_ui=*/false)) {
     SetVisible(false);

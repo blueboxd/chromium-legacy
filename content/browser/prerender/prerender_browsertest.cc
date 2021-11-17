@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/ignore_result.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/synchronization/lock.h"
@@ -88,6 +89,10 @@
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/common/pepper_plugin.mojom.h"
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
+
 using ::testing::Exactly;
 
 namespace content {
@@ -108,6 +113,10 @@ std::string ToString(const testing::TestParamInfo<BackForwardCacheType>& info) {
     case BackForwardCacheType::kEnabledWithSameSite:
       return "EnabledWithSameSite";
   }
+}
+
+int32_t InterfaceNameHasher(const std::string& interface_name) {
+  return static_cast<int32_t>(base::HashMetricNameAs32Bits(interface_name));
 }
 
 RenderFrameHost* FindRenderFrameHost(Page& page, const GURL& url) {
@@ -894,7 +903,8 @@ IN_PROC_BROWSER_TEST_F(
     AssertPrerenderHistoryLength(host_id, prerender_frame_host);
     EXPECT_EQ("state1", EvalJs(prerender_frame_host, "history.state"));
 
-    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_ENTRY, capturer.navigation_type());
+    EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
+              capturer.navigation_type());
     EXPECT_TRUE(capturer.is_same_document());
     EXPECT_TRUE(capturer.did_replace_entry());
   }
@@ -912,7 +922,8 @@ IN_PROC_BROWSER_TEST_F(
     AssertPrerenderHistoryLength(host_id, prerender_frame_host);
     EXPECT_EQ("state2", EvalJs(prerender_frame_host, "history.state"));
 
-    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_ENTRY, capturer.navigation_type());
+    EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
+              capturer.navigation_type());
     EXPECT_TRUE(capturer.is_same_document());
     EXPECT_TRUE(capturer.did_replace_entry());
   }
@@ -933,7 +944,8 @@ IN_PROC_BROWSER_TEST_F(
     // history.state should be replaced with a fragment navigation.
     EXPECT_EQ(nullptr, EvalJs(prerender_frame_host, "history.state"));
 
-    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_ENTRY, capturer.navigation_type());
+    EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
+              capturer.navigation_type());
     EXPECT_TRUE(capturer.is_same_document());
     EXPECT_TRUE(capturer.did_replace_entry());
   }
@@ -1082,7 +1094,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SessionHistoryAfterActivation) {
     TestNavigationHistory(k2ndUrl, 1, 3);
     EXPECT_EQ(nullptr, EvalJs(web_contents(), "history.state"));
 
-    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_ENTRY, capturer.navigation_type());
+    EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
+              capturer.navigation_type());
     EXPECT_FALSE(capturer.is_same_document());
   }
 
@@ -1094,7 +1107,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SessionHistoryAfterActivation) {
     TestNavigationHistory(kPrerenderingUrl, 2, 3);
     EXPECT_EQ("teststate", EvalJs(web_contents(), "history.state"));
 
-    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_ENTRY, capturer.navigation_type());
+    EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
+              capturer.navigation_type());
     EXPECT_FALSE(capturer.is_same_document());
   }
 }
@@ -1900,6 +1914,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderCancelledInterface",
       PrerenderCancelledInterface::kUnknown, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderUnknownCancelledInterface",
+      InterfaceNameHasher(mojom::TestInterfaceForCancel::Name_), 1);
   SetBrowserClientForTesting(old_browser_client);
 }
 
@@ -1948,6 +1965,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderCancelledInterface",
       PrerenderCancelledInterface::kUnknown, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderUnknownCancelledInterface",
+      InterfaceNameHasher(mojom::TestInterfaceForCancel::Name_), 1);
 }
 
 // Tests that mojo capability control will crash the prerender if the browser
@@ -2671,6 +2691,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PluginsCancelPrerendering) {
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus",
       PrerenderHost::FinalStatus::kMojoBinderPolicy, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderCancelledInterface",
+      PrerenderCancelledInterface::kUnknown, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderUnknownCancelledInterface",
+      InterfaceNameHasher(mojom::PepperHost::Name_), 1);
 
   // TODO(https://crbug.com/1215031): Remove this reload after fixing the issue.
   // Now a document cannot trigger prerendering twice, even if the first started
@@ -2683,6 +2709,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PluginsCancelPrerendering) {
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus",
       PrerenderHost::FinalStatus::kMojoBinderPolicy, 2);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderCancelledInterface",
+      PrerenderCancelledInterface::kUnknown, 2);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderUnknownCancelledInterface",
+      InterfaceNameHasher(mojom::PepperHost::Name_), 2);
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 

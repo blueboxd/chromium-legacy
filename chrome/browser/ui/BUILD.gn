@@ -682,9 +682,6 @@ static_library("ui") {
       "//chrome/browser/ui/webui/connectors_internals:mojo_bindings",
     ]
   }
-  if (is_chromeos) {
-    deps += [ "//chromeos/crosapi/cpp:cpp" ]
-  }
 
   if (!is_fuchsia) {
     deps += [ "//components/crash/core/app" ]
@@ -2146,6 +2143,8 @@ static_library("ui") {
       "ash/projector/projector_app_client_impl.h",
       "ash/projector/projector_client_impl.cc",
       "ash/projector/projector_client_impl.h",
+      "ash/projector/projector_soda_installation_controller.cc",
+      "ash/projector/projector_soda_installation_controller.h",
       "ash/quick_answers/quick_answers_browser_client_impl.cc",
       "ash/quick_answers/quick_answers_browser_client_impl.h",
       "ash/quick_answers/quick_answers_controller_impl.cc",
@@ -2861,7 +2860,6 @@ static_library("ui") {
       "//ash/quick_pair/common",
       "//ash/quick_pair/keyed_service",
       "//ash/quick_pair/ui",
-      "//ash/services/network_health/public/mojom",
       "//ash/services/recording/public/mojom",
       "//ash/shortcut_viewer",
       "//ash/webui/camera_app_ui",
@@ -2933,7 +2931,6 @@ static_library("ui") {
       "//chromeos/components/proximity_auth",
       "//chromeos/components/string_matching",
       "//chromeos/components/tether",
-      "//chromeos/constants",
       "//chromeos/crosapi/cpp",
       "//chromeos/cryptohome",
       "//chromeos/dbus",
@@ -2977,6 +2974,7 @@ static_library("ui") {
       "//chromeos/services/multidevice_setup/public/cpp:prefs",
       "//chromeos/services/multidevice_setup/public/cpp:url_provider",
       "//chromeos/services/network_config/public/mojom",
+      "//chromeos/services/network_health/public/mojom",
       "//chromeos/system",
       "//chromeos/tpm",
       "//chromeos/ui/base",

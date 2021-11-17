@@ -5514,6 +5514,12 @@ others/histograms.xml -->
   <int value="2" label="Import with section union"/>
 </enum>
 
+<enum name="AutofillAssistantCollectUserDataResult">
+  <int value="0" label="Unknown result"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Failure"/>
+</enum>
+
 <enum name="AutofillAssistantDependenciesInvalidated">
   <int value="0" label="Invalidated outside of flow"/>
   <int value="1" label="Invalidated during startup"/>
@@ -49174,6 +49180,8 @@ from previous Chrome versions.
   <int value="-1644308778" label="WASAPIRawAudioCapture:disabled"/>
   <int value="-1643933608" label="SyncAutofillWalletOfferData:enabled"/>
   <int value="-1641832607" label="DragToPinTabs:enabled"/>
+  <int value="-1641656402"
+      label="RTCDisallowPlanBOutsideDeprecationTrial:disabled"/>
   <int value="-1641384018" label="SideSearchClearCacheWhenClosed:enabled"/>
   <int value="-1640944841" label="HardwareSecureDecryption:disabled"/>
   <int value="-1639534120" label="VaapiVp9kSVCHWEncoding:enabled"/>
@@ -49363,6 +49371,8 @@ from previous Chrome versions.
   <int value="-1512555526" label="PaintPreviewShowOnStartup:enabled"/>
   <int value="-1510844027" label="ScanAppStickySettings:enabled"/>
   <int value="-1510839574" label="disable-sync-synced-notifications"/>
+  <int value="-1510524610"
+      label="RTCDisallowPlanBOutsideDeprecationTrial:enabled"/>
   <int value="-1508852757" label="CreditCardAutofillTouchBar:disabled"/>
   <int value="-1507722271" label="ImprovedDesksKeyboardShortcuts:enabled"/>
   <int value="-1506880454"
@@ -69054,6 +69064,19 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="kNotificationService"/>
 </enum>
 
+<enum name="PrerenderCancelledUnknownInterface">
+  <summary>
+    Enumerates names of Mojo interfaces. Work as supplementary information for
+    PrerenderCancelledInterface.kUnknown. See comments in
+    InterfaceNameHasher(content/browser/prerender/prerender_metrics.cc) for how
+    to update the enums.
+  </summary>
+  <int value="-2012727489" label="device.mojom.ScreenOrientation"/>
+  <int value="191605727" label="content.mojom.PepperHost"/>
+  <int value="1984681860"
+      label="chrome.mojom.OpenSearchDescriptionDocumentHandler"/>
+</enum>
+
 <enum name="PrerenderCookieSendType">
   <obsolete>
     Deprecated March 13 2015.
@@ -70782,6 +70805,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="5" label="Profile locked"/>
   <int value="6" label="Unable to create a browser"/>
   <int value="7" label="Background mode manager"/>
+  <int value="8" label="Adding an account from OGB (on lacros)"/>
 </enum>
 
 <enum name="ProfilePickerPages">
@@ -88559,9 +88583,9 @@ others/histograms.xml -->
 <enum name="VPNRemoteAuthenticationType">
   <int value="0" label="OpenVPN Default"/>
   <int value="1" label="OpenVPN Certificate"/>
-  <int value="2" label="L2TP/IPSec Default"/>
-  <int value="3" label="L2TP/IPSec Certificate"/>
-  <int value="4" label="L2TP/IPSec PSK"/>
+  <int value="2" label="L2TP/IPsec Default"/>
+  <int value="3" label="L2TP/IPsec Certificate"/>
+  <int value="4" label="L2TP/IPsec PSK"/>
 </enum>
 
 <enum name="VPNUserAuthenticationType">
@@ -88569,9 +88593,10 @@ others/histograms.xml -->
   <int value="1" label="OpenVPN Certificate"/>
   <int value="2" label="OpenVPN Username/Password"/>
   <int value="3" label="OpenVPN Username/Password/OTP"/>
-  <int value="4" label="L2TP/IPSec None"/>
-  <int value="5" label="L2TP/IPSec Certificate"/>
-  <int value="6" label="L2TP/IPSec Username/Password"/>
+  <int value="4" label="L2TP/IPsec None"/>
+  <int value="5" label="L2TP/IPsec Certificate"/>
+  <int value="6" label="L2TP/IPsec Username/Password"/>
+  <int value="7" label="OpenVPN Username/Token"/>
 </enum>
 
 <enum name="VPNWireGuardAllowedIPsType">

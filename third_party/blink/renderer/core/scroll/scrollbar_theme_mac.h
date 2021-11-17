@@ -26,16 +26,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_THEME_MAC_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_THEME_MAC_H_
 
-#include <AppKit/AppKit.h>
-
-#include "third_party/blink/renderer/core/scroll/ns_scroller_imp_details.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 
-typedef id ScrollbarPainter;
-
 namespace blink {
-
-class Pattern;
 
 class CORE_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
  public:
@@ -43,6 +36,7 @@ class CORE_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   ~ScrollbarThemeMac() override;
 
   void RegisterScrollbar(Scrollbar&) override;
+  bool IsScrollbarRegistered(Scrollbar&) const;
 
   // On Mac, the painting code itself animates the opacity so there's no need
   // to disable in order to make the scrollbars invisible. In fact,
@@ -78,8 +72,7 @@ class CORE_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   bool UsesOverlayScrollbars() const override;
   void UpdateScrollbarOverlayColorTheme(const Scrollbar&) override;
 
-  void SetNewPainterForScrollbar(Scrollbar&, ScrollbarPainter);
-  ScrollbarPainter PainterForScrollbar(const Scrollbar&) const;
+  void SetNewPainterForScrollbar(Scrollbar&);
 
   void PaintThumb(GraphicsContext& context,
                   const Scrollbar& scrollbar,
@@ -94,13 +87,13 @@ class CORE_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
 
   float Opacity(const Scrollbar&) const override;
 
-  static NSScrollerStyle RecommendedScrollerStyle();
+  static bool PreferOverlayScrollerStyle();
 
   // See WebScrollbarTheme for parameters description.
   static void UpdateScrollbarsWithNSDefaults(
       absl::optional<float> initial_button_delay,
       absl::optional<float> autoscroll_button_delay,
-      NSScrollerStyle preferred_scroller_style,
+      bool prefer_overlay_scroller_style,
       bool redraw,
       bool jump_on_track_click);
 
@@ -131,8 +124,6 @@ class CORE_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
                           const Scrollbar&,
                           const IntRect&,
                           float opacity);
-
-  scoped_refptr<Pattern> overhang_pattern_;
 };
 }  // namespace blink
 

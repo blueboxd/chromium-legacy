@@ -870,8 +870,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicDocumentInitiated) {
   RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
 
   // 2) Navigate to B.
-  EXPECT_TRUE(ExecJs(shell(), JsReplace("location = $1;", url_b.spec())));
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(NavigateToURLFromRenderer(shell(), url_b));
   RenderFrameHostImpl* rfh_b = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
@@ -983,7 +982,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
 
   // 2) Navigate to B. The previous document can't enter the BackForwardCache,
   // because of the popup.
-  ASSERT_TRUE(ExecJs(rfh_a.get(), JsReplace("location = $1;", url_b.spec())));
+  ASSERT_TRUE(NavigateToURLFromRenderer(rfh_a.get(), url_b));
   ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
   RenderFrameHostImplWrapper rfh_b(current_frame_host());
   EXPECT_EQ(2u, rfh_b->GetSiteInstance()->GetRelatedActiveContentsCount());
@@ -992,6 +991,12 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
   // because of the popup.
   ASSERT_TRUE(ExecJs(rfh_b.get(), "history.back();"));
   ASSERT_TRUE(rfh_b.WaitUntilRenderFrameDeleted());
+
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kRelatedActiveContentsExist,
+       BackForwardCacheMetrics::NotRestoredReason::kBrowsingInstanceNotSwapped},
+      {}, {ShouldSwapBrowsingInstance::kNo_HasRelatedActiveContents}, {}, {},
+      FROM_HERE);
 
   // 4) Make the popup drop the window.opener connection. It happens when the
   //    user does an omnibox-initiated navigation, which happens in a new
@@ -1003,9 +1008,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
 
   // 5) Navigate to B again. As the scripting relationship with the popup is
   // now severed, the current page (|rfh_a_new|) can enter back-forward cache.
-  ASSERT_TRUE(
-      ExecJs(rfh_a_new.get(), JsReplace("location = $1;", url_b.spec())));
-  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+  ASSERT_TRUE(NavigateToURLFromRenderer(rfh_a_new.get(), url_b));
   EXPECT_FALSE(rfh_a_new.IsRenderFrameDeleted());
   EXPECT_TRUE(rfh_a_new->IsInBackForwardCache());
 
@@ -1017,6 +1020,55 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
   ASSERT_TRUE(WaitForLoadStop(web_contents()));
   EXPECT_FALSE(rfh_b_new.IsRenderFrameDeleted());
   EXPECT_TRUE(rfh_b_new->IsInBackForwardCache());
+}
+
+// A popup will prevent a page from entering BFCache. Test that after closing a
+// popup, the page is not stopped from entering. This tries to close the popup
+// at the last moment.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpenThenClose) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/title2.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.test", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.test", "/title2.html"));
+
+  // Navigate to A.
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+  EXPECT_EQ(1u, rfh_a->GetSiteInstance()->GetRelatedActiveContentsCount());
+
+  // Open a popup.
+  Shell* popup = OpenPopup(rfh_a.get(), url_a, "");
+  EXPECT_EQ(2u, rfh_a->GetSiteInstance()->GetRelatedActiveContentsCount());
+
+  // Start navigating to B, the response will be delayed.
+  TestNavigationObserver observer(web_contents());
+  shell()->LoadURL(url_b);
+
+  // When the request is received, close the popup.
+  response.WaitForRequest();
+  RenderFrameHostImplWrapper rfh_popup(popup->web_contents()->GetMainFrame());
+  ASSERT_TRUE(ExecJs(rfh_popup.get(), "window.close();"));
+  ASSERT_TRUE(rfh_popup.WaitUntilRenderFrameDeleted());
+
+  EXPECT_EQ(1u, rfh_a->GetSiteInstance()->GetRelatedActiveContentsCount());
+
+  // Send the response.
+  response.Send(net::HTTP_OK, "text/html", "foo");
+  response.Done();
+  observer.Wait();
+
+  // A is in BFCache.
+  EXPECT_EQ(0u, rfh_a->GetSiteInstance()->GetRelatedActiveContentsCount());
+  ASSERT_TRUE(rfh_a->IsInBackForwardCache());
+
+  // Go back.
+  web_contents()->GetController().GoBack();
+  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // A is restored from BFCache.
+  EXPECT_FALSE(rfh_a.IsRenderFrameDeleted());
+  ExpectRestored(FROM_HERE);
 }
 
 // Navigate from A(B) to C and go back.
@@ -2635,6 +2687,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Events) {
               1),
           base::Bucket(
               static_cast<int>(
+                  blink::EventPageShowPersisted::kBrowserYesInRenderer),
+              1),
+          base::Bucket(
+              static_cast<int>(
+                  blink::EventPageShowPersisted::kBrowserYesInRendererWithPage),
+              1),
+          base::Bucket(
+              static_cast<int>(
                   blink::EventPageShowPersisted::
                       kYesInBrowser_BackForwardCache_WillCommitNavigationToCachedEntry),
               1),
@@ -2726,8 +2786,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   StartRecordingEvents(rfh_a);
 
   // 2) Navigate to B.
-  EXPECT_TRUE(ExecJs(shell(), JsReplace("location = $1;", url_b.spec())));
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(NavigateToURLFromRenderer(shell(), url_b));
   RenderFrameHostImpl* rfh_b = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
 
@@ -8040,6 +8099,66 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheFencedFrameBrowserTest,
 
   if (!fenced_frame_host_wrapper.IsRenderFrameDeleted())
     EXPECT_FALSE(fenced_frame_host->IsInBackForwardCache());
+}
+
+// A testing subclass that limits the cache size to 1 for ease of testing
+// evictions.
+class CacheSizeOneBackForwardCacheBrowserTest
+    : public BackForwardCacheBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnableFeatureAndSetParams(features::kBackForwardCache, "cache_size",
+                              base::NumberToString(1));
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(CacheSizeOneBackForwardCacheBrowserTest,
+                       ReplacedNavigationEntry) {
+  // Set the bfcache value to 1 to ensure that the test fails if a page
+  // that replaces the current history entry is stored in back-forward cache.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.test", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.test", "/title1.html"));
+  GURL url_c(embedded_test_server()->GetURL("c.test", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImplWrapper rfh_b(current_frame_host());
+  EXPECT_FALSE(rfh_a.IsRenderFrameDeleted());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
+
+  // 3) Navigate to a new page by replacing the location. The old page can't
+  // be navigated back to and we should not store it in the back-forward
+  // cache.
+  EXPECT_TRUE(
+      ExecJs(shell(), JsReplace("window.location.replace($1);", url_c)));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameHostImplWrapper rfh_c(current_frame_host());
+
+  // 4) Confirm A is still in BackForwardCache and it wasn't evicted due to the
+  // cache size limit, which would happen if we tried to store a new page in the
+  // cache in the previous step.
+  EXPECT_FALSE(rfh_a.IsRenderFrameDeleted());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  // 5) Confirm that navigating backwards goes back to A.
+  shell()->web_contents()->GetController().GoBack();
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_EQ(rfh_a.get(), current_frame_host());
+  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
+  EXPECT_EQ(rfh_a->GetVisibilityState(), PageVisibilityState::kVisible);
+
+  // Go forward again, should return to C
+  shell()->web_contents()->GetController().GoForward();
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_EQ(rfh_c.get(), current_frame_host());
+  EXPECT_EQ(rfh_c->GetVisibilityState(), PageVisibilityState::kVisible);
 }
 
 // BEFORE ADDING A NEW TEST HERE

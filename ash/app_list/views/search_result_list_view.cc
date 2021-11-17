@@ -104,7 +104,6 @@ SearchResultListView::SearchResultListType CategoryToListType(
 SearchResultListView::SearchResultListView(
     AppListMainView* main_view,
     AppListViewDelegate* view_delegate,
-    SearchResultPageDialogController* dialog_controller,
     absl::optional<size_t> productivity_launcher_index)
     : SearchResultContainerView(view_delegate),
       main_view_(main_view),
@@ -132,7 +131,7 @@ SearchResultListView::SearchResultListView(
 
   for (size_t i = 0; i < result_count; ++i) {
     search_result_views_.emplace_back(new SearchResultView(
-        this, view_delegate_, dialog_controller,
+        this, view_delegate_,
         features::IsProductivityLauncherEnabled()
             ? SearchResultView::SearchResultViewType::kDefault
             : SearchResultView::SearchResultViewType::kClassic));
@@ -206,7 +205,6 @@ void SearchResultListView::SetListType(SearchResultListType list_type) {
       title_label_->SetVisible(true);
       break;
   }
-  DoUpdate();
 }
 
 void SearchResultListView::ListItemsRemoved(size_t start, size_t count) {
@@ -242,8 +240,8 @@ int SearchResultListView::DoUpdate() {
         AppListModelProvider::Get()->search_model()->ordered_categories();
     if (productivity_launcher_index_ < ordered_categories->size()) {
       enabled_ = true;
-      list_type_ = CategoryToListType(
-          (*ordered_categories)[productivity_launcher_index_.value()]);
+      SetListType(CategoryToListType(
+          (*ordered_categories)[productivity_launcher_index_.value()]));
     } else {
       enabled_ = false;
       list_type_.reset();

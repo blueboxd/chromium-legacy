@@ -28,7 +28,6 @@ class SearchResultListViewTest;
 
 class AppListMainView;
 class AppListViewDelegate;
-class SearchResultPageDialogController;
 
 // SearchResultListView displays SearchResultList with a list of
 // SearchResultView.
@@ -69,7 +68,6 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
 
   SearchResultListView(AppListMainView* main_view,
                        AppListViewDelegate* view_delegate,
-                       SearchResultPageDialogController* dialog_controller,
                        absl::optional<size_t> productivity_launcher_index);
 
   SearchResultListView(const SearchResultListView&) = delete;
@@ -106,6 +104,8 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
   // This should not be called on a disabled list view as list_type_ will be
   // reset.
   SearchResultListType list_type_for_test() { return list_type_.value(); }
+
+  views::Label* title_label_for_test() { return title_label_; }
 
  protected:
   // Overridden from views::View:

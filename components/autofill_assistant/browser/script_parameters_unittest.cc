@@ -105,6 +105,9 @@ TEST(ScriptParametersTest, SpecialScriptParameters) {
        {"PASSWORD_CHANGE_USERNAME", "fake_username"},
        {"OVERLAY_COLORS", "#123456"},
        {"ENABLE_TTS", "true"},
+       {"CALLER", "3"},
+       {"SOURCE", "4"},
+       {"EXPERIMENT_IDS", "123,456,789"},
        {"DETAILS_SHOW_INITIAL", "true"},
        {"DETAILS_TITLE", "title"},
        {"DETAILS_DESCRIPTION_LINE_1", "line1"},
@@ -126,6 +129,11 @@ TEST(ScriptParametersTest, SpecialScriptParameters) {
   EXPECT_THAT(parameters.GetPasswordChangeUsername(), Eq("fake_username"));
   EXPECT_THAT(parameters.GetOverlayColors(), Eq("#123456"));
   EXPECT_THAT(parameters.GetEnableTts(), Eq(true));
+  EXPECT_THAT(parameters.GetCaller(), Eq(3));
+  EXPECT_THAT(parameters.GetSource(), Eq(4));
+  EXPECT_THAT(
+      parameters.GetExperiments(),
+      UnorderedElementsAreArray(std::vector<std::string>{"123", "456", "789"}));
   EXPECT_THAT(parameters.GetDetailsShowInitial(), Eq(true));
   EXPECT_THAT(parameters.GetDetailsTitle(), Eq("title"));
   EXPECT_THAT(parameters.GetDetailsDescriptionLine1(), Eq("line1"));
@@ -247,6 +255,49 @@ TEST(ScriptParametersTest,
             "b");
   EXPECT_EQ(user_data.GetAdditionalValue("param:key_c")->strings().values(0),
             "c");
+}
+
+TEST(ScriptParametersTest, InvalidFormat) {
+  ScriptParameters parameters = {
+      {{"ENABLED", "not_a_boolean"}, {"CALLER", "not_an_integer"}}};
+
+  EXPECT_THAT(parameters.GetEnabled(), Eq(absl::nullopt));
+  EXPECT_THAT(parameters.GetCaller(), Eq(absl::nullopt));
+}
+
+TEST(ScriptParametersTest, MissingValues) {
+  ScriptParameters parameters;
+
+  // Just one test per data type here for brevity.
+  EXPECT_THAT(parameters.GetEnabled(), Eq(absl::nullopt));
+  EXPECT_THAT(parameters.GetIntent(), Eq(absl::nullopt));
+  EXPECT_THAT(parameters.GetCaller(), Eq(absl::nullopt));
+  EXPECT_THAT(parameters.GetExperiments(), IsEmpty());
+}
+
+TEST(ScriptParametersTest, ExperimentIdParsing) {
+  {
+    ScriptParameters parameters = {{{"EXPERIMENT_IDS", ""}}};
+    EXPECT_THAT(parameters.GetExperiments(), IsEmpty());
+  }
+
+  {
+    ScriptParameters parameters = {{{"EXPERIMENT_IDS", ","}}};
+    EXPECT_THAT(parameters.GetExperiments(), IsEmpty());
+  }
+
+  {
+    ScriptParameters parameters = {{{"EXPERIMENT_IDS", ",123,"}}};
+    EXPECT_THAT(parameters.GetExperiments(),
+                UnorderedElementsAreArray(std::vector<std::string>{"123"}));
+  }
+
+  {
+    ScriptParameters parameters = {{{"EXPERIMENT_IDS", "not_an_integer"}}};
+    EXPECT_THAT(
+        parameters.GetExperiments(),
+        UnorderedElementsAreArray(std::vector<std::string>{"not_an_integer"}));
+  }
 }
 
 }  // namespace autofill_assistant

@@ -2059,7 +2059,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/unload_browsertest.cc",
       "../browser/usb/usb_browsertest.cc",
       "../browser/wake_lock/wake_lock_browsertest.cc",
-      "../browser/web_applications/extensions/bookmark_app_browsertest.cc",
       "../browser/webauthn/chrome_webauthn_browsertest.cc",
       "../browser/window_placement/window_placement_browsertest.cc",
       "../browser/window_placement/window_placement_permission_context_browsertest.cc",
@@ -2947,6 +2946,7 @@ if (!is_android && !is_fuchsia) {
         sources += [
           "../browser/ui/views/select_file_dialog_extension_browsertest.cc",
         ]
+        deps += [ "//chromeos/services/multidevice_setup/public/cpp:prefs" ]
       }
       if (!is_chromeos) {
         sources += [
@@ -6401,7 +6401,6 @@ test("unit_tests") {
       "../browser/lacros/client_cert_store_lacros_unittest.cc",
       "../browser/lacros/force_installed_tracker_lacros_unittest.cc",
       "../browser/lacros/lacros_memory_pressure_evaluator_unittest.cc",
-      "../browser/lacros/lacros_url_handling_unittest.cc",
       "../browser/lacros/metrics_reporting_observer_unittest.cc",
       "../browser/lacros/net/network_settings_translation_unittest.cc",
       "../browser/lacros/prefs_ash_observer_unittest.cc",
@@ -6565,6 +6564,7 @@ test("unit_tests") {
       "../browser/ui/ash/network/tether_notification_presenter_unittest.cc",
       "../browser/ui/ash/notification_badge_color_cache_unittest.cc",
       "../browser/ui/ash/projector/projector_client_impl_unittest.cc",
+      "../browser/ui/ash/projector/projector_soda_installation_controller_unittest.cc",
       "../browser/ui/ash/quick_answers/quick_answers_controller_unittest.cc",
       "../browser/ui/ash/quick_answers/quick_answers_state_controller_unittest.cc",
       "../browser/ui/ash/quick_answers/quick_answers_ui_controller_unittest.cc",
@@ -6591,6 +6591,7 @@ test("unit_tests") {
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/resources/vector_icons",
       "//ash/strings",
+      "//ash/webui/projector_app:test_support",
       "//ash/webui/projector_app/public/cpp",
       "//chrome/browser/ash/crosapi:test_support",
       "//chrome/browser/ash/system_extensions:unit_tests",
@@ -6616,7 +6617,6 @@ test("unit_tests") {
       "//chrome/services/sharing/nearby/decoder:unit_tests",
       "//chrome/services/sharing/nearby/platform:unit_tests",
       "//chromeos/assistant:buildflags",
-      "//chromeos/constants",
       "//chromeos/dbus/image_loader",
       "//chromeos/dbus/u2f",
       "//chromeos/services/nearby/public/cpp:test_support",

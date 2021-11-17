@@ -45,6 +45,7 @@ type SyncRoutes = {
   PEOPLE: Route,
   SYNC: Route,
   SYNC_ADVANCED: Route,
+  OS_SYNC: Route,
 };
 
 function getSyncRoutes(): SyncRoutes {
@@ -303,6 +304,16 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
   }
   // </if>
 
+  private showActivityControls_(): boolean {
+    // <if expr="chromeos">
+    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled')) {
+      // Should be hidden in OS settings.
+      return !loadTimeData.getBoolean('isOSSettings');
+    }
+    // </if>
+    return true;
+  }
+
   private computeSignedIn_(): boolean {
     return !!this.syncStatus.signedIn;
   }
@@ -320,9 +331,21 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
     return this.syncStatus !== undefined && !!this.syncStatus.managed;
   }
 
+  private getSyncAdvancedPageRoute_(): Route {
+    // <if expr="chromeos">
+    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled') &&
+        loadTimeData.getBoolean('isOSSettings')) {
+      // In OS settings on ChromeOS a different page is used to show the list of
+      // sync data types.
+      return getSyncRoutes().OS_SYNC;
+    }
+    // </if>
+
+    return getSyncRoutes().SYNC_ADVANCED;
+  }
+
   private onFocusConfigChange_() {
-    const router = Router.getInstance();
-    this.focusConfig.set(getSyncRoutes().SYNC_ADVANCED.path, () => {
+    this.focusConfig.set(this.getSyncAdvancedPageRoute_().path, () => {
       focusWithoutInk(
           assert(this.shadowRoot!.querySelector('#sync-advanced-row')!));
     });
@@ -605,7 +628,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
 
   private onSyncAdvancedClick_() {
     const router = Router.getInstance();
-    router.navigateTo(getSyncRoutes().SYNC_ADVANCED);
+    router.navigateTo(this.getSyncAdvancedPageRoute_());
   }
 
   /**

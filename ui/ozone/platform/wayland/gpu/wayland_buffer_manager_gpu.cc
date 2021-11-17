@@ -16,6 +16,12 @@
 #include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom.h"
 #include "ui/ozone/public/overlay_plane.h"
 
+#if defined(WAYLAND_GBM)
+#include "ui/gfx/linux/gbm_wrapper.h"
+#include "ui/ozone/platform/wayland/gpu/drm_render_node_handle.h"
+#include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
+#endif
+
 namespace mojo {
 // static
 ui::ozone::mojom::WaylandOverlayConfigPtr
@@ -56,7 +62,15 @@ TypeConverter<ui::ozone::mojom::WaylandOverlayConfigPtr,
 
 namespace ui {
 
-WaylandBufferManagerGpu::WaylandBufferManagerGpu() = default;
+WaylandBufferManagerGpu::WaylandBufferManagerGpu() {
+#if defined(WAYLAND_GBM)
+  // The path_finder and the handle do syscalls, which are permitted before
+  // the sandbox entry. After the gpu enters the sandbox, they fail. Thus,
+  // open the handle early and store it.
+  OpenAndStoreDrmRenderNodeFd();
+#endif
+}
+
 WaylandBufferManagerGpu::~WaylandBufferManagerGpu() = default;
 
 void WaylandBufferManagerGpu::Initialize(
@@ -68,15 +82,11 @@ void WaylandBufferManagerGpu::Initialize(
     bool supports_acquire_fence,
     bool supports_non_backed_solid_color_buffers) {
   supported_buffer_formats_with_modifiers_ = buffer_formats_with_modifiers;
-
-#if defined(WAYLAND_GBM)
-  if (!supports_dma_buf)
-    set_gbm_device(nullptr);
-#endif
   supports_viewporter_ = supports_viewporter;
   supports_acquire_fence_ = supports_acquire_fence;
   supports_non_backed_solid_color_buffers_ =
       supports_non_backed_solid_color_buffers;
+  supports_dmabuf_ = supports_dma_buf;
 
   BindHostInterface(std::move(remote_host));
 
@@ -269,6 +279,29 @@ void WaylandBufferManagerGpu::DestroyBuffer(gfx::AcceleratedWidget widget,
                                 base::Unretained(this), widget, buffer_id));
 }
 
+#if defined(WAYLAND_GBM)
+GbmDevice* WaylandBufferManagerGpu::GetGbmDevice() {
+  if (!supports_dmabuf_)
+    return nullptr;
+
+  if (gbm_device_ || use_fake_gbm_device_for_test_)
+    return gbm_device_.get();
+
+  if (!drm_render_node_fd_.is_valid()) {
+    supports_dmabuf_ = false;
+    return nullptr;
+  }
+
+  gbm_device_ = CreateGbmDevice(drm_render_node_fd_.release());
+  if (!gbm_device_) {
+    supports_dmabuf_ = false;
+    LOG(WARNING) << "Failed to initialize gbm device.";
+    return nullptr;
+  }
+  return gbm_device_.get();
+}
+#endif  // defined(WAYLAND_GBM)
+
 void WaylandBufferManagerGpu::AddBindingWaylandBufferManagerGpu(
     mojo::PendingReceiver<ozone::mojom::WaylandBufferManagerGpu> receiver) {
   receiver_set_.Add(this, std::move(receiver));
@@ -392,5 +425,24 @@ void WaylandBufferManagerGpu::SubmitPresentationOnOriginThread(
   if (surface)
     surface->OnPresentation(buffer_id, feedback);
 }
+
+#if defined(WAYLAND_GBM)
+void WaylandBufferManagerGpu::OpenAndStoreDrmRenderNodeFd() {
+  DrmRenderNodePathFinder path_finder;
+  const base::FilePath drm_node_path = path_finder.GetDrmRenderNodePath();
+  if (drm_node_path.empty()) {
+    LOG(WARNING) << "Failed to find drm render node path.";
+    return;
+  }
+
+  DrmRenderNodeHandle handle;
+  if (!handle.Initialize(drm_node_path)) {
+    LOG(WARNING) << "Failed to initialize drm render node handle.";
+    return;
+  }
+
+  drm_render_node_fd_ = handle.PassFD();
+}
+#endif
 
 }  // namespace ui

@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
+@class BlinkScrollbarObserver;
 @class BlinkScrollbarPainterControllerDelegate;
 @class BlinkScrollbarPainterDelegate;
 
@@ -23,6 +24,44 @@ typedef id ScrollbarPainterController;
 typedef id ScrollbarPainter;
 
 namespace blink {
+
+class ScrollbarThemeMac;
+
+class PLATFORM_EXPORT MacScrollbarImpl : public MacScrollbar {
+ public:
+  MacScrollbarImpl(Scrollbar&,
+                   base::scoped_nsobject<ScrollbarPainterController>,
+                   scoped_refptr<base::SingleThreadTaskRunner>,
+                   ScrollbarThemeMac*,
+                   std::unique_ptr<MacScrollbarImpl> old_scrollbar);
+  ~MacScrollbarImpl() override;
+
+  static MacScrollbarImpl* GetForScrollbar(const Scrollbar&);
+
+  void SetEnabled(bool) final;
+  void SetOverlayColorTheme(ScrollbarOverlayColorTheme) final;
+  float GetKnobAlpha() final;
+  float GetTrackAlpha() final;
+  int GetTrackBoxWidth() final;
+
+  BlinkScrollbarPainterDelegate* painter_delegate() {
+    return painter_delegate_.get();
+  }
+  BlinkScrollbarObserver* observer() { return observer_.get(); }
+  ScrollbarPainter painter();
+
+ private:
+  const bool is_horizontal_;
+
+  // `painter_controller_` is also owned by the MacScrollbarAnimatorImpl
+  // that owns `this`.
+  base::scoped_nsobject<ScrollbarPainterController> painter_controller_;
+
+  base::scoped_nsobject<BlinkScrollbarPainterDelegate> painter_delegate_;
+
+  base::scoped_nsobject<BlinkScrollbarObserver> observer_;
+};
+
 // This class handles scrollbar opacity animations by delegating to native
 // Cocoa APIs (.mm).
 // It was created with the goal of solving (crbug.com/682209), but we still
@@ -116,14 +155,16 @@ class PLATFORM_EXPORT MacScrollbarAnimatorImpl : public MacScrollbarAnimator {
   }
 
  protected:
+  // Recreate the scrollbar painter for the specified scrollbar.
+  void RecreateScrollbarPainter(Scrollbar& scrollbar);
+
   base::scoped_nsobject<ScrollbarPainterController>
       scrollbar_painter_controller_;
   base::scoped_nsobject<BlinkScrollbarPainterControllerDelegate>
       scrollbar_painter_controller_delegate_;
-  base::scoped_nsobject<BlinkScrollbarPainterDelegate>
-      horizontal_scrollbar_painter_delegate_;
-  base::scoped_nsobject<BlinkScrollbarPainterDelegate>
-      vertical_scrollbar_painter_delegate_;
+
+  std::unique_ptr<MacScrollbarImpl> horizontal_scrollbar_;
+  std::unique_ptr<MacScrollbarImpl> vertical_scrollbar_;
 
   Member<ScrollableArea> scrollable_area_;
 };

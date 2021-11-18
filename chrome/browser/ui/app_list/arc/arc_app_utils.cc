@@ -13,6 +13,7 @@
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/metrics/arc_metrics_constants.h"
+#include "ash/components/arc/metrics/arc_metrics_service.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/json/json_writer.h"
@@ -50,7 +51,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/app_restore/app_restore_utils.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/metrics/arc_metrics_service.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/session/arc_service_manager.h"
@@ -835,7 +835,7 @@ void RecordPlayStoreLaunchWithinAWeek(PrefService* prefs, bool launched) {
   if (!prefs->GetBoolean(arc::prefs::kArcPlayStoreLaunchMetricCanBeRecorded))
     return;
   auto time_oobe_finished = prefs->GetTime(ash::prefs::kOobeOnboardingTime);
-  if (!time_oobe_finished.is_null())
+  if (time_oobe_finished.is_null())
     return;
   bool within_a_week = base::Time::Now() - time_oobe_finished < base::Days(7);
   if (within_a_week && !launched)

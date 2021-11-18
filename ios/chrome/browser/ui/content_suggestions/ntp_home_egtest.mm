@@ -160,8 +160,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 #pragma mark - Tests
 
 // Tests that all items are accessible on the home page.
-// TODO(crbug.com/1237925): Re-enable once misisng accessibility label is fixed.
-- (void)DISABLED_testAccessibility {
+- (void)testAccessibility {
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
@@ -487,7 +486,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 // Tests that when navigating back to the NTP while having the omnibox focused
 // and moved up, the scroll position restored is the position before the omnibox
 // is selected.
-// Disable the test due to ios official build failure.
+// Disable the test due to waterfall failure.
 // TODO(crbug.com/1243222): enable the test with fix.
 - (void)DISABLED_testPositionRestoredWithOmniboxFocused {
   [self addMostVisitedTile];
@@ -776,8 +775,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Test to ensure that feed can be enabled/disabled and that feed header changes
 // accordingly.
-// TODO(crbug.com/1194106): Flaky on ios-simulator-noncq.
-- (void)DISABLED_testToggleFeedEnabled {
+- (void)testToggleFeedEnabled {
   [self
       testNTPInitialPositionAndContent:[NewTabPageAppInterface collectionView]];
 
@@ -799,7 +797,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   [self
       testNTPInitialPositionAndContent:[NewTabPageAppInterface collectionView]];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::DiscoverHeaderLabel()]
-      assertWithMatcher:grey_nil()];
+      assertWithMatcher:grey_notVisible()];
   [self checkIfNTPIsScrollable];
 
   // Re-enable feed.

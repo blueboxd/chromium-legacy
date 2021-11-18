@@ -70,11 +70,21 @@ tast_disabled_tests_from_chrome_all = [
   "ui.DesktopControl",
   "ui.WindowControl",
 
+  # https://crbug.com/1269113: Flaky.
+  "graphics.KmsvncConnect",
+  "graphics.Smoke.chrome",
+
   # https://crbug.com/1269876: Flaky.
   "arc.TextToSpeech",
 
   # https://crbug.com/1269880: Flaky.
   "ui.ChromeCrashReporterMetrics.success_crashpad",
+
+  # https://crbug.com/1269075: Flaky.
+  "shelf.AutoHideSmoke.clamshell_mode",
+
+  # https://crbug.com/1269124: Flaky.
+  "quicksettings.LockScreen.no_battery",
 ]
 
 # To disable a specific test in lacros_all_tast_tests, add it the following
@@ -83,4 +93,9 @@ tast_disabled_tests_from_lacros_all = [
   # crbug.com/1250036
   "a11y.Smoke.lacros",
   "a11y.Smoke.lacros_rootfs",
+
+  # crbug.com/1174896
+  "lacros.ShelfLaunch",
+  "lacros.ShelfLaunch.rootfs",
+  "lacros.AppLauncherLaunch",
 ]

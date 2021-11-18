@@ -1647,6 +1647,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/net/chrome_network_service_browsertest.cc",
       "../browser/net/chrome_network_service_restart_browsertest.cc",
       "../browser/net/cookie_policy_browsertest.cc",
+      "../browser/net/cookie_store_sameparty_browsertest.cc",
       "../browser/net/cookie_store_samesite_browsertest.cc",
       "../browser/net/dns_over_https_browsertest.cc",
       "../browser/net/dns_probe_browsertest.cc",
@@ -2705,6 +2706,7 @@ if (!is_android && !is_fuchsia) {
 
         deps += [
           "//chrome/browser/enterprise/connectors/device_trust:features",
+          "//chrome/browser/enterprise/connectors/device_trust/key_management/browser/commands:test_support",
           "//chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence:test_support",
         ]
       }
@@ -3161,6 +3163,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/ash/login/screens/fingerprint_setup_browsertest.cc",
         "../browser/ash/login/screens/gesture_navigation_screen_browsertest.cc",
         "../browser/ash/login/screens/hid_detection_screen_browsertest.cc",
+        "../browser/ash/login/screens/lacros_data_migration_screen_browsertest.cc",
         "../browser/ash/login/screens/management_transition_screen_browsertest.cc",
         "../browser/ash/login/screens/marketing_opt_in_screen_browsertest.cc",
         "../browser/ash/login/screens/mock_arc_terms_of_service_screen.cc",
@@ -3423,6 +3426,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/ui/ash/keyboard/keyboard_end_to_end_browsertest.cc",
         "../browser/ui/ash/multi_user/test_multi_user_window_manager.cc",
         "../browser/ui/ash/multi_user/test_multi_user_window_manager.h",
+        "../browser/ui/ash/projector/pending_screencast_manager_browsertest.cc",
         "../browser/ui/ash/projector/projector_client_impl_browsertest.cc",
         "../browser/ui/ash/projector/projector_navigation_throttle_browsertest.cc",
         "../browser/ui/ash/screen_orientation_delegate_chromeos_browsertest.cc",
@@ -5122,6 +5126,7 @@ test("unit_tests") {
       "../browser/ui/sync/sync_promo_ui_unittest.cc",
       "../browser/ui/toolbar/app_menu_icon_controller_unittest.cc",
       "../browser/ui/views/file_system_access/file_system_access_ui_helpers_unittest.cc",
+      "../browser/ui/views/location_bar/permission_chip_unittest.cc",
       "../browser/ui/webui/constrained_web_dialog_ui_unittest.cc",
       "../browser/ui/webui/devtools_ui_data_source_unittest.cc",
       "../browser/ui/webui/discards/graph_dump_impl_unittest.cc",

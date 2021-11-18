@@ -11,7 +11,7 @@ import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import './styles.js';
 import '../common/styles.js';
-import {assert, assertNotReached} from '/assert.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {afterNextRender, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {getNumberOfGridItemsPerRow, isNonEmptyArray, isSelectionEvent, normalizeKeyForRTL} from '../common/utils.js';
 import {getWallpaperProvider} from './mojo_interface_provider.js';
@@ -311,6 +311,19 @@ export class GooglePhotos extends WithPersonalizationStore {
   }
 
   /**
+   * Creates the html for the Google Photos link in zero state.
+   * @return {string}
+   * @private
+   */
+  getZeroStateMessage_() {
+    return this.i18nAdvanced('googlePhotosZeroStateMessage', {
+      substitutions: [
+        '<a target="_blank" href="https://photos.google.com">photos.google.com</a>'
+      ]
+    });
+  }
+
+  /**
    * Invalidates the grid for the currently selected tab to force relayout.
    * @private
    */
@@ -318,11 +331,11 @@ export class GooglePhotos extends WithPersonalizationStore {
     switch (this.tab_) {
       case Tab.Albums:
         // Firing 'iron-resize' event forces relayout of 'iron-list'.
-        this.shadowRoot.querySelector('#albumsGrid').fire('iron-resize');
+        this.shadowRoot.querySelector('#albumsGrid')?.fire('iron-resize');
         return;
       case Tab.Photos:
         // Firing 'iron-resize' event forces relayout of 'iron-list'.
-        this.shadowRoot.querySelector('#photosGrid').fire('iron-resize');
+        this.shadowRoot.querySelector('#photosGrid')?.fire('iron-resize');
         return;
       default:
         assertNotReached();
@@ -346,6 +359,15 @@ export class GooglePhotos extends WithPersonalizationStore {
    */
   isAlbumsTabSelected_() {
     return this.tab_ === Tab.Albums;
+  }
+
+  /**
+   * Whether the list of photos is empty.
+   * @return {boolean}
+   * @private
+   */
+  isPhotosEmpty_() {
+    return !isNonEmptyArray(this.photos_);
   }
 
   /**

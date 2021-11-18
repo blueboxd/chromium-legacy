@@ -6,18 +6,7 @@ found in the LICENSE file.
 
 <!--
 
-        You
-
-                   888                  d8b 888
-                   888                  88P 888
-                   888                  8P  888
-               .d88888  .d88b.  88888b. "   888888
-              d88" 888 d88""88b 888 "88b    888
-              888  888 888  888 888  888    888
-              Y88b 888 Y88..88P 888  888    Y88b.
-               "Y88888  "Y88P"  888  888     "Y888
-
-        need an OWNER review to submit changes to this file.
+        You DON'T need an OWNER review to submit changes to this file.
 
 This file describes the enumerations used in metrics data.  It is used
 along with histograms.xml to describe the histogram data collected by Chrome.
@@ -32481,10 +32470,12 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="1243" label="WebAnimationHyphenatedProperty"/>
   <int value="1244"
       label="FormControlsCollectionReturnsRadioNodeListForFieldSet"/>
-  <int value="1245" label="ApplicationCacheManifestSelectInsecureOrigin"/>
-  <int value="1246" label="ApplicationCacheManifestSelectSecureOrigin"/>
-  <int value="1247" label="ApplicationCacheAPIInsecureOrigin"/>
-  <int value="1248" label="ApplicationCacheAPISecureOrigin"/>
+  <int value="1245"
+      label="OBSOLETE_ApplicationCacheManifestSelectInsecureOrigin"/>
+  <int value="1246"
+      label="OBSOLETE_ApplicationCacheManifestSelectSecureOrigin"/>
+  <int value="1247" label="OBSOLETE_ApplicationCacheAPIInsecureOrigin"/>
+  <int value="1248" label="OBSOLETE_ApplicationCacheAPISecureOrigin"/>
   <int value="1249" label="CSSAtRuleApply"/>
   <int value="1250" label="CSSSelectorPseudoAny"/>
   <int value="1251" label="PannerNodeSetVelocity"/>
@@ -34080,7 +34071,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="2769" label="HTMLTemplateElement"/>
   <int value="2770" label="NoSysexWebMIDIWithoutPermission"/>
   <int value="2771" label="NoSysexWebMIDIOnInsecureOrigin"/>
-  <int value="2772" label="ApplicationCacheInstalledButNoManifest"/>
+  <int value="2772" label="OBSOLETE_ApplicationCacheInstalledButNoManifest"/>
   <int value="2773" label="PerMethodCanMakePaymentQuota"/>
   <int value="2774"
       label="OBSOLETE_CSSValueAppearanceButtonForNonButtonRendered"/>
@@ -50257,6 +50248,7 @@ from previous Chrome versions.
   <int value="-875217114"
       label="OmniboxEnableClipboardProviderTextSuggestions:enabled"/>
   <int value="-874602599" label="HorizontalTabSwitcherAndroid:enabled"/>
+  <int value="-873334439" label="PersistShareHubOnAppSwitch:disabled"/>
   <int value="-872764392" label="ContextualSuggestionsBottomSheet:disabled"/>
   <int value="-871784177" label="DeprecateMenagerieAPI:enabled"/>
   <int value="-871520682"
@@ -51045,6 +51037,7 @@ from previous Chrome versions.
   <int value="-265697837" label="PhoneHub:disabled"/>
   <int value="-263645996" label="InteractiveWindowCycleList:enabled"/>
   <int value="-263150202" label="BundledConnectionHelp:disabled"/>
+  <int value="-262368430" label="PersistShareHubOnAppSwitch:enabled"/>
   <int value="-262122630" label="ArcEnableDocumentsProviderInFilesApp:enabled"/>
   <int value="-261398170" label="ChromeLabs:enabled"/>
   <int value="-258081634" label="AutofillAssistantDirectActions:disabled"/>
@@ -63674,11 +63667,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Unknown"/>
   <int value="1" label="Success"/>
   <int value="2" label="Pending"/>
-  <int value="3" label="ErrorInternalError"/>
-  <int value="4" label="ErrorModelFileNotAvailable"/>
-  <int value="5" label="ErrorModelFileNotValid"/>
-  <int value="6" label="ErrorEmptyOrInvalidInput"/>
-  <int value="7" label="ErrorUnknown"/>
+  <int value="3" label="ErrorModelFileNotAvailable"/>
+  <int value="4" label="ErrorModelFileNotValid"/>
+  <int value="5" label="ErrorEmptyOrInvalidInput"/>
+  <int value="6" label="ErrorUnknown"/>
 </enum>
 
 <enum name="OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult">
@@ -78372,6 +78364,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="15" label="Invalid integrity header"/>
   <int value="16" label="Variant mismatch"/>
   <int value="17" label="Certificate's validity period is too long"/>
+  <int value="18" label="Had a cookie for cookieless only SXG"/>
 </enum>
 
 <enum name="SignedExchangeSignatureVerificationResult">
@@ -91116,7 +91109,6 @@ Called by update_scheduler_enums.py.-->
   <int value="-936786926" label="chrome://settings/"/>
   <int value="-907485548" label="chrome://policy-tool/"/>
   <int value="-905972126" label="chrome://signin-email-confirmation/"/>
-  <int value="-902637811" label="chrome://appcache-internals/"/>
   <int value="-892484505" label="chrome://sys-internals/"/>
   <int value="-891260101" label="chrome://inspect/"/>
   <int value="-853789543" label="chrome://bluetooth-pairing/"/>
@@ -91272,7 +91264,6 @@ Called by update_scheduler_enums.py.-->
   <int value="2052019697" label="chrome://userimage/"/>
   <int value="2114840772" label="chrome://drive-internals/"/>
   <int value="2120829362" label="chrome://account-manager-welcome/"/>
-  <int value="3251925547" label="chrome://offline-internals/"/>
 </enum>
 
 <enum name="WebURLRequestPriority">

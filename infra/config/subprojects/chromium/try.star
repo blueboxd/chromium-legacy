@@ -817,6 +817,7 @@ try_.chromium_chromiumos_builder(
 try_.chromium_chromiumos_builder(
     name = "chromeos-arm-generic-rel",
     branch_selector = branches.CROS_LTS_MILESTONE,
+    bootstrap = True,
     builderless = not settings.is_main,
     main_list_view = "try",
     os = os.LINUX_BIONIC_REMOVE,
@@ -1657,6 +1658,8 @@ try_.chromium_mac_orchestrator_pair(
     compilator_goma_jobs = goma.jobs.J150,
     compilator_os = os.MAC_11,
     compilator_name = "mac11-arm64-rel-compilator",
+    # TODO (crbug/1271287): Revert when root issue is fixed
+    compilator_grace_period = 3 * time.minute,
 )
 
 # NOTE: the following trybots aren't sensitive to Mac version on which

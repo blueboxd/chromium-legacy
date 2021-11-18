@@ -39,9 +39,6 @@ class FwupdClientImpl : public FwupdClient {
   void Init(dbus::Bus* bus) override {
     DCHECK(bus);
 
-    if (!features::IsFirmwareUpdaterAppEnabled())
-      return;
-
     proxy_ = bus->GetObjectProxy(kFwupdServiceName,
                                  dbus::ObjectPath(kFwupdServicePath));
     DCHECK(proxy_);
@@ -54,7 +51,7 @@ class FwupdClientImpl : public FwupdClient {
   }
 
   void RequestUpdates(const std::string& device_id) override {
-    DCHECK(IsInitialized());
+    CHECK(features::IsFirmwareUpdaterAppEnabled());
     dbus::MethodCall method_call(kFwupdServiceInterface,
                                  kFwupdGetUpgradesMethodName);
     dbus::MessageWriter writer(&method_call);
@@ -64,11 +61,11 @@ class FwupdClientImpl : public FwupdClient {
     proxy_->CallMethodWithErrorResponse(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&FwupdClientImpl::RequestUpdatesCallback,
-                       weak_ptr_factory_.GetWeakPtr()));
+                       weak_ptr_factory_.GetWeakPtr(), device_id));
   }
 
   void RequestDevices() override {
-    DCHECK(IsInitialized());
+    CHECK(features::IsFirmwareUpdaterAppEnabled());
     dbus::MethodCall method_call(kFwupdServiceInterface,
                                  kFwupdGetDevicesMethodName);
     proxy_->CallMethodWithErrorResponse(
@@ -78,9 +75,6 @@ class FwupdClientImpl : public FwupdClient {
   }
 
  private:
-  // Return true if the client has been initialized.
-  bool IsInitialized() { return proxy_; }
-
   // Pops a string-to-variant-string dictionary from the reader.
   std::unique_ptr<base::DictionaryValue> PopStringToStringDictionary(
       dbus::MessageReader* reader) {
@@ -126,7 +120,8 @@ class FwupdClientImpl : public FwupdClient {
     return result;
   }
 
-  void RequestUpdatesCallback(dbus::Response* response,
+  void RequestUpdatesCallback(const std::string& device_id,
+                              dbus::Response* response,
                               dbus::ErrorResponse* error_response) {
     if (!response) {
       LOG(ERROR) << "No Dbus response received from fwupd.";
@@ -141,8 +136,7 @@ class FwupdClientImpl : public FwupdClient {
       return;
     }
 
-    auto updates = std::make_unique<FwupdUpdateList>();
-
+    FwupdUpdateList updates;
     while (array_reader.HasMoreData()) {
       // Parse update description.
       std::unique_ptr<base::DictionaryValue> dict =
@@ -164,12 +158,12 @@ class FwupdClientImpl : public FwupdClient {
         return;
       }
 
-      updates->emplace_back(version->GetString(), description->GetString(),
-                            priority->GetInt());
+      updates.emplace_back(version->GetString(), description->GetString(),
+                           priority->GetInt());
     }
 
     for (auto& observer : observers_) {
-      observer.OnUpdateListResponse(updates.get());
+      observer.OnUpdateListResponse(device_id, &updates);
     }
   }
 
@@ -188,8 +182,7 @@ class FwupdClientImpl : public FwupdClient {
       return;
     }
 
-    auto devices = std::make_unique<FwupdDeviceList>();
-
+    FwupdDeviceList devices;
     while (array_reader.HasMoreData()) {
       // Parse device description.
       std::unique_ptr<base::DictionaryValue> dict =
@@ -209,11 +202,11 @@ class FwupdClientImpl : public FwupdClient {
         return;
       }
 
-      devices->emplace_back(id->GetString(), name->GetString());
+      devices.emplace_back(id->GetString(), name->GetString());
     }
 
     for (auto& observer : observers_)
-      observer.OnDeviceListResponse(devices.get());
+      observer.OnDeviceListResponse(&devices);
   }
 
   void OnSignalConnected(const std::string& interface_name,
@@ -227,6 +220,10 @@ class FwupdClientImpl : public FwupdClient {
 
   // TODO(swifton): This is a stub implementation.
   void OnDeviceAddedReceived(dbus::Signal* signal) {
+    // Do nothing if the feature is not enabled.
+    if (!features::IsFirmwareUpdaterAppEnabled())
+      return;
+
     if (client_is_in_testing_mode_) {
       ++device_signal_call_count_for_testing_;
     }

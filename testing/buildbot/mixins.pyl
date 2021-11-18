@@ -652,6 +652,14 @@
       },
     },
   },
+  'mac_10.12': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'x86-64',
+        'os': 'Mac-10.12.6',
+      },
+    },
+  },
   'mac_10.13': {
     'swarming': {
       'dimensions': {
@@ -724,24 +732,6 @@
         'os': 'Mac-11',
         'pool': 'chromium.tests',
         'display_attached': '1',
-      },
-    },
-  },
-  'mac_mini_10.12': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'x86-64',
-        'gpu': '8086:0a2e',
-        'os': 'Mac-10.12.6',
-      },
-    },
-  },
-  'mac_mini_10.14': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'x86-64',
-        'gpu': '8086:0a2e',
-        'os': 'Mac-10.14.6',
       },
     },
   },
@@ -1062,9 +1052,9 @@
   'win10_intel_hd_630_experimental': {
     'swarming': {
       'dimensions': {
-        'gpu': '8086:5912-26.20.100.7870|8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141',
+        'gpu': '8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141',
         'os': 'Windows-10',
-        'pool': 'chromium.tests.gpu.experimental',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -1105,7 +1095,7 @@
       'dimensions': {
         'gpu': '10de:1cb3-27.21.14.5148',
         'os': 'Windows-10-18363',
-        'pool': 'chromium.tests.gpu.experimental',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },

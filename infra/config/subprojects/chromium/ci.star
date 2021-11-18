@@ -921,11 +921,12 @@ ci.android_builder(
     name = "android-marshmallow-x86-rel",
     branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
-        category = "builder_tester|x86",
+        category = "on_cq|x86",
         short_name = "M",
     ),
     cq_mirrors_console_view = "mirrors",
     main_console_view = main_console_if_on_branch(),
+    tree_closing = True,
     os = os.LINUX_BIONIC_REMOVE,
 )
 
@@ -979,6 +980,7 @@ ci.android_builder(
         category = "builder_tester|x86",
         short_name = "11",
     ),
+    tree_closing = True,
     os = os.LINUX_BIONIC_REMOVE,
 )
 
@@ -6666,7 +6668,7 @@ ci.cipd_builder(
     name = "rts-model-packager",
     builderless = False,
     executable = "recipe:chromium_rts/create_model",
-    schedule = "0 7 * * *",  # at 12AM or 1AM PT (depending on DST), once a day.
+    schedule = "0 9 * * *",  # at 1AM or 2AM PT (depending on DST), once a day.
     triggered_by = [],
     execution_timeout = 8 * time.hour,
     cores = None,
@@ -6678,7 +6680,7 @@ ci.cipd_builder(
         luci.notifier(
             name = "rts-model-packager-notifier",
             on_occurrence = ["FAILURE", "INFRA_FAILURE"],
-            notify_emails = ["guterman@google.com"],
+            notify_emails = ["chrome-browser-infra-team@google.com"],
         ),
     ],
 )

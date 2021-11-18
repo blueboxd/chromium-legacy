@@ -1003,10 +1003,6 @@ const char kEnableCanvasContextLostInBackgroundName[] =
 const char kEnableCanvasContextLostInBackgroundDescription[] =
     "Enable canvas context to be cleared when it is running in background";
 
-const char kEnableLayoutNGName[] = "Enable LayoutNG";
-const char kEnableLayoutNGDescription[] =
-    "Enable Blink's next generation layout engine.";
-
 const char kEnableLazyFrameLoadingName[] = "Enable lazy frame loading";
 const char kEnableLazyFrameLoadingDescription[] =
     "Defers the loading of iframes marked with the attribute 'loading=lazy' "
@@ -4698,6 +4694,10 @@ const char kFilesBannerFrameworkName[] =
 const char kFilesBannerFrameworkDescription[] =
     "Enable the updated branner framework in Files app";
 
+const char kFilesExtractArchiveName[] = "Extract archive in Files app";
+const char kFilesExtractArchiveDescription[] =
+    "Enable the simplified archive extraction feature in Files app";
+
 const char kFilesSinglePartitionFormatName[] =
     "Enable Partitioning of Removable Disks.";
 const char kFilesSinglePartitionFormatDescription[] =
@@ -4710,10 +4710,6 @@ const char kFilesSWADescription[] =
 const char kFilesTrashName[] = "Enable Files Trash.";
 const char kFilesTrashDescription[] =
     "Enable trash for My files volume in Files App.";
-
-const char kFilesZipUnpackName[] = "New ZIP unpacking in Files App";
-const char kFilesZipUnpackDescription[] =
-    "Enable new ZIP archive extraction system in File Manager.";
 
 const char kForceSpectreVariant2MitigationName[] =
     "Force Spectre variant 2 mitigagtion";

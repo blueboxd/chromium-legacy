@@ -30082,6 +30082,7 @@ Called by update_extension_histograms.py.-->
   <int value="1599" label="WEB_AUTHENTICATION_PROXY_DETACH"/>
   <int value="1600" label="FILEMANAGERPRIVATE_CANCELIOTASK"/>
   <int value="1601" label="AUTOTESTPRIVATE_GETDISPLAYSMOOTHNESS"/>
+  <int value="1602" label="AUTOTESTPRIVATE_RESETHOLDINGSPACE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -50192,6 +50193,7 @@ from previous Chrome versions.
   <int value="-915035507" label="ArcPrintSpoolerExperiment:enabled"/>
   <int value="-914210146" label="enable-web-based-signin"/>
   <int value="-914097698" label="EnableDbusAndX11StatusIcons:disabled"/>
+  <int value="-913925109" label="FilesExtractArchive:disabled"/>
   <int value="-913294939" label="DriveFS:enabled"/>
   <int value="-912585719" label="AppManagementIntentSettings:disabled"/>
   <int value="-912456561" label="MidiManagerWinrt:enabled"/>
@@ -51206,6 +51208,7 @@ from previous Chrome versions.
   <int value="-127666141" label="TabGroups:disabled"/>
   <int value="-127231994" label="VrBrowsingNativeAndroidUi:disabled"/>
   <int value="-122492389" label="enable-browser-task-scheduler"/>
+  <int value="-122458532" label="FilesExtractArchive:enabled"/>
   <int value="-121563330" label="SecurePaymentConfirmationBrowser:disabled"/>
   <int value="-120521482" label="DirectManipulationStylus:enabled"/>
   <int value="-120091289" label="CrostiniAppSearch:enabled"/>
@@ -52133,7 +52136,6 @@ from previous Chrome versions.
   <int value="570469494" label="LoginDetection:disabled"/>
   <int value="571349694" label="AllowAllSitesToInitiateMirroring:enabled"/>
   <int value="571562912" label="InstallableAmbientBadgeMessage:disabled"/>
-  <int value="572915501" label="FilesZipUnpack:disabled"/>
   <int value="573385109" label="SharedClipboardUI:enabled"/>
   <int value="575380532" label="ExperimentalAccessibilityLabels:disabled"/>
   <int value="575394365" label="AndroidPaymentApps:disabled"/>
@@ -52202,7 +52204,6 @@ from previous Chrome versions.
   <int value="624783596" label="SamePartyCookiesConsideredFirstParty:enabled"/>
   <int value="625273056" label="disable-boot-animation"/>
   <int value="625725485" label="FilesTrash:enabled"/>
-  <int value="626605468" label="FilesZipUnpack:enabled"/>
   <int value="628302973" label="NTPSnippets:enabled"/>
   <int value="628570445" label="AndroidAutofillAccessibility:enabled"/>
   <int value="629549626" label="ContextualSearchMlTapSuppression:enabled"/>
@@ -64251,6 +64252,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1112" label="Privacy: Remove Fingerprint V2"/>
   <int value="1113"
       label="Privacy: Enable/Disable peripheral data access protection"/>
+  <int value="1114" label="Privacy: Snooping Protection"/>
   <int value="1200" label="Add Language"/>
   <int value="1201" label="Show Input Options In Shelf"/>
   <int value="1202" label="Show Personal Information Suggestions"/>
@@ -64306,6 +64308,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1706" label="View Terms of Service"/>
   <int value="1707" label="Open Diagnostics App"/>
   <int value="1708" label="Change Device Name"/>
+  <int value="1709" label="Open Firmware Updates App"/>
   <int value="1800" label="Add Kerberos Ticket V2"/>
   <int value="1801" label="Remove Kerberos Ticket V2"/>
   <int value="1802" label="Set Active Kerberos Ticket V2"/>

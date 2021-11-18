@@ -4425,6 +4425,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-banner-framework", flag_descriptions::kFilesBannerFrameworkName,
      flag_descriptions::kFilesBannerFrameworkDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesBannerFramework)},
+    {"files-extract-archive", flag_descriptions::kFilesExtractArchiveName,
+     flag_descriptions::kFilesExtractArchiveDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFilesExtractArchive)},
     {"files-filters-in-recents", flag_descriptions::kFiltersInRecentsName,
      flag_descriptions::kFiltersInRecentsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFiltersInRecents)},
@@ -4438,9 +4441,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-trash", flag_descriptions::kFilesTrashName,
      flag_descriptions::kFilesTrashDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesTrash)},
-    {"files-zip-unpack", flag_descriptions::kFilesZipUnpackName,
-     flag_descriptions::kFilesZipUnpackDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kFilesZipUnpack)},
     {"force-spectre-v2-mitigation",
      flag_descriptions::kForceSpectreVariant2MitigationName,
      flag_descriptions::kForceSpectreVariant2MitigationDescription, kOsCrOS,
@@ -5289,10 +5289,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShoppingListDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(commerce::kShoppingList)},
 #endif  // OS_ANDROID
-
-    {"enable-layout-ng", flag_descriptions::kEnableLayoutNGName,
-     flag_descriptions::kEnableLayoutNGDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kLayoutNG)},
 
     {"enable-lazy-image-loading",
      flag_descriptions::kEnableLazyImageLoadingName,

@@ -323,6 +323,8 @@ _CONFIG = [
             'gfx::Determinant',
             'gfx::IntersectRects',
             'gfx::PointAtOffsetFromOrigin',
+            'gfx::PointFToSkPoint',
+            'gfx::PointToSkIPoint',
             'gfx::MaximumCoveredRect',
             'gfx::RectFToSkRect',
             'gfx::RectToSkIRect',
@@ -335,8 +337,10 @@ _CONFIG = [
             'gfx::ScalePoint',
             'gfx::ScaleToRoundedPoint',
             'gfx::ScaleVector2d',
+            'gfx::SkIPointToPoint',
             'gfx::SkIRectToRect',
             'gfx::SkRectToRectF',
+            'gfx::SkPointToPointF',
             'gfx::SubtractRects',
             'gfx::ToCeiledPoint',
             'gfx::ToCeiledSize',
@@ -1403,6 +1407,16 @@ _CONFIG = [
             'third_party/blink/renderer/core/paint/theme_painter_default.cc',
         ],
         'allowed': ['ui::NativeTheme.*', 'ui::color_utils.*'],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/scroll/mac_scrollbar_animator_impl.h',
+            'third_party/blink/renderer/core/scroll/mac_scrollbar_animator_impl.mm',
+        ],
+        'allowed': [
+            'ui::ScrollbarAnimationTimerMac',
+            'ui::OverlayScrollbarAnimatorMac',
+        ],
     },
     {
         'paths': [

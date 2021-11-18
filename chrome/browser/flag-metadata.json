@@ -2169,11 +2169,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "enable-layout-ng",
-    "owners": [ "layout-dev@chromium.org" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "enable-lazy-frame-loading",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 90
@@ -3133,6 +3128,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "files-extract-archive",
+    "owners": [ "adanilo", "simmonsjosh@google.com" ],
+    "expiry_milestone": 112
+  },
+  {
     "name": "files-filters-in-recents",
     "owners": [ "simmonsjosh@google.com", "benhartney@google.com" ],
     "expiry_milestone": 98
@@ -3151,11 +3151,6 @@
     "name": "files-trash",
     "owners": [ "joelhockey", "noel", "simmonsjosh@google.com" ],
     "expiry_milestone": 105
-  },
-  {
-    "name": "files-zip-unpack",
-    "owners": [ "fdegros", "jboulic"],
-    "expiry_milestone": 100
   },
   {
     "name": "fill-on-account-select",

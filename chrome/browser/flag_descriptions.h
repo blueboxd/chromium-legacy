@@ -548,9 +548,6 @@ extern const char kEnableGenericSensorExtraClassesDescription[];
 extern const char kEnableGpuServiceLoggingName[];
 extern const char kEnableGpuServiceLoggingDescription[];
 
-extern const char kEnableLayoutNGName[];
-extern const char kEnableLayoutNGDescription[];
-
 extern const char kEnableLazyFrameLoadingName[];
 extern const char kEnableLazyFrameLoadingDescription[];
 
@@ -2700,6 +2697,9 @@ extern const char kFilesArchivemount2Description[];
 extern const char kFilesBannerFrameworkName[];
 extern const char kFilesBannerFrameworkDescription[];
 
+extern const char kFilesExtractArchiveName[];
+extern const char kFilesExtractArchiveDescription[];
+
 extern const char kFilesSinglePartitionFormatName[];
 extern const char kFilesSinglePartitionFormatDescription[];
 
@@ -2708,9 +2708,6 @@ extern const char kFilesSWADescription[];
 
 extern const char kFilesTrashName[];
 extern const char kFilesTrashDescription[];
-
-extern const char kFilesZipUnpackName[];
-extern const char kFilesZipUnpackDescription[];
 
 extern const char kFiltersInRecentsName[];
 extern const char kFiltersInRecentsDescription[];

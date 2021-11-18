@@ -182,3 +182,32 @@ Cookies as seen on server: "HTTP_COOKIE: foo=bar1\n"
 
 Running test: deleteAllCookies
 
+Running test: setPartitionedCookie
+Setting Cookie
+setCookie failed: Partitioned cookies disabled. Cannot set cookie partition key
+Num of cookies 0
+Setting Cookie
+setCookie failed: Partitioned cookies disabled. Cannot set cookie partition key
+Num of cookies 0
+
+Running test: deleteAllCookies
+
+Running test: logCookies
+Num of cookies 0
+
+Running test: setPartitionedCookies
+Adding multiple cookies
+Num of cookies 0
+
+Running test: getPartitionedCookie
+Num of cookies 1
+name: __Host-foo, value: bar, domain: example.test, path: /, secure, session, None
+
+Running test: deleteAllCookies
+
+Running test: getPartitionedCookieFromOpaqueOrigin
+Num of cookies 1
+name: __Host-foo, value: bar, domain: example.test, path: /, secure, session, None
+
+Running test: deleteAllCookies
+

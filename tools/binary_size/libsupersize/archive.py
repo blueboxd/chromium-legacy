@@ -124,9 +124,6 @@ class SectionSizeKnobs:
 # Parameters and states for archiving a container.
 @dataclasses.dataclass
 class ContainerArchiveOptions:
-  # TODO(agrieve): Delete pak_compression_ratio. We haven't compressed .pak
-  #    files since moving to bundles.
-  pak_compression_ratio: float = 0.5
   # Whether to count number of relative relocations instead of binary size.
   relocations_mode: bool = False
   # Whether to break down .so files.
@@ -287,44 +284,42 @@ def _NormalizeSourcePath(path):
   return True, path
 
 
-def _ExtractSourcePathsAndNormalizeObjectPaths(raw_symbols,
-                                               object_source_mapper,
-                                               address_source_mapper):
+def _AddSourcePathsUsingObjectPaths(ninja_source_mapper, raw_symbols):
+  logging.info('Looking up source paths from ninja files')
+  for symbol in raw_symbols:
+    if symbol.IsDex() or symbol.IsOther():
+      continue
+    # Native symbols and pak symbols use object paths.
+    object_path = symbol.object_path
+    if not object_path:
+      continue
+
+    # We don't have source info for prebuilt .a files.
+    if not os.path.isabs(object_path) and not object_path.startswith('..'):
+      symbol.source_path = ninja_source_mapper.FindSourceForPath(object_path)
+  assert ninja_source_mapper.unmatched_paths_count == 0, (
+      'One or more source file paths could not be found. Likely caused by '
+      '.ninja files being generated at a different time than the .map file.')
+
+
+def _AddSourcePathsUsingAddress(dwarf_source_mapper, raw_symbols):
+  logging.info('Looking up source paths from dwarfdump')
+  for symbol in raw_symbols:
+    if symbol.section_name != models.SECTION_TEXT:
+      continue
+    source_path = dwarf_source_mapper.FindSourceForTextAddress(symbol.address)
+    if source_path and not os.path.isabs(source_path):
+      symbol.source_path = source_path
+  # Majority of unmatched queries are for assembly source files (ex libav1d)
+  # and v8 builtins.
+  assert dwarf_source_mapper.unmatched_queries_ratio < 0.1, (
+      'Percentage of failing |dwarf_source_mapper| queries ' +
+      '({}%) >= 10% '.format(dwarf_source_mapper.unmatched_queries_ratio * 100)
+      + 'FindSourceForTextAddress() likely has a bug.')
+
+
+def _NormalizeObjectPaths(raw_symbols):
   """Fills in the |source_path| attribute and normalizes |object_path|."""
-  assert not object_source_mapper or not address_source_mapper
-  if object_source_mapper:
-    logging.info('Looking up source paths from ninja files')
-    for symbol in raw_symbols:
-      if symbol.IsDex() or symbol.IsOther():
-        continue
-      # Native symbols and pak symbols use object paths.
-      object_path = symbol.object_path
-      if not object_path:
-        continue
-
-      # We don't have source info for prebuilt .a files.
-      if not os.path.isabs(object_path) and not object_path.startswith('..'):
-        symbol.source_path = object_source_mapper.FindSourceForPath(object_path)
-    assert object_source_mapper.unmatched_paths_count == 0, (
-        'One or more source file paths could not be found. Likely caused by '
-        '.ninja files being generated at a different time than the .map file.')
-  elif address_source_mapper:
-    logging.info('Looking up source paths from dwarfdump')
-    for symbol in raw_symbols:
-      if symbol.section_name != models.SECTION_TEXT:
-        continue
-      source_path = address_source_mapper.FindSourceForTextAddress(
-          symbol.address)
-      if source_path and not os.path.isabs(source_path):
-        symbol.source_path = source_path
-    # Majority of unmatched queries are for assembly source files (ex libav1d)
-    # and v8 builtins.
-    assert address_source_mapper.unmatched_queries_ratio < 0.1, (
-        'Percentage of failing |address_source_mapper| queries ' +
-        '({}%) >= 10% '.format(
-            address_source_mapper.unmatched_queries_ratio * 100) +
-        'FindSourceForTextAddress() likely has a bug.')
-
   logging.info('Normalizing source and object paths')
   for symbol in raw_symbols:
     if symbol.object_path:
@@ -981,12 +976,9 @@ def _ParseElfInfo(native_spec, outdir_context=None):
           raw_symbols, object_paths_by_name)
 
 
-def _ComputePakFileSymbols(
-    file_name, contents, res_info, symbols_by_id, compression_ratio=1):
-  id_map = {
-      id(v): k
-      for k, v in sorted(list(contents.resources.items()), reverse=True)
-  }
+def _ComputePakFileSymbols(file_name, contents, res_info, symbols_by_id):
+  # Reversed so that aliases are clobbered by the entries they are aliases of.
+  id_map = {id(v): k for k, v in reversed(contents.resources.items())}
   alias_map = {
       k: id_map[id(v)]
       for k, v in contents.resources.items() if id_map[id(v)] != k
@@ -999,15 +991,16 @@ def _ComputePakFileSymbols(
   else:
     # E.g.: resources.pak, chrome_100_percent.pak.
     section_name = models.SECTION_PAK_NONTRANSLATED
-  overhead = (12 + 6) * compression_ratio  # Header size plus extra offset
+  overhead = 12 + 6  # Header size plus extra offset
   # Key just needs to be unique from other IDs and pak overhead symbols.
   symbols_by_id[-len(symbols_by_id) - 1] = models.Symbol(
       section_name, overhead, full_name='Overhead: {}'.format(file_name))
   for resource_id in sorted(contents.resources):
-    if resource_id in alias_map:
+    aliased_resource_id = alias_map.get(resource_id)
+    if aliased_resource_id is not None:
       # 4 extra bytes of metadata (2 16-bit ints)
       size = 4
-      resource_id = alias_map[resource_id]
+      resource_id = aliased_resource_id
     else:
       resource_data = contents.resources[resource_id]
       # 6 extra bytes of metadata (1 32-bit int, 1 16-bit int)
@@ -1022,7 +1015,6 @@ def _ComputePakFileSymbols(
           new_symbol.flags |= models.FLAG_UNCOMPRESSED
         symbols_by_id[resource_id] = new_symbol
 
-    size *= compression_ratio
     symbols_by_id[resource_id].size += size
   return section_name
 
@@ -1102,27 +1094,10 @@ def _ParsePakSymbols(symbols_by_id, object_paths_by_pak_id):
           full_name=symbol.full_name, object_path=path, aliases=aliases)
       aliases.append(new_sym)
       raw_symbols.append(new_sym)
-  raw_total = 0.0
-  int_total = 0
-  for symbol in raw_symbols:
-    raw_total += symbol.size
-    # We truncate rather than round to ensure that we do not over attribute. It
-    # is easier to add another symbol to make up the difference.
-    symbol.size = int(symbol.size)
-    int_total += symbol.size
-  # Attribute excess to translations since only those are compressed.
-  overhead_size = round(raw_total - int_total)
-  if overhead_size:
-    raw_symbols.append(
-        models.Symbol(models.SECTION_PAK_TRANSLATIONS,
-                      overhead_size,
-                      address=raw_symbols[-1].end_address,
-                      full_name='Overhead: Pak compression artifacts'))
 
   # Pre-sort to make final sort faster.
   # Note: _SECTION_SORT_ORDER[] for pak symbols matches section_name ordering.
-  raw_symbols.sort(
-      key=lambda s: (s.section_name, s.IsOverhead(), s.address, s.object_path))
+  raw_symbols.sort(key=lambda s: (s.section_name, s.address, s.object_path))
   return raw_symbols
 
 
@@ -1242,33 +1217,22 @@ def _CreatePakObjectMap(object_paths_by_name):
   return object_paths_by_pak_id
 
 
-def _FindPakSymbolsFromApk(opts, section_ranges, apk_path, size_info_prefix):
+def _FindPakSymbolsFromApk(section_ranges, apk_path, size_info_prefix):
   with zipfile.ZipFile(apk_path) as z:
     pak_zip_infos = (f for f in z.infolist() if f.filename.endswith('.pak'))
     pak_info_path = size_info_prefix + '.pak.info'
     res_info = _ParsePakInfoFile(pak_info_path)
     symbols_by_id = {}
-    total_compressed_size = 0
-    total_uncompressed_size = 0
     for zip_info in pak_zip_infos:
       contents = data_pack.ReadDataPackFromString(z.read(zip_info))
-      compression_ratio = 1.0
-      if zip_info.compress_size < zip_info.file_size:
-        total_compressed_size += zip_info.compress_size
-        total_uncompressed_size += zip_info.file_size
-        compression_ratio = opts.pak_compression_ratio
-      section_name = _ComputePakFileSymbols(
-          zip_info.filename, contents,
-          res_info, symbols_by_id, compression_ratio=compression_ratio)
+      if zip_info.compress_type != zipfile.ZIP_STORED:
+        logging.warning(
+            'Expected .pak files to be STORED, but this one is compressed: %s',
+            zip_info.filename)
+      section_name = _ComputePakFileSymbols(zip_info.filename, contents,
+                                            res_info, symbols_by_id)
       _ExtendSectionRange(section_ranges, section_name, zip_info.compress_size)
 
-    if total_uncompressed_size > 0:
-      actual_ratio = (
-          float(total_compressed_size) / total_uncompressed_size)
-      logging.info(
-          'Pak Compression Ratio: %f Actual: %f Diff: %.0f',
-          opts.pak_compression_ratio, actual_ratio,
-          (opts.pak_compression_ratio - actual_ratio) * total_uncompressed_size)
   return symbols_by_id
 
 
@@ -1460,8 +1424,8 @@ def CreateContainerAndSymbols(*,
         _ElfInfoFromApk,
         (apk_spec.apk_path, native_spec.apk_so_path, native_spec.tool_prefix))
 
-  object_source_mapper = None
-  address_source_mapper = None
+  ninja_source_mapper = None
+  dwarf_source_mapper = None
   section_ranges = {}
   raw_symbols = []
   object_paths_by_name = None
@@ -1469,15 +1433,15 @@ def CreateContainerAndSymbols(*,
     ninja_elf_object_paths = None
     if output_directory and native_spec.map_path:
       # Finds all objects passed to the linker and creates a map of .o -> .cc.
-      object_source_mapper, ninja_elf_object_paths = _ParseNinjaFiles(
+      ninja_source_mapper, ninja_elf_object_paths = _ParseNinjaFiles(
           output_directory, native_spec.elf_path)
     elif native_spec.elf_path:
       logging.info('Parsing source path info via dwarfdump')
-      address_source_mapper = dwarfdump.CreateAddressSourceMapper(
+      dwarf_source_mapper = dwarfdump.CreateAddressSourceMapper(
           native_spec.elf_path, native_spec.tool_prefix)
       logging.info('Found %d source paths across %s ranges',
-                   address_source_mapper.NumberOfPaths(),
-                   address_source_mapper.num_ranges)
+                   dwarf_source_mapper.NumberOfPaths(),
+                   dwarf_source_mapper.num_ranges)
 
     # Start by finding elf_object_paths so that nm can run on them while the
     # linker .map is being parsed.
@@ -1491,9 +1455,9 @@ def CreateContainerAndSymbols(*,
       known_inputs = None
       # When we don't know which elf file is used, just search all paths.
       # TODO(agrieve): Seems to be used only for tests. Remove?
-      if object_source_mapper:
+      if ninja_source_mapper:
         thin_archives = set(
-            p for p in object_source_mapper.IterAllPaths() if p.endswith('.a')
+            p for p in ninja_source_mapper.IterAllPaths() if p.endswith('.a')
             and ar.IsThinArchive(os.path.join(output_directory, p)))
       else:
         thin_archives = None
@@ -1535,7 +1499,7 @@ def CreateContainerAndSymbols(*,
   other_symbols = []
   if apk_spec and apk_spec.size_info_prefix and not opts.relocations_mode:
     # Can modify |section_ranges|.
-    pak_symbols_by_id = _FindPakSymbolsFromApk(opts, section_ranges,
+    pak_symbols_by_id = _FindPakSymbolsFromApk(section_ranges,
                                                apk_spec.apk_path,
                                                apk_spec.size_info_prefix)
 
@@ -1609,8 +1573,12 @@ def CreateContainerAndSymbols(*,
       '**'), s.address, s.full_name))
   raw_symbols.extend(other_symbols)
 
-  _ExtractSourcePathsAndNormalizeObjectPaths(raw_symbols, object_source_mapper,
-                                             address_source_mapper)
+  if ninja_source_mapper:
+    _AddSourcePathsUsingObjectPaths(ninja_source_mapper, raw_symbols)
+  elif dwarf_source_mapper:
+    _AddSourcePathsUsingAddress(dwarf_source_mapper, raw_symbols)
+  _NormalizeObjectPaths(raw_symbols)
+
   dir_metadata.PopulateComponents(raw_symbols, source_directory)
   logging.info('Converting excessive aliases into shared-path symbols')
   _CompactLargeAliasesIntoSharedSymbols(raw_symbols, knobs)
@@ -2042,10 +2010,6 @@ def _ProcessContainerArgs(top_args,
       sub_args.aux_elf_file = None
 
   opts = ContainerArchiveOptions()
-  # An estimate of pak translation compression ratio to make comparisons
-  # between .size files reasonable. Otherwise this can differ every pak
-  # change.
-  opts.pak_compression_ratio = 0.38 if sub_args.minimal_apks_file else 0.33
   opts.relocations_mode = top_args.relocations
   opts.analyze_native = not (sub_args.java_only or sub_args.no_native
                              or top_args.java_only or top_args.no_native)

@@ -536,6 +536,7 @@ crbug.com/882975 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gestur
 
 crbug.com/898394 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure Timeout ]
 
+crbug.com/1024151 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure Pass ]
 
 # Subpixel rounding differences that are incorrect.
 crbug.com/997202 compositing/overflow/scaled-overflow.html [ Failure ]
@@ -3000,6 +3001,7 @@ crbug.com/626703 fast/animation/scroll-animations/scrolltimeline-root-scroller-q
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/navigation-timing-extended.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.15 ] virtual/without-coep-for-shared-worker/external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/media-capabilities/encodingInfo.any.worker.html [ Crash ]
 crbug.com/626703 [ Mac11 ] virtual/css-calc-infinity-and-nan-disabled/external/wpt/css/css-transforms/crashtests/w-negative-002.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/dialogfocus-old-behavior/external/wpt/html/semantics/interactive-elements/the-dialog-element/backdrop-does-not-inherit.html [ Timeout ]
@@ -3446,8 +3448,6 @@ crbug.com/626703 [ Mac10.14 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCD
 crbug.com/626703 [ Mac11 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCDataChannel-iceRestart.html [ Skip Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc/RTCDtlsTransport-state.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] external/wpt/webrtc/RTCDtlsTransport-state.html [ Timeout ]
-crbug.com/626703 [ Mac10.14 ] external/wpt/mediacapture-record/passthrough/MediaRecorder-passthrough.https.html [ Timeout ]
-crbug.com/626703 [ Mac11-arm64 ] external/wpt/mediacapture-record/passthrough/MediaRecorder-passthrough.https.html [ Failure Pass Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc/RTCIceTransport.html [ Timeout ]
@@ -4053,6 +4053,7 @@ crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-028.htm
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-029.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-030.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-031.html [ Failure ]
+crbug.com/1066629 external/wpt/css/css-break/hit-test-transformed.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/monolithic-with-overflow-lr.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/monolithic-with-overflow-rl.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/monolithic-with-overflow.html [ Failure ]
@@ -6806,7 +6807,6 @@ crbug.com/1215390 [ Linux ] external/wpt/pointerevents/pointerevent_pointerId_sc
 crbug.com/1230534 external/wpt/webrtc/simulcast/getStats.https.html [ Failure Pass Skip Timeout ]
 
 # Sheriff 2021-08-10
-crbug.com/1233840 external/wpt/html/cross-origin-opener-policy/historical/coep-navigate-popup-unsafe-inherit.https.html [ Pass Skip Timeout ]
 crbug.com/1230534 external/wpt/webrtc/simulcast/basic.https.html [ Pass Skip Timeout ]
 crbug.com/1230534 external/wpt/webrtc/simulcast/setParameters-active.https.html [ Failure Pass Skip Timeout ]
 
@@ -7164,9 +7164,6 @@ crbug.com/1226112 [ Win ] http/tests/text-autosizing/wide-iframe.html [ Pass Tim
 crbug.com/1222126 http/tests/devtools/domdebugger/domdebugger-getEventListeners.js [ Skip ]
 crbug.com/1222126 http/tests/devtools/cache-storage/cache-live-update-list.js [ Skip ]
 crbug.com/1222126 http/tests/devtools/runtime/evaluate-timeout.js [ Skip ]
-crbug.com/1222126 http/tests/devtools/resource-har-headers.js [ Skip ]
-crbug.com/1222126 http/tests/devtools/resource-har-conversion.js [ Skip ]
-crbug.com/1222126 http/tests/devtools/network/network-choose-preview-view.js [ Skip ]
 crbug.com/1222126 http/tests/devtools/network/json-preview.js [ Skip ]
 crbug.com/1215072 http/tests/devtools/elements/copy-styles.js [ Skip ]
 
@@ -7300,3 +7297,5 @@ crbug.com/1271044 http/tests/devtools/application-panel/resources-panel-websql.j
 # Security OWP fixit week
 crbug.com/1270355 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/009.html [ Timeout ]
 
+# Sheriff 2021-11-18
+crbug.com/1180993 external/wpt/mediacapture-record/passthrough/MediaRecorder-passthrough.https.html [ Failure Pass Timeout ]

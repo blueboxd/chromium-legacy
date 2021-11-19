@@ -212,10 +212,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // is in stable with no issues.
 BLINK_COMMON_EXPORT extern const base::Feature kOffsetParentNewSpecBehavior;
 
-BLINK_COMMON_EXPORT extern const base::Feature kFontPreloadingDelaysRendering;
-BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
-    kFontPreloadingDelaysRenderingParam;
-
 BLINK_COMMON_EXPORT extern const base::Feature kKeepScriptResourceAlive;
 
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -319,6 +315,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kPreferCompositingToLCDText;
 
 BLINK_COMMON_EXPORT extern const base::Feature
     kLogUnexpectedIPCPostedToBackForwardCachedDocuments;
+
+BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableHandleLinks;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableIsolatedStorage;
 

@@ -89,6 +89,10 @@ void ConfigurableAttributionTestBrowserClient::
   blocked_reporting_origin_ = reporting_origin;
 }
 
+base::GUID DefaultExternalReportID() {
+  return base::GUID::ParseLowercase("21abd97f-73e8-4b88-9389-a9fee6abda5e");
+}
+
 ConfigurableStorageDelegate::ConfigurableStorageDelegate() = default;
 ConfigurableStorageDelegate::~ConfigurableStorageDelegate() = default;
 
@@ -134,6 +138,10 @@ base::TimeDelta ConfigurableStorageDelegate::GetDeleteExpiredSourcesFrequency()
 base::TimeDelta
 ConfigurableStorageDelegate::GetDeleteExpiredRateLimitsFrequency() const {
   return delete_expired_rate_limits_frequency_;
+}
+
+base::GUID ConfigurableStorageDelegate::NewReportID() const {
+  return DefaultExternalReportID();
 }
 
 AttributionManager* TestManagerProvider::GetManager(
@@ -231,15 +239,11 @@ void TestAttributionManager::Reset() {
 // Builds an impression with default values. This is done as a builder because
 // all values needed to be provided at construction time.
 SourceBuilder::SourceBuilder(base::Time time)
-    : source_event_id_(123),
-      impression_time_(time),
+    : impression_time_(time),
       expiry_(base::Milliseconds(kExpiryTime)),
       impression_origin_(url::Origin::Create(GURL(kDefaultImpressionOrigin))),
       conversion_origin_(url::Origin::Create(GURL(kDefaultTriggerOrigin))),
-      reporting_origin_(url::Origin::Create(GURL(kDefaultReportOrigin))),
-      source_type_(StorableSource::SourceType::kNavigation),
-      priority_(0),
-      attribution_logic_(StorableSource::AttributionLogic::kTruthfully) {}
+      reporting_origin_(url::Origin::Create(GURL(kDefaultReportOrigin))) {}
 
 SourceBuilder::~SourceBuilder() = default;
 
@@ -357,7 +361,8 @@ StorableTrigger TriggerBuilder::Build() const {
 }
 
 ReportBuilder::ReportBuilder(StorableSource source)
-    : source_(std::move(source)) {}
+    : source_(std::move(source)),
+      external_report_id_(DefaultExternalReportID()) {}
 
 ReportBuilder::~ReportBuilder() = default;
 
@@ -381,6 +386,12 @@ ReportBuilder& ReportBuilder::SetPriority(int64_t priority) {
   return *this;
 }
 
+ReportBuilder& ReportBuilder::SetExternalReportId(
+    base::GUID external_report_id) {
+  external_report_id_ = std::move(external_report_id);
+  return *this;
+}
+
 ReportBuilder& ReportBuilder::SetReportId(
     absl::optional<AttributionReport::Id> id) {
   report_id_ = id;
@@ -389,7 +400,8 @@ ReportBuilder& ReportBuilder::SetReportId(
 
 AttributionReport ReportBuilder::Build() const {
   return AttributionReport(source_, trigger_data_, conversion_time_,
-                           report_time_, priority_, report_id_);
+                           report_time_, priority_, external_report_id_,
+                           report_id_);
 }
 
 // Custom comparator for `StorableSource` that does not take impression IDs
@@ -413,7 +425,7 @@ bool operator==(const AttributionReport& a, const AttributionReport& b) {
   const auto tie = [](const AttributionReport& conversion) {
     return std::make_tuple(conversion.impression, conversion.trigger_data,
                            conversion.conversion_time, conversion.report_time,
-                           conversion.priority,
+                           conversion.priority, conversion.external_report_id,
                            conversion.failed_send_attempts);
   };
   return tie(a) == tie(b);
@@ -545,7 +557,9 @@ std::ostream& operator<<(std::ostream& out, const StorableSource& impression) {
       << ",impression_time=" << impression.impression_time()
       << ",expiry_time=" << impression.expiry_time()
       << ",source_type=" << impression.source_type()
-      << ",priority=" << impression.priority() << ",impression_id="
+      << ",priority=" << impression.priority()
+      << ",attribution_logic=" << impression.attribution_logic()
+      << ",impression_id="
       << (impression.impression_id()
               ? base::NumberToString(**impression.impression_id())
               : "null")
@@ -565,7 +579,9 @@ std::ostream& operator<<(std::ostream& out, const AttributionReport& report) {
              << ",trigger_data=" << report.trigger_data
              << ",conversion_time=" << report.conversion_time
              << ",report_time=" << report.report_time
-             << ",priority=" << report.priority << ",conversion_id="
+             << ",priority=" << report.priority
+             << ",external_report_id=" << report.external_report_id
+             << ",conversion_id="
              << (report.conversion_id
                      ? base::NumberToString(**report.conversion_id)
                      : "null")

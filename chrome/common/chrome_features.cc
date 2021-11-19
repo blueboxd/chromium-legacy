@@ -38,13 +38,13 @@ const base::Feature kAllowDisableMouseAcceleration{
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Shows settings to adjust and disable touchpad haptic feedback.
 const base::Feature kAllowDisableTouchpadHapticFeedback{
-    "AllowDisableTouchpadHapticFeedback", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AllowDisableTouchpadHapticFeedback", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Shows settings to adjust the touchpad haptic click settings.
 const base::Feature kAllowTouchpadHapticClickSettings{
-    "AllowTouchpadHapticClickSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AllowTouchpadHapticClickSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(IS_CHROMEOS_ASH)
 
 // Always reinstall system web apps, instead of only doing so after version
@@ -218,7 +218,7 @@ const base::Feature kCryptohomeUserDataAuthKillswitch{
     "CryptohomeUserDataAuthKillswitch", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 // Enables parsing and enforcing Data Leak Prevention policy rules that
 // restricts usage of some system features, e.g.clipboard, screenshot, etc.
 // for confidential content.
@@ -1202,5 +1202,12 @@ bool IsParentAccessCodeForOnlineLoginEnabled() {
 // Enables omnibox trigger prerendering.
 const base::Feature kOmniboxTriggerForPrerender2{
     "OmniboxTriggerForPrerender2", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables omnibox trigger no state prefetch. Only one of
+// kOmniboxTriggerForPrerender2 or kOmniboxTriggerForNoStatePrefetch can be
+// enabled in the experiment.
+// TODO(crbug.com/1267731): Remove this flag once the experiments are completed.
+const base::Feature kOmniboxTriggerForNoStatePrefetch{
+    "OmniboxTriggerForNoStatePrefetch", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features

@@ -515,6 +515,9 @@ extern const char kDesktopPWAsWindowControlsOverlayDescription[];
 extern const char kDevicePostureName[];
 extern const char kDevicePostureDescription[];
 
+extern const char kRestrictedApiOriginsName[];
+extern const char kRestrictedApiOriginsDescription[];
+
 extern const char kEnableMigrateDefaultChromeAppToWebAppsGSuiteName[];
 extern const char kEnableMigrateDefaultChromeAppToWebAppsGSuiteDescription[];
 
@@ -1028,6 +1031,9 @@ extern const char kOmniboxTabSwitchSuggestionsDescription[];
 
 extern const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPName[];
 extern const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPDescription[];
+
+extern const char kOmniboxZeroSuggestPrefetchingName[];
+extern const char kOmniboxZeroSuggestPrefetchingDescription[];
 
 extern const char kOmniboxMaxZeroSuggestMatchesName[];
 extern const char kOmniboxMaxZeroSuggestMatchesDescription[];
@@ -2319,6 +2325,9 @@ extern const char kAppDiscoveryRemoteUrlSearchDescription[];
 
 extern const char kAppServiceExternalProtocolName[];
 extern const char kAppServiceExternalProtocolDescription[];
+
+extern const char kArcAccountRestrictionsName[];
+extern const char kArcAccountRestrictionsDescription[];
 
 extern const char kArcCustomTabsExperimentName[];
 extern const char kArcCustomTabsExperimentDescription[];

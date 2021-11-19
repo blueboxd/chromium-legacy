@@ -1241,6 +1241,22 @@ const FeatureEntry::FeatureVariation kMaxZeroSuggestMatchesVariations[] = {
     {"15", kMaxZeroSuggestMatches15, base::size(kMaxZeroSuggestMatches15),
      nullptr}};
 
+constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration15Secs[] =
+    {{"ZeroSuggestCacheDurationSec", "15"}};
+constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration30Secs[] =
+    {{"ZeroSuggestCacheDurationSec", "30"}};
+constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration60Secs[] =
+    {{"ZeroSuggestCacheDurationSec", "60"}};
+
+constexpr FeatureEntry::FeatureVariation
+    kOmniboxZeroSuggestPrefetchingVariations[] = {
+        {"15 seconds", kOmniboxZeroSuggestCacheDuration15Secs,
+         base::size(kOmniboxZeroSuggestCacheDuration15Secs), nullptr},
+        {"30 seconds", kOmniboxZeroSuggestCacheDuration30Secs,
+         base::size(kOmniboxZeroSuggestCacheDuration30Secs), nullptr},
+        {"60 seconds", kOmniboxZeroSuggestCacheDuration60Secs,
+         base::size(kOmniboxZeroSuggestCacheDuration60Secs), nullptr}};
+
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches4[] = {
@@ -3582,10 +3598,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionContentVerificationName,
      flag_descriptions::kExtensionContentVerificationDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kExtensionContentVerificationChoices)},
-    {"preemptive-link-to-text-generation",
-     flag_descriptions::kPreemptiveLinkToTextGenerationName,
-     flag_descriptions::kPreemptiveLinkToTextGenerationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(shared_highlighting::kPreemptiveLinkToTextGeneration)},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"keyboard-based-display-arrangement-in-settings",
      flag_descriptions::kKeyboardBasedDisplayArrangementInSettingsName,
@@ -3654,6 +3666,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"isolate-origins", flag_descriptions::kIsolateOriginsName,
      flag_descriptions::kIsolateOriginsDescription, kOsAll,
      ORIGIN_LIST_VALUE_TYPE(switches::kIsolateOrigins, "")},
+    {"restricted-api-origins", flag_descriptions::kRestrictedApiOriginsName,
+     flag_descriptions::kRestrictedApiOriginsDescription, kOsAll,
+     ORIGIN_LIST_VALUE_TYPE(switches::kRestrictedApiOrigins, "")},
     {about_flags::kSiteIsolationTrialOptOutInternalName,
      flag_descriptions::kSiteIsolationOptOutName,
      flag_descriptions::kSiteIsolationOptOutDescription, kOsAll,
@@ -4304,6 +4319,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFillOnAccountSelectDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelect)},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"arc-account-restrictions", flag_descriptions::kArcAccountRestrictionsName,
+     flag_descriptions::kArcAccountRestrictionsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kArcAccountRestrictions)},
     {"arc-custom-tabs-experiment",
      flag_descriptions::kArcCustomTabsExperimentName,
      flag_descriptions::kArcCustomTabsExperimentDescription, kOsCrOS,
@@ -4551,6 +4569,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxTrendingZeroPrefixSuggestionsOnNTPDescription,
      kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxTrendingZeroPrefixSuggestionsOnNTP)},
+
+    {"omnibox-zero-suggest-prefetching",
+     flag_descriptions::kOmniboxZeroSuggestPrefetchingName,
+     flag_descriptions::kOmniboxZeroSuggestPrefetchingDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kZeroSuggestPrefetching,
+                                    kOmniboxZeroSuggestPrefetchingVariations,
+                                    "OmniboxBundledExperimentV1")},
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) || \
     defined(OS_WIN) || defined(OS_FUCHSIA)

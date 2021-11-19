@@ -1641,7 +1641,9 @@ try_.chromium_mac_orchestrator_pair(
     main_list_view = "try",
     use_clang_coverage = True,
     orchestrator_cores = 2,
-    orchestrator_tryjob = None,
+    orchestrator_tryjob = try_.job(
+        experiment_percentage = 1,
+    ),
     compilator_goma_jobs = goma.jobs.J150,
     compilator_os = os.MAC_DEFAULT,
     compilator_name = "mac-rel-compilator",
@@ -1653,7 +1655,7 @@ try_.chromium_mac_orchestrator_pair(
     main_list_view = "try",
     orchestrator_cores = 2,
     orchestrator_tryjob = try_.job(
-        experiment_percentage = 50,
+        experiment_percentage = 100,
     ),
     compilator_goma_jobs = goma.jobs.J150,
     compilator_os = os.MAC_11,

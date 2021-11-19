@@ -54,6 +54,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAmbientModePhotoPreviewFeature;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kAmbientModeNewUrl;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kArcAccountRestrictions;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kArcAdbSideloadingFeature;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kArcInputOverlay;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -407,6 +409,7 @@ extern const base::Feature kSessionManagerLivenessCheck;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSettingsAppNotificationSettings;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kShelfLauncherNudge;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kShelfParty;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kShimlessRMAFlow;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kShowBluetoothDebugLogToggle;

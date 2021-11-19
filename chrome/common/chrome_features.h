@@ -157,7 +157,7 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCryptohomeUserDataAuthKillswitch;
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDataLeakPreventionPolicy;
 
@@ -804,6 +804,9 @@ bool IsParentAccessCodeForOnlineLoginEnabled();
 // details of Omnibox triggered prerendering.
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kOmniboxTriggerForPrerender2;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kOmniboxTriggerForNoStatePrefetch;
 
 bool PrefServiceEnabled();
 

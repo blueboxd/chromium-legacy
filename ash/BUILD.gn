@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chromeos/assistant/ambient.gni")
@@ -13,7 +14,7 @@ import("//ui/base/ui_features.gni")
 
 # Historical note: Ash shipped on Windows for a couple years to support
 # Windows 8 Metro mode. Windows support was removed in 2016.
-assert(is_chromeos)
+assert(is_chromeos_ash)
 assert(use_aura)
 assert(enable_hidpi)
 
@@ -857,6 +858,8 @@ component("ash") {
     "shelf/shelf_navigation_widget.cc",
     "shelf/shelf_navigation_widget.h",
     "shelf/shelf_observer.h",
+    "shelf/shelf_party_feature_pod_controller.cc",
+    "shelf/shelf_party_feature_pod_controller.h",
     "shelf/shelf_test_api.cc",
     "shelf/shelf_tooltip_bubble.cc",
     "shelf/shelf_tooltip_bubble.h",
@@ -1977,8 +1980,6 @@ component("ash") {
     "//ash/components/fwupd",
     "//ash/components/pcie_peripheral",
     "//ash/components/phonehub",
-    "//ash/components/quick_answers",
-    "//ash/components/quick_answers/public/cpp:prefs",
     "//ash/components/settings",
     "//ash/constants",
     "//ash/dbus:privacy_screen_proto",
@@ -2007,6 +2008,7 @@ component("ash") {
     "//chromeos/assistant:buildflags",
     "//chromeos/components/feature_usage",
     "//chromeos/components/multidevice/logging",
+    "//chromeos/components/quick_answers/public/cpp:prefs",
     "//chromeos/components/sensors:buildflags",
     "//chromeos/components/sensors:sensors",
     "//chromeos/components/sensors/mojom",
@@ -2662,7 +2664,6 @@ test("ash_unittests") {
     "//ash/components/arc:notification_test_support",
     "//ash/components/audio",
     "//ash/components/phonehub:test_support",
-    "//ash/components/quick_answers:quick_answers",
     "//ash/constants",
     "//ash/keyboard/ui",
     "//ash/keyboard/ui:test_support",

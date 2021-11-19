@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
@@ -190,8 +191,21 @@ void AutocompleteActionPredictor::StartPrerendering(
     const GURL& url,
     content::WebContents& web_contents,
     const gfx::Size& size) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (blink::features::IsPrerender2Enabled() &&
       base::FeatureList::IsEnabled(features::kOmniboxTriggerForPrerender2)) {
+    // Check whether NetworkPredictionStatus is enabled. If users disable this
+    // setting, it means users do not want to preload pages.
+    // TODO(https://crbug.com/1269204): Move this check into
+    // WebContentsDelegate::IsPrerender2Supported after exposing TriggerType to
+    // embedders.
+    chrome_browser_net::NetworkPredictionStatus prediction_status =
+        chrome_browser_net::CanPrefetchAndPrerenderUI(profile_->GetPrefs());
+    if (prediction_status !=
+        chrome_browser_net::NetworkPredictionStatus::ENABLED) {
+      return;
+    }
+
     // TODO(https://crbug.com/1166085): Cancel an ongoing prerender if exists
     // and start a new one when its request URL is different from the URL of the
     // ongoing prerender. Otherwise, the new request is ignored.
@@ -204,7 +218,8 @@ void AutocompleteActionPredictor::StartPrerendering(
     // prerendering url.
     if (new_prerender_handle)
       prerender_handle_ = std::move(new_prerender_handle);
-  } else {
+  } else if (base::FeatureList::IsEnabled(
+                 features::kOmniboxTriggerForNoStatePrefetch)) {
     content::SessionStorageNamespace* session_storage_namespace =
         web_contents.GetController().GetDefaultSessionStorageNamespace();
     // Only cancel the old prefetch after starting the new one, so if the URLs

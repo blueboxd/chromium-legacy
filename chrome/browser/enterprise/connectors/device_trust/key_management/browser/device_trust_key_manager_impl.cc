@@ -22,6 +22,11 @@ namespace enterprise_connectors {
 
 namespace {
 
+// Wrap the SignSlowly call into this anonymous synchronous function to ensure
+// that `str` lives throughout the execution. If that was not being done, `str`
+// would get destroyed in the calling sequence and, with span being just a
+// pointer, the called sequence would use its data pointer after the address
+// was freed up (use-after-free), which is a security issue.
 absl::optional<std::vector<uint8_t>> SignString(
     const std::string& str,
     crypto::UnexportableSigningKey* key) {
@@ -149,13 +154,8 @@ void DeviceTrustKeyManagerImpl::StartKeyRotationInner(
       base::BindOnce(&DeviceTrustKeyManagerImpl::OnKeyRotationFinished,
                      weak_factory_.GetWeakPtr());
 
-  background_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &KeyRotationLauncher::LaunchKeyRotation,
-          base::Unretained(key_rotation_launcher_.get()), nonce,
-          base::BindPostTask(base::SequencedTaskRunnerHandle::Get(),
-                             std::move(rotation_finished_callback))));
+  key_rotation_launcher_->LaunchKeyRotation(
+      nonce, std::move(rotation_finished_callback));
 }
 
 void DeviceTrustKeyManagerImpl::OnKeyRotationFinished(

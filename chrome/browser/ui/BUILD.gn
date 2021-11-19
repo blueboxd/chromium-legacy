@@ -682,6 +682,9 @@ static_library("ui") {
       "//chrome/browser/ui/webui/connectors_internals:mojo_bindings",
     ]
   }
+  if (is_chromeos) {
+    deps += [ "//chromeos/crosapi/cpp:cpp" ]
+  }
 
   if (!is_fuchsia) {
     deps += [ "//components/crash/core/app" ]
@@ -2287,8 +2290,6 @@ static_library("ui") {
       "ash/window_properties.h",
       "browser_commands_chromeos.cc",
       "browser_commands_chromeos.h",
-      "extensions/extension_installed_notification.cc",
-      "extensions/extension_installed_notification.h",
       "settings_window_manager_chromeos.cc",
       "settings_window_manager_chromeos.h",
       "settings_window_manager_observer_chromeos.h",
@@ -2767,6 +2768,8 @@ static_library("ui") {
       "webui/settings/chromeos/languages_section.h",
       "webui/settings/chromeos/main_section.cc",
       "webui/settings/chromeos/main_section.h",
+      "webui/settings/chromeos/metrics_consent_handler.cc",
+      "webui/settings/chromeos/metrics_consent_handler.h",
       "webui/settings/chromeos/multidevice_handler.cc",
       "webui/settings/chromeos/multidevice_handler.h",
       "webui/settings/chromeos/multidevice_section.cc",
@@ -2853,8 +2856,6 @@ static_library("ui") {
       "//ash/components/pcie_peripheral",
       "//ash/components/phonehub",
       "//ash/components/phonehub:debug",
-      "//ash/components/quick_answers",
-      "//ash/components/quick_answers/public/cpp:prefs",
       "//ash/components/settings",
       "//ash/constants",
       "//ash/keyboard/ui",
@@ -2933,6 +2934,8 @@ static_library("ui") {
       "//chromeos/components/multidevice/debug_webui",
       "//chromeos/components/multidevice/logging",
       "//chromeos/components/proximity_auth",
+      "//chromeos/components/quick_answers",
+      "//chromeos/components/quick_answers/public/cpp:prefs",
       "//chromeos/components/string_matching",
       "//chromeos/components/tether",
       "//chromeos/crosapi/cpp",
@@ -3053,10 +3056,10 @@ static_library("ui") {
         "//ash/webui/telemetry_extension_ui",
       ]
     }
+  }
 
-    if (use_cras) {
-      defines += [ "USE_CRAS" ]
-    }
+  if (use_cras) {
+    defines += [ "USE_CRAS" ]
   }
 
   if (is_cfm) {

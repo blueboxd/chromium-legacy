@@ -260,6 +260,7 @@
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_impl.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
 #include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/ui/webui/certificates_handler.h"
@@ -272,7 +273,6 @@
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/audio/audio_devices_pref_handler_impl.h"
 #include "ash/components/device_activity/device_activity_controller.h"
-#include "ash/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "ash/components/timezone/timezone_resolver.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/ash_prefs.h"
@@ -358,7 +358,6 @@
 #include "chrome/browser/ash/web_applications/help_app/help_app_notification_controller.h"
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login/login_api.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_impl.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/device_identity/chromeos/device_oauth2_token_store_chromeos.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
@@ -374,6 +373,7 @@
 #include "chrome/browser/upgrade_detector/upgrade_detector_chromeos.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chromeos/components/local_search_service/search_metrics_reporter.h"
+#include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/network/cellular_esim_profile_handler_impl.h"
 #include "chromeos/network/cellular_metrics_logger.h"
 #include "chromeos/network/fast_transition_observer.h"
@@ -1072,7 +1072,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   policy::DeviceCloudPolicyManagerAsh::RegisterPrefs(registry);
   policy::DeviceStatusCollector::RegisterPrefs(registry);
   policy::DeviceWallpaperImageExternalDataHandler::RegisterPrefs(registry);
-  policy::DlpRulesManagerImpl::RegisterPrefs(registry);
   policy::DMTokenStorage::RegisterPrefs(registry);
   policy::EnrollmentRequisitionManager::RegisterPrefs(registry);
   policy::MinimumVersionPolicyHandler::RegisterPrefs(registry);
@@ -1085,6 +1084,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_CHROMEOS)
   policy::SystemFeaturesDisableListPolicyHandler::RegisterPrefs(registry);
+  policy::DlpRulesManagerImpl::RegisterPrefs(registry);
 #endif  // defined(OS_CHROMEOS)
 
 // TODO(crbug/1169547) Remove `BUILDFLAG(IS_CHROMEOS_LACROS)` once the

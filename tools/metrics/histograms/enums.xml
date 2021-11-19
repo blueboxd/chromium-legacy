@@ -1120,6 +1120,8 @@ Unknown properties are collapsed to zero. -->
   <int value="8"
       label="Account addition flow launched by the user from One Google Bar"/>
   <int value="9" label="Re-auth account button in Avatar bubble"/>
+  <int value="10"
+      label="Re-authentication flow triggered from a Chrome extension"/>
 </enum>
 
 <enum name="AccountManagerTokenLoadStatus">
@@ -11585,6 +11587,7 @@ not CDM specific. See media/base/cdm_promise.h. -->
   <int value="12" label="Ignored Windows Rev Checking Enabled"/>
   <int value="13" label="Ignored Authority Invalid"/>
   <int value="14" label="Ignored Known Root"/>
+  <int value="15" label="Ignored Both Errors Platform Symantec"/>
 </enum>
 
 <enum name="ChangePasswordUrlFetchResult">
@@ -49209,6 +49212,7 @@ from previous Chrome versions.
   <int value="-1619757314" label="touch-scrolling-mode"/>
   <int value="-1619146163" label="OverrideSitePrefsForHrefTranslate:disabled"/>
   <int value="-1618707999" label="enable-webfonts-intervention-v2"/>
+  <int value="-1618030555" label="ArcAccountRestrictions:enabled"/>
   <int value="-1617805422" label="WebViewUseMetricsUploadService:enabled"/>
   <int value="-1617183455" label="OfflineRecentPages:disabled"/>
   <int value="-1616855537" label="enable-manual-password-generation:disabled"/>
@@ -50871,6 +50875,7 @@ from previous Chrome versions.
   <int value="-395259448" label="VideoPlayerJsModules:disabled"/>
   <int value="-394734604" label="FillingPasswordsFromAnyOrigin:disabled"/>
   <int value="-392813122" label="LibinputHandleTouchpad"/>
+  <int value="-390624541" label="RestrictedApiOrigins:disabled"/>
   <int value="-389664522"
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRefOnInteraction:enabled"/>
   <int value="-389283574" label="IPH_PasswordsAccountStorage:disabled"/>
@@ -53093,6 +53098,7 @@ from previous Chrome versions.
   <int value="1288713607" label="EcheSWAResizing:disabled"/>
   <int value="1289433604" label="RecoverFromNeverSaveAndroid:enabled"/>
   <int value="1289495171" label="AssistantBetterOnboarding:disabled"/>
+  <int value="1289670142" label="ArcAccountRestrictions:disabled"/>
   <int value="1290904214" label="DiagnosticsAppNavigation:enabled"/>
   <int value="1291257442" label="TabsInCBD:disabled"/>
   <int value="1291761696" label="CCTModuleDexLoading:disabled"/>
@@ -53170,6 +53176,7 @@ from previous Chrome versions.
   <int value="1346994602" label="SyncPseudoUSSDictionary:enabled"/>
   <int value="1349100152"
       label="AutofillEnablePasswordInfoBarAccountIndicationFooter:disabled"/>
+  <int value="1349313561" label="RestrictedApiOrigins:enabled"/>
   <int value="1350197823" label="DragToSnapInClamshellMode:enabled"/>
   <int value="1351344112" label="ContentIndexingDownloadHome:enabled"/>
   <int value="1351830811" label="do-not-ignore-autocomplete-off"/>
@@ -53777,6 +53784,7 @@ from previous Chrome versions.
   <int value="1812368073" label="enable-new-app-list-mixer"/>
   <int value="1813370929"
       label="MigrateDefaultChromeAppToWebAppsNonGSuite:enabled"/>
+  <int value="1813741175" label="ZeroSuggestPrefetching:enabled"/>
   <int value="1814039202"
       label="CrossOriginEmbedderPolicyCredentialless:disabled"/>
   <int value="1814310862" label="WebKioskEnableLacros:enabled"/>
@@ -53885,6 +53893,7 @@ from previous Chrome versions.
   <int value="1888812860" label="ChromeModernAlternateCardLayout:enabled"/>
   <int value="1889076955" label="disable-app-link"/>
   <int value="1889198874" label="TabSwitcherOnReturn:disabled"/>
+  <int value="1889885696" label="ZeroSuggestPrefetching:disabled"/>
   <int value="1890329937"
       label="SafeBrowsingEnhancedProtectionMessageInInterstitials:disabled"/>
   <int value="1891210939" label="enable-blink-features"/>
@@ -57277,6 +57286,7 @@ Called by update_use_counter_css.py.-->
   <int value="6" label="Tab destroyed"/>
   <int value="7" label="Activity destroyed"/>
   <int value="8" label="Scope destroyed"/>
+  <int value="9" label="DismissedByFeature"/>
 </enum>
 
 <enum name="MessageIdentifier">
@@ -57302,6 +57312,8 @@ Called by update_use_counter_css.py.-->
   <int value="19" label="NearOomReduction"/>
   <int value="20" label="InstallableAmbientBadge"/>
   <int value="21" label="AutoDarkWebContents"/>
+  <int value="22" label="TestMessage"/>
+  <int value="23" label="TailoredSecurityEnabled"/>
 </enum>
 
 <enum name="MessageLoopProblems">
@@ -73342,6 +73354,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="15" label="Get available diagnostic routines command"/>
   <int value="16" label="Run diagnostic routine command"/>
   <int value="17" label="Get diagnostic routine update command"/>
+  <int value="18" label="Clear the cache and cookies command"/>
+  <int value="19" label="Resets the cellular EUICC command"/>
+  <int value="20" label="Rotate attestation credentials command"/>
 </enum>
 
 <enum name="RemoteHungProcessTerminateReason">
@@ -74729,6 +74744,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="Database Unavailable"/>
   <int value="3" label="Store Unavailable"/>
   <int value="4" label="Available"/>
+</enum>
+
+<enum name="SafeBrowsingTailoredSecurityOutcome">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="Dismissed"/>
+  <int value="2" label="Settings"/>
 </enum>
 
 <enum name="SafeBrowsingUserConsentVsUrlCheckRaceResult">

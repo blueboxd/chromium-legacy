@@ -101,6 +101,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:binary_size_generator_tot",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -117,6 +118,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:branch_configuration/tester",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -159,6 +161,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_export_metadata",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -171,6 +174,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_rts/create_model",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -199,6 +203,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:findit/chromium/export_bot_db",
+    use_python3 = True,
 )
 
 build_recipe(

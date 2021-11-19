@@ -592,6 +592,11 @@ const char kDevicePostureName[] = "Device Posture API";
 const char kDevicePostureDescription[] =
     "Enables Device Posture API (foldable devices)";
 
+extern const char kRestrictedApiOriginsName[] = "Restricted API Origins";
+extern const char kRestrictedApiOriginsDescription[] =
+    "Enables Restricted APIs (Direct Sockets API) for development purposes for "
+    "a set of origins, specified as a comma-separated list.";
+
 const char kDoubleBufferCompositingName[] = "Double buffered compositing";
 const char kDoubleBufferCompositingDescription[] =
     "Use double buffer for compositing (instead of triple-buffering). "
@@ -1738,6 +1743,14 @@ const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPName[] =
 const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPDescription[] =
     "Enables trending zero prefix suggestions for signed-in users with no or "
     "insufficient search history.";
+
+const char kOmniboxZeroSuggestPrefetchingName[] =
+    "Omnibox Zero Prefix Suggestion Prefetching";
+const char kOmniboxZeroSuggestPrefetchingDescription[] =
+    "Enables prefetching of the zero prefix suggestions for signed-in users. "
+    "The options indicate the duration for which the response will be stored "
+    "in the HTTP cache. If no or zero duration is provided, the existing "
+    "in-memory cache will used instead of HTTP cache.";
 
 const char kOmniboxRichAutocompletionName[] = "Omnibox Rich Autocompletion";
 const char kOmniboxRichAutocompletionDescription[] =
@@ -4026,6 +4039,10 @@ extern const char kAppDiscoveryRemoteUrlSearchDescription[] =
 const char kAppServiceExternalProtocolName[] = "App Service External Protocol";
 const char kAppServiceExternalProtocolDescription[] =
     "Use the App Service to provide data for external protocol dialog.";
+
+const char kArcAccountRestrictionsName[] = "Enable ARC account restrictions";
+const char kArcAccountRestrictionsDescription[] =
+    "ARC account restrictions feature for multi-profile account consistency";
 
 const char kArcCustomTabsExperimentName[] =
     "Enable Custom Tabs experiment for ARC";

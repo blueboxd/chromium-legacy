@@ -28,6 +28,7 @@
 
 #if defined(OS_MAC)
 #include "base/mac/mac_util.h"
+#include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -82,7 +83,7 @@ void RunGetDisplayMedia(content::WebContents* tab,
                         const std::string& constraints,
                         bool is_fake_ui,
                         bool expect_success,
-                        bool is_capturing_screen) {
+                        bool is_tab_capture) {
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab->GetMainFrame(),
@@ -91,12 +92,11 @@ void RunGetDisplayMedia(content::WebContents* tab,
       &result));
 
 #if defined(OS_MAC)
-  // Starting from macOS 10.15, screen capture requires system permissions
-  // that are disabled by default. The permission is reported as granted
-  // if the fake UI is used, and is unnecessary if we're not capturing the
-  // screen.
-  expect_success =
-      base::mac::IsAtMostOS10_14() || is_fake_ui || !is_capturing_screen;
+  if (!is_fake_ui && !is_tab_capture &&
+      system_media_permissions::CheckSystemScreenCapturePermission() !=
+          system_media_permissions::SystemPermission::kAllowed) {
+    expect_success = false;
+  }
 #endif
 
   EXPECT_EQ(result, expect_success ? "capture-success" : "capture-failure");
@@ -173,7 +173,7 @@ class WebRtcScreenCaptureBrowserTestWithPicker
 };
 
 // TODO(1170479): Real desktop capture is flaky on below platforms.
-#if defined(OS_WIN) || defined(OS_MAC)
+#if defined(OS_WIN)
 #define MAYBE_ScreenCaptureVideo DISABLED_ScreenCaptureVideo
 #else
 #define MAYBE_ScreenCaptureVideo ScreenCaptureVideo
@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcScreenCaptureBrowserTestWithPicker,
   content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
   RunGetDisplayMedia(tab, GetConstraints(/*video=*/true, /*audio=*/false),
                      /*is_fake_ui=*/false, test_config_.accept_this_tab_capture,
-                     /*is_capturing_screen=*/!PreferCurrentTab());
+                     /*is_tab_capture=*/PreferCurrentTab());
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -197,7 +197,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcScreenCaptureBrowserTestWithPicker,
   content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
   RunGetDisplayMedia(tab, GetConstraints(/*video=*/true, /*audio=*/false),
                      /*is_fake_ui=*/false, test_config_.accept_this_tab_capture,
-                     /*is_capturing_screen=*/!PreferCurrentTab());
+                     /*is_tab_capture=*/PreferCurrentTab());
 
   if (!test_config_.accept_this_tab_capture) {
     // This test is not relevant for this parameterized test case because it
@@ -231,7 +231,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcScreenCaptureBrowserTestWithPicker,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // TODO(1170479): Real desktop capture is flaky on below platforms.
-#if defined(OS_WIN) || defined(OS_MAC)
+#if defined(OS_WIN)
 #define MAYBE_ScreenCaptureVideoAndAudio DISABLED_ScreenCaptureVideoAndAudio
 // On linux debug bots, it's flaky as well.
 #elif ((defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && !defined(NDEBUG))
@@ -250,7 +250,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcScreenCaptureBrowserTestWithPicker,
   content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
   RunGetDisplayMedia(tab, GetConstraints(/*video=*/true, /*audio=*/true),
                      /*is_fake_ui=*/false, test_config_.accept_this_tab_capture,
-                     /*is_capturing_screen=*/!PreferCurrentTab());
+                     /*is_tab_capture=*/PreferCurrentTab());
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -297,7 +297,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcScreenCaptureBrowserTestWithFakeUI,
   content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
   RunGetDisplayMedia(tab, GetConstraints(/*video=*/true, /*audio=*/false),
                      /*is_fake_ui=*/true, /*expect_success=*/true,
-                     /*is_capturing_screen=*/!PreferCurrentTab());
+                     /*is_tab_capture=*/PreferCurrentTab());
 
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcScreenCaptureBrowserTestWithFakeUI,
   content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
   RunGetDisplayMedia(tab, GetConstraints(/*video=*/true, /*audio=*/true),
                      /*is_fake_ui=*/true, /*expect_success=*/true,
-                     /*is_capturing_screen=*/!PreferCurrentTab());
+                     /*is_tab_capture=*/PreferCurrentTab());
 
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
@@ -343,7 +343,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcScreenCaptureBrowserTestWithFakeUI,
       test_config_.should_prefer_current_tab_ ? "true" : "false");
   RunGetDisplayMedia(tab, constraints,
                      /*is_fake_ui=*/true, /*expect_success=*/true,
-                     /*is_capturing_screen=*/!PreferCurrentTab());
+                     /*is_tab_capture=*/PreferCurrentTab());
 
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
@@ -500,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAppWindowCaptureBrowserTestWithPicker,
 
   RunGetDisplayMedia(capturing_tab, "{video: true}", /*is_fake_ui=*/false,
                      /*expect_success=*/true,
-                     /*is_capturing_screen=*/false);
+                     /*is_tab_capture=*/true);
   CloseAppWindow(app_window);
 }
 
@@ -554,7 +554,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcSameOriginPolicyBrowserTest,
   RunGetDisplayMedia(capturing_tab,
                      GetConstraints(/*video=*/true, /*audio=*/true),
                      /*is_fake_ui=*/false, /*expect_success=*/true,
-                     /*is_capturing_screen=*/false);
+                     /*is_tab_capture=*/true);
 
   // Though the target tab should've been focused as a result of starting the
   // capture, we don't want to take a dependency on that behavior. Ensure that
@@ -593,7 +593,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcSameOriginPolicyBrowserTest,
   RunGetDisplayMedia(capturing_tab,
                      GetConstraints(/*video=*/true, /*audio=*/true),
                      /*is_fake_ui=*/false, /*expect_success=*/true,
-                     /*is_capturing_screen=*/false);
+                     /*is_tab_capture=*/true);
 
   // Though the target tab should've been focused as a result of starting the
   // capture, we don't want to take a dependency on that behavior. Ensure that

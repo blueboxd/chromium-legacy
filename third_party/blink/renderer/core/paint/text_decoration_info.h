@@ -96,9 +96,8 @@ class CORE_EXPORT TextDecorationInfo {
   // Compute bounds for the given line and the current decoration.
   FloatRect BoundsForLine(TextDecorationLine line) const;
 
-  // Return a path for a wavy line at the given position, for the
-  // current decoration.
-  absl::optional<Path> PrepareWavyStrokePath(TextDecorationLine line) const;
+  // Return a path for current decoration.
+  absl::optional<Path> StrokePathForLine(TextDecorationLine line) const;
 
  private:
   float ComputeUnderlineThickness(
@@ -110,6 +109,21 @@ class CORE_EXPORT TextDecorationInfo {
   float WavyDecorationSizing() const;
   float ControlPointDistanceFromResolvedThickness() const;
   float StepFromResolvedThickness() const;
+  Path PrepareDottedOrDashedStrokePath(TextDecorationLine line) const;
+  Path PrepareWavyStrokePath(TextDecorationLine line) const;
+
+  /* We need to store data for up to 3 lines: Underline, Overline and
+     LineThrough. Unfortunately the enum for these are bitfield indices, not
+     directly useful as indexes. So explicitly convert in place
+     when necessary.
+  */
+  struct PerLineData {
+    float line_offset;
+    float double_offset;
+    int wavy_offset_factor;
+    absl::optional<Path> stroke_path;
+  };
+  PerLineData LineDataForLine(TextDecorationLine line) const;
 
   const ComputedStyle& style_;
   const absl::optional<AppliedTextDecoration> selection_text_decoration_;
@@ -123,20 +137,7 @@ class CORE_EXPORT TextDecorationInfo {
   gfx::PointF local_origin_;
   bool antialias_;
   Vector<float> applied_decorations_thickness_;
-
   int decoration_index_;
-
-  /* We need to store data for up to 3 lines: Underline, Overline and
-     LineThrough. Unfortunately the enum for these are bitfield indices, not
-     directly useful as indexes. So explicitly convert in place
-     when necessary.
-  */
-  struct PerLineData {
-    float line_offset;
-    float double_offset;
-    int wavy_offset_factor;
-    mutable absl::optional<Path> stroke_path;
-  };
   PerLineData line_data_[3];
 };
 

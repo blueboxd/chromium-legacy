@@ -268,7 +268,6 @@ crbug.com/1124352 external/wpt/picture-in-picture/exit-picture-in-picture.html [
 crbug.com/1124352 external/wpt/picture-in-picture/picture-in-picture-element.html [ Crash Pass ]
 crbug.com/1124352 external/wpt/picture-in-picture/shadow-dom.html [ Crash Pass ]
 
-crbug.com/1174966 [ Mac ] external/wpt/webrtc/RTCPeerConnection-restartIce.https.html [ Failure Pass Timeout ]
 crbug.com/1174965 [ Mac ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCDtlsTransport-state.html [ Failure Pass ]
 
 # These tests require portals, and some require cross-origin portals.
@@ -2540,6 +2539,8 @@ crbug.com/910421 virtual/threaded-composited-iframes/external/wpt/is-input-pendi
 # requestIdleCallback requires threaded compositing
 crbug.com/1259718 external/wpt/requestidlecallback/* [ Skip ]
 crbug.com/1259718 virtual/threaded/external/wpt/requestidlecallback/* [ Pass ]
+crbug.com/1259718 http/tests/devtools/isolated-code-cache/* [ Skip ]
+crbug.com/1259718 virtual/threaded/http/tests/devtools/isolated-code-cache/* [ Pass ]
 
 # WebVTT is off because additional padding
 crbug.com/1012242 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_completely_move_up.html [ Failure ]
@@ -5413,7 +5414,6 @@ crbug.com/965495 external/wpt/permissions-policy/experimental-features/focus-wit
 crbug.com/834302 external/wpt/permissions-policy/permissions-policy-opaque-origin.https.html [ Failure ]
 
 # Temporary suppression to allow devtools-frontend changes
-crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Failure Pass Skip Timeout ]
 crbug.com/1041830 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile.js [ Failure Pass ]
 
 # Sheriff 2019-12-13
@@ -6214,8 +6214,6 @@ crbug.com/1180491 [ Linux ] virtual/storage-access-api/external/wpt/storage-acce
 
 # Sheriff 2021-02-24
 crbug.com/1181667 [ Linux ] external/wpt/css/selectors/focus-visible-011.html [ Failure Pass ]
-crbug.com/1045052 [ Linux ] virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Failure Pass Skip Timeout ]
-crbug.com/1045052 [ Linux ] virtual/not-split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Failure Pass Skip Timeout ]
 crbug.com/1181857 external/wpt/webaudio/the-audio-api/the-analysernode-interface/test-analyser-output.html [ Failure Pass ]
 
 # Sheriff 2021-02-25
@@ -6418,7 +6416,6 @@ crbug.com/1205184 [ Mac11 ] external/wpt/IndexedDB/interleaved-cursors-large.htm
 crbug.com/1205133 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-color.html [ Pass Timeout ]
 crbug.com/1205133 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-color.html [ Pass Timeout ]
 crbug.com/1205012 external/wpt/html/cross-origin-opener-policy/reporting/access-reporting/reporting-observer.html [ Pass Skip Timeout ]
-crbug.com/1197465 [ Linux ] virtual/scroll-unification/fast/events/mouse-cursor-no-mousemove.html [ Failure Pass ]
 crbug.com/1093041 fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Failure Pass ]
 crbug.com/1093041 virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Failure Pass Skip Timeout ]
 
@@ -6626,7 +6623,6 @@ crbug.com/1210687 [ Mac10.15 ] http/tests/devtools/a11y-axe-core/sources/scope-p
 crbug.com/1210687 [ Mac ] http/tests/permissions/chromium/test-request-worker.html [ Pass Skip Timeout ]
 crbug.com/1210687 [ Mac10.15 ] storage/websql/sql-error-codes.html [ Pass Skip Timeout ]
 crbug.com/1210687 [ Mac10.15 ] external/wpt/html/user-activation/propagation-crossorigin.sub.tentative.html [ Pass Skip Timeout ]
-crbug.com/1210687 [ Win ] virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Pass Skip Timeout ]
 crbug.com/1210687 [ Win ] virtual/shared_array_buffer_on_desktop/http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Pass Skip Timeout ]
 
 # Sheriff 2021-06-02
@@ -6964,7 +6960,6 @@ crbug.com/1249176 [ Mac11-arm64 ] webaudio/AudioBufferSource/audiobuffersource-d
 crbug.com/1249176 [ Mac11-arm64 ] webaudio/AudioBufferSource/audiobuffersource-playbackrate-modulation.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] webaudio/Analyser/realtimeanalyser-freq-data.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] webaudio/Oscillator/no-dezippering.html [ Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-restartIce.https.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/overlay-scrollbar/plugin-overlay-scrollbar-mouse-capture.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/offsetparent-old-behavior/external/wpt/shadow-dom/accesskey.tentative.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/plz-dedicated-worker/external/wpt/service-workers/idlharness.https.any.worker.html [ Failure ]
@@ -7138,7 +7133,6 @@ crbug.com/1249176 [ Mac11-arm64 ] virtual/no-auto-wpt-origin-isolation/external/
 crbug.com/1249176 [ Mac11-arm64 ] virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/iframe-navigation/parent-no-1-no-same-2-yes-port.sub.https.html [ Crash Pass ]
 
 # Sheriff 2021-09-16
-crbug.com/1250457 [ Win7 ] http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-3.js [ Failure ]
 crbug.com/1250457 [ Mac ] virtual/scroll-unification/plugins/plugin-map-data-to-src.html [ Failure ]
 crbug.com/1250457 [ Mac ] storage/websql/open-database-set-empty-version.html [ Timeout ]
 crbug.com/1250457 [ Mac ] virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/1-iframe/parent-no-child-yes-same.sub.https.html [ Timeout ]
@@ -7214,9 +7208,7 @@ crbug.com/1255221 http/tests/devtools/elements/styles-4/svg-style.js [ Failure P
 crbug.com/1226112 [ Win ] http/tests/text-autosizing/wide-iframe.html [ Pass Timeout ]
 
 # DevTools roll
-crbug.com/1222126 http/tests/devtools/domdebugger/domdebugger-getEventListeners.js [ Skip ]
 crbug.com/1222126 http/tests/devtools/cache-storage/cache-live-update-list.js [ Skip ]
-crbug.com/1222126 http/tests/devtools/runtime/evaluate-timeout.js [ Skip ]
 crbug.com/1215072 http/tests/devtools/elements/copy-styles.js [ Skip ]
 
 # Skip devtools test hitting an unexpected tracing infrastructure exception 2021-10-04
@@ -7254,7 +7246,6 @@ crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/jpeg-with-
 crbug.com/1259133 [ Mac10.14 ] external/wpt/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.commit.html [ Failure Pass ]
 crbug.com/1259133 [ Mac10.14 ] virtual/no-alloc-direct-call/external/wpt/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.commit.html [ Failure Pass ]
 crbug.com/1259188 [ Mac10.14 ] virtual/gpu-rasterization/images/color-profile-animate.html [ Failure Pass ]
-crbug.com/1197465 [ Win7 ] virtual/scroll-unification/fast/events/mouse-cursor-no-mousemove.html [ Failure Pass ]
 crbug.com/1259277 [ Debug Linux ] virtual/scroll-unification/fast/events/message-port-multi.html [ Failure Pass ]
 
 # Sheriff 2021-10-13
@@ -7351,3 +7342,6 @@ crbug.com/1270355 external/wpt/html/browsers/browsing-the-web/navigating-across-
 
 # Sheriff 2021-11-18
 crbug.com/1180993 external/wpt/mediacapture-record/passthrough/MediaRecorder-passthrough.https.html [ Failure Pass Timeout ]
+
+# Sheriff 2021-11-19
+crbug.com/1197465 virtual/scroll-unification/fast/events/mouse-cursor-no-mousemove.html [ Skip ]

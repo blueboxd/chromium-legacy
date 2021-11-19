@@ -164,12 +164,11 @@ void AppServiceInstanceRegistryHelper::OnTabClosing(
 void AppServiceInstanceRegistryHelper::OnBrowserRemoved() {
   auto instance_keys = GetInstanceKeys(extension_misc::kChromeAppId);
   for (const apps::Instance::InstanceKey& instance_key : instance_keys) {
-    DCHECK(!instance_key.IsForWebBasedApp());
-    if (!chrome::FindBrowserWithWindow(instance_key.GetEnclosingAppWindow())) {
+    if (!chrome::FindBrowserWithWindow(instance_key.Window())) {
       // The tabs in the browser should be closed, and tab windows have been
       // removed from |browser_window_to_tab_window_|.
       DCHECK(!base::Contains(browser_window_to_tab_instances_,
-                             instance_key.GetEnclosingAppWindow()));
+                             instance_key.Window()));
 
       // The browser is removed if the window can't be found, so update the
       // Chrome window instance as destroyed.
@@ -192,6 +191,9 @@ void AppServiceInstanceRegistryHelper::OnInstances(
   instance->SetLaunchId(launch_id);
   instance->UpdateState(state, base::Time::Now());
 
+  std::vector<std::unique_ptr<apps::Instance>> deltas;
+  deltas.push_back(std::move(instance));
+
   // The window could be teleported from the inactive user's profile to the
   // current active user, so search all proxies. If the instance is found from a
   // proxy, still save to that proxy, otherwise, save to the current active user
@@ -205,7 +207,7 @@ void AppServiceInstanceRegistryHelper::OnInstances(
       break;
     }
   }
-  proxy->InstanceRegistry().OnInstance(std::move(instance));
+  proxy->InstanceRegistry().OnInstances(std::move(deltas));
 }
 
 void AppServiceInstanceRegistryHelper::OnSetShelfIDForBrowserWindowContents(

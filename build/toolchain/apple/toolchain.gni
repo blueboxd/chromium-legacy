@@ -317,6 +317,9 @@ template("apple_toolchain") {
     tool("alink") {
       rspfile = "{{output}}.rsp"
 
+      script = rebase_path("//build/toolchain/apple/filter_libtool.py",
+                           root_build_dir)
+
       if (!toolchain_uses_lld) {
         # Note about -filelist: Apple's linker reads the file list file and
         # interprets each newline-separated chunk of text as a file name. It
@@ -328,9 +331,6 @@ template("apple_toolchain") {
         # corrupted by this process. Don't use spaces for source files or
         # labels.
         rspfile_content = "{{inputs_newline}}"
-
-        script = rebase_path("//build/toolchain/apple/filter_libtool.py",
-                             root_build_dir)
 
         # Specify explicit path for libtool.
         libtool = invoker.bin_path + "libtool"

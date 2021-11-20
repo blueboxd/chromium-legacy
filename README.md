@@ -32,7 +32,7 @@ Or, you can [use a downloader](https://github.com/blueboxd/chromium-legacy/discu
 
 ### nearest build to Chrome stable channel
 
-Currently, [r920096](../../releases/tag/920096) is the nearest.  
+Currently, [r929513](../../releases/tag/929513) is the nearest.  
 You can [find the branch position](https://omahaproxy.appspot.com/all?os=mac&channel=stable) of the current Chrome stable channel.
 
 ## limitations

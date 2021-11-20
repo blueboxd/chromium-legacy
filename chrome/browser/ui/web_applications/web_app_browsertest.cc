@@ -809,7 +809,13 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, NoTabSelectedMenuCrash) {
 }
 
 // Tests that PWA menus have an uninstall option.
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, UninstallMenuOption) {
+// TODO(crbug.com/1271118): Flaky on mac arm64.
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+#define MAYBE_UninstallMenuOption DISABLED_UninstallMenuOption
+#else
+#define MAYBE_UninstallMenuOption UninstallMenuOption
+#endif
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, MAYBE_UninstallMenuOption) {
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
@@ -1801,7 +1807,13 @@ class WebAppBrowserTest_FileHandler : public WebAppBrowserTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler, WebAppFileHandler) {
+// TODO(crbug.com/1270961): Flaky.
+#if defined(OS_WIN) || (defined(OS_MAC) && defined(ARCH_CPU_ARM64))
+#define MAYBE_WebAppFileHandler DISABLED_WebAppFileHandler
+#else
+#define MAYBE_WebAppFileHandler WebAppFileHandler
+#endif
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler, MAYBE_WebAppFileHandler) {
   os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
 

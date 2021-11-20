@@ -2207,7 +2207,10 @@ if (!is_android && !is_fuchsia) {
         "//chrome/browser/web_applications/app_service",
         "//chromeos/ui/frame",
       ]
-      sources += [ "../browser/ui/views/frame/browser_non_client_frame_view_chromeos_browsertest.cc" ]
+      sources += [
+        "../browser/download/notification/download_notification_browsertest.cc",
+        "../browser/ui/views/frame/browser_non_client_frame_view_chromeos_browsertest.cc",
+      ]
     }
 
     if (is_linux && !is_chromeos_lacros) {
@@ -3367,7 +3370,6 @@ if (!is_android && !is_fuchsia) {
         "../browser/chromeos/policy/dlp/mock_dlp_rules_manager.cc",
         "../browser/chromeos/policy/dlp/mock_dlp_rules_manager.h",
         "../browser/device_api/device_attribute_api_browsertest.cc",
-        "../browser/download/notification/download_notification_browsertest.cc",
         "../browser/drive/drive_notification_manager_factory_browsertest.cc",
         "../browser/extensions/api/certificate_provider/certificate_provider_apitest.cc",
         "../browser/extensions/api/file_manager/file_browser_handler_api_ash_test.cc",
@@ -3655,6 +3657,7 @@ if (!is_android && !is_fuchsia) {
         "//chromeos/assistant:buildflags",
         "//chromeos/attestation",
         "//chromeos/attestation:test_support",
+        "//chromeos/components/quick_answers/public/cpp:cpp",
         "//chromeos/cryptohome",
         "//chromeos/dbus:test_support",
         "//chromeos/dbus/attestation",
@@ -3695,6 +3698,7 @@ if (!is_android && !is_fuchsia) {
         "//chromeos/ui/frame:test_support",
         "//chromeos/ui/wm",
         "//components/app_restore",
+        "//components/arc:arc_test_support",
         "//components/arc/enterprise",
         "//components/crash/content/browser/error_reporting:mock_crash_endpoint",
         "//components/device_event_log",
@@ -5009,6 +5013,7 @@ test("unit_tests") {
   if (is_chromeos) {
     sources += [
       "../browser/apps/intent_helper/metrics/intent_handling_metrics_unittest.cc",
+      "../browser/download/notification/download_item_notification_unittest.cc",
       "../browser/policy/system_features_disable_list_policy_handler_unittest.cc",
       "chromeos/printing/fake_local_printer_chromeos.cc",
       "chromeos/printing/fake_local_printer_chromeos.h",
@@ -6637,12 +6642,14 @@ test("unit_tests") {
       "//chrome/services/sharing/nearby/platform:unit_tests",
       "//chromeos/assistant:buildflags",
       "//chromeos/components/quick_answers:quick_answers",
+      "//chromeos/components/quick_answers/public/cpp:cpp",
       "//chromeos/constants",
       "//chromeos/dbus/image_loader",
       "//chromeos/dbus/u2f",
       "//chromeos/services/nearby/public/cpp:test_support",
       "//chromeos/ui/wm",
       "//components/app_restore:unit_tests",
+      "//components/arc:arc_test_support",
       "//components/soda:soda",
     ]
   }
@@ -7352,6 +7359,7 @@ test("unit_tests") {
 
   if (is_linux || is_chromeos_ash || is_mac || is_win) {
     sources += [
+      "../browser/enterprise/connectors/device_trust/device_trust_connector_service_unittest.cc",
       "../browser/enterprise/connectors/device_trust/device_trust_service_unittest.cc",
       "../browser/enterprise/connectors/device_trust/navigation_throttle_unittest.cc",
       "../browser/enterprise/connectors/device_trust/signals/signals_service_impl_unittest.cc",
@@ -7780,8 +7788,8 @@ test("unit_tests") {
       "../browser/ui/views/toolbar/chrome_labs_bubble_view_model_unittest.cc",
       "../browser/ui/views/toolbar/chrome_labs_bubble_view_unittest.cc",
       "../browser/ui/views/toolbar/chrome_labs_button_unittest.cc",
-      "../browser/ui/views/toolbar/read_later_toolbar_button_unittest.cc",
       "../browser/ui/views/toolbar/reload_button_unittest.cc",
+      "../browser/ui/views/toolbar/side_panel_toolbar_button_unittest.cc",
       "../browser/ui/views/toolbar/toolbar_action_view_unittest.cc",
       "../browser/ui/views/toolbar/toolbar_actions_bar_bubble_views_unittest.cc",
       "../browser/ui/views/toolbar/toolbar_button_unittest.cc",

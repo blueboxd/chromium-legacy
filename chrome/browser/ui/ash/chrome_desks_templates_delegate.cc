@@ -19,6 +19,8 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/app_restore/app_launch_info.h"
 #include "components/app_restore/app_restore_data.h"
 #include "components/app_restore/full_restore_save_handler.h"
@@ -33,6 +35,8 @@
 #include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
 namespace {
@@ -136,6 +140,17 @@ desks_storage::DeskModel* ChromeDesksTemplatesDelegate::GetDeskModel() {
   return DesksClient::Get()->GetDeskModel();
 }
 
+absl::optional<gfx::ImageSkia>
+ChromeDesksTemplatesDelegate::MaybeRetrieveChromeIconForNTPUrl(
+    const std::string& page_url) const {
+  if (page_url != chrome::kChromeUINewTabURL)
+    return absl::nullopt;
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return absl::make_optional<gfx::ImageSkia>(
+      rb.GetImageNamed(IDR_PRODUCT_LOGO_32).AsImageSkia());
+}
+
 void ChromeDesksTemplatesDelegate::GetFaviconForUrl(
     const std::string& page_url,
     int desired_icon_size,
@@ -184,36 +199,7 @@ void ChromeDesksTemplatesDelegate::LaunchAppsFromTemplate(
 // Returns true if `window` is supported in desk templates feature.
 bool ChromeDesksTemplatesDelegate::IsWindowSupportedForDeskTemplate(
     aura::Window* window) const {
-  // For now we'll crostini and lacros windows in desk template. We'll also
-  // ignore ARC apps unless the flag is turned on.
-  const ash::AppType app_type =
-      static_cast<ash::AppType>(window->GetProperty(aura::client::kAppType));
-  switch (app_type) {
-    case ash::AppType::NON_APP:
-    case ash::AppType::CROSTINI_APP:
-    case ash::AppType::LACROS:
-      return false;
-    case ash::AppType::ARC_APP:
-      if (!ash::features::AreDesksTemplatesEnabled())
-        return false;
-      break;
-    case ash::AppType::BROWSER:
-    case ash::AppType::CHROME_APP:
-    case ash::AppType::SYSTEM_APP:
-      break;
-  }
-
-  const user_manager::User* active_user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  DCHECK(active_user);
-  Profile* user_profile =
-      ash::ProfileHelper::Get()->GetProfileByUser(active_user);
-  if (!user_profile)
-    return false;
-
-  // Exclude window that does not asscociate with a full restore app id.
-  const std::string app_id = full_restore::GetAppId(window);
-  if (app_id.empty())
+  if (!ash::DeskTemplate::IsAppTypeSupported(window))
     return false;
 
   // Exclude incognito browser window.

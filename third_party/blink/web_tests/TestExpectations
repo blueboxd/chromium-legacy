@@ -98,11 +98,7 @@ external/wpt/css/compositing/root-element-background-transparency.html [ Failure
 #   --enable-features=ForceSynchronousHTMLParsing,LoaderDataPipeTuning:allocation_size_bytes/2097152/loader_chunk_size/1048576
 
 # app-history tests - fail:
-crbug.com/1254926 external/wpt/app-history/navigate-event/navigate-history-back-after-fragment.html [ Failure ]
 crbug.com/1254926 external/wpt/app-history/navigate/navigate-same-document-event-order.html [ Failure ]
-crbug.com/1254926 external/wpt/app-history/currentchange-event/currentchange-app-history-back-forward-same-doc.html [ Failure ]
-crbug.com/1254926 external/wpt/app-history/currentchange-event/currentchange-app-history-navigate-same-doc.html [ Failure ]
-crbug.com/1254926 external/wpt/app-history/currentchange-event/currentchange-history-back-same-doc.html [ Failure ]
 
 # Extra line info appears in the output in some cases.
 crbug.com/1254932 http/tests/preload/meta-csp.html [ Failure ]
@@ -2057,6 +2053,7 @@ crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Pa
 crbug.com/846656 external/wpt/css/selectors/focus-visible-002.html [ Pass Skip Timeout ]
 crbug.com/1135405 http/tests/devtools/sources/debugger-pause/debugger-pause-infinite-loop.js [ Pass Skip Timeout ]
 crbug.com/1034789 [ Mac ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Pass Timeout ]
+crbug.com/1034789 [ Linux ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Pass Timeout ]
 crbug.com/1105957 [ Debug Linux ] fast/dom/cssTarget-crash.html [ Pass Timeout ]
 crbug.com/915903 http/tests/security/inactive-document-with-empty-security-origin.html [ Pass Timeout ]
 crbug.com/987138 [ Linux ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
@@ -3005,7 +3002,7 @@ crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/servi
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Linux ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-mouseup.html [ Timeout ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/media-capabilities/encodingInfo.any.worker.html [ Crash ]
+crbug.com/1270841 [ Mac ] external/wpt/media-capabilities/encodingInfo.any.worker.html [ Crash ]
 crbug.com/626703 [ Mac11 ] virtual/plz-dedicated-worker/external/wpt/workers/constructors/SharedWorker/setting-port-members.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/without-coep-for-shared-worker/external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/css-calc-infinity-and-nan-disabled/external/wpt/css/css-transforms/crashtests/w-negative-002.html [ Timeout ]
@@ -3041,7 +3038,7 @@ crbug.com/626703 [ Mac10.15 ] external/wpt/page-visibility/minimize.html [ Failu
 crbug.com/626703 [ Mac10.15 ] virtual/shared_array_buffer_on_desktop/external/wpt/compression/decompression-constructor-error.tentative.any.serviceworker.html [ Timeout ]
 crbug.com/626703 [ Win10.20h2 ] external/wpt/web-locks/bfcache/abort.tentative.https.html [ Failure Skip Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/custom-elements/form-associated/ElementInternals-validation.html [ Crash Failure ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/custom-elements/form-associated/ElementInternals-validation.html [ Crash Failure ]
+crbug.com/626703 [ Mac ] external/wpt/custom-elements/form-associated/ElementInternals-validation.html [ Crash Failure ]
 crbug.com/626703 [ Win10.20h2 ] external/wpt/custom-elements/form-associated/ElementInternals-validation.html [ Crash Failure ]
 crbug.com/626703 [ Mac11 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/create-credential.https.html [ Crash ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/html/semantics/forms/the-input-element/show-picker.tentative.html [ Timeout ]
@@ -3224,8 +3221,7 @@ crbug.com/626703 [ Mac10.14 ] external/wpt/css/css-sizing/aspect-ratio/replaced-
 crbug.com/626703 [ Mac10.15 ] wpt_internal/bluetooth/requestDevice/filter-does-not-match.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
 crbug.com/626703 [ Win7 ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
+crbug.com/1270820 [ Mac ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
 crbug.com/626703 [ Win10.20h2 ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/scheduler/post-task-without-signals.any.serviceworker.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/scheduler/post-task-without-signals.any.worker.html [ Crash ]
@@ -3240,21 +3236,13 @@ crbug.com/626703 [ Mac10.15 ] external/wpt/selection/textcontrols/selectionchang
 crbug.com/626703 [ Mac11 ] external/wpt/selection/textcontrols/selectionchange-bubble.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/selection/textcontrols/selectionchange-bubble.html [ Timeout ]
 crbug.com/626703 external/wpt/density-size-correction/density-corrected-image-svg-aspect-ratio-cross-origin.sub.html [ Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Timeout ]
-crbug.com/626703 [ Mac10.14 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Timeout ]
-crbug.com/626703 [ Mac11 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Timeout ]
+crbug.com/1270865 [ Mac ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Failure Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Failure Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Failure Timeout ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Failure Timeout ]
 crbug.com/626703 [ Win10.20h2 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-assign-user-click.html [ Failure Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-mouseup.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-mouseup.html [ Timeout ]
-crbug.com/626703 [ Mac10.14 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-mouseup.html [ Timeout ]
-crbug.com/626703 [ Mac11 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-mouseup.html [ Timeout ]
+crbug.com/1270842 [ Mac ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-mouseup.html [ Failure Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-mouseup.html [ Failure Timeout ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-mouseup.html [ Failure Timeout ]
 crbug.com/626703 [ Win10.20h2 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-mouseup.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/a-user-click-during-pageshow.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/a-user-click-during-load.html [ Timeout ]
@@ -5792,9 +5780,6 @@ crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvasClearRectPartial.html [
 # Sheriff 2020-06-03
 crbug.com/1007228 [ Mac ] external/wpt/fullscreen/api/element-request-fullscreen-and-move-to-iframe-manual.html [ Failure Pass ]
 
-# Disabled for landing DevTools change
-crbug.com/1011811 http/tests/devtools/persistence/automapping-sourcemap.js [ Failure Pass ]
-
 # Sheriff 2020-06-06
 crbug.com/1091843 fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Failure Pass ]
 
@@ -6495,9 +6480,10 @@ crbug.com/1261900 external/wpt/css/css-transforms/transform-fixed-bg-007.html [ 
 css3/flexbox/perpendicular-writing-modes-inside-flex-item.html [ Failure ]
 
 # Sheriff 2021-05-18
-crbug.com/1210658 [ Mac10.14 ] virtual/jxl-enabled/images/jxl/jxl-images.html [ Failure ]
-crbug.com/1210658 [ Mac10.15 ] virtual/jxl-enabled/images/jxl/jxl-images.html [ Failure ]
-crbug.com/1210658 [ Win ] virtual/jxl-enabled/images/jxl/jxl-images.html [ Failure ]
+crbug.com/1210658 [ Mac10.12 ] virtual/jxl-enabled/images/jxl/jxl-images.html [ Failure Pass ]
+crbug.com/1210658 [ Mac10.14 ] virtual/jxl-enabled/images/jxl/jxl-images.html [ Failure Pass ]
+crbug.com/1210658 [ Mac10.15 ] virtual/jxl-enabled/images/jxl/jxl-images.html [ Failure Pass ]
+crbug.com/1210658 [ Win ] virtual/jxl-enabled/images/jxl/jxl-images.html [ Failure Pass ]
 
 # Temporarily disabled to unblock https://crrev.com/c/3099011
 crbug.com/1199701 http/tests/devtools/console/console-big-array.js [ Skip ]
@@ -6998,7 +6984,6 @@ crbug.com/1249176 [ Mac11-arm64 ] fast/dom/geometry-interfaces-dom-matrix-rotate
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/focus/focus-already-focused-iframe-deep-same-site.html [ Timeout ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/focus/focus-already-focused-iframe-different-site.html [ Timeout ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/focus/focus-already-focused-iframe-same-site.html [ Timeout ]
-crbug.com/1249176 [ Mac11-arm64 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-mouseup.html [ Failure Timeout ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/selection/textcontrols/selectionchange-bubble.html [ Timeout ]
 crbug.com/1249176 [ Mac11-arm64 ] http/tests/devtools/tracing/timeline-paint/paint-profiler-update.js [ Failure Skip Timeout ]
 
@@ -7032,7 +7017,6 @@ crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/overlay/overlay-persistent-
 crbug.com/1249176 [ Mac11-arm64 ] virtual/scroll-unification/plugins/multiple-plugins.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/color-profile-animate.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] fast/layers/clip-rects-transformed-2.html [ Failure Pass ]
-crbug.com/1249176 [ Mac11-arm64 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Failure Timeout ]
 crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/timeline/page-frames.js [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/timeline/user-timing.js [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] http/tests/devtools/tracing/frame-model-instrumentation.js [ Failure Pass ]
@@ -7344,4 +7328,12 @@ crbug.com/1270355 external/wpt/html/browsers/browsing-the-web/navigating-across-
 crbug.com/1180993 external/wpt/mediacapture-record/passthrough/MediaRecorder-passthrough.https.html [ Failure Pass Timeout ]
 
 # Sheriff 2021-11-19
+crbug.com/1186771 [ Mac ] fast/scroll-snap/snaps-after-scrollbar-scrolling-track.html [ Crash ]
+crbug.com/1227911 [ Mac ] external/wpt/html/browsers/origin/origin-keyed-agent-clusters/2-iframes/parent-no-child1-no-subdomain1-child2-yes-subdomain2.sub.https.html [ Failure Pass ]
+crbug.com/1227911 [ Linux ] external/wpt/html/browsers/origin/origin-keyed-agent-clusters/2-iframes/parent-no-child1-no-subdomain1-child2-yes-subdomain2.sub.https.html [ Failure Pass ]
+crbug.com/894077 [ Linux ] virtual/android/fullscreen/video-fixed-background.html [ Pass Failure ]
+crbug.com/1271336 external/wpt/native-io/detach_iframe_during_open.https.window.html [ Crash Pass ]
 crbug.com/1197465 virtual/scroll-unification/fast/events/mouse-cursor-no-mousemove.html [ Skip ]
+crbug.com/1272017 [ Mac11-arm64 ] virtual/shared_array_buffer_on_desktop/http/tests/devtools/sources/debugger-ui/reveal-not-skipped.js [ Skip ]
+crbug.com/1272058 [ Linux ] fast/animation/request-animation-frame-cancel2.html [ Failure Pass ]
+crbug.com/1272058 [ Linux ] fast/animation/request-animation-frame-cancel.html [ Failure Pass ]

@@ -7,22 +7,16 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_ALPHA;
 
 import android.content.res.ColorStateList;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.InsetDrawable;
-import android.os.Build;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
@@ -110,33 +104,10 @@ class TabGridViewBinder {
             tabTitleView.setContentDescription(
                     view.getResources().getString(R.string.accessibility_tabstrip_tab, title));
         } else if (TabProperties.IS_SELECTED == propertyKey) {
-            if (TabUiThemeProvider.themeRefactorEnabled()) {
-                updateColor(view, model.get(TabProperties.IS_INCOGNITO),
-                        model.get(TabProperties.IS_SELECTED));
-                updateThumbnail(view, model);
-                updateFavicon(view, model);
-            } else {
-                int selectedTabBackground =
-                        model.get(TabProperties.SELECTED_TAB_BACKGROUND_DRAWABLE_ID);
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                    if (model.get(TabProperties.IS_SELECTED)) {
-                        view.fastFindViewById(R.id.selected_view_below_lollipop)
-                                .setBackgroundResource(selectedTabBackground);
-                        view.fastFindViewById(R.id.selected_view_below_lollipop)
-                                .setVisibility(View.VISIBLE);
-                    } else {
-                        view.fastFindViewById(R.id.selected_view_below_lollipop)
-                                .setVisibility(View.GONE);
-                    }
-                } else {
-                    Resources res = view.getResources();
-                    Resources.Theme theme = view.getContext().getTheme();
-                    Drawable drawable = new InsetDrawable(
-                            ResourcesCompat.getDrawable(res, selectedTabBackground, theme),
-                            (int) res.getDimension(R.dimen.tab_list_selected_inset));
-                    view.setForeground(model.get(TabProperties.IS_SELECTED) ? drawable : null);
-                }
-            }
+            updateColor(view, model.get(TabProperties.IS_INCOGNITO),
+                    model.get(TabProperties.IS_SELECTED));
+            updateThumbnail(view, model);
+            updateFavicon(view, model);
             if (TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue()) {
                 ChipView pageInfoButton = (ChipView) view.fastFindViewById(R.id.page_info_button);
                 pageInfoButton.getPrimaryTextView().setTextAlignment(
@@ -203,10 +174,8 @@ class TabGridViewBinder {
             TabListMediator.IphProvider provider = model.get(TabProperties.IPH_PROVIDER);
             if (provider != null) provider.showIPH(view.fastFindViewById(R.id.tab_thumbnail));
         } else if (TabProperties.CARD_ANIMATION_STATUS == propertyKey) {
-            boolean isSelected = model.get(TabProperties.IS_SELECTED);
             ((ClosableTabGridView) view)
-                    .scaleTabGridCardView(
-                            model.get(TabProperties.CARD_ANIMATION_STATUS), isSelected);
+                    .scaleTabGridCardView(model.get(TabProperties.CARD_ANIMATION_STATUS));
         } else if (TabProperties.IS_INCOGNITO == propertyKey) {
             updateColor(view, model.get(TabProperties.IS_INCOGNITO),
                     model.get(TabProperties.IS_SELECTED));
@@ -397,16 +366,9 @@ class TabGridViewBinder {
                 (ChromeImageView) rootView.fastFindViewById(R.id.background_view);
 
         cardView.getBackground().mutate();
-        int backgroundColor = TabUiThemeProvider.getCardViewBackgroundColor(
+        final @ColorInt int backgroundColor = TabUiThemeProvider.getCardViewBackgroundColor(
                 cardView.getContext(), isIncognito, isSelected);
-        if (TabUiThemeProvider.themeRefactorEnabled()) {
-            // ViewCompat#setBackgroundTintList does not work for the drawable background when
-            // themeRefactorEnabled. See https://crbug.com/1232590.
-            cardView.getBackground().setColorFilter(
-                    new PorterDuffColorFilter(backgroundColor, PorterDuff.Mode.SRC_IN));
-        } else {
-            ViewCompat.setBackgroundTintList(cardView, ColorStateList.valueOf(backgroundColor));
-        }
+        ViewCompat.setBackgroundTintList(cardView, ColorStateList.valueOf(backgroundColor));
 
         dividerView.setBackgroundColor(
                 TabUiThemeProvider.getDividerColor(dividerView.getContext(), isIncognito));

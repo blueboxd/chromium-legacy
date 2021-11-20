@@ -7,9 +7,9 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/view_factory.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class Browser;
@@ -69,5 +69,12 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView {
 
   const bool use_work_profile_wording_;
 };
+
+BEGIN_VIEW_BUILDER(,
+                   ProfileSigninConfirmationDialogViews,
+                   views::DialogDelegateView)
+END_VIEW_BUILDER
+
+DEFINE_VIEW_BUILDER(, ProfileSigninConfirmationDialogViews)
 
 #endif  // CHROME_BROWSER_UI_VIEWS_SYNC_PROFILE_SIGNIN_CONFIRMATION_DIALOG_VIEWS_H_

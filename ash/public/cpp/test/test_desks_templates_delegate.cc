@@ -4,11 +4,11 @@
 
 #include "ash/public/cpp/test/test_desks_templates_delegate.h"
 
-#include "ash/constants/app_types.h"
 #include "ash/public/cpp/desk_template.h"
 #include "components/app_restore/app_launch_info.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace ash {
 
@@ -24,6 +24,12 @@ TestDesksTemplatesDelegate::GetAppLaunchDataForDeskTemplate(
 
 desks_storage::DeskModel* TestDesksTemplatesDelegate::GetDeskModel() {
   return desk_model_;
+}
+
+absl::optional<gfx::ImageSkia>
+TestDesksTemplatesDelegate::MaybeRetrieveChromeIconForNTPUrl(
+    const std::string& page_url) const {
+  return absl::nullopt;
 }
 
 void TestDesksTemplatesDelegate::GetFaviconForUrl(
@@ -42,16 +48,7 @@ void TestDesksTemplatesDelegate::LaunchAppsFromTemplate(
 
 bool TestDesksTemplatesDelegate::IsWindowSupportedForDeskTemplate(
     aura::Window* window) const {
-  const ash::AppType app_type =
-      static_cast<ash::AppType>(window->GetProperty(aura::client::kAppType));
-  switch (app_type) {
-    case AppType::CROSTINI_APP:
-    case AppType::LACROS:
-      return false;
-    default:
-      break;
-  }
-  return true;
+  return DeskTemplate::IsAppTypeSupported(window);
 }
 
 }  // namespace ash

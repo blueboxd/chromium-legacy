@@ -465,7 +465,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
   EXPECT_TRUE(base::ContentsEqual(kTestFile, full_file_name));
 }
 
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyCancel) {
+// TODO(crbug.com/1271463): Flaky on mac arm64.
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+#define MAYBE_SaveHTMLOnlyCancel DISABLED_SaveHTMLOnlyCancel
+#else
+#define MAYBE_SaveHTMLOnlyCancel SaveHTMLOnlyCancel
+#endif
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyCancel) {
   GURL url = NavigateToMockURL("a");
   DownloadManager* manager = GetDownloadManager();
   std::vector<DownloadItem*> downloads;
@@ -1094,7 +1100,14 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveAsCompleteHtml) {
 }
 
 // Test for crbug.com/538766.
-IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveAsMHTML) {
+// Disabled on Mac due to excessive flakiness. https://crbug.com/1271741
+#if defined(OS_MAC)
+#define MAYBE_SaveAsMHTML DISABLED_SaveAsMHTML
+#else
+#define MAYBE_SaveAsMHTML SaveAsMHTML
+#endif
+IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest,
+                       MAYBE_SaveAsMHTML) {
   GURL url(
       embedded_test_server()->GetURL("a.com", "/save_page/frames-xsite.htm"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));

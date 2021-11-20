@@ -82,7 +82,6 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
         self._device, '%s-command-line' % self.product_name())
     self.browser_package_name = apk_helper.GetPackageName(
         self.options.browser_apk)
-    self.flags.ReplaceFlags(self.browser_command_line_args())
     self.browser_activity_name = (self.options.browser_activity_name or
                                   self.default_browser_activity_name)
     self.log_mon = None
@@ -168,6 +167,9 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
       '--mojojs-path=' + self.mojo_js_directory,
     ])
 
+    for binary_arg in self.browser_command_line_args():
+      rest_args.append('--binary-arg=%s' % binary_arg)
+
     for test in self.tests:
       rest_args.extend(['--include', test])
 
@@ -202,6 +204,10 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
     parser.add_argument('--webview-provider-apk',
                         type=os.path.realpath,
                         help='Path to the WebView provider apk')
+    parser.add_argument('--additional-apk',
+                        action='append',
+                        type=os.path.realpath,
+                        help='List of additional apk\'s to install')
     parser.add_argument('--browser-activity-name',
                         action='store',
                         help='Browser activity name')
@@ -224,6 +230,8 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
     """Install apks for testing"""
     self._device.Uninstall(self.browser_package_name)
     self._device.Install(self.options.browser_apk, reinstall=True)
+    for apk_path in self.options.additional_apk:
+      self._device.Install(apk_path)
     yield
 
   def browser_command_line_args(self):
@@ -242,6 +250,9 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
     """
     self.layout_test_results_subdir = ('%s_smoke_test_artifacts' %
                                        test_run_variation)
+
+    # Make sure the browser is not running before the tests run
+    self.stop_browser()
     ret = super(FinchTestCase, self).run_test()
     self.stop_browser()
 

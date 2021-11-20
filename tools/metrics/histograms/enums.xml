@@ -43970,7 +43970,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="Canceled"/>
 </enum>
 
-<enum name="InProductHelp.SnoozeAction">
+<enum name="InProductHelpSnoozeAction">
   <int value="0" label="Unknown"/>
   <int value="1" label="Snooze"/>
   <int value="2" label="Dismiss"/>
@@ -49859,6 +49859,7 @@ from previous Chrome versions.
   <int value="-1179917414" label="DefaultChromeAppUninstallSync:disabled"/>
   <int value="-1178350793" label="RemoteCopyReceiver:disabled"/>
   <int value="-1177802205" label="enable-hosted-app-quit-notification"/>
+  <int value="-1177230990" label="PrefetchAndroidFonts:enabled"/>
   <int value="-1176748003"
       label="FramebustingNeedsSameOriginOrUserGesture:disabled"/>
   <int value="-1176493523" label="enable-md-extensions"/>
@@ -50490,6 +50491,7 @@ from previous Chrome versions.
   <int value="-705212373" label="IncognitoNtpRevamp:disabled"/>
   <int value="-704459022" label="ContinuousSearch:enabled"/>
   <int value="-704232562" label="UseMonitorColorSpace:enabled"/>
+  <int value="-703552662" label="PrefetchAndroidFonts:disabled"/>
   <int value="-702477233" label="ContentFullscreen:enabled"/>
   <int value="-700762821" label="RequestDesktopSiteForTablets:disabled"/>
   <int value="-700300613" label="use-fake-device-for-media-stream:disabled"/>
@@ -57561,6 +57563,24 @@ Called by update_use_counter_css.py.-->
     observing mismatch between routing IDs of frames inside and those that are
     expected.
   </int>
+</enum>
+
+<enum name="MimeTypeOfHlsManifest">
+  <summary>
+    Captures the MIME type of the HTTP response that carried an HLS manifest.
+  </summary>
+  <int value="0" label="Other MIME type"/>
+  <int value="1" label="application/dash+xml"/>
+  <int value="2" label="application/ogg"/>
+  <int value="3" label="application/mpegurl"/>
+  <int value="4" label="application/vnd.apple.mpegurl"/>
+  <int value="5" label="application/x-mpegurl"/>
+  <int value="6" label="audio/mpegurl"/>
+  <int value="7" label="audio/x-mpegurl"/>
+  <int value="8" label="audio/*"/>
+  <int value="9" label="image/*"/>
+  <int value="10" label="video/*"/>
+  <int value="11" label="text/vtt"/>
 </enum>
 
 <enum name="MirrorFailureType">

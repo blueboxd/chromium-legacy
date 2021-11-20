@@ -45,6 +45,7 @@ class UpdateServiceImpl : public UpdateService {
   void UpdateAll(StateChangeCallback state_update, Callback callback) override;
   void Update(const std::string& app_id,
               Priority priority,
+              PolicySameVersionUpdate policy_same_version_update,
               StateChangeCallback state_update,
               Callback callback) override;
 
@@ -59,11 +60,13 @@ class UpdateServiceImpl : public UpdateService {
   // Run `callback`, pops `tasks_`, and calls TaskStart.
   void TaskDone(base::OnceClosure callback);
 
-  void OnShouldBlockUpdateForMeteredNetwork(StateChangeCallback state_update,
-                                            Callback callback,
-                                            const std::vector<std::string>& ids,
-                                            Priority priority,
-                                            bool update_blocked);
+  void OnShouldBlockUpdateForMeteredNetwork(
+      StateChangeCallback state_update,
+      Callback callback,
+      const std::vector<std::string>& ids,
+      Priority priority,
+      PolicySameVersionUpdate policy_same_version_update,
+      bool update_blocked);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

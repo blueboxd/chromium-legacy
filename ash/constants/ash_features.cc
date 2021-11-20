@@ -674,14 +674,14 @@ const base::Feature kHideShelfControlsInTabletMode{
 // transfer or access it later.
 const base::Feature kHoldingSpaceInProgressDownloadsIntegration{
     "HoldingSpaceInProgressDownloadsIntegration",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables in-progress downloads notification suppression with the productivity
 // feature that aims to reduce context switching by enabling users to collect
 // content and transfer or access it later.
 const base::Feature kHoldingSpaceInProgressDownloadsNotificationSuppression{
     "HoldingSpaceInProgressNotificationSuppression",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables incognito profile integration with the productivity feature that
 // aims to reduce context switching by enabling users to collect content and
@@ -693,6 +693,10 @@ const base::Feature kHoldingSpaceIncognitoProfileIntegration{
 // Controls whether the snooping protection prototype is enabled.
 const base::Feature kSnoopingProtection{"SnoopingProtection",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the HPS Sense prototype is enabled.
+const base::Feature kLeaveDetection{"LeaveDetection",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable MOZC IME to use protobuf as interactive message format.
 const base::Feature kImeMozcProto{"ImeMozcProto",
@@ -1510,6 +1514,10 @@ bool IsHostnameSettingEnabled() {
 
 bool IsSnoopingProtectionEnabled() {
   return base::FeatureList::IsEnabled(kSnoopingProtection);
+}
+
+bool IsLeaveDetectionEnabled() {
+  return base::FeatureList::IsEnabled(kLeaveDetection);
 }
 
 bool IsIdleInhibitEnabled() {

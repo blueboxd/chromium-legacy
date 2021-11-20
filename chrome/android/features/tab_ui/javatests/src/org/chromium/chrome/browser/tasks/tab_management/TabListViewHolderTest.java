@@ -11,7 +11,6 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -22,7 +21,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -302,18 +300,10 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     }
 
     private void testGridSelected(ViewGroup holder, PropertyModel model) {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-            model.set(TabProperties.IS_SELECTED, true);
-            Assert.assertNotNull(holder.getForeground());
-            model.set(TabProperties.IS_SELECTED, false);
-            Assert.assertNull(holder.getForeground());
-        } else {
-            model.set(TabProperties.IS_SELECTED, true);
-            View selectedView = holder.findViewById(R.id.selected_view_below_lollipop);
-            Assert.assertEquals(View.VISIBLE, selectedView.getVisibility());
-            model.set(TabProperties.IS_SELECTED, false);
-            Assert.assertEquals(View.GONE, selectedView.getVisibility());
-        }
+        model.set(TabProperties.IS_SELECTED, true);
+        Assert.assertTrue(TabSelectionEditorTestingRobot.isTabViewSelected(holder));
+        model.set(TabProperties.IS_SELECTED, false);
+        Assert.assertFalse(TabSelectionEditorTestingRobot.isTabViewSelected(holder));
     }
 
     private void testSelectableTabClickToSelect(
@@ -384,13 +374,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
                 () -> !((ClosableTabGridView) mTabGridView).getIsAnimatingForTesting());
 
         Assert.assertEquals(View.GONE, backgroundView.getVisibility());
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            View selectedView = mTabGridView.findViewById(R.id.selected_view_below_lollipop);
-            Assert.assertEquals(View.VISIBLE, selectedView.getVisibility());
-        } else {
-            Drawable selectedDrawable = mTabGridView.getForeground();
-            Assert.assertNotNull(selectedDrawable);
-        }
+        Assert.assertTrue(TabSelectionEditorTestingRobot.isTabViewSelected(mTabGridView));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mGridModel.set(TabProperties.IS_SELECTED, false);
@@ -400,14 +384,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         CriteriaHelper.pollUiThread(
                 () -> !((ClosableTabGridView) mTabGridView).getIsAnimatingForTesting());
         Assert.assertEquals(View.GONE, backgroundView.getVisibility());
-
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            View selectedView = mTabGridView.findViewById(R.id.selected_view_below_lollipop);
-            Assert.assertEquals(View.GONE, selectedView.getVisibility());
-        } else {
-            Drawable selectedDrawable = mTabGridView.getForeground();
-            Assert.assertNull(selectedDrawable);
-        }
+        Assert.assertFalse(TabSelectionEditorTestingRobot.isTabViewSelected(mTabGridView));
     }
 
     @Test

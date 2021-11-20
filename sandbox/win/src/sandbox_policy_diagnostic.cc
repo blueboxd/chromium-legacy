@@ -177,10 +177,6 @@ std::string GetIpcTagAsString(IpcTag service) {
       return "NtOpenProcessTokenEx";
     case IpcTag::CREATEPROCESSW:
       return "CreateProcessW";
-    case IpcTag::CREATEEVENT:
-      return "CreateEvent";
-    case IpcTag::OPENEVENT:
-      return "OpenEvent";
     case IpcTag::NTCREATEKEY:
       return "NtCreateKey";
     case IpcTag::NTOPENKEY:
@@ -384,7 +380,7 @@ PolicyDiagnostic::PolicyDiagnostic(PolicyBase* policy) {
   DCHECK(policy);
   // TODO(crbug/997273) Add more fields once webui plumbing is complete.
   {
-    AutoLock lock(&policy->lock_);
+    base::AutoLock lock(policy->lock_);
     for (auto&& target_process : policy->targets_) {
       process_ids_.push_back(
           base::strict_cast<uint32_t>(target_process->ProcessId()));

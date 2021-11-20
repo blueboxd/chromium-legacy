@@ -14,12 +14,6 @@
 
 namespace ash {
 
-namespace {
-
-constexpr int kSmartLockIconSizeDp = 32;
-
-}  // namespace
-
 SmartLockAuthFactorModel::SmartLockAuthFactorModel(
     base::RepeatingCallback<void()> arrow_button_tap_callback)
     : arrow_button_tap_callback_(arrow_button_tap_callback) {}
@@ -56,17 +50,22 @@ void SmartLockAuthFactorModel::SetSmartLockState(SmartLockState state) {
   if (state_ == state)
     return;
 
+  // Clear out the timeout if the state changes. This shouldn't happen
+  // ordinarily -- permanent error states are permanent after all -- but this is
+  // required for the debug overlay to work properly when cycling states.
+  has_permanent_error_display_timed_out_ = false;
+
   state_ = state;
-  NotifyOnStateChanged();
+  RefreshUI();
 }
 
 void SmartLockAuthFactorModel::NotifySmartLockAuthResult(bool result) {
   auth_result_ = result;
-  NotifyOnStateChanged();
+  RefreshUI();
 }
 
-AuthFactorModel::AuthFactorState
-SmartLockAuthFactorModel::GetAuthFactorState() {
+AuthFactorModel::AuthFactorState SmartLockAuthFactorModel::GetAuthFactorState()
+    const {
   if (auth_result_.has_value()) {
     return auth_result_.value() ? AuthFactorState::kAuthenticated
                                 : AuthFactorState::kErrorPermanent;
@@ -102,11 +101,11 @@ SmartLockAuthFactorModel::GetAuthFactorState() {
   }
 }
 
-AuthFactorType SmartLockAuthFactorModel::GetType() {
+AuthFactorType SmartLockAuthFactorModel::GetType() const {
   return AuthFactorType::kSmartLock;
 }
 
-int SmartLockAuthFactorModel::GetLabelId() {
+int SmartLockAuthFactorModel::GetLabelId() const {
   if (auth_result_.has_value()) {
     return auth_result_.value() ? IDS_SMART_LOCK_LABEL_PHONE_LOCKED
                                 : IDS_AUTH_FACTOR_LABEL_CANNOT_UNLOCK;
@@ -143,51 +142,47 @@ int SmartLockAuthFactorModel::GetLabelId() {
   NOTREACHED();
 }
 
-bool SmartLockAuthFactorModel::ShouldAnnounceLabel() {
+bool SmartLockAuthFactorModel::ShouldAnnounceLabel() const {
   // TODO(crbug.com/1233614): Return 'true' depending on SmartLockState.
   return false;
 }
 
-int SmartLockAuthFactorModel::GetAccessibleNameId() {
+int SmartLockAuthFactorModel::GetAccessibleNameId() const {
   // TODO(crbug.com/1233614): Determine whether any state needs to have a
   // different label for a11y.
   return GetLabelId();
 }
 
 void SmartLockAuthFactorModel::UpdateIcon(AuthIconView* icon) {
-  const SkColor primary_color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconColorPrimary);
-  const SkColor disabled_color =
-      AshColorProvider::Get()->GetDisabledColor(primary_color);
-
-  // TODO(crbug.com/1233614): Either find a system color to match the color in
-  // the Fingerprint animation png sequence, or upload new png files with the
-  // right color.
-  const SkColor alert_color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconColorAlert);
-
   if (auth_result_.has_value() && !auth_result_.value()) {
-    // TODO(crbug.com/1233614): Get actual failure icon once asset is ready.
-    icon->SetImage(gfx::CreateVectorIcon(kLockScreenSmartCardFailureIcon,
-                                         kSmartLockIconSizeDp, alert_color));
+    if (has_permanent_error_display_timed_out_) {
+      icon->SetIcon(kLockScreenSmartLockDisabledIcon,
+                    AuthIconView::Color::kDisabled);
+    } else {
+      // TODO(crbug.com/1233614): Get actual failure icon once asset is ready.
+      icon->SetIcon(kLockScreenSmartCardFailureIcon,
+                    AuthIconView::Color::kError);
+    }
     return;
   }
 
   switch (state_) {
     case SmartLockState::kPhoneNotFound:
-      FALLTHROUGH;
+      icon->SetIcon(kLockScreenSmartLockBluetoothIcon,
+                    AuthIconView::Color::kPrimary);
+      icon->RunErrorShakeAnimation();
+      return;
     case SmartLockState::kPhoneFoundLockedAndDistant:
       FALLTHROUGH;
     case SmartLockState::kPhoneFoundUnlockedAndDistant:
       FALLTHROUGH;
     case SmartLockState::kConnectingToPhone:
-      icon->SetImage(gfx::CreateVectorIcon(kLockScreenSmartLockBluetoothIcon,
-                                           kSmartLockIconSizeDp,
-                                           primary_color));
+      icon->SetIcon(kLockScreenSmartLockBluetoothIcon,
+                    AuthIconView::Color::kPrimary);
       return;
     case SmartLockState::kPhoneFoundLockedAndProximate:
-      icon->SetImage(gfx::CreateVectorIcon(
-          kLockScreenSmartLockPhoneIcon, kSmartLockIconSizeDp, primary_color));
+      icon->SetIcon(kLockScreenSmartLockPhoneIcon,
+                    AuthIconView::Color::kPrimary);
       return;
     case SmartLockState::kPrimaryUserAbsent:
       FALLTHROUGH;
@@ -198,9 +193,8 @@ void SmartLockAuthFactorModel::UpdateIcon(AuthIconView* icon) {
     case SmartLockState::kPhoneNotLockable:
       FALLTHROUGH;
     case SmartLockState::kBluetoothDisabled:
-      icon->SetImage(gfx::CreateVectorIcon(kLockScreenSmartLockDisabledIcon,
-                                           kSmartLockIconSizeDp,
-                                           disabled_color));
+      icon->SetIcon(kLockScreenSmartLockDisabledIcon,
+                    AuthIconView::Color::kDisabled);
       return;
     case SmartLockState::kPhoneAuthenticated:
       // Click to enter -- icon handled by parent view.
@@ -213,7 +207,10 @@ void SmartLockAuthFactorModel::UpdateIcon(AuthIconView* icon) {
   }
 }
 
-void SmartLockAuthFactorModel::OnTapOrClickEvent() {}
+void SmartLockAuthFactorModel::DoHandleTapOrClick() {
+  // Do Nothing: Smart Lock does not react to taps on its icon. Clicks on the
+  // arrow button are handled in LoginAuthFactorsView.
+}
 
 void SmartLockAuthFactorModel::OnArrowButtonTapOrClickEvent() {
   if (state_ == SmartLockState::kPhoneAuthenticated) {
@@ -221,6 +218,9 @@ void SmartLockAuthFactorModel::OnArrowButtonTapOrClickEvent() {
   }
 }
 
-void SmartLockAuthFactorModel::OnErrorTimeout() {}
+void SmartLockAuthFactorModel::DoHandleErrorTimeout() {
+  // Do Nothing: Smart Lock has no temporary errors to restore from, so there is
+  // nothing to do.
+}
 
 }  // namespace ash

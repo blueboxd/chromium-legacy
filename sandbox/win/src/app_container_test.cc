@@ -28,12 +28,12 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/scoped_localalloc.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/app_container_base.h"
 #include "sandbox/win/src/sandbox_factory.h"
-#include "sandbox/win/src/sync_policy_test.h"
 #include "sandbox/win/src/win_utils.h"
 #include "sandbox/win/tests/common/controller.h"
 #include "sandbox/win/tests/common/test_utils.h"
@@ -156,13 +156,14 @@ void CheckLpacToken(HANDLE process) {
   ASSERT_TRUE(::ConvertStringSecurityDescriptorToSecurityDescriptor(
       L"O:SYG:SYD:(A;;0x3;;;WD)(A;;0x1;;;AC)(A;;0x2;;;S-1-15-2-2)",
       SDDL_REVISION_1, &security_desc_ptr, nullptr));
-  std::unique_ptr<void, LocalFreeDeleter> security_desc(security_desc_ptr);
+  base::win::ScopedLocalAlloc security_desc =
+      base::win::TakeLocalAlloc(security_desc_ptr);
   GENERIC_MAPPING generic_mapping = {};
   PRIVILEGE_SET priv_set = {};
   DWORD priv_set_length = sizeof(PRIVILEGE_SET);
   DWORD granted_access;
   BOOL access_status;
-  ASSERT_TRUE(::AccessCheck(security_desc_ptr, token.Get(), MAXIMUM_ALLOWED,
+  ASSERT_TRUE(::AccessCheck(security_desc.get(), token.Get(), MAXIMUM_ALLOWED,
                             &generic_mapping, &priv_set, &priv_set_length,
                             &granted_access, &access_status));
   ASSERT_TRUE(access_status);
@@ -475,6 +476,25 @@ HANDLE UDPEchoServer::GetProcessSignalEvent() {
 
 }  // namespace
 
+SBOX_TESTS_COMMAND int AppContainerEvent_Open(int argc, wchar_t** argv) {
+  if (argc != 1)
+    return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
+
+  base::win::ScopedHandle event_open(
+      ::OpenEvent(EVENT_ALL_ACCESS, false, argv[0]));
+  DWORD error_open = ::GetLastError();
+
+  if (event_open.IsValid())
+    return SBOX_TEST_SUCCEEDED;
+
+  if (ERROR_ACCESS_DENIED == error_open || ERROR_BAD_PATHNAME == error_open ||
+      ERROR_FILE_NOT_FOUND == error_open) {
+    return SBOX_TEST_DENIED;
+  }
+
+  return SBOX_TEST_FAILED;
+}
+
 TEST_F(AppContainerTest, DenyOpenEventForLowBox) {
   if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
@@ -484,7 +504,7 @@ TEST_F(AppContainerTest, DenyOpenEventForLowBox) {
   EXPECT_EQ(SBOX_ALL_OK, runner.GetPolicy()->SetLowBox(kAppContainerSid));
   // Run test once, this ensures the app container directory exists, we
   // ignore the result.
-  runner.RunTest(L"Event_Open f test");
+  runner.RunTest(L"AppContainerEvent_Open test");
   std::wstring event_name = L"AppContainerNamedObjects\\";
   event_name += kAppContainerSid;
   event_name += L"\\test";
@@ -493,7 +513,7 @@ TEST_F(AppContainerTest, DenyOpenEventForLowBox) {
       ::CreateEvent(nullptr, false, false, event_name.c_str()));
   ASSERT_TRUE(event.IsValid());
 
-  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"Event_Open f test"));
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"AppContainerEvent_Open test"));
 }
 
 TEST_F(AppContainerTest, CheckIncompatibleOptions) {
@@ -678,7 +698,7 @@ SBOX_TESTS_COMMAND int CheckIsAppContainer(int argc, wchar_t** argv) {
 // correctly.
 SBOX_TESTS_COMMAND int Socket_CreateTCP(int argc, wchar_t** argv) {
   int init_status = InitWinsock();
-  if (init_status != STATUS_SUCCESS)
+  if (init_status != ERROR_SUCCESS)
     return init_status;
   SOCKET socket_handle = INVALID_SOCKET;
 
@@ -773,7 +793,7 @@ SBOX_TESTS_COMMAND int Socket_CreateTCP(int argc, wchar_t** argv) {
 // correctly.
 SBOX_TESTS_COMMAND int Socket_CreateUDP(int argc, wchar_t** argv) {
   int init_status = InitWinsock();
-  if (init_status != STATUS_SUCCESS)
+  if (init_status != ERROR_SUCCESS)
     return init_status;
   SOCKET socket_handle = INVALID_SOCKET;
 
@@ -897,7 +917,7 @@ class SocketBrokerTest
                            /* add brokering rule */ bool>> {
  public:
   void SetUp() override {
-    ASSERT_EQ(STATUS_SUCCESS, InitWinsock());
+    ASSERT_EQ(ERROR_SUCCESS, InitWinsock());
     SetUpSandboxPolicy();
   }
 

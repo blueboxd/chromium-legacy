@@ -784,7 +784,13 @@
       'android-11-x86-rel': {
         # https://crbug.com/1039860
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.cc_unittests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11_12.cc_unittests.filter',
+        ],
+      },
+      'android-12-x64-fyi-rel': {
+        # https://crbug.com/1039860
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11_12.cc_unittests.filter',
         ],
       },
       'android-marshmallow-x86-rel': {
@@ -1668,6 +1674,11 @@
       'android-11-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.gl_tests.filter',
+        ],
+      },
+      'android-12-x64-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.gl_tests.filter',
         ],
       },
       'android-marshmallow-x86-rel': {
@@ -3170,6 +3181,18 @@
     },
   },
   'webgl2_conformance_metal_passthrough_tests': {
+    'modifications': {
+      'Mac FYI ASAN (Intel)': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+      'Mac FYI Retina ASAN (AMD)': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+    },
     'remove_from': [
       # crbug.com/1270755: failing entire shards on Intel ASAN bot.
       'Mac FYI ASAN (Intel)',
@@ -3213,6 +3236,18 @@
     },
   },
   'webgl_conformance_gl_passthrough_tests': {
+    'modifications': {
+      'Mac FYI ASAN (Intel)': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+      'Mac FYI Retina ASAN (AMD)': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+    },
     'remove_from': [
       # crbug.com/555545 and crbug.com/649824:
       # Disable webgl_conformance_gl_tests on some Win/AMD cards.
@@ -3221,6 +3256,18 @@
     ],
   },
   'webgl_conformance_metal_passthrough_tests': {
+    'modifications': {
+      'Mac FYI ASAN (Intel)': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+      'Mac FYI Retina ASAN (AMD)': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+    },
     'remove_from': [
       # crbug.com/1270755: failing entire shards on Intel ASAN bot.
       'Mac FYI ASAN (Intel)',
@@ -3229,6 +3276,18 @@
     ],
   },
   'webgl_conformance_tests': {
+    'modifications': {
+      'Mac FYI ASAN (Intel)': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+      'Mac FYI Retina ASAN (AMD)': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+    },
     'remove_from': [
       # Too slow on this configuration, which is severely hardware
       # constrained. crbug.com/950690

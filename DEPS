@@ -234,7 +234,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '37940afc0caf5a68c3c17e28d23f3c101b73d6fd',
+  'skia_revision': '7ecacbc4c6be9225a63fe332ec44ebef5b3eb1d8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -349,7 +349,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'bdefb2dbd07e51eef4935e910efa6e9c7babc2e2',
+  'dawn_revision': 'bd3e042383e58964ff1a4c9228c962e51376769f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -708,7 +708,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'mMHf2sXGZyZk-VIgK0c_TaEj9zwpc87ZX-Kww8sj83wC',
+          'version': 'gJBAEYiywu0o-EEwn7UpwifzCyC4Rii5lIAO9w3vM5IC',
         },
       ],
       'dep_type': 'cipd',
@@ -719,7 +719,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'iXE7VUbdAL6j_XpPWqukKX9RuwfcYJI1scZCSlidU3sC',
+          'version': 'Y30Ib8gHQhcNop8Fl4wQC5J7l6NFymKZNLE6ztsf1PgC',
         },
       ],
       'dep_type': 'cipd',
@@ -730,7 +730,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': '8HnjSeA0LbuhlyOf47kGMJpU1HOp65e-ajVTfKvkTqUC',
+          'version': 'raTuwcc-vtXLaNKG7DXvx10nm9P-TUlL6TkY9cV7YOwC',
         },
       ],
       'dep_type': 'cipd',
@@ -1692,7 +1692,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@96eb14e89518919deef18317d39c0f5e8e34a3cf',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c8fa0a5304cc8eab97a7b3a1abd650aedbfbd632',
     'condition': 'checkout_src_internal',
   },
 

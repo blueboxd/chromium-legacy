@@ -393,7 +393,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libcxxabi_revision':    'a63bbc1389aaabc536f7076853661eab3e08d362',
+  'libcxxabi_revision':    'e504863f9e2d6e6f32c4c6f06545bf9626308145',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -708,7 +708,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'oSCGJbzfBzdqDTRUezAiUihdV8vjWdzbyeO2q4t_KcEC',
+          'version': 'mMHf2sXGZyZk-VIgK0c_TaEj9zwpc87ZX-Kww8sj83wC',
         },
       ],
       'dep_type': 'cipd',
@@ -719,7 +719,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': '0GlDFnEH8APG0FGAnOgI3fDq2bOa6Mw_Th7pp6DIeO4C',
+          'version': 'iXE7VUbdAL6j_XpPWqukKX9RuwfcYJI1scZCSlidU3sC',
         },
       ],
       'dep_type': 'cipd',
@@ -730,7 +730,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'Bt_CiyYxdd6yHU8Kg5QcDmVERM7LAhplcN6Ho8Eymb4C',
+          'version': '8HnjSeA0LbuhlyOf47kGMJpU1HOp65e-ajVTfKvkTqUC',
         },
       ],
       'dep_type': 'cipd',
@@ -791,7 +791,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'o0yQMzgHk3P85tdNpvxix8tkdC6i-u2wLm97YyZezYYC',
+          'version': 'aKcXVosJg7MlpJ8XfPOLPBWqFqsJIX5-RMOvp9K7DA4C',
       },
     ],
     'condition': 'checkout_android',
@@ -1692,7 +1692,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@31b57e9f2501c3ce168adba13fc667a0b0c832cd',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@96eb14e89518919deef18317d39c0f5e8e34a3cf',
     'condition': 'checkout_src_internal',
   },
 
@@ -1711,7 +1711,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'os0Wiyt5SB_b7xom4Oa-fVXOPTJYQj7uEYIm0_hEwk0C',
+        'version': 'j8V_WAngOqybQHcr_qUq7DalTzx0g4i3FB0EWgb0fS4C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1722,7 +1722,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '4ZvjAhOjsqD0GRO1FQbACSE9HCEEzXmB8C0yLKIafukC',
+        'version': 'rdr_mZCnR0-f6Q547CvRsS8QOy63sd5yiZk507KODNYC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

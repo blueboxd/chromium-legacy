@@ -349,7 +349,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'bd3e042383e58964ff1a4c9228c962e51376769f',
+  'dawn_revision': '4e3ddbd955897a22d6d43dc146e3f584284e197c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1692,7 +1692,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c8fa0a5304cc8eab97a7b3a1abd650aedbfbd632',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e87bd55c3f72c11d89354eda08577b7f5bd7bfee',
     'condition': 'checkout_src_internal',
   },
 
@@ -1711,7 +1711,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'j8V_WAngOqybQHcr_qUq7DalTzx0g4i3FB0EWgb0fS4C',
+        'version': 'UcFjbZ80vDokyymGZVPZJi8WrXD5t_jfrGlSzCSWTRgC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1722,7 +1722,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'rdr_mZCnR0-f6Q547CvRsS8QOy63sd5yiZk507KODNYC',
+        'version': 'Fu_Vv-127TddfIRXmqgJqD5xmGIh3v7o5TQHSN4ekIkC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

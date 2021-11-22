@@ -1422,10 +1422,6 @@ component("ash") {
     "system/supervised/supervised_icon_string.h",
     "system/system_notification_controller.cc",
     "system/system_notification_controller.h",
-    "system/time/calendar_event_list_item_view.cc",
-    "system/time/calendar_event_list_item_view.h",
-    "system/time/calendar_event_list_view.cc",
-    "system/time/calendar_event_list_view.h",
     "system/time/calendar_month_view.cc",
     "system/time/calendar_month_view.h",
     "system/time/calendar_utils.cc",
@@ -2148,7 +2144,6 @@ component("ash") {
     # Ash should not depend upon cryptohome_client or components that depend
     # on it. TODO(stevenjb): Assert on //chromeos/dbus/cryptohome_client once it
     # is extracted from //chromeos/dbus. https://crbug.com/647367.
-    "//chromeos/attestation",
     "//chromeos/cryptohome",
     "//chromeos/login/auth",
     "//chromeos/tpm",
@@ -2532,10 +2527,7 @@ test("ash_unittests") {
     "system/session/logout_confirmation_controller_unittest.cc",
     "system/session/session_limit_notification_controller_unittest.cc",
     "system/status_area_widget_unittest.cc",
-    "system/time/calendar_event_list_view_unittest.cc",
     "system/time/calendar_month_view_unittest.cc",
-    "system/time/calendar_unittest_utils.cc",
-    "system/time/calendar_unittest_utils.h",
     "system/time/calendar_view_controller_unittest.cc",
     "system/time/calendar_view_unittest.cc",
     "system/time/time_of_day_unittest.cc",
@@ -3059,6 +3051,7 @@ static_library("test_support") {
     "//ash/app_menu",
     "//ash/assistant/model:model",
     "//ash/assistant/ui:ui",
+    "//ash/components/attestation:test_support",
     "//ash/components/audio",
     "//ash/constants",
     "//ash/keyboard/ui",

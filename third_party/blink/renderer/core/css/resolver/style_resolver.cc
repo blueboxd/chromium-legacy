@@ -1282,7 +1282,8 @@ Element* StyleResolver::FindContainerForElement(
     Element* element,
     const AtomicString& container_name) {
   auto context = StyleRecalcContext::FromAncestors(*element);
-  return ContainerQueryEvaluator::FindContainer(context, container_name);
+  return ContainerQueryEvaluator::FindContainer(
+      context, ContainerSelector(container_name));
 }
 
 RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
@@ -1723,10 +1724,8 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
   if (!watched_selectors_rule_set)
     return;
 
-  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
-  StyleRecalcContext style_recalc_context;
   MatchResult match_result;
-  ElementRuleCollector collector(state.ElementContext(), style_recalc_context,
+  ElementRuleCollector collector(state.ElementContext(), StyleRecalcContext(),
                                  selector_filter_, match_result, state.Style(),
                                  state.Style()->InsideLink());
   collector.SetMode(SelectorChecker::kCollectingStyleRules);

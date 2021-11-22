@@ -64,8 +64,7 @@ enum class LayoutTransitionState {
 // The progress of the animator.
 @property(nonatomic, assign) CGFloat progressWhenInterrupted;
 // Set of UI elements which are animated during view reveal transitions.
-@property(nonatomic, strong)
-    NSMutableOrderedSet<id<ViewRevealingAnimatee>>* animatees;
+@property(nonatomic, strong) NSHashTable<id<ViewRevealingAnimatee>>* animatees;
 // The current state tracking whether the revealed view is undergoing a
 // transition of layout. This is |::Inactive| initially. It is set to |::Active|
 // when the transition layout is created.  It is set to |::Finishing| when the
@@ -106,7 +105,7 @@ enum class LayoutTransitionState {
     _revealedHeight = baseViewHeight - revealedCoverHeight;
     _remainingHeight = _revealedHeight - peekedHeight;
     _currentState = initialState;
-    _animatees = [[NSMutableOrderedSet alloc] init];
+    _animatees = [NSHashTable weakObjectsHashTable];
     _layoutTransitionState = LayoutTransitionState::Inactive;
   }
   return self;
@@ -250,9 +249,11 @@ enum class LayoutTransitionState {
     return;
   }
 
-  if (self.nextState == ViewRevealState::Revealed) {
+  if (self.nextState == ViewRevealState::Revealed ||
+      self.nextState == ViewRevealState::Fullscreen) {
     [self willTransitionToLayout:LayoutSwitcherState::Grid];
-  } else if (self.currentState == ViewRevealState::Revealed &&
+  } else if ((self.currentState == ViewRevealState::Revealed ||
+              self.currentState == ViewRevealState::Fullscreen) &&
              (self.nextState == ViewRevealState::Peeked ||
               self.nextState == ViewRevealState::Hidden)) {
     [self willTransitionToLayout:LayoutSwitcherState::Horizontal];
@@ -377,6 +378,9 @@ enum class LayoutTransitionState {
         return ViewRevealState::Revealed;
       }
       return self.currentState;
+    case ViewRevealState::Fullscreen:
+      NOTREACHED();
+      return ViewRevealState::Fullscreen;
   }
 }
 
@@ -397,6 +401,9 @@ enum class LayoutTransitionState {
       break;
     case ViewRevealState::Revealed:
       progress = translation / (-self.remainingHeight);
+      break;
+    case ViewRevealState::Fullscreen:
+      progress = translation / (self.baseViewHeight - self.revealedHeight);
       break;
   }
 
@@ -535,6 +542,7 @@ enum class LayoutTransitionState {
       break;
     }
     case ViewRevealState::Revealed:
+    case ViewRevealState::Fullscreen:
       // The scroll views should be covered in Revealed state, so should not
       // be able to be scrolled.
       NOTREACHED();

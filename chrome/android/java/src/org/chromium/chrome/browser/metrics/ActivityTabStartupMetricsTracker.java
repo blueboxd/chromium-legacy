@@ -39,6 +39,16 @@ public class ActivityTabStartupMetricsTracker {
          * Called when recording first visible content. This will be fired at most once.
          */
         void onFirstVisibleContent();
+
+        /**
+         * Called when recording first navigation commit. This will be fired at most once.
+         */
+        void onFirstNavigationCommit();
+
+        /**
+         * Called when recording first contentful paint. This will be fired at most once.
+         */
+        void onFirstContentfulPaint();
     }
 
     private static ObserverList<Observer> sObservers;
@@ -113,6 +123,12 @@ public class ActivityTabStartupMetricsTracker {
             ObservableSupplier<TabModelSelector> tabModelSelectorSupplier) {
         mActivityStartTimeMs = SystemClock.uptimeMillis();
         tabModelSelectorSupplier.addObserver((selector) -> registerObservers(selector));
+    }
+
+    // Returns the time since the activity was started (relative to which metrics such as time to
+    // first visible content are calculated).
+    public long getActivityStartTimeMs() {
+        return mActivityStartTimeMs;
     }
 
     private void registerObservers(TabModelSelector tabModelSelector) {
@@ -226,6 +242,10 @@ public class ActivityTabStartupMetricsTracker {
             if (mHistogramSuffix.equals(UMA_HISTOGRAM_TABBED_SUFFIX)) {
                 recordFirstVisibleContent(mFirstCommitTimeMs);
             }
+
+            for (Observer observer : sObservers) {
+                observer.onFirstNavigationCommit();
+            }
         }
         mShouldTrackStartupMetrics = false;
     }
@@ -247,6 +267,10 @@ public class ActivityTabStartupMetricsTracker {
                     durationMs);
             if (mHistogramSuffix.equals(UMA_HISTOGRAM_TABBED_SUFFIX)) {
                 recordVisibleContent(durationMs);
+            }
+
+            for (Observer observer : sObservers) {
+                observer.onFirstContentfulPaint();
             }
         }
         // This is the last event we track, so destroy this tracker and remove observers.

@@ -45,6 +45,10 @@ const char kAccountIdMigrationDescription[] =
     "Migrate to use Gaia ID instead of the email as the account identifer for "
     "the Identity Manager.";
 
+const char kAddPasswordsInSettingsName[] = "Add passwords in settings";
+const char kAddPasswordsInSettingsDescription[] =
+    "Enables manual password adding in settings.";
+
 const char kLauncherAppSortName[] = "Productivity experiment: Reorder Apps";
 const char kLauncherAppSortDescription[] =
     "To evaluate an enhanced Launcher experience that enables users to reorder "
@@ -2025,8 +2029,8 @@ const char kPermissionPredictionsDescription[] =
     "Use the Permission Predictions Service to surface permission requests "
     "using a quieter UI when the likelihood of the user granting the "
     "permission is predicted to be low. Requires "
-    "chrome://flags/#quiet-notification-prompts and `Safe Browsing Enhanced "
-    "Protection` to be enabled.";
+    "chrome://flags/#quiet-notification-prompts and `Safe Browsing` to be "
+    "enabled.";
 
 const char kPermissionQuietChipName[] = "Quiet Permission Chip Experiment";
 const char kPermissionQuietChipDescription[] =

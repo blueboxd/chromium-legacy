@@ -3513,8 +3513,6 @@ crbug.com/626703 [ Mac11 ] external/wpt/websockets/Create-protocols-repeated-cas
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/websockets/Create-protocols-repeated-case-insensitive.any.html?wss [ Failure Timeout ]
 crbug.com/626703 [ Mac11 ] external/wpt/websockets/basic-auth.any.worker.html?wpt_flags=h2 [ Failure Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/websockets/basic-auth.any.worker.html?wpt_flags=h2 [ Failure Timeout ]
-crbug.com/626703 [ Mac11 ] external/wpt/websockets/stream/tentative/backpressure-send.any.serviceworker.html?wpt_flags=h2 [ Failure Skip Timeout ]
-crbug.com/626703 [ Mac11-arm64 ] external/wpt/websockets/stream/tentative/backpressure-send.any.serviceworker.html?wpt_flags=h2 [ Failure Skip Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/worklets/paint-worklet-credentials.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11 ] external/wpt/css/css-images/image-set/image-set-parsing.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11 ] external/wpt/dom/xslt/transformToFragment.tentative.window.html [ Failure Timeout ]
@@ -3529,7 +3527,6 @@ crbug.com/626703 [ Mac11 ] external/wpt/websockets/stream/tentative/backpressure
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/websockets/stream/tentative/backpressure-send.any.worker.html?wpt_flags=h2 [ Crash Failure ]
 crbug.com/626703 [ Mac11 ] external/wpt/websockets/stream/tentative/backpressure-send.any.html?wpt_flags=h2 [ Failure Skip Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/websockets/stream/tentative/backpressure-send.any.html?wpt_flags=h2 [ Failure Skip Timeout ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/websockets/stream/tentative/backpressure-receive.any.html?wpt_flags=h2 [ Failure Pass ]
 crbug.com/626703 [ Mac ] external/wpt/websockets/bufferedAmount-unchanged-by-sync-xhr.any.worker.html?wpt_flags=h2 [ Failure Pass ]
 crbug.com/626703 [ Mac ] external/wpt/websockets/basic-auth.any.html?wpt_flags=h2 [ Failure Pass ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/worklets/audio-worklet-credentials.https.html [ Crash Failure ]
@@ -3764,8 +3761,6 @@ crbug.com/626703 [ Linux ] external/wpt/url/a-element.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/websockets/Create-protocols-repeated-case-insensitive.any.worker.html?wpt_flags=h2 [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/websockets/Create-url-with-space.any.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/websockets/stream/tentative/abort.any.sharedworker.html?wpt_flags=h2 [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/websockets/stream/tentative/backpressure-receive.any.serviceworker.html?wpt_flags=h2 [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/websockets/stream/tentative/backpressure-receive.any.sharedworker.html?wpt_flags=h2 [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/websockets/stream/tentative/constructor.any.html?wpt_flags=h2 [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/websockets/stream/tentative/constructor.any.sharedworker.html?wpt_flags=h2 [ Failure ]
 crbug.com/626703 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/cross-origin-start-end-time-with-redirects.html [ Failure ]
@@ -6459,9 +6454,6 @@ crbug.com/1210658 [ Mac10.14 ] virtual/jxl-enabled/images/jxl/jxl-images.html [ 
 crbug.com/1210658 [ Mac10.15 ] virtual/jxl-enabled/images/jxl/jxl-images.html [ Failure Pass ]
 crbug.com/1210658 [ Win ] virtual/jxl-enabled/images/jxl/jxl-images.html [ Failure Pass ]
 
-# Temporarily disabled to unblock https://crrev.com/c/3099011
-crbug.com/1199701 http/tests/devtools/console/console-big-array.js [ Skip ]
-
 # Sheriff 2021-5-19
 # Flaky on Webkit Linux Leak
 crbug.com/1210731 [ Linux ] http/tests/devtools/sources/debugger-step/debugger-step-out-document-write.js [ Failure Pass ]
@@ -6700,7 +6692,7 @@ crbug.com/1224804 virtual/not-site-per-process/external/wpt/wasm/serialization/m
 
 
 # Sheriff 2021-07-13
-crbug.com/1220114 [ Linux ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Failure Pass Timeout ]
+crbug.com/1220114 external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Failure Pass Timeout ]
 crbug.com/1228959 [ Linux ] virtual/scroll-unification/fast/scroll-snap/snaps-after-wheel-scrolling-single-tick.html [ Failure Pass ]
 
 # A number of http/tests/inspector-protocol/network tests are flaky.
@@ -6876,12 +6868,6 @@ crbug.com/1236558 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css
 crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-before-start.https.html [ Crash Failure Pass ]
 crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-get-timing-on-worklet-thread.https.html [ Crash Failure Pass ]
 
-# Temporarily disable to fix DevTools issue reporting
-crbug.com/1241860 http/tests/inspector-protocol/issues/content-security-policy-issue-trusted-types-exception.js [ Skip ]
-crbug.com/1241860 http/tests/inspector-protocol/issues/content-security-policy-issue-trusted-types-policy-exception.js [ Skip ]
-crbug.com/1241860 http/tests/inspector-protocol/issues/cors-issues.js [ Skip ]
-crbug.com/1241860 http/tests/inspector-protocol/issues/renderer-cors-issues.js [ Skip ]
-
 # [CompositeClipPathAnimations] failing test
 crbug.com/1249071 virtual/composite-clip-path-animation/external/wpt/css/css-masking/clip-path/animations/clip-path-animation-filter.html [ Crash Failure Pass ]
 
@@ -6945,7 +6931,6 @@ crbug.com/1249176 [ Mac11-arm64 ] external/wpt/websockets/interfaces/WebSocket/c
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/websockets/Create-protocols-repeated-case-insensitive.any_wss.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/websockets/unload-a-document/002_wss.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/websockets/stream/tentative/backpressure-send.any_wpt_flags=h2.html [ Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] external/wpt/websockets/stream/tentative/backpressure-send.any.serviceworker_wpt_flags=h2.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/websockets/stream/tentative/backpressure-send.any.worker_wpt_flags=h2.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] fast/forms/color/color-picker-escape-cancellation-revert.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] fast/css/focus-display-block-inline.html [ Failure ]
@@ -7161,10 +7146,6 @@ crbug.com/1255221 http/tests/devtools/elements/styles-4/svg-style.js [ Failure P
 # Sheriff 2021-10-04
 crbug.com/1226112 [ Win ] http/tests/text-autosizing/wide-iframe.html [ Pass Timeout ]
 
-# DevTools roll
-crbug.com/1222126 http/tests/devtools/cache-storage/cache-live-update-list.js [ Skip ]
-crbug.com/1215072 http/tests/devtools/elements/copy-styles.js [ Skip ]
-
 # Skip devtools test hitting an unexpected tracing infrastructure exception 2021-10-04
 crbug.com/1255679 http/tests/devtools/service-workers/service-workers-wasm-test.js [ Skip ]
 
@@ -7249,10 +7230,6 @@ crbug.com/1264775 [ Mac10.14 ] external/wpt/webrtc-stats/supported-stats.html [ 
 # Sheriff 2021-11-02
 crbug.com/1265924 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Pass ]
 
-# V8 roll
-crbug.com/1257806 http/tests/devtools/console/console-external-array.js [ Skip ]
-crbug.com/1257806 http/tests/devtools/console/console-log-side-effects.js [ Skip ]
-
 # TODO(https://crbug.com/1265311): Make the test behave the same way on all platforms
 crbug.com/1265311 http/tests/navigation/location-change-repeated-from-blank.html [ Failure Pass ]
 
@@ -7270,7 +7247,7 @@ crbug.com/1267736 [ Win ] http/tests/devtools/bindings/jssourcemap-bindings-over
 # Sheriff 2021-11-09
 crbug.com/1268518 [ Linux ] external/wpt/web-animations/interfaces/Animation/onfinish.html [ Failure Pass ]
 crbug.com/1268518 [ Mac10.12 ] external/wpt/web-animations/interfaces/Animation/onfinish.html [ Failure Pass ]
-crbug.com/1268519 [ Win10.20h2 ] virtual/scroll-unification/http/tests/misc/resource-timing-sizes-multipart.html [ Failure Pass ]
+crbug.com/1269535 http/tests/misc/resource-timing-sizes-multipart.html [ Failure Pass ]
 crbug.com/1267734 [ Win7 ] virtual/scroll-unification/fast/forms/suggestion-picker/week-suggestion-picker-appearance.html [ Failure Pass ]
 
 # This test is flaky on all platforms
@@ -7283,13 +7260,6 @@ crbug.com/1268963 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-t
 crbug.com/1268594 [ Linux ] css3/filters/composited-layer-bounds-after-sw-blur-animation.html [ Failure Pass ]
 crbug.com/1268594 [ Mac ] css3/filters/composited-layer-bounds-after-sw-blur-animation.html [ Failure Pass ]
 crbug.com/1268594 [ Win ] css3/filters/composited-layer-bounds-after-sw-blur-animation.html [ Failure Pass ]
-
-# Temporarily disable to update DevTools Application Panel
-crbug.com/1271044 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Failure Pass ]
-crbug.com/1271044 http/tests/devtools/application-panel/resources-panel-on-navigation.js [ Failure Pass ]
-crbug.com/1271044 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass ]
-crbug.com/1271044 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Failure Pass ]
-crbug.com/1271044 http/tests/devtools/application-panel/resources-panel-websql.js [ Failure Pass ]
 
 # Security OWP fixit week
 crbug.com/1270355 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/009.html [ Timeout ]
@@ -7311,3 +7281,9 @@ crbug.com/1272058 [ Linux ] fast/animation/request-animation-frame-cancel.html [
 # Sheriff 2021-11-22
 crbug.com/1272352 virtual/threaded/http/tests/devtools/isolated-code-cache/same-origin-test.js [ Pass Crash ]
 crbug.com/1272352 virtual/threaded/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Pass Crash ]
+crbug.com/1272376 virtual/scroll-unification/plugins/plugin-document-back-forward.html [ Failure Pass ]
+crbug.com/1272380 http/tests/devtools/bindings/bindings-multiple-frames.js [ Failure Pass ]
+
+# Flaky on Mac and Windows
+crbug.com/1272199 external/wpt/websockets/stream/tentative/backpressure-receive.any.serviceworker.html?wpt_flags=h2 [ Failure Pass ]
+crbug.com/1272203 external/wpt/websockets/stream/tentative/backpressure-send.any.serviceworker.html?wpt_flags=h2 [ Failure Pass ]

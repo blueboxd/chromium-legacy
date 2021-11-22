@@ -44,6 +44,27 @@ WTF::ICUConverterWrapper::converter
 blink::PersistentBase::raw_
 blink::SVGFilterBuilder::last_effect_
 
+# Populated manually - missing |.get()| in not-rewritten platform specific code
+viz::OverlayCandidate::rpdq
+viz::CALayerOverlay::rpdq
+viz::DrawQuad::shared_quad_state
+content::RenderWidgetHostInputEventRouter::wheel_target_
+NavigateParams::navigated_or_inserted_contents
+web_app::WebAppTabStripBrowserTest::App::web_contents
+policy::ChromePolicyConversionsClient::profile_
+
+# Populated manually - reference to raw_ptr in not-rewritten platform specific code
+viz::DirectRenderer::DrawingFrame::current_render_pass
+TabGroupViews::header_
+TabGroupViews::underline_
+TabGroupViews::highlight_
+
+# Populated manually - incompatibilities with tracing in not-rewritten platform specific code
+TabStripModelChange::RemovedTab::contents
+
+# Populated manually - extra .get() added in not-rewritten platform specific code
+SECItem::data
+
 # Populated manually - the rewriter has trouble appending |.get()| inside macros
 # that work with |XDisplay*|.
 extensions::GlobalShortcutListenerX11::x_display_
@@ -185,6 +206,10 @@ device::P256PublicKey::ExtractFromCOSEKey(int32_t, base::span<const uint8_t>, co
 device::RSAPublicKey::ExtractFromCOSEKey(int32_t, base::span<const uint8_t>, const cbor::Value::MapValue &)::COSEKey::kty
 device::RSAPublicKey::ExtractFromCOSEKey(int32_t, base::span<const uint8_t>, const cbor::Value::MapValue &)::COSEKey::n
 device::RSAPublicKey::ExtractFromCOSEKey(int32_t, base::span<const uint8_t>, const cbor::Value::MapValue &)::COSEKey::e
+
+# Populated manually - pointer to Objective-C object
+gfx::ScopedNSGraphicsContextSaveGState::context_
+base::mac::ScopedNSAutoreleasePool::autorelease_pool_
 
 #######
 # BackupRefPtr-specific sections

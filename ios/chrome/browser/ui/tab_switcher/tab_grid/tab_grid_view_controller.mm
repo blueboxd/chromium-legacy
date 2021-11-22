@@ -54,6 +54,9 @@
 #endif
 
 namespace {
+// Not selected tabs opacity in thumbstrip.
+const CGFloat kNotSelectedTabsOpacity = 0.8f;
+
 // Types of configurations of this view controller.
 typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   TabGridConfigurationBottomToolbar = 1,
@@ -682,6 +685,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                                toState:(ViewRevealState)nextViewRevealState {
   self.currentState = currentViewRevealState;
   self.scrollView.scrollEnabled = NO;
+  [self updateNotSelectedTabCellOpacityForState:currentViewRevealState];
+  if (nextViewRevealState != ViewRevealState::Fullscreen) {
+    // Reset tag grid mode, unless the grid is fullscreen.
+    self.tabGridMode = TabGridModeNormal;
+  }
   switch (currentViewRevealState) {
     case ViewRevealState::Hidden: {
       // If the tab grid is just showing up, make sure that the active page is
@@ -711,12 +719,14 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     case ViewRevealState::Peeked:
       break;
     case ViewRevealState::Revealed:
+    case ViewRevealState::Fullscreen:
       self.plusSignButton.alpha = 0;
       break;
   }
 }
 
 - (void)animateViewReveal:(ViewRevealState)nextViewRevealState {
+  [self updateNotSelectedTabCellOpacityForState:nextViewRevealState];
   GridViewController* regularViewController =
       [self gridViewControllerForPage:TabGridPageRegularTabs];
   GridViewController* incognitoViewController =
@@ -753,7 +763,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                                                 .fractionVisibleOfLastItem];
       break;
     }
-    case ViewRevealState::Revealed: {
+    case ViewRevealState::Revealed:
+    case ViewRevealState::Fullscreen: {
       self.foregroundView.alpha = 0;
       self.topToolbar.transform = CGAffineTransformIdentity;
       regularViewController.gridView.transform =
@@ -770,6 +781,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)didAnimateViewReveal:(ViewRevealState)viewRevealState {
+  [self updateNotSelectedTabCellOpacityForState:viewRevealState];
   self.currentState = viewRevealState;
   switch (viewRevealState) {
     case ViewRevealState::Hidden:
@@ -779,8 +791,30 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       // No-op.
       break;
     case ViewRevealState::Revealed:
+    case ViewRevealState::Fullscreen:
       self.scrollView.scrollEnabled = YES;
       [self setInsetForRemoteTabs];
+      break;
+  }
+}
+
+// Sets the expected opacity level for each view revealing state.
+- (void)updateNotSelectedTabCellOpacityForState:(ViewRevealState)state {
+  GridViewController* regularViewController =
+      [self gridViewControllerForPage:TabGridPageRegularTabs];
+  GridViewController* incognitoViewController =
+      [self gridViewControllerForPage:TabGridPageIncognitoTabs];
+  switch (state) {
+    case ViewRevealState::Hidden:
+    case ViewRevealState::Peeked:
+      regularViewController.notSelectedTabCellOpacity = kNotSelectedTabsOpacity;
+      incognitoViewController.notSelectedTabCellOpacity =
+          kNotSelectedTabsOpacity;
+      break;
+    case ViewRevealState::Revealed:
+    case ViewRevealState::Fullscreen:
+      regularViewController.notSelectedTabCellOpacity = 1.0f;
+      incognitoViewController.notSelectedTabCellOpacity = 1.0f;
       break;
   }
 }
@@ -1831,8 +1865,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
         didChangeItemCount:(NSUInteger)count {
   if (self.tabGridMode == TabGridModeSelection) {
     // Exit selection mode if there are no more tabs.
-    if (count == 0)
+    if (count == 0) {
       self.tabGridMode = TabGridModeNormal;
+      [self.delegate showFullscreen:NO];
+    }
     [self updateSelectionModeToolbars];
   }
 
@@ -1908,6 +1944,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // mode.
   if (self.tabGridMode == TabGridModeSelection) {
     self.tabGridMode = TabGridModeNormal;
+    [self.delegate showFullscreen:NO];
     // Records action when user exit the selection mode.
     base::RecordAction(base::UserMetricsAction("MobileTabGridSelectionDone"));
     return;
@@ -1933,6 +1970,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)selectTabsButtonTapped:(id)sender {
   self.tabGridMode = TabGridModeSelection;
+  [self.delegate showFullscreen:YES];
   base::RecordAction(base::UserMetricsAction("MobileTabGridSelectTabs"));
 }
 
@@ -2114,6 +2152,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     didUpdateAuthenticationRequirement:(BOOL)isRequired {
   if (isRequired) {
     self.tabGridMode = TabGridModeNormal;
+    [self.delegate showFullscreen:NO];
   }
 }
 

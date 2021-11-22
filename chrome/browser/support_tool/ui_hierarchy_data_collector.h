@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/support_tool/data_collector.h"
 
 class UiHierarchyDataCollector : public DataCollector {
@@ -24,18 +25,26 @@ class UiHierarchyDataCollector : public DataCollector {
   const PIIMap& GetDetectedPII() override;
 
   void CollectDataAndDetectPII(
-      base::OnceClosure on_data_collected_callback) override;
+      DataCollectorDoneCallback on_data_collected_callback) override;
 
   void ExportCollectedDataWithPII(
       std::set<PIIType> pii_types_to_keep,
       base::FilePath target_directory,
-      base::OnceClosure on_exported_callback) override;
+      DataCollectorDoneCallback on_exported_callback) override;
 
  private:
-  void CollectUiHierarchyData();
+  // Runs `on_data_collected_callback` when data collection is done. Returns an
+  // error message to the callback if the optional `pii_map` is nullopt.
+  void OnDataCollectedAndPIIDetected(
+      DataCollectorDoneCallback on_data_collected_callback,
+      absl::optional<PIIMap> pii_map);
 
-  void WriteOutputFile(base::FilePath target_directory);
+  // Runs `on_exported_callback` when the data export is done. Returns an error
+  // to the callback if `success` is false.
+  void OnDataExportDone(DataCollectorDoneCallback on_exported_callback,
+                        bool success);
 
+  SEQUENCE_CHECKER(sequence_checker_);
   PIIMap pii_map_;
   base::WeakPtrFactory<UiHierarchyDataCollector> weak_ptr_factory_{this};
 };

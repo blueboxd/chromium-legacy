@@ -13,6 +13,7 @@
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/metrics/arc_metrics_constants.h"
 #include "ash/components/arc/metrics/stability_metrics_manager.h"
+#include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/test/test_browser_context.h"
 #include "ash/constants/app_types.h"
 #include "base/metrics/histogram_samples.h"
@@ -20,7 +21,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
-#include "components/arc/session/arc_service_manager.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/test/browser_task_environment.h"
@@ -403,10 +403,20 @@ TEST_F(ArcMetricsServiceTest, ArcAnr) {
   expectation[CreateAnrKey(kAppTypeSystemServer, mojom::AnrType::INPUT)] = 1;
   VerifyAnr(tester, expectation);
 
-  service()->ReportAnr(
-      GetAnr(mojom::AnrSource::SYSTEM_SERVER, mojom::AnrType::SERVICE));
-  expectation[CreateAnrKey(kAppOverall, mojom::AnrType::SERVICE)] = 1;
-  expectation[CreateAnrKey(kAppTypeSystemServer, mojom::AnrType::SERVICE)] = 1;
+  service()->ReportAnr(GetAnr(mojom::AnrSource::SYSTEM_SERVER,
+                              mojom::AnrType::FOREGROUND_SERVICE));
+  expectation[CreateAnrKey(kAppOverall, mojom::AnrType::FOREGROUND_SERVICE)] =
+      1;
+  expectation[CreateAnrKey(kAppTypeSystemServer,
+                           mojom::AnrType::FOREGROUND_SERVICE)] = 1;
+  VerifyAnr(tester, expectation);
+
+  service()->ReportAnr(GetAnr(mojom::AnrSource::SYSTEM_SERVER,
+                              mojom::AnrType::BACKGROUND_SERVICE));
+  expectation[CreateAnrKey(kAppOverall, mojom::AnrType::BACKGROUND_SERVICE)] =
+      1;
+  expectation[CreateAnrKey(kAppTypeSystemServer,
+                           mojom::AnrType::BACKGROUND_SERVICE)] = 1;
   VerifyAnr(tester, expectation);
 
   service()->ReportAnr(
@@ -435,11 +445,12 @@ TEST_F(ArcMetricsServiceTest, ArcAnr) {
   expectation[CreateAnrKey(kAppTypeArcOther, mojom::AnrType::INPUT)] = 1;
   VerifyAnr(tester, expectation);
 
-  service()->ReportAnr(
-      GetAnr(mojom::AnrSource::ARC_APP_LAUNCHER, mojom::AnrType::SERVICE));
-  expectation[CreateAnrKey(kAppOverall, mojom::AnrType::SERVICE)] = 2;
-  expectation[CreateAnrKey(kAppTypeArcAppLauncher, mojom::AnrType::SERVICE)] =
-      1;
+  service()->ReportAnr(GetAnr(mojom::AnrSource::ARC_APP_LAUNCHER,
+                              mojom::AnrType::FOREGROUND_SERVICE));
+  expectation[CreateAnrKey(kAppOverall, mojom::AnrType::FOREGROUND_SERVICE)] =
+      2;
+  expectation[CreateAnrKey(kAppTypeArcAppLauncher,
+                           mojom::AnrType::FOREGROUND_SERVICE)] = 1;
   VerifyAnr(tester, expectation);
 }
 

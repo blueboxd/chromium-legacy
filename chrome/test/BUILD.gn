@@ -1418,7 +1418,6 @@ if (!is_android && !is_fuchsia) {
       "//third_party/polymer/v1_0/components-chromium/iron-test-helpers/mock-interactions.js",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
       "//third_party/simplejson/",
-      "//third_party/tlslite/",
       "//ui/webui/resources/",
     ]
     data += js2gtest_js_libraries
@@ -2841,7 +2840,6 @@ if (!is_android && !is_fuchsia) {
         "../browser/ui/views/extensions/extension_install_friction_dialog_view_browsertest.cc",
         "../browser/ui/views/extensions/extension_installed_bubble_view_browsertest.cc",
         "../browser/ui/views/extensions/extension_uninstall_dialog_view_browsertest.cc",
-        "../browser/ui/views/extensions/extensions_side_panel_controller_browsertest.cc",
         "../browser/ui/views/extensions/extensions_toolbar_browsertest.cc",
         "../browser/ui/views/extensions/extensions_toolbar_browsertest.h",
         "../browser/ui/views/extensions/media_galleries_dialog_views_browsertest.cc",
@@ -3423,7 +3421,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/ui/ash/capture_mode/recording_service_browsertest.cc",
         "../browser/ui/ash/chrome_new_window_client_browsertest.cc",
         "../browser/ui/ash/clipboard_history_browsertest.cc",
-        "../browser/ui/ash/desks_client_browsertest.cc",
+        "../browser/ui/ash/desks_templates/desks_templates_client_browsertest.cc",
         "../browser/ui/ash/keyboard/keyboard_controller_browsertest.cc",
         "../browser/ui/ash/keyboard/keyboard_end_to_end_browsertest.cc",
         "../browser/ui/ash/multi_user/test_multi_user_window_manager.cc",
@@ -3604,6 +3602,7 @@ if (!is_android && !is_fuchsia) {
         "//ash/app_list:test_support",
         "//ash/app_list/model:app_list_model",
         "//ash/components/arc:arc_test_support",
+        "//ash/components/arc/enterprise",
         "//ash/components/attestation",
         "//ash/components/attestation:test_support",
         "//ash/components/audio",
@@ -3699,7 +3698,6 @@ if (!is_android && !is_fuchsia) {
         "//chromeos/ui/wm",
         "//components/app_restore",
         "//components/arc:arc_test_support",
-        "//components/arc/enterprise",
         "//components/crash/content/browser/error_reporting:mock_crash_endpoint",
         "//components/device_event_log",
         "//components/drive",
@@ -5204,7 +5202,6 @@ test("unit_tests") {
     "//google_apis/test/data/",
     "//net/tools/testserver/",
     "//third_party/pywebsocket3/src/mod_pywebsocket/",
-    "//third_party/tlslite/",
     "//tools/metrics/histograms/enums.xml",
   ]
 
@@ -7730,6 +7727,7 @@ test("unit_tests") {
       "../browser/ui/views/extensions/expandable_container_view_unittest.cc",
       "../browser/ui/views/extensions/extensions_menu_item_unittest.cc",
       "../browser/ui/views/extensions/extensions_menu_view_unittest.cc",
+      "../browser/ui/views/extensions/extensions_tabbed_menu_view_unittest.cc",
       "../browser/ui/views/extensions/extensions_toolbar_controls_unittest.cc",
       "../browser/ui/views/extensions/media_galleries_dialog_views_unittest.cc",
       "../browser/ui/views/extensions/settings_overridden_dialog_view_unittest.cc",
@@ -8398,7 +8396,6 @@ if (!is_android && !is_fuchsia) {
       "//third_party/mocha/mocha.js",
       "//third_party/polymer/v1_0/components-chromium/iron-test-helpers/mock-interactions.js",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
-      "//third_party/tlslite/",
       "//tools/metrics/histograms/enums.xml",
       "//ui/webui/resources/html/test_loader.html",
       "//ui/webui/resources/js/",
@@ -9089,7 +9086,6 @@ if (!is_android && !is_fuchsia) {
       "//chrome/test/data/banners/",
       "//net/tools/testserver/",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
-      "//third_party/tlslite/",
     ]
 
     # TODO(phajdan.jr): Only temporary, to make transition easier.

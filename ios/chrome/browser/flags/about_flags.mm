@@ -511,10 +511,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          optimization_guide::features::
              kRemoteOptimizationGuideFetchingAnonymousDataConsent)},
-    {"legacy-tls-interstitial",
-     flag_descriptions::kIOSLegacyTLSInterstitialsName,
-     flag_descriptions::kIOSLegacyTLSInterstitialsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kIOSLegacyTLSInterstitial)},
 #if BUILDFLAG(IOS_SCREEN_TIME_ENABLED)
     {"screen-time-integration-ios",
      flag_descriptions::kScreenTimeIntegrationName,
@@ -840,13 +836,6 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
   // Set some sample policy values for testing if EnableSamplePolicies is set to
   // true.
   if ([defaults boolForKey:@"EnableSamplePolicies"]) {
-    // Define sample policies to enable. If some of the sample policies are
-    // still marked as experimental (future_on), they must be explicitly
-    // allowed, otherwise they will be ignored in Beta and Stable. Add them to
-    // the |allowed_experimental_policies| array.
-    [allowed_experimental_policies addObjectsFromArray:@[
-    ]];
-
     [testing_policies addEntriesFromDictionary:@{
       base::SysUTF8ToNSString(policy::key::kAutofillAddressEnabled) : @NO,
 
@@ -885,7 +874,6 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
     NSString* sync_policy_key =
         base::SysUTF8ToNSString(policy::key::kSyncDisabled);
     [testing_policies addEntriesFromDictionary:@{sync_policy_key : @YES}];
-    [allowed_experimental_policies addObject:sync_policy_key];
   }
 
   // SyncTypesListDisabled policy.
@@ -918,17 +906,14 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
     [testing_policies addEntriesFromDictionary:@{
       Sync_types_list_disabled_key : Sync_types_list_disabled_values
     }];
-    [allowed_experimental_policies addObject:Sync_types_list_disabled_key];
   }
 
-  // If an incognito mode availability is set, add the policy key to the list of
-  // allowed experimental policies, and set the value.
+  // If an incognito mode availability is set, set the value.
   NSString* incognito_policy_key =
       base::SysUTF8ToNSString(policy::key::kIncognitoModeAvailability);
   NSInteger incognito_mode_availability =
       [defaults integerForKey:incognito_policy_key];
   if (incognito_mode_availability) {
-    [allowed_experimental_policies addObject:incognito_policy_key];
     [testing_policies addEntriesFromDictionary:@{
       incognito_policy_key : @(incognito_mode_availability),
     }];
@@ -953,7 +938,6 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
     --signin_policy_mode;
     DCHECK(signin_policy_mode >= 0);
 
-    [allowed_experimental_policies addObject:kSigninPolicyKey];
     [testing_policies addEntriesFromDictionary:@{
       kSigninPolicyKey : @(signin_policy_mode),
     }];

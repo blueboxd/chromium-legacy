@@ -294,6 +294,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableSkipTouchEventFilter, blink::features::kSkipTouchEventFilter},
     {wf::EnableSubresourceWebBundles, features::kSubresourceWebBundles},
     {wf::EnableTextFragmentAnchor, blink::features::kTextFragmentAnchor},
+    {wf::EnableCSSSelectorFragmentAnchor,
+     blink::features::kCssSelectorFragmentAnchor},
     {wf::EnableBackfaceVisibilityInterop,
      blink::features::kBackfaceVisibilityInterop},
     {wf::EnableUserActivationSameOriginVisibility,
@@ -406,6 +408,10 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kAutoExpandDetailsElement},
           {"UserAgentClientHintFullVersionList",
            blink::features::kUserAgentClientHintFullVersionList},
+          {"ClientHintsMetaHTTPEquivAcceptCH",
+           blink::features::kClientHintsMetaHTTPEquivAcceptCH},
+          {"ClientHintsMetaNameAcceptCH",
+           blink::features::kClientHintsMetaNameAcceptCH},
       };
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(

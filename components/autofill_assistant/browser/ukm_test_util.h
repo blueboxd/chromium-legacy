@@ -46,6 +46,7 @@ const char kInChromeTriggerAction[] = "InChromeTriggerAction";
 const char kTriggerConditionTimingMs[] = "TriggerConditionEvaluationMs";
 const char kCompleteContactProfilesCount[] = "CompleteContactProfilesCount";
 const char kContactModified[] = "ContactModified";
+const char kInitialContactFieldsStatus[] = "InitialContactFieldsStatus";
 const char kIncompleteContactProfilesCount[] = "IncompleteContactProfilesCount";
 const char kCompleteCreditCardsCount[] = "CompleteCreditCardsCount";
 const char kIncompleteCreditCardsCount[] = "IncompleteCreditCardsCount";
@@ -55,6 +56,7 @@ const char kIncompleteShippingProfilesCount[] =
     "IncompleteShippingProfilesCount";
 const char kShippingModified[] = "ShippingModified";
 const char kResult[] = "Result";
+const char kTimeTakenMs[] = "TimeTakenMs";
 
 // Convenience accessors for UKM metrics.
 std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry>
@@ -73,6 +75,8 @@ std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry>
 GetUkmCompleteContactProfilesCount(ukm::TestAutoSetUkmRecorder& ukm_recorder);
 std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry>
 GetUkmIncompleteContactProfilesCount(ukm::TestAutoSetUkmRecorder& ukm_recorder);
+std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry>
+GetUkmInitialContactFieldsStatus(ukm::TestAutoSetUkmRecorder& ukm_recorder);
 std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry> GetUkmContactModified(
     ukm::TestAutoSetUkmRecorder& ukm_recorder);
 std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry>
@@ -90,6 +94,8 @@ std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry> GetUkmShippingModified(
     ukm::TestAutoSetUkmRecorder& ukm_recorder);
 std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry>
 GetUkmCollectUserDataResult(ukm::TestAutoSetUkmRecorder& ukm_recorder);
+std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry> GetUkmTimeTakenMs(
+    ukm::TestAutoSetUkmRecorder& ukm_recorder);
 
 // Variant containing all UKM enums that we currently record/test.
 // NOTE: When adding entries, remember to also modify kUkmEnumMetricNames!

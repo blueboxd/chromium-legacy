@@ -398,6 +398,10 @@ const base::Feature kStorageAccessAPI{"StorageAccessAPI",
 const base::Feature kTextFragmentAnchor{"TextFragmentAnchor",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables CSS selector fragment anchors. https://crbug.com/1252460
+const base::Feature kCssSelectorFragmentAnchor{
+    "CssSelectorFragmentAnchor", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // File handling integration. https://crbug.com/829689
 const base::Feature kFileHandlingAPI{"FileHandlingAPI",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
@@ -864,7 +868,7 @@ const base::Feature kMediaStreamTrackUseConfigMaxFrameRate{
 // When enabled, WebRTC's worker thread will run on a thread context distinct
 // from the WebRTC signaling and network threads.
 const base::Feature kWebRtcDistinctWorkerThread{
-    "WebRtcDistinctWorkerThread", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebRtcDistinctWorkerThread", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, the SubresourceFilter receives calls from the ResourceLoader
 // to perform additional checks against any aliases found from DNS CNAME records
@@ -1130,6 +1134,14 @@ const base::Feature kAutoExpandDetailsElement{"AutoExpandDetailsElement",
 // Enables fetching the code cache earlier in navigation.
 const base::Feature kEarlyCodeCache{"EarlyCodeCache",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Allow use of an http-equiv meta tag to set client hints.
+const base::Feature kClientHintsMetaHTTPEquivAcceptCH{
+    "ClientHintsMetaHTTPEquivAcceptCH", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Allow use of a named meta tag to set client hints.
+const base::Feature kClientHintsMetaNameAcceptCH{
+    "ClientHintsMetaNameAcceptCH", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allow third-party delegation of client hint information.
 const base::Feature kClientHintThirdPartyDelegation{

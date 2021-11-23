@@ -28,9 +28,11 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/startup/startup_types.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
+#include "chrome/browser/ui/webui/whats_new/whats_new_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
@@ -133,10 +135,12 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
 StartupTabs StartupTabProviderImpl::GetWelcomeBackTabs(
     Profile* profile,
     StartupBrowserCreator* browser_creator,
-    bool process_startup) const {
+    chrome::startup::IsProcessStartup process_startup) const {
   StartupTabs tabs;
-  if (!process_startup || !browser_creator)
+  if (process_startup == chrome::startup::IsProcessStartup::kNo ||
+      !browser_creator) {
     return tabs;
+  }
   if (browser_creator->welcome_back_page() &&
       CanShowWelcome(SyncServiceFactory::IsSyncAllowed(profile),
                      profile->IsSupervised(),
@@ -367,10 +371,8 @@ StartupTabs StartupTabProviderImpl::GetPostCrashTabsForState(
 StartupTabs StartupTabProviderImpl::GetNewFeaturesTabsForState(
     bool whats_new_enabled) {
   StartupTabs tabs;
-  if (whats_new_enabled) {
-    GURL url(chrome::kChromeUIWhatsNewURL);
-    tabs.emplace_back(net::AppendQueryParameter(url, "auto", "true"), false);
-  }
+  if (whats_new_enabled)
+    tabs.emplace_back(whats_new::GetWebUIStartupURL(), false);
   return tabs;
 }
 #endif

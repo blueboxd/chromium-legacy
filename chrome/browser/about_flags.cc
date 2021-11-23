@@ -2603,7 +2603,6 @@ constexpr FeatureEntry::FeatureVariation
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr char kPersonalizationHubInternalName[] = "personalization-hub";
-constexpr char kWallpaperWebUIInternalName[] = "wallpaper-webui";
 constexpr char kWallpaperFullScreenPreviewInternalName[] =
     "wallpaper-fullscreen-preview";
 constexpr char kWallpaperPerDeskName[] = "per-desk-wallpaper";
@@ -3984,6 +3983,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kToolbarMicIphAndroid,
                                     kIphMicToolbarVariations,
                                     "ToolbarMicIphAndroid")},
+    {"theme-refactor-android", flag_descriptions::kThemeRefactorAndroidName,
+     flag_descriptions::kThemeRefactorAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kThemeRefactorAndroid)},
 #endif  // OS_ANDROID
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,
@@ -4941,6 +4943,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSidePanelDragAndDropDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSidePanelDragAndDrop)},
 
+    {flag_descriptions::kUnifiedSidePanelFlagId,
+     flag_descriptions::kUnifiedSidePanelName,
+     flag_descriptions::kUnifiedSidePanelDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kUnifiedSidePanel)},
+
     {"tab-outlines-in-low-contrast-themes",
      flag_descriptions::kTabOutlinesInLowContrastThemesName,
      flag_descriptions::kTabOutlinesInLowContrastThemesDescription, kOsDesktop,
@@ -5429,6 +5436,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReduceHorizontalFlingVelocityName,
      flag_descriptions::kReduceHorizontalFlingVelocityDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kReduceHorizontalFlingVelocity)},
+
+    {"enable-css-selector-fragment-anchor",
+     flag_descriptions::kEnableCssSelectorFragmentAnchorName,
+     flag_descriptions::kEnableCssSelectorFragmentAnchorDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kCssSelectorFragmentAnchor)},
 
     {"enable-resampling-input-events",
      flag_descriptions::kEnableResamplingInputEventsName,
@@ -7088,9 +7100,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPersonalizationHubName,
      flag_descriptions::kPersonalizationHubDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kPersonalizationHub)},
-    {kWallpaperWebUIInternalName, flag_descriptions::kWallpaperWebUIName,
-     flag_descriptions::kWallpaperWebUIDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kWallpaperWebUI)},
     {kWallpaperFullScreenPreviewInternalName,
      flag_descriptions::kWallpaperFullScreenPreviewName,
      flag_descriptions::kWallpaperFullScreenPreviewDescription, kOsCrOS,

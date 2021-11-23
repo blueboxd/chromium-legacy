@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_menu_constants.h"
@@ -59,7 +60,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/app_restore/app_launch_info.h"
 #include "components/app_restore/full_restore_utils.h"
-#include "components/arc/session/arc_service_manager.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/services/app_service/public/cpp/instance.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
@@ -815,15 +815,13 @@ void ExtensionAppsChromeOs::RegisterInstance(extensions::AppWindow* app_window,
     DCHECK(base::Contains(app_window_to_aura_window_, app_window));
     window = app_window_to_aura_window_[app_window];
   }
-  std::vector<std::unique_ptr<apps::Instance>> deltas;
   auto instance = std::make_unique<apps::Instance>(
       app_window->extension_id(),
       apps::Instance::InstanceKey::ForWindowBasedApp(window));
   instance->SetLaunchId(GetLaunchId(app_window));
   instance->UpdateState(new_state, base::Time::Now());
   instance->SetBrowserContext(app_window->browser_context());
-  deltas.push_back(std::move(instance));
-  instance_registry_->OnInstances(std::move(deltas));
+  instance_registry_->OnInstance(std::move(instance));
 }
 
 content::WebContents* ExtensionAppsChromeOs::LaunchImpl(

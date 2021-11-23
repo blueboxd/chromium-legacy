@@ -107,6 +107,7 @@ static_library("arc") {
 
   deps = [
     "//ash",
+    "//ash/components/arc/enterprise",
     "//ash/components/arc/input_overlay/resources:resources_grit",
     "//ash/components/audio",
     "//ash/constants",
@@ -132,7 +133,6 @@ static_library("arc") {
     "//chromeos/ui/base",
     "//chromeos/ui/frame",
     "//components/account_id",
-    "//components/arc/enterprise",
     "//components/arc/vector_icons",
     "//components/exo",
     "//components/google/core/common",
@@ -186,8 +186,8 @@ static_library("prefs") {
   defines = [ "ARC_IMPLEMENTATION" ]
 
   deps = [
+    "//ash/components/arc/session:arc_base_enums",
     "//build:chromeos_buildflags",
-    "//components/arc/session:arc_base_enums",
     "//components/guest_os:prefs",
     "//components/prefs",
   ]
@@ -239,10 +239,10 @@ static_library("arc_base") {
 
   public_deps = [
     ":arc_base_utils",
+    "//ash/components/arc/session",
+    "//ash/components/arc/session:arc_base_enums",
+    "//ash/components/arc/session:connection_holder",
     "//components/arc/mojom",
-    "//components/arc/session",
-    "//components/arc/session:arc_base_enums",
-    "//components/arc/session:connection_holder",
     "//dbus",
   ]
 }
@@ -276,8 +276,8 @@ static_library("notification_test_support") {
   ]
 
   public_deps = [
+    "//ash/components/arc/session:connection_holder",
     "//components/arc/mojom:notifications",
-    "//components/arc/session:connection_holder",
   ]
 }
 
@@ -359,9 +359,9 @@ static_library("arc_test_support") {
   ]
 
   deps = [
+    "//ash/components/arc/enterprise",
     "//ash/constants",
     "//base",
-    "//components/arc/enterprise",
     "//components/keyed_service/content",
     "//components/prefs:test_support",
     "//components/user_prefs",
@@ -430,6 +430,8 @@ source_set("unit_tests") {
   # TODO(b/129295708): Clean up unused deps. Update users of this target.
   deps = [
     "//ash/components/arc:arc_test_support",
+    "//ash/components/arc/enterprise",
+    "//ash/components/arc/video_accelerator:common",
     "//ash/constants",
     "//ash/keyboard/ui",
     "//ash/public/cpp",
@@ -452,9 +454,7 @@ source_set("unit_tests") {
     "//chromeos/policy",
     "//chromeos/ui/frame",
     "//components/account_id",
-    "//components/arc/enterprise",
     "//components/arc/media_session",
-    "//components/arc/video_accelerator:common",
     "//components/exo",
     "//components/exo:test_support",
     "//components/keyed_service/content",

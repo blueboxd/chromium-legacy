@@ -691,6 +691,9 @@ extern const char kReduceHorizontalFlingVelocityDescription[];
 extern const char kRetailCouponsName[];
 extern const char kRetailCouponsDescription[];
 
+extern const char kEnableCssSelectorFragmentAnchorName[];
+extern const char kEnableCssSelectorFragmentAnchorDescription[];
+
 extern const char kEnableResamplingInputEventsName[];
 extern const char kEnableResamplingInputEventsDescription[];
 extern const char kEnableResamplingScrollEventsName[];
@@ -1493,6 +1496,10 @@ extern const char kTurnOffStreamingMediaCachingOnBatteryDescription[];
 extern const char kTurnOffStreamingMediaCachingAlwaysName[];
 extern const char kTurnOffStreamingMediaCachingAlwaysDescription[];
 
+extern const char kUnifiedSidePanelFlagId[];
+extern const char kUnifiedSidePanelName[];
+extern const char kUnifiedSidePanelDescription[];
+
 extern const char kUnifiedPasswordManagerAndroidName[];
 extern const char kUnifiedPasswordManagerAndroidDescription[];
 
@@ -1522,9 +1529,6 @@ extern const char kVp9kSVCHWDecodingDescription[];
 
 extern const char kWalletServiceUseSandboxName[];
 extern const char kWalletServiceUseSandboxDescription[];
-
-extern const char kWallpaperWebUIName[];
-extern const char kWallpaperWebUIDescription[];
 
 extern const char kWallpaperFullScreenPreviewName[];
 extern const char kWallpaperFullScreenPreviewDescription[];
@@ -2032,6 +2036,9 @@ extern const char kSharingHubLinkToggleDescription[];
 
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
+
+extern const char kThemeRefactorAndroidName[];
+extern const char kThemeRefactorAndroidDescription[];
 
 extern const char kToolbarIphAndroidName[];
 extern const char kToolbarIphAndroidDescription[];

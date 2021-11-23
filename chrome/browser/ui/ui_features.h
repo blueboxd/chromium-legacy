@@ -45,11 +45,6 @@ extern const base::Feature kEvDetailsInPageInfo;
 
 extern const base::Feature kExtensionsMenuAccessControl;
 
-extern const base::Feature kExtensionsSidePanel;
-
-// The extension id of the extension hosted in the left aligned side panel.
-extern const base::FeatureParam<std::string> kExtensionsSidePanelId;
-
 extern const base::Feature kForceSignInReauth;
 
 extern const base::Feature kProminentDarkModeActiveTabTitle;
@@ -181,6 +176,8 @@ extern const base::FeatureParam<int> kTabSearchRecentlyClosedTabCountThreshold;
 // Determines how screenshots of the toolbar uses Software or Hardware drawing.
 // Works on Android 10+.
 extern const base::Feature kToolbarUseHardwareBitmapDraw;
+
+extern const base::Feature kUnifiedSidePanel;
 
 extern const base::Feature kWebUIBubblePerProfilePersistence;
 

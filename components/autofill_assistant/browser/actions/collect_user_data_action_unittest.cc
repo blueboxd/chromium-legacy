@@ -49,6 +49,16 @@ const char kFakePassword[] = "example_password";
 
 const char kMemoryLocation[] = "address";
 
+class TimeTicksOverride {
+ public:
+  static base::TimeTicks Now() { return now_ticks_; }
+
+  static base::TimeTicks now_ticks_;
+};
+
+// static
+base::TimeTicks TimeTicksOverride::now_ticks_ = base::TimeTicks::Now();
+
 MATCHER_P(MatchingAutofillVariant, guid, "") {
   if (absl::holds_alternative<const autofill::AutofillProfile*>(arg)) {
     return absl::get<const autofill::AutofillProfile*>(arg)->guid() == guid;
@@ -3418,7 +3428,7 @@ TEST_F(CollectUserDataActionTest, LogsUkmCreditCardsCount) {
                   ukm::kInvalidSourceId, kIncompleteCreditCardsCount, 2)}));
 }
 
-TEST_F(CollectUserDataActionTest, LogsUkmmMoreThanFiveProfilesCount) {
+TEST_F(CollectUserDataActionTest, LogsUkmMoreThanFiveProfilesCount) {
   ON_CALL(mock_personal_data_manager_, IsAutofillProfileEnabled)
       .WillByDefault(Return(true));
 
@@ -3465,7 +3475,9 @@ TEST_F(CollectUserDataActionTest, LogsUkmmMoreThanFiveProfilesCount) {
           static_cast<int64_t>(Metrics::UserDataEntryCount::FIVE_OR_MORE))}));
 }
 
-TEST_F(CollectUserDataActionTest, LogUkmSuccesss) {
+TEST_F(CollectUserDataActionTest, LogUkmSuccess) {
+  base::subtle::ScopedTimeClockOverrides overrides(
+      nullptr, &TimeTicksOverride::Now, nullptr);
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
   collect_user_data_proto->set_privacy_notice_text("privacy");
@@ -3478,6 +3490,7 @@ TEST_F(CollectUserDataActionTest, LogUkmSuccesss) {
   ON_CALL(mock_action_delegate_, CollectUserData(_))
       .WillByDefault([&](CollectUserDataOptions* collect_user_data_options) {
         user_data_.terms_and_conditions_ = ACCEPTED;
+        TimeTicksOverride::now_ticks_ += base::Seconds(4);
 
         std::move(collect_user_data_options->confirm_callback)
             .Run(&user_data_, &user_model_);
@@ -3494,9 +3507,14 @@ TEST_F(CollectUserDataActionTest, LogUkmSuccesss) {
       ElementsAreArray({ToHumanReadableEntry(
           source_id_, kResult,
           static_cast<int64_t>(Metrics::CollectUserDataResult::SUCCESS))}));
+  EXPECT_THAT(
+      GetUkmTimeTakenMs(ukm_recorder_),
+      ElementsAreArray({ToHumanReadableEntry(source_id_, kTimeTakenMs, 4000)}));
 }
 
 TEST_F(CollectUserDataActionTest, LogUkmFailure) {
+  base::subtle::ScopedTimeClockOverrides overrides(
+      nullptr, &TimeTicksOverride::Now, nullptr);
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
   collect_user_data_proto->set_privacy_notice_text("privacy");
@@ -3510,6 +3528,7 @@ TEST_F(CollectUserDataActionTest, LogUkmFailure) {
     CollectUserDataAction action(&mock_action_delegate_, action_proto);
     ON_CALL(mock_action_delegate_, CollectUserData(_))
         .WillByDefault([&](CollectUserDataOptions* collect_user_data_options) {
+          TimeTicksOverride::now_ticks_ += base::Seconds(3);
           // The continue button is never pressed.
         });
     action.ProcessAction(callback_.Get());
@@ -3522,6 +3541,87 @@ TEST_F(CollectUserDataActionTest, LogUkmFailure) {
       ElementsAreArray({ToHumanReadableEntry(
           source_id_, kResult,
           static_cast<int64_t>(Metrics::CollectUserDataResult::FAILURE))}));
+  EXPECT_THAT(
+      GetUkmTimeTakenMs(ukm_recorder_),
+      ElementsAreArray({ToHumanReadableEntry(source_id_, kTimeTakenMs, 3000)}));
+}
+
+TEST_F(CollectUserDataActionTest, LogsUkmInitialSelectionFieldBitArray) {
+  ON_CALL(mock_personal_data_manager_, IsAutofillProfileEnabled)
+      .WillByDefault(Return(true));
+
+  autofill::AutofillProfile incomplete;
+  autofill::test::SetProfileInfo(&incomplete, "Adam", "", "",
+                                 "adam.west@gmail.com", "", "Baker Street 221b",
+                                 "", "", "", "", "", "");
+
+  int expected_bitarray =
+      Metrics::AutofillAssistantProfileFields::NAME_FIRST |
+      Metrics::AutofillAssistantProfileFields::NAME_FULL |
+      Metrics::AutofillAssistantProfileFields::EMAIL_ADDRESS |
+      Metrics::AutofillAssistantProfileFields::ADDRESS_HOME_LINE1;
+
+  ON_CALL(mock_personal_data_manager_, GetProfiles)
+      .WillByDefault(
+          Return(std::vector<autofill::AutofillProfile*>({&incomplete})));
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+            // We can't submit here since the user data is not complete.
+          }));
+
+  ActionProto action_proto;
+  auto* user_data = action_proto.mutable_collect_user_data();
+  user_data->set_request_terms_and_conditions(false);
+  auto* contact_details = user_data->mutable_contact_details();
+  contact_details->set_request_payer_name(true);
+  contact_details->set_request_payer_email(true);
+  contact_details->set_contact_details_name("contact");
+
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    action.ProcessAction(callback_.Get());
+
+    // The CollectUserDataAction destructor is called, this simulates the user
+    // closing the bottom sheet or the tab.
+  }
+
+  EXPECT_THAT(GetUkmInitialContactFieldsStatus(ukm_recorder_),
+              ElementsAreArray({ToHumanReadableEntry(
+                  ukm::kInvalidSourceId, kInitialContactFieldsStatus,
+                  expected_bitarray)}));
+}
+
+TEST_F(CollectUserDataActionTest, NoDefaultProfileLogsAllFieldsAsEmpty) {
+  ON_CALL(mock_personal_data_manager_, IsAutofillProfileEnabled)
+      .WillByDefault(Return(true));
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+            // We can't submit here since the user data is not complete.
+          }));
+
+  ActionProto action_proto;
+  auto* user_data = action_proto.mutable_collect_user_data();
+  user_data->set_request_terms_and_conditions(false);
+  auto* contact_details = user_data->mutable_contact_details();
+  contact_details->set_request_payer_name(true);
+  contact_details->set_request_payer_email(true);
+  contact_details->set_contact_details_name("contact");
+
+  {
+    CollectUserDataAction action(&mock_action_delegate_, action_proto);
+    action.ProcessAction(callback_.Get());
+
+    // The CollectUserDataAction destructor is called, this simulates the user
+    // closing the bottom sheet or the tab.
+  }
+
+  EXPECT_THAT(GetUkmInitialContactFieldsStatus(ukm_recorder_),
+              ElementsAreArray({ToHumanReadableEntry(
+                  ukm::kInvalidSourceId, kInitialContactFieldsStatus, 0)}));
 }
 
 }  // namespace

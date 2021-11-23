@@ -283,6 +283,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTabToGTSAnimation,
     &kTestDefaultDisabled,
     &kTestDefaultEnabled,
+    &kThemeRefactorAndroid,
     &kToolbarIphAndroid,
     &kToolbarMicIphAndroid,
     &kTrustedWebActivityLocationDelegation,
@@ -582,7 +583,7 @@ const base::Feature kDownloadProgressInfoBar{"DownloadProgressInfoBar",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDownloadProgressMessage{"DownloadProgressMessage",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDownloadFileProvider{"DownloadFileProvider",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -758,6 +759,9 @@ const base::Feature kTestDefaultDisabled{"TestDefaultDisabled",
 
 const base::Feature kTestDefaultEnabled{"TestDefaultEnabled",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kThemeRefactorAndroid{"ThemeRefactorAndroid",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kToolbarIphAndroid{"ToolbarIphAndroid",
                                        base::FEATURE_ENABLED_BY_DEFAULT};

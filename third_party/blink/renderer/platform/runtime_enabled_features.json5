@@ -383,6 +383,14 @@
       status: "experimental",
     },
     {
+      name: "ClientHintsMetaHTTPEquivAcceptCH",
+      status: "stable",
+    },
+    {
+      name: "ClientHintsMetaNameAcceptCH",
+      status: "experimental",
+    },
+    {
       name: "ClipboardCustomFormats",
       status: "experimental",
     },
@@ -753,6 +761,10 @@
     // https://drafts.csswg.org/scroll-animations-1/#scroll-timeline-at-rule
     {
       name: "CSSScrollTimeline",
+      status: "experimental",
+    },
+    {
+      name: "CSSSelectorFragmentAnchor",
       status: "experimental",
     },
     {
@@ -2411,8 +2423,6 @@
     },
     {
       name: "WebAppLinkCapturing",
-      origin_trial_feature_name: "WebAppLinkCapturing",
-      origin_trial_os: ["chromeos"],
     },
     {
       // This flag enables the Manifest parser to handle id field.

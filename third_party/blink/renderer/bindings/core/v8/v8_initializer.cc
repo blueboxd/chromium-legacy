@@ -76,7 +76,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -748,30 +748,6 @@ V8PerIsolateData::V8ContextSnapshotMode GetV8ContextSnapshotMode() {
   }
 #endif  // USE_V8_CONTEXT_SNAPSHOT
   return V8PerIsolateData::V8ContextSnapshotMode::kDontUseSnapshot;
-}
-
-void AddHistogramSample(void* hist, int sample) {
-  base::Histogram* histogram = static_cast<base::Histogram*>(hist);
-  histogram->Add(sample);
-}
-
-void* CreateHistogram(const char* name, int min, int max, size_t buckets) {
-  // Each histogram has an implicit '0' bucket (for underflow), so we can always
-  // bump the minimum to 1.
-  DCHECK_LE(0, min);
-  min = std::max(1, min);
-
-  // For boolean histograms, always include an overflow bucket [2, infinity).
-  if (max == 1 && buckets == 2) {
-    max = 2;
-    buckets = 3;
-  }
-
-  const std::string histogram_name =
-      Platform::Current()->GetNameForHistogram(name);
-  return base::Histogram::FactoryGet(
-      histogram_name, min, max, static_cast<uint32_t>(buckets),
-      base::Histogram::kUmaTargetedHistogramFlag);
 }
 
 }  // namespace

@@ -1558,7 +1558,6 @@ test("content_browsertests") {
       "//ppapi/tests/test_page.css",
       "//ppapi/tests/test_url_loader_data/",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
-      "//third_party/tlslite/",
     ]
   }
 
@@ -2643,7 +2642,7 @@ test("content_unittests") {
       "//third_party/blink/public/common",
       "//third_party/blink/public/common:font_unique_name_table_proto",
       "//third_party/iaccessible2",
-      "//ui/base/cursor",
+      "//ui/base",
     ]
     libs = [
       "dwrite.lib",

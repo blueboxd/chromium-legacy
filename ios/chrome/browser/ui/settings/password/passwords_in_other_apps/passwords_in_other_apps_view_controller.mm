@@ -15,6 +15,7 @@
 #include "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/button_util.h"
+#import "ios/chrome/common/ui/util/image_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #include "ios/chrome/grit/ios_google_chrome_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -69,7 +70,9 @@ CGFloat const kButtonHorizontalMargin = 4;
 @property(nonatomic, strong) UINavigationBarAppearance* defaultAppearance;
 @end
 
-@interface PasswordsInOtherAppsViewController () <UITextViewDelegate>
+@interface PasswordsInOtherAppsViewController () <
+    UIAdaptivePresentationControllerDelegate,
+    UITextViewDelegate>
 
 @end
 
@@ -601,6 +604,13 @@ CGFloat const kButtonHorizontalMargin = 4;
     l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORDS_IN_OTHER_APPS_STEP_3),
     l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORDS_IN_OTHER_APPS_STEP_4)
   ];
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (BOOL)presentationControllerShouldDismiss:
+    (UIPresentationController*)presentationController {
+  return YES;
 }
 
 #pragma mark - UITextViewDelegate

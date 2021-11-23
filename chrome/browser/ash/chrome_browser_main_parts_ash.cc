@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ash/components/arc/arc_util.h"
+#include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
 #include "ash/components/audio/audio_devices_pref_handler_impl.h"
 #include "ash/components/audio/cras_audio_handler.h"
 #include "ash/components/device_activity/device_activity_controller.h"
@@ -157,11 +158,13 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/metrics/structured/chrome_structured_metrics_recorder.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/startup_data.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/ash/assistant/assistant_browser_delegate_impl.h"
 #include "chrome/browser/ui/ash/assistant/assistant_state_client.h"
@@ -205,7 +208,6 @@
 #include "chromeos/tpm/install_attributes.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 #include "components/account_id/account_id.h"
-#include "components/arc/enterprise/arc_data_snapshotd_manager.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_service.h"
@@ -292,7 +294,9 @@ namespace internal {
 // Wrapper class for initializing D-Bus services and shutting them down.
 class DBusServices {
  public:
-  explicit DBusServices(const content::MainFunctionParams& parameters) {
+  explicit DBusServices(
+      const content::MainFunctionParams& parameters,
+      std::unique_ptr<base::FeatureList::Accessor> feature_list_accessor) {
     PowerPolicyController::Initialize(PowerManagerClient::Get());
 
     dbus::Bus* system_bus = DBusThreadManager::Get()->IsUsingFakes()
@@ -351,7 +355,8 @@ class DBusServices {
         system_bus, chromeos::kChromeFeaturesServiceName,
         dbus::ObjectPath(chromeos::kChromeFeaturesServicePath),
         CrosDBusService::CreateServiceProviderList(
-            std::make_unique<ChromeFeaturesServiceProvider>()));
+            std::make_unique<ChromeFeaturesServiceProvider>(
+                std::move(feature_list_accessor))));
 
     printers_service_ = CrosDBusService::Create(
         system_bus, chromeos::kPrintersServiceName,
@@ -538,7 +543,11 @@ class DBusServices {
 ChromeBrowserMainPartsAsh::ChromeBrowserMainPartsAsh(
     content::MainFunctionParams parameters,
     StartupData* startup_data)
-    : ChromeBrowserMainPartsLinux(std::move(parameters), startup_data) {}
+    : ChromeBrowserMainPartsLinux(std::move(parameters), startup_data),
+      feature_list_accessor_(
+          startup_data->chrome_feature_list_creator()
+              ->GetAndClearFeatureListAccessor(
+                  base::PassKey<ChromeBrowserMainPartsAsh>())) {}
 
 ChromeBrowserMainPartsAsh::~ChromeBrowserMainPartsAsh() {
   // To be precise, logout (browser shutdown) is not yet done, but the
@@ -620,7 +629,8 @@ void ChromeBrowserMainPartsAsh::PostCreateMainMessageLoop() {
   // (ComponentUpdaterServiceProvider).
   g_browser_process->platform_part()->InitializeCrosComponentManager();
 
-  dbus_services_ = std::make_unique<internal::DBusServices>(parameters());
+  dbus_services_ = std::make_unique<internal::DBusServices>(
+      parameters(), std::move(feature_list_accessor_));
 
   // Need to be done after LoginState has been initialized in DBusServices().
   ::memory::MemoryKillsMonitor::Initialize();

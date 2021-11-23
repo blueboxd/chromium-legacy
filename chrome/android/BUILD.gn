@@ -288,6 +288,7 @@ java_group("delegate_public_impl_java") {
     "//chrome/browser/policy/android:delegate_public_impl_java",
     "//chrome/browser/ui/android/theme:delegate_public_impl_java",
     "//components/externalauth/android:google_delegate_public_impl_java",
+    "//components/language/android:ulp_delegate_public_java",
   ]
   if (enable_new_feed_hooks) {
     deps += [ "//chrome/browser/feed/android:hooks_public_impl_java" ]
@@ -497,7 +498,7 @@ android_library("chrome_java") {
     "//components/infobars/core:infobar_enums_java",
     "//components/installedapp/android:java",
     "//components/javascript_dialogs/android:java",
-    "//components/language/android:language_bridge_java",
+    "//components/language/android:java",
     "//components/location/android:location_java",
     "//components/location/android:settings_java",
     "//components/media_router/browser/android:java",
@@ -589,6 +590,7 @@ android_library("chrome_java") {
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/android_deps:com_google_guava_listenablefuture_java",
     "//third_party/android_deps:dagger_java",
+    "//third_party/android_deps:guava_android_java",
     "//third_party/android_deps:javax_inject_javax_inject_java",
     "//third_party/android_deps:material_design_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
@@ -1120,7 +1122,6 @@ junit_binary("chrome_junit_tests") {
     "//third_party/android_deps:dagger_java",
     "//third_party/android_deps:espresso_java",
     "//third_party/android_deps:guava_android_java",
-    "//third_party/android_deps:material_design_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
@@ -1486,6 +1487,8 @@ android_library("chrome_test_java") {
     "//components/infobars/core:infobar_enums_java",
     "//components/installedapp/android:javatests",
     "//components/javascript_dialogs/android:java",
+    "//components/language/android:java",
+    "//components/language/android:javatests",
     "//components/location/android:location_java",
     "//components/media_router/browser/android:java",
     "//components/media_router/browser/android:test_support_java",

@@ -98,7 +98,7 @@
 #include "third_party/blink/renderer/core/url/url_search_params.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
@@ -449,8 +449,10 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   // Check if |url| is allowed to run JavaScript. If not, client hints are not
   // attached to the requests that initiate on the render side.
-  if (!AllowScriptFromSourceWithoutNotifying(request.Url()))
+  if (!AllowScriptFromSourceWithoutNotifying(
+          request.Url(), GetContentSettingsClient(), GetSettings())) {
     return;
+  }
 
   // When the runtime flag "FeaturePolicyForClientHints" is enabled, permissions
   // policy is used to enable hints for all subresources, based on the policy of
@@ -526,19 +528,23 @@ void FrameFetchContext::SetFirstPartyCookie(ResourceRequest& request) {
 }
 
 bool FrameFetchContext::AllowScriptFromSource(const KURL& url) const {
-  if (AllowScriptFromSourceWithoutNotifying(url))
+  if (AllowScriptFromSourceWithoutNotifying(url, GetContentSettingsClient(),
+                                            GetSettings())) {
     return true;
+  }
   WebContentSettingsClient* settings_client = GetContentSettingsClient();
   if (settings_client)
     settings_client->DidNotAllowScript();
   return false;
 }
 
+// static
 bool FrameFetchContext::AllowScriptFromSourceWithoutNotifying(
-    const KURL& url) const {
-  Settings* settings = GetSettings();
+    const KURL& url,
+    WebContentSettingsClient* settings_client,
+    Settings* settings) {
   bool allow_script = !settings || settings->GetScriptEnabled();
-  if (auto* settings_client = GetContentSettingsClient())
+  if (settings_client)
     allow_script = settings_client->AllowScriptFromSource(allow_script, url);
   return allow_script;
 }

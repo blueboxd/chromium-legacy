@@ -52,16 +52,27 @@ uploading your change for review.  These are checked by presubmit scripts.
 
 <enum name="AboutThisSiteStatus">
   <summary>Tracks status of AboutThisSite queries.</summary>
-  <int value="0" label="kValid">kValid</int>
-  <int value="1" label="kNoResult">kNoResult</int>
-  <int value="2" label="kMissingSiteInfo">kMissingSiteInfo</int>
-  <int value="3" label="kEmptySiteData">kEmptySiteData</int>
-  <int value="4" label="kIncompleteDescription">kIncompleteDescription</int>
-  <int value="5" label="kIncompleteSource">kIncompleteSource</int>
-  <int value="6" label="kInvalidSource">kInvalidSource</int>
-  <int value="7" label="kIncompleteTimeStamp">kIncompleteTimeStamp</int>
-  <int value="8" label="kInvalidTimeStamp">kInvalidTimeStamp</int>
-  <int value="9" label="kUnknown">kUnknown</int>
+  <int value="0" label="kValid">A valid response.</int>
+  <int value="1" label="kNoResult">No result received.</int>
+  <int value="2" label="kMissingSiteInfo">SiteInfo is missing.</int>
+  <int value="3" label="kEmptySiteInfo">SiteInfo is empty.</int>
+  <int value="4" label="kIncompleteDescription (deprecated)">
+    kIncompleteDescription - deprecated.
+  </int>
+  <int value="5" label="kIncompleteSource">Source is incomplete.</int>
+  <int value="6" label="kInvalidSource">Source URL is invalid.</int>
+  <int value="7" label="kIncompleteTimeStamp">Timestamp is incomplete.</int>
+  <int value="8" label="kInvalidTimeStamp">Timestamp is invalid.</int>
+  <int value="9" label="kUnknown">
+    User has not opted in to Optimization guide.
+  </int>
+  <int value="10" label="kMissingDescription">Description is missing.</int>
+  <int value="11" label="kMissingDescriptionDescription">
+    Description field in description is missing.
+  </int>
+  <int value="12" label="kMissingDescriptionName">Name is missing.</int>
+  <int value="13" label="kMissingDescriptionLang">Lang is missing.</int>
+  <int value="14" label="kMissingDescriptionSource">Source is missing.</int>
 </enum>
 
 <enum name="AcceleratedFixedRootBackground">
@@ -3709,11 +3720,12 @@ Unknown properties are collapsed to zero. -->
   <summary>Defines ARC ANR types.</summary>
   <int value="0" label="Unknown">ANR type cannot be determined.</int>
   <int value="1" label="Input">ANR while handling input event dispatching.</int>
-  <int value="2" label="Service">ANR in service.</int>
+  <int value="2" label="ForegroundService">ANR in foreground service.</int>
   <int value="3" label="Broadcast">ANR handling broadcast.</int>
   <int value="4" label="ContentProvider">ANR from ContentProvider.</int>
   <int value="5" label="AppRequested">ANR requested explicitly by app.</int>
   <int value="6" label="Process">ANR in process.</int>
+  <int value="7" label="BackgroundService">ANR in background service.</int>
 </enum>
 
 <enum name="ArcAppShortcutStatus">
@@ -5557,6 +5569,12 @@ others/histograms.xml -->
   <int value="1" label="Foreground installation succeeded"/>
   <int value="2" label="Foreground installation failed"/>
   <int value="3" label="Already installed"/>
+</enum>
+
+<enum name="AutofillAssistantGetClientTokenResult">
+  <int value="0" label="Called"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Failure"/>
 </enum>
 
 <enum name="AutofillAssistantInChromeTriggerAction">
@@ -27623,6 +27641,7 @@ Called by update_document_policy_enum.py.-->
   <int value="7" label="Yes in browser seen in renderer"/>
   <int value="8" label="Yes in browser seen in renderer with Page"/>
   <int value="9" label="Yes in browser seen in ACK to browser"/>
+  <int value="10" label="Yes in browser while disconnected"/>
 </enum>
 
 <enum name="EventPreFilterResult">
@@ -50093,6 +50112,7 @@ from previous Chrome versions.
   <int value="-1010588306" label="SlideTopChromeWithPageScrolls:disabled"/>
   <int value="-1008511612" label="EnableCustomMacPaperSizes:disabled"/>
   <int value="-1007961880" label="PrivacySandboxSettings:enabled"/>
+  <int value="-1007856269" label="CssSelectorFragmentAnchor:disabled"/>
   <int value="-1005937042" label="ArcVmBalloonPolicy:enabled"/>
   <int value="-1005164075" label="ContextualSearchTranslations:enabled"/>
   <int value="-1002537430" label="HudDisplayForPerformanceMetrics:disabled"/>
@@ -50338,6 +50358,7 @@ from previous Chrome versions.
   <int value="-823165021" label="MaterialDesignUserMenu:enabled"/>
   <int value="-822712881"
       label="ContextualSearchThinWebViewImplementation:enabled"/>
+  <int value="-822237807" label="UnifiedSidePanel:enabled"/>
   <int value="-821635312" label="EyeDropper:enabled"/>
   <int value="-820041355" label="enable-transition-compositing"/>
   <int value="-819165158" label="ScrollableTabStripButtons:enabled"/>
@@ -50571,6 +50592,7 @@ from previous Chrome versions.
   <int value="-645455405" label="MacViewsNativeDialogs:enabled"/>
   <int value="-643217597" label="EduCoexistenceConsentLog:enabled"/>
   <int value="-642346675" label="DesktopPWAsAttentionBadgingCrOS:enabled"/>
+  <int value="-641846393" label="WebViewLegacyTlsSupport:enabled"/>
   <int value="-641820371" label="EnableCustomMacPaperSizes:enabled"/>
   <int value="-641719457" label="disable-compositor-touch-hit-testing"/>
   <int value="-641423897" label="CompositeAfterPaint:disabled"/>
@@ -52260,6 +52282,7 @@ from previous Chrome versions.
   <int value="644084236" label="CloseButtonsInactiveTabs:enabled"/>
   <int value="644189071" label="PermissionsBlacklist:enabled"/>
   <int value="646252875" label="ReadItLaterInMenu:enabled"/>
+  <int value="646269021" label="UnifiedSidePanel:disabled"/>
   <int value="646738320" label="disable-gesture-editing"/>
   <int value="647662142" label="use-angle"/>
   <int value="649111851" label="MidiManagerCros:enabled"/>
@@ -52529,6 +52552,7 @@ from previous Chrome versions.
       label="DesktopPWAsLocalUpdatingThrottlePersistence:disabled"/>
   <int value="845659238" label="DevicePosture:enabled"/>
   <int value="846951416" label="CopylessPaste:enabled"/>
+  <int value="848005486" label="WebViewLegacyTlsSupport:disabled"/>
   <int value="848324390" label="enable-lock-screen-apps"/>
   <int value="849980462" label="RemoveNtpFakebox:disabled"/>
   <int value="850779988" label="allow-popups-during-page-unload"/>
@@ -53651,6 +53675,7 @@ from previous Chrome versions.
   <int value="1698089268" label="WebXRMultiGpu:disabled"/>
   <int value="1699180023" label="PaymentRequestOptionalTotal:disabled"/>
   <int value="1699182601" label="DockedMagnifier:disabled"/>
+  <int value="1699290689" label="CssSelectorFragmentAnchor:enabled"/>
   <int value="1700117535" label="MediaFeedsBackgroundFetching:disabled"/>
   <int value="1700394127" label="OverlayScrollbar:disabled"/>
   <int value="1701972870" label="NTPSnippetsIncreasedVisibility:enabled"/>
@@ -90781,6 +90806,8 @@ Called by update_scheduler_enums.py.-->
   <int value="25" label="Chooser object deleted"/>
   <int value="26" label="Reset certificate decisions clicked"/>
   <int value="27" label="Store info clicked"/>
+  <int value="28" label="AboutThisSite section clicked"/>
+  <int value="29" label="AboutThisSite source link clicked"/>
 </enum>
 
 <enum name="WebSiteSettingsAllSitesAction">
@@ -91713,6 +91740,7 @@ Called by update_scheduler_enums.py.-->
   <int value="2" label="Load failed and error page whas shown"/>
   <int value="3" label="Load failed and was redirected to NTP"/>
   <int value="4" label="Load failed and tab was closed"/>
+  <int value="5" label="Load failed in preload and tab was never opened"/>
 </enum>
 
 <enum name="WhitelistedDownloadType">

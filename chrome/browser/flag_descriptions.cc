@@ -1202,6 +1202,12 @@ const char kReduceHorizontalFlingVelocityDescription[] =
     "Reduces the velocity of horizontal flings to 20\% of their original"
     "velocity.";
 
+const char kEnableCssSelectorFragmentAnchorName[] =
+    "Enables CSS selector fragment anchors";
+const char kEnableCssSelectorFragmentAnchorDescription[] =
+    "Similar to text directives, CSS selector directives can be specified "
+    "in a url which is to be scrolled into view and highlighted.";
+
 const char kRetailCouponsName[] = "Enable to fetch for retail coupons";
 const char kRetailCouponsDescription[] =
     "Allow to fetch retail coupons for consented users";
@@ -2586,6 +2592,10 @@ const char kTurnOffStreamingMediaCachingAlwaysDescription[] =
     "Reduces disk activity during media playback, which can result in "
     "power savings.";
 
+const char kUnifiedSidePanelFlagId[] = "unified-side-panel";
+const char kUnifiedSidePanelName[] = "Unified side panel";
+const char kUnifiedSidePanelDescription[] = "Revamp the side panel experience.";
+
 const char kUnifiedPasswordManagerAndroidName[] =
     "Google Mobile Services for passwords";
 const char kUnifiedPasswordManagerAndroidDescription[] =
@@ -2663,11 +2673,6 @@ const char kWalletServiceUseSandboxName[] =
     "Use Google Payments sandbox servers";
 const char kWalletServiceUseSandboxDescription[] =
     "For developers: use the sandbox service for Google Payments API calls.";
-
-const char kWallpaperWebUIName[] = "Enable new wallpaper experience";
-const char kWallpaperWebUIDescription[] =
-    "Enables the wallpaper picker "
-    "in ChromeOS Settings";
 
 const char kWallpaperFullScreenPreviewName[] =
     "Enable wallpaper full screen preview UI";
@@ -3544,6 +3549,10 @@ const char kStrictSiteIsolationDescription[] =
     "platform, enterprise policy, or field trial. See also "
     "#site-isolation-trial-opt-out for how to disable site isolation for "
     "testing.";
+
+const char kThemeRefactorAndroidName[] = "Theme refactor on Android";
+const char kThemeRefactorAndroidDescription[] =
+    "Enables the theme refactoring on Android.";
 
 const char kToolbarIphAndroidName[] = "Enable Toolbar IPH on Android";
 const char kToolbarIphAndroidDescription[] =

@@ -578,7 +578,7 @@
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/794372
         'swarming': {
-          'shards': 31,
+          'shards': 40,
         },
       },
       'Linux ChromiumOS MSan Tests': {
@@ -1193,12 +1193,6 @@
         'swarming': {
           'shards': 15,
         },
-      },
-      # https://crbug.com/1077181
-      'Linux Tests (Wayland)': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_content_browsertests.filter',
-        ],
       },
       'Mac ASan 64 Tests (1)': { # https://crbug.com/1200640
         'experiment_percentage': 100,
@@ -2006,7 +2000,12 @@
     'modifications': {
       'android-11-x86-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.media_unittests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11_12.media_unittests.filter',
+        ],
+      },
+      'android-12-x64-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11_12.media_unittests.filter',
         ],
       },
       'android-marshmallow-x86-rel-non-cq': {

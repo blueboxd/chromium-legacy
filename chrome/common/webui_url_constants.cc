@@ -349,6 +349,7 @@ const char kChromeUIUrgentPasswordExpiryNotificationUrl[] =
 const char kOsUICroshURL[] = "os://crosh";
 const char kOsUIFileManagerURL[] = "os://file-manager";
 const char kOsUITerminalURL[] = "os://terminal";
+const char kOsUIAboutURL[] = "os://about";
 const char kOsUIAccountManagerErrorURL[] = "os://account-manager-error";
 const char kOsUIAccountManagerWelcomeURL[] = "os://account-manager-welcome";
 const char kOsUIAccountMigrationWelcomeURL[] = "os://account-migration-welcome";
@@ -370,7 +371,6 @@ const char kOsUIDeviceLogUrl[] = "os://device-log";
 const char kOsUIDiagnosticsAppURL[] = "os://diagnostics";
 const char kOsUIDriveInternalsUrl[] = "os://drive-internals";
 const char kOsUIEmojiPickerURL[] = "os://emoji-picker";
-const char kOsUIFlagsURL[] = "os://flags";
 const char kOsUIGpuURL[] = "os://gpu";
 const char kOsUIHistogramsURL[] = "os://histograms";
 const char kOsUIIntenetConfigDialogURL[] = "os://internet-config-dialog";
@@ -449,6 +449,7 @@ bool IsSystemWebUIHost(base::StringPiece host) {
 const char kChromeUIAppDisabledHost[] = "app-disabled";
 const char kChromeUIOSSettingsHost[] = "os-settings";
 const char kChromeUIOSSettingsURL[] = "chrome://os-settings/";
+const char kOsUIFlagsURL[] = "os://flags";
 #endif
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)

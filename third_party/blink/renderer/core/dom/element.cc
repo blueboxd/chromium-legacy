@@ -4018,13 +4018,15 @@ void Element::ChildrenChanged(const ChildrenChange& change) {
                            change.sibling_after_change);
 
   if (!change.ByParser() && change.IsChildElementChange()) {
+    Element* changed_element = To<Element>(change.sibling_changed);
     CheckForSiblingStyleChanges(
         change.type == ChildrenChangeType::kElementRemoved
             ? kSiblingElementRemoved
             : kSiblingElementInserted,
-        To<Element>(change.sibling_changed), change.sibling_before_change,
+        changed_element, change.sibling_before_change,
         change.sibling_after_change);
-    GetDocument().GetStyleEngine().ChildElementInsertedOrRemoved(this);
+    GetDocument().GetStyleEngine().SubtreeInsertedOrRemoved(this,
+                                                            *changed_element);
   }
 
   if (ShadowRoot* shadow_root = GetShadowRoot())
@@ -4036,7 +4038,8 @@ void Element::FinishParsingChildren() {
   CheckForEmptyStyleChange(this, this);
   CheckForSiblingStyleChanges(kFinishedParsingChildren, nullptr, lastChild(),
                               nullptr);
-  GetDocument().GetStyleEngine().ChildElementInsertedOrRemoved(parentElement());
+  GetDocument().GetStyleEngine().ElementInsertedOrRemoved(parentElement(),
+                                                          *this);
 }
 
 AttrNodeList* Element::GetAttrNodeList() {
@@ -5329,8 +5332,14 @@ const ComputedStyle* Element::EnsureOwnComputedStyle(
   style_request.layout_parent_override = layout_parent_style;
   style_request.pseudo_argument = pseudo_argument;
 
+  StyleRecalcContext child_recalc_context = style_recalc_context;
+  if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled() &&
+      element_style->IsContainerForContainerQueries()) {
+    child_recalc_context.container = this;
+  }
+
   scoped_refptr<ComputedStyle> result =
-      GetDocument().GetStyleResolver().ResolveStyle(this, style_recalc_context,
+      GetDocument().GetStyleResolver().ResolveStyle(this, child_recalc_context,
                                                     style_request);
   DCHECK(result);
   result->SetIsEnsuredInDisplayNone();

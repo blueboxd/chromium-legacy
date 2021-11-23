@@ -252,13 +252,13 @@ const base::Feature kAutofillServerTypeTakesPrecedence{
 // GetIdentifierForRefill() to identify forms during refills.
 // TODO(crbug/896689): Remove once experiment is finished.
 const base::Feature kAutofillRefillWithRendererIds{
-    "AutofillRefillWithRendererIds", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillRefillWithRendererIds", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, Autofill will use FormRendererIds instead of
 // unique_name() to create unique section names.
 // TODO(crbug/896689): Remove once experiment is finished.
 const base::Feature kAutofillNameSectionsWithRendererIds{
-    "AutofillNameSectionsWithRendererIds", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillNameSectionsWithRendererIds", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, Autofill suggestions are displayed in the keyboard accessory
 // instead of the regular popup.
@@ -414,6 +414,11 @@ const base::Feature kAutofillUseConsistentPopupSettingsIcons{
 // implementation for section splitting or not. See https://crbug.com/1076175.
 const base::Feature kAutofillUseNewSectioningMethod{
     "AutofillUseNewSectioningMethod", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether or not the profile icon is shown in front of an address
+// suggestion.
+const base::Feature kAutofillUseAddressSuggestionIcon{
+    "AutofillUseAddressSuggestionIcon", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, to get the unowned control elements we call
 // Document::UnassociatedListedElements(). This way we can reduce the number of

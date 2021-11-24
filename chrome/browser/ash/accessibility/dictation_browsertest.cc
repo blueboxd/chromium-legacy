@@ -455,7 +455,6 @@ IN_PROC_BROWSER_TEST_P(DictationTest, UserEndsDictation) {
   EXPECT_EQ(kFinalSpeechResult16, input_context_handler_->last_commit_text());
 }
 
-// TODO(crbug.com/1216111): add a DictationExtensionTest variant of this test.
 IN_PROC_BROWSER_TEST_P(DictationTest, UserEndsDictationWhenChromeVoxEnabled) {
   AccessibilityManager* manager = GetManager();
 
@@ -723,6 +722,12 @@ class DictationExtensionTest : public DictationBaseTest {
     return input_context_handler_->update_preedit_text_call_count();
   }
 
+  // Retrieves the number of times commit text is updated.
+  int GetCommitTextCallCount() {
+    DCHECK(input_context_handler_);
+    return input_context_handler_->commit_text_call_count();
+  }
+
   void WaitForCompositionText(const std::u16string& value) {
     DCHECK(input_context_handler_);
     SuccessWaiter waiter(
@@ -786,6 +791,16 @@ IN_PROC_BROWSER_TEST_P(DictationExtensionTest, EntersFinalizedSpeech) {
                                                kFinalSpeechResult);
   ToggleDictationWithKeystroke();
   WaitForRecognitionStopped();
+}
+
+IN_PROC_BROWSER_TEST_P(DictationExtensionTest,
+                       EntersInterimSpeechWhenToggledOff) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFakeSpeechResultAndWait(kFinalSpeechResult, /*is_final=*/false);
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+  WaitForTextAreaValue(kFinalSpeechResult);
 }
 
 IN_PROC_BROWSER_TEST_P(DictationExtensionTest, EntersMultipleFinalizedStrings) {
@@ -867,6 +882,34 @@ IN_PROC_BROWSER_TEST_P(DictationExtensionTest,
   ASSERT_EQ(0, GetUpdatePreeditTextCallCount());
   GetManager()->ToggleDictation();
   WaitForRecognitionStopped();
+}
+
+IN_PROC_BROWSER_TEST_P(DictationExtensionTest,
+                       UserEndsDictationWhenChromeVoxEnabled) {
+  EnableChromeVox();
+  EXPECT_TRUE(GetManager()->IsSpokenFeedbackEnabled());
+  InstallMockInputContextHandler();
+
+  GetManager()->ToggleDictation();
+  WaitForRecognitionStarted();
+  SendFakeSpeechResultAndWait(kFinalSpeechResult, /*is_final=*/false);
+  GetManager()->ToggleDictation();
+  WaitForRecognitionStopped();
+
+  WaitForCommitText(kFinalSpeechResult16);
+  ASSERT_EQ(0, GetUpdatePreeditTextCallCount());
+}
+
+// Tests that composition and commit text are not updated if the user
+// toggles dictation and no speech results are processed.
+IN_PROC_BROWSER_TEST_P(DictationExtensionTest, UserEndsDictationBeforeSpeech) {
+  InstallMockInputContextHandler();
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+  ASSERT_EQ(0, GetUpdatePreeditTextCallCount());
+  EXPECT_EQ(0, GetCommitTextCallCount());
 }
 
 // Ensures that the correct metrics are recorded when Dictation is toggled.

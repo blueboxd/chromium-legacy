@@ -141,6 +141,9 @@ build_recipe(
 build_recipe(
     name = "recipe:chromium/compilator",
     bootstrappable = True,
+    experiments = {
+        "luci.recipes.use_python3": 1,
+    },
 )
 
 build_recipe(
@@ -149,6 +152,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_afl",
+    use_python3 = True,
 )
 
 build_recipe(

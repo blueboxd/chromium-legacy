@@ -207,6 +207,7 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
     parser.add_argument('--additional-apk',
                         action='append',
                         type=os.path.realpath,
+                        default=[],
                         help='List of additional apk\'s to install')
     parser.add_argument('--browser-activity-name',
                         action='store',

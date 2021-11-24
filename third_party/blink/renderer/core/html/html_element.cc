@@ -446,8 +446,12 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        nullptr},
       {html_names::kOncloseAttr, kNoWebFeature, event_type_names::kClose,
        nullptr},
+      {html_names::kOncontextlostAttr, kNoWebFeature,
+       event_type_names::kContextlost, nullptr},
       {html_names::kOncontextmenuAttr, kNoWebFeature,
        event_type_names::kContextmenu, nullptr},
+      {html_names::kOncontextrestoredAttr, kNoWebFeature,
+       event_type_names::kContextrestored, nullptr},
       {html_names::kOncopyAttr, kNoWebFeature, event_type_names::kCopy,
        nullptr},
       {html_names::kOncuechangeAttr, kNoWebFeature,
@@ -751,14 +755,18 @@ const AtomicString& HTMLElement::EventNameForAttributeName(
 void HTMLElement::AttributeChanged(const AttributeModificationParams& params) {
   Element::AttributeChanged(params);
   if (params.name == html_names::kDisabledAttr &&
+      IsFormAssociatedCustomElement() &&
       params.old_value.IsNull() != params.new_value.IsNull()) {
-    if (IsFormAssociatedCustomElement()) {
-      EnsureElementInternals().DisabledAttributeChanged();
-      if (params.reason == AttributeModificationReason::kDirectly &&
-          IsDisabledFormControl() &&
-          AdjustedFocusedElementInTreeScope() == this)
-        blur();
-    }
+    EnsureElementInternals().DisabledAttributeChanged();
+    if (params.reason == AttributeModificationReason::kDirectly &&
+        IsDisabledFormControl() && AdjustedFocusedElementInTreeScope() == this)
+      blur();
+    return;
+  }
+  if (params.name == html_names::kReadonlyAttr &&
+      IsFormAssociatedCustomElement() &&
+      params.old_value.IsNull() != params.new_value.IsNull()) {
+    EnsureElementInternals().ReadonlyAttributeChanged();
     return;
   }
   if (params.reason != AttributeModificationReason::kDirectly)

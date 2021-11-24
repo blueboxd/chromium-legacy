@@ -3820,7 +3820,8 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.sandbox_linux_unittests.filter"
         ],
         "merge": {
           "args": [
@@ -5794,7 +5795,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M96",
-              "revision": "version:96.0.4664.71"
+              "revision": "version:96.0.4664.72"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -6058,7 +6059,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M96",
-              "revision": "version:96.0.4664.71"
+              "revision": "version:96.0.4664.72"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",

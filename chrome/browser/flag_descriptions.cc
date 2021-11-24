@@ -3829,10 +3829,6 @@ const char kCalculateNativeWinOcclusionDescription[] =
     "Calculate window occlusion on Windows will be used in the future "
     "to throttle and potentially unload foreground tabs in occluded windows";
 
-const char kD3D11VideoDecoderName[] = "D3D11 Video Decoder";
-const char kD3D11VideoDecoderDescription[] =
-    "Enables D3D11VideoDecoder for hardware accelerated video decoding.";
-
 const char kEnableIncognitoShortcutOnDesktopName[] =
     "Enable Incognito Desktop Shortcut";
 const char kEnableIncognitoShortcutOnDesktopDescription[] =
@@ -5202,6 +5198,12 @@ const char kWebuiDarkModeName[] = "WebUI dark mode";
 const char kWebuiDarkModeDescription[] =
     "Allows dark mode usage in WebUI. Note that this does not necessary enable "
     "dark mode, which is enabled via the #enable-force-dark flag.";
+
+const char kWifiConnectMacAddressRandomizationName[] =
+    "MAC address randomization";
+const char kWifiConnectMacAddressRandomizationDescription[] =
+    "Randomize MAC address when connecting to unmanaged (non-enterprise) "
+    "WiFi networks.";
 
 const char kWifiSyncAllowDeletesName[] =
     "Sync removal of Wi-Fi network configurations";

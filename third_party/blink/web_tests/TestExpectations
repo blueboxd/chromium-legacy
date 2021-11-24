@@ -5440,10 +5440,6 @@ crbug.com/1033852 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/fetch/api/i
 crbug.com/1034374 http/tests/devtools/tracing/timeline-worker-events.js [ Failure Pass ]
 crbug.com/1034513 [ Win7 ] virtual/stable/fast/dom/Window/window-resize-contents.html [ Failure Pass ]
 
-# Assertion errors need to be fixed
-crbug.com/1034492 http/tests/devtools/unit/filtered-item-selection-dialog-filtering.js [ Failure Pass ]
-crbug.com/1034492 http/tests/devtools/unit/filtered-list-widget-providers.js [ Failure Pass ]
-
 # Sheriff 2019-12-23
 crbug.com/1036626 http/tests/devtools/tracing/tracing-record-input-events.js [ Failure Pass ]
 
@@ -5825,9 +5821,6 @@ crbug.com/924472 external/wpt/css/css-transforms/transform-box/cssbox-fill-box.h
 crbug.com/924472 external/wpt/css/css-transforms/transform-box/svgbox-border-box.html [ Failure ]
 crbug.com/924472 external/wpt/css/css-transforms/transform-box/svgbox-content-box.html [ Failure ]
 crbug.com/924472 external/wpt/css/css-transforms/transform-box/svgbox-stroke-box.html [ Failure ]
-
-# Temporarily disable test to allow devtools-frontend changes
-crbug.com/1095733 http/tests/devtools/tabbed-pane-closeable-persistence.js [ Skip ]
 
 # Sheriff 2020-06-17
 crbug.com/1095969 [ Mac ] fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Failure Pass ]
@@ -7348,6 +7341,13 @@ crbug.com/1272203 external/wpt/websockets/stream/tentative/backpressure-send.any
 
 # Times out flakily on all platforms. Previously marked slow, crbug.com/874695.
 crbug.com/1272801 http/tests/permissions/chromium/test-request-sharedworker.html [ Pass Timeout ]
+
+# Flaky with setTimeout without clamp
+crbug.com/1272954 external/wpt/app-history/currentchange-event/currentchange-app-history-navigate-same-doc.html [ Failure Pass ]
+crbug.com/1272954 external/wpt/app-history/currentchange-event/currentchange-app-history-back-forward-same-doc.html [ Failure Pass ]
+crbug.com/1272954 external/wpt/app-history/currentchange-event/currentchange-history-back-same-doc.html [ Failure Pass ]
+crbug.com/1272954 external/wpt/app-history/navigate-event/navigate-history-back-after-fragment.html [ Failure Pass ]
+crbug.com/1272955 http/tests/devtools/extensions/extensions-timeline-api.js [ Failure Pass ]
 
 # Sheriff 2021-11-23
 crbug.com/1270963 wpt_internal/fenced_frame/create-credential.https.html [ Skip ]

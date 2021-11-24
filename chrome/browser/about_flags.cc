@@ -3169,6 +3169,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowFeedbackReportQuestionnaireName,
      flag_descriptions::kShowFeedbackReportQuestionnaireDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kShowFeedbackReportQuestionnaire)},
+    {"wifi-connect-mac-address-randomization",
+     flag_descriptions::kWifiConnectMacAddressRandomizationName,
+     flag_descriptions::kWifiConnectMacAddressRandomizationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         chromeos::features::kWifiConnectMacAddressRandomization)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_CHROMEOS)
@@ -5567,12 +5572,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIntentPickerPWAPersistenceDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kIntentPickerPWAPersistence)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if defined(OS_WIN)
-    {"d3d11-video-decoder", flag_descriptions::kD3D11VideoDecoderName,
-     flag_descriptions::kD3D11VideoDecoderDescription, kOsWin,
-     FEATURE_VALUE_TYPE(media::kD3D11VideoDecoder)},
-#endif
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     // TODO(b/180051795): remove kOsLinux when lacros-chrome switches to

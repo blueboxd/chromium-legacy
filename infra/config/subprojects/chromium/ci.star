@@ -2086,6 +2086,7 @@ ci.chromiumos_builder(
 
 ci.chromiumos_builder(
     name = "lacros-amd64-generic-rel",
+    branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "lacros|x64",
         short_name = "rel",
@@ -2097,6 +2098,7 @@ ci.chromiumos_builder(
 
 ci.chromiumos_builder(
     name = "lacros-arm-generic-rel",
+    branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "lacros|arm",
         short_name = "arm",

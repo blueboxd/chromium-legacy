@@ -2199,9 +2199,6 @@ extern const char kSCTAuditingDescription[];
 extern const char kCalculateNativeWinOcclusionName[];
 extern const char kCalculateNativeWinOcclusionDescription[];
 
-extern const char kD3D11VideoDecoderName[];
-extern const char kD3D11VideoDecoderDescription[];
-
 extern const char kEnableIncognitoShortcutOnDesktopName[];
 extern const char kEnableIncognitoShortcutOnDesktopDescription[];
 
@@ -3008,6 +3005,9 @@ extern const char kWebAppsCrosapiDescription[];
 
 extern const char kWebuiDarkModeName[];
 extern const char kWebuiDarkModeDescription[];
+
+extern const char kWifiConnectMacAddressRandomizationName[];
+extern const char kWifiConnectMacAddressRandomizationDescription[];
 
 extern const char kWifiSyncAllowDeletesName[];
 extern const char kWifiSyncAllowDeletesDescription[];

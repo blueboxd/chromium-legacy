@@ -77,14 +77,14 @@ class MODULES_EXPORT PeerConnectionTracker
       LocalFrame* frame,
       mojo::PendingReceiver<mojom::blink::PeerConnectionManager> receiver);
 
-  enum Source { SOURCE_LOCAL, SOURCE_REMOTE };
+  enum Source { kSourceLocal, kSourceRemote };
 
   enum Action {
-    ACTION_SET_LOCAL_DESCRIPTION,
-    ACTION_SET_LOCAL_DESCRIPTION_IMPLICIT,
-    ACTION_SET_REMOTE_DESCRIPTION,
-    ACTION_CREATE_OFFER,
-    ACTION_CREATE_ANSWER
+    kActionSetLocalDescription,
+    kActionSetLocalDescriptionImplicit,
+    kActionSetRemoteDescription,
+    kActionCreateOffer,
+    kActionCreateAnswer
   };
 
   // In Plan B: "Transceiver" refers to RTCRtpSender or RTCRtpReceiver.
@@ -247,6 +247,10 @@ class MODULES_EXPORT PeerConnectionTracker
   // Sends an update when getUserMedia resolveѕ with a stream.
   virtual void TrackGetUserMediaSuccess(UserMediaRequest* user_media_request,
                                         MediaStream* stream);
+  // Sends an update when getUserMedia fails with an error.
+  virtual void TrackGetUserMediaFailure(UserMediaRequest* user_media_request,
+                                        const String& error,
+                                        const String& error_message);
 
   // Sends a new fragment on an RtcEventLog.
   virtual void TrackRtcEventLogWrite(RTCPeerConnectionHandler* pc_handler,

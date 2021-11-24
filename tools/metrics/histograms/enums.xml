@@ -37007,6 +37007,8 @@ Called by update_permissions_policy_enum.py.-->
 </enum>
 
 <enum name="FileManagerVolumeType">
+<!-- Keep this in sync with the JS value: QuickViewUma.VolumeType. -->
+
   <int value="0" label="Google Drive"/>
   <int value="1" label="Download Folder"/>
   <int value="2" label="Removable Disk"/>
@@ -37018,6 +37020,7 @@ Called by update_permissions_policy_enum.py.-->
   <int value="8" label="Android Files"/>
   <int value="9" label="Android Documents Provider"/>
   <int value="10" label="SMB File Share"/>
+  <int value="11" label="System internal"/>
 </enum>
 
 <enum name="FileManagerZipHandlerType">
@@ -49883,7 +49886,6 @@ from previous Chrome versions.
   <int value="-1179917414" label="DefaultChromeAppUninstallSync:disabled"/>
   <int value="-1178350793" label="RemoteCopyReceiver:disabled"/>
   <int value="-1177802205" label="enable-hosted-app-quit-notification"/>
-  <int value="-1177230990" label="PrefetchAndroidFonts:enabled"/>
   <int value="-1176748003"
       label="FramebustingNeedsSameOriginOrUserGesture:disabled"/>
   <int value="-1176493523" label="enable-md-extensions"/>
@@ -50384,6 +50386,7 @@ from previous Chrome versions.
   <int value="-806480547" label="SyncDeviceInfoInTransportMode:enabled"/>
   <int value="-805927945" label="CrOSEnforceSystemAecNsAgc:disabled"/>
   <int value="-805480822" label="RemoteCopyImageNotification:disabled"/>
+  <int value="-804520763" label="WifiConnectMacAddressRandomization:enabled"/>
   <int value="-803233334" label="AutofillRefreshStyleAndroid:disabled"/>
   <int value="-803206774" label="TabbedAppOverflowMenuActionBar:disabled"/>
   <int value="-802348444" label="disable-site-engagement-service"/>
@@ -50518,7 +50521,6 @@ from previous Chrome versions.
   <int value="-705212373" label="IncognitoNtpRevamp:disabled"/>
   <int value="-704459022" label="ContinuousSearch:enabled"/>
   <int value="-704232562" label="UseMonitorColorSpace:enabled"/>
-  <int value="-703552662" label="PrefetchAndroidFonts:disabled"/>
   <int value="-702477233" label="ContentFullscreen:enabled"/>
   <int value="-700762821" label="RequestDesktopSiteForTablets:disabled"/>
   <int value="-700300613" label="use-fake-device-for-media-stream:disabled"/>
@@ -52348,6 +52350,7 @@ from previous Chrome versions.
   <int value="689577480" label="vr-shell-experimental-rendering"/>
   <int value="690185633" label="NonValidatingReloadOnNormalReload:disabled"/>
   <int value="691020108" label="NTPCondensedTileLayout:disabled"/>
+  <int value="691982483" label="WifiConnectMacAddressRandomization:disabled"/>
   <int value="693012666" label="QuickUnlockPin:disabled"/>
   <int value="693545401"
       label="AutofillEnableInfoBarAccountIndicationFooter:enabled"/>
@@ -67734,6 +67737,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Missing"/>
   <int value="2" label="Read error"/>
   <int value="3" label="Parse error"/>
+  <int value="4" label="No-op"/>
 </enum>
 
 <enum name="PersistentProtoWriteStatus">
@@ -81564,6 +81568,17 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6"
       label="Abandoned because no content was visible at the beginning of
              startup"/>
+</enum>
+
+<enum name="StartupTabPreloaderLoadDecisionCause">
+  <int value="0" label="DisabledByIntent"/>
+  <int value="1" label="Incognito"/>
+  <int value="2" label="IntentIgnored"/>
+  <int value="3" label="NoUrl"/>
+  <int value="4" label="NoTabCreator"/>
+  <int value="5" label="WrongTabCreator"/>
+  <int value="6" label="DisabledByFeature"/>
+  <int value="7" label="AllSatisfied"/>
 </enum>
 
 <enum name="StartupTemperature">

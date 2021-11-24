@@ -2674,11 +2674,6 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
   if (HasRareData()) {
     ElementRareData* data = GetElementRareData();
 
-    if (data->GetEditContext()) {
-      data->GetEditContext()->DetachElement(this);
-      data->SetEditContext(nullptr);
-    }
-
     data->ClearRestyleFlags();
 
     if (ElementAnimations* element_animations = data->GetElementAnimations())
@@ -2748,6 +2743,21 @@ void Element::AttachLayoutTree(AttachContext& context) {
     children_context.parent = nullptr;
   }
   children_context.use_previous_in_flow = true;
+
+  if (ChildStyleRecalcBlockedByDisplayLock()) {
+    // Since we block style recalc on descendants of this node due to display
+    // locking, none of its descendants should have the NeedsReattachLayoutTree
+    // bit set.
+    DCHECK(!ChildNeedsReattachLayoutTree());
+    // If an element is locked we shouldn't attach the layout tree for its
+    // descendants. We should notify that we blocked a reattach so that we will
+    // correctly attach the descendants when allowed.
+    GetDisplayLockContext()->NotifyReattachLayoutTreeWasBlocked();
+    Node::AttachLayoutTree(context);
+    if (layout_object && layout_object->AffectsWhitespaceSiblings())
+      context.previous_in_flow = layout_object;
+    return;
+  }
 
   AttachPseudoElement(kPseudoIdMarker, children_context);
   AttachPseudoElement(kPseudoIdBefore, children_context);
@@ -3568,9 +3578,6 @@ EditContext* Element::editContext() const {
 }
 
 void Element::setEditContext(EditContext* edit_context) {
-  if (!InActiveDocument())
-    return;
-
   // If an element is in focus when being attached to a new EditContext,
   // its old EditContext, if it has any, will get blurred,
   // and the new EditContext will automatically get focused.

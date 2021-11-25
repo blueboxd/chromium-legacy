@@ -35391,7 +35391,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3983" label="TableCollapsedBorderDifferentToVisual"/>
   <int value="3984" label="HighlightAPIRegisterHighlight"/>
   <int value="3985" label="ReadOrWriteWebDatabaseThirdPartyContext"/>
-  <int value="3986" label="FontSelectorCSSFontFamilyWebKitPrefixPictograph"/>
+  <int value="3986"
+      label="OBSOLETE_FontSelectorCSSFontFamilyWebKitPrefixPictograph"/>
   <int value="3987" label="FontSelectorCSSFontFamilyWebKitPrefixStandard"/>
   <int value="3988" label="FontSelectorCSSFontFamilyWebKitPrefixBody"/>
   <int value="3989" label="FontBuilderCSSFontFamilyWebKitPrefixBody"/>
@@ -35489,6 +35490,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4079" label="ClientHintsUAFullVersionList"/>
   <int value="4080" label="WebAppManifestLaunchHandler"/>
   <int value="4081" label="ClientHintsMetaNameAcceptCH"/>
+  <int value="4082" label="CSSMatchMediaUnknown"/>
+  <int value="4083" label="CSSMediaListUnknown"/>
+  <int value="4084" label="CSSOMMediaConditionUnknown"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

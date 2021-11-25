@@ -377,8 +377,7 @@ void SharesheetBubbleView::PopulateLayoutsWithTargets(
 
     auto target_view = std::make_unique<SharesheetTargetButton>(
         base::BindRepeating(&SharesheetBubbleView::TargetButtonPressed,
-                            base::Unretained(this),
-                            base::Passed(std::move(target))),
+                            base::Unretained(this), target),
         display_name, secondary_display_name, icon,
         delegator_->GetVectorIcon(display_name));
 
@@ -592,6 +591,10 @@ void SharesheetBubbleView::OnTabletControllerDestroyed() {
 }
 
 void SharesheetBubbleView::CreateBubble() {
+  // This disables the default deactivation behaviour in
+  // BubbleDialogDelegateView. Close on deactivation behaviour is managed by the
+  // SharesheetBubbleView with the |close_on_deactivate_| member.
+  set_close_on_deactivate(false);
   SetButtons(ui::DIALOG_BUTTON_NONE);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(

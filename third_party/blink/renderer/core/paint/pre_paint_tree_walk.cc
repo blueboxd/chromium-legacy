@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/link_highlight.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -35,6 +36,15 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
+
+namespace {
+
+bool IsLinkHighlighted(const LayoutObject& object) {
+  return object.GetFrame()->GetPage()->GetLinkHighlight().IsHighlighting(
+      object);
+}
+
+}  // anonymous namespace
 
 static void SetNeedsCompositingLayerPropertyUpdate(const LayoutObject& object) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
@@ -509,8 +519,11 @@ FragmentData* PrePaintTreeWalk::GetOrCreateFragmentData(
         fragment_data->ClearNextFragment();
       }
     } else {
-      // We don't need any additional fragments for culled inlines.
-      if (!object.IsBox() && !object.HasInlineFragments())
+      // We don't need any additional fragments for culled inlines - unless this
+      // is the highlighted link (in which case even culled inlines get paint
+      // effects).
+      if (!object.IsBox() && !object.HasInlineFragments() &&
+          !IsLinkHighlighted(object))
         return nullptr;
 
       DCHECK(allow_update);
@@ -987,25 +1000,35 @@ void PrePaintTreeWalk::WalkLayoutObjectChildren(
       if (!box_fragment)
         continue;
     } else if (child->IsInline() && !child_box) {
-      // Deal with inline-level objects not searched for above.
-      //
-      // Needed for fragment-less objects that have children. This is the case
-      // for culled inlines. We're going to have to enter them for every
-      // fragment in the parent.
-      //
-      // The child is inline-level even if the parent fragment doesn't establish
-      // an inline formatting context. This may happen if there's only collapsed
-      // text, or if we had to insert a break in a block before we got to any
-      // inline content. Make sure that we visit such objects once.
+      // This child is a non-atomic inline (or text), but we have no cursor.
+      // The cursor will be missing if the child has no fragment representation,
+      // or if the container has no fragment items (which may happen if there's
+      // only collapsed text / culled inlines, or if we had to insert a break in
+      // a block before we got to any inline content, or if the container only
+      // has resumed floats).
 
-      is_first_for_node = parent_fragment->IsFirstForNode();
-      is_last_for_node = !parent_fragment->BreakToken();
+      // If the child has a fragment representation, we're going to find it in
+      // the fragmentainer(s) where it occurs.
+      if (child->HasInlineFragments())
+        continue;
 
-      // If the parent block fragment isn't an inline formatting context
-      // (e.g. because there are only resumed floats), there isn't a lot we need
-      // to do with this child. Only enter the inline when at the last parent
-      // fragment, to clear the paint flags.
-      if (!parent_fragment->HasItems() && !is_last_for_node)
+      if (!child->IsLayoutInline()) {
+        // We end up here for collapsed text nodes. Just clear the paint flags.
+        for (const LayoutObject* fragmentless = child; fragmentless;
+             fragmentless = fragmentless->NextInPreOrder(child)) {
+          DCHECK(fragmentless->IsText());
+          DCHECK(!fragmentless->HasInlineFragments());
+          fragmentless->GetMutableForPainting().ClearPaintFlags();
+        }
+        continue;
+      }
+
+      // We have to enter culled inlines for every block fragment where any of
+      // their children has a representation.
+      if (!parent_fragment->HasItems())
+        continue;
+      if (!parent_fragment->Items()->IsContainerForCulledInline(
+              To<LayoutInline>(*child), &is_first_for_node, &is_last_for_node))
         continue;
 
       // Inlines will pass their containing block fragment (and its incoming

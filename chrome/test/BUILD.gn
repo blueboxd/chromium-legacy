@@ -1312,6 +1312,7 @@ if (!is_android && !is_fuchsia) {
       "//pdf:buildflags",
       "//pdf:features",
       "//ppapi/buildflags",
+      "//ppapi/shared_impl:test_support",
       "//printing/buildflags",
       "//rlz/buildflags",
       "//services/audio/public/cpp:test_support",
@@ -1364,11 +1365,17 @@ if (!is_android && !is_fuchsia) {
       "//chrome/test/data:web_ui_test_mojom_js_module",
       "//components/policy/proto",
       "//testing:test_scripts_shared",
+      "//third_party/private_membership:private_membership_proto",
+      "//third_party/shell-encryption:serialization_proto",
+
+      # TODO(thakis): Why do these need copying in browser_tests?
+      # content_browsertests uses the non-copied files instead.
+      "//ppapi:copy_test_files",
+      "//ppapi:copy_test_files2",
+      "//ppapi:ppapi_tests",
       "//testing/buildbot/filters:browser_tests_filters",
       "//testing/buildbot/filters:linux_trusty_rel_browser_tests_filters",
       "//third_party/mesa_headers",
-      "//third_party/private_membership:private_membership_proto",
-      "//third_party/shell-encryption:serialization_proto",
       "//third_party/widevine/cdm:widevine_test_license_server",
       "//tools/media_engagement_preload:generator",
       "//ui/webui/resources/cr_elements:modulize_runtime_data",
@@ -1404,6 +1411,10 @@ if (!is_android && !is_fuchsia) {
       "//chrome/test/data/cart/",
       "//media/test/data/",
       "//net/tools/testserver/",
+      "//ppapi/tests/test_case.html",
+      "//ppapi/tests/test_case.html.mock-http-headers",
+      "//ppapi/tests/test_page.css",
+      "//ppapi/tests/test_page.css.mock-http-headers",
       "//third_party/mocha/mocha.js",
       "//third_party/polymer/v1_0/components-chromium/iron-test-helpers/mock-interactions.js",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
@@ -2104,6 +2115,8 @@ if (!is_android && !is_fuchsia) {
       "data/webui/webui_resource_browsertest.cc",
       "gpu/webgl_infobar_browsertest.cc",
       "origin_policy/origin_policy_browsertest.cc",
+      "ppapi/ppapi_browsertest.cc",
+      "ppapi/ppapi_filechooser_browsertest.cc",
       "v8/wasm_trap_handler_browsertest.cc",
     ]
 
@@ -2144,30 +2157,6 @@ if (!is_android && !is_fuchsia) {
       ]
     }
 
-    if (enable_plugins) {
-      data += [
-        "//ppapi/tests/test_case.html",
-        "//ppapi/tests/test_case.html.mock-http-headers",
-        "//ppapi/tests/test_page.css",
-        "//ppapi/tests/test_page.css.mock-http-headers",
-      ]
-
-      data_deps += [
-        # TODO(thakis): Why do these need copying in browser_tests?
-        # content_browsertests uses the non-copied files instead.
-        "//ppapi:copy_test_files",
-        "//ppapi:copy_test_files2",
-        "//ppapi:ppapi_tests",
-      ]
-
-      deps += [ "//ppapi/shared_impl:test_support" ]
-
-      sources += [
-        "ppapi/ppapi_browsertest.cc",
-        "ppapi/ppapi_filechooser_browsertest.cc",
-      ]
-    }
-
     if (safe_browsing_mode != 0) {
       deps += [ "//components/safe_browsing/content/common/proto:download_file_types_proto" ]
     }
@@ -2175,31 +2164,6 @@ if (!is_android && !is_fuchsia) {
     if (enable_basic_printing) {
       sources +=
           [ "../browser/devtools/protocol/devtools_printtopdf_browsertest.cc" ]
-    }
-
-    if (is_mac) {
-      sources += [
-        "../browser/app_controller_mac_browsertest.mm",
-        "../browser/apps/app_shim/app_shim_listener_browsertest_mac.mm",
-        "../browser/apps/app_shim/test/app_shim_listener_test_api_mac.cc",
-        "../browser/apps/app_shim/test/app_shim_listener_test_api_mac.h",
-        "../browser/mac/auth_session_request_browsertest.mm",
-        "../browser/ui/find_bar/find_bar_platform_helper_mac_browsertest.mm",
-        "../browser/ui/test/test_browser_dialog_mac.h",
-        "../browser/ui/test/test_browser_dialog_mac.mm",
-        "../browser/webshare/mac/sharing_service_operation_browsertest.cc",
-        "../common/mac/app_mode_chrome_locator_browsertest.mm",
-        "../common/mac/mock_launchd.h",
-        "../common/mac/mock_launchd.mm",
-      ]
-
-      deps += [
-        "//chrome/app_shim",
-        "//chrome/browser/apps/app_shim",
-        "//components/onc",
-        "//components/remote_cocoa/app_shim",
-        "//ui/accelerated_widget_mac",
-      ]
     }
 
     if (is_linux) {
@@ -2282,6 +2246,69 @@ if (!is_android && !is_fuchsia) {
       if (is_chrome_branded) {
         deps += [ "//chrome/browser/win/conflicts:browser_tests" ]
       }
+    }
+
+    if (is_mac) {
+      sources += [
+        "../browser/app_controller_mac_browsertest.mm",
+        "../browser/apps/app_shim/app_shim_listener_browsertest_mac.mm",
+        "../browser/apps/app_shim/test/app_shim_listener_test_api_mac.cc",
+        "../browser/apps/app_shim/test/app_shim_listener_test_api_mac.h",
+        "../browser/mac/auth_session_request_browsertest.mm",
+        "../browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_browsertest.mm",
+        "../browser/spellchecker/spell_check_host_chrome_impl_mac_browsertest.cc",
+        "../browser/ui/cocoa/accelerators_cocoa_browsertest.mm",
+        "../browser/ui/cocoa/applescript/bookmark_applescript_utils_test.h",
+        "../browser/ui/cocoa/applescript/bookmark_applescript_utils_test.mm",
+        "../browser/ui/cocoa/applescript/bookmark_folder_applescript_browsertest.mm",
+        "../browser/ui/cocoa/applescript/bookmark_item_applescript_browsertest.mm",
+        "../browser/ui/cocoa/applescript/browsercrapplication+applescript_test.mm",
+        "../browser/ui/cocoa/applescript/tab_applescript_browsertest.mm",
+        "../browser/ui/cocoa/applescript/window_applescript_test.mm",
+        "../browser/ui/cocoa/apps/app_shim_menu_controller_mac_browsertest.mm",
+        "../browser/ui/cocoa/apps/native_app_window_cocoa_browsertest.mm",
+        "../browser/ui/cocoa/browser_window_mac_browsertest.mm",
+        "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa_browsertest.mm",
+        "../browser/ui/cocoa/share_menu_controller_browsertest.mm",
+        "../browser/ui/cocoa/task_manager_mac_browsertest.mm",
+        "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
+        "../browser/ui/find_bar/find_bar_platform_helper_mac_browsertest.mm",
+        "../browser/ui/test/test_browser_dialog_mac.h",
+        "../browser/ui/test/test_browser_dialog_mac.mm",
+        "../browser/ui/views/frame/browser_non_client_frame_view_mac_browsertest.mm",
+        "../browser/webshare/mac/sharing_service_operation_browsertest.cc",
+        "../common/mac/app_mode_chrome_locator_browsertest.mm",
+        "../common/mac/mock_launchd.h",
+        "../common/mac/mock_launchd.mm",
+        "../common/profiler/thread_profiler_browsertest.cc",
+      ]
+      sources -= [
+        # TODO(groby): This test depends on hunspell and we cannot run it on
+        # Mac, which does not use hunspell by default.
+        "../browser/spellchecker/spellcheck_service_browsertest.cc",
+      ]
+
+      data_deps += [
+        "//chrome",
+        "//chrome:chrome_framework",
+      ]
+
+      deps += [
+        "//chrome/app_shim",
+        "//chrome/browser/apps/app_shim",
+        "//components/onc",
+        "//components/remote_cocoa/app_shim",
+        "//third_party/ocmock",
+        "//ui/accelerated_widget_mac",
+      ]
+    } else {
+      # !is_mac
+      sources += [
+        "../browser/policy/test/full_screen_allowed_policy_browsertest.cc",
+        "../browser/ui/views/create_application_shortcut_view_browsertest.cc",
+      ]
+
+      data_deps += [ "//chrome:packed_resources" ]
     }
 
     if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
@@ -2389,14 +2416,6 @@ if (!is_android && !is_fuchsia) {
           ]
         }
       }
-    }
-
-    if (!is_mac) {
-      data_deps += [ "//chrome:packed_resources" ]
-      sources += [
-        "../browser/policy/test/full_screen_allowed_policy_browsertest.cc",
-        "../browser/ui/views/create_application_shortcut_view_browsertest.cc",
-      ]
     }
 
     if (enable_captive_portal_detection) {
@@ -2966,7 +2985,6 @@ if (!is_android && !is_fuchsia) {
         "../browser/ui/views/tab_sharing/tab_sharing_ui_views_browsertest.cc",
         "../browser/ui/views/tabs/tab_group_editor_bubble_view_browsertest.cc",
         "../browser/ui/views/tabs/tab_hover_card_bubble_view_browsertest.cc",
-        "../browser/ui/views/task_manager_view_browsertest.cc",
         "../browser/ui/views/translate/translate_bubble_test_utils_views.cc",
         "../browser/ui/views/translate/translate_bubble_view_browsertest.cc",
         "../browser/ui/views/user_education/tip_marquee_view_browsertest.cc",
@@ -2981,6 +2999,9 @@ if (!is_android && !is_fuchsia) {
           "../browser/ui/views/status_bubble_views_browsertest_mac.h",
           "../browser/ui/views/status_bubble_views_browsertest_mac.mm",
         ]
+      } else {
+        # TaskManagerView is not used or built on Mac.
+        sources += [ "../browser/ui/views/task_manager_view_browsertest.cc" ]
       }
       if (is_chromeos_ash) {
         sources += [
@@ -3791,8 +3812,6 @@ if (!is_android && !is_fuchsia) {
         "../browser/safe_browsing/safe_browsing_service_browsertest.cc",
         "../browser/safe_browsing/v4_embedded_test_server_browsertest.cc",
         "../browser/ssl/sct_reporting_service_browsertest.cc",
-        "../renderer/safe_browsing/phishing_classifier_browsertest.cc",
-        "../renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc",
         "../renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc",
         "../renderer/safe_browsing/threat_dom_details_browsertest.cc",
       ]
@@ -3811,50 +3830,9 @@ if (!is_android && !is_fuchsia) {
           "//chrome/services/file_util/public/cpp:cpp",
         ]
       }
-    }
 
-    if (enable_captive_portal_detection) {
-      sources += [ "../browser/captive_portal/captive_portal_browsertest.cc" ]
-    }
-
-    if (is_mac) {
-      deps += [ "//third_party/ocmock" ]
-      data_deps += [
-        "//chrome",
-        "//chrome:chrome_framework",
-      ]
-      sources += [
-        "../browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_browsertest.mm",
-        "../browser/spellchecker/spell_check_host_chrome_impl_mac_browsertest.cc",
-        "../browser/ui/cocoa/accelerators_cocoa_browsertest.mm",
-        "../browser/ui/cocoa/applescript/bookmark_applescript_utils_test.h",
-        "../browser/ui/cocoa/applescript/bookmark_applescript_utils_test.mm",
-        "../browser/ui/cocoa/applescript/bookmark_folder_applescript_browsertest.mm",
-        "../browser/ui/cocoa/applescript/bookmark_item_applescript_browsertest.mm",
-        "../browser/ui/cocoa/applescript/browsercrapplication+applescript_test.mm",
-        "../browser/ui/cocoa/applescript/tab_applescript_browsertest.mm",
-        "../browser/ui/cocoa/applescript/window_applescript_test.mm",
-        "../browser/ui/cocoa/apps/app_shim_menu_controller_mac_browsertest.mm",
-        "../browser/ui/cocoa/apps/native_app_window_cocoa_browsertest.mm",
-        "../browser/ui/cocoa/browser_window_mac_browsertest.mm",
-        "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa_browsertest.mm",
-        "../browser/ui/cocoa/share_menu_controller_browsertest.mm",
-        "../browser/ui/cocoa/task_manager_mac_browsertest.mm",
-        "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
-        "../browser/ui/views/frame/browser_non_client_frame_view_mac_browsertest.mm",
-        "../common/profiler/thread_profiler_browsertest.cc",
-      ]
-      sources -= [
-        # TODO(groby): This test depends on hunspell and we cannot run it on
-        # Mac, which does not use hunspell by default.
-        "../browser/spellchecker/spellcheck_service_browsertest.cc",
-
-        # TaskManagerView is not used or built on Mac.
-        "../browser/ui/views/task_manager_view_browsertest.cc",
-      ]
-
-      if (safe_browsing_mode == 1) {
-        sources -= [
+      if (!is_mac) {
+        sources += [
           # single-process mode hangs on Mac sometimes because of multiple UI
           # message loops. See 306348
           "../renderer/safe_browsing/phishing_classifier_browsertest.cc",
@@ -3862,6 +3840,11 @@ if (!is_android && !is_fuchsia) {
         ]
       }
     }
+
+    if (enable_captive_portal_detection) {
+      sources += [ "../browser/captive_portal/captive_portal_browsertest.cc" ]
+    }
+
     if (is_mac || is_win || is_fuchsia) {
       sources += [
         "../browser/extensions/api/networking_private/networking_private_apitest.cc",
@@ -4094,6 +4077,7 @@ if (is_chromeos_lacros) {
       "../browser/ui/browser_navigator_browsertest.cc",
       "../browser/ui/browser_navigator_browsertest.h",
       "../browser/ui/browser_navigator_browsertest_chromeos.cc",
+      "../browser/ui/views/profiles/profile_picker_view_browsertest.cc",
     ]
 
     deps = [
@@ -4107,8 +4091,11 @@ if (is_chromeos_lacros) {
       "//chromeos/services/machine_learning/public/cpp",
       "//chromeos/services/machine_learning/public/cpp:stub",
       "//chromeos/services/machine_learning/public/mojom",
+      "//components/account_manager_core:test_support",
       "//components/captive_portal/content:content",
       "//components/captive_portal/core:buildflags",
+      "//components/feature_engagement/public:public",
+      "//components/feature_engagement/test:test_support",
       "//components/metrics/structured",
       "//components/metrics/structured:structured_events",
       "//components/proxy_config:proxy_config",
@@ -4963,30 +4950,6 @@ test("unit_tests") {
     ]
   }
 
-  if (is_mac) {
-    sources += [
-      "../../testing/gtest_mac_unittest.mm",
-      "../browser/app_controller_mac_unittest.mm",
-      "../browser/apps/app_shim/mach_bootstrap_acceptor_unittest.mm",
-      "../browser/global_keyboard_shortcuts_mac_unittest.mm",
-      "../browser/mac/auth_session_request_unittest.mm",
-      "../browser/mac/exception_processor_unittest.mm",
-      "../browser/mac/keystone_glue_unittest.mm",
-      "../browser/notifications/notification_dispatcher_mojo_unittest.cc",
-      "../browser/notifications/notification_platform_bridge_mac_unittest.cc",
-      "../browser/notifications/notification_platform_bridge_mac_utils_unittest.cc",
-      "../browser/notifications/stub_notification_dispatcher_mac.cc",
-      "../browser/notifications/stub_notification_dispatcher_mac.h",
-      "../browser/performance_monitor/resource_coalition_mac_unittest.mm",
-      "../browser/policy/browser_dm_token_storage_mac_unittest.cc",
-      "../browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_unit_test.mm",
-      "../browser/service_process/service_process_control_mac_unittest.mm",
-      "../browser/upgrade_detector/directory_monitor_unittest.cc",
-      "../common/mac/mock_launchd.h",
-      "../common/mac/mock_launchd.mm",
-    ]
-  }
-
   if (is_chromeos) {
     sources += [
       "../browser/apps/intent_helper/metrics/intent_handling_metrics_unittest.cc",
@@ -5204,9 +5167,6 @@ test("unit_tests") {
   }
   if (is_linux || is_chromeos || is_win) {
     data_deps += [ "//chrome:packed_resources" ]
-  }
-  if (is_mac) {
-    data += [ "//chrome/test/data/performance_monitor/" ]
   }
   defines = []
 
@@ -5624,19 +5584,54 @@ test("unit_tests") {
     }
   }
 
-  if (enable_chromium_updater) {
-    deps += [
-      "//chrome/browser/updater:browser_updater_client",
-      "//chrome/updater:browser_sources",
-    ]
-  }
-
-  if (enable_paint_preview) {
-    deps += [ "//chrome/browser/paint_preview:services" ]
-  }
-
   if (is_mac) {
+    sources += [
+      "../../testing/gtest_mac_unittest.mm",
+      "../browser/app_controller_mac_unittest.mm",
+      "../browser/apps/app_shim/mach_bootstrap_acceptor_unittest.mm",
+      "../browser/global_keyboard_shortcuts_mac_unittest.mm",
+      "../browser/mac/auth_session_request_unittest.mm",
+      "../browser/mac/exception_processor_unittest.mm",
+      "../browser/mac/keystone_glue_unittest.mm",
+      "../browser/notifications/notification_dispatcher_mojo_unittest.cc",
+      "../browser/notifications/notification_platform_bridge_mac_unittest.cc",
+      "../browser/notifications/notification_platform_bridge_mac_utils_unittest.cc",
+      "../browser/notifications/stub_notification_dispatcher_mac.cc",
+      "../browser/notifications/stub_notification_dispatcher_mac.h",
+      "../browser/performance_monitor/resource_coalition_mac_unittest.mm",
+      "../browser/policy/browser_dm_token_storage_mac_unittest.cc",
+      "../browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_unit_test.mm",
+      "../browser/service_process/service_process_control_mac_unittest.mm",
+      "../browser/ui/cocoa/applescript/apple_event_util_unittest.mm",
+      "../browser/ui/cocoa/bookmarks/bookmark_menu_bridge_unittest.mm",
+      "../browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller_unittest.mm",
+      "../browser/ui/cocoa/confirm_quit_panel_controller_unittest.mm",
+      "../browser/ui/cocoa/find_pasteboard_unittest.mm",
+      "../browser/ui/cocoa/first_run_dialog_controller_unittest.mm",
+      "../browser/ui/cocoa/history_menu_bridge_unittest.mm",
+      "../browser/ui/cocoa/history_menu_cocoa_controller_unittest.mm",
+      "../browser/ui/cocoa/history_overlay_controller_unittest.mm",
+      "../browser/ui/cocoa/main_menu_builder_unittest.mm",
+      "../browser/ui/cocoa/profiles/profile_menu_controller_unittest.mm",
+      "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_unittest.mm",
+      "../browser/ui/cocoa/scoped_menu_bar_lock_unittest.mm",
+      "../browser/ui/cocoa/status_icons/status_icon_mac_unittest.mm",
+      "../browser/ui/cocoa/tab_menu_bridge_unittest.mm",
+      "../browser/ui/cocoa/test/run_loop_testing_unittest.mm",
+      "../browser/ui/cocoa/touchbar/browser_window_default_touch_bar_unittest.mm",
+      "../browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller_unittest.mm",
+      "../browser/ui/cocoa/window_size_autosaver_unittest.mm",
+      "../browser/ui/content_settings/content_setting_media_image_model_unittest.mm",
+      "../browser/upgrade_detector/directory_monitor_unittest.cc",
+      "../common/mac/mock_launchd.h",
+      "../common/mac/mock_launchd.mm",
+      "../utility/importer/safari_importer_unittest.mm",
+    ]
+
+    data += [ "//chrome/test/data/performance_monitor/" ]
+
     data_deps += [ "//chrome:chrome_framework" ]
+
     deps += [
       "//chrome/app_shim",
       "//chrome/browser/apps/app_shim",
@@ -5648,8 +5643,42 @@ test("unit_tests") {
       "//chrome/utility/safe_browsing/mac",
       "//chrome/utility/safe_browsing/mac:dmg_common",
       "//components/power_metrics",
+
+      # The test fetches resources which means Mac need the app bundle to exist
+      # on disk so it can pull from it.
+      "//third_party/ocmock",
       "//ui/events/devices:test_support",
     ]
+
+    # TODO(mark): We really want this for all non-static library targets,
+    # but when we tried to pull it up to the common.gypi level, it broke
+    # other things like the ui and startup tests. *shrug*
+    ldflags = [ "-Wl,-ObjC" ]
+  } else {
+    # !is_mac
+    deps += [
+      "//chrome/tools/convert_dict:lib",
+      "//third_party/hunspell",
+    ]
+  }
+
+  if (enable_chromium_updater) {
+    deps += [
+      "//chrome/browser/updater:browser_updater_client",
+      "//chrome/updater:browser_sources",
+    ]
+
+    if (is_mac) {
+      sources += [ "../browser/updater/browser_updater_client_mac_unittest.mm" ]
+      deps += [
+        "//chrome/browser/updater:browser_updater_client",
+        "//chrome/updater:browser_sources",
+      ]
+    }
+  }
+
+  if (enable_paint_preview) {
+    deps += [ "//chrome/browser/paint_preview:services" ]
   }
 
   # TODO(crbug.com/931218): Ninja cannot handle certain characters appearing
@@ -5767,6 +5796,7 @@ test("unit_tests") {
     deps += [
       "//base:base_java",
       "//chrome:chrome_android_core",
+      "//chrome/android:chrome_apk_paks",
       "//chrome/android:chrome_java",
       "//chrome/android:delegate_public_impl_java",
       "//chrome/android/modules/dev_ui/provider:native",
@@ -6179,6 +6209,9 @@ test("unit_tests") {
       # Android uses a different way of showing browser windows.
       "../browser/optimization_guide/optimization_guide_tab_url_provider_unittest.cc",
     ]
+    if (!is_mac) {
+      data_deps += [ "//chrome:packed_resources" ]
+    }
     if (!is_fuchsia) {
       sources += [
         # File type policies are not supported on Fuchsia.
@@ -6201,21 +6234,6 @@ test("unit_tests") {
         "../browser/task_manager/providers/crosapi/crosapi_task_provider_ash_unittest.cc",
         "../browser/ui/webui/help/version_updater_chromeos_unittest.cc",
       ]
-    }
-    if (is_mac) {
-      sources += [
-        "../browser/ui/content_settings/content_setting_media_image_model_unittest.mm",
-        "../utility/importer/safari_importer_unittest.mm",
-      ]
-
-      if (enable_chromium_updater) {
-        sources +=
-            [ "../browser/updater/browser_updater_client_mac_unittest.mm" ]
-        deps += [
-          "//chrome/browser/updater:browser_updater_client",
-          "//chrome/updater:browser_sources",
-        ]
-      }
     }
     if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
       sources +=
@@ -6732,8 +6750,6 @@ test("unit_tests") {
     sources += [
       "../browser/spellchecker/spellcheck_custom_dictionary_unittest.cc",
       "../browser/spellchecker/spellcheck_language_policy_handlers_unittest.cc",
-      "../browser/spellchecker/spellcheck_service_unittest.cc",
-      "../tools/convert_dict/convert_dict_unittest.cc",
     ]
 
     if (is_mac) {
@@ -6741,7 +6757,15 @@ test("unit_tests") {
         "../browser/spellchecker/spell_check_host_chrome_impl_mac_unittest.cc",
       ]
     } else {
-      sources += [ "../tools/convert_dict/aff_reader_unittest.cc" ]
+      sources += [
+        # This tests the function GetSpellCheckLanguages which is not used on
+        # Mac.
+        "../browser/spellchecker/spellcheck_service_unittest.cc",
+
+        # This tests Chrome's spellchecker which Mac doesn't use.
+        "../tools/convert_dict/aff_reader_unittest.cc",
+        "../tools/convert_dict/convert_dict_unittest.cc",
+      ]
     }
 
     data += [
@@ -7566,58 +7590,6 @@ test("unit_tests") {
   if ((is_linux || is_chromeos) && is_chrome_branded && current_cpu == "x86") {
     ldflags = [ "-Wl,--strip-debug" ]
   }
-  if (is_mac) {
-    sources -= [
-      # This tests the function GetSpellCheckLanguages which is not used on
-      # Mac.
-      "../browser/spellchecker/spellcheck_service_unittest.cc",
-
-      # This tests Chrome's spellchecker which Mac doesn't use.
-      "../tools/convert_dict/convert_dict_unittest.cc",
-    ]
-
-    # The test fetches resources which means Mac need the app bundle to exist
-    # on disk so it can pull from it.
-    deps += [ "//third_party/ocmock" ]
-
-    sources += [
-      "../browser/ui/cocoa/applescript/apple_event_util_unittest.mm",
-      "../browser/ui/cocoa/bookmarks/bookmark_menu_bridge_unittest.mm",
-      "../browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller_unittest.mm",
-      "../browser/ui/cocoa/confirm_quit_panel_controller_unittest.mm",
-      "../browser/ui/cocoa/find_pasteboard_unittest.mm",
-      "../browser/ui/cocoa/first_run_dialog_controller_unittest.mm",
-      "../browser/ui/cocoa/history_menu_bridge_unittest.mm",
-      "../browser/ui/cocoa/history_menu_cocoa_controller_unittest.mm",
-      "../browser/ui/cocoa/history_overlay_controller_unittest.mm",
-      "../browser/ui/cocoa/main_menu_builder_unittest.mm",
-      "../browser/ui/cocoa/profiles/profile_menu_controller_unittest.mm",
-      "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_unittest.mm",
-      "../browser/ui/cocoa/scoped_menu_bar_lock_unittest.mm",
-      "../browser/ui/cocoa/status_icons/status_icon_mac_unittest.mm",
-      "../browser/ui/cocoa/tab_menu_bridge_unittest.mm",
-      "../browser/ui/cocoa/test/run_loop_testing_unittest.mm",
-      "../browser/ui/cocoa/touchbar/browser_window_default_touch_bar_unittest.mm",
-      "../browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller_unittest.mm",
-      "../browser/ui/cocoa/window_size_autosaver_unittest.mm",
-    ]
-
-    # TODO(mark): We really want this for all non-static library targets,
-    # but when we tried to pull it up to the common.gypi level, it broke
-    # other things like the ui and startup tests. *shrug*
-    ldflags = [ "-Wl,-ObjC" ]
-  }
-  if (!is_mac) {
-    deps += [
-      "//chrome/tools/convert_dict:lib",
-      "//third_party/hunspell",
-    ]
-    if (is_android) {
-      deps += [ "//chrome/android:chrome_apk_paks" ]
-    } else {
-      data_deps += [ "//chrome:packed_resources" ]
-    }
-  }
   if (is_win || is_mac) {
     deps += [ "//chrome/common/notifications:unit_tests" ]
   }
@@ -8179,7 +8151,7 @@ if (!is_android) {
         "../browser/password_manager/password_manager_signin_intercept_test_helper.h",
       ]
     }
-    if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
+    if (is_win || is_mac || is_linux || is_chromeos_lacros) {
       sources += [
         "../browser/ui/views/profiles/profile_picker_test_base.cc",
         "../browser/ui/views/profiles/profile_picker_test_base.h",
@@ -8354,6 +8326,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/webauth_interactive_uitest.cc",
       "//ui/base/clipboard/clipboard_unittest.cc",
       "base/interactive_ui_tests_main.cc",
+      "ppapi/ppapi_interactive_browsertest.cc",
     ]
 
     configs += [ "//build/config:precompiled_headers" ]
@@ -8759,10 +8732,6 @@ if (!is_android && !is_fuchsia) {
       }
     }
 
-    if (enable_plugins) {
-      sources += [ "ppapi/ppapi_interactive_browsertest.cc" ]
-    }
-
     if (enable_chrome_notifications) {
       sources += [
         "../browser/notifications/notification_ui_manager_browsertest.cc",
@@ -8794,10 +8763,15 @@ if (!is_android && !is_fuchsia) {
           [ "../browser/ui/views/frame/webui_tab_strip_interactive_uitest.cc" ]
     }
 
+    if (is_win || is_mac || is_linux || is_chromeos_lacros) {
+      sources += [
+        "../browser/ui/views/profiles/profile_picker_interactive_uitest.cc",
+      ]
+    }
+
     if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
       sources += [
         "../browser/ui/views/profiles/profile_bubble_interactive_uitest.cc",
-        "../browser/ui/views/profiles/profile_picker_interactive_uitest.cc",
       ]
     }
   }

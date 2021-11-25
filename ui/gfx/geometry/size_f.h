@@ -10,8 +10,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "build/build_config.h"
 #include "ui/gfx/geometry/geometry_export.h"
 #include "ui/gfx/geometry/size.h"
+
+#if defined(OS_APPLE)
+struct CGSize;
+#endif
 
 namespace gfx {
 
@@ -30,11 +35,23 @@ class GEOMETRY_EXPORT SizeF {
       : SizeF(static_cast<float>(size.width()),
               static_cast<float>(size.height())) {}
 
+#if defined(OS_APPLE)
+  explicit SizeF(const CGSize&);
+  CGSize ToCGSize() const;
+#endif
+
   constexpr float width() const { return width_; }
   constexpr float height() const { return height_; }
 
   void set_width(float width) { width_ = clamp(width); }
   void set_height(float height) { height_ = clamp(height); }
+
+  void operator+=(const SizeF& size) {
+    SetSize(width_ + size.width_, height_ + size.height_);
+  }
+  void operator-=(const SizeF& size) {
+    SetSize(width_ - size.width_, height_ - size.height_);
+  }
 
   float GetArea() const;
 
@@ -61,7 +78,10 @@ class GEOMETRY_EXPORT SizeF {
     SetSize(width() * x_scale, height() * y_scale);
   }
 
-  void Transpose() { std::swap(width_, height_); }
+  void Transpose() {
+    using std::swap;
+    swap(width_, height_);
+  }
 
   std::string ToString() const;
 
@@ -84,6 +104,14 @@ inline bool operator==(const SizeF& lhs, const SizeF& rhs) {
 
 inline bool operator!=(const SizeF& lhs, const SizeF& rhs) {
   return !(lhs == rhs);
+}
+
+inline SizeF operator+(const SizeF& lhs, const SizeF& rhs) {
+  return SizeF(lhs.width() + rhs.width(), lhs.height() + rhs.height());
+}
+
+inline SizeF operator-(const SizeF& lhs, const SizeF& rhs) {
+  return SizeF(lhs.width() - rhs.width(), lhs.height() - rhs.height());
 }
 
 GEOMETRY_EXPORT SizeF ScaleSize(const SizeF& p, float x_scale, float y_scale);

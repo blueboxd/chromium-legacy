@@ -152,8 +152,7 @@ void AppServiceAppWindowShelfController::ActiveUserChanged(
   // Deactivates the running app windows in InstanceRegistry for the inactive
   // user, and activates the app windows for the active user.
   for (auto* window : window_list_) {
-    ash::ShelfID shelf_id = proxy_->InstanceRegistry().GetShelfId(
-        apps::Instance::InstanceKey::ForWindowBasedApp(window));
+    ash::ShelfID shelf_id = proxy_->InstanceRegistry().GetShelfId(window);
     if (!shelf_id.IsNull()) {
       RegisterWindow(window, shelf_id);
     } else {
@@ -216,12 +215,11 @@ void AppServiceAppWindowShelfController::OnWindowInitialized(
       widget->IsMinimized()) {
     // Update |state|. The app must be started, and running state. If visible,
     // set it as |kVisible|, otherwise, clear the visible bit.
-    auto instance_key = apps::Instance::InstanceKey::ForWindowBasedApp(window);
     apps::InstanceState state =
         app_service_instance_helper_->CalculateVisibilityState(
             window, /*visible=*/false);
-    app_service_instance_helper_->OnInstances(
-        instance_key, GetAppId(shelf_id.app_id), shelf_id.launch_id, state);
+    app_service_instance_helper_->OnInstances(GetAppId(shelf_id.app_id), window,
+                                              shelf_id.launch_id, state);
 
     RegisterWindow(window, shelf_id);
   }
@@ -246,9 +244,9 @@ void AppServiceAppWindowShelfController::OnWindowPropertyChanged(
   if (GetAppType(shelf_id.app_id) != apps::mojom::AppType::kBuiltIn)
     return;
 
-  app_service_instance_helper_->OnInstances(
-      apps::Instance::InstanceKey::ForWindowBasedApp(window), shelf_id.app_id,
-      shelf_id.launch_id, apps::InstanceState::kUnknown);
+  app_service_instance_helper_->OnInstances(shelf_id.app_id, window,
+                                            shelf_id.launch_id,
+                                            apps::InstanceState::kUnknown);
 
   RegisterWindow(window, shelf_id);
 }
@@ -282,11 +280,10 @@ void AppServiceAppWindowShelfController::OnWindowVisibilityChanged(
 
   // Update |state|. The app must be started, and running state. If visible,
   // set it as |kVisible|, otherwise, clear the visible bit.
-  auto instance_key = apps::Instance::InstanceKey::ForWindowBasedApp(window);
   apps::InstanceState state =
       app_service_instance_helper_->CalculateVisibilityState(window, visible);
-  app_service_instance_helper_->OnInstances(
-      instance_key, GetAppId(shelf_id.app_id), shelf_id.launch_id, state);
+  app_service_instance_helper_->OnInstances(GetAppId(shelf_id.app_id), window,
+                                            shelf_id.launch_id, state);
 
   // Only register the visible non-browser |window| for the active user.
   if (!visible || shelf_id.app_id == extension_misc::kChromeAppId ||
@@ -322,7 +319,6 @@ void AppServiceAppWindowShelfController::OnWindowDestroying(
   if (crostini_tracker_)
     crostini_tracker_->OnWindowDestroying(window);
 
-  auto instance_key = apps::Instance::InstanceKey::ForWindowBasedApp(window);
   // When the window is destroyed, we should search all proxies, because the
   // window could be teleported from the inactive user, and isn't saved in the
   // proxy of the active user's profile, but it should still be removed from
@@ -335,7 +331,7 @@ void AppServiceAppWindowShelfController::OnWindowDestroying(
     // app window from the shelf. So if we can get the window from
     // InstanceRegistry, we should still destroy it from InstanceRegistry and
     // remove the app window from the shelf
-    app_id = app_service_instance_helper_->GetAppId(instance_key);
+    app_id = app_service_instance_helper_->GetAppId(window);
   }
 
   if (!app_id.empty() &&
@@ -343,7 +339,7 @@ void AppServiceAppWindowShelfController::OnWindowDestroying(
                                                        window) &&
       app_id != extension_misc::kChromeAppId) {
     // Delete the instance from InstanceRegistry.
-    app_service_instance_helper_->OnInstances(instance_key, GetAppId(app_id),
+    app_service_instance_helper_->OnInstances(GetAppId(app_id), window,
                                               std::string(),
                                               apps::InstanceState::kDestroyed);
   }
@@ -555,11 +551,10 @@ void AppServiceAppWindowShelfController::SetWindowActivated(
     return;
   }
 
-  auto instance_key = apps::Instance::InstanceKey::ForWindowBasedApp(window);
   apps::InstanceState state =
       app_service_instance_helper_->CalculateActivatedState(window, active);
-  app_service_instance_helper_->OnInstances(
-      instance_key, GetAppId(shelf_id.app_id), std::string(), state);
+  app_service_instance_helper_->OnInstances(GetAppId(shelf_id.app_id), window,
+                                            std::string(), state);
 }
 
 void AppServiceAppWindowShelfController::RegisterWindow(
@@ -729,8 +724,7 @@ ash::ShelfID AppServiceAppWindowShelfController::GetShelfId(
   // InstanceRegistry.
   for (auto* profile : profile_list_) {
     auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
-    shelf_id = proxy->InstanceRegistry().GetShelfId(
-        apps::Instance::InstanceKey::ForWindowBasedApp(window));
+    shelf_id = proxy->InstanceRegistry().GetShelfId(window);
     if (!shelf_id.IsNull())
       break;
   }

@@ -9,9 +9,14 @@
 #include <string>
 #include <tuple>
 
+#include "build/build_config.h"
 #include "ui/gfx/geometry/geometry_export.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+
+#if defined(OS_APPLE)
+struct CGPoint;
+#endif
 
 namespace gfx {
 
@@ -23,6 +28,11 @@ class GEOMETRY_EXPORT PointF {
 
   constexpr explicit PointF(const Point& p)
       : PointF(static_cast<float>(p.x()), static_cast<float>(p.y())) {}
+
+#if defined(OS_APPLE)
+  explicit PointF(const CGPoint&);
+  CGPoint ToCGPoint() const;
+#endif
 
   constexpr float x() const { return x_; }
   constexpr float y() const { return y_; }
@@ -74,7 +84,10 @@ class GEOMETRY_EXPORT PointF {
     SetPoint(x() * x_scale, y() * y_scale);
   }
 
-  void Transpose() { std::swap(x_, y_); }
+  void Transpose() {
+    using std::swap;
+    swap(x_, y_);
+  }
 
   // Uses the Pythagorean theorem to determine the straight line distance
   // between the two points, and returns true if it is less than

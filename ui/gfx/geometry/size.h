@@ -32,10 +32,6 @@ class GEOMETRY_EXPORT Size {
   explicit Size(const CGSize& s);
 #endif
 
-#if defined(OS_APPLE)
-  Size& operator=(const CGSize& s);
-#endif
-
   void operator+=(const Size& size);
 
   void operator-=(const Size& size);
@@ -71,6 +67,11 @@ class GEOMETRY_EXPORT Size {
 
   bool IsEmpty() const { return !width() || !height(); }
   bool IsZero() const { return !width() && !height(); }
+
+  void Transpose() {
+    using std::swap;
+    swap(width_, height_);
+  }
 
   std::string ToString() const;
 
@@ -115,6 +116,10 @@ GEOMETRY_EXPORT Size ScaleToRoundedSize(const Size& size,
                                         float x_scale,
                                         float y_scale);
 GEOMETRY_EXPORT Size ScaleToRoundedSize(const Size& size, float scale);
+
+inline Size TransposeSize(const Size& s) {
+  return Size(s.height(), s.width());
+}
 
 }  // namespace gfx
 

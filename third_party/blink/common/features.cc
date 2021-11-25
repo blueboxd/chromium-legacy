@@ -798,6 +798,11 @@ const base::Feature kLogUnexpectedIPCPostedToBackForwardCachedDocuments{
     "LogUnexpectedIPCPostedToBackForwardCachedDocuments",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables web apps to provide theme color and background color overrides for
+// dark mode.
+const base::Feature kWebAppEnableDarkMode{"WebAppEnableDarkMode",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the "handle_links" manifest field for web apps.
 // Explainer:
 // https://github.com/WICG/pwa-url-handler/blob/main/handle_links/explainer.md
@@ -1146,6 +1151,12 @@ const base::Feature kClientHintsMetaNameAcceptCH{
 // Allow third-party delegation of client hint information.
 const base::Feature kClientHintThirdPartyDelegation{
     "ClientHintThirdPartyDelegation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_ANDROID)
+// Enables prefetching Android fonts on renderer startup.
+const base::Feature kPrefetchAndroidFonts{"PrefetchAndroidFonts",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 }  // namespace features
 }  // namespace blink

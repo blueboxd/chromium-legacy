@@ -11,6 +11,7 @@
 #include "base/containers/span.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
 #include "media/base/timestamp_constants.h"
@@ -41,6 +42,7 @@
 #include "third_party/blink/renderer/modules/webcodecs/parsed_copy_to_options.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_color_space.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame_init_util.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
@@ -217,7 +219,8 @@ class CanvasResourceProviderCache
     if (size_to_provider_.size() >= kMaxSize)
       size_to_provider_.clear();
 
-    auto provider = CreateResourceProviderForVideoFrame(size, nullptr);
+    auto provider = CreateResourceProviderForVideoFrame(
+        size, GetRasterContextProvider().get());
     auto* result = provider.get();
     size_to_provider_.Set(key, std::move(provider));
     return result;

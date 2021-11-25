@@ -38,7 +38,7 @@ extern const base::Feature kChromeWhatsNewInMainMenuNewBadge;
 extern const base::Feature kCommander;
 
 #if !defined(ANDROID)
-extern const base::Feature kEnterpriseCastingUI;
+extern const base::Feature kAccessCodeCastUI;
 #endif
 
 extern const base::Feature kEvDetailsInPageInfo;
@@ -67,7 +67,6 @@ extern const base::Feature kSettingsLandingPageRedesign;
 // TODO(pbos): Once kReadLater is cleaned up on Desktop, move definition into
 // ui_features.cc. This is currently temporarily in reading_list_switches.h.
 extern const base::Feature kSidePanel;
-extern const base::Feature kSidePanelBorder;
 extern const base::Feature kSidePanelDragAndDrop;
 
 #if BUILDFLAG(ENABLE_SIDE_SEARCH)

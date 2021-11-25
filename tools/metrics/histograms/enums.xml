@@ -23813,6 +23813,25 @@ Called by update_document_policy_enum.py.-->
   <int value="1" label="SOFTWARE_REJECTED"/>
 </enum>
 
+<enum name="DTAttestationFunnelStep">
+  <int value="0" label="Attestation Flow Started"/>
+  <int value="1" label="Challenge Received"/>
+  <int value="2" label="Signals Collected"/>
+  <int value="3" label="Challenge Response Sent"/>
+</enum>
+
+<enum name="DTAttestationResult">
+  <int value="0" label="Missing Core Signals"/>
+  <int value="1" label="Missing Signing Key"/>
+  <int value="2" label="Bad Challenge Format"/>
+  <int value="3" label="Bad Challenge Source"/>
+  <int value="4" label="Failed to Serialize KeyInfo"/>
+  <int value="5" label="Failed to Generate a Response"/>
+  <int value="6" label="Failed to Sign the Response"/>
+  <int value="7" label="Failed to Serialize the Response"/>
+  <int value="8" label="Success"/>
+</enum>
+
 <enum name="DTLS_SRTPCryptoSuite">
   <summary>
     DTLS/SRTP crypto suites from the IANA registry as specified at
@@ -30110,6 +30129,7 @@ Called by update_extension_histograms.py.-->
   <int value="1600" label="FILEMANAGERPRIVATE_CANCELIOTASK"/>
   <int value="1601" label="AUTOTESTPRIVATE_GETDISPLAYSMOOTHNESS"/>
   <int value="1602" label="AUTOTESTPRIVATE_RESETHOLDINGSPACE"/>
+  <int value="1603" label="FILEMANAGERPRIVATEINTERNAL_GETDISALLOWEDTRANSFERS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -42326,6 +42346,21 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="kResume"/>
 </enum>
 
+<enum name="HoldingSpaceItemFailureToLaunchReason">
+  <int value="0" label="kUnknown"/>
+  <int value="1" label="kCrosApiNotFound"/>
+  <int value="2" label="kDownloadNotFound"/>
+  <int value="3" label="kFileError"/>
+  <int value="4" label="kFileInfoError"/>
+  <int value="5" label="kInvalidType"/>
+  <int value="6" label="kNoHandlerForFileType"/>
+  <int value="7" label="kNoHandlerForItemType"/>
+  <int value="8" label="kPathEmpty"/>
+  <int value="9" label="kPathNotFound"/>
+  <int value="10" label="kReattemptToOpenWhenComplete"/>
+  <int value="11" label="kShutdown"/>
+</enum>
+
 <enum name="HoldingSpaceItemType">
   <int value="0" label="kPinnedFile"/>
   <int value="1" label="kScreenshot"/>
@@ -49684,7 +49719,6 @@ from previous Chrome versions.
   <int value="-1321640296"
       label="AutofillDownstreamCvcPromptUseGooglePayLogo:enabled"/>
   <int value="-1321212159" label="MediaAppAnnotation:enabled"/>
-  <int value="-1320181781" label="ChromeOSDirectVideoDecoder:disabled"/>
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
   <int value="-1318914924" label="OverflowIconsForMediaControls:enabled"/>
   <int value="-1316769004" label="CrossOriginOpenerPolicyReporting:disabled"/>
@@ -49886,6 +49920,7 @@ from previous Chrome versions.
   <int value="-1179917414" label="DefaultChromeAppUninstallSync:disabled"/>
   <int value="-1178350793" label="RemoteCopyReceiver:disabled"/>
   <int value="-1177802205" label="enable-hosted-app-quit-notification"/>
+  <int value="-1177230990" label="PrefetchAndroidFonts:enabled"/>
   <int value="-1176748003"
       label="FramebustingNeedsSameOriginOrUserGesture:disabled"/>
   <int value="-1176493523" label="enable-md-extensions"/>
@@ -50215,6 +50250,7 @@ from previous Chrome versions.
   <int value="-933377608"
       label="OmniboxUIExperimentHideSteadyStateUrlScheme:enabled"/>
   <int value="-933316841" label="enable-permissions-blacklist"/>
+  <int value="-932783986" label="UseChromeOSDirectVideoDecoder:enabled"/>
   <int value="-932474660" label="VirtualDesks:enabled"/>
   <int value="-932261921"
       label="enable-defer-all-script-without-optimization-hints"/>
@@ -50521,6 +50557,7 @@ from previous Chrome versions.
   <int value="-705212373" label="IncognitoNtpRevamp:disabled"/>
   <int value="-704459022" label="ContinuousSearch:enabled"/>
   <int value="-704232562" label="UseMonitorColorSpace:enabled"/>
+  <int value="-703552662" label="PrefetchAndroidFonts:disabled"/>
   <int value="-702477233" label="ContentFullscreen:enabled"/>
   <int value="-700762821" label="RequestDesktopSiteForTablets:disabled"/>
   <int value="-700300613" label="use-fake-device-for-media-stream:disabled"/>
@@ -52757,7 +52794,6 @@ from previous Chrome versions.
   <int value="1011550878" label="MessagesForAndroidPermissionUpdate:disabled"/>
   <int value="1012643576" label="CommerceDeveloper:enabled"/>
   <int value="1012942422" label="HorizontalTabSwitcherAndroid:disabled"/>
-  <int value="1015012662" label="ChromeOSDirectVideoDecoder:enabled"/>
   <int value="1015895665" label="drop-sync-credential:enabled"/>
   <int value="1017364362" label="VrIconInDaydreamHome:enabled"/>
   <int value="1017523412" label="ExtensionsMenuAccessControl:disabled"/>
@@ -53934,6 +53970,7 @@ from previous Chrome versions.
   <int value="1880955305" label="enable-preconnect-to-search"/>
   <int value="1881036528" label="disable-multilingual-spellchecker"/>
   <int value="1881174782" label="disable-brotli"/>
+  <int value="1882197308" label="UseChromeOSDirectVideoDecoder:disabled"/>
   <int value="1883998150" label="WebAppsCrosapi:disabled"/>
   <int value="1887031213" label="AutofillManualFallbackAndroid:disabled"/>
   <int value="1887882558" label="RTCUnifiedPlanByDefault:enabled"/>
@@ -64221,6 +64258,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="217" label="Nearby Share: Data Usage"/>
   <int value="218" label="Phone Hub Apps: On/Off"/>
   <int value="219" label="Phone Hub Camera Roll: On/Off"/>
+  <int value="220"
+      label="Nearby Share: Devices nearby are sharing notification"/>
   <int value="300" label="Add Account"/>
   <int value="301" label="Remove Account"/>
   <int value="302" label="Split Sync On/Off"/>

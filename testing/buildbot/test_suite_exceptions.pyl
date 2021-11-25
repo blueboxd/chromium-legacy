@@ -464,14 +464,6 @@
           'shards': 20,
         },
       },
-      'linux-exp-code-coverage': {
-        'args': [
-          '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw',
-        ],
-        'swarming': {
-          'shards': 20,
-        },
-      },
       'linux-layout-tests-edit-ng': {
         'args': [
           '--flag-specific=enable-editing-ng',
@@ -850,6 +842,16 @@
         },
       },
     },
+  },
+  'chrome_junit_tests': {
+   'modifications': {
+     'android-marshmallow-arm64-rel': {
+       'args': [
+         # Too many shards can lead to race conditions (crbug/1272066)
+         '--shards=8',
+       ],
+     },
+   },
   },
   'chrome_public_smoke_test': {
     'remove_from': [
@@ -1458,6 +1460,15 @@
       # exception once there is enough capacity to run these tests.
       'Android FYI Release (Pixel 2)',
     ],
+  },
+  'device_unittests': {
+    'modifications': {
+      'android-12-x64-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.device_unittests.filter',
+        ],
+      },
+    },
   },
   'disk_usage_tast_test': {
     # TODO(crbug.com/1077659): Add the test back after it's fixed.

@@ -2467,6 +2467,7 @@ static_library("browser") {
       "//ash/webui/shortcut_customization_ui",
       "//chrome/app/theme:chrome_unscaled_resources_grit",
       "//chrome/browser/ash/system_extensions",
+      "//chrome/browser/ash/system_extensions/api/window_management",
       "//chrome/browser/nearby_sharing/common",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/audio:mojo_bindings",
@@ -2506,6 +2507,11 @@ static_library("browser") {
       "//components/session_manager/core",
       "//device/vr/public/mojom:isolated_xr_service",
     ]
+
+    # TODO(crbug.com/1253318): Refactor window_management into ash/ and expose
+    # the InstanceRegistry via an InstanceRegistryWrapper, then remove this.
+    allow_circular_includes_from +=
+        [ "//chrome/browser/ash/system_extensions/api/window_management" ]
     public_deps += [ "//ui/lottie" ]
     if (!is_official_build) {
       deps += [
@@ -4452,7 +4458,7 @@ static_library("browser") {
       "//chrome/browser/share/core:share_targets",
       "//chrome/browser/share/proto:proto",
       "//chrome/browser/ui/color:color_headers",
-      "//chrome/browser/ui/webui/enterprise_casting:mojo_bindings",
+      "//chrome/browser/ui/webui/access_code_cast:mojo_bindings",
       "//chrome/browser/ui/webui/tab_strip:mojo_bindings",
       "//chrome/browser/web_applications",
       "//chrome/browser/web_applications/app_service",
@@ -5609,7 +5615,6 @@ static_library("browser") {
       "obsolete_system/obsolete_system_mac.cc",
       "password_manager/password_manager_util_mac.h",
       "password_manager/password_manager_util_mac.mm",
-      "performance_monitor/resource_coalition_internal_types_mac.h",
       "performance_monitor/resource_coalition_mac.h",
       "performance_monitor/resource_coalition_mac.mm",
       "platform_util_mac.mm",
@@ -5637,6 +5642,7 @@ static_library("browser") {
       "//chrome/services/mac_notifications/public/mojom",
       "//components/crash/core/app",
       "//components/metal_util",
+      "//components/power_metrics",
       "//components/remote_cocoa/browser:browser",
       "//sandbox/mac:seatbelt",
       "//sandbox/policy",
@@ -5696,6 +5702,7 @@ static_library("browser") {
       "//chrome/browser/enterprise/connectors/device_trust:features",
       "//chrome/browser/enterprise/connectors/device_trust/attestation/common",
       "//chrome/browser/enterprise/connectors/device_trust/attestation/common:types",
+      "//chrome/browser/enterprise/connectors/device_trust/common",
       "//chrome/browser/enterprise/connectors/device_trust/signals",
       "//chrome/browser/enterprise/connectors/device_trust/signals/decorators/common",
       "//chrome/browser/enterprise/connectors/device_trust/signals/decorators/content",
@@ -6219,6 +6226,8 @@ static_library("browser") {
       sources += [
         "printing/print_backend_service_manager.cc",
         "printing/print_backend_service_manager.h",
+        "printing/print_job_worker_oop.cc",
+        "printing/print_job_worker_oop.h",
       ]
       deps += [
         "//chrome/services/printing/public/mojom",

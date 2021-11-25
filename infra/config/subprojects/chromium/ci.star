@@ -4202,7 +4202,7 @@ ci.fyi_builder(
     # TODO(thakis): Remove once https://crbug.com/927738 is resolved.
     execution_timeout = 5 * time.hour,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_jobs = 400,
     reclient_instance = rbe_instance.DEFAULT,
 )
 # End - Reclient migration, phase 2, block 1 shadow builders
@@ -4214,6 +4214,7 @@ ci.fyi_windows_builder(
         category = "win",
         short_name = "re",
     ),
+    cores = 32,
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
     os = os.WINDOWS_DEFAULT,
@@ -4226,6 +4227,7 @@ ci.fyi_windows_builder(
         category = "win",
         short_name = "re x",
     ),
+    cores = 32,
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
     reclient_profiler_service = "reclient-win",
@@ -4455,19 +4457,6 @@ ci.fyi_coverage_builder(
     ),
     use_clang_coverage = True,
     coverage_test_types = ["overall", "unit"],
-    triggered_by = [],
-)
-
-ci.fyi_coverage_builder(
-    name = "linux-exp-code-coverage",
-    console_view_entry = consoles.console_view_entry(
-        category = "code_coverage",
-        short_name = "lnx",
-    ),
-    use_clang_coverage = True,
-    coverage_test_types = ["overall"],
-    schedule = "triggered",
-    coverage_reference_commit = "c942891373445199f69afd905965ad1e89cdee09",
     triggered_by = [],
 )
 

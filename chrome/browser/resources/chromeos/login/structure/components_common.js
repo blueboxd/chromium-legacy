@@ -12,8 +12,6 @@ function loadCommonComponents() {
 // <include src="../notification_card.js">
 // <include src="../gaia_dialog.js">
 
-// <include src="../checking_downloading_update.js">
-
 // <include src="../screen_gaia_signin.js">
 // <include src="../saml_confirm_password.js">
 // <include src="../offline_ad_login.js">
@@ -23,7 +21,6 @@ function loadCommonComponents() {
 // <include src="../multidevice_setup_first_run.js">
 // <include src="../screen_multidevice_setup.js">
 // <include src="../security_token_pin.js">
-// <include src="../screen_app_launch_splash.js">
 
 // <include src="components_[OOBE].js">
 // <include src="components_[OS_INSTALL].js">

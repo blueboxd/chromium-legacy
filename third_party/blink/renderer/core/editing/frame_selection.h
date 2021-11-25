@@ -250,6 +250,11 @@ class CORE_EXPORT FrameSelection final
   // Returns true if a word is selected.
   bool SelectWordAroundCaret();
 
+  // Returns whether a selection was successfully executed. Currently supports
+  // word and sentence granularities.
+  bool SelectAroundCaret(TextGranularity text_granularity,
+                         HandleVisibility handle_visibility);
+
 #if DCHECK_IS_ON()
   void ShowTreeForThis() const;
 #endif

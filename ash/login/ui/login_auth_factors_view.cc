@@ -22,7 +22,9 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/flex_layout.h"
 
 namespace ash {
 
@@ -31,11 +33,9 @@ namespace {
 using AuthFactorState = AuthFactorModel::AuthFactorState;
 
 constexpr int kAuthFactorsViewWidthDp = 204;
-constexpr int kSpacingBetweenIconsAndLabelDp = 15;
-constexpr int kIconTopSpacingDp = 20;
+constexpr int kSpacingBetweenIconsAndLabelDp = 8;
+constexpr int kIconTopSpacingDp = 10;
 constexpr int kArrowButtonSizeDp = 32;
-constexpr int kSpacingBetweenIconsDp = 28;
-constexpr int kIconSizeDp = 32;
 constexpr base::TimeDelta kErrorTimeout = base::Seconds(3);
 
 // The values of this enum should be nearly the same as the values of
@@ -217,14 +217,12 @@ LoginAuthFactorsView::LoginAuthFactorsView(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   auth_factor_icon_row_ = AddChildView(std::make_unique<views::View>());
-  auto* icon_row_layout = auth_factor_icon_row_->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-          kSpacingBetweenIconsDp));
-  icon_row_layout->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::kCenter);
-  icon_row_layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
+  auto* animating_layout = auth_factor_icon_row_->SetLayoutManager(
+      std::make_unique<views::AnimatingLayoutManager>());
+  animating_layout->SetBoundsAnimationMode(
+      views::AnimatingLayoutManager::BoundsAnimationMode::kAnimateMainAxis);
+  animating_layout->SetTargetLayoutManager(
+      std::make_unique<views::FlexLayout>());
 
   arrow_button_ = AddChildView(std::make_unique<ArrowButtonView>(
       base::BindRepeating(&LoginAuthFactorsView::ArrowButtonPressed,
@@ -236,11 +234,11 @@ LoginAuthFactorsView::LoginAuthFactorsView(
       l10n_util::GetStringUTF16(IDS_AUTH_FACTOR_LABEL_CLICK_TO_ENTER));
   arrow_button_->SetVisible(false);
 
+  // TODO(crbug.com/1233614): Rename kLockScreenFingerprintSuccessIcon once the
+  // feature flag is removed and FingerprintView no longer needs this.
   checkmark_icon_ = AddChildView(std::make_unique<AuthIconView>());
-  checkmark_icon_->SetImage(gfx::CreateVectorIcon(
-      kLockScreenFingerprintSuccessIcon, kIconSizeDp,
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconColorPositive)));
+  checkmark_icon_->SetIcon(kLockScreenFingerprintSuccessIcon,
+                           AuthIconView::Color::kPositive);
   checkmark_icon_->SetVisible(false);
 
   label_ = AddChildView(std::make_unique<AuthFactorsLabel>());

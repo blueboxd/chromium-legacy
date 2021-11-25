@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://oobe/screens/common/app_downloading.m.js';
+import 'chrome://oobe/screens/common/app_launch_splash.m.js';
 import 'chrome://oobe/screens/common/adb_sideloading.m.js';
 import 'chrome://oobe/screens/common/arc_terms_of_service.m.js';
 import 'chrome://oobe/screens/common/autolaunch.m.js';
@@ -12,6 +13,7 @@ import 'chrome://oobe/screens/common/enable_kiosk.m.js';
 import 'chrome://oobe/screens/common/error_message.m.js';
 import 'chrome://oobe/screens/common/family_link_notice.m.js';
 import 'chrome://oobe/screens/common/fingerprint_setup.m.js';
+import 'chrome://oobe/screens/common/hw_data_collection.m.js';
 import 'chrome://oobe/screens/common/gesture_navigation.m.js';
 import 'chrome://oobe/screens/common/guest_tos.m.js';
 import 'chrome://oobe/screens/common/managed_terms_of_service.m.js';
@@ -26,10 +28,10 @@ import 'chrome://oobe/screens/common/wrong_hwid.m.js';
 import 'chrome://oobe/screens/login/active_directory_password_change.m.js';
 import 'chrome://oobe/screens/login/encryption_migration.m.js';
 import 'chrome://oobe/screens/login/gaia_password_changed.m.js';
-import 'chrome://oobe/screens/login/hw_data_collection.m.js';
 import 'chrome://oobe/screens/login/lacros_data_migration.m.js';
 import 'chrome://oobe/screens/login/management_transition.m.js';
 import 'chrome://oobe/screens/login/offline_login.m.js';
+import 'chrome://oobe/screens/login/update_required_card.m.js';
 import 'chrome://oobe/screens/oobe/auto_enrollment_check.m.js';
 import 'chrome://oobe/screens/oobe/demo_preferences.m.js';
 import 'chrome://oobe/screens/oobe/demo_setup.m.js';

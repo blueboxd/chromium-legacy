@@ -126,14 +126,6 @@ class InstanceRegistry {
   // Returns instances for the |app_id|.
   std::set<const Instance*> GetInstances(const std::string& app_id);
 
-  // Return states for the `app_id` and `window`. For apps opened in Lacros
-  // tabs, there might be multiple tabs in one Lacros window for one app, so
-  // there could be multiple states for tab instances. For other standalone app
-  // window, or tab window of the ash Chrome browser, there should be one state
-  // only.
-  std::set<InstanceState> GetStates(const std::string& app_id,
-                                    const aura::Window* window) const;
-
   // Returns one state for the `window`.
   //
   // Note: This interface is used for the standalone window, or the ash Chrome
@@ -279,21 +271,11 @@ class InstanceRegistry {
   // exactly once, and deltas_pending_ will stay empty.
   bool in_progress_ = false;
 
-  // Maps from instance key to the latest state: the "sum" of all previous
-  // deltas.
-  // TODO(crbug.com/1251501): Will be removed soon.
-  std::map<const Instance::InstanceKey, Instance*> instance_key_states_;
-
   // Maps from the instance id to the latest state: the "sum" of all previous
   // deltas.
   std::map<const base::UnguessableToken, InstancePtr> states_;
 
   std::list<InstancePtr> deltas_pending_;
-
-  // Maps from app id to app instance key.
-  // TODO(crbug.com/1251501): Will be removed soon.
-  std::map<const std::string, std::set<const Instance::InstanceKey>>
-      app_id_to_app_instance_key_;
 
   // Maps from window to a set of instance id.
   std::map<const aura::Window*, InstanceIds> window_to_instance_ids_;
@@ -303,7 +285,7 @@ class InstanceRegistry {
   // might be changed, and the instance id should be removed from
   // `window_to_instance_ids_`. `states_` can't be used to check window, because
   // some instances might be in `deltas_pending_`.
-  std::map<base::UnguessableToken, aura::Window*> instance_id_to_window_;
+  std::map<const base::UnguessableToken, aura::Window*> instance_id_to_window_;
 
   // Maps from app id to instances.
   std::map<const std::string, std::set<const Instance*>> app_id_to_instances_;

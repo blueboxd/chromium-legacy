@@ -1842,6 +1842,7 @@
     "type": "windowed_test_launcher",
   },
   "unit_tests": {
+    "python3": False,
     "label": "//chrome/test:unit_tests",
     "type": "windowed_test_launcher",
   },
@@ -2112,6 +2113,7 @@
     "type": "windowed_test_launcher",
   },
   "zlib_unittests": {
+    "python3": False,
     "label": "//third_party/zlib:zlib_unittests",
     "type": "console_test_launcher",
   },

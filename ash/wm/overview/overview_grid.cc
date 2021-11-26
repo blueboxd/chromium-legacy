@@ -29,7 +29,9 @@
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/desks/expanded_desks_bar_button.h"
 #include "ash/wm/desks/templates/desks_templates_grid_view.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
@@ -1426,8 +1428,7 @@ gfx::Rect OverviewGrid::GetGridEffectiveBounds() const {
     return bounds_;
 
   gfx::Rect effective_bounds = bounds_;
-  effective_bounds.Inset(0, DesksBarView::GetBarHeightForWidth(root_window_), 0,
-                         0);
+  effective_bounds.Inset(0, GetDesksBarHeight(), 0, 0);
   return effective_bounds;
 }
 
@@ -1449,7 +1450,7 @@ bool OverviewGrid::IntersectsWithDesksBar(const gfx::Point& screen_location,
   return dragged_item_over_bar;
 }
 
-bool OverviewGrid::MaybeDropItemOnDeskMiniView(
+bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
     const gfx::Point& screen_location,
     OverviewItem* drag_item) {
   DCHECK(desks_util::ShouldDesksBarBeCreated());
@@ -1490,7 +1491,30 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
         DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
   }
 
-  return false;
+  if (!features::IsDragWindowToNewDeskEnabled())
+    return false;
+
+  if (!desks_controller->CanCreateDesks())
+    return false;
+
+  if (!desks_bar_view_->expanded_state_new_desk_button()->IsPointOnButton(
+          screen_location)) {
+    return false;
+  }
+
+  desks_bar_view_->OnNewDeskButtonPressed(
+      DesksCreationRemovalSource::kDragToNewDeskButton);
+
+  return desks_controller->MoveWindowFromActiveDeskTo(
+      dragged_window, desks_controller->desks().back().get(), root_window_,
+      DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
+}
+
+void OverviewGrid::MaybeExpandDesksBarView() {
+  if (desks_bar_view_ && desks_bar_view_->IsZeroState()) {
+    desks_bar_view_->UpdateNewMiniViews(/*initializing_bar_view=*/false,
+                                        /*expanding_bar_view=*/true);
+  }
 }
 
 void OverviewGrid::StartScroll() {
@@ -2021,8 +2045,8 @@ void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
 
 gfx::Rect OverviewGrid::GetDesksWidgetBounds() const {
   gfx::Rect desks_widget_screen_bounds = bounds_;
-  desks_widget_screen_bounds.set_height(
-      DesksBarView::GetBarHeightForWidth(root_window_));
+  desks_widget_screen_bounds.set_height(GetDesksBarHeight());
+
   // Shift the widget down to make room for the splitview indicator guidance
   // when it's shown at the top of the screen and no other windows are snapped.
   if (split_view_drag_indicators_ &&
@@ -2051,6 +2075,17 @@ void OverviewGrid::UpdateFrameThrottling() {
       [](std::unique_ptr<OverviewItem>& item) { return item->GetWindow(); });
   Shell::Get()->frame_throttling_controller()->StartThrottling(
       windows_to_throttle);
+}
+
+int OverviewGrid::GetDesksBarHeight() const {
+  const bool should_show_zero_state_desks_bar =
+      desks_bar_view_ ? desks_bar_view_->IsZeroState()
+                      : !IsShowingDesksTemplatesGrid() &&
+                            DesksController::Get()->GetNumberOfDesks() == 1;
+
+  return should_show_zero_state_desks_bar
+             ? DesksBarView::kZeroStateBarHeight
+             : DesksBarView::GetExpandedBarHeight(root_window_);
 }
 
 }  // namespace ash

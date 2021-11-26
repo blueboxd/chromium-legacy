@@ -3937,8 +3937,8 @@ AutotestPrivateGetAppWindowListFunction::Run() {
           views::CAPTION_BUTTON_ICON_MINIMIZE,
           views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
           views::CAPTION_BUTTON_ICON_CLOSE,
-          views::CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-          views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+          views::CAPTION_BUTTON_ICON_LEFT_TOP_SNAPPED,
+          views::CAPTION_BUTTON_ICON_RIGHT_BOTTOM_SNAPPED,
           views::CAPTION_BUTTON_ICON_BACK,
           views::CAPTION_BUTTON_ICON_LOCATION,
           views::CAPTION_BUTTON_ICON_MENU,
@@ -5059,6 +5059,11 @@ AutotestPrivateStopSmoothnessTrackingFunction::Run() {
       &AutotestPrivateStopSmoothnessTrackingFunction::OnReportData, this);
   it->second.stopping = true;
   it->second.tracker->Stop();
+
+  // Trigger a repaint after ThroughputTracker::Stop() to generate a frame to
+  // ensure the tracker report will be sent back.
+  auto* root_window = ash::Shell::GetRootWindowForDisplayId(display_id);
+  root_window->GetHost()->compositor()->ScheduleFullRedraw();
 
   return did_respond() ? AlreadyResponded() : RespondLater();
 }

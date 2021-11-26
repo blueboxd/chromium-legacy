@@ -16,18 +16,29 @@ class CardUnmaskOtpInputDialogController;
 // Interface that exposes the view to CardUnmaskOtpInputDialogControllerImpl.
 class CardUnmaskOtpInputDialogView {
  public:
+  virtual ~CardUnmaskOtpInputDialogView() = default;
   // Creates a dialog and displays it as a modal on top of the web contents of
   // CardUnmaskOtpInputDialogController.
   static CardUnmaskOtpInputDialogView* CreateAndShow(
       CardUnmaskOtpInputDialogController* controller,
       content::WebContents* web_contents);
 
-  // Pending state is shown once the user submits a valid OTP.
+  // Pending state is shown once the user submits a possible valid OTP.
   virtual void ShowPendingState() = 0;
 
-  // Method to safely close this dialog when the controller is destroyed by
-  // unlinking the controller and closing the widget that owns this dialog.
-  virtual void OnControllerDestroying() = 0;
+  // Invalid state is shown if the user submits an incorrect or expired OTP. The
+  // view will automatically hide invalid state once the contents of the
+  // textfield are changed. Once the contents are changed and invalid state is
+  // hidden, the OK button might still be disabled due to not being a valid OTP.
+  virtual void ShowInvalidState(const std::u16string& invalid_label_text) = 0;
+
+  // Method to safely close this dialog including the case where the controller
+  // is destroyed first. |show_confirmation_before_closing| indicates whether we
+  // should update the throbber to show a checkmark before closing the dialog.
+  // |user_closed_dialog| indicates whether the dismissal was triggered by user
+  // closing the dialog.
+  virtual void Dismiss(bool show_confirmation_before_closing,
+                       bool user_closed_dialog) = 0;
 };
 
 }  // namespace autofill

@@ -26,6 +26,7 @@
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "gpu/ipc/common/dxgi_helpers.h"
 #include "media/base/media_switches.h"
 #include "media/base/win/mf_helpers.h"
@@ -77,6 +78,11 @@ eAVEncH264VProfile GetH264VProfile(VideoCodecProfile profile,
 }
 
 bool IsSvcSupported(IMFActivate* activate) {
+#if defined(ARCH_CPU_X86)
+  // x86 systems sometimes crash in video drivers here.
+  // More info: https://crbug.com/1253748
+  return false;
+#else
   Microsoft::WRL::ComPtr<IMFTransform> encoder;
   Microsoft::WRL::ComPtr<ICodecAPI> codec_api;
   HRESULT hr = activate->ActivateObject(IID_PPV_ARGS(&encoder));
@@ -107,6 +113,7 @@ bool IsSvcSupported(IMFActivate* activate) {
 
   activate->ShutdownObject();
   return result;
+#endif  // defined(ARCH_CPU_X86)
 }
 
 }  // namespace
@@ -1346,22 +1353,68 @@ void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
                     "Invalid bitrate mode", );
 
   framerate = base::clamp(framerate, 1u, uint32_t{kMaxFrameRateNumerator});
+
   if (frame_rate_ != framerate) {
     HRESULT hr = MFSetAttributeRatio(imf_output_media_type_.Get(),
                                      MF_MT_FRAME_RATE, framerate, 1);
     RETURN_ON_HR_FAILURE(hr, "Couldn't set frame rate for output type", );
 
+    imf_output_media_type_->SetUINT32(MF_MT_AVG_BITRATE, bitrate.target());
+    RETURN_ON_HR_FAILURE(hr, "Couldn't set average bitrate for output type", );
+
     hr = MFSetAttributeRatio(imf_input_media_type_.Get(), MF_MT_FRAME_RATE,
                              framerate, 1);
     RETURN_ON_HR_FAILURE(hr, "Couldn't set frame rate for input type", );
 
-    hr = encoder_->SetOutputType(output_stream_id_,
-                                 imf_output_media_type_.Get(), 0);
-    RETURN_ON_HR_FAILURE(hr, "Couldn't set output media type", );
+    if (is_async_mft_) {
+      // Some HMFTs will reject output type change with MF_E_INVALIDTYPE due
+      // to temporary mismatch between output/input media types, so we always
+      // clear the input/output media types before reconfiguring them
+      // dynamically.
+      hr = encoder_->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, 0);
+      RETURN_ON_HR_FAILURE(
+          hr, "Couldn't process message MFT_MESSAGE_COMMAND_DRAIN", );
 
-    hr = encoder_->SetInputType(input_stream_id_, imf_input_media_type_.Get(),
-                                0);
-    RETURN_ON_HR_FAILURE(hr, "Couldn't set input media type", );
+      DrainPendingOutputs();
+
+      hr = encoder_->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, 0);
+      RETURN_ON_HR_FAILURE(
+          hr, "Couldn't process message MFT_MESSAGE_NOTIFY_END_OF_STREAM", );
+
+      hr = encoder_->ProcessMessage(MFT_MESSAGE_NOTIFY_END_STREAMING, 0);
+      RETURN_ON_HR_FAILURE(
+          hr, "Couldn't process message MFT_MESSAGE_NOTIFY_END_STREAMING", );
+
+      hr = encoder_->SetInputType(input_stream_id_, nullptr, 0);
+      RETURN_ON_HR_FAILURE(hr, "Couldn't clear input media type.", );
+
+      hr = encoder_->SetOutputType(output_stream_id_, nullptr, 0);
+      RETURN_ON_HR_FAILURE(hr, "Couldn't clear ouput media type.", );
+
+      hr = encoder_->SetOutputType(output_stream_id_,
+                                   imf_output_media_type_.Get(), 0);
+      RETURN_ON_HR_FAILURE(hr, "Couldn't set output media type", );
+
+      hr = encoder_->SetInputType(input_stream_id_, imf_input_media_type_.Get(),
+                                  0);
+      RETURN_ON_HR_FAILURE(hr, "Couldn't set input media type", );
+
+      hr = encoder_->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, 0);
+      RETURN_ON_HR_FAILURE(
+          hr, "Couldn't process message MFT_MESSAGE_NOTIFY_BEGIN_STREAMING", );
+
+      hr = encoder_->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, 0);
+      RETURN_ON_HR_FAILURE(
+          hr, "Couldn't process message MFT_MESSAGE_NOTIFY_START_OF_STREAM", );
+    } else {
+      hr = encoder_->SetOutputType(output_stream_id_,
+                                   imf_output_media_type_.Get(), 0);
+      RETURN_ON_HR_FAILURE(hr, "Couldn't set output media type", );
+
+      hr = encoder_->SetInputType(input_stream_id_, imf_input_media_type_.Get(),
+                                  0);
+      RETURN_ON_HR_FAILURE(hr, "Couldn't set input media type", );
+    }
     frame_rate_ = framerate;
   }
 
@@ -1574,6 +1627,24 @@ HRESULT MediaFoundationVideoEncodeAccelerator::PerformD3DScaling(
   }
 
   return hr;
+}
+
+void MediaFoundationVideoEncodeAccelerator::DrainPendingOutputs() {
+  Microsoft::WRL::ComPtr<IMFMediaEvent> media_event;
+
+  while ((SUCCEEDED(
+      event_generator_->GetEvent(MF_EVENT_FLAG_NO_WAIT, &media_event)))) {
+    MediaEventType event_type;
+    HRESULT hr = media_event->GetType(&event_type);
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "Failed to get the type of media event.";
+      continue;
+    }
+
+    if (event_type == METransformHaveOutput) {
+      ProcessOutputAsync();
+    }
+  }
 }
 
 }  // namespace media

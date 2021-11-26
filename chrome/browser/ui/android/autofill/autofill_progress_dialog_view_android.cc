@@ -39,7 +39,25 @@ AutofillProgressDialogView* AutofillProgressDialogView::CreateAndShow(
   return dialog_view;
 }
 
-void AutofillProgressDialogViewAndroid::Dismiss() {
+void AutofillProgressDialogViewAndroid::Dismiss(
+    bool show_confirmation_before_closing,
+    bool is_canceled_by_user) {
+  if (show_confirmation_before_closing) {
+    // If the confirmation is shown, the dialog must have been dismissed
+    // automatically without user actions.
+    DCHECK(!is_canceled_by_user);
+    DCHECK(controller_);
+    std::u16string confirmation_message = controller_->GetConfirmationMessage();
+    controller_->OnDismissed(/*is_canceled_by_user=*/false);
+    controller_ = nullptr;
+    ShowConfirmation(confirmation_message);
+    return;
+  }
+
+  if (controller_) {
+    controller_->OnDismissed(/*is_canceled_by_user=*/is_canceled_by_user);
+    controller_ = nullptr;
+  }
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!java_object_.is_null()) {
     Java_AutofillProgressDialogBridge_dismiss(env, java_object_);
@@ -49,8 +67,10 @@ void AutofillProgressDialogViewAndroid::Dismiss() {
 }
 
 void AutofillProgressDialogViewAndroid::OnDismissed(JNIEnv* env) {
-  controller_->OnDismissed();
-  controller_ = nullptr;
+  if (controller_) {
+    controller_->OnDismissed(/*is_canceled_by_user=*/true);
+    controller_ = nullptr;
+  }
   delete this;
 }
 
@@ -74,12 +94,12 @@ void AutofillProgressDialogViewAndroid::ShowDialog() {
           IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER));
 }
 
-void AutofillProgressDialogViewAndroid::ShowConfirmation() {
+void AutofillProgressDialogViewAndroid::ShowConfirmation(
+    std::u16string confirmation_message) {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!java_object_.is_null()) {
     Java_AutofillProgressDialogBridge_showConfirmation(
-        env, java_object_,
-        ConvertUTF16ToJavaString(env, controller_->GetConfirmationMessage()));
+        env, java_object_, ConvertUTF16ToJavaString(env, confirmation_message));
   }
 }
 

@@ -15,6 +15,7 @@
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
@@ -23,6 +24,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/ash/crosapi/browser_data_migrator_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
@@ -223,15 +225,22 @@ BrowserDataMigrator::TargetInfo::TargetInfo(TargetInfo&&) = default;
 BrowserDataMigrator::TargetInfo::~TargetInfo() = default;
 
 BrowserDataMigrator::TargetItem::TargetItem(base::FilePath path,
+                                            int64_t size,
                                             ItemType item_type)
-    : path(path), is_directory(item_type == ItemType::kDirectory) {}
+    : path(path), size(size), is_directory(item_type == ItemType::kDirectory) {}
 
 bool BrowserDataMigrator::TargetItem::operator==(const TargetItem& rhs) const {
-  return this->path == rhs.path && this->is_directory == rhs.is_directory;
+  return this->path == rhs.path && this->size == rhs.size &&
+         this->is_directory == rhs.is_directory;
 }
 
 int64_t BrowserDataMigrator::TargetInfo::TotalCopySize() const {
   return lacros_data_size + common_data_size;
+}
+
+int64_t BrowserDataMigrator::TargetInfo::TotalDirSize() const {
+  return no_copy_data_size + ash_data_size + lacros_data_size +
+         common_data_size;
 }
 
 // static
@@ -389,7 +398,7 @@ BrowserDataMigrator::MigrationResult BrowserDataMigrator::MigrateInternal(
   TargetInfo target_info = GetTargetInfo(original_user_dir);
   base::ElapsedTimer timer;
 
-  if (!HasEnoughDiskSpace(target_info, new_user_dir)) {
+  if (!HasEnoughDiskSpace(target_info, original_user_dir, Mode::kCopy)) {
     RecordStatus(FinalStatus::kNotEnoughSpace, &target_info);
     return {data_wipe_result, ResultValue::kFailed};
   }
@@ -490,7 +499,8 @@ BrowserDataMigrator::TargetInfo BrowserDataMigrator::GetTargetInfo(
       size = info.GetSize();
       item_type = TargetItem::ItemType::kFile;
     } else if (S_ISDIR(info.stat().st_mode)) {
-      size = base::ComputeDirectorySize(entry);
+      size =
+          browser_data_migrator_util::ComputeDirectorySizeWithoutLinks(entry);
       item_type = TargetItem::ItemType::kDirectory;
     } else {
       // Skip if `entry` is not a file or directory such as a symlink.
@@ -498,18 +508,23 @@ BrowserDataMigrator::TargetInfo BrowserDataMigrator::GetTargetInfo(
     }
 
     if (base::Contains(ash_data_paths, entry.BaseName().value())) {
-      target_info.ash_data_items.emplace_back(TargetItem{entry, item_type});
+      target_info.ash_data_items.emplace_back(
+          TargetItem{entry, size, item_type});
       target_info.ash_data_size += size;
     } else if (base::Contains(no_copy_data_paths, entry.BaseName().value())) {
+      target_info.no_copy_data_items.emplace_back(
+          TargetItem{entry, size, item_type});
       target_info.no_copy_data_size += size;
     } else if (base::Contains(lacros_data_paths, entry.BaseName().value())) {
       // Items that should be moved to lacros.
-      target_info.lacros_data_items.emplace_back(TargetItem{entry, item_type});
+      target_info.lacros_data_items.emplace_back(
+          TargetItem{entry, size, item_type});
       target_info.lacros_data_size += size;
     } else {
       // Items that are not explicitly ash, no_copy or lacros are put into
       // common category.
-      target_info.common_data_items.emplace_back(TargetItem{entry, item_type});
+      target_info.common_data_items.emplace_back(
+          TargetItem{entry, size, item_type});
       target_info.common_data_size += size;
     }
   }
@@ -518,15 +533,35 @@ BrowserDataMigrator::TargetInfo BrowserDataMigrator::GetTargetInfo(
 }
 
 // static
-bool BrowserDataMigrator::HasEnoughDiskSpace(const TargetInfo& target_info,
-                                             const base::FilePath& to_dir) {
-  // Check the amount of free disk space for `to_dir`'s parent directory. We
-  // check the parent directly because `to_dir` (i.e. /home/chronos/user/lacros)
-  // does not exist yet.
+bool BrowserDataMigrator::HasEnoughDiskSpace(
+    const TargetInfo& target_info,
+    const base::FilePath& original_user_dir,
+    Mode mode) {
   const int64_t free_disk_space =
-      base::SysInfo::AmountOfFreeDiskSpace(to_dir.DirName());
-  if (free_disk_space < target_info.TotalCopySize() + kBuffer) {
-    LOG(ERROR) << "Aborting migration. Need " << target_info.TotalCopySize()
+      base::SysInfo::AmountOfFreeDiskSpace(original_user_dir);
+
+  int64_t required_space;
+  switch (mode) {
+    case Mode::kMove:
+      required_space = target_info.common_data_size;
+      break;
+    case Mode::kDeleteAndCopy:
+      required_space =
+          target_info.TotalCopySize() - target_info.no_copy_data_size;
+      break;
+    case Mode::kDeleteAndMove:
+      required_space =
+          target_info.common_data_size - target_info.no_copy_data_size;
+      break;
+    case Mode::kCopy:
+    default:
+      DCHECK_EQ(mode, Mode::kCopy);
+      required_space = target_info.TotalCopySize();
+      break;
+  }
+
+  if (free_disk_space < required_space + kBuffer) {
+    LOG(ERROR) << "Aborting migration. Need " << required_space
                << " bytes but only have " << free_disk_space << " bytes left.";
     return false;
   }
@@ -638,5 +673,51 @@ bool BrowserDataMigrator::SetupTmpDir(const TargetInfo& target_info,
   }
 
   return true;
+}
+
+// static
+void BrowserDataMigrator::DryRunToCollectUMA(
+    const base::FilePath& profile_data_dir) {
+  TargetInfo target_info = GetTargetInfo(profile_data_dir);
+
+  base::UmaHistogramCustomCounts(kDryRunNoCopyDataSize,
+                                 target_info.no_copy_data_size / 1024 / 1024, 1,
+                                 10000, 100);
+  base::UmaHistogramCustomCounts(kDryRunAshDataSize,
+                                 target_info.ash_data_size / 1024 / 1024, 1,
+                                 10000, 100);
+  base::UmaHistogramCustomCounts(kDryRunLacrosDataSize,
+                                 target_info.lacros_data_size / 1024 / 1024, 1,
+                                 10000, 100);
+  base::UmaHistogramCustomCounts(kDryRunCommonDataSize,
+                                 target_info.common_data_size / 1024 / 1024, 1,
+                                 10000, 100);
+
+  browser_data_migrator_util::RecordTotalSize(target_info.TotalDirSize());
+
+  RecordTargetItemSizes(target_info.no_copy_data_items);
+  RecordTargetItemSizes(target_info.ash_data_items);
+  RecordTargetItemSizes(target_info.lacros_data_items);
+  RecordTargetItemSizes(target_info.common_data_items);
+
+  base::UmaHistogramBoolean(
+      kDryRunCopyMigrationHasEnoughDiskSpace,
+      HasEnoughDiskSpace(target_info, profile_data_dir, Mode::kCopy));
+  base::UmaHistogramBoolean(
+      kDryRunMoveMigrationHasEnoughDiskSpace,
+      HasEnoughDiskSpace(target_info, profile_data_dir, Mode::kMove));
+  base::UmaHistogramBoolean(
+      kDryRunDeleteAndCopyMigrationHasEnoughDiskSpace,
+      HasEnoughDiskSpace(target_info, profile_data_dir, Mode::kDeleteAndCopy));
+  base::UmaHistogramBoolean(
+      kDryRunDeleteAndMoveMigrationHasEnoughDiskSpace,
+      HasEnoughDiskSpace(target_info, profile_data_dir, Mode::kDeleteAndMove));
+}
+
+// staic
+void BrowserDataMigrator::RecordTargetItemSizes(
+    const std::vector<TargetItem>& items) {
+  for (auto& item : items)
+    browser_data_migrator_util::RecordUserDataSize(item.path, item.size);
 }
 }  // namespace ash

@@ -461,6 +461,28 @@ be describing additional metrics about the same event.
       site-wide framework and not a reader experience.
     </summary>
   </metric>
+  <metric
+      name="SubFrame.InteractiveTiming.AverageUserInteractionLatencyOverBudget.MaxEventduration">
+    <summary>
+      The average value of user interaction latency above budget of a page load
+      in AMP subframes, in ms. For this metric, we measure the latency of user
+      interactions by Responsiveness.UserInteraction.MaxEventDuration and we
+      deduct a budget from the original value. If the latency value is below the
+      budget, it will be treated as 0 ms. Each type of interaction has its own
+      budget.
+    </summary>
+  </metric>
+  <metric
+      name="SubFrame.InteractiveTiming.AverageUserInteractionLatencyOverBudget.TotalEventduration">
+    <summary>
+      The average value of user interaction latency above budget of a page load
+      in AMP subframes, in ms. For this metric, we measure the latency of user
+      interactions by Responsiveness.UserInteraction.TotalEventDuration and we
+      deduct a budget from the original value. If the latency value is below the
+      budget, it will be treated as 0 ms. Each type of interaction has its own
+      budget.
+    </summary>
+  </metric>
   <metric name="SubFrame.InteractiveTiming.FirstInputDelay3">
     <obsolete>
       Removed July 2019 in favor of FirstInputDelay4.
@@ -478,6 +500,112 @@ be describing additional metrics about the same event.
       and the start of event processing on the main thread for the first
       meaningful input per navigation, in the AMP subframe. See
       https://goo.gl/tr1oTZ for a detailed explanation. In milliseconds.
+    </summary>
+  </metric>
+  <metric
+      name="SubFrame.InteractiveTiming.SlowUserInteractionLatencyOverBudget.HighPercentile.MaxEventduration">
+    <summary>
+      An approximation of high percentile of user interaction latency above
+      budget of a page load in AMP subframes, in ms. For this metric, we measure
+      the latency of user interactions by
+      Responsiveness.UserInteraction.MaxEventDuration and we deduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="SubFrame.InteractiveTiming.SlowUserInteractionLatencyOverBudget.HighPercentile.TotalEventduration">
+    <summary>
+      An approximation of high percentile of user interaction latency above
+      budget of a page load in AMP subframes, in ms. For this metric, we measure
+      the latency of user interactions by
+      Responsiveness.UserInteraction.TotalEventDuration and we deduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="SubFrame.InteractiveTiming.SlowUserInteractionLatencyOverBudget.HighPercentile2.MaxEventduration">
+    <summary>
+      An approximation of high percentile of user interaction latency above
+      budget of a page load in AMP subframes, in ms. For this metric, we measure
+      the latency of user interactions by
+      Responsiveness.UserInteraction.MaxEventDuration and we deduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="SubFrame.InteractiveTiming.SlowUserInteractionLatencyOverBudget.HighPercentile2.TotalEventduration">
+    <summary>
+      An approximation of high percentile of user interaction latency above
+      budget of a page load in AMP subframes, in ms. For this metric, we measure
+      the latency of user interactions by
+      Responsiveness.UserInteraction.TotalEventDuration and we deduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="SubFrame.InteractiveTiming.SumOfUserInteractionLatencyOverBudget.MaxEventduration">
+    <summary>
+      The sum of user interaction latency above budget of a page load in AMP
+      subframes, in ms. For this metric, we measure the latency of user
+      interactions by Responsiveness.UserInteraction.MaxEventDuration and we
+      deduct a budget from the original value. If the latency value is below the
+      budget, it will be treated as 0 ms. Each type of interaction has its own
+      budget.
+    </summary>
+  </metric>
+  <metric
+      name="SubFrame.InteractiveTiming.SumOfUserInteractionLatencyOverBudget.TotalEventduration">
+    <summary>
+      The sum of user interaction latency above budget of a page load in AMP
+      subframes, in ms. For this metric, we measure the latency of user
+      interactions by Responsiveness.UserInteraction.TotalEventDuration and we
+      deduct a budget from the original value. If the latency value is below the
+      budget, it will be treated as 0 ms. Each type of interaction has its own
+      budget.
+    </summary>
+  </metric>
+  <metric
+      name="SubFrame.InteractiveTiming.WorstUserInteractionLatency.MaxEventduration">
+    <summary>
+      The maximum value of high percentile of user interaction latency above
+      budget of a page load in AMP subframes, in ms. For this metric, we measure
+      the latency of user interactions by
+      Responsiveness.UserInteraction.MaxEventDuration.
+    </summary>
+  </metric>
+  <metric
+      name="SubFrame.InteractiveTiming.WorstUserInteractionLatency.TotalEventduration">
+    <summary>
+      The maximum value of high percentile of user interaction latency above
+      budget of a page load in AMP subframes, in ms. For this metric, we measure
+      the latency of user interactions by
+      Responsiveness.UserInteraction.TotalEventDuration.
+    </summary>
+  </metric>
+  <metric
+      name="SubFrame.InteractiveTiming.WorstUserInteractionLatencyOverBudget.MaxEventduration">
+    <summary>
+      The maximum value of user interaction latency above budget of a page load
+      in AMP subframes, in ms. For this metric, we measure the latency of user
+      interactions by Responsiveness.UserInteraction.MaxEventDuration and we
+      deduct a budget from the original value. If the latency value is below the
+      budget, it will be treated as 0 ms. Each type of interaction has its own
+      budget.
+    </summary>
+  </metric>
+  <metric
+      name="SubFrame.InteractiveTiming.WorstUserInteractionLatencyOverBudget.TotalEventduration">
+    <summary>
+      The maximum value of user interaction latency above budget of a page load
+      in AMP subframes, in ms. For this metric, we measure the latency of user
+      interactions by Responsiveness.UserInteraction.TotalEventDuration and we
+      deduct a budget from the original value. If the latency value is below the
+      budget, it will be treated as 0 ms. Each type of interaction has its own
+      budget.
     </summary>
   </metric>
   <metric
@@ -701,6 +829,27 @@ be describing additional metrics about the same event.
       Note that most AMP documents are loaded in a subframe from a reader like
       Google Search; this metric measures usage of such readers.
     </summary>
+  </metric>
+</event>
+
+<event name="Android.DarkTheme.AutoDarkMode">
+  <owner>nemco@google.com</owner>
+  <owner>wenyufu@chromium.org</owner>
+  <summary>
+    Recorded when the user changes auto-dark theming for a site through the app
+    menu.
+  </summary>
+  <metric name="DisabledByUser" enum="Boolean">
+    <summary>
+      A boolean signaling that auto-dark theming has been disabled.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -7721,6 +7870,28 @@ be describing additional metrics about the same event.
       cumulative layout shift score described in the explainer.
     </summary>
   </metric>
+  <metric
+      name="AverageUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore.MaxEventduration">
+    <summary>
+      The average value of user interaction latency above budget of a page after
+      it is restored from the back-forward, in ms. For this metric, we measure
+      the latency of user interactions by
+      Responsiveness.UserInteraction.MaxEventDuration and we deduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="AverageUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore.TotalEventduration">
+    <summary>
+      The average value of user interaction latency above budget of a page after
+      it is restored from the back-forward, in ms. For this metric, we measure
+      the latency of user interactions by
+      Responsiveness.UserInteraction.TotalEventDuration and we deduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
   <metric name="BackForwardCache.BlocklistedFeatures"
       enum="WebSchedulerTrackedFeature">
     <summary>
@@ -7928,6 +8099,72 @@ be describing additional metrics about the same event.
       cache and the second requestAnimationFrame time in milliseconds.
     </summary>
   </metric>
+  <metric
+      name="SlowUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore.HighPercentile.MaxEventduration">
+    <summary>
+      An approximation of high percentile of user interaction latency above
+      budget of a page after it is restored from the back-forward, in ms. For
+      this metric, we measure the latency of user interactions by
+      Responsiveness.UserInteraction.MaxEventDuration and we deduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="SlowUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore.HighPercentile.TotalEventduration">
+    <summary>
+      An approximation of high percentile of user interaction latency above
+      budget of a page after it is restored from the back-forward, in ms. For
+      this metric, we measure the latency of user interactions by
+      Responsiveness.UserInteraction.TotalEventDuration and we deduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="SlowUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore.HighPercentile2.MaxEventduration">
+    <summary>
+      An approximation of high percentile of user interaction latency above
+      budget of a page after it is restored from the back-forward, in ms. For
+      this metric, we measure the latency of user interactions by
+      Responsiveness.UserInteraction.MaxEventDuration and we deduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="SlowUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore.HighPercentile2.TotalEventduration">
+    <summary>
+      An approximation of high percentile of user interaction latency above
+      budget of a page after it is restored from the back-forward, in ms. For
+      this metric, we measure the latency of user interactions by
+      Responsiveness.UserInteraction.TotalEventDuration and we deduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="SumOfUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore.MaxEventduration">
+    <summary>
+      The sum of user interaction latency above budget of a page after it is
+      restored from the back-forward, in ms. For this metric, we measure the
+      latency of user interactions by
+      Responsiveness.UserInteraction.MaxEventDuration and we deduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="SumOfUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore.TotalEventduration">
+    <summary>
+      The sum of user interaction latency above budget of a page after it is
+      restored from the back-forward, in ms. For this metric, we measure the
+      latency of user interactions by
+      Responsiveness.UserInteraction.TotalEventDuration and we deduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
   <metric name="ThirdRequestAnimationFrameAfterBackForwardCacheRestore">
     <summary>
       Measures the time duration between the page restore from back-forward
@@ -7942,6 +8179,46 @@ be describing additional metrics about the same event.
       This is clamped to hours for values greater than 3 hours, to minutes for
       values greater than 3 minutes, to seconds for values greater than 5
       seconds.
+    </summary>
+  </metric>
+  <metric
+      name="WorstUserInteractionLatencyAfterBackForwardCacheRestore.MaxEventduration">
+    <summary>
+      The maximum value of user interaction latency of a page after it is
+      restored from the back-forward, in ms. For this metric, we measure the
+      latency of user interactions by
+      Responsiveness.UserInteraction.MaxEventDuration.
+    </summary>
+  </metric>
+  <metric
+      name="WorstUserInteractionLatencyAfterBackForwardCacheRestore.TotalEventduration">
+    <summary>
+      The maximum value of user interaction latency of a page after it is
+      restored from the back-forward, in ms. For this metric, we measure the
+      latency of user interactions by
+      Responsiveness.UserInteraction.TotalEventDuration.
+    </summary>
+  </metric>
+  <metric
+      name="WorstUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore.MaxEventduration">
+    <summary>
+      The maximum value of user interaction latency above budget of a page after
+      it is restored from the back-forward, in ms. For this metric, we measure
+      the latency of user interactions by
+      Responsiveness.UserInteraction.MaxEventDuration and we reduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="WorstUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore.TotalEventduration">
+    <summary>
+      The maximum value of user interaction latency above budget of a page after
+      it is restored from the back-forward, in ms. For this metric, we measure
+      the latency of user interactions by
+      Responsiveness.UserInteraction.TotalEventDuration and we reduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
     </summary>
   </metric>
 </event>
@@ -11805,7 +12082,7 @@ be describing additional metrics about the same event.
     <summary>
       The average value of user interaction latency above budget of a page load,
       in ms. For this metric, we measure the latency of user interactions by
-      Responsiveness.UserInteraction.MaxEventDuration and we reduct a budget
+      Responsiveness.UserInteraction.MaxEventDuration and we deduct a budget
       from the original value. If the latency value is below the budget, it will
       be treated as 0 ms. Each type of interaction has its own budget.
     </summary>
@@ -11815,7 +12092,7 @@ be describing additional metrics about the same event.
     <summary>
       The average value of user interaction latency above budget of a page load,
       in ms. For this metric, we measure the latency of user interactions by
-      Responsiveness.UserInteraction.TotalEventDuration and we reduct a budget
+      Responsiveness.UserInteraction.TotalEventDuration and we deduct a budget
       from the original value. If the latency value is below the budget, it will
       be treated as 0 ms. Each type of interaction has its own budget.
     </summary>
@@ -12110,8 +12387,8 @@ be describing additional metrics about the same event.
     <summary>
       An approximation of a high percentile of user interaction latency above
       budget of a page load, in ms. For this metric, we measure the latency of
-      user interactions by Responsiveness.UserInteraction.MaxlEventDuration and
-      we reduct a budget from the original value. If the latency value is below
+      user interactions by Responsiveness.UserInteraction.MaxEventDuration and
+      we deduct a budget from the original value. If the latency value is below
       the budget, it will be treated as 0 ms. Each type of interaction has its
       own budget.
     </summary>
@@ -12122,9 +12399,51 @@ be describing additional metrics about the same event.
       An approximation of a high percentile of user interaction latency above
       budget of a page load, in ms. For this metric, we measure the latency of
       user interactions by Responsiveness.UserInteraction.TotalEventDuration and
-      we reduct a budget from the original value. If the latency value is below
+      we deduct a budget from the original value. If the latency value is below
       the budget, it will be treated as 0 ms. Each type of interaction has its
       own budget.
+    </summary>
+  </metric>
+  <metric
+      name="InteractiveTiming.SlowUserInteractionLatencyOverBudget.HighPercentile2.MaxEventDuration">
+    <summary>
+      An approximation of a high percentile of user interaction latency above
+      budget of a page load, in ms. For this metric, we measure the latency of
+      user interactions by Responsiveness.UserInteraction.MaxEventDuration and
+      we deduct a budget from the original value. If the latency value is below
+      the budget, it will be treated as 0 ms. Each type of interaction has its
+      own budget.
+    </summary>
+  </metric>
+  <metric
+      name="InteractiveTiming.SlowUserInteractionLatencyOverBudget.HighPercentile2.TotalEventDuration">
+    <summary>
+      An approximation of a high percentile of user interaction latency above
+      budget of a page load, in ms. For this metric, we measure the latency of
+      user interactions by Responsiveness.UserInteraction.TotalEventDuration and
+      we deduct a budget from the original value. If the latency value is below
+      the budget, it will be treated as 0 ms. Each type of interaction has its
+      own budget.
+    </summary>
+  </metric>
+  <metric
+      name="InteractiveTiming.SumOfUserInteractionLatencyOverBudget.MaxEventDuration">
+    <summary>
+      The sum of user interaction latency above budget of a page load, in ms.
+      For this metric, we measure the latency of user interactions by
+      Responsiveness.UserInteraction.MaxEventDuration and we deduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
+    </summary>
+  </metric>
+  <metric
+      name="InteractiveTiming.SumOfUserInteractionLatencyOverBudget.TotalEventDuration">
+    <summary>
+      The sum of user interaction latency above budget of a page load, in ms.
+      For this metric, we measure the latency of user interactions by
+      Responsiveness.UserInteraction.TotalEventDuration and we deduct a budget
+      from the original value. If the latency value is below the budget, it will
+      be treated as 0 ms. Each type of interaction has its own budget.
     </summary>
   </metric>
   <metric name="InteractiveTiming.TotalAdjustedInputDelay">
@@ -12157,20 +12476,28 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="InteractiveTiming.TotalUserInteractionLatencyOverBudget.MaxEventDuration">
+    <obsolete>
+      Deprecated 10/2021. Replaced by
+      &quot;InteractiveTiming.SumOfUserInteractionLatencyOverBudget.MaxEventDuration&quot;.
+    </obsolete>
     <summary>
       The sum of user interaction latency above budget of a page load, in ms.
       For this metric, we measure the latency of user interactions by
-      Responsiveness.UserInteraction.MaxEventDuration and we reduct a budget
+      Responsiveness.UserInteraction.MaxEventDuration and we deduct a budget
       from the original value. If the latency value is below the budget, it will
       be treated as 0 ms. Each type of interaction has its own budget.
     </summary>
   </metric>
   <metric
       name="InteractiveTiming.TotalUserInteractionLatencyOverBudget.TotalEventDuration">
+    <obsolete>
+      Deprecated 10/2021. Replaced by
+      &quot;InteractiveTiming.SumOfUserInteractionLatencyOverBudget.TotalEventDuration&quot;.
+    </obsolete>
     <summary>
       The sum of user interaction latency above budget of a page load, in ms.
       For this metric, we measure the latency of user interactions by
-      Responsiveness.UserInteraction.TotalEventDuration and we reduct a budget
+      Responsiveness.UserInteraction.TotalEventDuration and we deduct a budget
       from the original value. If the latency value is below the budget, it will
       be treated as 0 ms. Each type of interaction has its own budget.
     </summary>
@@ -12197,7 +12524,7 @@ be describing additional metrics about the same event.
     <summary>
       The maximum value of user interaction latency above budget of a page load,
       in ms. For this metric, we measure the latency of user interactions by
-      Responsiveness.UserInteraction.TotalEventDuration and we reduct a budget
+      Responsiveness.UserInteraction.MaxEventDuration and we deduct a budget
       from the original value. If the latency value is below the budget, it will
       be treated as 0 ms. Each type of interaction has its own budget.
     </summary>
@@ -13982,6 +14309,150 @@ be describing additional metrics about the same event.
   <metric name="Source">
     <summary>
       An enum of type PermissionSourceUI. The UI surface for this action.
+    </summary>
+  </metric>
+  <metric name="Stats.AllPrompts.Count">
+    <summary>
+      Total number of prompts shown to the user in the last 28 days. The count
+      is bucketed. The bucket minimums being 20, 15, 12, 10, 9, 8, 7, 6, 5, 4
+      and 0. The correct bucket is the first one that is smaller or equal to the
+      prompt count.
+    </summary>
+  </metric>
+  <metric name="Stats.AllPrompts.DenyRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user deny.
+      Aggregated across all origins, all PermissionTypes and all
+      PromptDisposition. Rounded to the nearest 10%.
+    </summary>
+  </metric>
+  <metric name="Stats.AllPrompts.DismissRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user dismiss.
+      Aggregated across all origins, all PermissionTypes and all
+      PromptDisposition. Rounded to the nearest 10%.
+    </summary>
+  </metric>
+  <metric name="Stats.AllPrompts.GrantRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user grant.
+      Aggregated across all origins, all PermissionTypes and all
+      PromptDisposition. Rounded to the nearest 10%.
+    </summary>
+  </metric>
+  <metric name="Stats.AllPrompts.IgnoreRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user ignore.
+      Aggregated across all origins, all PermissionTypes and all
+      PromptDisposition. Rounded to the nearest 10%.
+    </summary>
+  </metric>
+  <metric name="Stats.AllPromptsOfType.Count">
+    <summary>
+      Total number of prompts shown to the user in the last 28 days for the
+      currently requested permission type. The count is bucketed. The bucket
+      minimums being 20, 15, 12, 10, 9, 8, 7, 6, 5, 4 and 0. The correct bucket
+      is the first one that is smaller or equal to the prompt count.
+    </summary>
+  </metric>
+  <metric name="Stats.AllPromptsOfType.DenyRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user deny.
+      Aggregated across all origins, the current requested PermissionType and
+      all PromptDisposition. Rounded to the nearest 10%.
+    </summary>
+  </metric>
+  <metric name="Stats.AllPromptsOfType.DismissRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user dismiss.
+      Aggregated across all origins, the current requested PermissionType and
+      all PromptDisposition. Rounded to the nearest 10%.
+    </summary>
+  </metric>
+  <metric name="Stats.AllPromptsOfType.GrantRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user grant.
+      Aggregated across all origins, the current requested PermissionType and
+      all PromptDisposition. Rounded to the nearest 10%.
+    </summary>
+  </metric>
+  <metric name="Stats.AllPromptsOfType.IgnoreRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user ignore.
+      Aggregated across all origins, the current requested PermissionType and
+      all PromptDisposition. Rounded to the nearest 10%.
+    </summary>
+  </metric>
+  <metric name="Stats.LoudPrompts.Count">
+    <summary>
+      Total number of loud UI prompts shown to the user in the last 28 days. The
+      count is bucketed. The bucket minimums being 20, 15, 12, 10, 9, 8, 7, 6, 5
+      ,4 and 0. The correct bucket is the first one that is smaller or equal to
+      the prompt count.
+    </summary>
+  </metric>
+  <metric name="Stats.LoudPrompts.DenyRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user deny.
+      Aggregated across all origins, all PermissionTypes and loud UI
+      PromptDispositions only. Rounded to the nearest 10%.
+    </summary>
+  </metric>
+  <metric name="Stats.LoudPrompts.DismissRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user dismiss.
+      Aggregated across all origins, all PermissionTypes and loud UI
+      PromptDispositions only. Rounded to the nearest 10%.
+    </summary>
+  </metric>
+  <metric name="Stats.LoudPrompts.GrantRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user grant.
+      Aggregated across all origins, all PermissionTypes and loud UI
+      PromptDispositions only. Rounded to the nearest 10%.
+    </summary>
+  </metric>
+  <metric name="Stats.LoudPrompts.IgnoreRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user ignore.
+      Aggregated across all origins, all PermissionTypes and loud UI
+      PromptDispositions only. Rounded to the nearest 10%.
+    </summary>
+  </metric>
+  <metric name="Stats.LoudPromptsOfType.Count">
+    <summary>
+      Total number of loud UI prompts shown to the user in the last 28 days for
+      the currently requested permission type. The count is bucketed. The bucket
+      minimums being 20, 15, 12, 10, 9, 8, 7, 6, 5, 4 and 0. The correct bucket
+      is the first one that is smaller or equal to the prompt count.
+    </summary>
+  </metric>
+  <metric name="Stats.LoudPromptsOfType.DenyRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user deny.
+      Aggregated across all origins, currently requested PermissionType and loud
+      UI PromptDispositions only. Rounded to the nearest 10%.
+    </summary>
+  </metric>
+  <metric name="Stats.LoudPromptsOfType.DismissRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user dismiss.
+      Aggregated across all origins, currently requested PermissionType and loud
+      UI PromptDispositions only. Rounded to the nearest 10%.
+    </summary>
+  </metric>
+  <metric name="Stats.LoudPromptsOfType.GrantRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user grant.
+      Aggregated across all origins, currently requested PermissionType and loud
+      UI PromptDispositions only. Rounded to the nearest 10%.
+    </summary>
+  </metric>
+  <metric name="Stats.LoudPromptsOfType.IgnoreRate">
+    <summary>
+      What percentage of prompts from the last 28 days did the user ignore.
+      Aggregated across all origins, currently requested PermissionType and loud
+      UI PromptDispositions only. Rounded to the nearest 10%.
     </summary>
   </metric>
   <metric name="TimeToDecision">

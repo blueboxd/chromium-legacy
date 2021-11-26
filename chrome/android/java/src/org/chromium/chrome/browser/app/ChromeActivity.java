@@ -122,6 +122,7 @@ import org.chromium.chrome.browser.gsa.GSAAccountChangeListener;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
+import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
@@ -185,7 +186,7 @@ import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
+import org.chromium.chrome.browser.ui.messages.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManagerProvider;
@@ -346,9 +347,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private Configuration mConfig;
 
     /**
-     * Control the tab-reparenting tasks.
+     * Supplier of the instance to control the tab-reparenting tasks.
      */
-    private TabReparentingController mTabReparentingController;
+    private OneshotSupplierImpl<TabReparentingController> mTabReparentingControllerSupplier =
+            new OneshotSupplierImpl<>();
 
     /**
      * Track whether {@link #mTabReparentingController} has prepared tab reparenting.
@@ -414,12 +416,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     public boolean onIntentCallbackNotFoundError(String error) {
-        Snackbar snackbar =
-                Snackbar.make(error, null, Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_WINDOW_ERROR);
-        snackbar.setSingleLine(false);
-        snackbar.setDuration(SnackbarManager.DEFAULT_SNACKBAR_DURATION_LONG_MS);
-        mSnackbarManager.showSnackbar(snackbar);
-        return true;
+        Tab tab = mActivityTabProvider.get();
+        if (tab != null) {
+            SimpleConfirmInfoBarBuilder.create(tab.getWebContents(),
+                    InfoBarIdentifier.WINDOW_ERROR_INFOBAR_DELEGATE_ANDROID, error, false);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -504,7 +507,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 getTabContentManagerSupplier(), getOverviewModeBehaviorSupplier(),
                 this::getSnackbarManager, getActivityType(), this::isInOverviewMode,
                 this::isWarmOnResume, /* appMenuDelegate= */ this,
-                /* statusBarColorProvider= */ this, getIntentRequestTracker());
+                /* statusBarColorProvider= */ this, getIntentRequestTracker(),
+                mTabReparentingControllerSupplier, false);
         // clang-format on
     }
 
@@ -900,7 +904,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new AppMenuPropertiesDelegateImpl(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(), null, mBookmarkBridgeSupplier);
+                getWindow().getDecorView(), null, null, mBookmarkBridgeSupplier);
     }
 
     /**
@@ -1673,10 +1677,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 findViewById(R.id.keyboard_accessory_stub),
                 findViewById(R.id.keyboard_accessory_sheet_stub));
 
-        mTabReparentingController = new TabReparentingController(
+        mTabReparentingControllerSupplier.set(new TabReparentingController(
                 ReparentingDelegateFactory.createReparentingControllerDelegate(
                         getTabModelSelector()),
-                AsyncTabParamsManagerSingleton.getInstance());
+                AsyncTabParamsManagerSingleton.getInstance()));
 
         // This must be initialized after initialization of tab reparenting controller.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_LAYOUT_CHANGE_TAB_REPARENT)) {
@@ -1933,6 +1937,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
+     * @return The provider of the instance of {@link TabReparentingController}.
+     */
+    protected OneshotSupplier<TabReparentingController> getTabReparentingControllerSupplier() {
+        return mTabReparentingControllerSupplier;
+    }
+
+    /**
      * Returns the {@link InsetObserverView} that has the current system window
      * insets information.
      * @return The {@link InsetObserverView}, possibly null.
@@ -2183,7 +2194,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public void performOnConfigurationChanged(Configuration newConfig) {
         super.performOnConfigurationChanged(newConfig);
         if (mConfig != null) {
-            if (mTabReparentingController != null && didChangeTabletMode()) {
+            if (mTabReparentingControllerSupplier.get() != null && didChangeTabletMode()) {
                 onScreenLayoutSizeChange();
             }
             // We only handle VR UI mode and UI mode night changes. Any other changes should follow
@@ -2534,15 +2545,16 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             WebContentsDarkModeController.setEnabledForUrl(profile, url, !isEnabled);
             currentTab.getWebContents().notifyRendererPreferenceUpdate();
 
+            WebContentsDarkModeController.recordAutoDarkUkm(
+                    currentTab.getWebContents(), !isEnabled);
+
             // Show dialog informing user how to disable the feature globally and give feedback if
             // disabling through the app menu for the nth time (determined by feature engagement).
             if (isEnabled) {
-                WebContentsDarkModeMessageController.attemptToShowDialog(
-                        this, profile, getModalDialogManager(), new SettingsLauncherImpl());
+                WebContentsDarkModeMessageController.attemptToShowDialog(this, profile,
+                        url.getSpec(), getModalDialogManager(), new SettingsLauncherImpl(),
+                        HelpAndFeedbackLauncherImpl.getInstance());
             }
-
-            // TODO(crbug.com/1250800): Update UMA ExceptionCounts and mark UMA SettingStateChanges
-            // from app menu item.
 
             return true;
         }
@@ -2790,8 +2802,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // Note: order matters here because the call to super will recreate the activity.
         // Note: it's possible for this method to be called before mNightModeReparentingController
         // is constructed.
-        if (mTabReparentingController != null) {
-            mTabReparentingController.prepareTabsForReparenting();
+        if (mTabReparentingControllerSupplier.get() != null) {
+            mTabReparentingControllerSupplier.get().prepareTabsForReparenting();
         }
         super.onNightModeStateChanged();
     }
@@ -2811,8 +2823,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * Switch between phone and tablet mode and do the tab re-parenting in the meantime.
      */
     private void onScreenLayoutSizeChange() {
-        if (mTabReparentingController != null && !mIsTabReparentingPrepared) {
-            mTabReparentingController.prepareTabsForReparenting();
+        if (mTabReparentingControllerSupplier.get() != null && !mIsTabReparentingPrepared) {
+            mTabReparentingControllerSupplier.get().prepareTabsForReparenting();
             mIsTabReparentingPrepared = true;
             if (!isFinishing()) recreate();
         }

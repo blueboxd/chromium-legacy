@@ -39,15 +39,12 @@ public class MerchantTrustMessageScheduler {
 
     /** Cancels any scheduled messages. */
     void clear(@MessageClearReason int clearReason) {
-        if (mScheduledMessage != null) {
-            mMetrics.recordMetricsForMessageCleared(clearReason);
-        }
         mEnqueueMessageTimer.removeCallbacksAndMessages(null);
         if (mScheduledMessage != null && mScheduledMessage.second != null) {
             mMessageDispatcher.dismissMessage(
                     mScheduledMessage.second, DismissReason.SCOPE_DESTROYED);
         }
-        setScheduledMessage(null);
+        clearScheduledMessage(clearReason);
     }
 
     /** Adds a message to the underlying {@link MessageDispatcher} queue. */
@@ -64,16 +61,32 @@ public class MerchantTrustMessageScheduler {
                         model, messageContext.getWebContents(), MessageScopeType.NAVIGATION, false);
                 mMetrics.recordMetricsForMessageShown();
                 messageEnqueuedCallback.onResult(messageContext);
+                setScheduledMessage(null);
             } else {
                 messageEnqueuedCallback.onResult(null);
+                if (!messageContext.isValid()) {
+                    clearScheduledMessage(MessageClearReason.MESSAGE_CONTEXT_NO_LONGER_VALID);
+                } else if (mTabSupplier.hasValue()
+                        && !messageContext.getWebContents().equals(
+                                mTabSupplier.get().getWebContents())) {
+                    clearScheduledMessage(MessageClearReason.SWITCH_TO_DIFFERENT_WEBCONTENTS);
+                } else {
+                    clearScheduledMessage(MessageClearReason.UNKNOWN);
+                }
             }
-            setScheduledMessage(null);
         }, delayInMillis);
     }
 
     /** Returns the currently scheduled message. */
     MerchantTrustMessageContext getScheduledMessageContext() {
         return mScheduledMessage == null ? null : mScheduledMessage.first;
+    }
+
+    private void clearScheduledMessage(@MessageClearReason int clearReason) {
+        if (mScheduledMessage != null) {
+            mMetrics.recordMetricsForMessageCleared(clearReason);
+        }
+        setScheduledMessage(null);
     }
 
     @VisibleForTesting

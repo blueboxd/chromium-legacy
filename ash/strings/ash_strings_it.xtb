@@ -23,6 +23,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1104621072296271835">I tuoi dispositivi funzionano ancora meglio insieme</translation>
 <translation id="1119348796022671382">La modalità colore A tema usa i colori estratti dallo sfondo per colorare leggermente l'interfaccia.</translation>
 <translation id="112308213915226829">Nascondi automaticamente barra delle app</translation>
+<translation id="1142002900084379065">Foto recenti</translation>
 <translation id="1148499908455722006">Apri la finestra di dialogo delle informazioni per <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Calendario</translation>
 <translation id="1153356358378277386">Dispositivi accoppiati</translation>
@@ -82,7 +83,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1503394326855300303">Questo account proprietario deve essere il primo account registrato in una sessione con accesso simultaneo.</translation>
 <translation id="1510238584712386396">Avvio app</translation>
 <translation id="1516740043221086139">La modalità Non disturbare è attiva.</translation>
-<translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostra impostazioni di notifica. Le notifiche sono disattivate per un'app}other{Mostra impostazioni di notifica. Le notifiche sono disattivate per # app}}</translation>
+<translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostra impostazioni di notifica. Le notifiche sono disattivate per un'app}one{Show notification settings. Notifications are off for # apps}other{Mostra impostazioni di notifica. Le notifiche sono disattivate per # app}}</translation>
 <translation id="1525508553941733066">IGNORA</translation>
 <translation id="1536604384701784949">Per usare l'account <ph name="USER_EMAIL_ADDRESS" />, devi prima uscire da tutti gli account. A tale scopo, seleziona Annulla per tornare indietro. Dopodiché seleziona l'ora per aprire l'area di stato e poi Esci. Quindi accedi di nuovo all'account <ph name="USER_EMAIL_ADDRESS_2" />.</translation>
 <translation id="15373452373711364">Puntatore del mouse grande</translation>
@@ -179,6 +180,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="2298170939937364391">Ingrandimento a schermo intero attivato. Premi di nuovo CTRL + tasto per la ricerca + M per disattivarlo.</translation>
 <translation id="2302092602801625023">Questo account è gestito da Family Link</translation>
 <translation id="2303600792989757991">Attiva/disattiva panoramica finestra</translation>
+<translation id="2318576281648121272">Oggi, <ph name="TODAY_DATE" /></translation>
 <translation id="2322173485024759474">Indietro per lettera</translation>
 <translation id="2339073806695260576">Tocca il pulsante dello stilo nella barra delle app per creare note, acquisire screenshot, usare il puntatore laser o la lente d'ingrandimento.</translation>
 <translation id="2341729377289034582">Bloccata in verticale</translation>
@@ -200,6 +202,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="2435457462613246316">Mostra password</translation>
 <translation id="24452542372838207">Espandi la notifica</translation>
 <translation id="2450205753526923158">Modalità screenshot</translation>
+<translation id="2456008742792828469">Calendario, <ph name="CURRENT_MONTH_YEAR" /></translation>
 <translation id="2473177541599297363">Conferma la risoluzione</translation>
 <translation id="2475982808118771221">Si è verificato un errore</translation>
 <translation id="2482878487686419369">Notifiche</translation>
@@ -278,6 +281,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3100274880412651815">Ignora modalità di acquisizione</translation>
 <translation id="3105917916468784889">Acquisisce uno screenshot</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3113926042639749131">Rimuovi suggerimento</translation>
 <translation id="3126069444801937830">Riavvia per aggiornare</translation>
 <translation id="3139942575505304791">Scrivania 1</translation>
 <translation id="315116470104423982">Dati mobili</translation>
@@ -285,7 +289,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3153444934357957346">Puoi avere massimo <ph name="MULTI_PROFILE_USER_LIMIT" /> account per l'accesso simultaneo.</translation>
 <translation id="3154351730702813399">L'amministratore del dispositivo potrebbe monitorare l'attività di navigazione.</translation>
 <translation id="3181441307743005334">Il riavvio potrebbe richiedere un po' di tempo</translation>
-<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connesso a un dispositivo}other{Connesso a # dispositivi}}</translation>
+<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connesso a un dispositivo}one{Connected to # devices}other{Connesso a # dispositivi}}</translation>
 <translation id="320207200541803018">Imposta il timer</translation>
 <translation id="3203405173652969239">Funzionalità Switch Access attiva</translation>
 <translation id="3207953481422525583">Impostazioni utente</translation>
@@ -317,6 +321,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3413817803639110246">Niente da vedere in questo momento</translation>
 <translation id="3428447136709161042">Disconnettiti da <ph name="NETWORK_NAME" /></translation>
 <translation id="3430396595145920809">Scorri da destra per tornare indietro</translation>
+<translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="343571671045587506">Modifica promemoria</translation>
 <translation id="3435967511775410570">Impronta riconosciuta</translation>
 <translation id="3441920967307853524"><ph name="RECEIVED_BYTES" />/<ph name="TOTAL_BYTES" /></translation>
@@ -408,7 +413,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Stai condividendo lo schermo</translation>
 <translation id="4057003836560082631">Scheda del browser <ph name="INDEX" /> di <ph name="TOTAL_COUNT" />. <ph name="SITE_TITLE" />, <ph name="SITE_URL" /></translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Off per un'app}other{Off per # app}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Off per un'app}one{Off for # apps}other{Off per # app}}</translation>
 <translation id="4066027111132117168">On, <ph name="REMAINING_TIME" /></translation>
 <translation id="4072264167173457037">Segnale medio</translation>
 <translation id="4095366824370681039">Penna stilografica</translation>
@@ -465,7 +470,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="4424159417645388645">Scrivania 5</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4445159312344259901">Accedi per sbloccare</translation>
-<translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 notifica importante}other{# notifiche importanti}}</translation>
+<translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 notifica importante}one{# notifiche importanti}other{# notifiche importanti}}</translation>
 <translation id="4450893287417543264">Non mostrare più</translation>
 <translation id="4451374464530248585">La scorciatoia da tastiera Alt + Freccia giù è cambiata. Per usare il tasto Pagina giù, premi il tasto <ph name="LAUNCHER_KEY_NAME" /> + Freccia giù.</translation>
 <translation id="445864333228800152">Buonasera,</translation>
@@ -504,6 +509,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="4642092649622328492">Acquisisce lo screenshot parziale</translation>
 <translation id="4659419629803378708">ChromeVox attivato</translation>
 <translation id="4665114317261903604">Attiva/disattiva Non disturbare. <ph name="STATE_TEXT" /></translation>
+<translation id="4667099493359681081">Download di <ph name="FILENAME" /> in corso…</translation>
 <translation id="4696813013609194136">Sblocca con codice genitore</translation>
 <translation id="4702647871202761252">Schermata sulla privacy non attiva</translation>
 <translation id="4706121060329443414">Verrà effettuato un tentativo di download in un secondo tempo. Per ora ciò che dici viene inviato a Google per l'elaborazione.</translation>
@@ -572,7 +578,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="5170568018924773124">Mostra nella cartella</translation>
 <translation id="5176318573511391780">Registra schermo parziale</translation>
 <translation id="5199367439331364630">Per accedere a Chromebook, inserisci la password</translation>
-<translation id="5206057955438543357">{NUM_NOTIFICATIONS,plural, =1{1 altra notifica}other{altre # notifiche}}</translation>
+<translation id="5206057955438543357">{NUM_NOTIFICATIONS,plural, =1{1 altra notifica}one{altre # notifiche}other{altre # notifiche}}</translation>
 <translation id="5207949376430453814">Evidenzia il cursore di testo</translation>
 <translation id="5208059991603368177">On</translation>
 <translation id="5222676887888702881">Esci</translation>
@@ -641,6 +647,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="5744083938413354016">Trascinamento al tocco</translation>
 <translation id="5745612484876805746">La funzione Luminosità notturna viene attivata automaticamente al tramonto</translation>
 <translation id="5750765938512549687">Bluetooth non attivo.</translation>
+<translation id="576341972084747908">Download di <ph name="FILENAME" /> (pericoloso) in corso…</translation>
 <translation id="576453121877257266">Luminosità notturna attiva.</translation>
 <translation id="5769373120130404283">Schermata sulla privacy</translation>
 <translation id="5777841717266010279">Interrompere la condivisione dello schermo?</translation>
@@ -781,7 +788,8 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="6850010208275816200">L'app aperta in questo momento è a schermo intero. Se l'app richiede la password, prima di tutto esci dallo schermo intero.</translation>
 <translation id="6852052252232534364">Fai clic per attivare</translation>
 <translation id="6857725247182211756"><ph name="SECONDS" /> sec</translation>
-<translation id="685782768769951078">{NUM_DIGITS,plural, =1{Manca una cifra}other{Mancano # cifre}}</translation>
+<translation id="685782768769951078">{NUM_DIGITS,plural, =1{Manca una cifra}one{Mancano # cifre}other{Mancano # cifre}}</translation>
+<translation id="6867938213751067702">Download di <ph name="FILENAME" /> sospeso</translation>
 <translation id="6878400149835617132">Scorciatoia disattivata</translation>
 <translation id="6886172995547742638">Il tuo <ph name="DEVICE_TYPE" /> potrebbe offrire prestazioni inferiori. Usa un alimentatore USB-C certificato da almeno <ph name="PREFERRED_MINIMUM_POWER" /> W.</translation>
 <translation id="688631446150864480">Premi il tasto Freccia giù per cambiare finestra</translation>
@@ -894,7 +902,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="7662283695561029522">Tocca per configurare</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7714767791242455379">Aggiungi una nuova rete mobile</translation>
-<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notifica}other{# notifiche}}</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notifica}one{# notifications}other{# notifiche}}</translation>
 <translation id="7724603315864178912">Taglia</translation>
 <translation id="7745560842763881396">Mostra app nella barra delle app</translation>
 <translation id="7749443890790263709">Numero massimo di scrivanie raggiunto.</translation>

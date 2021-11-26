@@ -1053,6 +1053,7 @@ if (!is_android && !is_fuchsia) {
       "//chrome/browser:theme_properties",
       "//chrome/browser/apps/app_service:test_support",
       "//chrome/browser/browsing_data:constants",
+      "//chrome/browser/commerce:feature_list",
       "//chrome/browser/continuous_search:browser_tests",
       "//chrome/browser/devtools",
       "//chrome/browser/devtools:test_support",
@@ -1466,6 +1467,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/browsing_data/third_party_data_remover_browsertest.cc",
       "../browser/capability_delegation_browsertest.cc",
       "../browser/cart/cart_service_browsertest.cc",
+      "../browser/cart/fetch_discount_worker_browsertest.cc",
       "../browser/chrome_back_forward_cache_browsertest.cc",
       "../browser/chrome_content_browser_client_browsertest.cc",
       "../browser/chrome_do_not_track_browsertest.cc",
@@ -2670,7 +2672,10 @@ if (!is_android && !is_fuchsia) {
       if (is_win || is_linux || is_mac) {
         sources += [ "../browser/enterprise/connectors/device_trust/device_trust_browsertest.cc" ]
 
-        deps += [ "//chrome/browser/enterprise/connectors/device_trust/attestation/desktop:test_support" ]
+        deps += [
+          "//chrome/browser/enterprise/connectors/device_trust:features",
+          "//chrome/browser/enterprise/connectors/device_trust/attestation/desktop:test_support",
+        ]
       }
 
       if (is_win) {
@@ -4603,7 +4608,6 @@ test("unit_tests") {
     "../browser/permissions/contextual_notification_permission_ui_selector_unittest.cc",
     "../browser/permissions/crowd_deny_preload_data_unittest.cc",
     "../browser/permissions/crowd_deny_safe_browsing_request_unittest.cc",
-    "../browser/permissions/permission_actions_history_unittest.cc",
     "../browser/permissions/permission_context_base_permissions_policy_unittest.cc",
     "../browser/permissions/prediction_based_permission_ui_selector_unittest.cc",
     "../browser/permissions/pref_notification_permission_ui_selector_unittest.cc",
@@ -4654,6 +4658,7 @@ test("unit_tests") {
     "../browser/prefs/profile_pref_store_manager_unittest.cc",
     "../browser/prefs/proxy_policy_unittest.cc",
     "../browser/prefs/session_startup_pref_unittest.cc",
+    "../browser/privacy/privacy_metrics_service_unittest.cc",
     "../browser/privacy_sandbox/privacy_sandbox_settings_unittest.cc",
     "../browser/profiles/gaia_info_update_service_unittest.cc",
     "../browser/profiles/guest_mode_policy_handler_unittest.cc",
@@ -4754,6 +4759,8 @@ test("unit_tests") {
     "../browser/translate/fake_translate_agent.cc",
     "../browser/translate/fake_translate_agent.h",
     "../browser/translate/translate_service_unittest.cc",
+    "../browser/ui/autofill/payments/card_unmask_authentication_selection_dialog_controller_impl_unittest.cc",
+    "../browser/ui/autofill/payments/card_unmask_otp_input_dialog_controller_impl_unittest.cc",
     "../browser/ui/blocked_content/popup_opener_tab_helper_unittest.cc",
     "../browser/ui/chrome_select_file_policy_unittest.cc",
     "../browser/ui/cookie_controls/cookie_controls_controller_unittest.cc",
@@ -7045,6 +7052,12 @@ test("unit_tests") {
     sources += [ "../browser/ui/global_media_controls/media_notification_device_monitor_unittest.cc" ]
   }
 
+  if (is_chromeos_lacros) {
+    sources += [
+      "../browser/upgrade_detector/get_installed_version_lacros_unittest.cc",
+    ]
+  }
+
   if (is_linux) {
     sources += [
       "../browser/shell_integration_linux_unittest.cc",
@@ -7231,6 +7244,7 @@ test("unit_tests") {
     ]
 
     deps += [
+      "../browser/enterprise/connectors/device_trust:features",
       "../browser/enterprise/connectors/device_trust:test_support",
       "../browser/enterprise/connectors/device_trust/attestation/common",
       "../browser/enterprise/connectors/device_trust/attestation/common:test_support",
@@ -7297,6 +7311,7 @@ test("unit_tests") {
         "../browser/printing/test_print_job.h",
         "../browser/printing/test_printer_query.cc",
         "../browser/printing/test_printer_query.h",
+        "../browser/ui/webui/print_preview/data_request_filter_unittest.cc",
         "../browser/ui/webui/print_preview/extension_printer_handler_unittest.cc",
         "../browser/ui/webui/print_preview/fake_print_render_frame.cc",
         "../browser/ui/webui/print_preview/fake_print_render_frame.h",
@@ -7918,6 +7933,7 @@ if (!is_android) {
       "//chrome/app:command_ids",
       "//chrome/browser",
       "//chrome/browser:browser_process",
+      "//chrome/browser/commerce:feature_list",
       "//chrome/browser/devtools",
       "//chrome/browser/profiles:profile",
       "//chrome/browser/ui",

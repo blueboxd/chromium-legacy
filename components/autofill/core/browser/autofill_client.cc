@@ -59,6 +59,21 @@ profile_metrics::BrowserProfileType AutofillClient::GetProfileType() const {
   return profile_metrics::BrowserProfileType::kRegular;
 }
 
+void AutofillClient::ShowUnmaskAuthenticatorSelectionDialog(
+    const std::vector<CardUnmaskChallengeOption>& challenge_options,
+    base::OnceCallback<void(const std::string&)>
+        confirm_unmask_challenge_option_callback,
+    base::OnceClosure cancel_unmasking_closure) {
+  // This is overridden by platform subclasses. Currently only
+  // ChromeAutofillClient (Chrome Desktop and Clank) implements this.
+}
+
+void AutofillClient::DismissUnmaskAuthenticatorSelectionDialog(
+    bool server_success) {
+  // This is overridden by platform subclasses. Currently only
+  // ChromeAutofillClient (Chrome Desktop and Clank) implements this.
+}
+
 #if !defined(OS_IOS)
 std::unique_ptr<webauthn::InternalAuthenticator>
 AutofillClient::CreateCreditCardInternalAuthenticator(
@@ -67,20 +82,47 @@ AutofillClient::CreateCreditCardInternalAuthenticator(
 }
 #endif
 
+void AutofillClient::ShowCardUnmaskOtpInputDialog(
+    const size_t& otp_length,
+    base::WeakPtr<OtpUnmaskDelegate> delegate) {
+  // This is overridden by platform subclasses. Currently only
+  // ChromeAutofillClient (Chrome Desktop and Clank) implements this.
+}
+
+void AutofillClient::OnUnmaskOtpVerificationResult(
+    OtpUnmaskResult unmask_result) {
+  // This is overridden by platform subclasses. Currently only
+  // ChromeAutofillClient (Chrome Desktop and Clank) implements this.
+}
+
 void AutofillClient::ShowOfferNotificationIfApplicable(
     const AutofillOfferData* offer) {
   // This is overridden by platform subclasses. Currently only
   // ChromeAutofillClient (Chrome Desktop and Clank) implements this.
 }
 
-void AutofillClient::OnVirtualCardDataAvailable(const CreditCard* credit_card,
-                                                const std::u16string& cvc,
-                                                const gfx::Image& card_image) {
+void AutofillClient::OnVirtualCardDataAvailable(
+    const std::u16string& masked_card_identifier_string,
+    const CreditCard* credit_card,
+    const std::u16string& cvc,
+    const gfx::Image& card_image) {
   // This is overridden by platform subclasses. Currently only
   // ChromeAutofillClient (Chrome Desktop & Android) implements this.
 }
 
 void AutofillClient::ShowVirtualCardErrorDialog(bool is_permanent_error) {
+  // This is overridden by platform subclasses. Currently only
+  // ChromeAutofillClient (Chrome Desktop & Android) implements this.
+}
+
+void AutofillClient::ShowAutofillProgressDialog(
+    base::OnceClosure cancel_callback) {
+  // This is overridden by platform subclasses. Currently only
+  // ChromeAutofillClient (Chrome Desktop & Android) implements this.
+}
+
+void AutofillClient::CloseAutofillProgressDialog(
+    bool show_confirmation_before_closing) {
   // This is overridden by platform subclasses. Currently only
   // ChromeAutofillClient (Chrome Desktop & Android) implements this.
 }

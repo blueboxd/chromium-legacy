@@ -228,6 +228,16 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kEarlyLibraryLoad;
 #endif
 
+#if defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kElidePrioritizationOfPreNativeBootstrapTasks;
+#endif
+
+#if defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kElideTabPreloadAtStartup;
+#endif
+
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kEnableAllSystemWebApps;
 
@@ -254,6 +264,8 @@ extern const base::Feature kEnterpriseRealtimeExtensionRequest;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<base::TimeDelta>
     kEnterpiseRealtimeExtensionRequestThrottleDelay;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kExtensionDeferredIndividualSettings;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -288,6 +300,12 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kGdiTextPrinting;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kGeoLanguage;
+
+#if defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature
+    kGiveJavaUiThreadDefaultTaskTraitsUserBlockingPriority;
+#endif
 
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)

@@ -1148,6 +1148,19 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self.omniboxHandler cancelOmniboxEdit];
 }
 
+- (int)liveNTPCount {
+  NSUInteger count = 0;
+  WebStateList* webStateList = self.browser->GetWebStateList();
+  for (int i = 0; i < webStateList->count(); i++) {
+    web::WebState* webState = webStateList->GetWebStateAt(i);
+    auto found = _ntpCoordinatorsForWebStates.find(webState);
+    if (found != _ntpCoordinatorsForWebStates.end()) {
+      count++;
+    }
+  }
+  return count;
+}
+
 #pragma mark - browser_view_controller+private.h
 
 - (void)setActive:(BOOL)active {
@@ -1655,6 +1668,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
        withTransitionCoordinator:
            (id<UIViewControllerTransitionCoordinator>)coordinator {
   [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+  // After |-shutdown| is called, |self.browser| is invalid and will cause
+  // a crash.
+  if (_isShutdown)
+    return;
+
   [self dismissPopups];
 
   __weak BrowserViewController* weakSelf = self;
@@ -3193,10 +3212,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return @[];
 
   NSMutableArray<UIView*>* overlays = [NSMutableArray array];
-  UIView* infoBarView = [self infoBarOverlayViewForWebState:webState];
-  if (infoBarView) {
-    [overlays addObject:infoBarView];
-  }
 
   UIView* downloadManagerView = _downloadManagerCoordinator.viewController.view;
   if (downloadManagerView) {

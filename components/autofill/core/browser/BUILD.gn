@@ -6,6 +6,9 @@ import("//build/config/chrome_build.gni")
 import("//build/util/version.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//tools/grit/grit_rule.gni")
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
 
 grit("autofill_address_rewriter_resources") {
   source = "autofill_address_rewriter_resources.grd"
@@ -59,8 +62,6 @@ static_library("browser") {
     "autofill_download_manager.cc",
     "autofill_download_manager.h",
     "autofill_driver.h",
-    "autofill_driver_factory.cc",
-    "autofill_driver_factory.h",
     "autofill_experiments.cc",
     "autofill_experiments.h",
     "autofill_external_delegate.cc",
@@ -249,6 +250,8 @@ static_library("browser") {
     "payments/full_card_request.h",
     "payments/legal_message_line.cc",
     "payments/legal_message_line.h",
+    "payments/otp_unmask_delegate.h",
+    "payments/otp_unmask_result.h",
     "payments/payments_client.cc",
     "payments/payments_client.h",
     "payments/payments_customer_data.h",
@@ -513,6 +516,22 @@ static_library("browser") {
   }
 }
 
+if (is_android) {
+  java_cpp_enum("java_enum_srcjar") {
+    # External code should depend on ":card_unmask_challenge_option_type_java" instead.
+    visibility = [ ":*" ]
+    sources = [ "payments/card_unmask_challenge_option.h" ]
+  }
+
+  android_library("card_unmask_challenge_option_type_java") {
+    srcjar_deps = [ ":java_enum_srcjar" ]
+
+    # Important: the generated enum uses the @IntDef annotation provided by
+    # this dependency.
+    deps = [ "//third_party/androidx:androidx_annotation_annotation_java" ]
+  }
+}
+
 static_library("test_support") {
   testonly = true
   sources = [
@@ -692,7 +711,6 @@ source_set("unit_tests") {
     "autofill_credit_card_policy_handler_unittest.cc",
     "autofill_data_util_unittest.cc",
     "autofill_download_manager_unittest.cc",
-    "autofill_driver_factory_unittest.cc",
     "autofill_experiments_unittest.cc",
     "autofill_external_delegate_unittest.cc",
     "autofill_merge_unittest.cc",

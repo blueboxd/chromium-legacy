@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.merchant_viewer;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -43,9 +44,10 @@ import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.merchant_viewer.PageInfoStoreInfoController.StoreInfoActionHandler;
-import org.chromium.chrome.browser.merchant_viewer.proto.MerchantTrustSignalsOuterClass.MerchantTrustSignals;
+import org.chromium.chrome.browser.merchant_viewer.proto.MerchantTrustSignalsOuterClass.MerchantTrustSignalsV2;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge.OptimizationGuideCallback;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeJni;
@@ -71,7 +73,8 @@ import java.io.IOException;
  * Tests for PageInfoStoreInfo view.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Features.EnableFeatures(PageInfoFeatures.PAGE_INFO_STORE_INFO_NAME)
+@Features.EnableFeatures(
+        {PageInfoFeatures.PAGE_INFO_STORE_INFO_NAME, ChromeFeatureList.COMMERCE_MERCHANT_VIEWER})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
 @Batch(Batch.PER_CLASS)
@@ -102,8 +105,8 @@ public class PageInfoStoreInfoViewTest {
     @Mock
     private StoreInfoActionHandler mMockStoreInfoActionHandler;
 
-    private final MerchantTrustSignals mFakeMerchantTrustSigals =
-            MerchantTrustSignals.newBuilder()
+    private final MerchantTrustSignalsV2 mFakeMerchantTrustSigals =
+            MerchantTrustSignalsV2.newBuilder()
                     .setMerchantStarRating(4.5f)
                     .setMerchantCountRating(100)
                     .setMerchantDetailsPageUrl("http://dummy/url")
@@ -169,14 +172,62 @@ public class PageInfoStoreInfoViewTest {
 
     @Test
     @MediumTest
+    @Feature({"RenderTest"})
+    public void testStoreInfoRowVisibleWithData_WithoutReviews() throws IOException {
+        MerchantTrustSignalsV2 fakeMerchantTrustSigals =
+                MerchantTrustSignalsV2.newBuilder()
+                        .setMerchantStarRating(4.5f)
+                        .setMerchantCountRating(0)
+                        .setMerchantDetailsPageUrl("http://dummy/url")
+                        .build();
+
+        Any anyMerchantTrustSignals =
+                Any.newBuilder()
+                        .setValue(ByteString.copyFrom(fakeMerchantTrustSigals.toByteArray()))
+                        .build();
+
+        mockOptimizationGuideResponse(mMockOptimizationGuideBridgeJni,
+                OptimizationGuideDecision.TRUE, anyMerchantTrustSignals);
+        openPageInfo();
+        verifyStoreRowShowing(true);
+        renderTestForStoreInfoRow("page_info_store_info_row_without_reviews");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testStoreInfoRowVisibleWithData_WithoutRating() throws IOException {
+        MerchantTrustSignalsV2 fakeMerchantTrustSigals =
+                MerchantTrustSignalsV2.newBuilder()
+                        .setMerchantStarRating(0)
+                        .setMerchantCountRating(0)
+                        .setMerchantDetailsPageUrl("http://dummy/url")
+                        .setHasReturnPolicy(true)
+                        .build();
+
+        Any anyMerchantTrustSignals =
+                Any.newBuilder()
+                        .setValue(ByteString.copyFrom(fakeMerchantTrustSigals.toByteArray()))
+                        .build();
+
+        mockOptimizationGuideResponse(mMockOptimizationGuideBridgeJni,
+                OptimizationGuideDecision.TRUE, anyMerchantTrustSignals);
+        openPageInfo();
+        verifyStoreRowShowing(true);
+        renderTestForStoreInfoRow("page_info_store_info_row_without_rating");
+    }
+
+    @Test
+    @MediumTest
     public void testStoreInfoRowClick() {
         mockOptimizationGuideResponse(mMockOptimizationGuideBridgeJni,
                 OptimizationGuideDecision.TRUE, mAnyMerchantTrustSignals);
         openPageInfo();
         verifyStoreRowShowing(true);
         onView(withId(PageInfoStoreInfoController.STORE_INFO_ROW_ID)).perform(click());
+        onView(withId(R.id.page_info_url_wrapper)).check(doesNotExist());
         verify(mMockStoreInfoActionHandler, times(1))
-                .onStoreInfoClicked(any(MerchantTrustSignals.class));
+                .onStoreInfoClicked(any(MerchantTrustSignalsV2.class));
     }
 
     private void mockOptimizationGuideResponse(OptimizationGuideBridge.Natives optimizationGuideJni,

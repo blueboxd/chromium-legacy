@@ -9,9 +9,13 @@
 #include "chrome/browser/cart/cart_discount_fetcher.h"
 #include "chrome/browser/cart/cart_service_factory.h"
 #include "chrome/browser/commerce/commerce_feature_list.h"
+#include "chrome/browser/commerce/coupons/coupon_service.h"
+#include "chrome/browser/commerce/coupons/coupon_service_factory.h"
 #include "chrome/browser/endpoint_fetcher/endpoint_fetcher.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/ntp_features.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -48,6 +52,31 @@ cart_db::ChromeCartContentProto BuildCartContentProto(const char* domain,
   return proto;
 }
 
+coupon_db::FreeListingCouponInfoProto BuildFreeListingCouponInfoProto(
+    const std::string& description,
+    const std::string& code,
+    const int64_t id,
+    const double expiration_time) {
+  coupon_db::FreeListingCouponInfoProto proto;
+  proto.set_coupon_description(description);
+  proto.set_coupon_code(code);
+  proto.set_coupon_id(id);
+  proto.set_expiry_time(expiration_time);
+  return proto;
+}
+
+std::unique_ptr<autofill::AutofillOfferData> BuildCouponsMapValueEntry(
+    const GURL& cart_url,
+    const coupon_db::FreeListingCouponInfoProto& coupon_info) {
+  auto offer = std::make_unique<autofill::AutofillOfferData>();
+  offer->display_strings.value_prop_text = coupon_info.coupon_description();
+  offer->promo_code = coupon_info.coupon_code();
+  offer->offer_id = coupon_info.coupon_id();
+  offer->expiry = base::Time::FromDoubleT(coupon_info.expiry_time());
+  offer->merchant_origins.emplace_back(cart_url);
+  return offer;
+}
+
 cart_db::ChromeCartContentProto AddRBDDiscountToProto(
     cart_db::ChromeCartContentProto proto,
     const std::string& merchant_id,
@@ -73,6 +102,27 @@ MATCHER_P(EqualsProto, message, "") {
   return expected_serialized == actual_serialized;
 }
 
+testing::Matcher<autofill::DisplayStrings> EqualsDisplayStrings(
+    const autofill::DisplayStrings& display_strings) {
+  return testing::Field("value_prop_text",
+                        &autofill::DisplayStrings::value_prop_text,
+                        testing::Eq(display_strings.value_prop_text));
+}
+
+testing::Matcher<autofill::AutofillOfferData> EqualsAutofillOfferData(
+    const autofill::AutofillOfferData& data) {
+  return testing::AllOf(
+      testing::Field("offer_id", &autofill::AutofillOfferData::offer_id,
+                     testing::Eq(data.offer_id)),
+      testing::Field("promo_code", &autofill::AutofillOfferData::promo_code,
+                     testing::Eq(data.promo_code)),
+      testing::Field("expiry", &autofill::AutofillOfferData::expiry,
+                     testing::Eq(data.expiry)),
+      testing::Field("display_strings",
+                     &autofill::AutofillOfferData::display_strings,
+                     EqualsDisplayStrings(data.display_strings)));
+}
+
 const char kMockMerchantA[] = "foo.com";
 const char kMockMerchantACartUrl[] = "https://www.foo.com/cart";
 const char kMockMerchantAId[] = "123";
@@ -91,6 +141,9 @@ const std::vector<cart_db::RuleDiscountInfoProto> kMockMerchantADiscounts = {
                                      kMockMerchantARawMerchantOfferId,
                                      kMockMerchantAPercentOff)};
 const char kEmail[] = "mock_email@gmail.com";
+
+const std::vector<coupon_db::FreeListingCouponInfoProto>
+    kEmptyCouponDiscountList = {};
 }  // namespace
 
 class FakeCartDiscountFetcher : public CartDiscountFetcher {
@@ -192,6 +245,11 @@ class FakeCartServiceDelegate : public CartServiceDelegate {
   explicit FakeCartServiceDelegate(CartService* cart_service)
       : CartServiceDelegate(cart_service), expected_tester_(false) {}
 
+  MOCK_METHOD(void,
+              UpdateFreeListingCoupons,
+              (const CouponService::CouponsMap& coupon_map),
+              (override));
+
   void LoadAllCarts(CartDB::LoadCallback callback) override {
     std::move(callback).Run(true, fake_load_data_);
   }
@@ -248,6 +306,15 @@ class FakeCartServiceDelegate : public CartServiceDelegate {
 
   void SetExpectedTester(bool is_tester) { expected_tester_ = is_tester; }
 
+  void SetExpectedCouponMap(CouponService::CouponsMap map) {
+    expected_coupon_map_ = std::move(map);
+    EXPECT_CALL(*this, UpdateFreeListingCoupons)
+        .Times(1)
+        .WillOnce([this](const CouponService::CouponsMap& coupon_map) {
+          UpdateFreeListingCoupons_(coupon_map);
+        });
+  }
+
  private:
   std::vector<CartDB::KeyAndValue> fake_load_data_;
   cart_db::ChromeCartContentProto fake_update_expected_data_;
@@ -255,6 +322,26 @@ class FakeCartServiceDelegate : public CartServiceDelegate {
   bool fake_update_has_coupon_discounts_;
   std::string fake_update_highest_discount_string_;
   bool expected_tester_;
+  CouponService::CouponsMap expected_coupon_map_;
+
+  void UpdateFreeListingCoupons_(const CouponService::CouponsMap& coupon_map) {
+    EXPECT_EQ(expected_coupon_map_.size(), coupon_map.size());
+
+    for (const auto& expected_entry : expected_coupon_map_) {
+      EXPECT_TRUE(coupon_map.count(expected_entry.first));
+      const auto& coupon_infos = coupon_map.at(expected_entry.first);
+      const auto& expected_coupon_info = expected_entry.second;
+      EXPECT_EQ(expected_coupon_info.size(), coupon_infos.size());
+      std::vector<
+          testing::Matcher<std::unique_ptr<autofill::AutofillOfferData>>>
+          expected_offer_data_matchers;
+      for (const auto& offer_data : expected_coupon_info) {
+        expected_offer_data_matchers.push_back(
+            testing::Pointee(EqualsAutofillOfferData(*offer_data)));
+      }
+      EXPECT_THAT(coupon_infos, ElementsAreArray(expected_offer_data_matchers));
+    }
+  }
 };
 
 class FakeVariationsClient : public variations::VariationsClient {
@@ -282,6 +369,7 @@ class FetchDiscountWorkerTest : public testing::Test {
     enabled_features.emplace_back(ntp_features::kNtpChromeCartModule,
                                   cart_params);
     coupon_params["coupon-partner-merchant-pattern"] = "(qux.com)";
+    coupon_params[commerce::kRetailCouponsWithCodeParam] = "true";
     enabled_features.emplace_back(commerce::kRetailCoupons, coupon_params);
     features_.InitWithFeaturesAndParameters(enabled_features,
                                             /*disabled_features*/ {});
@@ -293,8 +381,13 @@ class FetchDiscountWorkerTest : public testing::Test {
 
     mock_fetcher_ = std::make_unique<MockCartDiscountFetcher>();
 
+    TestingProfile::Builder profile_builder;
+    profile_builder.AddTestingFactory(
+        HistoryServiceFactory::GetInstance(),
+        HistoryServiceFactory::GetDefaultFactory());
+    profile_ = profile_builder.Build();
     fake_cart_service_delegate_ = std::make_unique<FakeCartServiceDelegate>(
-        CartServiceFactory::GetForProfile(&profile_));
+        CartServiceFactory::GetForProfile(profile_.get()));
 
     fake_variations_client_ = std::make_unique<FakeVariationsClient>();
   }
@@ -358,13 +451,13 @@ class FetchDiscountWorkerTest : public testing::Test {
 
   std::unique_ptr<FakeVariationsClient> fake_variations_client_;
 
-  TestingProfile profile_;
+  std::unique_ptr<TestingProfile> profile_;
   bool is_signin_and_sync_ = false;
 };
 
 
 TEST_F(FetchDiscountWorkerTest, TestStart_EndToEnd) {
-  EXPECT_EQ(profile_.GetPrefs()->GetTime(prefs::kCartDiscountLastFetchedTime),
+  EXPECT_EQ(profile_->GetPrefs()->GetTime(prefs::kCartDiscountLastFetchedTime),
             base::Time());
   CartDiscountFetcher::CartDiscountMap fake_result;
   CreateCartDiscountFetcherFactory(std::move(fake_result), false);
@@ -372,7 +465,7 @@ TEST_F(FetchDiscountWorkerTest, TestStart_EndToEnd) {
 
   fetch_discount_worker_->Start(base::Milliseconds(0));
   task_environment_.RunUntilIdle();
-  EXPECT_NE(profile_.GetPrefs()->GetTime(prefs::kCartDiscountLastFetchedTime),
+  EXPECT_NE(profile_->GetPrefs()->GetTime(prefs::kCartDiscountLastFetchedTime),
             base::Time());
 }
 
@@ -380,9 +473,9 @@ TEST_F(FetchDiscountWorkerTest, TestStart_DiscountUpdatedWithRBDDiscount) {
   CartDiscountFetcher::CartDiscountMap fake_result;
   fake_result.emplace(
       kMockMerchantACartUrl,
-      MerchantIdAndDiscounts(kMockMerchantAId, kMockMerchantADiscounts,
-                             kMockMerchantAHighestPercentOff,
-                             false /*has_coupons*/));
+      MerchantIdAndDiscounts(
+          kMockMerchantAId, kMockMerchantADiscounts, kEmptyCouponDiscountList,
+          kMockMerchantAHighestPercentOff, false /*has_coupons*/));
   CreateCartDiscountFetcherFactory(std::move(fake_result), false);
 
   CartDB::KeyAndValue mockMerchantACartContentKeyAndProto =
@@ -407,10 +500,11 @@ TEST_F(FetchDiscountWorkerTest, TestStart_DiscountUpdatedWithRBDDiscount) {
 
 TEST_F(FetchDiscountWorkerTest, TestStart_DiscountUpdatedWithCouponDiscount) {
   CartDiscountFetcher::CartDiscountMap fake_result;
-  fake_result.emplace(kMockMerchantACartUrl,
-                      MerchantIdAndDiscounts(kMockMerchantAId, {},
-                                             kMockMerchantAHighestPercentOff,
-                                             true /*has_coupons*/));
+  fake_result.emplace(
+      kMockMerchantACartUrl,
+      MerchantIdAndDiscounts(kMockMerchantAId, {}, kEmptyCouponDiscountList,
+                             kMockMerchantAHighestPercentOff,
+                             true /*has_coupons*/));
   CreateCartDiscountFetcherFactory(std::move(fake_result), false);
 
   CartDB::KeyAndValue mockMerchantACartContentKeyAndProto =
@@ -469,9 +563,9 @@ TEST_F(FetchDiscountWorkerTest, TestStart_FetcherRefetched) {
   CartDiscountFetcher::CartDiscountMap fake_result;
   fake_result.emplace(
       kMockMerchantACartUrl,
-      MerchantIdAndDiscounts(kMockMerchantAId, kMockMerchantADiscounts,
-                             kMockMerchantAHighestPercentOff,
-                             false /*has_coupons*/));
+      MerchantIdAndDiscounts(
+          kMockMerchantAId, kMockMerchantADiscounts, kEmptyCouponDiscountList,
+          kMockMerchantAHighestPercentOff, false /*has_coupons*/));
   CreateCartDiscountFetcherFactory(std::move(fake_result), false);
 
   CartDB::KeyAndValue mockMerchantACartContentKeyAndProto =
@@ -504,9 +598,9 @@ TEST_F(FetchDiscountWorkerTest, TestTesterFetch) {
   CartDiscountFetcher::CartDiscountMap fake_result;
   fake_result.emplace(
       kMockMerchantACartUrl,
-      MerchantIdAndDiscounts(kMockMerchantAId, kMockMerchantADiscounts,
-                             kMockMerchantAHighestPercentOff,
-                             false /*has_coupons*/));
+      MerchantIdAndDiscounts(
+          kMockMerchantAId, kMockMerchantADiscounts, kEmptyCouponDiscountList,
+          kMockMerchantAHighestPercentOff, false /*has_coupons*/));
   CreateCartDiscountFetcherFactory(std::move(fake_result), expected_a_tester);
 
   CartDB::KeyAndValue mockMerchantACartContentKeyAndProto =
@@ -578,4 +672,44 @@ TEST_F(FetchDiscountWorkerTest, TestFetchForCouponPartnerMerchants) {
   fetch_discount_worker_->Start(base::Milliseconds(0));
   task_environment_.RunUntilIdle();
   EXPECT_EQ(1, FakeCartDiscountFetcher::GetFetchCount());
+}
+
+TEST_F(FetchDiscountWorkerTest, TestUpdateFreeListingCouponsWithCode) {
+  coupon_db::FreeListingCouponInfoProto coupon_info_proto =
+      BuildFreeListingCouponInfoProto("des", "code", 1, 1);
+
+  std::vector<coupon_db::FreeListingCouponInfoProto> coupon_discount_list = {
+      coupon_info_proto};
+  CartDiscountFetcher::CartDiscountMap fake_result;
+  fake_result.emplace(
+      kMockMerchantACartUrl,
+      MerchantIdAndDiscounts(
+          kMockMerchantAId, kMockMerchantADiscounts, coupon_discount_list,
+          kMockMerchantAHighestPercentOff, false /*has_coupons*/));
+  CreateCartDiscountFetcherFactory(std::move(fake_result), false);
+
+  CouponService::CouponsMap expected_map;
+  expected_map[GURL(kMockMerchantACartUrl).GetOrigin()]
+      .emplace_back(BuildCouponsMapValueEntry(
+          GURL(kMockMerchantACartUrl).GetOrigin(),
+          coupon_info_proto));
+  fake_cart_service_delegate_->SetExpectedCouponMap(std::move(expected_map));
+
+  CartDB::KeyAndValue mockMerchantACartContentKeyAndProto =
+      std::make_pair(kMockMerchantA, kMockMerchantACartContentProto);
+  std::vector<CartDB::KeyAndValue> loader_fake_data(
+      1, mockMerchantACartContentKeyAndProto);
+  fake_cart_service_delegate_->SetCartLoadFakeData(loader_fake_data);
+
+  cart_db::ChromeCartContentProto cart_content_proto = BuildCartContentProto(
+      kMockMerchantA, kMockMerchantACartUrl, kMockMerchantATimestamp);
+  cart_db::ChromeCartContentProto updater_expected_data = AddRBDDiscountToProto(
+      cart_content_proto, kMockMerchantAId, kMockMerchantADiscounts[0]);
+  fake_cart_service_delegate_->SetCartDiscountUpdateExpectedData(
+      updater_expected_data, true, kMockMerchantAHighestPercentOff);
+
+  CreateWorker();
+
+  fetch_discount_worker_->Start(base::Milliseconds(0));
+  task_environment_.RunUntilIdle();
 }

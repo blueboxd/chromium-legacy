@@ -2661,6 +2661,24 @@ const FeatureEntry::FeatureVariation kReadLaterVariations[] = {
     {"(with app menu item)", kReadLaterInAppMenu,
      base::size(kReadLaterInAppMenu), nullptr}};
 
+const FeatureEntry::FeatureParam kBookmarksRefreshVisuals[] = {
+    {"bookmark_visuals_enabled", "true"}};
+const FeatureEntry::FeatureParam kBookmarksRefreshAppMenu[] = {
+    {"add_bookmark_in_app_menu", "true"},
+    {"edit_bookmark_in_app_menu", "true"}};
+const FeatureEntry::FeatureParam kBookmarksRefreshWithEverything[] = {
+    {"bookmark_visuals_enabled", "true"},
+    {"add_bookmark_in_app_menu", "true"},
+    {"edit_bookmark_in_app_menu", "true"}};
+
+const FeatureEntry::FeatureVariation kBookmarksRefreshVariations[] = {
+    {"(manager visuals only)", kBookmarksRefreshVisuals,
+     base::size(kBookmarksRefreshVisuals), nullptr},
+    {"(app menu)", kBookmarksRefreshAppMenu,
+     base::size(kBookmarksRefreshAppMenu), nullptr},
+    {"(everything)", kBookmarksRefreshWithEverything,
+     base::size(kBookmarksRefreshWithEverything), nullptr}};
+
 const FeatureEntry::FeatureParam kScrollCaptureInMemory[] = {
     {"in_memory_capture", "true"}};
 
@@ -3068,9 +3086,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kButtonARCNetworkDiagnosticsName,
      flag_descriptions::kButtonARCNetworkDiagnosticsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kButtonARCNetworkDiagnostics)},
-    {"calendar-view", flag_descriptions::kCalendarViewName,
-     flag_descriptions::kCalendarViewDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCalendarView)},
     {"cellular-allow-per-network-roaming",
      flag_descriptions::kCellularAllowPerNetworkRoamingName,
      flag_descriptions::kCellularAllowPerNetworkRoamingDescription, kOsCrOS,
@@ -3118,9 +3133,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDefaultCalculatorWebAppName,
      flag_descriptions::kDefaultCalculatorWebAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(web_app::kDefaultCalculatorWebApp)},
-    {"enable-notifications-revamp", flag_descriptions::kNotificationsRevampName,
-     flag_descriptions::kNotificationsRevampDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kNotificationsRefresh)},
     {kLacrosSupportInternalName, flag_descriptions::kLacrosSupportName,
      flag_descriptions::kLacrosSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kLacrosSupport)},
@@ -4022,8 +4034,8 @@ const FeatureEntry kFeatureEntries[] = {
     {"password-import", flag_descriptions::kPasswordImportName,
      flag_descriptions::kPasswordImportDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordImport)},
-    {"enable-force-dark", flag_descriptions::kForceWebContentsDarkModeName,
-     flag_descriptions::kForceWebContentsDarkModeDescription, kOsAll,
+    {"enable-force-dark", flag_descriptions::kAutoWebContentsDarkModeName,
+     flag_descriptions::kAutoWebContentsDarkModeDescription, kOsAll,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
      // TODO(https://crbug.com/1011696): Investigate crash reports and
      // re-enable variations for ChromeOS.
@@ -4178,8 +4190,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::
          kExperimentalAccessibilitySwitchAccessSetupGuideDescription,
      kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         ::switches::kEnableExperimentalAccessibilitySwitchAccessSetupGuide)},
+     FEATURE_VALUE_TYPE(
+         features::kExperimentalAccessibilitySwitchAccessSetupGuide)},
     {"enable-experimental-kernel-vm-support",
      flag_descriptions::kKernelnextVMsName,
      flag_descriptions::kKernelnextVMsDescription, kOsCrOS,
@@ -7577,7 +7589,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"bookmarks-refresh", flag_descriptions::kBookmarksRefreshName,
      flag_descriptions::kBookmarksRefreshDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kBookmarksRefresh)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kBookmarksRefresh,
+                                    kBookmarksRefreshVariations,
+                                    "BookmarksRefresh")},
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

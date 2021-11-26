@@ -40,9 +40,14 @@ CardUnmaskAuthenticationSelectionDialogViews::
 
 CardUnmaskAuthenticationSelectionDialogViews::
     ~CardUnmaskAuthenticationSelectionDialogViews() {
-  // Inform |controller_| of the dialog's destruction.
-  if (controller_)
-    controller_->OnDialogClosed();
+  // Inform |controller_| of the dialog's destruction. By the time this is
+  // called, the |controller_| will not be nullptr only if the dialog is closed
+  // by the user. For other cases, the |controller_| should already be reset.
+  if (controller_) {
+    controller_->OnDialogClosed(/*user_closed_dialog=*/true,
+                                /*server_success=*/false);
+    controller_ = nullptr;
+  }
 }
 
 // static
@@ -56,9 +61,22 @@ CardUnmaskAuthenticationSelectionDialogView::CreateAndShow(
   return dialog_view;
 }
 
-void CardUnmaskAuthenticationSelectionDialogViews::OnControllerDestroying() {
-  controller_ = nullptr;
+void CardUnmaskAuthenticationSelectionDialogViews::Dismiss(
+    bool user_closed_dialog,
+    bool server_success) {
+  if (controller_) {
+    controller_->OnDialogClosed(user_closed_dialog, server_success);
+    controller_ = nullptr;
+  }
   GetWidget()->Close();
+}
+
+bool CardUnmaskAuthenticationSelectionDialogViews::Accept() {
+  ReplaceContentWithProgressThrobber();
+  SetButtonEnabled(ui::DIALOG_BUTTON_OK, false);
+  DCHECK(!controller_->GetChallengeOptions().empty());
+  controller_->OnOkButtonClicked(controller_->GetChallengeOptions()[0].id);
+  return false;
 }
 
 std::u16string CardUnmaskAuthenticationSelectionDialogViews::GetWindowTitle()
@@ -75,10 +93,11 @@ void CardUnmaskAuthenticationSelectionDialogViews::AddedToWidget() {
 void CardUnmaskAuthenticationSelectionDialogViews::InitViews() {
   DCHECK(children().empty());
   // Sets the layout manager for the top level view.
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
   // Adds the header.
   AddHeaderText();
   // Adds the list of challenge options.
@@ -137,6 +156,13 @@ void CardUnmaskAuthenticationSelectionDialogViews::AddFooterText() {
       views::style::STYLE_SECONDARY));
   content->SetMultiLine(true);
   content->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+}
+
+void CardUnmaskAuthenticationSelectionDialogViews::
+    ReplaceContentWithProgressThrobber() {
+  RemoveAllChildViews();
+  AddChildView(std::make_unique<ProgressBarWithTextView>(
+      controller_->GetProgressLabel()));
 }
 
 }  // namespace autofill

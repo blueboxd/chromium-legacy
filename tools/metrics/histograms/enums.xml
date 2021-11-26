@@ -5527,6 +5527,18 @@ others/histograms.xml -->
   <int value="3" label="Closed without user interaction"/>
 </enum>
 
+<enum name="AutofillCardUnmaskAuthenticationSelectionDialogResult">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="User canceled before selecting a challenge option"/>
+  <int value="2"
+      label="User canceled after selecting a challenge option, while the
+             dialog was in pending state"/>
+  <int value="3"
+      label="A challenge option was selected and the server returned success"/>
+  <int value="4"
+      label="A challenge option was selected and the server returned failure"/>
+</enum>
+
 <enum name="AutofillCardUploadDecision">
   <obsolete>
     Deprecated as of 2/2016, replaced by AutofillCardUploadDecisionExpanded.
@@ -6460,6 +6472,46 @@ others/histograms.xml -->
   <int value="2" label="User did not interact with the infobar"/>
 </enum>
 
+<enum name="AutofillOtpAuthEvent">
+  <int value="0" label="Unknown result"/>
+  <int value="1" label="OTP auth succeeded"/>
+  <int value="2" label="OTP auth failed due to flow being cancelled"/>
+  <int value="3"
+      label="OTP auth failed due to generic error in SelectChallengeOption
+             request"/>
+  <int value="4"
+      label="OTP auth failed due to virtual card retrieval error in
+             SelectChallengeOption request"/>
+  <int value="5"
+      label="OTP auth failed due to auth error in UnmaskCard request"/>
+  <int value="6"
+      label="OTP auth failed due to virtual card retrieval error in
+             UnmaskCard request"/>
+  <int value="7" label="OTP auth temporarily failed due to OTP being expired"/>
+  <int value="8"
+      label="OTP auth temporarily failed due to OTP being incorrect"/>
+</enum>
+
+<enum name="AutofillOtpInputDialogError">
+  <int value="0" label="Unknown error"/>
+  <int value="1" label="OTP expired temporary error was shown"/>
+  <int value="2" label="OTP mismatch temporary error was shown"/>
+</enum>
+
+<enum name="AutofillOtpInputDialogResult">
+  <int value="0" label="Unknown result"/>
+  <int value="1"
+      label="User closed the OTP input dialog before pressing the OK button"/>
+  <int value="3"
+      label="User closed the OTP input dialog after pressing the OK button"/>
+  <int value="4"
+      label="OTP input dialog closed automatically after the OTP verification
+             succeeded"/>
+  <int value="5"
+      label="OTP input dialog closed automatically after a server failure
+             response"/>
+</enum>
+
 <enum name="AutofillPredictionSource">
   <int value="0" label="PREDICTION_SOURCE_UNKNOWN"/>
   <int value="1" label="PREDICTION_SOURCE_HEURISTIC"/>
@@ -6610,6 +6662,21 @@ others/histograms.xml -->
   <int value="0" label="Scan card shown"/>
   <int value="1" label="Scan card selected"/>
   <int value="2" label="Some other item selected"/>
+</enum>
+
+<enum name="AutofillServerCardUnmaskResult">
+  <int value="0" label="Unknown result"/>
+  <int value="1" label="Local cache hit"/>
+  <int value="2"
+      label="Completed risk-based unmasking, no user-facing authentication"/>
+  <int value="3" label="Completed unmasking via authentication"/>
+  <int value="4" label="Authentication-related errors"/>
+  <int value="5" label="Virtual-card-retrieval-related errors"/>
+  <int value="6" label="Flow was cancelled"/>
+  <int value="7"
+      label="FIDO option was the only option provided but user has not opted
+             in"/>
+  <int value="8" label="Unexpected errors"/>
 </enum>
 
 <enum name="AutofillServerFieldType">
@@ -7821,6 +7888,8 @@ Called by update_bad_message_reasons.py.-->
   <int value="251"
       label="OBSOLETE_RFH_CHILD_FRAME_UNEXPECTED_OWNER_ELEMENT_TYPE"/>
   <int value="252" label="RFH_POPUP_REQUEST_WHILE_PRERENDERING"/>
+  <int value="253" label="RFH_INTERECEPT_DOWNLOAD_WHILE_INACTIVE"/>
+  <int value="254" label="RFH_CREATE_CHILD_FRAME_SANDBOX_FLAGS"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -10028,6 +10097,11 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BooleanStreamed">
   <int value="0" label="Not streamed"/>
   <int value="1" label="Streamed"/>
+</enum>
+
+<enum name="BooleanSubmitted">
+  <int value="0" label="Not submitted"/>
+  <int value="1" label="Submitted"/>
 </enum>
 
 <enum name="BooleanSuccess">
@@ -12914,6 +12988,25 @@ In case of new special images, values 3 to 9 can be used. -->
   <int value="5" label="Notifications and Durable"/>
   <int value="6" label="Notifications, Durable, and Engagement"/>
   <int value="7" label="Unknown"/>
+</enum>
+
+<enum name="ClearOnExitSyncEvent">
+  <int value="0" label="Profile startup, sync is disabled"/>
+  <int value="1" label="Profile startup, sync is paused"/>
+  <int value="2" label="Profile startup, sync is active"/>
+  <int value="3" label="Re-login to a sync paused account"/>
+  <int value="4" label="Logout of a sync paused account"/>
+  <int value="5"
+      label="Profile shutdown, sync is active, started paused, consent change"/>
+  <int value="6"
+      label="Profile shutdown, sync is active, started paused, no consent
+             change"/>
+  <int value="7"
+      label="Profile shutdown, sync is active, started active, consent change"/>
+  <int value="8"
+      label="Profile shutdown, sync is active, started active, no consent
+             change"/>
+  <int value="9" label="Profile shutdown, sync is paused"/>
 </enum>
 
 <enum name="ClearServerDataEvents">
@@ -19283,6 +19376,7 @@ Called by update_debug_scenarios.py.-->
   <int value="7" label="kDebugSubframeProxyCreationWithNoRVH"/>
   <int value="8" label="kDebugBackForwardCacheEntryExistsOnSubframeHistoryNav"/>
   <int value="9" label="kDebugNoRenderFrameProxyHostOnSetFocusedFrame"/>
+  <int value="10" label="kDebugNoRestoredRFHOnNonRestartedNavigation"/>
 </enum>
 
 <enum name="DeclarativeAPIFunctionType">
@@ -19564,6 +19658,7 @@ Called by update_debug_scenarios.py.-->
   <int value="1" label="Keyboard shortcut"/>
   <int value="2" label="Desks restore on first signin"/>
   <int value="3" label="Template Launched"/>
+  <int value="4" label="Drag and drop window on the new desk button"/>
 </enum>
 
 <enum name="DesksMoveWindowFromActiveDeskSource">
@@ -19923,6 +20018,8 @@ Called by update_debug_scenarios.py.-->
   <int value="48" label="hideIssuesFeature"/>
   <int value="49" label="reportingApiDebugging"/>
   <int value="50" label="syncSettings"/>
+  <int value="51" label="groupAndHideIssuesByKind"/>
+  <int value="52" label="cssTypeComponentLength"/>
 </enum>
 
 <enum name="DevToolsGridOverlayOpenedFrom">
@@ -34806,6 +34903,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4056" label="AppHistory"/>
   <int value="4057" label="FlexboxAlignSingleLineDifference"/>
   <int value="4058" label="ExternalProtocolBlockedBySandbox"/>
+  <int value="4059" label="WebAssemblyDynamicTiering"/>
+  <int value="4062" label="AutoDarkMode"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -47792,6 +47891,8 @@ from previous Chrome versions.
       label="AutofillSaveCreditCardUsesStrikeSystemV2:disabled"/>
   <int value="-2059771509" label="NTPTilesLowerResolutionFavicons:disabled"/>
   <int value="-2059331227" label="DiceWebSigninInterception:disabled"/>
+  <int value="-2058862330"
+      label="ExperimentalAccessibilitySwitchAccessSetupGuide:disabled"/>
   <int value="-2058762785"
       label="AllowDownloadResumptionWithoutStrongValidators:disabled"/>
   <int value="-2058656447" label="ContextualSearchUrlActions:enabled"/>
@@ -48396,6 +48497,7 @@ from previous Chrome versions.
   <int value="-1619757314" label="touch-scrolling-mode"/>
   <int value="-1619146163" label="OverrideSitePrefsForHrefTranslate:disabled"/>
   <int value="-1618707999" label="enable-webfonts-intervention-v2"/>
+  <int value="-1617805422" label="WebViewUseMetricsUploadService:enabled"/>
   <int value="-1617183455" label="OfflineRecentPages:disabled"/>
   <int value="-1616855537" label="enable-manual-password-generation:disabled"/>
   <int value="-1615901413" label="NewMacNotificationAPI:enabled"/>
@@ -48404,6 +48506,8 @@ from previous Chrome versions.
       label="AutofillLocalCardMigrationUsesStrikeSystemV2:disabled"/>
   <int value="-1614912400" label="enable-link-disambiguation-popup"/>
   <int value="-1613583483" label="UseNewAcceptLanguageHeader:enabled"/>
+  <int value="-1612418793"
+      label="ExperimentalAccessibilitySwitchAccessSetupGuide:enabled"/>
   <int value="-1611758030" label="AndroidWebContentsDarkMode:disabled"/>
   <int value="-1611357520" label="MediaAppPdfInInk:enabled"/>
   <int value="-1611305202" label="KeepPrefetchedContentSuggestions:disabled"/>
@@ -52120,6 +52224,7 @@ from previous Chrome versions.
       label="SafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid:disabled"/>
   <int value="1247293682" label="topchrome-md"/>
   <int value="1249215617" label="SelectToSpeakNavigationControl:enabled"/>
+  <int value="1249861983" label="WebViewUseMetricsUploadService:disabled"/>
   <int value="1250071868" label="disable-timezone-tracking-option"/>
   <int value="1250776846" label="DnsProxyEnableDOH:enabled"/>
   <int value="1251663392" label="ArcImageCopyPasteCompat:disabled"/>
@@ -56299,10 +56404,18 @@ Called by update_use_counter_css.py.-->
   <int value="7" label="Could not identify the source language"/>
 </enum>
 
+<enum name="MerchantTrustBottomSheetOpenedSource">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="From message"/>
+  <int value="2" label="From page info"/>
+</enum>
+
 <enum name="MerchantTrustMessageClearReason">
   <int value="0" label="Unknown"/>
   <int value="1" label="Navigate to same domain"/>
   <int value="2" label="Navigate to different domain"/>
+  <int value="3" label="Message context is no longer valid"/>
+  <int value="4" label="Switch to different webcontents"/>
 </enum>
 
 <enum name="MessageDismissReason">
@@ -60917,6 +61030,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Background customization unavailable due to theme"/>
   <int value="3"
       label="Background customization unavailable due to search provider"/>
+</enum>
+
+<enum name="NTPBrokenViewHierarchyRelationship">
+  <int value="0" label="ELM collection containing Content Suggestions fixed"/>
+  <int value="1" label="Discover feed containing ELM collection fixed"/>
+  <int value="2" label="Discover feed wrapper containing Discover feed fixed"/>
+  <int value="3" label="NTP containing Discover feed wrapper fixed"/>
+  <int value="4"
+      label="Content suggestions view controller not cleaned up on restart"/>
 </enum>
 
 <enum name="NTPCustomizeAction">
@@ -76916,6 +77038,20 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="Context menu"/>
 </enum>
 
+<enum name="ShowChromeStartSegmentationResult">
+  <int value="0" label="Uninitialized"/>
+  <int value="1" label="Dont show Start surface"/>
+  <int value="2" label="Show Start surface"/>
+</enum>
+
+<enum name="ShowChromeStartSegmentationResultComparison">
+  <int value="0" label="Uninitialized."/>
+  <int value="1" label="Segmentation enabled and logic enabled."/>
+  <int value="2" label="Segmentation enabled and logic disabled."/>
+  <int value="3" label="Segmentation disabled and logic enabled."/>
+  <int value="4" label="Segmentation disabled and logic enabled."/>
+</enum>
+
 <enum name="ShownAfterCrashingReason">
   <summary>
     This enum describes the reason that a crashed subframe became visible.
@@ -78416,8 +78552,6 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="42" label="UMA_WEB_FEED_UNFOLLOW_FAILURE"/>
   <int value="43" label="UMA_LANGUAGE_SPLIT_RESTART"/>
   <int value="44" label="UMA_AUTOFILL_VIRTUAL_CARD_FILLED"/>
-  <int value="45" label="UMA_WINDOW_ERROR"/>
-  <int value="46" label="UMA_MODULE_INSTALL_FAILURE"/>
 </enum>
 
 <enum name="SnapshotItemId">
@@ -89303,6 +89437,8 @@ Called by update_scheduler_enums.py.-->
   <int value="4" label="Clear Site Group Data"/>
   <int value="5" label="Clear Origin Data"/>
   <int value="6" label="Enter Site Details"/>
+  <int value="7" label="Remove Site Group"/>
+  <int value="8" label="Remove Origin"/>
 </enum>
 
 <enum name="WebsiteSettingsDiscoverabilityAction">

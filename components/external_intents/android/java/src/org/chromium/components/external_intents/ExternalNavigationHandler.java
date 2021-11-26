@@ -900,11 +900,11 @@ public class ExternalNavigationHandler {
             return false;
         }
 
-        String packageName = mDelegate.getContext().getPackageName();
+        String selfPackageName = mDelegate.getContext().getPackageName();
         boolean matchesOtherPackage = false;
         for (ResolveInfo resolveInfo : resolveInfos) {
             ActivityInfo info = resolveInfo.activityInfo;
-            if (info == null || !packageName.equals(info.packageName)) {
+            if (info == null || !selfPackageName.equals(info.packageName)) {
                 matchesOtherPackage = true;
                 break;
             }
@@ -917,6 +917,15 @@ public class ExternalNavigationHandler {
         // Fall back to querying for browser packages if the intent doesn't obviously match or not
         // match a browser. This will catch custom URL schemes like googlechrome://.
         Set<String> browserPackages = getInstalledBrowserPackages();
+
+        if (hasSpecializedHandler) {
+            List<String> specializedPackages = getSpecializedHandlers(resolveInfos);
+            for (String packageName : specializedPackages) {
+                // A non-browser package is specialized, so don't consider it to be targeting a
+                // browser.
+                if (!browserPackages.contains(packageName)) return false;
+            }
+        }
 
         for (ResolveInfo resolveInfo : resolveInfos) {
             ActivityInfo info = resolveInfo.activityInfo;
@@ -1800,6 +1809,7 @@ public class ExternalNavigationHandler {
         }
     }
 
+    @SuppressWarnings("UseCompatLoadingForDrawables")
     private OverrideUrlLoadingResult startActivityWithChooser(final Intent intent,
             List<ResolveInfo> resolvingInfos, GURL browserFallbackUrl, GURL intentDataUrl,
             GURL referrerUrl, Activity activity) {
@@ -1836,10 +1846,16 @@ public class ExternalNavigationHandler {
             Resources resources = pm.getResourcesForApplication(applicationInfo);
             resource.packageName = packageName;
             resource.resourceName = resources.getResourceName(applicationInfo.icon);
+            // This will throw a Resources.NotFoundException if the package uses resource
+            // name collapsing/stripping. The ActivityPicker fails to handle this exception, we have
+            // have to check for it here to avoid crashes.
+            resources.getDrawable(resources.getIdentifier(resource.resourceName, null, null), null);
         } catch (NameNotFoundException | Resources.NotFoundException e) {
+            Log.w(TAG, "No icon resource found for package: " + packageName);
             // Most likely the app doesn't have an icon and is just a test
             // app. Android will just use a blank icon.
             resource.packageName = "";
+            resource.resourceName = "";
         }
         labels.add(label);
         icons.add(resource);

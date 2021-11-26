@@ -28,6 +28,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/metrics/metrics_data_validation.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_utils.h"
@@ -666,56 +667,66 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
         longest_input_timestamp.InMilliseconds());
   }
 
-  if (GetDelegate()
-          .GetNormalizedResponsivenessMetrics()
-          .num_user_interactions) {
-    const page_load_metrics::NormalizedResponsivenessMetrics&
-        normalized_responsiveness_metrics =
-            GetDelegate().GetNormalizedResponsivenessMetrics();
+  const page_load_metrics::NormalizedResponsivenessMetrics&
+      normalized_responsiveness_metrics =
+          GetDelegate().GetNormalizedResponsivenessMetrics();
+  auto& max_event_durations =
+      normalized_responsiveness_metrics.normalized_max_event_durations;
+  auto& total_event_durations =
+      normalized_responsiveness_metrics.normalized_total_event_durations;
+  if (normalized_responsiveness_metrics.num_user_interactions) {
     builder.SetInteractiveTiming_WorstUserInteractionLatency_MaxEventDuration(
-        normalized_responsiveness_metrics.normalized_max_event_durations
-            .worst_latency.InMilliseconds());
+        max_event_durations.worst_latency.InMilliseconds());
     builder.SetInteractiveTiming_WorstUserInteractionLatency_TotalEventDuration(
-        normalized_responsiveness_metrics.normalized_total_event_durations
-            .worst_latency.InMilliseconds());
+        total_event_durations.worst_latency.InMilliseconds());
     if (base::FeatureList::IsEnabled(
             blink::features::kSendAllUserInteractionLatencies)) {
       // When the flag is disabled, we don't know the type of user interactions
       // and can't calculate the worst over budget.
       builder
           .SetInteractiveTiming_WorstUserInteractionLatencyOverBudget_MaxEventDuration(
-              normalized_responsiveness_metrics.normalized_max_event_durations
-                  .worst_latency_over_budget.InMilliseconds());
+              max_event_durations.worst_latency_over_budget.InMilliseconds());
       builder
           .SetInteractiveTiming_WorstUserInteractionLatencyOverBudget_TotalEventDuration(
-              normalized_responsiveness_metrics.normalized_total_event_durations
-                  .worst_latency_over_budget.InMilliseconds());
+              total_event_durations.worst_latency_over_budget.InMilliseconds());
       builder
-          .SetInteractiveTiming_TotalUserInteractionLatencyOverBudget_MaxEventDuration(
-              normalized_responsiveness_metrics.normalized_max_event_durations
-                  .total_latency_over_budget.InMilliseconds());
+          .SetInteractiveTiming_SumOfUserInteractionLatencyOverBudget_MaxEventDuration(
+              max_event_durations.sum_of_latency_over_budget.InMilliseconds());
       builder
-          .SetInteractiveTiming_TotalUserInteractionLatencyOverBudget_TotalEventDuration(
-              normalized_responsiveness_metrics.normalized_total_event_durations
-                  .total_latency_over_budget.InMilliseconds());
+          .SetInteractiveTiming_SumOfUserInteractionLatencyOverBudget_TotalEventDuration(
+              total_event_durations.sum_of_latency_over_budget
+                  .InMilliseconds());
       builder
           .SetInteractiveTiming_AverageUserInteractionLatencyOverBudget_MaxEventDuration(
-              normalized_responsiveness_metrics.normalized_max_event_durations
-                  .total_latency_over_budget.InMilliseconds() /
+              max_event_durations.sum_of_latency_over_budget.InMilliseconds() /
               normalized_responsiveness_metrics.num_user_interactions);
       builder
           .SetInteractiveTiming_AverageUserInteractionLatencyOverBudget_TotalEventDuration(
-              normalized_responsiveness_metrics.normalized_total_event_durations
-                  .total_latency_over_budget.InMilliseconds() /
+              total_event_durations.sum_of_latency_over_budget
+                  .InMilliseconds() /
               normalized_responsiveness_metrics.num_user_interactions);
       builder
           .SetInteractiveTiming_SlowUserInteractionLatencyOverBudget_HighPercentile_MaxEventDuration(
-              normalized_responsiveness_metrics.normalized_max_event_durations
-                  .high_percentile_latency_over_budget.InMilliseconds());
+              max_event_durations.high_percentile_latency_over_budget
+                  .InMilliseconds());
       builder
           .SetInteractiveTiming_SlowUserInteractionLatencyOverBudget_HighPercentile_TotalEventDuration(
-              normalized_responsiveness_metrics.normalized_total_event_durations
-                  .high_percentile_latency_over_budget.InMilliseconds());
+              total_event_durations.high_percentile_latency_over_budget
+                  .InMilliseconds());
+      builder
+          .SetInteractiveTiming_SlowUserInteractionLatencyOverBudget_HighPercentile2_MaxEventDuration(
+              page_load_metrics::ResponsivenessMetricsNormalization::
+                  ApproximateHighPercentile(
+                      normalized_responsiveness_metrics.num_user_interactions,
+                      max_event_durations.worst_ten_latencies_over_budget)
+                      .InMilliseconds());
+      builder
+          .SetInteractiveTiming_SlowUserInteractionLatencyOverBudget_HighPercentile2_TotalEventDuration(
+              page_load_metrics::ResponsivenessMetricsNormalization::
+                  ApproximateHighPercentile(
+                      normalized_responsiveness_metrics.num_user_interactions,
+                      total_event_durations.worst_ten_latencies_over_budget)
+                      .InMilliseconds());
     }
   }
   if (timing.interactive_timing->first_scroll_delay &&
@@ -1038,23 +1049,26 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
         "Gap1000ms.Max5000ms",
         page_load_metrics::LayoutShiftUmaValue(
             normalized_cls_data.session_windows_gap1000ms_max5000ms_max_cls));
-    // TODO(sullivan): remove this histogram in resolving crbug.com/1230786.
     base::UmaHistogramCustomCounts(
-        "PageLoad.Experimental.LayoutInstability.MaxCumulativeShiftScore."
-        "SessionWindow."
-        "Gap1000ms.Max5000ms.Bucketing50_GoodRange",
-        page_load_metrics::LayoutShiftExperimentalUmaValue10000(
+        "PageLoad.LayoutInstability.MaxCumulativeShiftScore.SessionWindow."
+        "Gap1000ms.Max5000ms2",
+        page_load_metrics::LayoutShiftUmaValue10000(
             normalized_cls_data.session_windows_gap1000ms_max5000ms_max_cls),
-        1, 1000, 50);
+        1, 24000, 50);
   }
   builder.Record(ukm::UkmRecorder::Get());
 
   // TODO(crbug.com/1064483): We should move UMA recording to components/
 
+  const float page_shift_score = page_load_metrics::LayoutShiftUmaValue(
+      GetDelegate().GetPageRenderData().layout_shift_score);
+  UMA_HISTOGRAM_COUNTS_100("PageLoad.LayoutInstability.CumulativeShiftScore",
+                           page_shift_score);
+  // The pseudo metric of PageLoad.LayoutInstability.CumulativeShiftScore. Only
+  // used to assess field trial data quality.
   UMA_HISTOGRAM_COUNTS_100(
-      "PageLoad.LayoutInstability.CumulativeShiftScore",
-      page_load_metrics::LayoutShiftUmaValue(
-          GetDelegate().GetPageRenderData().layout_shift_score));
+      "UMA.Pseudo.PageLoad.LayoutInstability.CumulativeShiftScore",
+      metrics::GetPseudoMetricsSample(page_shift_score));
 
   TRACE_EVENT_INSTANT1("loading", "CumulativeShiftScore::AllFrames::UMA",
                        TRACE_EVENT_SCOPE_THREAD, "data",

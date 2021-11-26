@@ -10,7 +10,7 @@ load("//lib/branches.star", "branches")
 load("//project.star", "settings")
 
 lucicfg.check_version(
-    min = "1.28.0",
+    min = "1.29.1",
     message = "Update depot_tools",
 )
 
@@ -89,6 +89,12 @@ luci.project(
         acl.entry(
             roles = acl.SCHEDULER_OWNER,
             groups = "project-chromium-admins",
+        ),
+    ],
+    bindings = [
+        luci.binding(
+            roles = "role/configs.validator",
+            groups = "project-chromium-try-task-accounts",
         ),
     ],
 )

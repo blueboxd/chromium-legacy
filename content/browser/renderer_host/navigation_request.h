@@ -352,6 +352,7 @@ class CONTENT_EXPORT NavigationRequest
   network::mojom::WebSandboxFlags SandboxFlagsToCommit() override;
   bool IsWaitingToCommit() override;
   bool WasEarlyHintsPreloadLinkHeaderReceived() override;
+  bool IsPdf() override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
   bool SetNavigationTimeout(base::TimeDelta timeout) override;
 
@@ -1494,6 +1495,9 @@ class CONTENT_EXPORT NavigationRequest
   // Whether the navigation should be sent to a renderer a process. This is
   // true, except for 204/205 responses and downloads.
   bool response_should_be_rendered_ = false;
+
+  // Whether devtools overrides were applied on the User-Agent request header.
+  bool devtools_user_agent_override_ = false;
 
   // The type of SiteInstance associated with this navigation.
   AssociatedSiteInstanceType associated_site_instance_type_ =

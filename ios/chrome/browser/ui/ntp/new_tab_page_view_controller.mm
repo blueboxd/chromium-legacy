@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/ntp/discover_feed_wrapper_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_content_delegate.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_omnibox_positioning.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
@@ -100,6 +101,10 @@ const CGFloat kOffsetToPinOmnibox = 100;
   DCHECK(self.discoverFeedWrapperViewController);
   DCHECK(self.contentSuggestionsViewController);
 
+  // TODO(crbug.com/1262536): Remove this when bug is fixed.
+  [self.discoverFeedWrapperViewController loadViewIfNeeded];
+  [self.contentSuggestionsViewController loadViewIfNeeded];
+
   // Prevent the NTP from spilling behind the toolbar and tab strip.
   self.view.clipsToBounds = YES;
 
@@ -119,6 +124,15 @@ const CGFloat kOffsetToPinOmnibox = 100;
       [self.ntpContentDelegate isFeedVisible]
           ? self.discoverFeedWrapperViewController.discoverFeed
           : self.discoverFeedWrapperViewController;
+
+  if (self.contentSuggestionsViewController.parentViewController) {
+    [self.contentSuggestionsViewController willMoveToParentViewController:nil];
+    [self.contentSuggestionsViewController.view removeFromSuperview];
+    [self.contentSuggestionsViewController removeFromParentViewController];
+    [self.discoverFeedMetricsRecorder
+        recordBrokenNTPHierarchy:BrokenNTPHierarchyRelationship::
+                                     kContentSuggestionsReset];
+  }
 
   [self.contentSuggestionsViewController
       willMoveToParentViewController:parentViewController];
@@ -631,6 +645,13 @@ const CGFloat kOffsetToPinOmnibox = 100;
              scrollPosition <= -kOffsetToPinOmnibox) {
     [self resetFakeOmnibox];
   }
+
+  // Content suggestions header will sometimes glitch when swiping quickly from
+  // inside the feed to the top of the NTP. This check safeguards this action to
+  // make sure the header is properly positioned. (crbug.com/1261458)
+  if (scrollPosition <= -[self adjustedContentSuggestionsHeight]) {
+    [self resetFakeOmnibox];
+  }
 }
 
 // Registers notifications for certain actions on the NTP.
@@ -653,10 +674,16 @@ const CGFloat kOffsetToPinOmnibox = 100;
 // Applies constraints to the NTP collection view, along with the constraints
 // for the content suggestions within it.
 - (void)applyCollectionViewConstraints {
-  UIView* containerView =
-      [self.ntpContentDelegate isFeedVisible]
-          ? self.discoverFeedWrapperViewController.discoverFeed.view
-          : self.view;
+  UIView* containerView;
+  if ([self.ntpContentDelegate isFeedVisible]) {
+    // TODO(crbug.com/1262536): Remove this when the bug is fixed.
+    if (IsNTPViewHierarchyRepairEnabled()) {
+      [self verifyNTPViewHierarchy];
+    }
+    containerView = self.discoverFeedWrapperViewController.discoverFeed.view;
+  } else {
+    containerView = self.view;
+  }
   UIView* contentSuggestionsView = self.contentSuggestionsViewController.view;
   contentSuggestionsView.translatesAutoresizingMaskIntoConstraints = NO;
 
@@ -700,6 +727,65 @@ const CGFloat kOffsetToPinOmnibox = 100;
 // omnibox, so they would both show.
 - (BOOL)collectionViewHasLoaded {
   return self.collectionView.contentSize.height > 0;
+}
+
+// TODO(crbug.com/1262536): Temporary fix to compensate for the view hierarchy
+// sometimes breaking. Use DCHECKs to investigate what exactly is broken and
+// find a fix.
+- (void)verifyNTPViewHierarchy {
+  // The view hierarchy with the feed enabled should be: self.view ->
+  // self.discoverFeedWrapperViewController.view ->
+  // self.discoverFeedWrapperViewController.discoverFeed.view ->
+  // self.collectionView -> self.contentSuggestionsViewController.view.
+  if (![self.collectionView.subviews
+          containsObject:self.contentSuggestionsViewController.view]) {
+    // Remove child VC from old parent.
+    [self.contentSuggestionsViewController willMoveToParentViewController:nil];
+    [self.contentSuggestionsViewController removeFromParentViewController];
+    [self.contentSuggestionsViewController.view removeFromSuperview];
+    [self.contentSuggestionsViewController didMoveToParentViewController:nil];
+
+    // Add child VC to new parent.
+    [self.contentSuggestionsViewController
+        willMoveToParentViewController:self.discoverFeedWrapperViewController
+                                           .discoverFeed];
+    [self.discoverFeedWrapperViewController.discoverFeed
+        addChildViewController:self.contentSuggestionsViewController];
+    [self.collectionView addSubview:self.contentSuggestionsViewController.view];
+    [self.contentSuggestionsViewController
+        didMoveToParentViewController:self.discoverFeedWrapperViewController
+                                          .discoverFeed];
+
+    [self.discoverFeedMetricsRecorder
+        recordBrokenNTPHierarchy:BrokenNTPHierarchyRelationship::
+                                     kContentSuggestionsParent];
+  }
+  [self ensureView:self.collectionView
+             isSubviewOf:self.discoverFeedWrapperViewController.discoverFeed
+                             .view
+      withRelationshipID:BrokenNTPHierarchyRelationship::kELMCollectionParent];
+  [self ensureView:self.discoverFeedWrapperViewController.discoverFeed.view
+             isSubviewOf:self.discoverFeedWrapperViewController.view
+      withRelationshipID:BrokenNTPHierarchyRelationship::kDiscoverFeedParent];
+  [self ensureView:self.discoverFeedWrapperViewController.view
+             isSubviewOf:self.view
+      withRelationshipID:BrokenNTPHierarchyRelationship::
+                             kDiscoverFeedWrapperParent];
+}
+
+// Ensures that |subView| is a descendent of |parentView|. If not, logs a DCHECK
+// and adds the subview. Includes |relationshipID| for metrics recorder to log
+// which part of the view hierarchy was broken.
+// TODO(crbug.com/1262536): Remove this once bug is fixed.
+- (void)ensureView:(UIView*)subView
+           isSubviewOf:(UIView*)parentView
+    withRelationshipID:(BrokenNTPHierarchyRelationship)relationship {
+  if (![parentView.subviews containsObject:subView]) {
+    DCHECK([parentView.subviews containsObject:subView]);
+    [subView removeFromSuperview];
+    [parentView addSubview:subView];
+    [self.discoverFeedMetricsRecorder recordBrokenNTPHierarchy:relationship];
+  }
 }
 
 #pragma mark - Setters

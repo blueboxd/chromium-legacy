@@ -83,6 +83,10 @@ const char kBreakpadNoDelayInitialUploadDescription[] =
     "disabled, initial upload is delayed until deferred initialization. This "
     "does not affect recovery mode.";
 
+const char kCommercePriceTrackingName[] = "Price Tracking";
+const char kCommercePriceTrackingDescription[] =
+    "Allows users to track product prices through Chrome.";
+
 const char kContextMenuActionsRefreshName[] = "Context menu actions refresh";
 const char kContextMenuActionsRefreshDescription[] =
     "When enabled, context menu actions are updated";
@@ -357,6 +361,10 @@ const char kModernTabStripDescription[] =
 
 const char kNewOverflowMenuName[] = "New Overflow Menu";
 const char kNewOverflowMenuDescription[] = "Enables the new overflow menu";
+
+const char kNTPViewHierarchyRepairName[] = "NTP View Hierarchy Repair";
+const char kNTPViewHierarchyRepairDescription[] =
+    "Checks if NTP view hierarchy is broken and fixes it if necessary.";
 
 const char kOldSyncStringFREName[] = "Use previous sync screen strings";
 const char kOldSyncStringFREDescription[] =

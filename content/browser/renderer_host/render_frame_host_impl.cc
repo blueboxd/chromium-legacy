@@ -2390,6 +2390,12 @@ void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
       javascript, false, has_user_gesture, world_id, base::NullCallback());
 }
 
+void RenderFrameHostImpl::ExecutePluginActionAtLocalLocation(
+    const gfx::Point& local_location,
+    blink::mojom::PluginActionType plugin_action) {
+  GetAssociatedLocalFrame()->PluginActionAt(local_location, plugin_action);
+}
+
 void RenderFrameHostImpl::CopyImageAt(int x, int y) {
   gfx::PointF point_in_view =
       GetView()->TransformRootPointToViewCoordSpace(gfx::PointF(x, y));
@@ -3299,6 +3305,9 @@ void RenderFrameHostImpl::RendererDidActivateForPrerendering() {
 
 void RenderFrameHostImpl::SetCrossOriginOpenerPolicyReporter(
     std::unique_ptr<CrossOriginOpenerPolicyReporter> coop_reporter) {
+  // Set reporting source to current document's reporting source.
+  if (coop_reporter)
+    coop_reporter->set_reporting_source(GetReportingSource());
   coop_access_report_manager_.set_coop_reporter(std::move(coop_reporter));
 }
 
@@ -3484,6 +3493,16 @@ void RenderFrameHostImpl::CreateChildFrame(
     return;
   }
 
+  // Documents create iframes, iframes host new documents. Both are associated
+  // with sandbox flags. They are required to be stricter or equal to their
+  // owner when they are created, as we go down.
+  if (frame_policy.sandbox_flags !=
+      (frame_policy.sandbox_flags | active_sandbox_flags())) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_CREATE_CHILD_FRAME_SANDBOX_FLAGS);
+    return;
+  }
+
   // TODO(crbug.com/1145708). The interface exposed to tests should
   // match the mojo interface.
   OnCreateChildFrame(new_routing_id, std::move(frame_remote),
@@ -3554,15 +3573,6 @@ void RenderFrameHostImpl::DidNavigate(
       !navigation_request->IsPageActivation() && !was_within_same_document;
   if (did_create_new_document)
     DidCommitNewDocument(params, navigation_request);
-
-  // Reporting API: If a Reporting-Endpoints header was received with this
-  // document, send it to the network service to configure the endpoints in the
-  // reporting cache.
-  if (!reporting_endpoints_.empty()) {
-    GetStoragePartition()->GetNetworkContext()->SetDocumentReportingEndpoints(
-        GetReportingSource(), params.origin, isolation_info_,
-        reporting_endpoints_);
-  }
 
   // When the frame hosts a different document, its state must be replicated
   // via its proxies to the other processes where it appears as remote.
@@ -7171,7 +7181,8 @@ void RenderFrameHostImpl::ResetWaitingState() {
 CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
     const url::Origin& origin,
     const GURL& url,
-    bool is_same_document_navigation) {
+    bool is_same_document_navigation,
+    bool is_pdf) {
   // Note that callers are responsible for avoiding this function in modes that
   // can bypass these rules, such as --disable-web-security or certain Android
   // WebView features like universal access from file URLs.
@@ -7187,7 +7198,7 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
   // set OriginIsolationRequest to kNone (this is implicitly done by the
   // UrlInfoInit constructor).
   if (!Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
-          this, UrlInfo(UrlInfoInit(url).WithOrigin(origin)),
+          this, UrlInfo(UrlInfoInit(url).WithOrigin(origin).WithIsPdf(is_pdf)),
           /*is_renderer_initiated_check=*/true)) {
     return CanCommitStatus::CANNOT_COMMIT_URL;
   }
@@ -10071,10 +10082,17 @@ bool RenderFrameHostImpl::ValidateURLAndOrigin(
     bool is_same_document_navigation,
     NavigationRequest* navigation_request) {
   RenderProcessHost* process = GetProcess();
+
+  // Use the value of `is_pdf` from `navigation_request` (if provided). This may
+  // be needed to verify the process lock in `CanCommitOriginAndUrl()`, but
+  // cannot be derived from the URL and origin alone.
+  bool is_pdf = navigation_request && navigation_request->GetUrlInfo().is_pdf;
+
   // Attempts to commit certain off-limits URL should be caught more strictly
   // than our FilterURL checks.  If a renderer violates this policy, it
   // should be killed.
-  switch (CanCommitOriginAndUrl(origin, url, is_same_document_navigation)) {
+  switch (
+      CanCommitOriginAndUrl(origin, url, is_same_document_navigation, is_pdf)) {
     case CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL:
       // The origin and URL are safe to commit.
       break;
@@ -10519,6 +10537,8 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
 
   coep_reporter_ = navigation_request->TakeCoepReporter();
   if (coep_reporter_) {
+    // Set coep reporter to the document reporting source.
+    coep_reporter_->set_reporting_source(GetReportingSource());
     mojo::PendingRemote<blink::mojom::ReportingObserver> remote;
     mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver =
         remote.InitWithNewPipeAndPassReceiver();
@@ -10576,11 +10596,16 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
   reporting_endpoints_.clear();
   DCHECK(navigation_request);
 
-  if (navigation_request->response() &&
-      navigation_request->response()->parsed_headers &&
+  const url::Origin& origin = GetLastCommittedOrigin();
+  // Reporting API: If a Reporting-Endpoints header was received with this
+  // document over secure connection, send it to the network service to
+  // configure the endpoints in the reporting cache.
+  if (GURL::SchemeIsCryptographic(origin.scheme()) &&
+      navigation_request->response() &&
       navigation_request->response()->parsed_headers->reporting_endpoints) {
-    reporting_endpoints_ =
-        *(navigation_request->response()->parsed_headers->reporting_endpoints);
+    GetStoragePartition()->GetNetworkContext()->SetDocumentReportingEndpoints(
+        GetReportingSource(), origin, isolation_info_,
+        *(navigation_request->response()->parsed_headers->reporting_endpoints));
   }
 
   // We move the PolicyContainerHost of |navigation_request| into the

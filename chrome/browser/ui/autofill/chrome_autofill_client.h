@@ -18,6 +18,7 @@
 #include "chrome/browser/autofill/autofill_gstatic_reader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/payments/autofill_error_dialog_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/autofill_progress_dialog_controller_impl.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
@@ -83,10 +84,20 @@ class ChromeAutofillClient
   CreateCreditCardInternalAuthenticator(content::RenderFrameHost* rfh) override;
 
   void ShowAutofillSettings(bool show_credit_card_settings) override;
+  void ShowCardUnmaskOtpInputDialog(
+      const size_t& otp_length,
+      base::WeakPtr<OtpUnmaskDelegate> delegate) override;
+  void OnUnmaskOtpVerificationResult(OtpUnmaskResult unmask_result) override;
   void ShowUnmaskPrompt(const CreditCard& card,
                         UnmaskCardReason reason,
                         base::WeakPtr<CardUnmaskDelegate> delegate) override;
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
+  void ShowUnmaskAuthenticatorSelectionDialog(
+      const std::vector<CardUnmaskChallengeOption>& challenge_options,
+      base::OnceCallback<void(const std::string&)>
+          confirm_unmask_challenge_option_callback,
+      base::OnceClosure cancel_unmasking_closure) override;
+  void DismissUnmaskAuthenticatorSelectionDialog(bool server_success) override;
 #if !defined(OS_ANDROID)
   std::vector<std::string> GetAllowedMerchantsForVirtualCards() override;
   std::vector<std::string> GetAllowedBinRangesForVirtualCards() override;
@@ -155,10 +166,15 @@ class ChromeAutofillClient
   void HideAutofillPopup(PopupHidingReason reason) override;
   void ShowOfferNotificationIfApplicable(
       const AutofillOfferData* offer) override;
-  void OnVirtualCardDataAvailable(const CreditCard* credit_card,
-                                  const std::u16string& cvc,
-                                  const gfx::Image& card_image) override;
+  void OnVirtualCardDataAvailable(
+      const std::u16string& masked_card_identifier_string,
+      const CreditCard* credit_card,
+      const std::u16string& cvc,
+      const gfx::Image& card_image) override;
   void ShowVirtualCardErrorDialog(bool is_permanent_error) override;
+  void ShowAutofillProgressDialog(base::OnceClosure cancel_callback) override;
+  void CloseAutofillProgressDialog(
+      bool show_confirmation_before_closing) override;
   bool IsAutofillAssistantShowing() override;
   bool IsAutocompleteEnabled() override;
   void PropagateAutofillPredictions(
@@ -218,6 +234,8 @@ class ChromeAutofillClient
 #endif
   CardUnmaskPromptControllerImpl unmask_controller_;
   AutofillErrorDialogControllerImpl autofill_error_dialog_controller_;
+  std::unique_ptr<AutofillProgressDialogControllerImpl>
+      autofill_progress_dialog_controller_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

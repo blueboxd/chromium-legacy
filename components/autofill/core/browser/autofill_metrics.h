@@ -313,6 +313,31 @@ class AutofillMetrics {
     kMaxValue = OFFER_NOTIFICATION_INFOBAR_IGNORED,
   };
 
+  // Metrics to track events in CardUnmaskAuthenticationSelectionDialog.
+  enum class CardUnmaskAuthenticationSelectionDialogResultMetric {
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+
+    // Default value, should never be used.
+    kUnknown = 0,
+    // User canceled the dialog before selecting a challenge option.
+    kCanceledByUserBeforeSelection = 1,
+    // User canceled the dialog after selecting a challenge option, while the
+    // dialog was in a pending state.
+    kCanceledByUserAfterSelection = 2,
+    // Server success after user chose a challenge option. For instance, in the
+    // SMS OTP case, a server success indicates that the server successfully
+    // requested the issuer to send an OTP, and we can move on to the next step
+    // in this flow.
+    kDismissedByServerRequestSuccess = 3,
+    // Server failure after user chose a challenge option. For instance, in the
+    // SMS OTP case, a server failure indicates that the server unsuccessfully
+    // requested the issuer to send an OTP, and we can not move on to the next
+    // step in this flow.
+    kDismissedByServerRequestFailure = 4,
+    kMaxValue = kDismissedByServerRequestFailure,
+  };
+
   enum CreditCardUploadFeedbackMetric {
     // The loading indicator animation which indicates uploading is in progress
     // is successfully shown.
@@ -767,6 +792,26 @@ class AutofillMetrics {
     kMaxValue = kCvcThenFido,
   };
 
+  // TODO(crbug.com/1263302): Right now this is only used for virtual cards.
+  // Extend it for masked server cards in the future too. Tracks the flow type
+  // used in a virtual card unmasking.
+  enum class VirtualCardUnmaskFlowType {
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+
+    // Flow type was not specified because of no option was provided, or was
+    // unknown at time of logging.
+    kUnspecified = 0,
+    // Only FIDO auth was offered.
+    kFidoOnly = 1,
+    // Only OTP auth was offered.
+    kOtpOnly = 2,
+    // FIDO auth was offered first but was cancelled or failed. OTP auth was
+    // offered as a fallback.
+    kOtpFallbackFromFido = 3,
+    kMaxValue = kOtpFallbackFromFido,
+  };
+
   // Possible scenarios where a WebAuthn prompt may show.
   enum class WebauthnFlowEvent {
     // WebAuthn is immediately prompted for unmasking.
@@ -1025,6 +1070,98 @@ class AutofillMetrics {
     kMaxValue = SECTION_UNION_IMPORT,
   };
 
+  // OTP authentication-related events.
+  enum class OtpAuthEvent {
+    // Unknown results. Should not happen.
+    kUnknown = 0,
+    // The OTP auth succeeded.
+    kSuccess = 1,
+    // The OTP auth failed because the flow was cancelled.
+    kFlowCancelled = 2,
+    // The OTP auth failed because the SelectedChallengeOption request failed
+    // due to generic errors.
+    kSelectedChallengeOptionGenericError = 3,
+    // The OTP auth failed because the SelectedChallengeOption request failed
+    // due to virtual card retrieval errors.
+    kSelectedChallengeOptionVirtualCardRetrievalError = 4,
+    // The OTP auth failed because the UnmaskCard request failed due to
+    // authentication errors.
+    kUnmaskCardAuthError = 5,
+    // The OTP auth failed because the UnmaskCard request failed due to virtual
+    // card retrieval errors.
+    kUnmaskCardVirtualCardRetrievalError = 6,
+    // The OTP auth failed temporarily because the OTP was expired.
+    kOtpExpired = 7,
+    // The OTP auth failed temporarily because the OTP didn't match the expected
+    // value.
+    kOtpMismatch = 8,
+    kMaxValue = kOtpMismatch
+  };
+
+  // All possible results of the card unmask flow.
+  enum class ServerCardUnmaskResult {
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+
+    // Default value, should never be used in logging.
+    kUnknown = 0,
+    // Card unmask completed successfully because the data had already been
+    // cached locally.
+    kLocalCacheHit = 1,
+    // Card unmask completed successfully without further authentication steps.
+    kRiskBasedUnmasked = 2,
+    // Card unmask completed successfully via explicit authentication method,
+    // such as FIDO, OTP, etc.
+    kAuthenticationUnmasked = 3,
+    // Card unmask failed due to some generic authentication errors.
+    kAuthenticationError = 4,
+    // Card unmask failed due to specific virtual card retrieval errors. Only
+    // applies for virtual cards.
+    kVirtualCardRetrievalError = 5,
+    // Card unmask was aborted due to user cancellation.
+    kFlowCancelled = 6,
+    // Card unmask failed because only FIDO authentication was provided as an
+    // option but the user has not opted in.
+    kOnlyFidoAvailableButNotOptedIn = 7,
+    // Card unmask failed due to unexpected errors.
+    kUnexpectedError = 8,
+    kMaxValue = kUnexpectedError,
+  };
+
+  // The result of how the OTP input dialog was closed. This dialog is used for
+  // users to type in the received OTP value for card verification.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class OtpInputDialogResult {
+    // Unknown event, should not happen.
+    kUnknown = 0,
+    // The dialog was closed before the user entered any OTP and clicked the OK
+    // button. This includes closing the dialog in an error state after a failed
+    // unmask attempt.
+    kDialogCancelledByUserBeforeConfirmation = 1,
+    // The dialog was closed after the user entered a valid OTP and clicked the
+    // OK button, and when the dialog was in a pending state.
+    kDialogCancelledByUserAfterConfirmation = 2,
+    // The dialog closed automatically after the OTP verification succeeded.
+    kDialogClosedAfterVerificationSucceeded = 3,
+    // The dialog closed automatically after a server failure response.
+    kDialogClosedAfterVerificationFailed = 4,
+    kMaxValue = kDialogClosedAfterVerificationFailed,
+  };
+
+  // The type of error message shown in the card unmask OTP input dialog.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class OtpInputDialogError {
+    // Unknown type, should not be used.
+    kUnknown = 0,
+    // The error indicating that the OTP is expired.
+    kOtpExpiredError = 1,
+    // The error indicating that the OTP is incorrect.
+    kOtpMismatchError = 2,
+    kMaxValue = kOtpMismatchError,
+  };
+
   // Utility to log URL keyed form interaction events.
   class FormInteractionsUkmLogger {
    public:
@@ -1167,6 +1304,15 @@ class AutofillMetrics {
   // from its prefilled value or not.
   static void LogSaveCardCardholderNameWasEdited(bool edited);
 
+  // When the Card Unmask Authentication Selection Dialog is shown, logs the
+  // result of what the user did with the dialog.
+  static void LogCardUnmaskAuthenticationSelectionDialogResultMetric(
+      CardUnmaskAuthenticationSelectionDialogResultMetric metric);
+
+  // Logs true every time the Card Unmask Authentication Selection Dialog is
+  // shown.
+  static void LogCardUnmaskAuthenticationSelectionDialogShown();
+
   // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.
   static void LogCardUploadDecisionMetrics(int upload_decision_metrics);
   static void LogCreditCardInfoBarMetric(
@@ -1222,10 +1368,16 @@ class AutofillMetrics {
       AutofillOfferData::OfferType offer_type,
       OfferNotificationBubbleResultMetric metric,
       bool is_reshow);
+  static void LogOfferNotificationBubblePromoCodeButtonClicked(
+      AutofillOfferData::OfferType offer_type);
+  static void LogOfferNotificationBubbleSuppressed(
+      AutofillOfferData::OfferType offer_type);
   static void LogOfferNotificationInfoBarDeepLinkClicked();
   static void LogOfferNotificationInfoBarResultMetric(
       OfferNotificationInfoBarResultMetric metric);
   static void LogOfferNotificationInfoBarShown();
+  static void LogProgressDialogResultMetric(bool is_canceled_by_user);
+  static void LogProgressDialogShown();
   static void LogVirtualCardManualFallbackBubbleShown(bool is_reshow);
   static void LogVirtualCardManualFallbackBubbleResultMetric(
       VirtualCardManualFallbackBubbleResultMetric metric,
@@ -1298,6 +1450,17 @@ class AutofillMetrics {
   // Logs the duration of the PaymentsClient::GetUnmaskDetails() call (aka
   // GetDetailsForGetRealPan).
   static void LogCardUnmaskPreflightDuration(const base::TimeDelta& duration);
+
+  // TODO(crbug.com/1263302): These functions are used for only virtual cards
+  // now. Consider integrating with other masked server cards logging below.
+  static void LogServerCardUnmaskAttempt(
+      AutofillClient::PaymentsRpcCardType card_type);
+  static void LogServerCardUnmaskResult(
+      ServerCardUnmaskResult unmask_result,
+      AutofillClient::PaymentsRpcCardType card_type,
+      VirtualCardUnmaskFlowType flow_type);
+  static void LogServerCardUnmaskFormSubmission(
+      AutofillClient::PaymentsRpcCardType card_type);
 
   // Logs the count of calls to PaymentsClient::OptChange() (aka
   // UpdateAutofillUserPreference).
@@ -1739,6 +1902,35 @@ class AutofillMetrics {
 
   // Logs the image fetching result for one image in AutofillImageFetcher.
   static void LogImageFetchResult(bool succeeded);
+
+  /* Card unmasking OTP authentication-related metrics. */
+  // Logs when an OTP authentication starts.
+  static void LogOtpAuthAttempt();
+  // Logs the final reason the OTP authentication dialog is closed, even if
+  // there were prior failures like OTP mismatch, and is done once per Attempt.
+  static void LogOtpAuthResult(OtpAuthEvent event);
+  // Logged every time a retriable error occurs, which could potentially be
+  // several times in the same flow (mismatch then mismatch then cancel, etc.).
+  static void LogOtpAuthRetriableError(OtpAuthEvent event);
+  // Logs the roundtrip latency for UnmaskCardRequest sent by OTP
+  // authentication.
+  static void LogOtpAuthUnmaskCardRequestLatency(
+      const base::TimeDelta& latency);
+  // Logs the roundtrip latency for SelectChallengeOptionRequest sent by OTP
+  // authentication.
+  static void LogOtpAuthSelectChallengeOptionRequestLatency(
+      const base::TimeDelta& latency);
+
+  // Logs whenever the OTP input dialog is triggered and it is shown.
+  static void LogOtpInputDialogShown();
+  // Logs the result of how the dialog is dismissed.
+  static void LogOtpInputDialogResult(OtpInputDialogResult result,
+                                      bool temporary_error_shown);
+  // Logs when the temporary error shown in the dialog.
+  static void LogOtpInputDialogErrorMessageShown(OtpInputDialogError error);
+  // Logs when the "Get New Code" button in the dialog is clicked and user is
+  // requesting a new OTP.
+  static void LogOtpInputDialogNewOtpRequested();
 
   // The total number of values in the |CardUploadDecisionMetric| enum. Must be
   // updated each time a new value is added.

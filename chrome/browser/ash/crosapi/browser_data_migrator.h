@@ -16,10 +16,13 @@
 #include "chromeos/login/auth/user_context.h"
 
 namespace ash {
+
 // User data directory name for lacros.
 constexpr char kLacrosDir[] = "lacros";
+
 // Profile data directory name for lacros.
 constexpr char kLacrosProfilePath[] = "Default";
+
 // The following are UMA names.
 constexpr char kFinalStatus[] = "Ash.BrowserDataMigrator.FinalStatus";
 constexpr char kCopiedDataSize[] = "Ash.BrowserDataMigrator.CopiedDataSizeMB";
@@ -35,6 +38,26 @@ constexpr char kCommonDataTime[] =
 constexpr char kCreateDirectoryFail[] =
     "Ash.BrowserDataMigrator.CreateDirectoryFailure";
 
+// The following UMAs are recorded from
+// `BrowserDataMigrator::DryRunToCollectUMA()`.
+constexpr char kDryRunNoCopyDataSize[] =
+    "Ash.BrowserDataMigrator.DryRunNoCopyDataSizeMB";
+constexpr char kDryRunAshDataSize[] =
+    "Ash.BrowserDataMigrator.DryRunAshDataSizeMB";
+constexpr char kDryRunLacrosDataSize[] =
+    "Ash.BrowserDataMigrator.DryRunLacrosDataSizeMB";
+constexpr char kDryRunCommonDataSize[] =
+    "Ash.BrowserDataMigrator.DryRunCommonDataSizeMB";
+
+constexpr char kDryRunCopyMigrationHasEnoughDiskSpace[] =
+    "Ash.BrowserDataMigrator.DryRunHasEnoughDiskSpace.Copy";
+constexpr char kDryRunMoveMigrationHasEnoughDiskSpace[] =
+    "Ash.BrowserDataMigrator.DryRunHasEnoughDiskSpace.Move";
+constexpr char kDryRunDeleteAndCopyMigrationHasEnoughDiskSpace[] =
+    "Ash.BrowserDataMigrator.DryRunHasEnoughDiskSpace.DeleteAndCopy";
+constexpr char kDryRunDeleteAndMoveMigrationHasEnoughDiskSpace[] =
+    "Ash.BrowserDataMigrator.DryRunHasEnoughDiskSpace.DeleteAndMove";
+
 // BrowserDataMigrator is responsible for one time browser data migration from
 // ash-chrome to lacros-chrome.
 class BrowserDataMigrator {
@@ -42,11 +65,14 @@ class BrowserDataMigrator {
   // Used to describe a file/dir that has to be migrated.
   struct TargetItem {
     enum class ItemType { kFile, kDirectory };
-    TargetItem(base::FilePath path, ItemType item_type);
+    TargetItem(base::FilePath path, int64_t size, ItemType item_type);
     ~TargetItem() = default;
     bool operator==(const TargetItem& rhs) const;
 
     base::FilePath path;
+    // The size of the TargetItem. If TargetItem is a directory, it is the sum
+    // of all files under the directory.
+    int64_t size;
     bool is_directory;
   };
 
@@ -63,6 +89,8 @@ class BrowserDataMigrator {
     std::vector<TargetItem> lacros_data_items;
     // Items that will be duplicated in both ash and lacros data dir.
     std::vector<TargetItem> common_data_items;
+    // Items that can be deleted from both ash and lacros data dir.
+    std::vector<TargetItem> no_copy_data_items;
     // The total size of `ash_data_items`.
     int64_t ash_data_size;
     // The total size of items that can be deleted during the migration.
@@ -76,6 +104,9 @@ class BrowserDataMigrator {
     // common_data_size` since we are copying lacros data rather than moving
     // them.
     int64_t TotalCopySize() const;
+    // The total size of the profile data directory. It is the sum of ash,
+    // no_copy, lacros and common sizes.
+    int64_t TotalDirSize() const;
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -110,7 +141,18 @@ class BrowserDataMigrator {
     ResultValue data_migration;
   };
 
-  // Checks if migration is required for the user identified by `user_context`
+  // Specifies the mode of migration.
+  enum class Mode {
+    kCopy = 0,  // Copies browser related files to lacros.
+    kMove = 1,  // Moves browser related files to lacros while copying files
+                // that are needed by both ash and lacros.
+    kDeleteAndCopy = 2,  // Similar to kCopy but deletes
+                         // TargetInfo::no_copy_items to make extra space.
+    kDeleteAndMove = 3   // Similar to kMove but deletes
+                         // TargetInfo::no_copy_items to make extra space.
+  };
+
+  // Checks if migration is required for the user identified by `user_id_hash`
   // and if it is required, calls a DBus method to session_manager and
   // terminates ash-chrome.
   static void MaybeRestartToMigrate(const UserContext& user_context);
@@ -120,6 +162,10 @@ class BrowserDataMigrator {
   // once migration has completed or failed.
   static void Migrate(const std::string& user_id_hash,
                       base::OnceClosure callback);
+
+  // Collects migration specific UMAs without actually running the migration. It
+  // does not check if lacros is enabled.
+  static void DryRunToCollectUMA(const base::FilePath& profile_data_dir);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest,
@@ -133,6 +179,7 @@ class BrowserDataMigrator {
   // already exists or not. Check if lacros is enabled or not beforehand.
   static bool IsMigrationRequiredOnWorker(base::FilePath user_data_dir,
                                           const std::string& user_id_hash);
+
   // Handles the migration on a worker thread. Returns the end status of data
   // wipe and migration.
   static MigrationResult MigrateInternal(
@@ -141,40 +188,52 @@ class BrowserDataMigrator {
   static void MigrateInternalFinishedUIThread(base::OnceClosure callback,
                                               const std::string& user_id_hash,
                                               MigrationResult result);
+
   // Records to UMA histograms. Note that if `target_info` is nullptr, timer
   // will be ignored.
   static void RecordStatus(const FinalStatus& final_status,
                            const TargetInfo* target_info = nullptr,
                            const base::ElapsedTimer* timer = nullptr);
+
   // Create `TargetInfo` from `original_user_dir`. `TargetInfo` will include
   // paths of files/dirs that needs to be migrated.
   static TargetInfo GetTargetInfo(const base::FilePath& original_user_dir);
+
   // Compares space available for `to_dir` against total byte size that
   // needs to be copied.
   static bool HasEnoughDiskSpace(const TargetInfo& target_info,
-                                 const base::FilePath& to_dir);
+                                 const base::FilePath& original_user_dir,
+                                 Mode mode);
+
   // TODO(crbug.com/1248318):Remove this arbitrary cap for migration once a long
   // term solution is found. Temporarily limit the migration size to 4GB until
   // the slow migration speed issue is resolved.
   static bool IsMigrationSmallEnough(const TargetInfo& target_info);
+
   // Set up the temporary directory `tmp_dir` by copying items into it.
   static bool SetupTmpDir(const TargetInfo& target_info,
                           const base::FilePath& from_dir,
                           const base::FilePath& tmp_dir);
+
   // Copies `items` to `to_dir`. `items_size` and `category_name` are used for
   // logging.
   static bool CopyTargetItems(const base::FilePath& to_dir,
                               const std::vector<TargetItem>& items,
                               int64_t items_size,
                               base::StringPiece category_name);
+
   // Copies `item` to location pointed by `dest`. Returns true on success and
   // false on failure.
   static bool CopyTargetItem(const BrowserDataMigrator::TargetItem& item,
                              const base::FilePath& dest);
+
   // Copies the contents of `from_path` to `to_path` recursively. Unlike
   // `base::CopyDirectory()` it skips symlinks.
   static bool CopyDirectory(const base::FilePath& from_path,
                             const base::FilePath& to_path);
+
+  // Records the sizes of `TargetItem`s.
+  static void RecordTargetItemSizes(const std::vector<TargetItem>& items);
 };
 
 }  // namespace ash

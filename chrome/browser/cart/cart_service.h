@@ -120,6 +120,8 @@ class CartService : public history::HistoryServiceObserver,
   bool IsDiscountUsed(const std::string& rule_id);
   // Records timestamp of the latest fetch for discount.
   void RecordFetchTimestamp();
+  // Called by discount worker to pass new coupons to CouponService.
+  void UpdateFreeListingCoupons(const CouponService::CouponsMap& map);
   // KeyedService:
   void Shutdown() override;
 
@@ -130,6 +132,7 @@ class CartService : public history::HistoryServiceObserver,
   friend class CartServiceBrowserDiscountTest;
   friend class CartServiceDiscountFetchTest;
   friend class CartServiceCouponTest;
+  friend class FetchDiscountWorkerBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(CartHandlerNtpModuleFakeDataTest,
                            TestEnableFakeData);
 
@@ -201,10 +204,13 @@ class CartService : public history::HistoryServiceObserver,
   void CleanUpDiscounts(cart_db::ChromeCartContentProto proto);
   // A callback to to keep entries of removed carts when deletion.
   void OnDeleteCart(bool success, std::vector<CartDB::KeyAndValue> proto_pairs);
+  // A callback for when enable status for cart-related features has changed.
+  void OnCartFeaturesChanged(const std::string& pref_name);
+  // Get if cart and discount feature are both enabled.
+  bool IsCartAndDiscountEnabled();
 
   Profile* profile_;
   std::unique_ptr<CartDB> cart_db_;
-  history::HistoryService* history_service_;
   base::ScopedObservation<history::HistoryService, HistoryServiceObserver>
       history_service_observation_{this};
   absl::optional<base::Value> domain_name_mapping_;
@@ -216,6 +222,7 @@ class CartService : public history::HistoryServiceObserver,
   std::unique_ptr<CartMetricsTracker> metrics_tracker_;
   std::unique_ptr<DiscountURLLoader> discount_url_loader_;
   CouponService* coupon_service_;
+  PrefChangeRegistrar pref_change_registrar_;
   base::WeakPtrFactory<CartService> weak_ptr_factory_{this};
 };
 

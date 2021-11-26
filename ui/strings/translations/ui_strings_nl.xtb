@@ -30,6 +30,7 @@
 <translation id="1710340000377843106">nu</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuut}other{# minuten}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
+<translation id="1770726142253415363">Verplaatst naar rij <ph name="ROW_NUMBER" />, kolom <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="1801827354178857021">Periode</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 maand}other{# maanden}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
@@ -58,7 +59,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Je internetverbinding controleren…</translation>
 <translation id="2388990488038464401">Dit nummer bellen vanaf je telefoon?</translation>
-<translation id="2435457462613246316">Wachtwoord tonen</translation>
+<translation id="2435457462613246316">Wachtwoord bekijken</translation>
 <translation id="24452542372838207">Melding uitvouwen</translation>
 <translation id="2445449901874883781">Hoge dichtheid gebruiken</translation>
 <translation id="2482878487686419369">Meldingen</translation>

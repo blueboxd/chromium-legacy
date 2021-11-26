@@ -755,7 +755,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 }
 
                 if (isInOverviewMode()
-                        && !ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled()) {
+                        && !ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(this)) {
                     hideOverview();
                 } else {
                     showOverview(StartSurfaceState.SHOWING_TABSWITCHER);
@@ -1615,7 +1615,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 /* appMenuDelegate= */ this, /* statusBarColorProvider= */ this,
                 mEphemeralTabCoordinatorSupplier, getIntentRequestTracker(),
                 getControlContainerHeightResource(), this::getInsetObserverView,
-                this::backShouldCloseTab);
+                this::backShouldCloseTab, getTabReparentingControllerSupplier(),
+                // TODO(sinansahin): This currently only checks for incognito extras in the intent.
+                // We should make it more robust by using more signals.
+                IntentHandler.hasAnyIncognitoExtra(getIntent().getExtras()));
     }
 
     @Override
@@ -1729,7 +1732,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         // tablet), a view-only start page created on Java will be shown before native is
         // initialized. The {@link prepareToShowStartPagePreNative()} is only called in a cold
         // start.
-        if (ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled()
+        if (ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(this)
                 && TabUiFeatureUtilities.supportInstantStart(isTablet(), this) && !hadWarmStart()) {
             prepareToShowStartPagePreNative();
         }
@@ -1835,6 +1838,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         return new TabbedAppMenuPropertiesDelegate(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
                 getWindow().getDecorView(), this, mOverviewModeBehaviorSupplier,
+                ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(this) ? mStartSurfaceSupplier
+                                                                          : null,
                 mBookmarkBridgeSupplier,
                 ()
                         -> getTabCreator(/*incognito=*/false)
@@ -1866,7 +1871,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     protected Pair<ChromeTabCreator, ChromeTabCreator> createTabCreators() {
         ChromeTabCreator.OverviewNTPCreator overviewNTPCreator = null;
 
-        if (ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled()) {
+        if (ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(this)) {
             overviewNTPCreator = new ChromeTabCreator.OverviewNTPCreator() {
                 @Override
                 public boolean handleCreateNTPIfNeeded(boolean isNTP, boolean incognito,
@@ -2018,7 +2023,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     new LoadUrlParams(UrlConstants.RECENT_TABS_URL, PageTransition.AUTO_BOOKMARK);
             boolean isInOverviewMode = isInOverviewMode();
             if (isInOverviewMode && !isTablet()
-                    && ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled()) {
+                    && ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(this)) {
                 // When tapping the "Recent tabs" menu item from the overview page (Start surface or
                 // GTS), we will create the tab with the launch type FROM_START_SURFACE. Thus, if
                 // the back button is tapped on this "Recent tabs" page, it can go back to the
@@ -2159,9 +2164,15 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             if (StartSurfaceUserData.getKeepTab(currentTab)
                     || StartSurfaceUserData.isOpenedFromStart(currentTab)) {
                 // If the current tab is created from the start surface with the keepTab property,
-                // shows the Start surface Homepage to prevent a loop between the current tab and
-                // previous overview mode. Once in the Start surface, it will close Chrome if back
-                // button is tapped again.
+                // shows the Start surface non-incognito homepage to prevent a loop between the
+                // current tab and previous overview mode. Once in the Start surface, it will close
+                // Chrome if back button is tapped again.
+                if (currentTab.isIncognito()) {
+                    if (!currentTab.isClosing()) {
+                        getCurrentTabModel().closeTab(currentTab);
+                    }
+                    mTabModelSelector.selectModel(/*incognito=*/false);
+                }
                 showOverview(StartSurfaceState.SHOWING_HOMEPAGE);
             } else {
                 // Otherwise, clicking the back button should close the tab and go back to the

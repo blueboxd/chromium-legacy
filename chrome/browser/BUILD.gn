@@ -1131,8 +1131,8 @@ static_library("browser") {
     "permissions/last_tab_standing_tracker_observer.h",
     "permissions/last_tab_standing_tracker_tab_helper.cc",
     "permissions/last_tab_standing_tracker_tab_helper.h",
-    "permissions/permission_actions_history.cc",
-    "permissions/permission_actions_history.h",
+    "permissions/permission_actions_history_factory.cc",
+    "permissions/permission_actions_history_factory.h",
     "permissions/permission_auditing_service_factory.cc",
     "permissions/permission_auditing_service_factory.h",
     "permissions/permission_decision_auto_blocker_factory.cc",
@@ -5552,6 +5552,7 @@ static_library("browser") {
       "enterprise/connectors/device_trust/signals/signals_service_impl.h",
     ]
     deps += [
+      "//chrome/browser/enterprise/connectors/device_trust:features",
       "//chrome/browser/enterprise/connectors/device_trust/attestation/common",
       "//chrome/browser/enterprise/connectors/device_trust/attestation/common:types",
       "//chrome/browser/enterprise/connectors/device_trust/signals",

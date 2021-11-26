@@ -97,10 +97,13 @@
 #include "content/public/test/text_input_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/test/result_catcher.h"
+#include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -138,6 +141,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_view_manager.h"
+#include "ui/base/ui_base_types.h"
 #else
 #include "chrome/browser/printing/print_view_manager_basic.h"
 #endif
@@ -154,6 +158,7 @@ using ::guest_view::TestGuestViewManagerFactory;
 using ::pdf_extension_test_util::ConvertPageCoordToScreenCoord;
 using ::testing::IsEmpty;
 using ::testing::MatchesRegex;
+using ::testing::StartsWith;
 using ::ui::AXTreeFormatter;
 
 const int kNumberLoadTestParts = 10;
@@ -733,6 +738,55 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionBlobNavigationTest, SameTab) {
       /*number_of_navigations=*/2));
   EXPECT_TRUE(
       pdf_extension_test_util::EnsurePDFHasLoaded(GetActiveWebContents()));
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest, LoadInPlatformApp) {
+  extensions::TestExtensionDir dir;
+  dir.WriteManifest(R"(
+    {
+      "name": "PDFExtensionTest App",
+      "version": "1.0",
+      "manifest_version": 2,
+      "app": {
+        "background": {
+          "scripts": ["background_script.js"]
+        }
+      }
+    }
+  )");
+
+  dir.WriteFile(FILE_PATH_LITERAL("background_script.js"), R"(
+    chrome.app.runtime.onLaunched.addListener(() => {
+      chrome.app.window.create('test.pdf', () => {
+        chrome.test.notifyPass();
+      });
+    });
+  )");
+
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    std::string pdf_contents;
+    ASSERT_TRUE(base::ReadFileToString(
+        GetTestResourcesParentDir().AppendASCII("pdf").AppendASCII("test.pdf"),
+        &pdf_contents));
+    dir.WriteFile(FILE_PATH_LITERAL("test.pdf"), pdf_contents);
+  }
+
+  extensions::ResultCatcher result_catcher;
+  ASSERT_TRUE(LoadAndLaunchApp(dir.UnpackedPath()));
+  ASSERT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
+
+  auto* app_registry = extensions::AppWindowRegistry::Get(browser()->profile());
+  ASSERT_TRUE(app_registry);
+  const extensions::AppWindowRegistry::AppWindowList& app_windows =
+      app_registry->app_windows();
+  ASSERT_EQ(app_windows.size(), 1u);
+  extensions::AppWindow* window = app_windows.front();
+  ASSERT_TRUE(window);
+  content::WebContents* app_contents = window->web_contents();
+
+  ASSERT_TRUE(content::WaitForLoadStop(app_contents));
+  EXPECT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(app_contents));
 }
 
 class DownloadAwaiter : public content::DownloadManager::Observer {
@@ -1610,7 +1664,8 @@ class PrintObserver : public printing::PrintViewManagerBase::Observer {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionTest, BasicPrintCommand) {
+// TODO(crbug.com/1258561): Fix flakes.
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest, DISABLED_BasicPrintCommand) {
   content::WebContents* guest_contents =
       LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
   content::RenderFrameHost* frame = GetPluginFrame(guest_contents);
@@ -1630,6 +1685,21 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, PrintCommand) {
 
   PrintObserver print_observer(guest_contents, frame);
   chrome::Print(browser());
+  print_observer.WaitForPrintPreview();
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest, ContextMenuPrintCommand) {
+  content::WebContents* guest_contents =
+      LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  content::RenderFrameHost* plugin_frame = GetPluginFrame(guest_contents);
+  ASSERT_TRUE(plugin_frame);
+
+  // Executes the print command as soon as the context menu is shown.
+  ContextMenuNotificationObserver context_menu_observer(IDC_PRINT);
+
+  PrintObserver print_observer(guest_contents, plugin_frame);
+  guest_contents->GetMainFrame()->GetRenderWidgetHost()->ShowContextMenuAtPoint(
+      {1, 1}, ui::MENU_SOURCE_MOUSE);
   print_observer.WaitForPrintPreview();
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -1994,6 +2064,20 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionIsolatedContentTest, PdfAndHtml) {
   EXPECT_EQ(pdf_frames[0]->GetLastCommittedOrigin(),
             iframe->GetLastCommittedOrigin());
   EXPECT_NE(pdf_frames[0]->GetProcess(), iframe->GetProcess());
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionIsolatedContentTest, DataNavigation) {
+  WebContents* guest_contents = LoadPdfGetGuestContents(
+      embedded_test_server()->GetURL("/pdf/data_url_rectangles.html"));
+
+  // The PDF plugin frame and the extension main frame should not share renderer
+  // processes even though the extension triggers a data: navigation when
+  // loading its plugin.
+  std::vector<content::RenderFrameHost*> pdf_frames =
+      GetUnseasonedPdfFrames(guest_contents);
+  ASSERT_EQ(pdf_frames.size(), 1u);
+  EXPECT_NE(pdf_frames[0]->GetProcess(),
+            guest_contents->GetMainFrame()->GetProcess());
 }
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionIsolatedContentTest, HistoryNavigation) {
@@ -3700,6 +3784,60 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionPrerenderTest,
   ASSERT_EQ(web_contents->GetLastCommittedURL(), pdf_url);
 }
 
+class PDFExtensionSubmitFormTest : public PDFExtensionTest {
+ public:
+  void SetUpOnMainThread() override {
+    embedded_test_server()->RegisterRequestMonitor(base::BindLambdaForTesting(
+        [this](const net::test_server::HttpRequest& request) {
+          if (request.relative_url != "/pdf/test_endpoint")
+            return;
+
+          EXPECT_EQ(request.method, net::test_server::METHOD_POST);
+          EXPECT_THAT(request.content, StartsWith("\%FDF"));
+          ASSERT_TRUE(quit_closure_);
+          std::move(quit_closure_).Run();
+        }));
+
+    PDFExtensionTest::SetUpOnMainThread();
+  }
+
+ protected:
+  // Retrieves a `base::RunLoop` and saves its `QuitClosure()`. The test
+  // monitors HTTP requests on the IO thread, so `quit_closure_` needs to be set
+  // up on the UI thread before the requests can arrive.
+  std::unique_ptr<base::RunLoop> CreateFormSubmissionRunLoop() {
+    auto run_loop = std::make_unique<base::RunLoop>();
+    EXPECT_FALSE(quit_closure_);
+    quit_closure_ = run_loop->QuitClosure();
+    return run_loop;
+  }
+
+ private:
+  base::OnceClosure quit_closure_;
+};
+
+// TODO(crbug.com/1259994): Fix Windows 7 flakes.
+#if defined(OS_WIN)
+#define MAYBE_SubmitForm DISABLED_SubmitForm
+#else
+#define MAYBE_SubmitForm SubmitForm
+#endif
+IN_PROC_BROWSER_TEST_P(PDFExtensionSubmitFormTest, MAYBE_SubmitForm) {
+  WebContents* guest_contents = LoadPdfGetGuestContents(
+      embedded_test_server()->GetURL("/pdf/submit_form.pdf"));
+  ASSERT_TRUE(guest_contents);
+
+  std::unique_ptr<base::RunLoop> run_loop = CreateFormSubmissionRunLoop();
+
+  // Click on the "Submit Form" button.
+  content::SimulateMouseClickAt(
+      guest_contents, blink::WebInputEvent::kNoModifiers,
+      blink::WebMouseEvent::Button::kLeft,
+      ConvertPageCoordToScreenCoord(guest_contents, {200, 200}));
+
+  run_loop->Run();
+}
+
 // TODO(crbug.com/702993): Stop testing both modes after unseasoned launches.
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionTestWithPartialLoading);
@@ -3720,3 +3858,4 @@ INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionHitTestTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(
     PDFExtensionAccessibilityNavigationTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionPrerenderTest);
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionSubmitFormTest);

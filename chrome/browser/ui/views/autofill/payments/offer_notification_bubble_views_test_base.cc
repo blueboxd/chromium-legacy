@@ -6,6 +6,9 @@
 
 #include "chrome/browser/autofill/autofill_uitest_util.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/commerce/commerce_feature_list.h"
+#include "chrome/browser/commerce/coupons/coupon_service.h"
+#include "chrome/browser/commerce/coupons/coupon_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -18,19 +21,24 @@
 
 namespace autofill {
 
+const char kDefaultTestPromoCode[] = "5PCTOFFSHOES";
+
 OfferNotificationBubbleViewsTestBase::OfferNotificationBubbleViewsTestBase(
     bool promo_code_flag_enabled) {
   if (promo_code_flag_enabled) {
-    scoped_feature_list_.InitWithFeatures(
+    scoped_feature_list_.InitWithFeaturesAndParameters(
         /*enabled_features=*/
-        {features::kAutofillEnableOfferNotification,
-         features::kAutofillEnableOfferNotificationForPromoCodes},
+        {{features::kAutofillEnableOfferNotification, {}},
+         {features::kAutofillEnableOfferNotificationForPromoCodes, {}},
+         {commerce::kRetailCoupons,
+          {{commerce::kRetailCouponsWithCodeParam, "true"}}}},
         /*disabled_features=*/{});
   } else {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillEnableOfferNotification},
         /*disabled_features=*/{
-            features::kAutofillEnableOfferNotificationForPromoCodes});
+            features::kAutofillEnableOfferNotificationForPromoCodes,
+            commerce::kRetailCoupons});
   }
 }
 
@@ -43,6 +51,7 @@ void OfferNotificationBubbleViewsTestBase::SetUpOnMainThread() {
 
   personal_data_ =
       PersonalDataManagerFactory::GetForProfile(browser()->profile());
+  coupon_service_ = CouponServiceFactory::GetForProfile(browser()->profile());
 
   // Wait for Personal Data Manager to be fully loaded to prevent that
   // spurious notifications deceive the tests.
@@ -86,7 +95,7 @@ OfferNotificationBubbleViewsTestBase::CreatePromoCodeOfferDataWithDomains(
   for (auto url : domains)
     offer_data_entry->merchant_origins.emplace_back(url.GetOrigin());
   offer_data_entry->offer_details_url = GURL("https://www.google.com/");
-  offer_data_entry->promo_code = "5PCTOFFSHOES";
+  offer_data_entry->promo_code = GetDefaultTestPromoCode();
   offer_data_entry->display_strings.value_prop_text =
       "5% off on shoes. Up to $50.";
   offer_data_entry->display_strings.see_details_text = "See details";
@@ -132,6 +141,21 @@ void OfferNotificationBubbleViewsTestBase::
   personal_data_->AddOfferDataForTest(
       CreatePromoCodeOfferDataWithDomains(domains));
   personal_data_->NotifyPersonalDataObserver();
+}
+
+void OfferNotificationBubbleViewsTestBase::
+    SetUpFreeListingCouponOfferDataForCouponService(
+        std::unique_ptr<AutofillOfferData> offer) {
+  coupon_service_->DeleteAllFreeListingCoupons();
+  // Simulate that user has given the consent to opt in the feature.
+  coupon_service_->MaybeFeatureStatusChanged(true);
+  base::flat_map<GURL,
+                 std::vector<std::unique_ptr<autofill::AutofillOfferData>>>
+      coupon_map;
+  for (auto origin : offer->merchant_origins) {
+    coupon_map[origin].emplace_back(std::move(offer));
+  }
+  coupon_service_->UpdateFreeListingCoupons(coupon_map);
 }
 
 void OfferNotificationBubbleViewsTestBase::NavigateTo(
@@ -184,6 +208,16 @@ void OfferNotificationBubbleViewsTestBase::ResetEventWaiterForSequence(
     std::list<DialogEvent> event_sequence) {
   event_waiter_ =
       std::make_unique<EventWaiter<DialogEvent>>(std::move(event_sequence));
+}
+
+void OfferNotificationBubbleViewsTestBase::UpdateFreeListingCouponDisplayTime(
+    std::unique_ptr<AutofillOfferData> offer) {
+  coupon_service_->RecordCouponDisplayTimestamp(*offer);
+}
+
+std::string OfferNotificationBubbleViewsTestBase::GetDefaultTestPromoCode()
+    const {
+  return kDefaultTestPromoCode;
 }
 
 }  // namespace autofill

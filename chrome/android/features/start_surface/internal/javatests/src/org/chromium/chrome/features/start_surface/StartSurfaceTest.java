@@ -27,6 +27,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
@@ -110,6 +112,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -126,6 +129,7 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.ui.test.util.ViewUtils;
 
@@ -2031,7 +2035,7 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     // clang-format off
-    @CommandLineFlags.Add({BASE_PARAMS + "/single/behavioural_targeting/mv_tiles"
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/behavioural_targeting/model_mv_tiles"
         + "/user_clicks_threshold/1/num_days_user_click_below_threshold/2"})
     public void testStartWithBehaviouralTargeting() throws Exception {
         // clang-format on
@@ -2051,6 +2055,9 @@ public class StartSurfaceTest {
         Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
         Assert.assertEquals(0, manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT, 0));
 
+        manager.writeInt(ChromePreferenceKeys.SHOW_START_SEGMENTATION_RESULT,
+                ReturnToChromeExperimentsUtil.ShowChromeStartSegmentationResult.DONT_SHOW);
+
         StartSurfaceConfiguration.USER_CLICK_THRESHOLD.setForTesting(1);
         int clicksHigherThreshold = StartSurfaceConfiguration.USER_CLICK_THRESHOLD.getValue();
         Assert.assertEquals(1, clicksHigherThreshold);
@@ -2064,6 +2071,10 @@ public class StartSurfaceTest {
         Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
         Assert.assertEquals(1, manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT, 0));
 
+        Assert.assertEquals(0,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        "Startup.Android.ShowChromeStartSegmentationResultComparison"));
+
         // Verifies if the next decision time past and the clicks of MV tiles is higher than the
         // threshold, userBehaviourSupported() returns true. Besides, the next decision time is set
         // to NUM_DAYS_KEEP_SHOW_START_AT_STARTUP day's later, and MV tiles count is reset.
@@ -2074,17 +2085,29 @@ public class StartSurfaceTest {
         verifyNextDecisionTimeStampInDays(
                 manager, StartSurfaceConfiguration.NUM_DAYS_KEEP_SHOW_START_AT_STARTUP.getValue());
         Assert.assertEquals(0, manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT, 0));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "Startup.Android.ShowChromeStartSegmentationResultComparison",
+                        ReturnToChromeExperimentsUtil.ShowChromeStartSegmentationResultComparison
+                                .SEGMENTATION_DISABLED_LOGIC_ENABLED));
 
         // Verifies if the next decision time past and the clicks of MV tiles is lower than the
         // threshold, userBehaviourSupported() returns false. Besides, the next decision time is
         // set to NUM_DAYS_USER_CLICK_BELOW_THRESHOLD day's later.
         manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
                 System.currentTimeMillis() - 1);
+        manager.writeInt(ChromePreferenceKeys.SHOW_START_SEGMENTATION_RESULT,
+                ReturnToChromeExperimentsUtil.ShowChromeStartSegmentationResult.SHOW);
         Assert.assertEquals(0, manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT, 0));
         Assert.assertFalse(ReturnToChromeExperimentsUtil.userBehaviourSupported());
         Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
         verifyNextDecisionTimeStampInDays(
                 manager, StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD.getValue());
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "Startup.Android.ShowChromeStartSegmentationResultComparison",
+                        ReturnToChromeExperimentsUtil.ShowChromeStartSegmentationResultComparison
+                                .SEGMENTATION_ENABLED_LOGIC_DISABLED));
 
         StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.setForTesting("feeds");
         verifyBehaviourTypeRecordedAndChecked(manager);
@@ -2132,6 +2155,124 @@ public class StartSurfaceTest {
 
         // Resets the decision.
         manager.writeBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/behavioural_targeting/model"})
+    public void testStartSegmentationUsage() throws Exception {
+        // clang-format on
+        Assume.assumeTrue(mImmediateReturn);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+        Assert.assertFalse(cta.getLayoutManager().overviewVisible());
+
+        SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
+        // Verifies that the START_NEXT_SHOW_ON_STARTUP_DECISION_MS has been set.
+        long nextDecisionTime =
+                manager.readLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                        ReturnToChromeExperimentsUtil.INVALID_DECISION_TIMESTAMP);
+        verifyNextDecisionTimeStampInDays(
+                manager, StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD.getValue());
+        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+        Assert.assertEquals(0, manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT, 0));
+
+        manager.writeInt(ChromePreferenceKeys.SHOW_START_SEGMENTATION_RESULT,
+                ReturnToChromeExperimentsUtil.ShowChromeStartSegmentationResult.SHOW);
+
+        // Verifies that userBehaviourSupported() returns the same result before the next decision
+        // time arrives.
+        Assert.assertFalse(ReturnToChromeExperimentsUtil.userBehaviourSupported());
+        Assert.assertEquals(nextDecisionTime,
+                manager.readLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                        ReturnToChromeExperimentsUtil.INVALID_DECISION_TIMESTAMP));
+        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+
+        // Verifies if the next decision time past, userBehaviourSupported() returns true. Besides,
+        // the next decision time is set to NUM_DAYS_KEEP_SHOW_START_AT_STARTUP day's later.
+        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                System.currentTimeMillis() - 1);
+        Assert.assertTrue(ReturnToChromeExperimentsUtil.userBehaviourSupported());
+        Assert.assertTrue(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+        verifyNextDecisionTimeStampInDays(
+                manager, StartSurfaceConfiguration.NUM_DAYS_KEEP_SHOW_START_AT_STARTUP.getValue());
+
+        // Verifies if the next decision time past and segmentation says dont show,
+        // userBehaviourSupported() returns false. Besides, the next decision time is set to
+        // NUM_DAYS_USER_CLICK_BELOW_THRESHOLD day's later.
+        manager.writeInt(ChromePreferenceKeys.SHOW_START_SEGMENTATION_RESULT,
+                ReturnToChromeExperimentsUtil.ShowChromeStartSegmentationResult.DONT_SHOW);
+        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                System.currentTimeMillis() - 1);
+        Assert.assertFalse(ReturnToChromeExperimentsUtil.userBehaviourSupported());
+        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+        verifyNextDecisionTimeStampInDays(
+                manager, StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD.getValue());
+
+        // Verifies that if segmentation stops returning results, then we continue to use the
+        // previous result.
+        manager.writeInt(ChromePreferenceKeys.SHOW_START_SEGMENTATION_RESULT,
+                ReturnToChromeExperimentsUtil.ShowChromeStartSegmentationResult.UNINITIALIZED);
+        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                System.currentTimeMillis() - 1);
+        Assert.assertFalse(ReturnToChromeExperimentsUtil.userBehaviourSupported());
+        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+        verifyNextDecisionTimeStampInDays(
+                manager, StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD.getValue());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    public void testStartSurfaceMenu() throws ExecutionException {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        if (!mImmediateReturn) StartSurfaceTestUtils.pressHomePageButton(cta);
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AppMenuTestSupport.showAppMenu(mActivityTestRule.getAppMenuCoordinator(), null, false);
+        });
+
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.icon_row_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.new_tab_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.new_incognito_tab_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.divider_line_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.open_history_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.downloads_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.all_bookmarks_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.recent_tabs_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.divider_line_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.preferences_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.help_id));
+
+        assertNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.menu_group_tabs));
+        assertNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.close_all_tabs_menu_id));
+
+        ModelList menuItemsModelList =
+                AppMenuTestSupport.getMenuModelList(mActivityTestRule.getAppMenuCoordinator());
+        assertEquals(11, menuItemsModelList.size());
     }
 
     /**

@@ -25,6 +25,7 @@
 
 #if defined(OS_MAC)
 #include "chrome/browser/image_editor/event_capture_mac.h"
+#include "components/lens/lens_features.h"
 #include "content/public/browser/render_view_host.h"
 #include "ui/views/widget/widget.h"
 #endif
@@ -38,7 +39,7 @@ namespace image_editor {
 
 // Colors for semitransparent overlay.
 static constexpr SkColor kColorSemitransparentOverlayMask =
-    SkColorSetARGB(0x30, 0x00, 0x00, 0x00);
+    SkColorSetARGB(0x7F, 0x00, 0x00, 0x00);
 static constexpr SkColor kColorSemitransparentOverlayVisible =
     SkColorSetARGB(0x00, 0x00, 0x00, 0x00);
 static constexpr SkColor kColorSelectionRect = SkColorSetRGB(0xEE, 0xEE, 0xEE);
@@ -311,6 +312,15 @@ void ScreenshotFlow::SetCursor(ui::mojom::CursorType cursor_type) {
   if (!web_contents_) {
     return;
   }
+
+#if defined(OS_MAC)
+  if (cursor_type == ui::mojom::CursorType::kCross &&
+      lens::features::kRegionSearchMacCursorFix.Get()) {
+    EventCaptureMac::SetCrossCursor();
+    return;
+  }
+#endif
+
   content::RenderWidgetHost* host =
       web_contents_->GetMainFrame()->GetRenderWidgetHost();
   if (host) {

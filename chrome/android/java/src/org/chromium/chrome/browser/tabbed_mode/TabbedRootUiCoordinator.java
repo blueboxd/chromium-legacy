@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
+import org.chromium.chrome.browser.app.tab_activity_glue.TabReparentingController;
 import org.chromium.chrome.browser.banners.AppBannerInProductHelpController;
 import org.chromium.chrome.browser.banners.AppBannerInProductHelpControllerFactory;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
@@ -117,6 +118,7 @@ import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.browser_ui.widget.TouchEventObserver;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.messages.MessageDispatcherProvider;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.IntentRequestTracker;
@@ -240,6 +242,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
      * @param insetObserverViewSupplier Supplier for the {@link InsetObserverView}.
      * @param backButtonShouldCloseTabFn Function which supplies whether or not the back button
      *         should close the tab.
+     * @param tabReparentingControllerSupplier Supplier for the {@link TabReparentingController}.
+     * @param initializeUiWithIncognitoColors Whether to initialize the UI with incognito colors.
      */
     public TabbedRootUiCoordinator(@NonNull AppCompatActivity activity,
             @Nullable Callback<Boolean> onOmniboxFocusChangedListener,
@@ -277,7 +281,9 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                     ephemeralTabCoordinatorSupplier,
             @NonNull IntentRequestTracker intentRequestTracker, int controlContainerHeightResource,
             @NonNull Supplier<InsetObserverView> insetObserverViewSupplier,
-            @NonNull Function<Tab, Boolean> backButtonShouldCloseTabFn) {
+            @NonNull Function<Tab, Boolean> backButtonShouldCloseTabFn,
+            OneshotSupplier<TabReparentingController> tabReparentingControllerSupplier,
+            boolean initializeUiWithIncognitoColors) {
         super(activity, onOmniboxFocusChangedListener, shareDelegateSupplier, tabProvider,
                 profileSupplier, bookmarkBridgeSupplier, contextualSearchManagerSupplier,
                 tabModelSelectorSupplier, startSurfaceSupplier, intentMetadataOneshotSupplier,
@@ -289,7 +295,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 compositorViewHolderSupplier, tabContentManagerSupplier,
                 overviewModeBehaviorSupplier, snackbarManagerSupplier, activityType,
                 isInOverviewModeSupplier, isWarmOnResumeSupplier, appMenuDelegate,
-                statusBarColorProvider, intentRequestTracker);
+                statusBarColorProvider, intentRequestTracker, tabReparentingControllerSupplier,
+                initializeUiWithIncognitoColors);
         mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
         mControlContainerHeightResource = controlContainerHeightResource;
         mInsetObserverViewSupplier = insetObserverViewSupplier;
@@ -338,6 +345,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
         }
 
         if (mRootUiTabObserver != null) mRootUiTabObserver.destroy();
+
+        if (mAddToHomescreenIPHController != null) mAddToHomescreenIPHController.destroy();
 
         if (mAppBannerInProductHelpController != null) {
             AppBannerInProductHelpControllerFactory.detach(mAppBannerInProductHelpController);
@@ -632,9 +641,19 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                         ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING)) {
             // TODO(crbug.com/1252965): Investigate locking feature engagement system during
             // "second run promos" to avoid !didTriggerPromo check.
-            WebContentsDarkModeMessageController.attemptToSendMessage(mActivity,
-                    Profile.fromWebContents(mActivityTabProvider.get().getWebContents()),
-                    new SettingsLauncherImpl(), mMessageDispatcher);
+            Tab tab;
+            WebContents webContents;
+
+            Profile profile;
+            if ((tab = mActivityTabProvider.get()) != null
+                    && (webContents = tab.getWebContents()) != null) {
+                profile = Profile.fromWebContents(webContents);
+            } else {
+                profile = Profile.getLastUsedRegularProfile();
+            }
+
+            WebContentsDarkModeMessageController.attemptToSendMessage(
+                    mActivity, profile, new SettingsLauncherImpl(), mMessageDispatcher);
         }
 
         if (FeedFeatures.isWebFeedUIEnabled()) {

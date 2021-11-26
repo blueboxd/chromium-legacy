@@ -17,7 +17,7 @@
 #include "base/containers/queue.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "pdf/accessibility_structs.h"
 #include "pdf/paint_manager.h"
@@ -66,6 +66,13 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Do not save files with over 100 MB. This cap should be kept in sync with
   // and is also enforced in chrome/browser/resources/pdf/pdf_viewer.js.
   static constexpr size_t kMaximumSavedFileSize = 100 * 1000 * 1000;
+
+  // Print Preview base URL.
+  static constexpr base::StringPiece kChromePrintHost = "chrome://print/";
+
+  // Untrusted Print Preview base URL.
+  static constexpr base::StringPiece kChromeUntrustedPrintHost =
+      "chrome-untrusted://print/";
 
   enum class AccessibilityState {
     kOff = 0,  // Off.
@@ -116,6 +123,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
              const std::string& subject,
              const std::string& body) override;
   void Print() override;
+  void SubmitForm(const std::string& url,
+                  const void* data,
+                  int length) override;
   std::unique_ptr<UrlLoader> CreateUrlLoader() override;
   void DocumentLoadComplete() override;
   void DocumentLoadFailed() override;
@@ -192,6 +202,11 @@ class PdfViewPluginBase : public PDFEngine::Client,
                       SkColor background_color,
                       bool has_edits);
 
+  // Creates a new `PDFiumEngine`.
+  virtual std::unique_ptr<PDFiumEngine> CreateEngine(
+      PDFEngine::Client* client,
+      PDFiumFormFiller::ScriptOption script_option);
+
   // Destroys the main `PDFiumEngine`. Subclasses should call this method in
   // their destructor to ensure the engine is destroyed first.
   void DestroyEngine();
@@ -213,6 +228,12 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Creates a URL loader and allows it to access all urls, i.e. not just the
   // frame's origin.
   virtual std::unique_ptr<UrlLoader> CreateUrlLoaderInternal() = 0;
+
+  // Rewrites the request URL just before sending to the URL loader.
+  //
+  // TODO(crbug.com/1238829): This is a workaround for Pepper not supporting
+  // chrome-untrusted://print/ URLs.
+  virtual std::string RewriteRequestUrl(base::StringPiece url) const;
 
   bool HandleInputEvent(const blink::WebInputEvent& event);
 
@@ -484,6 +505,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Handles `LoadUrl()` result for print preview.
   void DidOpenPreview(std::unique_ptr<UrlLoader> loader, int32_t result);
 
+  // Handles `Open()` result for `form_loader_`.
+  void DidFormOpen(int32_t result);
+
   // Performs tasks necessary when the document is loaded in print preview mode.
   void OnPrintPreviewLoaded();
 
@@ -493,7 +517,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   // Process the preview page data information. `src_url` specifies the preview
   // page data location. The `src_url` is in the format:
-  // chrome://print/id/page_number/print.pdf
+  // chrome-untrusted://print/id/page_number/print.pdf
   // `dest_page_index` specifies the blank page index that needs to be replaced
   // with the new page data.
   void ProcessPreviewPageInfo(const std::string& src_url, int dest_page_index);
@@ -618,6 +642,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   // Whether the document is in edit mode.
   bool edit_mode_ = false;
+
+  // Used for submitting forms.
+  std::unique_ptr<UrlLoader> form_loader_;
 
   // Assigned a value only between `PrintBegin()` and `PrintEnd()` calls.
   absl::optional<blink::WebPrintParams> print_params_;

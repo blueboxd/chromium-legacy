@@ -59,7 +59,8 @@ bool HasSupportedMimeType(
     const std::string& container_name,
     const guest_os::GuestOsMimeTypesService& mime_types_service,
     const extensions::EntryInfo& entry) {
-  if (supported_mime_types.find(entry.mime_type) !=
+  // Use lowercase for insensitive match.
+  if (supported_mime_types.find(base::ToLowerASCII(entry.mime_type)) !=
       supported_mime_types.end()) {
     return true;
   }
@@ -112,8 +113,8 @@ bool HasSupportedExtension(const std::set<std::string>& supported_extensions,
   const auto& extension = entry.path.Extension();
   if (extension.size() <= 1 || extension[0] != '.')
     return false;
-  // Strip the leading period.
-  return supported_extensions.find({extension.begin() + 1, extension.end()}) !=
+  // Strip the leading period, convert to lower case for insensitive match.
+  return supported_extensions.find(base::ToLowerASCII(extension.substr(1))) !=
          supported_extensions.end();
 }
 

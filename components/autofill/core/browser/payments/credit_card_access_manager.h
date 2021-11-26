@@ -200,8 +200,14 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   FRIEND_TEST_ALL_PREFIXES(
       CreditCardAccessManagerTest,
       RiskBasedVirtualCardUnmasking_AuthenticationRequired_FidoOnly_FidoNotOptedIn);
+  FRIEND_TEST_ALL_PREFIXES(
+      CreditCardAccessManagerTest,
+      RiskBasedVirtualCardUnmasking_Failure_NoOptionReturned);
+  FRIEND_TEST_ALL_PREFIXES(
+      CreditCardAccessManagerTest,
+      RiskBasedVirtualCardUnmasking_Failure_VirtualCardRetrievalError);
   FRIEND_TEST_ALL_PREFIXES(CreditCardAccessManagerTest,
-                           RiskBasedVirtualCardUnmasking_Failure);
+                           RiskBasedVirtualCardUnmasking_FlowCancelled);
   friend class AutofillAssistantTest;
   friend class BrowserAutofillManagerTest;
   friend class AutofillMetricsTest;
@@ -350,13 +356,21 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // Callback function invoked when the user has accepted the authentication
   // selection dialog and chosen an auth method to use.
   void OnUserAcceptedAuthenticationSelectionDialog(
-      const CardUnmaskChallengeOption& selected_challenge_option);
+      const std::string& selected_challenge_option_id);
+
+  // Callback function invoked when the user has cancelled the virtual card
+  // unmasking.
+  void OnVirtualCardUnmaskCancelled();
 
   // Reset all the member variables of |this| and restore initial states.
   void Reset();
 
   // Handles the FIDO opt-in status change.
   void HandleFidoOptInStatusChange();
+
+  // Shows the authenticator selection dialog for users to confirm their choice
+  // of authentication method.
+  void ShowUnmaskAuthenticatorSelectionDialog();
 
   // The current form of authentication in progress.
   UnmaskAuthFlowType unmask_auth_flow_type_ = UnmaskAuthFlowType::kNone;

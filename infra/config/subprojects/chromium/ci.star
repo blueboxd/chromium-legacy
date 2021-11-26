@@ -920,19 +920,6 @@ ci.android_builder(
 )
 
 ci.android_builder(
-    name = "android-lollipop-arm-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
-    console_view_entry = consoles.console_view_entry(
-        category = "on_cq",
-        short_name = "L",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    main_console_view = main_console_if_on_branch(),
-    tree_closing = True,
-    os = os.LINUX_BIONIC_REMOVE,
-)
-
-ci.android_builder(
     name = "android-marshmallow-arm64-rel",
     branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
@@ -4808,7 +4795,7 @@ ci.fyi_mac_builder(
     cores = None,
     executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
-    os = os.MAC_10_15,
+    os = os.MAC_DEFAULT,
 )
 
 ci.fyi_mac_builder(
@@ -6152,7 +6139,7 @@ ci.mac_builder(
     ),
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
-    os = os.MAC_10_15,
+    os = os.MAC_DEFAULT,
 )
 
 ci.mac_builder(

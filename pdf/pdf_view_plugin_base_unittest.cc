@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_piece.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
@@ -22,6 +24,7 @@
 #include "pdf/document_layout.h"
 #include "pdf/document_metadata.h"
 #include "pdf/pdf_engine.h"
+#include "pdf/pdfium/pdfium_form_filler.h"
 #include "pdf/ppapi_migration/callback.h"
 #include "pdf/ppapi_migration/graphics.h"
 #include "pdf/ppapi_migration/url_loader.h"
@@ -36,10 +39,12 @@ namespace chrome_pdf {
 
 namespace {
 
+using ::testing::ByMove;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::Return;
 using ::testing::SaveArg;
+using ::testing::StrEq;
 
 // Keep it in-sync with the `kFinalFallbackName` returned by
 // net::GetSuggestedFilename().
@@ -144,6 +149,8 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
   using PdfViewPluginBase::UpdateGeometryOnPluginRectChanged;
   using PdfViewPluginBase::UpdateScroll;
 
+  MOCK_METHOD(std::string, GetURL, (), (override));
+
   MOCK_METHOD(bool, Confirm, (const std::string&), (override));
 
   MOCK_METHOD(std::string,
@@ -174,6 +181,11 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
   MOCK_METHOD(void,
               ScheduleTaskOnMainThread,
               (const base::Location&, ResultCallback, int32_t, base::TimeDelta),
+              (override));
+
+  MOCK_METHOD(std::unique_ptr<PDFiumEngine>,
+              CreateEngine,
+              (PDFEngine::Client*, PDFiumFormFiller::ScriptOption),
               (override));
 
   base::WeakPtr<PdfViewPluginBase> GetWeakPtr() override {
@@ -493,6 +505,20 @@ TEST_F(PdfViewPluginBaseTest, DocumentLoadProgressResetByLoadUrl) {
     "type": "loadProgress",
     "progress": 3.0,
   })")));
+}
+
+TEST_F(PdfViewPluginBaseTest,
+       DocumentLoadProgressNotResetByLoadUrlWithPrintPreview) {
+  fake_plugin_.DocumentLoadProgress(2, 100);
+  fake_plugin_.clear_sent_messages();
+  EXPECT_CALL(fake_plugin_, CreateUrlLoaderInternal).WillOnce([]() {
+    return std::make_unique<testing::NiceMock<MockUrlLoader>>();
+  });
+
+  fake_plugin_.LoadUrl("fake-url", /*is_print_preview=*/true);
+  fake_plugin_.DocumentLoadProgress(3, 100);
+
+  EXPECT_THAT(fake_plugin_.sent_messages(), IsEmpty());
 }
 
 TEST_F(PdfViewPluginBaseTest, CreateUrlLoaderInFullFrame) {
@@ -896,9 +922,35 @@ TEST_F(PdfViewPluginBaseTest, HandleSetBackgroundColorMessage) {
   EXPECT_EQ(kNewBackgroundColor, fake_plugin_.GetBackgroundColor());
 }
 
-TEST_F(PdfViewPluginBaseWithEngineTest, HandleViewportMessageInitially) {
+TEST_F(PdfViewPluginBaseWithEngineTest,
+       HandleViewportMessageBeforeDocumentLoadComplete) {
   auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
   EXPECT_CALL(*engine, ApplyDocumentLayout(DocumentLayout::Options()));
+
+  fake_plugin_.HandleMessage(base::test::ParseJson(R"({
+    "type": "viewport",
+    "userInitiated": false,
+    "zoom": 1,
+    "layoutOptions": {
+      "direction": 0,
+      "defaultPageOrientation": 0,
+      "twoUpViewEnabled": false,
+    },
+    "xOffset": 0,
+    "yOffset": 0,
+    "pinchPhase": 0,
+  })"));
+
+  EXPECT_THAT(fake_plugin_.sent_messages(), IsEmpty());
+}
+
+TEST_F(PdfViewPluginBaseWithEngineTest,
+       HandleViewportMessageAfterDocumentLoadComplete) {
+  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
+  EXPECT_CALL(*engine, ApplyDocumentLayout(DocumentLayout::Options()));
+
+  fake_plugin_.DocumentLoadComplete();
+  fake_plugin_.clear_sent_messages();
 
   fake_plugin_.HandleMessage(base::test::ParseJson(R"({
     "type": "viewport",
@@ -1098,6 +1150,56 @@ TEST_F(PdfViewPluginBaseWithEngineTest, UpdateScrollScaled) {
   fake_plugin_.UpdateScroll({2, 1});
 }
 
+TEST_F(PdfViewPluginBaseTest, HandleResetPrintPreviewModeMessage) {
+  EXPECT_CALL(fake_plugin_, IsPrintPreview).WillRepeatedly(Return(true));
+  EXPECT_CALL(fake_plugin_, CreateUrlLoaderInternal).WillRepeatedly([]() {
+    return std::make_unique<testing::NiceMock<MockUrlLoader>>();
+  });
+
+  auto engine =
+      std::make_unique<testing::NiceMock<TestPDFiumEngine>>(&fake_plugin_);
+  EXPECT_CALL(*engine, ZoomUpdated);
+  EXPECT_CALL(*engine, PageOffsetUpdated);
+  EXPECT_CALL(*engine, PluginSizeUpdated);
+  EXPECT_CALL(*engine, SetGrayscale(false));
+  EXPECT_CALL(fake_plugin_,
+              CreateEngine(&fake_plugin_,
+                           PDFiumFormFiller::ScriptOption::kNoJavaScript))
+      .WillOnce(Return(ByMove(std::move(engine))));
+
+  fake_plugin_.HandleMessage(base::test::ParseJson(R"({
+    "type": "resetPrintPreviewMode",
+    "url": "chrome-untrusted://print/0/0/print.pdf",
+    "grayscale": false,
+    "pageCount": 1,
+  })"));
+}
+
+TEST_F(PdfViewPluginBaseTest, HandleResetPrintPreviewModeMessageSetGrayscale) {
+  EXPECT_CALL(fake_plugin_, IsPrintPreview).WillRepeatedly(Return(true));
+  EXPECT_CALL(fake_plugin_, CreateUrlLoaderInternal).WillRepeatedly([]() {
+    return std::make_unique<testing::NiceMock<MockUrlLoader>>();
+  });
+
+  auto engine =
+      std::make_unique<testing::NiceMock<TestPDFiumEngine>>(&fake_plugin_);
+  EXPECT_CALL(*engine, ZoomUpdated);
+  EXPECT_CALL(*engine, PageOffsetUpdated);
+  EXPECT_CALL(*engine, PluginSizeUpdated);
+  EXPECT_CALL(*engine, SetGrayscale(true));
+  EXPECT_CALL(fake_plugin_,
+              CreateEngine(&fake_plugin_,
+                           PDFiumFormFiller::ScriptOption::kNoJavaScript))
+      .WillOnce(Return(ByMove(std::move(engine))));
+
+  fake_plugin_.HandleMessage(base::test::ParseJson(R"({
+    "type": "resetPrintPreviewMode",
+    "url": "chrome-untrusted://print/0/0/print.pdf",
+    "grayscale": true,
+    "pageCount": 1,
+  })"));
+}
+
 TEST_F(PdfViewPluginBaseWithEngineTest, GetContentRestrictions) {
   auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
   static constexpr int kContentRestrictionCutPaste =
@@ -1184,6 +1286,76 @@ TEST_F(PdfViewPluginBaseWithEngineTest, GetAccessibilityDocInfo) {
   EXPECT_EQ(TestPDFiumEngine::kPageNumber, doc_info.page_count);
   EXPECT_TRUE(doc_info.text_accessible);
   EXPECT_TRUE(doc_info.text_copyable);
+}
+
+class PdfViewPluginBaseSubmitFormTest : public PdfViewPluginBaseTest {
+ public:
+  void SubmitForm(const std::string& url,
+                  base::StringPiece form_data = "data") {
+    EXPECT_CALL(fake_plugin_, CreateUrlLoaderInternal).WillOnce([this]() {
+      auto mock_loader = std::make_unique<testing::NiceMock<MockUrlLoader>>();
+      EXPECT_CALL(*mock_loader, Open).WillOnce(testing::SaveArg<0>(&request_));
+      return mock_loader;
+    });
+
+    fake_plugin_.SubmitForm(url, form_data.data(), form_data.size());
+  }
+
+  void SubmitFailingForm(const std::string& url) {
+    EXPECT_CALL(fake_plugin_, CreateUrlLoaderInternal).Times(0);
+    constexpr char kFormData[] = "form data";
+    fake_plugin_.SubmitForm(url, kFormData, base::size(kFormData));
+  }
+
+ protected:
+  UrlRequest request_;
+};
+
+TEST_F(PdfViewPluginBaseSubmitFormTest, RequestMethodAndBody) {
+  EXPECT_CALL(fake_plugin_, GetURL)
+      .WillOnce(Return("https://www.example.com/path/to/the.pdf"));
+  constexpr char kFormData[] = "form data";
+  SubmitForm(/*url=*/"", kFormData);
+  EXPECT_EQ(request_.method, "POST");
+  EXPECT_THAT(request_.body, StrEq(kFormData));
+}
+
+TEST_F(PdfViewPluginBaseSubmitFormTest, RelativeUrl) {
+  EXPECT_CALL(fake_plugin_, GetURL)
+      .WillOnce(Return("https://www.example.com/path/to/the.pdf"));
+  SubmitForm("relative_endpoint");
+  EXPECT_EQ(request_.url, "https://www.example.com/path/to/relative_endpoint");
+}
+
+TEST_F(PdfViewPluginBaseSubmitFormTest, NoRelativeUrl) {
+  EXPECT_CALL(fake_plugin_, GetURL)
+      .WillOnce(Return("https://www.example.com/path/to/the.pdf"));
+  SubmitForm("");
+  EXPECT_EQ(request_.url, "https://www.example.com/path/to/the.pdf");
+}
+
+TEST_F(PdfViewPluginBaseSubmitFormTest, AbsoluteUrl) {
+  EXPECT_CALL(fake_plugin_, GetURL)
+      .WillOnce(Return("https://a.example.com/path/to/the.pdf"));
+  SubmitForm("https://b.example.com/relative_endpoint");
+  EXPECT_EQ(request_.url, "https://b.example.com/relative_endpoint");
+}
+
+TEST_F(PdfViewPluginBaseSubmitFormTest, EmptyDocumentUrl) {
+  EXPECT_CALL(fake_plugin_, GetURL).WillOnce(Return(std::string()));
+  SubmitFailingForm("relative_endpoint");
+}
+
+TEST_F(PdfViewPluginBaseSubmitFormTest, RelativeUrlInvalidDocumentUrl) {
+  EXPECT_CALL(fake_plugin_, GetURL)
+      .WillOnce(Return(R"(https://www.%B%Ad.com/path/to/the.pdf)"));
+  SubmitFailingForm("relative_endpoint");
+}
+
+TEST_F(PdfViewPluginBaseSubmitFormTest, AbsoluteUrlInvalidDocumentUrl) {
+  EXPECT_CALL(fake_plugin_, GetURL)
+      .WillOnce(Return(R"(https://www.%B%Ad.com/path/to/the.pdf)"));
+  SubmitFailingForm("https://wwww.example.com");
 }
 
 }  // namespace chrome_pdf

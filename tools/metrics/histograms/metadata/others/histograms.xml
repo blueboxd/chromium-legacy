@@ -4750,6 +4750,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="DigitalGoods.CrossSite" enum="Boolean"
+    expires_after="2022-03-29">
+  <owner>glenrob@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <owner>rouslan@chromium.org</owner>
+  <owner>web-payments-team@google.com</owner>
+  <summary>
+    Records whether the |GetDigitalGoodsService| method was called from a
+    cross-site sub-frame. This metric is emitted when the cross-site check is
+    made in the renderer, i.e. only when the payment method is non-empty and the
+    script context is not being destroyed.
+  </summary>
+</histogram>
+
 <histogram name="DirectSockets.PermissionDeniedFailures"
     enum="DirectSocketPermissionFailureType" expires_after="2022-1-20">
   <owner>ericwilligers@chromium.org</owner>
@@ -10497,14 +10511,25 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="MerchantTrust.BottomSheet.OpenSource"
+    enum="MerchantTrustBottomSheetOpenedSource" expires_after="M102">
+  <owner>zhiyuancai@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records which ui the bottom sheet is opened from. Recorded when the bottom
+    sheet is opened. Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="MerchantTrust.Message.ClearReason"
     enum="MerchantTrustMessageClearReason" expires_after="M102">
   <owner>ayman@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
   <summary>
-    Records the reason that the merchant trust message is cleared in the
-    MessageDispatcher queue. Right now we only record message being cleared when
-    user navigates away from current page. Implemented for Android.
+    Records why the prepared merchant trust message is cleared. Recorded when
+    the prepared message is cleared. Implemented for Android. In M96 and later
+    this includes MESSAGE_CONTEXT_NO_LONGER_VALID and
+    SWITCH_TO_DIFFERENT_WEBCONTENTS.
   </summary>
 </histogram>
 
@@ -10523,8 +10548,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>ayman@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
   <summary>
-    Records the duration in milliseconds that the merchant trust message is in
-    the MessageDispatcher queue. Implemented for Android.
+    Records the duration in milliseconds from the merchant trust message being
+    prepared to it being shown or cleared. Implemented for Android.
   </summary>
 </histogram>
 
@@ -10535,6 +10560,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records the duration in milliseconds that the merchant trust message is
     shown. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="MerchantTrust.PageInfo.IsStoreInfoVisible"
+    enum="BooleanVisible" expires_after="M102">
+  <owner>zhiyuancai@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records whether the store info row is visible in page info. Recorded when
+    the page info is opened. Implemented for Android.
   </summary>
 </histogram>
 
@@ -11204,7 +11239,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NCN.NetworkOperatorMCCMNC" units="units"
-    expires_after="2022-05-01">
+    expires_after="2021-10-27">
+  <obsolete>
+    Deprecated in 10/2021 because the location permission protected API is
+    required to get this information and this isn't a must-have histogram.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <owner>bengr@google.com</owner>
   <summary>
@@ -13307,6 +13346,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>dullweber@chromium.org</owner>
   <owner>eokoyomon@chromium.org</owner>
   <summary>The accuracy status of a page. Recorded on each page load.</summary>
+</histogram>
+
+<histogram name="Privacy.ClearOnExitSyncEvent" enum="ClearOnExitSyncEvent"
+    expires_after="M100">
+  <owner>sauski@google.com</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <summary>
+    Interactions between sync and the cookies clear on exit setting. Only
+    recorded when the user has cookies clear on exit enabled.
+  </summary>
 </histogram>
 
 <histogram name="Privacy.ConsentAuditor.ConsentGiven.Feature"
@@ -19622,7 +19671,8 @@ regressions. -->
   <owner>mxcai@chromium.org</owner>
   <summary>
     Tracks actions with the &quot;All Sites&quot; page in website settings
-    starting in M82. No data available for M94, was temporarily expired.
+    starting in M82. No data available for M94, was temporarily expired. Values
+    7 and 8 were added with M96.
   </summary>
 </histogram>
 

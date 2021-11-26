@@ -96,11 +96,21 @@ AppServiceProxyLacros::AppServiceProxyLacros(Profile* profile)
       icon_coalescer_(&inner_icon_loader_),
       outer_icon_loader_(&icon_coalescer_,
                          apps::IconCache::GarbageCollectionPolicy::kEager),
-      profile_(profile),
-      browser_app_instance_tracker_(
-          BrowserAppInstanceTracker::Create(profile_, app_registry_cache_)),
-      browser_app_instance_forwarder_(BrowserAppInstanceForwarder::Create(
-          browser_app_instance_tracker_.get())) {
+      profile_(profile) {
+  auto* service = chromeos::LacrosService::Get();
+  if (service && service->init_params()->web_apps_enabled &&
+      service->IsAvailable<crosapi::mojom::BrowserAppInstanceRegistry>()) {
+    browser_app_instance_tracker_ =
+        std::make_unique<apps::BrowserAppInstanceTracker>(profile_,
+                                                          app_registry_cache_);
+    auto& registry =
+        chromeos::LacrosService::Get()
+            ->GetRemote<crosapi::mojom::BrowserAppInstanceRegistry>();
+    DCHECK(registry);
+    browser_app_instance_forwarder_ =
+        std::make_unique<apps::BrowserAppInstanceForwarder>(
+            *browser_app_instance_tracker_, registry);
+  }
   Initialize();
 }
 

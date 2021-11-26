@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/paint/paint_image.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "pdf/mojom/pdf.mojom.h"
 #include "pdf/pdf_accessibility_action_handler.h"
 #include "pdf/pdf_view_plugin_base.h"
@@ -227,9 +228,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   bool Confirm(const std::string& message) override;
   std::string Prompt(const std::string& question,
                      const std::string& default_answer) override;
-  void SubmitForm(const std::string& url,
-                  const void* data,
-                  int length) override;
   std::vector<SearchStringResult> SearchString(const char16_t* string,
                                                const char16_t* term,
                                                bool case_sensitive) override;
@@ -344,8 +342,12 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   std::unique_ptr<Client> const client_;
 
+  // Used to access the services provided by the browser.
   // May be unbound in unit tests.
   mojo::AssociatedRemote<pdf::mojom::PdfService> const pdf_service_remote_;
+
+  // Used to access find-in-page interface provided by the PDF extension.
+  mojo::Remote<pdf::mojom::PdfFindInPage> find_remote_;
 
   // The id of the current find operation, or -1 if no current operation is
   // present.

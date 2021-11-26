@@ -27,7 +27,7 @@ const base::Feature kDocumentsProviderUnknownSizeFeature{
 // When enabled, Android apps will show the Nearby Share as a share target in
 // its sharesheet.
 const base::Feature kEnableArcNearbyShare{"ArcNearbySharing",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether crosvm for ARCVM does per-VM core scheduling on devices with
 // MDS/L1TF vulnerabilities. When this feature is disabled, crosvm does per-vCPU
@@ -167,7 +167,7 @@ const base::FeatureParam<int> kVmMemorySizeMaxMiB{&kVmMemorySize, "max_mib",
 // ARCVM never has it's kernel page cache drop below the level that LMKD will
 // start killing.
 const base::Feature kVmBalloonPolicy{"ArcVmBalloonPolicy",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The maximum amount of kernel page cache ARCVM can have when ChromeOS is under
 // moderate memory pressure. 0 for no limit.

@@ -228,10 +228,10 @@ class WebAppBrowserTest_Tabbed : public WebAppBrowserTest {
 };
 
 // TODO(crbug.com/1257751): Stabilize the test.
-#if defined(OS_MAC)
-#define DISABLE_MAC(TEST) DISABLED_##TEST
+#if defined(OS_POSIX)
+#define DISABLE_POSIX(TEST) DISABLED_##TEST
 #else
-#define DISABLE_MAC(TEST) TEST
+#define DISABLE_POSIX(TEST) TEST
 #endif
 
 #if defined(OS_WIN)
@@ -427,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WithoutMinimalUiButtons) {
                                    /*open_as_window=*/false));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, DISABLE_MAC(DisplayOverride)) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, DISABLE_POSIX(DisplayOverride)) {
   GURL test_url = https_server()->GetURL(
       "/banners/"
       "manifest_test_page.html?manifest=manifest_display_override.json");
@@ -867,7 +867,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ShortcutMenuOptionsForCrashedTab) {
 }
 
 // Tests that an installed PWA is not used when out of scope by one path level.
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, MenuOptionsOutsideInstalledPwaScope) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
+                       DISABLE_POSIX(MenuOptionsOutsideInstalledPwaScope)) {
   NavigateToURLAndWait(
       browser(),
       https_server()->GetURL("/banners/scope_is_start_url/index.html"));
@@ -883,7 +884,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, MenuOptionsOutsideInstalledPwaScope) {
             kNotPresent);
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, DISABLE_MAC(InstallInstallableSite)) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
+                       DISABLE_POSIX(InstallInstallableSite)) {
   base::Time before_install_time = base::Time::Now();
   base::UserActionTester user_action_tester;
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
@@ -910,7 +912,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, DISABLE_MAC(InstallInstallableSite)) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, CanInstallOverTabPwa) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, DISABLE_POSIX(CanInstallOverTabPwa)) {
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   const AppId app_id = InstallPwaForCurrentUrl();
 
@@ -929,7 +931,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, CanInstallOverTabPwa) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
-                       DISABLE_MAC(CannotInstallOverWindowPwa)) {
+                       DISABLE_POSIX(CannotInstallOverWindowPwa)) {
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   InstallPwaForCurrentUrl();
 
@@ -941,6 +943,23 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
   EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser), kNotPresent);
   EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, new_browser),
             kEnabled);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, NoOpenInAppForBrowserTabPwa) {
+  GURL app_url = https_server()->GetURL(
+      "/web_apps/get_manifest.html?display_browser.json");
+  AppId app_id = InstallWebAppFromPage(browser(), app_url);
+
+  // Change display mode to open in tab.
+  auto* provider = WebAppProvider::GetForTest(profile());
+  provider->sync_bridge().SetAppUserDisplayMode(
+      app_id, blink::mojom::DisplayMode::kBrowser, /*is_user_action=*/false);
+
+  NavigateToURLAndWait(browser(), app_url);
+  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, browser()), kEnabled);
+  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), kNotPresent);
+  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
+            kNotPresent);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, CanInstallWithPolicyPwa) {
@@ -1001,7 +1020,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ReparentWebAppForSecureActiveTab) {
 
 #if defined(OS_MAC) || defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
-                       DISABLE_MAC(ShortcutIconCorrectColor)) {
+                       DISABLE_POSIX(ShortcutIconCorrectColor)) {
   os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
 
@@ -1145,7 +1164,15 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ShortcutMenu, ShortcutsMenu) {
 #endif
 
 #if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WebAppCreateAndDeleteShortcut) {
+
+// Times out, see https://crbug.com/1257751
+#if defined(OS_MAC) || defined(OS_LINUX)
+#define MAYBE_WebAppCreateAndDeleteShortcut \
+  DISABLED_WebAppCreateAndDeleteShortcut
+#else
+#define MAYBE_WebAppCreateAndDeleteShortcut WebAppCreateAndDeleteShortcut
+#endif
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, MAYBE_WebAppCreateAndDeleteShortcut) {
   os_hooks_suppress_.reset();
 
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -1230,14 +1257,15 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ReparentLastBrowserTab) {
   EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
 }
 
-// Tests that reparenting a shortcut app tab results in a minimal-ui app window.
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ReparentShortcutApp) {
+// Tests that reparenting a display: browser app tab results in a minimal-ui
+// app window.
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ReparentDisplayBrowserApp) {
   const GURL app_url = GetSecureAppURL();
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->start_url = app_url;
   web_app_info->scope = app_url.GetWithoutFilename();
   web_app_info->display_mode = DisplayMode::kBrowser;
-  web_app_info->user_display_mode = DisplayMode::kBrowser;
+  web_app_info->user_display_mode = DisplayMode::kStandalone;
   web_app_info->title = u"A Shortcut App";
   const AppId app_id = InstallWebApp(std::move(web_app_info));
 
@@ -1254,12 +1282,11 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ReparentShortcutApp) {
   ASSERT_EQ(app_browser->app_controller()->app_id(), app_id);
   EXPECT_TRUE(app_browser->app_controller()->HasMinimalUiButtons());
 
-  // User preference remains unchanged. Future instances will open in tabs.
   auto* provider = WebAppProvider::GetForTest(profile());
   EXPECT_EQ(provider->registrar().GetAppUserDisplayMode(app_id),
-            DisplayMode::kBrowser);
+            DisplayMode::kStandalone);
   EXPECT_EQ(provider->registrar().GetAppEffectiveDisplayMode(app_id),
-            DisplayMode::kBrowser);
+            DisplayMode::kMinimalUi);
 }
 
 // Tests that the manifest name of the current installable site is used in the
@@ -1596,7 +1623,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, BrowserDisplayNotInstallable) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_WindowControlsOverlay,
-                       DISABLE_MAC(WindowControlsOverlay)) {
+                       DISABLE_POSIX(WindowControlsOverlay)) {
   GURL test_url = https_server()->GetURL(
       "/banners/"
       "manifest_test_page.html?manifest=manifest_window_controls_overlay.json");
@@ -1617,7 +1644,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_WindowControlsOverlay,
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_Tabbed,
-                       DISABLE_MAC(TabbedDisplayOverride)) {
+                       DISABLE_POSIX(TabbedDisplayOverride)) {
   GURL test_url = https_server()->GetURL(
       "/banners/"
       "manifest_test_page.html?manifest=manifest_tabbed_display_override.json");
@@ -1643,7 +1670,8 @@ class WebAppBrowserTest_RemoveStatusBar : public WebAppBrowserTest {
       features::kRemoveStatusBarInWebApps};
 };
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_RemoveStatusBar, RemoveStatusBar) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_RemoveStatusBar,
+                       DISABLE_POSIX(RemoveStatusBar)) {
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   const AppId app_id = InstallPwaForCurrentUrl();
   Browser* const app_browser = LaunchWebAppBrowser(app_id);
@@ -1694,7 +1722,7 @@ class WebAppBrowserTest_ManifestId : public WebAppBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ManifestId,
-                       DISABLE_MAC(NoManifestId)) {
+                       DISABLE_POSIX(NoManifestId)) {
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
 
   const AppId app_id = InstallPwaForCurrentUrl();

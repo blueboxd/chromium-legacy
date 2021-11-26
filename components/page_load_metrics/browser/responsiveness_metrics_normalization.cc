@@ -10,7 +10,6 @@ namespace page_load_metrics {
 constexpr base::TimeDelta kBudgetForKeyboard = base::Milliseconds(50);
 constexpr base::TimeDelta kBudgetForClickOrTap = base::Milliseconds(100);
 constexpr base::TimeDelta kBudgetForDrag = base::Milliseconds(100);
-constexpr uint64_t kHighPercentileUpdateFrequnecy = 50;
 
 namespace {
 
@@ -31,12 +30,36 @@ base::TimeDelta LatencyOverBudget(
 
 }  // namespace
 
+NormalizedInteractionLatencies::NormalizedInteractionLatencies() = default;
+NormalizedInteractionLatencies::~NormalizedInteractionLatencies() = default;
+
 NormalizedResponsivenessMetrics::NormalizedResponsivenessMetrics() = default;
 NormalizedResponsivenessMetrics::~NormalizedResponsivenessMetrics() = default;
+
 ResponsivenessMetricsNormalization::ResponsivenessMetricsNormalization() =
     default;
 ResponsivenessMetricsNormalization::~ResponsivenessMetricsNormalization() =
     default;
+
+// static
+base::TimeDelta ResponsivenessMetricsNormalization::ApproximateHighPercentile(
+    uint64_t num_interactions,
+    std::priority_queue<base::TimeDelta,
+                        std::vector<base::TimeDelta>,
+                        std::greater<>> worst_ten_latencies_over_budget) {
+  DCHECK(num_interactions &&
+         base::FeatureList::IsEnabled(
+             blink::features::kSendAllUserInteractionLatencies));
+  int index = std::max(
+      0,
+      static_cast<int>(worst_ten_latencies_over_budget.size()) - 1 -
+          static_cast<int>(num_interactions / kHighPercentileUpdateFrequency));
+  for (; index > 0; index--) {
+    worst_ten_latencies_over_budget.pop();
+  }
+
+  return worst_ten_latencies_over_budget.top();
+}
 
 void ResponsivenessMetricsNormalization::AddNewUserInteractionLatencies(
     uint64_t num_new_interactions,
@@ -88,7 +111,14 @@ void ResponsivenessMetricsNormalization::NormalizeUserInteractionLatencies(
     normalized_event_durations.worst_latency_over_budget =
         std::max(normalized_event_durations.worst_latency_over_budget,
                  latency_over_budget);
-    normalized_event_durations.total_latency_over_budget += latency_over_budget;
+    normalized_event_durations.sum_of_latency_over_budget +=
+        latency_over_budget;
+    normalized_event_durations.worst_ten_latencies_over_budget.push(
+        latency_over_budget);
+    if (normalized_event_durations.worst_ten_latencies_over_budget.size() ==
+        11) {
+      normalized_event_durations.worst_ten_latencies_over_budget.pop();
+    }
     if (latency_over_budget >=
         normalized_event_durations.high_percentile_latency_over_budget) {
       normalized_event_durations.pseudo_second_worst_latency_over_budget =
@@ -103,12 +133,12 @@ void ResponsivenessMetricsNormalization::NormalizeUserInteractionLatencies(
     }
   }
   // If the number of user interactions is below
-  // kHighPercentileUpdateFrequnecy the high_percentile_latency_over_budget
+  // kHighPercentileUpdateFrequency the high_percentile_latency_over_budget
   // will be same as worst_latency_over_budget. But if there are more
   // interactions, we replace it with second_worst_latency_over_budget every
-  // kHighPercentileUpdateFrequnecy interactions.
-  if ((current_num_user_interactions / kHighPercentileUpdateFrequnecy) -
-          (last_num_user_interactions / kHighPercentileUpdateFrequnecy) >=
+  // kHighPercentileUpdateFrequency interactions.
+  if ((current_num_user_interactions / kHighPercentileUpdateFrequency) -
+          (last_num_user_interactions / kHighPercentileUpdateFrequency) >=
       1) {
     normalized_event_durations.high_percentile_latency_over_budget =
         normalized_event_durations.pseudo_second_worst_latency_over_budget;

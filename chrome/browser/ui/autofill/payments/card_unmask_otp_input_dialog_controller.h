@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "build/build_config.h"
+
 namespace autofill {
 
 struct FooterText {
@@ -21,8 +23,19 @@ class CardUnmaskOtpInputDialogController {
   virtual ~CardUnmaskOtpInputDialogController() = default;
 
   // Called whenever the dialog is closed, and it sets the |dialog_view_|
-  // variable in this class to nullptr.
-  virtual void OnDialogClosed() = 0;
+  // variable in this class to nullptr. |user_closed_dialog| indicates whether
+  // the user closed the dialog and cancelled the flow.
+  // |server_request_succeeded| indicates if the server call succeeded, this is
+  // only meaningful if the dialog closure is not triggered by user
+  // cancellation.
+  virtual void OnDialogClosed(bool user_closed_dialog,
+                              bool server_request_succeeded) = 0;
+
+  // Invoked when the OK button of the dialog is clicked.
+  virtual void OnOkButtonClicked(const std::u16string& otp) = 0;
+
+  // Invoked when the "Get New Code" link is clicked.
+  virtual void OnNewCodeLinkClicked() = 0;
 
   virtual std::u16string GetWindowTitle() const = 0;
 
@@ -30,6 +43,12 @@ class CardUnmaskOtpInputDialogController {
   // This placeholder text lets the user know how many digits need to be entered
   // for the OTP, and it can change based on OTP length.
   virtual std::u16string GetTextfieldPlaceholderText() const = 0;
+
+#if defined(OS_ANDROID)
+  // The length of the OTP that the user is expected to fill into the text
+  // field.
+  virtual int GetExpectedOtpLength() const = 0;
+#endif  // OS_ANDROID
 
   // Checks if the given text is a possible valid OTP before sending a request
   // to the backend to see if the otp is correct.
@@ -48,6 +67,9 @@ class CardUnmaskOtpInputDialogController {
   // The label directly under the throbber in the pending state of this dialog,
   // letting the user know that the the code is being verified.
   virtual std::u16string GetProgressLabel() const = 0;
+
+  // The label shown when the OTP verification is completed.
+  virtual std::u16string GetConfirmationMessage() const = 0;
 };
 
 }  // namespace autofill

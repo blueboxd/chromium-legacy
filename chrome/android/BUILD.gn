@@ -112,7 +112,7 @@ jinja_template("chrome_public_android_manifest") {
   output = chrome_public_android_manifest
   variables = chrome_public_jinja_variables
   variables += [
-    "min_sdk_version=21",
+    "min_sdk_version=$default_min_sdk_version",
     "target_sdk_version=$android_sdk_version",
   ]
 }
@@ -387,6 +387,7 @@ android_library("chrome_java") {
     "//chrome/browser/safe_browsing/android:java",
     "//chrome/browser/safety_check/android:java",
     "//chrome/browser/search_engines/android:java",
+    "//chrome/browser/segmentation_platform:factory_java",
     "//chrome/browser/settings:java",
     "//chrome/browser/share:java",
     "//chrome/browser/share/android:java_resources",
@@ -498,6 +499,7 @@ android_library("chrome_java") {
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/offline_items_collection/core:core_java",
     "//components/omnibox/browser:browser_java",
+    "//components/optimization_guide/proto:optimization_guide_proto_java",
     "//components/page_info/android:java",
     "//components/page_info/android:page_info_action_enum_java",
     "//components/paint_preview/browser/android:java",
@@ -2804,7 +2806,7 @@ jinja_template("chrome_public_unit_test_apk_manifest") {
   variables = default_chrome_public_jinja_variables
   variables += [
     "manifest_package=$chrome_public_test_manifest_package",
-    "min_sdk_version=21",
+    "min_sdk_version=$default_min_sdk_version",
     "target_sdk_version=$android_sdk_version",
   ]
 }
@@ -2816,7 +2818,7 @@ jinja_template("chrome_public_test_apk_manifest") {
   variables = default_chrome_public_jinja_variables
   variables += [
     "manifest_package=$chrome_public_test_manifest_package",
-    "min_sdk_version=21",
+    "min_sdk_version=$default_min_sdk_version",
     "target_sdk_version=$android_sdk_version",
   ]
 }
@@ -2827,7 +2829,7 @@ jinja_template("chrome_public_test_vr_apk_manifest") {
   output = chrome_public_test_vr_apk_manifest
   variables = chrome_public_jinja_variables
   variables += [
-    "min_sdk_version=21",
+    "min_sdk_version=$default_min_sdk_version",
     "target_sdk_version=$android_sdk_version",
   ]
 }
@@ -2979,6 +2981,7 @@ chrome_test_apk_tmpl("chrome_public_unit_test_apk") {
   shared_libraries = [ ":libchromefortest" ]
   deps = [
     ":chrome_unit_test_java",
+    "//chrome/browser/user_education:javatests",
     "//chrome/browser/video_tutorials/internal:javatests",
   ]
 }
@@ -3364,7 +3367,7 @@ chrome_bundle("chrome_modern_public_bundle") {
   }
   is_monochrome_or_trichrome = false
   manifest_package = chrome_public_manifest_package
-  min_sdk_version = 21
+  min_sdk_version = default_min_sdk_version
   module_descs = chrome_modern_module_descs
   version_code = chrome_modern_version_code
 

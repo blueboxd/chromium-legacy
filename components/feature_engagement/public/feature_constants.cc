@@ -139,7 +139,7 @@ const base::Feature kIPHKeyboardAccessoryPaymentOfferFeature{
     "IPH_KeyboardAccessoryPaymentOffer", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHKeyboardAccessoryPaymentVirtualCardFeature{
     "IPH_KeyboardAccessoryPaymentVirtualCard",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHNewTabPageHomeButtonFeature{
     "IPH_NewTabPageHomeButton", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHMicToolbarFeature{"IPH_MicToolbar",
@@ -172,6 +172,8 @@ const base::Feature kIPHVideoTutorialNTPVoiceSearchFeature{
     "IPH_VideoTutorial_NTP_VoiceSearch", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHVideoTutorialNTPSummaryFeature{
     "IPH_VideoTutorial_NTP_Summary", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kIPHVideoTutorialTryNowFeature{
+    "IPH_VideoTutorial_TryNow", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHExploreSitesTileFeature{
     "IPH_ExploreSitesTile", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHFeedHeaderMenuFeature{"IPH_FeedHeaderMenu",

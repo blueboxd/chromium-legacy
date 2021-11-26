@@ -476,12 +476,6 @@ public final class ChromePreferenceKeys {
     public static final String FLAGS_CACHED_NETWORK_SERVICE_WARM_UP_ENABLED =
             "network_service_warm_up_enabled";
     /**
-     * Whether or not bootstrap tasks should be prioritized (i.e. bootstrap task prioritization
-     * experiment is enabled). Default value is true.
-     */
-    public static final String FLAGS_CACHED_PRIORITIZE_BOOTSTRAP_TASKS =
-            "prioritize_bootstrap_tasks";
-    /**
      * Key for whether PrefetchBackgroundTask should load native in service manager only mode.
      * Default value is false.
      */
@@ -526,6 +520,8 @@ public final class ChromePreferenceKeys {
     public static final String HOMEPAGE_ENABLED = "homepage";
     public static final String HOMEPAGE_USE_CHROME_NTP = "Chrome.Homepage.UseNTP";
     public static final String HOMEPAGE_USE_DEFAULT_URI = "homepage_partner_enabled";
+    public static final String HOMEPAGE_PARTNER_CUSTOMIZED_DEFAULT_URI =
+            "Chrome.Homepage.PartnerCustomizedDefaultUri";
 
     /**
      * Key used to save homepage location set by enterprise policy
@@ -788,6 +784,8 @@ public final class ChromePreferenceKeys {
     public static final String OPEN_NEW_TAB_PAGE_COUNT = "Chrome.StartSurface.OpenNewTabPageCount";
     public static final String OPEN_HISTORY_COUNT = "Chrome.StartSurface.OpenHistoryCount";
     public static final String OPEN_RECENT_TABS_COUNT = "Chrome.StartSurface.OpenRecentTabCount";
+    public static final String SHOW_START_SEGMENTATION_RESULT =
+            "Chrome.StartSurface.ShowSegmentationResult";
 
     /**
      * Contains a trial group that was used to determine whether the reached code profiler should be
@@ -860,9 +858,11 @@ public final class ChromePreferenceKeys {
     public static final String SIGNIN_ACCOUNT_RENAME_EVENT_INDEX =
             "prefs_sync_account_rename_event_index";
 
-    /** SigninPromo Show Count preference. */
-    public static final KeyPrefix SIGNIN_PROMO_SHOW_COUNT =
-            new KeyPrefix("Chrome.SigninPromo.ShowCount.*");
+    /** SyncPromo Show Count preference. */
+    public static final KeyPrefix SYNC_PROMO_SHOW_COUNT =
+            new KeyPrefix("Chrome.SyncPromo.ShowCount.*");
+    /** SyncPromo total shown count preference across all access points. */
+    public static final String SYNC_PROMO_TOTAL_SHOW_COUNT = "Chrome.SyncPromo.TotalShowCount";
 
     /**
      * Generic signin and sync promo preferences.
@@ -1076,6 +1076,7 @@ public final class ChromePreferenceKeys {
                 FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS,
                 HOMEPAGE_LOCATION_POLICY,
                 HOMEPAGE_USE_CHROME_NTP,
+            HOMEPAGE_PARTNER_CUSTOMIZED_DEFAULT_URI,
                 IMAGE_DESCRIPTIONS_JUST_ONCE_COUNT,
                 IMAGE_DESCRIPTIONS_DONT_ASK_AGAIN,
                 ISOLATED_SPLITS_DEX_COMPILE_VERSION,
@@ -1123,10 +1124,12 @@ public final class ChromePreferenceKeys {
                 SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP,
                 SETTINGS_SAFETY_CHECK_RUN_COUNTER,
                 SHARING_LAST_SHARED_COMPONENT_NAME,
+                SHOW_START_SEGMENTATION_RESULT,
                 SIGNIN_PROMO_IMPRESSIONS_COUNT_NTP,
-                SIGNIN_PROMO_SHOW_COUNT.pattern(),
+                SYNC_PROMO_SHOW_COUNT.pattern(),
                 SIGNIN_PROMO_NTP_FIRST_SHOWN_TIME,
                 SIGNIN_PROMO_NTP_LAST_SHOWN_TIME,
+                SYNC_PROMO_TOTAL_SHOW_COUNT,
                 START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
                 START_SHOW_ON_STARTUP,
                 TAP_FEED_CARDS_COUNT,

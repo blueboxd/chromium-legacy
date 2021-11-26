@@ -33,6 +33,7 @@
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
@@ -41,6 +42,7 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/event_observer.h"
 #include "ui/events/types/event_type.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/event_monitor.h"
 #include "ui/views/widget/unique_widget_ptr.h"
@@ -190,7 +192,6 @@ class DesksBarScrollViewLayout : public views::LayoutManager {
   void Layout(views::View* host) override {
     const gfx::Rect scroll_bounds = bar_view_->scroll_view_->bounds();
 
-
     // |host| here is |scroll_view_contents_|.
     // TODO(crbug.com/1255185): Make templates button compatible with zero
     // state.
@@ -243,14 +244,6 @@ class DesksBarScrollViewLayout : public views::LayoutManager {
                                  kZeroStateY),
                       desks_templates_button_size));
       }
-
-      // Keep the background view's translation updated while the height of bar
-      // changes. E.g, it could happens while zooming in/out the bar. Note, the
-      // background view is only translated while in zero state.
-      gfx::Transform transform;
-      transform.Translate(
-          0, -(scroll_bounds.height() - DesksBarView::kZeroStateBarHeight));
-      bar_view_->background_view()->layer()->SetTransform(transform);
       return;
     }
 
@@ -313,15 +306,13 @@ class DesksBarScrollViewLayout : public views::LayoutManager {
 // DesksBarView:
 
 DesksBarView::DesksBarView(OverviewGrid* overview_grid)
-    : background_view_(new views::View), overview_grid_(overview_grid) {
+    : overview_grid_(overview_grid) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-  background_view_->layer()->SetFillsBoundsOpaquely(false);
-
-  AddChildView(background_view_);
-
+  SetBackground(
+      views::CreateSolidBackground(AshColorProvider::Get()->GetShieldLayerColor(
+          AshColorProvider::ShieldLayerType::kShield80)));
   scroll_view_ = AddChildView(std::make_unique<views::ScrollView>());
   scroll_view_->SetPaintToLayer();
   scroll_view_->layer()->SetFillsBoundsOpaquely(false);
@@ -357,14 +348,16 @@ DesksBarView::DesksBarView(OverviewGrid* overview_grid)
           this, &kDesksNewDeskButtonIcon,
           l10n_util::GetStringUTF16(IDS_ASH_DESKS_NEW_DESK_BUTTON),
           base::BindRepeating(&DesksBarView::OnNewDeskButtonPressed,
-                              base::Unretained(this))));
+                              base::Unretained(this),
+                              DesksCreationRemovalSource::kButton)));
   zero_state_default_desk_button_ = scroll_view_contents_->AddChildView(
       std::make_unique<ZeroStateDefaultDeskButton>(this));
   zero_state_new_desk_button_ =
       scroll_view_contents_->AddChildView(std::make_unique<ZeroStateIconButton>(
           &kDesksNewDeskButtonIcon,
           base::BindRepeating(&DesksBarView::OnNewDeskButtonPressed,
-                              base::Unretained(this))));
+                              base::Unretained(this),
+                              DesksCreationRemovalSource::kButton)));
   if (features::AreDesksTemplatesEnabled()) {
     // TODO(sophiewen): u"Templates" should be replaced with the localized name
     // for the "Templates" desk label.
@@ -407,7 +400,10 @@ DesksBarView::~DesksBarView() {
 }
 
 // static
-int DesksBarView::GetBarHeightForWidth(aura::Window* root) {
+constexpr int DesksBarView::kZeroStateBarHeight;
+
+// static
+int DesksBarView::GetExpandedBarHeight(aura::Window* root) {
   return DeskPreviewView::GetHeight(root) + kNonPreviewAllocatedHeight;
 }
 
@@ -496,6 +492,11 @@ void DesksBarView::SetDragDetails(const gfx::Point& screen_location,
 
   for (auto* mini_view : mini_views_)
     mini_view->UpdateBorderColor();
+
+  if (features::IsDragWindowToNewDeskEnabled() &&
+      DesksController::Get()->CanCreateDesks()) {
+    expanded_state_new_desk_button()->UpdateBorderColor();
+  }
 }
 
 bool DesksBarView::IsZeroState() const {
@@ -651,6 +652,16 @@ void DesksBarView::EndDragDesk(DeskMiniView* mini_view, bool end_by_user) {
   }
 }
 
+void DesksBarView::OnNewDeskButtonPressed(
+    DesksCreationRemovalSource desks_creation_removal_source) {
+  auto* controller = DesksController::Get();
+  if (!controller->CanCreateDesks())
+    return;
+  set_should_name_nudge(true);
+  controller->NewDesk(desks_creation_removal_source);
+  expanded_state_new_desk_button_->UpdateButtonState();
+}
+
 void DesksBarView::FinalizeDragDesk() {
   if (drag_view_) {
     drag_view_->layer()->SetOpacity(1.0f);
@@ -668,7 +679,9 @@ const char* DesksBarView::GetClassName() const {
 }
 
 void DesksBarView::Layout() {
-  background_view()->SetBoundsRect(bounds());
+  if (is_bounds_animation_on_going_)
+    return;
+
   // Scroll buttons are kept |kScrollViewMinimumHorizontalPadding| away from
   // the edge of the scroll view. So the horizontal padding of the scroll view
   // is set to guarantee enough space for the scroll buttons.
@@ -729,10 +742,10 @@ void DesksBarView::OnGestureEvent(ui::GestureEvent* event) {
 
 void DesksBarView::OnThemeChanged() {
   views::View::OnThemeChanged();
-  DCHECK_EQ(ui::LAYER_SOLID_COLOR, background_view_->layer()->type());
-  background_view_->layer()->SetColor(
+  background()->SetNativeControlColor(
       AshColorProvider::Get()->GetShieldLayerColor(
           AshColorProvider::ShieldLayerType::kShield80));
+  SchedulePaint();
 }
 
 void DesksBarView::OnDeskAdded(const Desk* desk) {
@@ -863,7 +876,6 @@ void DesksBarView::UpdateNewMiniViews(bool initializing_bar_view,
   // This should not be called when a desk is removed.
   DCHECK_LE(mini_views_.size(), desks.size());
 
-  const bool first_time_mini_views = mini_views_.empty();
   const int begin_x = GetFirstMiniViewXOffset();
   std::vector<DeskMiniView*> new_mini_views;
 
@@ -904,20 +916,19 @@ void DesksBarView::UpdateNewMiniViews(bool initializing_bar_view,
     should_name_nudge_ = false;
   }
 
-  Layout();
-
   if (expanding_bar_view) {
     UpdateDeskButtonsVisibility();
     PerformZeroStateToExpandedStateMiniViewAnimation(this);
     return;
   }
 
+  Layout();
+
   if (initializing_bar_view)
     return;
 
   PerformNewDeskMiniViewAnimation(this, new_mini_views,
-                                  begin_x - GetFirstMiniViewXOffset(),
-                                  first_time_mini_views);
+                                  begin_x - GetFirstMiniViewXOffset());
 }
 
 void DesksBarView::ScrollToShowMiniViewIfNecessary(
@@ -1130,15 +1141,6 @@ int DesksBarView::GetAdjustedUncroppedScrollPosition(int position) const {
       adjusted_position = mini_views_[i + 1]->bounds().x();
   }
   return adjusted_position;
-}
-
-void DesksBarView::OnNewDeskButtonPressed() {
-  auto* controller = DesksController::Get();
-  if (!controller->CanCreateDesks())
-    return;
-  set_should_name_nudge(true);
-  controller->NewDesk(DesksCreationRemovalSource::kButton);
-  expanded_state_new_desk_button_->UpdateButtonState();
 }
 
 void DesksBarView::OnDesksTemplatesButtonPressed() {

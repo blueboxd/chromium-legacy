@@ -30,11 +30,14 @@ class AndroidNotificationHandler : public ReceivingUiHandler {
   explicit AndroidNotificationHandler(Profile* profile);
   ~AndroidNotificationHandler() override;
 
-  Profile* profile() { return profile_; }
+  const Profile* profile() const override;
 
   void UpdateWebContents(content::WebContents* web_contents);
 
  private:
+  void DisplayNewEntriesOnUIThread(
+      const std::vector<const SendTabToSelfEntry>& new_entries);
+
   // ReceivingUiHandler implementation.
   void DisplayNewEntries(
       const std::vector<const SendTabToSelfEntry*>& new_entries) override;
@@ -56,7 +59,7 @@ class AndroidNotificationHandler : public ReceivingUiHandler {
 
   Profile* profile_;
 
-  content::WebContents* web_contents_;
+  base::WeakPtr<content::WebContents> web_contents_;
 };
 
 }  // namespace send_tab_to_self

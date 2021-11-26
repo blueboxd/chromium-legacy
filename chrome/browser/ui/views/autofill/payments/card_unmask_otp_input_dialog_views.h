@@ -34,7 +34,9 @@ class CardUnmaskOtpInputDialogViews : public CardUnmaskOtpInputDialogView,
 
   // CardUnmaskOtpInputDialogView:
   void ShowPendingState() override;
-  void OnControllerDestroying() override;
+  void ShowInvalidState(const std::u16string& invalid_label_text) override;
+  void Dismiss(bool show_confirmation_before_closing,
+               bool user_closed_dialog) override;
 
   // views::DialogDelegateView:
   std::u16string GetWindowTitle() const override;
@@ -59,16 +61,29 @@ class CardUnmaskOtpInputDialogViews : public CardUnmaskOtpInputDialogView,
   // otp.
   void CreateHiddenProgressView();
 
+  void HideInvalidState();
+
+  void CloseWidget(bool user_closed_dialog, bool server_request_succeeded);
+
   CardUnmaskOtpInputDialogController* controller_ = nullptr;
 
   // Elements related to the otp part of the view.
   views::BoxLayoutView* otp_input_view_ = nullptr;
   views::Textfield* otp_input_textfield_ = nullptr;
+  views::Label* otp_input_textfield_invalid_label_ = nullptr;
+
+  // Adds padding to the view's layout so that the layout allows room for
+  // |otp_input_textfield_invalid_label_| to appear if necessary. This padding's
+  // visibility will always be the opposite of
+  // |otp_input_textfield_invalid_label_|'s visibility.
+  views::View* otp_input_textfield_invalid_label_padding_ = nullptr;
 
   // Elements related to progress or error when the request is being made.
   views::BoxLayoutView* progress_view_ = nullptr;
   views::Label* progress_label_ = nullptr;
   views::Throbber* progress_throbber_ = nullptr;
+
+  base::WeakPtrFactory<CardUnmaskOtpInputDialogViews> weak_ptr_factory_{this};
 };
 
 }  // namespace autofill

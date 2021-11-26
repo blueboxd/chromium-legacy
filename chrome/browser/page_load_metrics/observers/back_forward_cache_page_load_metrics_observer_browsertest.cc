@@ -36,7 +36,9 @@ class BackForwardCachePageLoadMetricsObserverBrowserTest
         {{features::kBackForwardCache,
           {{"TimeToLiveInBackForwardCacheInSeconds", "3600"},
            {"ignore_outstanding_network_request_for_testing", "true"}}},
-         {internal::kBackForwardCacheEmitZeroSamplesForKeyMetrics, {{}}}},
+         {internal::kBackForwardCacheEmitZeroSamplesForKeyMetrics, {{}}},
+         // Send all user interaction latencies to the browser process.
+         {blink::features::kSendAllUserInteractionLatencies, {{}}}},
         // Allow BackForwardCache for all devices regardless of their memory.
         {features::kBackForwardCacheMemoryControls});
 
@@ -593,4 +595,120 @@ return score;
       "PageLoad.LayoutInstability.MaxCumulativeShiftScore."
       "AfterBackForwardCacheRestore.SessionWindow.Gap1000ms.Max5000ms",
       2);
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// TODO(crbug.com/1261828): Flaky on linux-chromeos.
+#define MAYBE_ResponsivenessMetricsNormalizationWithSendingAllLatencies \
+  DISABLED_ResponsivenessMetricsNormalizationWithSendingAllLatencies
+#else
+#define MAYBE_ResponsivenessMetricsNormalizationWithSendingAllLatencies \
+  ResponsivenessMetricsNormalizationWithSendingAllLatencies
+#endif
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCachePageLoadMetricsObserverBrowserTest,
+    MAYBE_ResponsivenessMetricsNormalizationWithSendingAllLatencies) {
+  Start();
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  // Navigate to A.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_a));
+  content::RenderFrameHostWrapper rfh_a(top_frame_host());
+
+  // Navigate to B.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_b));
+  EXPECT_EQ(rfh_a->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
+
+  // Go back to A.
+  {
+    auto waiter = CreatePageLoadMetricsTestWaiter();
+    waiter->AddPageExpectation(
+        page_load_metrics::PageLoadMetricsTestWaiter::TimingField::
+            kFirstInputDelayAfterBackForwardCacheRestore);
+
+    web_contents()->GetController().GoBack();
+    EXPECT_TRUE(WaitForLoadStop(web_contents()));
+    EXPECT_EQ(rfh_a.get(), top_frame_host());
+    EXPECT_NE(rfh_a->GetLifecycleState(),
+              content::RenderFrameHost::LifecycleState::kInBackForwardCache);
+
+    // Simulate clicks.
+    content::SimulateMouseClick(web_contents(), 0,
+                                blink::WebPointerProperties::Button::kLeft);
+    content::SimulateMouseClick(web_contents(), 0,
+                                blink::WebPointerProperties::Button::kLeft);
+    content::SimulateMouseClick(web_contents(), 0,
+                                blink::WebPointerProperties::Button::kLeft);
+
+    waiter->Wait();
+  }
+
+  // Navigate to B again.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_b));
+
+  // Go back to A again.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+
+  std::vector<std::string> ukm_list = {
+      "WorstUserInteractionLatencyAfterBackForwardCacheRestore."
+      "MaxEventduration",
+      "WorstUserInteractionLatencyAfterBackForwardCacheRestore."
+      "TotalEventduration",
+      "WorstUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore."
+      "MaxEventduration",
+      "WorstUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore."
+      "TotalEventduration",
+      "SumOfUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore."
+      "TotalEventduration",
+      "SumOfUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore."
+      "MaxEventduration",
+      "SlowUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore."
+      "HighPercentile2.TotalEventduration",
+      "SlowUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore."
+      "HighPercentile2.MaxEventduration",
+      "SlowUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore."
+      "HighPercentile.TotalEventduration",
+      "SlowUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore."
+      "HighPercentile.MaxEventduration",
+      "AverageUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore."
+      "MaxEventduration",
+      "AverageUserInteractionLatencyOverBudgetAfterBackForwardCacheRestore."
+      "TotalEventduration"};
+
+  for (auto& ukm : ukm_list) {
+    ExpectMetricCountForUrl(url_a, ukm.c_str(), 1);
+    ExpectMetricCountForUrl(url_b, ukm.c_str(), 0);
+  }
+
+  std::vector<std::string> uma_list = {
+      internal::
+          kAverageUserInteractionLatencyOverBudget_MaxEventDuration_AfterBackForwardCacheRestore,
+      internal::
+          kSlowUserInteractionLatencyOverBudgetHighPercentile_MaxEventDuration_AfterBackForwardCacheRestore,
+      internal::
+          kSlowUserInteractionLatencyOverBudgetHighPercentile2_MaxEventDuration_AfterBackForwardCacheRestore,
+      internal::
+          kSumOfUserInteractionLatencyOverBudget_MaxEventDuration_AfterBackForwardCacheRestore,
+      internal::
+          kWorstUserInteractionLatency_MaxEventDuration_AfterBackForwardCacheRestore,
+      internal::
+          kWorstUserInteractionLatencyOverBudget_MaxEventDuration_AfterBackForwardCacheRestore,
+      internal::
+          kAverageUserInteractionLatencyOverBudget_TotalEventDuration_AfterBackForwardCacheRestore,
+      internal::
+          kSlowUserInteractionLatencyOverBudgetHighPercentile_TotalEventDuration_AfterBackForwardCacheRestore,
+      internal::
+          kSlowUserInteractionLatencyOverBudgetHighPercentile2_TotalEventDuration_AfterBackForwardCacheRestore,
+      internal::
+          kSumOfUserInteractionLatencyOverBudget_TotalEventDuration_AfterBackForwardCacheRestore,
+      internal::
+          kWorstUserInteractionLatency_TotalEventDuration_AfterBackForwardCacheRestore,
+      internal::
+          kWorstUserInteractionLatencyOverBudget_TotalEventDuration_AfterBackForwardCacheRestore};
+
+  for (auto& uma : uma_list) {
+    histogram_tester().ExpectTotalCount(uma, 1);
+  }
 }

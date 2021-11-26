@@ -5457,6 +5457,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ContentSuggestions.Feed.Engaged">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user has engaged with the feed or scrolled at least 1 inch into it
+    within a 5-minute session.
+  </description>
+</action>
+
 <action name="ContentSuggestions.Feed.HeaderAction.ManageActivity">
   <owner>adamta@google.org</owner>
   <owner>sczs@chromium.org</owner>
@@ -17564,6 +17574,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="NewTabPage.PreinstalledApps.Clicked">
+  <owner>phillis@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>
+    The user clicked on a most visited tile that is a preinstalled extension
+    app. This action is logged every time the NewTabPage.MostVisited histogram
+    is logged and when the tile is a preinstalled extension app.
+  </description>
+</action>
+
 <action name="NewTabPage.Promo.EnhancedProtectionPromo.Accepted">
   <owner>bdea@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
@@ -29520,6 +29540,8 @@ should be able to be added at any place in this file.
       label="For video tutorial summary card."/>
   <suffix name="VideoTutorial_NTP_VoiceSearch"
       label="For voice search video tutorial."/>
+  <suffix name="VideoTutorial_TryNow"
+      label="For video tutorial Try Now feature."/>
   <suffix name="WebFeedFollow" label="For Web Feed follow recommendations."/>
   <suffix name="WebFeedPostFollowDialog"
       label="For Web Feed successful follow operations."/>

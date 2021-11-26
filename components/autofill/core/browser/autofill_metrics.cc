@@ -182,6 +182,19 @@ const char* GetSaveAndUpdatePromptDecisionMetricsSuffix(
   return "";
 }
 
+std::string GetCreditCardTypeSuffix(
+    AutofillClient::PaymentsRpcCardType card_type) {
+  switch (card_type) {
+    case AutofillClient::PaymentsRpcCardType::kServerCard:
+      return ".ServerCard";
+    case AutofillClient::PaymentsRpcCardType::kVirtualCard:
+      return ".VirtualCard";
+    case AutofillClient::PaymentsRpcCardType::kUnknown:
+      NOTREACHED();
+      return std::string();
+  }
+}
+
 }  // namespace
 
 // First, translates |field_type| to the corresponding logical |group| from
@@ -864,6 +877,21 @@ void AutofillMetrics::LogSaveCardCardholderNameWasEdited(bool edited) {
 }
 
 // static
+void AutofillMetrics::LogCardUnmaskAuthenticationSelectionDialogResultMetric(
+    CardUnmaskAuthenticationSelectionDialogResultMetric metric) {
+  DCHECK_LE(metric,
+            CardUnmaskAuthenticationSelectionDialogResultMetric::kMaxValue);
+  base::UmaHistogramEnumeration(
+      "Autofill.CardUnmaskAuthenticationSelectionDialog.Result", metric);
+}
+
+// static
+void AutofillMetrics::LogCardUnmaskAuthenticationSelectionDialogShown() {
+  base::UmaHistogramBoolean(
+      "Autofill.CardUnmaskAuthenticationSelectionDialog.Shown", true);
+}
+
+// static
 void AutofillMetrics::LogCardUploadDecisionMetrics(
     int upload_decision_metrics) {
   DCHECK(upload_decision_metrics);
@@ -1217,6 +1245,43 @@ void AutofillMetrics::LogOfferNotificationBubbleResultMetric(
 }
 
 // static
+void AutofillMetrics::LogOfferNotificationBubblePromoCodeButtonClicked(
+    AutofillOfferData::OfferType offer_type) {
+  std::string histogram_name =
+      "Autofill.OfferNotificationBubblePromoCodeButtonClicked.";
+  // Switch to different sub-histogram depending on offer type being displayed.
+  // Card-linked offers do not have a promo code button.
+  switch (offer_type) {
+    case AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER:
+      histogram_name += "FreeListingCouponOffer";
+      break;
+    case AutofillOfferData::OfferType::GPAY_CARD_LINKED_OFFER:
+    case AutofillOfferData::OfferType::UNKNOWN:
+      NOTREACHED();
+      return;
+  }
+  base::UmaHistogramBoolean(histogram_name, true);
+}
+
+// static
+void AutofillMetrics::LogOfferNotificationBubbleSuppressed(
+    AutofillOfferData::OfferType offer_type) {
+  std::string histogram_name = "Autofill.OfferNotificationBubbleSuppressed.";
+  // Switch to different sub-histogram depending on offer type being suppressed.
+  // Card-linked offers will not be suppressed.
+  switch (offer_type) {
+    case AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER:
+      histogram_name += "FreeListingCouponOffer";
+      break;
+    case AutofillOfferData::OfferType::GPAY_CARD_LINKED_OFFER:
+    case AutofillOfferData::OfferType::UNKNOWN:
+      NOTREACHED();
+      return;
+  }
+  base::UmaHistogramBoolean(histogram_name, true);
+}
+
+// static
 void AutofillMetrics::LogOfferNotificationInfoBarDeepLinkClicked() {
   base::RecordAction(base::UserMetricsAction(
       "Autofill_OfferNotificationInfoBar_DeepLinkClicked"));
@@ -1233,6 +1298,15 @@ void AutofillMetrics::LogOfferNotificationInfoBarResultMetric(
 void AutofillMetrics::LogOfferNotificationInfoBarShown() {
   base::UmaHistogramBoolean(
       "Autofill.OfferNotificationInfoBarOffer.CardLinkedOffer", true);
+}
+
+void AutofillMetrics::LogProgressDialogResultMetric(bool is_canceled_by_user) {
+  base::UmaHistogramBoolean("Autofill.ProgressDialog.CardUnmask.Result",
+                            is_canceled_by_user);
+}
+
+void AutofillMetrics::LogProgressDialogShown() {
+  base::UmaHistogramBoolean("Autofill.ProgressDialog.CardUnmask.Shown", true);
 }
 
 // static
@@ -1279,7 +1353,6 @@ void AutofillMetrics::LogCardUnmaskDurationAfterWebauthn(
     AutofillClient::PaymentsRpcResult result,
     AutofillClient::PaymentsRpcCardType card_type) {
   std::string result_suffix;
-  std::string card_type_suffix;
 
   switch (result) {
     case AutofillClient::PaymentsRpcResult::kSuccess:
@@ -1301,22 +1374,11 @@ void AutofillMetrics::LogCardUnmaskDurationAfterWebauthn(
       return;
   }
 
-  switch (card_type) {
-    case AutofillClient::PaymentsRpcCardType::kServerCard:
-      card_type_suffix = "ServerCard";
-      break;
-    case AutofillClient::PaymentsRpcCardType::kVirtualCard:
-      card_type_suffix = "VirtualCard";
-      break;
-    case AutofillClient::PaymentsRpcCardType::kUnknown:
-      NOTREACHED();
-      return;
-  }
-
   base::UmaHistogramLongTimes("Autofill.BetterAuth.CardUnmaskDuration.Fido",
                               duration);
-  base::UmaHistogramLongTimes("Autofill.BetterAuth.CardUnmaskDuration.Fido." +
-                                  card_type_suffix + "." + result_suffix,
+  base::UmaHistogramLongTimes("Autofill.BetterAuth.CardUnmaskDuration.Fido" +
+                                  GetCreditCardTypeSuffix(card_type) + "." +
+                                  result_suffix,
                               duration);
 }
 
@@ -1330,6 +1392,50 @@ void AutofillMetrics::LogCardUnmaskPreflightDuration(
     const base::TimeDelta& duration) {
   base::UmaHistogramLongTimes("Autofill.BetterAuth.CardUnmaskPreflightDuration",
                               duration);
+}
+
+// static
+void AutofillMetrics::LogServerCardUnmaskAttempt(
+    AutofillClient::PaymentsRpcCardType card_type) {
+  base::UmaHistogramBoolean("Autofill.ServerCardUnmask" +
+                                GetCreditCardTypeSuffix(card_type) + ".Attempt",
+                            true);
+}
+
+// static
+void AutofillMetrics::LogServerCardUnmaskResult(
+    ServerCardUnmaskResult unmask_result,
+    AutofillClient::PaymentsRpcCardType card_type,
+    VirtualCardUnmaskFlowType flow_type) {
+  std::string flow_type_suffix;
+  switch (flow_type) {
+    case VirtualCardUnmaskFlowType::kUnspecified:
+      flow_type_suffix = ".UnspecifiedFlowType";
+      break;
+    case VirtualCardUnmaskFlowType::kFidoOnly:
+      flow_type_suffix = ".Fido";
+      break;
+    case VirtualCardUnmaskFlowType::kOtpOnly:
+      flow_type_suffix = ".Otp";
+      break;
+    case VirtualCardUnmaskFlowType::kOtpFallbackFromFido:
+      flow_type_suffix = ".OtpFallbackFromFido";
+      break;
+  }
+
+  base::UmaHistogramEnumeration("Autofill.ServerCardUnmask" +
+                                    GetCreditCardTypeSuffix(card_type) +
+                                    ".Result" + flow_type_suffix,
+                                unmask_result);
+}
+
+// static
+void AutofillMetrics::LogServerCardUnmaskFormSubmission(
+    AutofillClient::PaymentsRpcCardType card_type) {
+  base::UmaHistogramBoolean("Autofill.ServerCardUnmask" +
+                                GetCreditCardTypeSuffix(card_type) +
+                                ".FormSubmission",
+                            true);
 }
 
 // static
@@ -2980,6 +3086,74 @@ void AutofillMetrics::LogVirtualCardMetadataSynced(bool existing_card) {
 // static
 void AutofillMetrics::LogImageFetchResult(bool succeeded) {
   base::UmaHistogramBoolean("Autofill.ImageFetcher.Result", succeeded);
+}
+
+// static
+void AutofillMetrics::LogOtpAuthAttempt() {
+  base::UmaHistogramBoolean("Autofill.OtpAuth.SmsOtp.Attempt", true);
+}
+
+// static
+void AutofillMetrics::LogOtpAuthResult(OtpAuthEvent event) {
+  DCHECK_LE(event, OtpAuthEvent::kMaxValue);
+  base::UmaHistogramEnumeration("Autofill.OtpAuth.SmsOtp.Result", event);
+}
+
+// static
+void AutofillMetrics::LogOtpAuthRetriableError(OtpAuthEvent event) {
+  DCHECK_LE(event, OtpAuthEvent::kMaxValue);
+  base::UmaHistogramEnumeration("Autofill.OtpAuth.SmsOtp.RetriableError",
+                                event);
+}
+
+// static
+void AutofillMetrics::LogOtpAuthUnmaskCardRequestLatency(
+    const base::TimeDelta& duration) {
+  base::UmaHistogramLongTimes(
+      "Autofill.OtpAuth.SmsOtp.RequestLatency.UnmaskCardRequest", duration);
+}
+
+// static
+void AutofillMetrics::LogOtpAuthSelectChallengeOptionRequestLatency(
+    const base::TimeDelta& duration) {
+  base::UmaHistogramLongTimes(
+      "Autofill.OtpAuth.SmsOtp.RequestLatency.SelectChallengeOptionRequest",
+      duration);
+}
+
+// static
+void AutofillMetrics::LogOtpInputDialogShown() {
+  base::UmaHistogramBoolean("Autofill.OtpInputDialog.SmsOtp.Shown", true);
+}
+
+// static
+void AutofillMetrics::LogOtpInputDialogResult(OtpInputDialogResult result,
+                                              bool temporary_error_shown) {
+  DCHECK_GT(result, OtpInputDialogResult::kUnknown);
+  DCHECK_LE(result, OtpInputDialogResult::kMaxValue);
+  std::string temporary_error_shown_suffix = temporary_error_shown
+                                                 ? ".WithPreviousTemporaryError"
+                                                 : ".WithNoTemporaryError";
+  base::UmaHistogramEnumeration("Autofill.OtpInputDialog.SmsOtp.Result",
+                                result);
+  base::UmaHistogramEnumeration(
+      "Autofill.OtpInputDialog.SmsOtp.Result" + temporary_error_shown_suffix,
+      result);
+}
+
+// static
+void AutofillMetrics::LogOtpInputDialogErrorMessageShown(
+    OtpInputDialogError error) {
+  DCHECK_GT(error, OtpInputDialogError::kUnknown);
+  DCHECK_LE(error, OtpInputDialogError::kMaxValue);
+  base::UmaHistogramEnumeration(
+      "Autofill.OtpInputDialog.SmsOtp.ErrorMessageShown", error);
+}
+
+// static
+void AutofillMetrics::LogOtpInputDialogNewOtpRequested() {
+  base::UmaHistogramBoolean("Autofill.OtpInputDialog.SmsOtp.NewOtpRequested",
+                            true);
 }
 
 }  // namespace autofill

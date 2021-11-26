@@ -10877,6 +10877,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
              logged-in"/>
   <suffix name="MerchantTrustSignals"
       label="Provides trust data related to the merchant."/>
+  <suffix name="MerchantTrustSignalsV2"
+      label="Provides trust data related to the merchant -- version 2."/>
   <suffix name="MetadataFetchValidation"
       label="Validates metadata fetch on navigation"/>
   <suffix name="NoScript"
@@ -14782,6 +14784,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       label="Records metrics for consumer real time URL lookup service."/>
   <suffix name="Enterprise"
       label="Records metrics for enterprise real time URL lookup service."/>
+  <affected-histogram name="SafeBrowsing.PageLoadToken.RealTimeCheckHasToken"/>
   <affected-histogram name="SafeBrowsing.RT.Backoff.State"/>
   <affected-histogram name="SafeBrowsing.RT.GetCache.Time"/>
   <affected-histogram name="SafeBrowsing.RT.GetCacheResult"/>

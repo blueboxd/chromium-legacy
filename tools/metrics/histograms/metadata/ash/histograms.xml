@@ -321,6 +321,77 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Ash.BrowserDataMigrator.DryRunAshDataSizeMB" units="MB"
+    expires_after="M101">
+  <owner>ythjkt@chromium.org</owner>
+  <owner>hidehiko@chromium.org</owner>
+  <summary>
+    The size of profile data that is identified to belong to ash-chrome i.e. the
+    total size of files that are under profile data directory of ash-chrome that
+    should remain in the same directory.
+
+    The same as Ash.BrowserDataMigrator.AshDataSizeMB but collected without
+    actually running the migrator. It is called on every ash launch.
+  </summary>
+</histogram>
+
+<histogram name="Ash.BrowserDataMigrator.DryRunCommonDataSizeMB" units="MB"
+    expires_after="M101">
+  <owner>ythjkt@chromium.org</owner>
+  <owner>hidehiko@chromium.org</owner>
+  <summary>
+    The size of profile data that is duplicated in both ash and lacros data
+    directory.
+
+    The same as Ash.BrowserDataMigrator.CommonDataSizeMB but collected without
+    actually running the migrator. It is called on every ash launch.
+  </summary>
+</histogram>
+
+<histogram name="Ash.BrowserDataMigrator.DryRunHasEnoughDiskSpace.{Mode}"
+    enum="Boolean" expires_after="M101">
+  <owner>ythjkt@chromium.org</owner>
+  <owner>hidehiko@chromium.org</owner>
+  <summary>
+    Checks if there is enough disk space for profile migration in each modes.
+    These modes are Copy, Move, DeleteAndCopy and DeleteAndMove.
+
+    Checked upon launch of ash-chrome.
+  </summary>
+  <token key="Mode">
+    <variant name="Copy"/>
+    <variant name="DeleteAndCopy"/>
+    <variant name="DeleteAndMove"/>
+    <variant name="Move"/>
+  </token>
+</histogram>
+
+<histogram name="Ash.BrowserDataMigrator.DryRunLacrosDataSizeMB" units="MB"
+    expires_after="M101">
+  <owner>ythjkt@chromium.org</owner>
+  <owner>hidehiko@chromium.org</owner>
+  <summary>
+    The size of profile data that is identified to belong to lacros-chrome i.e.
+    the total size of files that are under profile data directory of ash-chrome
+    that should move to lacros data directory.
+
+    The same as Ash.BrowserDataMigrator.LacrosDataSizeMB but collected without
+    actually running the migrator. It is called on every ash launch.
+  </summary>
+</histogram>
+
+<histogram name="Ash.BrowserDataMigrator.DryRunNoCopyDataSizeMB" units="MB"
+    expires_after="M101">
+  <owner>ythjkt@chromium.org</owner>
+  <owner>hidehiko@chromium.org</owner>
+  <summary>
+    The size of profile data that is identified to be deletable such as cache.
+
+    The same as Ash.BrowserDataMigrator.NoCopyDataSizeMB but collected without
+    actually running the migrator. It is called on every ash launch.
+  </summary>
+</histogram>
+
 <histogram name="Ash.BrowserDataMigrator.FinalStatus"
     enum="BrowserDataMigratorFinalStatus" expires_after="M101">
   <owner>ythjkt@chromium.org</owner>
@@ -2131,12 +2202,37 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Ash.PersistentWindow.NumOfWindowsRestored" units="units"
     expires_after="M82">
+  <obsolete>
+    Expired on M82. Marked as obsolete on 10/2021. Replaced by
+    Ash.PersistentWindow.NumOfWindowsRestoredOnDisplayAdded.
+  </obsolete>
   <owner>zentaro@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
     The number of windows restored in multi-display scenario, such as due to
     disconnecting and reconnecting display, enabling and disabling mirror mode,
     entering and leaving dock mode. Zero is not recorded.
+  </summary>
+</histogram>
+
+<histogram name="Ash.PersistentWindow.NumOfWindowsRestoredOnDisplayAdded"
+    units="units" expires_after="2022-10-31">
+  <owner>minch@chromium.org</owner>
+  <owner>fanafan@chromium.org</owner>
+  <summary>
+    The number of windows restored in multi-display scenario, such as due to
+    disconnecting and reconnecting display, enabling and disabling mirror mode,
+    entering and leaving dock mode. Zero is not recorded.
+  </summary>
+</histogram>
+
+<histogram name="Ash.PersistentWindow.NumOfWindowsRestoredOnScreenRotation"
+    units="units" expires_after="2022-10-31">
+  <owner>minch@chromium.org</owner>
+  <owner>fanafan@chromium.org</owner>
+  <summary>
+    Emits the number of windows bounds restored when rotating the screen back to
+    the previous screen orientation. Zero is not recorded.
   </summary>
 </histogram>
 
@@ -3129,6 +3225,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Relative smoothness of all animations applied during the unlock process.
     100% represents the ideal smoothness for 60 frames per second.
+  </summary>
+</histogram>
+
+<histogram name="Ash.UserDataStatsRecorder.DataSize.TotalSize" units="MB"
+    expires_after="M101">
+  <owner>ythjkt@chromium.org</owner>
+  <owner>hidehiko@chromium.org</owner>
+  <summary>
+    Records the size of the entire profile data directory. Collected upon
+    launching ash chrome.
   </summary>
 </histogram>
 

@@ -242,8 +242,9 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
     @Override
     protected void addCustomActionButton(
             Drawable drawable, String description, OnClickListener listener) {
-        ImageButton button = (ImageButton) LayoutInflater.from(getContext())
-                                     .inflate(R.layout.custom_tabs_toolbar_button, null);
+        ImageButton button =
+                (ImageButton) LayoutInflater.from(getContext())
+                        .inflate(R.layout.custom_tabs_toolbar_button, mCustomActionButtons, false);
         button.setOnLongClickListener(this);
         button.setOnClickListener(listener);
         button.setVisibility(VISIBLE);
@@ -896,7 +897,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         private void updateUseDarkColors() {
             updateButtonsTint();
             @OmniboxTheme
-            int omniboxTheme = mUseDarkColors ? OmniboxTheme.DARK_THEME : OmniboxTheme.LIGHT_THEME;
+            int omniboxTheme = mUseDarkColors ? OmniboxTheme.LIGHT_THEME : OmniboxTheme.DARK_THEME;
             if (mUrlCoordinator.setOmniboxTheme(omniboxTheme)) {
                 // Update the URL to make it use the new color scheme.
                 updateUrlBar();

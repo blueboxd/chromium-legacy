@@ -3670,7 +3670,7 @@ void NavigationRequest::OnStartChecksComplete(
       devtools_accepted_stream_types;
   devtools_instrumentation::ApplyNetworkRequestOverrides(
       frame_tree_node_, begin_params_.get(), &report_raw_headers,
-      &devtools_accepted_stream_types);
+      &devtools_accepted_stream_types, &devtools_user_agent_override_);
   devtools_instrumentation::OnNavigationRequestWillBeSent(*this);
 
   // Merge headers with embedder's headers.
@@ -3729,7 +3729,29 @@ void NavigationRequest::OnStartChecksComplete(
       // soon be restarted as a normal history navigation.
       return;
     }
-    CHECK(rfh_restored_from_back_forward_cache_);
+    if (!rfh_restored_from_back_forward_cache_ ||
+        rfh_restored_from_back_forward_cache_
+            ->is_evicted_from_back_forward_cache()) {
+      // We might also get here when the navigation is not marked as being
+      // restarted yet, but the RFH being restored is gone or is already marked
+      // as evicted. Do not continue the navigation, and trigger uploading of
+      // debug information to understand what led to this case, since it's still
+      // unknown.
+      // See https://crbug.com/1258523.
+      SCOPED_CRASH_KEY_BOOL("NoRestoredRFH", "rfh_exists",
+                            !!rfh_restored_from_back_forward_cache_);
+      SCOPED_CRASH_KEY_BOOL("NoRestoredRFH", "is_main_frame",
+                            frame_tree_node_->IsMainFrame());
+      SCOPED_CRASH_KEY_BOOL("NoRestoredRFH", "is_ftn_nav_req",
+                            (frame_tree_node_->navigation_request() == this));
+      BackForwardCacheImpl& back_forward_cache =
+          frame_tree_node_->frame_tree()->controller().GetBackForwardCache();
+      SCOPED_CRASH_KEY_NUMBER("NoRestoredRFH", "bfcache_entries_size",
+                              back_forward_cache.GetEntries().size());
+      CaptureTraceForNavigationDebugScenario(
+          DebugScenario::kDebugNoRestoredRFHOnNonRestartedNavigation);
+      return;
+    }
     loader_type = NavigationURLLoader::LoaderType::kNoopForBackForwardCache;
     cached_response_head =
         rfh_restored_from_back_forward_cache_->last_response_head()->Clone();
@@ -3863,11 +3885,14 @@ void NavigationRequest::OnRedirectChecksComplete(
         client_hints_delegate, is_overriding_user_agent(), frame_tree_node_,
         commit_params_->frame_policy.container_policy);
     modified_headers.MergeFrom(client_hints_extra_headers);
-    // On a redirect, if the Critical-CH header has Sec-CH-UA-Reduced, then we
-    // should send the reduced User-Agent string.
-    modified_headers.SetHeader(
-        net::HttpRequestHeaders::kUserAgent,
-        ComputeUserAgentValue(modified_headers, GetUserAgentOverride()));
+    // On a redirect, unless devtools has overridden the User-Agent header, if
+    // the Critical-CH header has Sec-CH-UA-Reduced, then we should send the
+    // reduced User-Agent string.
+    if (!devtools_user_agent_override_) {
+      modified_headers.SetHeader(
+          net::HttpRequestHeaders::kUserAgent,
+          ComputeUserAgentValue(modified_headers, GetUserAgentOverride()));
+    }
   }
 
   net::HttpRequestHeaders cors_exempt_headers;
@@ -4681,6 +4706,9 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
     bool is_response_check) {
   DCHECK(policy_container_navigation_bundle_.has_value());
   if (common_params_->url.SchemeIs(url::kAboutScheme))
+    return net::OK;
+
+  if (IsSameDocument())
     return net::OK;
 
   if (common_params_->should_check_main_world_csp ==
@@ -5710,6 +5738,10 @@ bool NavigationRequest::IsWaitingToCommit() {
 
 bool NavigationRequest::WasEarlyHintsPreloadLinkHeaderReceived() {
   return was_early_hints_preload_link_header_received_;
+}
+
+bool NavigationRequest::IsPdf() {
+  return is_pdf_;
 }
 
 bool NavigationRequest::IsLoadDataWithBaseURL() const {

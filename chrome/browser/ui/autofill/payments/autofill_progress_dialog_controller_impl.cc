@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/autofill/payments/autofill_progress_dialog_controller_impl.h"
 
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -15,23 +16,49 @@ AutofillProgressDialogControllerImpl::AutofillProgressDialogControllerImpl(
     : web_contents_(web_contents) {}
 
 AutofillProgressDialogControllerImpl::~AutofillProgressDialogControllerImpl() {
-  Dismiss();
+  if (autofill_progress_dialog_view_) {
+    autofill_progress_dialog_view_->Dismiss(
+        /*show_confirmation_before_closing=*/false,
+        /*is_canceled_by_user=*/true);
+    autofill_progress_dialog_view_ = nullptr;
+  }
 }
 
-void AutofillProgressDialogControllerImpl::ShowDialog() {
+void AutofillProgressDialogControllerImpl::ShowDialog(
+    base::OnceClosure cancel_callback) {
   DCHECK(!autofill_progress_dialog_view_);
 
+  cancel_callback_ = std::move(cancel_callback);
   autofill_progress_dialog_view_ =
       AutofillProgressDialogView::CreateAndShow(this);
+
+  if (autofill_progress_dialog_view_)
+    // TODO(crbug.com/1261529): Pass in the flow type once we have another use
+    // case so that the progress dialog can be shared across multiple use cases.
+    AutofillMetrics::LogProgressDialogShown();
 }
 
-void AutofillProgressDialogControllerImpl::ShowConfirmation() {
-  DCHECK(autofill_progress_dialog_view_);
-  autofill_progress_dialog_view_->ShowConfirmation();
-}
+void AutofillProgressDialogControllerImpl::DismissDialog(
+    bool show_confirmation_before_closing) {
+  if (!autofill_progress_dialog_view_)
+    return;
 
-void AutofillProgressDialogControllerImpl::OnDismissed() {
+  autofill_progress_dialog_view_->Dismiss(show_confirmation_before_closing,
+                                          /*is_canceled_by_user=*/false);
   autofill_progress_dialog_view_ = nullptr;
+}
+
+void AutofillProgressDialogControllerImpl::OnDismissed(
+    bool is_canceled_by_user) {
+  // Dialog is being dismissed so set the pointer to nullptr.
+  autofill_progress_dialog_view_ = nullptr;
+
+  if (is_canceled_by_user)
+    std::move(cancel_callback_).Run();
+  // TODO(crbug.com/1261529): Pass in the flow type once we have another use
+  // case so that the progress dialog can be shared across multiple use cases.
+  AutofillMetrics::LogProgressDialogResultMetric(is_canceled_by_user);
+  cancel_callback_.Reset();
 }
 
 const std::u16string AutofillProgressDialogControllerImpl::GetTitle() {
@@ -57,11 +84,6 @@ AutofillProgressDialogControllerImpl::GetConfirmationMessage() {
 
 content::WebContents* AutofillProgressDialogControllerImpl::GetWebContents() {
   return web_contents_;
-}
-
-void AutofillProgressDialogControllerImpl::Dismiss() {
-  if (autofill_progress_dialog_view_)
-    autofill_progress_dialog_view_->Dismiss();
 }
 
 }  // namespace autofill

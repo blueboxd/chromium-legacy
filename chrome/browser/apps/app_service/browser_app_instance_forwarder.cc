@@ -12,31 +12,20 @@
 #include "chrome/browser/lacros/window_utility.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/chrome_features.h"
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
 #include "chromeos/crosapi/mojom/browser_app_instance_registry.mojom.h"
-#include "chromeos/lacros/lacros_service.h"
 
 namespace apps {
 
 BrowserAppInstanceForwarder::BrowserAppInstanceForwarder(
-    BrowserAppInstanceTracker& tracker)
-    : registry_(chromeos::LacrosService::Get()
-                    ->GetRemote<crosapi::mojom::BrowserAppInstanceRegistry>()),
-      tracker_(tracker) {
+    BrowserAppInstanceTracker& tracker,
+    mojo::Remote<crosapi::mojom::BrowserAppInstanceRegistry>& registry)
+    : registry_(registry), tracker_(tracker) {
   tracker_observation_.Observe(&tracker);
   registry_->RegisterController(
       controller_receiver_.BindNewPipeAndPassRemoteWithVersion());
 }
 BrowserAppInstanceForwarder::~BrowserAppInstanceForwarder() = default;
-
-std::unique_ptr<BrowserAppInstanceForwarder>
-BrowserAppInstanceForwarder::Create(BrowserAppInstanceTracker* tracker) {
-  if (!features::IsBrowserAppInstanceTrackingEnabled()) {
-    return nullptr;
-  }
-  return std::make_unique<BrowserAppInstanceForwarder>(*tracker);
-}
 
 void BrowserAppInstanceForwarder::OnBrowserWindowAdded(
     const apps::BrowserWindowInstance& instance) {

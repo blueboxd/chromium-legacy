@@ -5,6 +5,7 @@
 package org.chromium.chrome.features.start_surface;
 
 import android.app.Activity;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -235,7 +236,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                 new FeedLaunchReliabilityLoggingState(SurfaceType.START_SURFACE, System.nanoTime());
         mActivity = activity;
         mScrimCoordinator = scrimCoordinator;
-        mIsStartSurfaceEnabled = ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled();
+        mIsStartSurfaceEnabled = ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(mActivity);
         mBottomSheetController = sheetController;
         mParentTabSupplier = parentTabSupplier;
         mWindowAndroid = windowAndroid;
@@ -479,10 +480,13 @@ public class StartSurfaceCoordinator implements StartSurface {
         if (StartSurfaceConfiguration.CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP.getValue()) {
             ReturnToChromeExperimentsUtil.cachePrimaryAccountSyncStatus();
         }
-        if (ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled()) {
+        if (ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(mActivity)) {
             Log.i(TAG, "Recorded %s = %b", START_SHOWN_AT_STARTUP_UMA, isOverviewShownOnStartup);
             RecordHistogram.recordBooleanHistogram(
                     START_SHOWN_AT_STARTUP_UMA, isOverviewShownOnStartup);
+        }
+        if (!TextUtils.isEmpty(StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.getValue())) {
+            ReturnToChromeExperimentsUtil.cacheSegmentationResult();
         }
     }
 

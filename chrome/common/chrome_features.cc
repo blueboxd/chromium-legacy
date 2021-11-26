@@ -372,6 +372,22 @@ const base::Feature kEarlyLibraryLoad{"EarlyLibraryLoad",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_ANDROID)
+// Under this flag Java bootstrap (aka startup) tasks that are run before native
+// initialization will not be specially prioritized by being posted at the front
+// of the Looper's queue.
+const base::Feature kElidePrioritizationOfPreNativeBootstrapTasks = {
+    "ElidePrioritizationOfPreNativeBootstrapTasks",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
+#if defined(OS_ANDROID)
+// Under this flag tab preloading at startup will be elided (i.e., not
+// performed).
+const base::Feature kElideTabPreloadAtStartup = {
+    "ElideTabPreloadAtStartup", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables all registered system web apps, regardless of their respective
 // feature flags.
 const base::Feature kEnableAllSystemWebApps{"EnableAllSystemWebApps",
@@ -411,6 +427,10 @@ const base::FeatureParam<base::TimeDelta>
     kEnterpiseRealtimeExtensionRequestThrottleDelay{
         &kEnterpriseRealtimeExtensionRequest, "throttle_delay",
         base::Minutes(1)};
+// Lazy initialize IndividualSettings for extensions from enterprise policy
+// that are not installed.
+const base::Feature kExtensionDeferredIndividualSettings{
+    "ExtensionDeferredIndividualSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Controls whether the user justification text field is visible on the
@@ -445,6 +465,16 @@ const base::Feature kGdiTextPrinting{"GdiTextPrinting",
 // of languages.
 const base::Feature kGeoLanguage{"GeoLanguage",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_ANDROID)
+// Gives Java tasks that are posted with the UiThreadTaskTraits.DEFAULT traits
+// user-blocking priority rather than their default user-visible priority.
+// See crbug.com/1259560.
+const base::Feature kGiveJavaUiThreadDefaultTaskTraitsUserBlockingPriority{
+    "GiveJavaUiThreadDefaultTaskTraitsUserBlockingPriority",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if !defined(OS_ANDROID)
 // Enables or disables the Happiness Tracking System demo mode for Desktop
 // Chrome.
@@ -871,7 +901,7 @@ const base::Feature kChromeOSSharingHub{"ChromeOSSharingHub",
 
 #if defined(OS_ANDROID)
 const base::Feature kShareUsageRanking{"ShareUsageRanking",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kShareUsageRankingFixedMore{
     "ShareUsageRankingFixedMore", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif

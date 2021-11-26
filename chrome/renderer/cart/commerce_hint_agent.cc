@@ -8,12 +8,12 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/cart/commerce_hints.mojom.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/cart/commerce_renderer_feature_list.h"
@@ -53,10 +53,65 @@ constexpr base::FeatureParam<std::string> kSkipPattern{
     // This regex does not match anything.
     "\\b\\B"};
 
+// This is based on top 30 US shopping sites.
+// TODO(crbug/1164236): cover more shopping sites.
+constexpr base::FeatureParam<std::string> kAddToCartPattern{
+    &ntp_features::kNtpChromeCartModule, "add-to-cart-pattern",
+    "(\\b|[^a-z])"
+    "((add(ed)?(-|_|(%20))?(item)?(-|_|(%20))?to(-|_|(%20))?(cart|basket|bag)"
+    ")|(cart\\/add)|(checkout\\/basket)|(cart_type)|(isquickaddtocartbutton))"
+    "(\\b|[^a-z])"};
+
 constexpr base::FeatureParam<std::string> kSkipAddToCartMapping{
     &ntp_features::kNtpChromeCartModule, "skip-add-to-cart-mapping",
     // Empty JSON string.
     ""};
+
+// The heuristics of cart pages are from top 100 US shopping domains.
+// https://colab.corp.google.com/drive/1fTGE_SQw_8OG4ubzQvWcBuyHEhlQ-pwQ?usp=sharing
+constexpr base::FeatureParam<std::string> kCartPattern{
+    &ntp_features::kNtpChromeCartModule, "cart-pattern",
+    // clang-format off
+    "(^https?://cart\\.)"
+    "|"
+    "(/("
+      "(((my|co|shopping)[-_]?)?(cart|bag)(view|display)?)"
+      "|"
+      "(checkout/([^/]+/)?(basket|bag))"
+      "|"
+      "(checkoutcart(display)?view)"
+      "|"
+      "(bundles/shop)"
+      "|"
+      "((ajax)?orderitemdisplay(view)?)"
+      "|"
+      "(cart-show)"
+    ")(/|\\.|$))"
+    // clang-format on
+};
+
+constexpr base::FeatureParam<std::string> kCartPatternMapping{
+    &ntp_features::kNtpChromeCartModule, "cart-pattern-mapping",
+    // Empty JSON string.
+    ""};
+
+constexpr base::FeatureParam<std::string> kCheckoutPattern{
+    &ntp_features::kNtpChromeCartModule, "checkout-pattern",
+    // clang-format off
+    "/("
+    "("
+      "("
+        "(begin|billing|cart|payment|start|review|final|order|secure|new)"
+        "[-_]?"
+      ")?"
+      "(checkout|chkout)(s)?"
+      "([-_]?(begin|billing|cart|payment|start|review))?"
+    ")"
+    "|"
+    "(\\w+(checkout|chkout)(s)?)"
+    ")(/|\\.|$|\\?)"
+    // clang-format on
+};
 
 constexpr base::FeatureParam<std::string> kCheckoutPatternMapping{
     &ntp_features::kNtpChromeCartModule, "checkout-pattern-mapping",
@@ -67,6 +122,26 @@ constexpr base::FeatureParam<std::string> kPurchaseURLPatternMapping{
     &ntp_features::kNtpChromeCartModule, "purchase-url-pattern-mapping",
     // Empty JSON string.
     ""};
+
+constexpr base::FeatureParam<std::string> kPurchaseButtonPattern{
+    &ntp_features::kNtpChromeCartModule, "purchase-button-pattern",
+    // clang-format off
+    "^("
+    "("
+      "(place|submit|complete|confirm|finalize|make)(\\s(an|your|my|this))?"
+      "(\\ssecure)?\\s(order|purchase|checkout|payment)"
+    ")"
+    "|"
+    "((pay|buy)(\\ssecurely)?(\\sUSD)?\\s(it|now|((\\$)?\\d+(\\.\\d+)?)))"
+    "|"
+    "((make|authorise|authorize|secure)\\spayment)"
+    "|"
+    "(confirm\\s(and|&)\\s(buy|purchase|order|pay|checkout))"
+    "|"
+    "((\\W)*(buy|purchase|order|pay|checkout)(\\W)*)"
+    ")$"
+    // clang-format on
+};
 
 constexpr base::FeatureParam<std::string> kPurchaseButtonPatternMapping{
     &ntp_features::kNtpChromeCartModule, "purchase-button-pattern-mapping",
@@ -125,21 +200,27 @@ enum class CommerceEvent {
 void RecordCommerceEvent(CommerceEvent event) {
   switch (event) {
     case CommerceEvent::kAddToCartByForm:
+      LOCAL_HISTOGRAM_BOOLEAN("Commerce.Carts.AddToCartByPOST", true);
       DVLOG(1) << "Commerce.AddToCart by POST form";
       break;
     case CommerceEvent::kAddToCartByURL:
+      LOCAL_HISTOGRAM_BOOLEAN("Commerce.Carts.AddToCartByURL", true);
       DVLOG(1) << "Commerce.AddToCart by URL";
       break;
     case CommerceEvent::kVisitCart:
+      LOCAL_HISTOGRAM_BOOLEAN("Commerce.Carts.VisitCart", true);
       DVLOG(1) << "Commerce.VisitCart";
       break;
     case CommerceEvent::kVisitCheckout:
+      LOCAL_HISTOGRAM_BOOLEAN("Commerce.Carts.VisitCheckout", true);
       DVLOG(1) << "Commerce.VisitCheckout";
       break;
     case CommerceEvent::kPurchaseByForm:
+      LOCAL_HISTOGRAM_BOOLEAN("Commerce.Carts.PurchaseByPOST", true);
       DVLOG(1) << "Commerce.Purchase by POST form";
       break;
     case CommerceEvent::kPurchaseByURL:
+      LOCAL_HISTOGRAM_BOOLEAN("Commerce.Carts.PurchaseByURL", true);
       DVLOG(1) << "Commerce.Purchase by URL";
       break;
     default:
@@ -229,22 +310,14 @@ bool PartialMatch(base::StringPiece str, const re2::RE2& re) {
   return RE2::PartialMatch(re2::StringPiece(str.data(), str.size()), re);
 }
 
-// This is based on top 30 US shopping sites.
-// TODO(crbug/1164236): cover more shopping sites.
 const re2::RE2& GetAddToCartPattern() {
   re2::RE2::Options options;
   options.set_case_sensitive(false);
-  static base::NoDestructor<re2::RE2> instance(
-      "(\\b|[^a-z])"
-      "((add(ed)?(-|_|(%20))?(item)?(-|_|(%20))?to(-|_|(%20))?(cart|basket|bag)"
-      ")|(cart\\/add)|(checkout\\/basket)|(cart_type)|(isquickaddtocartbutton))"
-      "(\\b|[^a-z])",
-      options);
+  static base::NoDestructor<re2::RE2> instance(kAddToCartPattern.Get(),
+                                               options);
   return *instance;
 }
 
-// The heuristics of cart pages are from top 100 US shopping domains.
-// https://colab.corp.google.com/drive/1fTGE_SQw_8OG4ubzQvWcBuyHEhlQ-pwQ?usp=sharing
 // TODO(crbug.com/1189786): Using per-site pattern and full URL matching could
 // be unnecessary. Improve this later by using general pattern if possible and
 // more flexible matching.
@@ -254,7 +327,11 @@ const re2::RE2& GetVisitCartPattern(const GURL& url) {
         const base::StringPiece json_resource(
             ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
                 IDR_CART_DOMAIN_CART_URL_REGEX_JSON));
-        const base::Value json(base::JSONReader::Read(json_resource).value());
+        const std::string& finch_param = kCartPatternMapping.Get();
+        const base::Value json(base::JSONReader::Read(finch_param.empty()
+                                                          ? json_resource
+                                                          : finch_param)
+                                   .value());
         DCHECK(json.is_dict());
         std::map<std::string, std::string> map;
         for (auto item : json.DictItems()) {
@@ -269,25 +346,7 @@ const re2::RE2& GetVisitCartPattern(const GURL& url) {
   options.set_case_sensitive(false);
   const std::string& domain = eTLDPlusOne(url);
   if (heuristic_string_map->find(domain) == heuristic_string_map->end()) {
-    // clang-format off
-    static base::NoDestructor<re2::RE2> instance(
-        "(^https?://cart\\.)"
-        "|"
-        "(/("
-          "(((my|co|shopping)[-_]?)?(cart|bag)(view|display)?)"
-          "|"
-          "(checkout/([^/]+/)?(basket|bag))"
-          "|"
-          "(checkoutcart(display)?view)"
-          "|"
-          "(bundles/shop)"
-          "|"
-          "((ajax)?orderitemdisplay(view)?)"
-          "|"
-          "(cart-show)"
-        ")(/|\\.|$))",
-        options);
-    // clang-format on
+    static base::NoDestructor<re2::RE2> instance(kCartPattern.Get(), options);
     return *instance;
   }
   if (heuristic_regex_map->find(domain) == heuristic_regex_map->end()) {
@@ -302,22 +361,7 @@ const re2::RE2& GetVisitCartPattern(const GURL& url) {
 const re2::RE2& GetVisitCheckoutPattern() {
   re2::RE2::Options options;
   options.set_case_sensitive(false);
-  // clang-format off
-  static base::NoDestructor<re2::RE2> instance(
-      "/("
-      "("
-        "("
-          "(begin|billing|cart|payment|start|review|final|order|secure|new)"
-          "[-_]?"
-        ")?"
-        "(checkout|chkout)(s)?"
-        "([-_]?(begin|billing|cart|payment|start|review))?"
-      ")"
-      "|"
-      "(\\w+(checkout|chkout)(s)?)"
-      ")(/|\\.|$|\\?)",
-      options);
-  // clang-format on
+  static base::NoDestructor<re2::RE2> instance(kCheckoutPattern.Get(), options);
   return *instance;
 }
 
@@ -334,24 +378,8 @@ const re2::RE2& GetSkipPattern() {
 const re2::RE2& GetPurchaseTextPattern() {
   re2::RE2::Options options;
   options.set_case_sensitive(false);
-  // clang-format off
-  static base::NoDestructor<re2::RE2> instance(
-      "^("
-      "("
-        "(place|submit|complete|confirm|finalize|make)(\\s(an|your|my|this))?"
-        "(\\ssecure)?\\s(order|purchase|checkout|payment)"
-      ")"
-      "|"
-      "((pay|buy)(\\ssecurely)?(\\sUSD)?\\s(it|now|((\\$)?\\d+(\\.\\d+)?)))"
-      "|"
-      "((make|authorise|authorize|secure)\\spayment)"
-      "|"
-      "(confirm\\s(and|&)\\s(buy|purchase|order|pay|checkout))"
-      "|"
-      "((\\W)*(buy|purchase|order|pay|checkout)(\\W)*)"
-      ")$",
-      options);
-  // clang-format on
+  static base::NoDestructor<re2::RE2> instance(kPurchaseButtonPattern.Get(),
+                                               options);
   return *instance;
 }
 
@@ -751,12 +779,6 @@ void CommerceHintAgent::JavaScriptRequest::WillExecute() {
 
 void CommerceHintAgent::JavaScriptRequest::Completed(
     const blink::WebVector<v8::Local<v8::Value>>& result) {
-  // Only record when the start time is correctly captured.
-  DCHECK(!start_time_.is_null());
-  if (!start_time_.is_null()) {
-    base::UmaHistogramTimes("Commerce.Carts.ExtractionExecutionTime",
-                            base::TimeTicks::Now() - start_time_);
-  }
   if (!agent_)
     return;
   blink::WebLocalFrame* main_frame = agent_->render_frame()->GetWebFrame();
@@ -790,6 +812,12 @@ void CommerceHintAgent::JavaScriptRequest::Completed(
 
 void CommerceHintAgent::JavaScriptRequest::HandlePromiseResults(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
+  // Only record when the start time is correctly captured.
+  DCHECK(!start_time_.is_null());
+  if (!start_time_.is_null()) {
+    base::UmaHistogramTimes("Commerce.Carts.ExtractionExecutionTime",
+                            base::TimeTicks::Now() - start_time_);
+  }
   if (!agent_)
     return;
   blink::WebLocalFrame* main_frame = agent_->render_frame()->GetWebFrame();
@@ -880,6 +908,9 @@ void CommerceHintAgent::OnDestruct() {
 }
 
 void CommerceHintAgent::WillSendRequest(const blink::WebURLRequest& request) {
+  if (should_skip_) {
+    return;
+  }
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   const GURL& url(frame->GetDocument().Url());
   if (!url.SchemeIsHTTPOrHTTPS())
@@ -911,17 +942,44 @@ void CommerceHintAgent::WillSendRequest(const blink::WebURLRequest& request) {
   }
 }
 
+void CommerceHintAgent::OnNavigation(const GURL& url,
+                                     OnNavigationCallback callback) {
+  if (!commerce_renderer_feature::kOptimizeRendererSignal.Get()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  if (!navigation_observer_.is_bound() ||
+      !navigation_observer_.is_connected()) {
+    navigation_observer_ = GetObserver(render_frame());
+  }
+  navigation_observer_->OnNavigation(url, std::move(callback));
+}
+
 void CommerceHintAgent::DidStartNavigation(
     const GURL& url,
     absl::optional<blink::WebNavigationType> navigation_type) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
-  starting_url_ = url;
   has_finished_loading_ = false;
+  OnNavigation(url,
+               base::BindOnce(&CommerceHintAgent::DidStartNavigationCallback,
+                              weak_factory_.GetWeakPtr(), url,
+                              std::move(navigation_type)));
+}
+
+void CommerceHintAgent::DidStartNavigationCallback(
+    const GURL& url,
+    absl::optional<blink::WebNavigationType> navigation_type,
+    bool should_skip) {
+  should_skip_ = should_skip;
+  starting_url_ = url;
 }
 
 void CommerceHintAgent::DidCommitProvisionalLoad(
     ui::PageTransition transition) {
+  if (should_skip_) {
+    return;
+  }
   if (!starting_url_.is_valid())
     return;
   if (IsAddToCart(starting_url_.PathForRequestPiece())) {
@@ -948,9 +1006,18 @@ void CommerceHintAgent::DidFinishLoad() {
   const GURL& url(frame->GetDocument().Url());
   if (!url.SchemeIs(url::kHttpsScheme))
     return;
+  OnNavigation(url, base::BindOnce(&CommerceHintAgent::DidFinishLoadCallback,
+                                   weak_factory_.GetWeakPtr()));
+}
+
+void CommerceHintAgent::DidFinishLoadCallback(bool should_skip) {
+  should_skip_ = should_skip;
+  if (should_skip_) {
+    return;
+  }
   has_finished_loading_ = true;
   extraction_count_ = 0;
-
+  const GURL& url(render_frame()->GetWebFrame()->GetDocument().Url());
   // Some URLs might satisfy the patterns for both cart and checkout (e.g.
   // https://www.foo.com/cart/checkout). In those cases, cart has higher
   // priority.
@@ -966,6 +1033,9 @@ void CommerceHintAgent::DidFinishLoad() {
 }
 
 void CommerceHintAgent::WillSubmitForm(const blink::WebFormElement& form) {
+  if (should_skip_) {
+    return;
+  }
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   const GURL url(frame->GetDocument().Url());
   if (!url.SchemeIsHTTPOrHTTPS())
@@ -985,6 +1055,9 @@ void CommerceHintAgent::WillSubmitForm(const blink::WebFormElement& form) {
 
 // TODO(crbug/1164236): use MutationObserver on cart instead.
 void CommerceHintAgent::ExtractCartFromCurrentFrame() {
+  if (should_skip_) {
+    return;
+  }
   if (!has_finished_loading_)
     return;
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();

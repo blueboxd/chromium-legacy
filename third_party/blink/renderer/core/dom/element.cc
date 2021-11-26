@@ -2745,15 +2745,20 @@ void Element::AttachLayoutTree(AttachContext& context) {
   }
   children_context.use_previous_in_flow = true;
 
-  if (ChildStyleRecalcBlockedByDisplayLock()) {
+  bool skip_container_descendants = SkippedContainerStyleRecalc();
+  bool skip_lock_descendants = ChildStyleRecalcBlockedByDisplayLock();
+  if (skip_container_descendants || skip_lock_descendants) {
     // Since we block style recalc on descendants of this node due to display
-    // locking, none of its descendants should have the NeedsReattachLayoutTree
-    // bit set.
+    // locking or container queries, none of its descendants should have the
+    // NeedsReattachLayoutTree bit set.
     DCHECK(!ChildNeedsReattachLayoutTree());
-    // If an element is locked we shouldn't attach the layout tree for its
-    // descendants. We should notify that we blocked a reattach so that we will
-    // correctly attach the descendants when allowed.
-    GetDisplayLockContext()->NotifyReattachLayoutTreeWasBlocked();
+
+    if (skip_lock_descendants) {
+      // If an element is locked we shouldn't attach the layout tree for its
+      // descendants. We should notify that we blocked a reattach so that we
+      // will correctly attach the descendants when allowed.
+      GetDisplayLockContext()->NotifyReattachLayoutTreeWasBlocked();
+    }
     Node::AttachLayoutTree(context);
     if (layout_object && layout_object->AffectsWhitespaceSiblings())
       context.previous_in_flow = layout_object;
@@ -2777,7 +2782,6 @@ void Element::AttachLayoutTree(AttachContext& context) {
 
   UpdateFirstLetterPseudoElement(StyleUpdatePhase::kAttachLayoutTree);
   AttachPseudoElement(kPseudoIdFirstLetter, children_context);
-
   if (layout_object) {
     if (layout_object->AffectsWhitespaceSiblings())
       context.previous_in_flow = layout_object;
@@ -3087,8 +3091,10 @@ void Element::RecalcStyle(const StyleRecalcChange change,
     // If we are re-attaching us or any of our descendants, we need to attach
     // the descendants before we know if this element generates a ::first-letter
     // and which element the ::first-letter inherits style from.
-    if (!child_change.ReattachLayoutTree() && !ChildNeedsReattachLayoutTree())
-      UpdateFirstLetterPseudoElement(StyleUpdatePhase::kRecalc);
+    if (!child_change.ReattachLayoutTree() && !ChildNeedsReattachLayoutTree()) {
+      UpdateFirstLetterPseudoElement(StyleUpdatePhase::kRecalc,
+                                     child_recalc_context);
+    }
   }
 
   ClearChildNeedsStyleRecalc();
@@ -3405,7 +3411,8 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     whitespace_attacher.DidReattachElement(this,
                                            reattach_context.previous_in_flow);
   } else if (NeedsRebuildChildLayoutTrees(whitespace_attacher) &&
-             !ChildStyleRecalcBlockedByDisplayLock()) {
+             !ChildStyleRecalcBlockedByDisplayLock() &&
+             !SkippedContainerStyleRecalc()) {
     // TODO(crbug.com/972752): Make the condition above a DCHECK instead when
     // style recalc and dirty bit propagation uses flat-tree traversal.
     // We create a local WhitespaceAttacher when rebuilding children of an
@@ -5010,6 +5017,14 @@ void Element::SetContainerQueryEvaluator(ContainerQueryEvaluator* evaluator) {
   EnsureElementRareData().SetContainerQueryEvaluator(evaluator);
 }
 
+bool Element::SkippedContainerStyleRecalc() const {
+  if (!RuntimeEnabledFeatures::CSSContainerSkipStyleRecalcEnabled())
+    return false;
+  if (const auto* cq_data = GetContainerQueryData())
+    return cq_data->SkippedStyleRecalc();
+  return false;
+}
+
 // Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
 static Node* ContextNodeForInsertion(const String& where,
                                      Element* element,
@@ -5422,6 +5437,16 @@ void Element::CancelFocusAppearanceUpdate() {
 }
 
 void Element::UpdateFirstLetterPseudoElement(StyleUpdatePhase phase) {
+  if (CanGeneratePseudoElement(kPseudoIdFirstLetter) ||
+      GetPseudoElement(kPseudoIdFirstLetter)) {
+    UpdateFirstLetterPseudoElement(
+        phase, StyleRecalcContext::FromInclusiveAncestors(*this));
+  }
+}
+
+void Element::UpdateFirstLetterPseudoElement(
+    StyleUpdatePhase phase,
+    const StyleRecalcContext& style_recalc_context) {
   // Update the ::first-letter pseudo elements presence and its style. This
   // method may be called from style recalc or layout tree rebuilding/
   // reattachment. In order to know if an element generates a ::first-letter
@@ -5444,9 +5469,6 @@ void Element::UpdateFirstLetterPseudoElement(StyleUpdatePhase phase) {
   //
   // The StyleUpdatePhase tells where we are in the process of updating style
   // and layout tree.
-
-  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
-  StyleRecalcContext style_recalc_context;
 
   PseudoElement* element = GetPseudoElement(kPseudoIdFirstLetter);
   if (!element) {

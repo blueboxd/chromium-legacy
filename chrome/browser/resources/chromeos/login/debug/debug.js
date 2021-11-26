@@ -11,6 +11,8 @@
 // #import {Oobe} from '../cr_ui.m.js'
 // #import {$} from 'chrome://resources/js/util.m.js';
 
+// #import {MessageType, ProblemType} from 'chrome://resources/cr_components/chromeos/quick_unlock/setup_pin_keyboard.m.js';
+
 cr.define('cr.ui.login.debug', function() {
   const DEBUG_BUTTON_STYLE = `
       height:20px;
@@ -846,6 +848,14 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'lacros-data-migration',
       kind: ScreenKind.OTHER,
+      defaultState: 'default',
+      handledSteps: 'skip-revealed',
+      states: [{
+        id: 'skip-revealed',
+        trigger: (screen) => {
+          screen.showSkipButton();
+        }
+      }],
     },
     {
       id: 'terms-of-service',

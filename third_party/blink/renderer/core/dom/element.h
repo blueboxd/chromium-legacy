@@ -990,6 +990,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   ContainerQueryData* GetContainerQueryData() const;
   void SetContainerQueryEvaluator(ContainerQueryEvaluator*);
   ContainerQueryEvaluator* GetContainerQueryEvaluator() const;
+  bool SkippedContainerStyleRecalc() const;
 
   virtual void SetActive(bool active);
   virtual void SetHovered(bool hovered);
@@ -1173,6 +1174,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
     kAttachLayoutTree,
   };
 
+  void UpdateFirstLetterPseudoElement(StyleUpdatePhase,
+                                      const StyleRecalcContext&);
+
+  // Creates a StyleRecalcContext and invokes the method above. Only use this
+  // when there is no StyleRecalcContext available.
   void UpdateFirstLetterPseudoElement(StyleUpdatePhase);
 
   inline PseudoElement* CreatePseudoElementIfNeeded(PseudoId,

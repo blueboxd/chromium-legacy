@@ -122,10 +122,11 @@ class SectionSizeKnobs:
 
 @dataclasses.dataclass
 class NativeSpec:
+  # One (or more) of apk_so_path, map_path, elf_path must be non-None.
   tool_prefix: str  # Never None.
   apk_so_path: str = None
   map_path: str = None
-  elf_path: str = None
+  elf_path: str = None  # Unstripped .so path.
   linker_name: str = None
   track_string_literals: bool = True
 
@@ -671,6 +672,7 @@ def _ListSplits(minimal_apks_path):
       if m:
         ret.append(m.group(1))
   # Make "base" comes first since that's the main chunk of work.
+  # Also so that --abi-filter detection looks at it first.
   return sorted(ret, key=lambda x: (x != 'base', x))
 
 
@@ -718,6 +720,13 @@ def CreateMetadata(*, build_config, apk_spec, native_spec, source_directory,
     relative_tool_prefix = path_util.ToToolsSrcRootRelative(
         native_spec.tool_prefix)
     update_build_config(models.BUILD_CONFIG_TOOL_PREFIX, relative_tool_prefix)
+
+    if native_spec.map_path:
+      metadata[models.METADATA_ELF_ALGORITHM] = 'linker_map'
+    elif native_spec.elf_path:
+      metadata[models.METADATA_ELF_ALGORITHM] = 'dwarf'
+    else:
+      metadata[models.METADATA_ELF_ALGORITHM] = 'sections'
 
     if native_spec.linker_name:
       update_build_config(models.BUILD_CONFIG_LINKER_NAME,
@@ -1258,9 +1267,11 @@ def _AddUnattributedSectionSymbols(raw_symbols, section_ranges):
   # Create symbols for ELF sections not covered by existing symbols.
   logging.info('Searching for symbol gaps...')
   new_syms_by_section = collections.defaultdict(list)
+  seen_sections = set()
 
   for section_name, group in itertools.groupby(
       raw_symbols, lambda s: s.section_name):
+    seen_sections.add(section_name)
     # Get last Last symbol in group.
     for sym in group:
       pass
@@ -1283,9 +1294,12 @@ def _AddUnattributedSectionSymbols(raw_symbols, section_ranges):
   # Sections that should not bundle into ".other".
   unsummed_sections, summed_sections = models.ClassifySections(
       section_ranges.keys())
+  ret = []
   other_elf_symbols = []
   # Sort keys to ensure consistent order (> 1 sections may have address = 0).
   for section_name, (_, section_size) in list(section_ranges.items()):
+    if section_name in seen_sections:
+      continue
     # Handle sections that don't appear in |raw_symbols|.
     if (section_name not in unsummed_sections
         and section_name not in summed_sections):
@@ -1294,12 +1308,16 @@ def _AddUnattributedSectionSymbols(raw_symbols, section_ranges):
                         section_size,
                         full_name='** ELF Section: {}'.format(section_name)))
       _ExtendSectionRange(section_ranges, models.SECTION_OTHER, section_size)
+    else:
+      ret.append(
+          models.Symbol(section_name,
+                        section_size,
+                        full_name='** ELF Section: {}'.format(section_name)))
   other_elf_symbols.sort(key=lambda s: (s.address, s.full_name))
 
   # TODO(agrieve): It would probably simplify things to use a dict of
   #     section_name->raw_symbols while creating symbols.
   # Merge |new_syms_by_section| into |raw_symbols| while maintaining ordering.
-  ret = []
   for section_name, group in itertools.groupby(
       raw_symbols, lambda s: s.section_name):
     ret.extend(group)
@@ -1420,8 +1438,9 @@ def CreateContainerAndSymbols(*,
           output_directory=output_directory,
           thin_archives=thin_archives)
 
-    section_ranges, raw_symbols, object_paths_by_name = _ParseElfInfo(
-        native_spec, outdir_context=outdir_context)
+    if native_spec.elf_path or native_spec.map_path:
+      section_ranges, raw_symbols, object_paths_by_name = _ParseElfInfo(
+          native_spec, outdir_context=outdir_context)
 
   if apk_elf_result:
     logging.debug('Extracting section sizes from .so within .apk')
@@ -1630,87 +1649,112 @@ def _ElfInfoFromApk(apk_path, apk_so_path, tool_prefix):
     return build_id, section_ranges, elf_overhead_size
 
 
-def _AddContainerArguments(parser):
+def _AddContainerArguments(parser, is_top_args=False):
   """Add arguments applicable to a single container."""
 
-  # Special: Use _IdentifyInputFile() to detect main file argument.
-  parser.add_argument('-f', metavar='FILE',
-                      help='Auto-identify input file type.')
-
-  # Main file argument: Exactly one should be specified (perhaps via -f), with
-  # the exception that --map-file can be specified in addition.
+  # Main file argument: Exactly one should be specified (perhaps via -f).
   # _IdentifyInputFile() should be kept updated.
-  parser.add_argument('--apk-file',
-                      help='.apk file to measure. Other flags can generally be '
-                      'derived when this is used.')
-  parser.add_argument('--minimal-apks-file',
-                      help='.minimal.apks file to measure. Other flags can '
-                      'generally be derived when this is used.')
-  parser.add_argument('--elf-file', help='Path to input ELF file.')
-  parser.add_argument('--map-file',
-                      help='Path to input .map(.gz) file. Defaults to '
-                           '{{elf_file}}.map(.gz)?. If given without '
-                           '--elf-file, no size metadata will be recorded.')
+  group = parser.add_argument_group(title='Main Input')
+  group = group.add_mutually_exclusive_group(required=True)
+  group.add_argument('-f',
+                     metavar='FILE',
+                     help='Auto-identify input file type.')
+  group.add_argument('--apk-file',
+                     help='.apk file to measure. Other flags can generally be '
+                     'derived when this is used.')
+  group.add_argument('--minimal-apks-file',
+                     help='.minimal.apks file to measure. Other flags can '
+                     'generally be derived when this is used.')
+  group.add_argument('--elf-file', help='Path to input ELF file.')
+  group.add_argument('--map-file',
+                     help='Path to input .map(.gz) file. Defaults to '
+                     '{{elf_file}}.map(.gz)?. If given without '
+                     '--elf-file, no size metadata will be recorded.')
+  group.add_argument('--pak-file',
+                     action='append',
+                     dest='pak_files',
+                     help='Paths to pak files.')
+  if is_top_args:
+    group.add_argument('--ssargs-file',
+                       help='Path to SuperSize multi-container arguments file.')
 
-  # Auxiliary file arguments.
-  parser.add_argument('--mapping-file',
-                      help='Proguard .mapping file for deobfuscation.')
-  parser.add_argument('--resources-pathmap-file',
-                      help='.pathmap.txt file that contains a maping from '
-                      'original resource paths to shortened resource paths.')
-  parser.add_argument('--pak-file', action='append',
-                      help='Paths to pak files.')
-  parser.add_argument('--pak-info-file',
-                      help='This file should contain all ids found in the pak '
-                           'files that have been passed in.')
-  parser.add_argument('--aux-elf-file',
-                      help='Path to auxiliary ELF if the main file is APK, '
-                      'useful for capturing metadata.')
+  group = parser.add_argument_group(title='What to Analyze')
+  group.add_argument('--java-only',
+                     action='store_true',
+                     help='Run on only Java symbols')
+  group.add_argument('--native-only',
+                     action='store_true',
+                     help='Run on only native symbols')
+  group.add_argument('--no-java',
+                     action='store_true',
+                     help='Do not run on Java symbols')
+  group.add_argument('--no-native',
+                     action='store_true',
+                     help='Do not run on native symbols')
 
-  # Non-file argument.
-  parser.add_argument('--no-string-literals', dest='track_string_literals',
-                      default=True, action='store_false',
-                      help='Disable breaking down "** merge strings" into more '
-                           'granular symbols.')
-  parser.add_argument('--no-map-file',
-                      dest='ignore_linker_map',
-                      action='store_true',
-                      help='Use debug information to capture symbol sizes '
-                      'instead of linker map file.')
-  parser.add_argument(
-      '--java-only', action='store_true', help='Run on only Java symbols')
-  parser.add_argument(
-      '--native-only', action='store_true', help='Run on only native symbols')
-  parser.add_argument(
-      '--no-java', action='store_true', help='Do not run on Java symbols')
-  parser.add_argument(
-      '--no-native', action='store_true', help='Do not run on native symbols')
-  parser.add_argument(
-      '--include-padding',
-      action='store_true',
-      help='Include a padding field for each symbol, instead of rederiving '
-      'from consecutive symbols on file load.')
-  parser.add_argument(
-      '--check-data-quality',
-      action='store_true',
-      help='Perform sanity checks to ensure there is no missing data.')
+  group = parser.add_argument_group(title='Analysis Options for Native Code')
+  if is_top_args:
+    group.add_argument(
+        '--tool-prefix',
+        help='Path prefix for binaries such as nm, readelf, objdump')
+  group.add_argument('--no-string-literals',
+                     dest='track_string_literals',
+                     default=True,
+                     action='store_false',
+                     help='Disable breaking down "** merge strings" into more '
+                     'granular symbols.')
+  group.add_argument('--no-map-file',
+                     dest='ignore_linker_map',
+                     action='store_true',
+                     help='Use debug information to capture symbol sizes '
+                     'instead of linker map file.')
+  # Used by tests to override path to APK-discovered files.
+  group.add_argument('--aux-elf-file', help=argparse.SUPPRESS)
+  group.add_argument(
+      '--aux-map-file',
+      help='Path to linker map to use when --elf-file is provided')
+
+  group = parser.add_argument_group(title='APK options')
+  group.add_argument('--mapping-file',
+                     help='Proguard .mapping file for deobfuscation.')
+  group.add_argument('--resources-pathmap-file',
+                     help='.pathmap.txt file that contains a maping from '
+                     'original resource paths to shortened resource paths.')
+  group.add_argument('--abi-filter',
+                     dest='abi_filters',
+                     action='append',
+                     help='For apks with multiple ABIs, break down native '
+                     'libraries for this ABI. Defaults to 64-bit when both '
+                     '32 and 64 bit are present.')
+
+  group = parser.add_argument_group(title='Analysis Options for Pak Files')
+  group.add_argument('--pak-info-file',
+                     help='This file should contain all ids found in the pak '
+                     'files that have been passed in.')
+
+  group = parser.add_argument_group(title='Analysis Options (shared)')
+  group.add_argument('--source-directory',
+                     help='Custom path to the root source directory.')
+  group.add_argument('--output-directory',
+                     help='Path to the root build directory.')
+  if is_top_args:
+    group.add_argument('--no-output-directory',
+                       action='store_true',
+                       help='Do not auto-detect --output-directory.')
+    group.add_argument('--include-padding',
+                       action='store_true',
+                       help='Include a padding field for each symbol, '
+                       'instead of rederiving from consecutive symbols '
+                       'on file load.')
+    group.add_argument('--check-data-quality',
+                       action='store_true',
+                       help='Perform sanity checks to ensure there is no '
+                       'missing data.')
 
 
 def AddArguments(parser):
   parser.add_argument('size_file', help='Path to output .size file.')
-  parser.add_argument('--source-directory',
-                      help='Custom path to the root source directory.')
-  parser.add_argument('--output-directory',
-                      help='Path to the root build directory.')
-  parser.add_argument('--tool-prefix',
-                      help='Path prefix for c++filt, nm, readelf.')
-  parser.add_argument(
-      '--no-output-directory',
-      action='store_true',
-      help='Skips all data collection that requires build intermediates.')
-  parser.add_argument('--ssargs-file',
-                      help='Path to SuperSize multi-container arguments file.')
-  _AddContainerArguments(parser)
+  _AddContainerArguments(parser, is_top_args=True)
 
 
 def _IdentifyInputFile(args, on_config_error):
@@ -1734,6 +1778,8 @@ def _IdentifyInputFile(args, on_config_error):
       args.elf_file = args.f
     elif args.f.endswith('.map') or args.f.endswith('.map.gz'):
       args.map_file = args.f
+    elif args.f.endswith('.pak'):
+      args.pak_files.append(args.f)
     elif args.f.endswith('.ssargs'):
       # Fails if trying to nest them, which should never happen.
       args.ssargs_file = args.f
@@ -1743,20 +1789,13 @@ def _IdentifyInputFile(args, on_config_error):
 
   ret = [
       args.apk_file, args.elf_file, args.minimal_apks_file,
-      args.__dict__.get('ssargs_file')
-  ]
+      args.__dict__.get('ssargs_file'), args.map_file
+  ] + (args.pak_files or [])
   ret = [v for v in ret if v]
-  # --map-file can be a main file, or used with another main file.
-  if not ret and args.map_file:
-    ret.append(args.map_file)
-  elif not ret:
+  if not ret:
     on_config_error(
         'Must pass at least one of --apk-file, --minimal-apks-file, '
-        '--elf-file, --map-file, --ssargs-file')
-  elif len(ret) > 1:
-    on_config_error(
-        'Found colliding --apk-file, --minimal-apk-file, --elf-file, '
-        '--ssargs-file')
+        '--elf-file, --map-file, --pak-file, --ssargs-file')
   return ret[0]
 
 
@@ -1812,9 +1851,9 @@ def _UpdateLinkerNameAndToolPrefix(tentative_output_dir, native_spec):
   return native_spec
 
 
-def _CreateNativeSpecs(tentative_output_dir, apk_path, elf_path, map_path,
-                       track_string_literals, ignore_linker_map, tool_prefix,
-                       on_config_error):
+def _CreateNativeSpecs(*, tentative_output_dir, apk_path, elf_path, map_path,
+                       abi_filters, track_string_literals, ignore_linker_map,
+                       tool_prefix, on_config_error):
   if (map_path and not map_path.endswith('.map')
       and not map_path.endswith('.map.gz')):
     on_config_error('Expected --map-file to end with .map or .map.gz')
@@ -1825,6 +1864,10 @@ def _CreateNativeSpecs(tentative_output_dir, apk_path, elf_path, map_path,
       lib_infos = [
           f for f in z.infolist()
           if f.filename.endswith('.so') and f.file_size > 0
+      ]
+    if abi_filters:
+      lib_infos = [
+          l for l in lib_infos if any(f in l.filename for f in abi_filters)
       ]
     if lib_infos:
       # TODO(agrieve): Analyze more than just one library.
@@ -1842,8 +1885,13 @@ def _CreateNativeSpecs(tentative_output_dir, apk_path, elf_path, map_path,
         elf_path = os.path.join(
             tentative_output_dir, 'lib.unstripped',
             posixpath.basename(apk_so_path.replace('crazy.', '')))
-
-        logging.debug('Detected --elf-file=%s', elf_path)
+        # E.g. libcrashpad_handler_trampoline.so is missing from lib.unstripped.
+        if not os.path.exists(elf_path):
+          elf_path = None
+          logging.debug('Not breaking down %s: missing in lib.unstripped',
+                        apk_so_path)
+        else:
+          logging.debug('Detected --elf-file=%s', elf_path)
 
   if not tentative_output_dir:
     logging.warning('Cannot break down native symbols without output_dir')
@@ -1863,8 +1911,9 @@ def _CreateNativeSpecs(tentative_output_dir, apk_path, elf_path, map_path,
     if map_path:
       logging.debug('Detected --map-file=%s', map_path)
 
-  if not map_path and not elf_path:
+  if not (apk_so_path or map_path or elf_path):
     return []
+
   # TODO(crbug.com/1193507): Implement string literal tracking without map
   #     files. nm emits some string literal symbols, but most are missing.
   track_string_literals = bool(track_string_literals and map_path)
@@ -1921,18 +1970,17 @@ def _ReadMultipleArgsFromFile(ssargs_file, on_config_error):
                                      on_config_error)
 
 
+# Both |top_args| and |sub_args| may be modified.
 def _ProcessContainerArgs(top_args,
                           sub_args,
                           container_name,
                           on_config_error,
                           apk_path=None,
                           split_name=None):
-  # Copy output_directory, tool_prefix, etc. into sub_args.
-  # Since |sub_args| gets modified, the caller should provide a fresh copy if
-  # this function is called from a loop.
-  for k, v in top_args.__dict__.items():
-    sub_args.__dict__.setdefault(k, v)
-
+  sub_args.source_directory = (sub_args.source_directory
+                               or top_args.source_directory)
+  sub_args.output_directory = (sub_args.output_directory
+                               or top_args.output_directory)
   analyze_native = not (sub_args.java_only or sub_args.no_native
                         or top_args.java_only or top_args.no_native)
 
@@ -1944,9 +1992,6 @@ def _ProcessContainerArgs(top_args,
     # * Diffs that change an on-demand status show as adds/removes.
     if _IsOnDemand(apk_path):
       container_name += '?'
-    if split_name != 'base':
-      # TODO(crbug.com/1143690): Fix native analysis for split APKs.
-      analyze_native = False
 
   apk_prefix = sub_args.minimal_apks_file or sub_args.apk_file
   if apk_prefix:
@@ -1971,18 +2016,36 @@ def _ProcessContainerArgs(top_args,
 
   if analyze_native:
     tool_prefix_finder = path_util.ToolPrefixFinder(
-        value=sub_args.tool_prefix,
+        value=top_args.tool_prefix,
         output_directory=top_args.output_directory,
         linker_name='lld')
+
+    # Allow top-level --abi-filter to override values set in .ssargs.
+    abi_filters = top_args.abi_filters or sub_args.abi_filters
+    aux_elf_file = sub_args.aux_elf_file
+    aux_map_file = sub_args.aux_map_file
+    if split_name not in (None, 'base'):
+      aux_elf_file = None
+      aux_map_file = None
+
     native_specs = _CreateNativeSpecs(
         tentative_output_dir=top_args.output_directory,
         apk_path=apk_path,
-        elf_path=sub_args.elf_file or sub_args.aux_elf_file,
-        map_path=sub_args.map_file,
-        track_string_literals=top_args.track_string_literals,
-        ignore_linker_map=sub_args.ignore_linker_map,
+        elf_path=sub_args.elf_file or aux_elf_file,
+        map_path=sub_args.map_file or aux_map_file,
+        abi_filters=abi_filters,
+        track_string_literals=(top_args.track_string_literals
+                               and sub_args.track_string_literals),
+        ignore_linker_map=(top_args.ignore_linker_map
+                           or sub_args.ignore_linker_map),
         tool_prefix=tool_prefix_finder.Finalized(),
         on_config_error=on_config_error)
+
+    # For app bundles, use a consistent ABI for all splits.
+    if split_name == 'base' and native_specs and not abi_filters:
+      abi = posixpath.basename(posixpath.dirname(native_specs[0].apk_so_path))
+      logging.info('Detected --abi-filter %s', abi)
+      top_args.abi_filters = [abi]
   else:
     native_specs = []
 
@@ -2110,7 +2173,7 @@ def Run(top_args, on_config_error):
           source_directory=sub_args.source_directory,
           output_directory=sub_args.output_directory,
           resources_pathmap_path=resources_pathmap_path,
-          pak_files=sub_args.pak_file,
+          pak_files=sub_args.pak_files,
           pak_info_file=sub_args.pak_info_file)
 
       container_list.append(container)

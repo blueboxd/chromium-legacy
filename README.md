@@ -14,7 +14,7 @@ Chromium-legacy is the latest Chromium (almost equivalent to Chrome Canary witho
 ## features
 
 Basically equivalent to the [same version of original Chromium](https://chromestatus.com/features) except for limitations by old OSes (see [limitations](#limitations)).  
-Some features (i.e [DRM](../../wiki/DRM)) needs extra operation to use.
+Some features (i.e. [DRM](../../wiki/DRM)) need extra operations to use.
 
 ## system requirements
 
@@ -34,7 +34,7 @@ It's recommended to find and use a stable build for daily use. (The same is true
 
 ### latest
 
-See [Releases](../../releases) to recent builds.
+See [Releases](../../releases) for recent builds.
 
 You can automatically download the latest build with commands like:  
 

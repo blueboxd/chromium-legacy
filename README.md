@@ -44,12 +44,11 @@ curl -s https://api.github.com/repos/blueboxd/chromium-legacy/releases/latest|gr
 
 Or, you can [use a downloader](https://github.com/blueboxd/chromium-legacy/discussions/25) by [@Wowfunhappy](https://github.com/Wowfunhappy).
 
-### nearest build to base branch of Chrome stable channel
+### Chrome stable channel
 
-Currently, [r929513](../../releases/tag/929513) is the nearest.  
-**NB: this build is based on Chrome stable features, but may lack recent security fixes unlike Chrome**  
+[96.0.4664.55](../../releases/tag/stable)
 
-You can [find the branch position](https://omahaproxy.appspot.com/all?os=mac&channel=stable) of the current Chrome stable channel.
+Or, you can [find the branch position](https://omahaproxy.appspot.com/all?os=mac&channel=stable) of the current Chrome stable channel.
 
 ## limitations
 

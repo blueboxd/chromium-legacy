@@ -375,7 +375,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ServiceWorker.FetchEvent.MainResource.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2022-02-27">
+    enum="ServiceWorkerStatusCode" expires_after="2022-05-01">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -399,7 +399,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ServiceWorker.FetchEvent.Subresource.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2022-02-27">
+    enum="ServiceWorkerStatusCode" expires_after="2022-05-01">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -437,7 +437,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ServiceWorker.InstallEvent.All.FetchCount" units="fetches"
-    expires_after="2021-12-05">
+    expires_after="2022-04-24">
   <owner>wanderview@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -782,7 +782,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="ServiceWorker.PushEvent.Time" units="ms" expires_after="M96">
+<histogram name="ServiceWorker.PushEvent.Time" units="ms"
+    expires_after="2022-04-24">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -1179,7 +1180,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2022-02-13">
+    enum="ServiceWorkerStatusCode" expires_after="2022-04-17">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -1205,7 +1206,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.Time" units="ms"
-    expires_after="2022-02-13">
+    expires_after="2022-04-17">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>

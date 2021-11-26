@@ -268,7 +268,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </variants>
 
 <histogram name="Event.AggregatedLatency.Renderer2" units="microseconds"
-    expires_after="2022-02-13">
+    expires_after="2022-04-24">
   <owner>flackr@chromium.org</owner>
   <summary>
     Time between initiation of any input event and the renderer receiving and
@@ -311,7 +311,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.AsyncTargeting.ResponseTime" units="ms"
-    expires_after="2021-12-12">
+    expires_after="2022-04-03">
   <owner>sadrul@chromium.org</owner>
   <owner>event-targeting@chromium.org</owner>
   <summary>
@@ -355,7 +355,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Event.DownEventCount.PerInputFormFactorDestinationCombination2"
-    enum="DownEventInputFormFactorDestinationCombination2" expires_after="M100">
+    enum="DownEventInputFormFactorDestinationCombination2"
+    expires_after="2022-04-17">
   <owner>tbuckley@chromium.org</owner>
   <summary>
     The number of down events received per destination, input and form factor
@@ -583,7 +584,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.EndToEnd.TouchpadPinch2" units="microseconds"
-    expires_after="2021-12-26">
+    expires_after="2022-04-03">
   <owner>nzolghadr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -603,7 +604,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.HitTest" units="microseconds"
-    expires_after="2022-01-16">
+    expires_after="2022-04-03">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -622,7 +623,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.HitTestRecursive" units="microseconds"
-    expires_after="2022-01-16">
+    expires_after="2022-04-03">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -656,7 +657,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Event.Latency.OS2" units="ms" expires_after="2021-12-01">
+<histogram name="Event.Latency.OS2" units="ms" expires_after="2022-04-10">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -976,7 +977,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.ScrollBegin.Touch.AverageLagPresentation"
-    units="pixels" expires_after="M97">
+    units="pixels" expires_after="2022-05-01">
   <owner>flackr@chromium.org</owner>
   <owner>joalmei@microsoft.org</owner>
   <owner>input-dev@chromium.org</owner>
@@ -1128,7 +1129,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Event.Latency.ScrollBegin.Wheel.BrowserNotifiedToBeforeGpuSwap2"
-    units="microseconds" expires_after="2021-12-01">
+    units="microseconds" expires_after="2022-05-01">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -1233,7 +1234,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Event.Latency.ScrollInertial.Touch.BrowserNotifiedToBeforeGpuSwap2"
-    units="microseconds" expires_after="2021-12-01">
+    units="microseconds" expires_after="2022-04-17">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -1449,7 +1450,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Event.Latency.ScrollUpdate.Scrollbar.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2021-12-01">
+    units="microseconds" expires_after="2022-04-10">
   <owner>flackr@chromium.org</owner>
   <owner>arakeri@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -1472,7 +1473,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.TimeToScrollUpdateSwapBegin2"
-    units="microseconds" expires_after="2022-02-20">
+    units="microseconds" expires_after="2022-04-24">
   <owner>nzolghadr@chromium.org</owner>
   <summary>
     Time between initial creation of a wheel/touch event and start of the frame
@@ -1936,7 +1937,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.PassiveListeners" enum="EventResultType"
-    expires_after="2021-12-12">
+    expires_after="2022-04-10">
   <owner>dtapuska@chromium.org</owner>
   <summary>
     The result of handling of MouseWheel, TouchStart, TouchMove, TouchEnd events
@@ -2172,7 +2173,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="EventLatency.TotalLatency" units="microseconds"
-    expires_after="2022-01-16">
+    expires_after="2022-04-24">
   <owner>mohsen@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>

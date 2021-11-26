@@ -58,7 +58,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Install.GooglePlayErrorCode"
-    enum="WebApkInstallGooglePlayErrorCode" expires_after="2022-02-01">
+    enum="WebApkInstallGooglePlayErrorCode" expires_after="2022-05-01">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -82,7 +82,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Install.InstallDuration" units="ms"
-    expires_after="2022-01-23">
+    expires_after="2022-04-17">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -95,7 +95,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Install.InstallEvent" enum="WebApkInstallEvent"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -108,7 +108,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Install.PathToInstall" enum="PwaInstallPath"
-    expires_after="2021-11-18">
+    expires_after="2022-04-10">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <owner>
@@ -295,7 +295,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Update.GooglePlayUpdateResult"
-    enum="WebApkGooglePlayInstallResult" expires_after="2022-02-13">
+    enum="WebApkGooglePlayInstallResult" expires_after="2022-05-01">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS

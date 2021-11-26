@@ -254,7 +254,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Scheduling.Renderer.DeadlineMode"
-    enum="RendererSchedulerDeadlineMode" expires_after="2022-01-01">
+    enum="RendererSchedulerDeadlineMode" expires_after="2022-04-17">
   <owner>weiliangc@chromium.org</owner>
   <owner>chrome-gpu-metrics@chromium.org</owner>
   <summary>
@@ -290,7 +290,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Scheduling.Renderer.DrawIntervalWithCustomPropertyAnimations2"
-    units="microseconds" expires_after="2022-02-01">
+    units="microseconds" expires_after="2022-05-01">
   <owner>xidachen@chromium.org</owner>
   <owner>animations-dev@chromium.org</owner>
   <summary>

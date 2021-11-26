@@ -21,7 +21,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
-<histogram name="Signin" enum="SigninHelperFlow" expires_after="M85">
+<histogram name="Signin" enum="SigninHelperFlow" expires_after="2022-04-10">
   <owner>mlerman@chromium.org</owner>
   <summary>
     Tracks user interactions as they sign in through a flow. The suffix of the
@@ -47,7 +47,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Signin.AccountCapabilities.FetchResult"
-    enum="AccountCapabilitiesFetchResult" expires_after="2021-11-01">
+    enum="AccountCapabilitiesFetchResult" expires_after="2022-04-10">
   <owner>alexilin@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -94,7 +94,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Signin.AccountConsistencyPromoAction"
-    enum="AccountConsistencyPromoAction" expires_after="2022-01-02">
+    enum="AccountConsistencyPromoAction" expires_after="2022-04-03">
   <owner>bsazonov@chromium.org</owner>
   <owner>aliceywang@chromium.org</owner>
   <summary>
@@ -104,7 +104,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Signin.AccountConsistencyPromoAction.Shown.Count"
-    units="counts" expires_after="2022-01-02">
+    units="counts" expires_after="2022-04-10">
   <owner>aliceywang@chromium.org</owner>
   <owner>triploblastic@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -112,11 +112,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Every time the account picker bottom sheet is shown as part of the web
     sign-in flow this histogram records the number of times bottom sheet was
     shown (Android and iOS only).
+
+    NOTE: This stopped being recorded on Android on 10/2021.
   </summary>
 </histogram>
 
 <histogram name="Signin.AccountConsistencyPromoAction.SignedIn.Count"
-    units="counts" expires_after="2022-01-02">
+    units="counts" expires_after="2022-04-17">
   <owner>aliceywang@chromium.org</owner>
   <owner>triploblastic@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -124,6 +126,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     This histogram records the number of times the account picker bottom sheet
     was shown before the user signed-in through the bottom sheet (Android and
     iOS only).
+
+    NOTE: This stopped being recorded on Android on 10/2021.
   </summary>
 </histogram>
 
@@ -153,7 +157,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Signin.AccountFetcher.AccountAvatarFetchTime" units="ms"
-    expires_after="2021-12-16">
+    expires_after="2022-04-17">
   <owner>triploblastic@chromium.org</owner>
   <owner>aliceywang@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -168,7 +172,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Signin.AccountFetcher.AccountUserInfoFetchTime" units="ms"
-    expires_after="2021-12-16">
+    expires_after="2022-04-10">
   <owner>triploblastic@chromium.org</owner>
   <owner>aliceywang@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -208,7 +212,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AccountTracker.GaiaIdMigrationState"
-    enum="OAuth2LoginAccountRevokedMigrationState" expires_after="2022-01-09">
+    enum="OAuth2LoginAccountRevokedMigrationState" expires_after="2022-04-03">
   <owner>msarda@chromium.org</owner>
   <owner>sdefresne@chromium.org</owner>
   <summary>
@@ -246,7 +250,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AndroidAccountInfoFetchTime" units="ms"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>aliceywang@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -271,7 +275,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AndroidDeviceAccountsNumberWhenEnteringFRE"
-    units="count" expires_after="2022-02-06">
+    units="count" expires_after="2022-04-24">
   <owner>bsazonov@chromium.org</owner>
   <owner>aliceywang@chromium.org</owner>
   <summary>
@@ -325,7 +329,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AndroidNumberOfDeviceAccounts" units="accounts"
-    expires_after="2022-01-02">
+    expires_after="2022-04-10">
   <owner>triploblastic@chromium.org</owner>
   <owner>aliceywang@chromium.org</owner>
   <summary>
@@ -360,7 +364,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AuthError" enum="GoogleServiceAuthError"
-    expires_after="2022-02-13">
+    expires_after="2022-04-17">
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -512,7 +516,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Extensions.GetAuthTokenResult"
-    enum="GetAuthTokenResult" expires_after="2021-12-12">
+    enum="GetAuthTokenResult" expires_after="2022-05-01">
 <!-- Name completed by histogram_suffixes name="GetAuthTokenType" -->
 
   <owner>alexilin@chromium.org</owner>
@@ -593,7 +597,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Intercept.AccountInfoFetchDuration" units="ms"
-    expires_after="2021-12-19">
+    expires_after="2022-05-01">
   <owner>alexilin@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -612,7 +616,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Intercept.HeuristicOutcome"
-    enum="SigninInterceptHeuristicOutcome" expires_after="2022-02-20">
+    enum="SigninInterceptHeuristicOutcome" expires_after="2022-04-24">
   <owner>droger@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -622,7 +626,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Intercept.ProfileCreationDuration" units="ms"
-    expires_after="2021-12-19">
+    expires_after="2022-05-01">
   <owner>alexilin@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -632,7 +636,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Intercept.ProfileSwitchDuration" units="ms"
-    expires_after="2021-12-19">
+    expires_after="2022-05-01">
   <owner>alexilin@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -700,7 +704,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram base="true" name="Signin.InterceptResult"
-    enum="SigninInterceptResult" expires_after="2022-02-20">
+    enum="SigninInterceptResult" expires_after="2022-04-24">
 <!-- Name completed by histogram_suffixes name="SigninInterceptType" -->
 
   <owner>alexilin@chromium.org</owner>
@@ -752,7 +756,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSGaiaCookieStateOnSignedInNavigation"
-    enum="GaiaCookieStateOnSignedInNavigation" expires_after="2022-02-06">
+    enum="GaiaCookieStateOnSignedInNavigation" expires_after="2022-04-10">
   <owner>jebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -1553,7 +1557,7 @@ should be kept for as long as we store refresh tokens in an SQLite DB. -->
 </histogram>
 
 <histogram name="Signin.TransactionalReauthResult" enum="SigninReauthResult"
-    expires_after="2022-01-02">
+    expires_after="2022-04-03">
 <!-- Name completed by histogram_suffixes
 name="TransactionalReauthEntryPoint" -->
 
@@ -1567,7 +1571,7 @@ name="TransactionalReauthEntryPoint" -->
 </histogram>
 
 <histogram name="Signin.TransactionalReauthUserAction"
-    enum="SigninReauthUserAction" expires_after="2022-01-02">
+    enum="SigninReauthUserAction" expires_after="2022-04-10">
 <!-- Name completed by histogram_suffixes
 name="TransactionalReauthEntryPoint" -->
 
@@ -1607,7 +1611,7 @@ Chrome adds accounts to the Gaia cookies. -->
 </histogram>
 
 <histogram name="Signin.UserRequestedWipeDataOnSignout" enum="BooleanRequested"
-    expires_after="2022-01-02">
+    expires_after="2022-04-03">
   <owner>triploblastic@google.com</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>User requested to wipe local device data on signout.</summary>

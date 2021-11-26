@@ -214,10 +214,13 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   void BeginMainFrameAborted(
       CommitEarlyOutReason reason,
       std::vector<std::unique_ptr<SwapPromise>> swap_promises,
-      const viz::BeginFrameArgs& args) override {
-    LayerTreeHostImpl::BeginMainFrameAborted(reason, std::move(swap_promises),
-                                             args);
-    test_hooks_->BeginMainFrameAbortedOnThread(this, reason);
+      const viz::BeginFrameArgs& args,
+      bool scroll_and_viewport_changes_synced) override {
+    LayerTreeHostImpl::BeginMainFrameAborted(
+        reason, std::move(swap_promises), args,
+        scroll_and_viewport_changes_synced);
+    test_hooks_->BeginMainFrameAbortedOnThread(
+        this, reason, scroll_and_viewport_changes_synced);
   }
 
   void ReadyToCommit(
@@ -455,7 +458,9 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
 
   void WillCommit() override { test_hooks_->WillCommit(); }
 
-  void DidCommit(const base::TimeTicks) override { test_hooks_->DidCommit(); }
+  void DidCommit(const base::TimeTicks, const base::TimeTicks) override {
+    test_hooks_->DidCommit();
+  }
 
   void DidCommitAndDrawFrame() override {
     test_hooks_->DidCommitAndDrawFrame();
@@ -792,6 +797,13 @@ void LayerTreeTest::PostReturnDeferMainFrameUpdateToMainThread(
                      std::move(scoped_defer_main_frame_update)));
 }
 
+void LayerTreeTest::PostDeferringCommitsStatusToMainThread(
+    bool is_deferring_commits) {
+  main_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&LayerTreeTest::DispatchDeferringCommitsStatus,
+                                main_thread_weak_ptr_, is_deferring_commits));
+}
+
 void LayerTreeTest::PostSetNeedsCommitToMainThread() {
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&LayerTreeTest::DispatchSetNeedsCommit,
@@ -1023,6 +1035,17 @@ void LayerTreeTest::DispatchReturnDeferMainFrameUpdate(
         scoped_defer_main_frame_update) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   // Just let |scoped_defer_main_frame_update| go out of scope.
+}
+
+void LayerTreeTest::DispatchDeferringCommitsStatus(bool is_deferring_commits) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  if (is_deferring_commits) {
+    layer_tree_host_->StartDeferringCommits(
+        base::Milliseconds(1000), PaintHoldingReason::kFirstContentfulPaint);
+  } else {
+    layer_tree_host_->StopDeferringCommits(
+        PaintHoldingCommitTrigger::kFirstContentfulPaint);
+  }
 }
 
 void LayerTreeTest::DispatchSetNeedsCommit() {

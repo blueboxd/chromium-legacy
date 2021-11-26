@@ -3014,6 +3014,10 @@ const char kCCTResizable90MaximumHeightDescription[] =
     "of the screen height, otherwise the maximum height is 100% of the screen "
     "height. In both cases, Custom Tabs will yield to the top status bar when "
     "at full stop";
+const char kCCTResizableAllowResizeByUserGestureName[] =
+    "Bottom sheet Custom Tabs allow resize by user gesture";
+const char kCCTResizableAllowResizeByUserGestureDescription[] =
+    "Enable user gesture to resize bottom sheet Custom Tabs";
 const char kCCTResizableForFirstPartiesName[] =
     "Bottom sheet Custom Tabs (first party)";
 const char kCCTResizableForFirstPartiesDescription[] =
@@ -3312,6 +3316,10 @@ const char kPageInfoHistoryName[] = "Page info history";
 const char kPageInfoHistoryDescription[] =
     "Enable a history sub page to the page info menu, and a button to forget "
     "a site, removing all preferences and history.";
+
+const char kPageInfoStoreInfoName[] = "Page info store info";
+const char kPageInfoStoreInfoDescription[] =
+    "Enable a store info row to the page info menu on eligible pages.";
 
 extern const char kPageInfoV2DesktopName[];
 extern const char kPageInfoV2DesktopDescription[];
@@ -3858,6 +3866,14 @@ const char kHardwareSecureDecryptionDescription[] =
     "Enable/Disable the use of hardware secure Content Decryption Module (CDM) "
     "for protected content playback.";
 
+const char kPwaUninstallInWindowsOsName[] =
+    "Enable PWAs to register as an uninstallable app in Windows on "
+    "installation.";
+const char kPwaUninstallInWindowsOsDescription[] =
+    "This allows the PWA to show up in Windows Control Panel (and other OS "
+    "surfaces), and be uninstallable from those surfaces. For example, "
+    "uninstalling by right-clicking on the app in the Start Menu.";
+
 const char kRawAudioCaptureName[] = "Raw audio capture";
 const char kRawAudioCaptureDescription[] =
     "Enable/Disable the usage of WASAPI raw audio capture. When enabled, the "
@@ -3996,6 +4012,11 @@ const char kAllowDisableMouseAccelerationName[] =
     "Allow disabling mouse acceleration";
 const char kAllowDisableMouseAccelerationDescription[] =
     "Shows a setting to disable mouse acceleration.";
+
+const char kAllowDisableTouchpadHapticFeedbackName[] =
+    "Allow disabling touchpad haptic feedback";
+const char kAllowDisableTouchpadHapticFeedbackDescription[] =
+    "Shows settings to adjust and disable touchpad haptic feedback.";
 
 const char kAllowRepeatedUpdatesName[] =
     "Continue checking for updates before reboot and after initial update.";
@@ -4293,6 +4314,14 @@ const char kDisplayAlignmentAssistanceDescription[] =
     "Show indicators on shared edges of the displays when user is "
     "attempting to move their mouse over to another display. Show preview "
     "indicators when the user is moving a display in display layouts.";
+
+const char kEnableLibinputToHandleTouchpadName[] =
+    "Enable libinput to handle touchpad.";
+const char kEnableLibinputToHandleTouchpadDescription[] =
+    "Use libinput instead of the gestures library to handle touchpad."
+    "Libgesures works very well on modern devices but fails on legacy"
+    "devices. Use libinput if an input device doesn't work or is not working"
+    "well.";
 
 const char kFastPairName[] = "Enable Fast Pair";
 const char kFastPairDescription[] =
@@ -5160,6 +5189,11 @@ const char kWifiSyncAndroidName[] =
 const char kWifiSyncAndroidDescription[] =
     "Enables the option to sync Wi-Fi network configurations between Chrome OS "
     "devices and a connected Android phone";
+
+const char kWindowControlMenu[] = "Float current active window";
+const char kWindowControlMenuDescription[] =
+    "Enables the accelerator (Control + Alt + F) to float current active "
+    "window.";
 
 // Prefer keeping this section sorted to adding new definitions down here.
 

@@ -672,12 +672,11 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc) {
   StopArcInstance(/*arc_upgraded=*/false);
 }
 
-// Tests that StartMiniArc() still succeeds with the feature.
-TEST_F(ArcVmClientAdapterTest,
-       StartMiniArc_WithArcMoreVcpusWithCoreScheduling) {
+// Tests that StartMiniArc() still succeeds without the feature.
+TEST_F(ArcVmClientAdapterTest, StartMiniArc_WithPerVCpuCoreScheduling) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(kMoreVcpusWithCoreScheduling,
-                                    true /* use */);
+  feature_list.InitWithFeatureState(kEnablePerVmCoreScheduling,
+                                    false /* use */);
 
   StartMiniArc();
   EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);

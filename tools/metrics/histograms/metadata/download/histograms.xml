@@ -125,7 +125,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.DangerousDialog.Events"
-    enum="DangerousDownloadDialogEvent" expires_after="2021-12-26">
+    enum="DangerousDownloadDialogEvent" expires_after="2022-04-17">
   <owner>qinmin@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
   <summary>
@@ -136,7 +136,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.DangerousFile.DownloadValidatedByType"
-    enum="SBClientDownloadExtensions" expires_after="2021-12-26">
+    enum="SBClientDownloadExtensions" expires_after="2022-04-17">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@chromium.org</owner>
   <summary>
@@ -183,7 +183,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.DownloadDangerPrompt"
-    enum="SBClientDownloadExtensions" expires_after="2022-01-09">
+    enum="SBClientDownloadExtensions" expires_after="2022-04-10">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -517,7 +517,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.Later.ScheduledDownloadSize" units="Mb"
-    expires_after="2022-01-09">
+    expires_after="2022-05-01">
   <owner>xingliu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
@@ -527,7 +527,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Download.Later.UI.DialogChoice"
-    enum="DownloadLaterDialogChoice" expires_after="2022-01-09">
+    enum="DownloadLaterDialogChoice" expires_after="2022-04-03">
 <!-- Name completed by histogram_suffixes name="DownloadDialogSource" -->
 
   <owner>xingliu@chromium.org</owner>
@@ -540,7 +540,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.Later.UI.Events" enum="DownloadLaterUiEvent"
-    expires_after="2022-01-09">
+    expires_after="2022-04-10">
   <owner>xingliu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
@@ -621,7 +621,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.OpenDownloads.PerProfileType"
-    enum="BrowserProfileType" expires_after="2021-12-31">
+    enum="BrowserProfileType" expires_after="2022-04-24">
   <owner>sideyilmaz@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -632,7 +632,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.OpenDownloadsFromMenu.PerProfileType"
-    enum="BrowserProfileType" expires_after="2021-12-31">
+    enum="BrowserProfileType" expires_after="2022-04-17">
   <owner>sideyilmaz@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -662,7 +662,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.OverwrittenDownloadRemovedFromHistory"
-    units="downloads" expires_after="2022-02-06">
+    units="downloads" expires_after="2022-04-24">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-downloads@google.com</owner>
   <summary>
@@ -781,7 +781,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.Progress.InfoBar.CloseButtonClicked"
-    enum="DownloadInfoBarState" expires_after="M97">
+    enum="DownloadInfoBarState" expires_after="2022-04-10">
   <owner>shaktisahu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
@@ -791,7 +791,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.Progress.InfoBar.Shown"
-    enum="DownloadInfoBar.ShownState" expires_after="2022-02-01">
+    enum="DownloadInfoBar.ShownState" expires_after="2022-04-10">
   <owner>shaktisahu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
@@ -1022,7 +1022,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.Service.Finish.Type"
-    enum="Download.Service.CompletionType" expires_after="2021-12-05">
+    enum="Download.Service.CompletionType" expires_after="2022-04-10">
   <owner>xingliu@chromium.org</owner>
   <summary>The completion type for downloads in download service.</summary>
 </histogram>
@@ -1124,8 +1124,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Download.Shelf.VisibleTime" units="ms"
+    expires_after="2022-10-10">
+  <owner>anise@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@chromium.org</owner>
+  <summary>
+    The time that the download shelf was visible until it was closed. This
+    histogram excludes times when DoUnhide() and DoHide() are called (i.e., when
+    the full screen state changes).
+  </summary>
+</histogram>
+
 <histogram name="Download.Shelf.WebUI.LoadCompletedTime" units="ms"
-    expires_after="M97">
+    expires_after="2022-04-10">
   <owner>kerenzhu@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <owner>romanarora@chromium.org</owner>
@@ -1138,7 +1149,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.Shelf.WebUI.LoadDocumentTime" units="ms"
-    expires_after="M97">
+    expires_after="2022-04-17">
   <owner>kerenzhu@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <owner>romanarora@chromium.org</owner>
@@ -1255,7 +1266,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.Start.ContentType.NormalProfile"
-    enum="DownloadContentType" expires_after="2022-01-02">
+    enum="DownloadContentType" expires_after="2022-05-01">
   <owner>shaktisahu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
@@ -1264,7 +1275,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.Start.PerProfileType" enum="BrowserProfileType"
-    expires_after="2021-12-31">
+    expires_after="2022-04-03">
   <owner>sideyilmaz@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>

@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="Stability.Android.OomKillReverseRank" units="rank"
-    expires_after="2021-10-31">
+    expires_after="2022-05-01">
   <owner>boliu@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -64,7 +64,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.Android.ProcessedRealMinidumps"
-    enum="AndroidProcessedMinidumps" expires_after="2021-11-23">
+    enum="AndroidProcessedMinidumps" expires_after="2022-04-10">
   <owner>mheikal@chromium.org</owner>
   <owner>smaier@chromium.org</owner>
   <owner>wnwen@chromium.org</owner>
@@ -77,7 +77,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.Android.ProcessedSimulatedMinidumps"
-    enum="AndroidProcessedMinidumps" expires_after="2021-11-23">
+    enum="AndroidProcessedMinidumps" expires_after="2022-05-01">
   <owner>mheikal@chromium.org</owner>
   <owner>smaier@chromium.org</owner>
   <owner>wnwen@chromium.org</owner>
@@ -90,7 +90,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.Android.RendererCrash" enum="Boolean"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>wnwen@chromium.org</owner>
   <summary>
     Counts renderer crashes including OOMs. Android only. Mirrors old stability
@@ -130,7 +130,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Stability.Android.SystemExitReason"
-    enum="AndroidProcessExitReason" expires_after="2022-03-01">
+    enum="AndroidProcessExitReason" expires_after="2022-05-01">
   <owner>boliu@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <owner>wnwen@chromium.org</owner>
@@ -173,7 +173,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.BadMessageTerminated.Extensions"
-    enum="BadMessageReasonExtensions" expires_after="2021-11-14">
+    enum="BadMessageReasonExtensions" expires_after="2022-04-03">
   <owner>jamescook@chromium.org</owner>
   <owner>karandeepb@chromium.org</owner>
   <summary>
@@ -351,7 +351,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.Experimental.PageLoads" enum="StabilityPageLoadType"
-    expires_after="2022-01-16">
+    expires_after="2022-04-10">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -562,7 +562,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.HasPossibleExplanation"
-    enum="BooleanHasPossibleExplanation" expires_after="2022-02-20">
+    enum="BooleanHasPossibleExplanation" expires_after="2022-04-24">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -642,7 +642,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.TimeBetweenUTEAndNextLaunch" units="ms"
-    expires_after="2021-12-12">
+    expires_after="2022-05-01">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>

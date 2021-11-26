@@ -1718,6 +1718,8 @@ extern const char kCCTIncognitoAvailableToThirdPartyDescription[];
 
 extern const char kCCTResizable90MaximumHeightName[];
 extern const char kCCTResizable90MaximumHeightDescription[];
+extern const char kCCTResizableAllowResizeByUserGestureName[];
+extern const char kCCTResizableAllowResizeByUserGestureDescription[];
 extern const char kCCTResizableForFirstPartiesName[];
 extern const char kCCTResizableForFirstPartiesDescription[];
 extern const char kCCTResizableForThirdPartiesName[];
@@ -1898,6 +1900,9 @@ extern const char kOfflinePagesLivePageSharingDescription[];
 
 extern const char kPageInfoHistoryName[];
 extern const char kPageInfoHistoryDescription[];
+
+extern const char kPageInfoStoreInfoName[];
+extern const char kPageInfoStoreInfoDescription[];
 
 extern const char kPasswordProtectionForSignedInUsersName[];
 extern const char kPasswordProtectionForSignedInUsersDescription[];
@@ -2204,6 +2209,9 @@ extern const char kEnableMediaFoundationVideoCaptureDescription[];
 extern const char kHardwareSecureDecryptionName[];
 extern const char kHardwareSecureDecryptionDescription[];
 
+extern const char kPwaUninstallInWindowsOsName[];
+extern const char kPwaUninstallInWindowsOsDescription[];
+
 extern const char kRawAudioCaptureName[];
 extern const char kRawAudioCaptureDescription[];
 
@@ -2292,6 +2300,9 @@ extern const char kAcceleratedMjpegDecodeDescription[];
 
 extern const char kAllowDisableMouseAccelerationName[];
 extern const char kAllowDisableMouseAccelerationDescription[];
+
+extern const char kAllowDisableTouchpadHapticFeedbackName[];
+extern const char kAllowDisableTouchpadHapticFeedbackDescription[];
 
 extern const char kAllowRepeatedUpdatesName[];
 extern const char kAllowRepeatedUpdatesDescription[];
@@ -2565,6 +2576,9 @@ extern const char kEnableInputNoiseCancellationUiDescription[];
 
 extern const char kEnableLauncherSearchNormalizationName[];
 extern const char kEnableLauncherSearchNormalizationDescription[];
+
+extern const char kEnableLibinputToHandleTouchpadName[];
+extern const char kEnableLibinputToHandleTouchpadDescription[];
 
 extern const char kNewDragSpecInLauncherName[];
 extern const char kNewDragSpecInLauncherDescription[];
@@ -2975,6 +2989,9 @@ extern const char kWifiSyncAllowDeletesDescription[];
 
 extern const char kWifiSyncAndroidName[];
 extern const char kWifiSyncAndroidDescription[];
+
+extern const char kWindowControlMenu[];
+extern const char kWindowControlMenuDescription[];
 
 // Prefer keeping this section sorted to adding new declarations down here.
 

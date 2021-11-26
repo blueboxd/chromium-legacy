@@ -93,6 +93,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "allow-disable-touchpad-haptic-feedback",
+    "owners": [ "gavinwill", "cros-peripherals@google.com" ],
+    "expiry_milestone": 101
+  },
+  {
     "name": "allow-insecure-localhost",
     "owners": [ "security-dev" ],
     "expiry_milestone": 95
@@ -240,12 +245,12 @@
   {
     "name": "arc-rt-vcpu-dual-core",
     "owners": [ "kansho" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "arc-rt-vcpu-quad-core",
     "owners": [ "kansho" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "arc-usb-device-attach-to-vm-experiment",
@@ -274,6 +279,11 @@
     // Used by developers for debugging and to dump extra information to logs
     // in official builds.
     "expiry_milestone": -1
+  },
+  {
+    "name": "ash-enable-floating-window",
+    "owners": [ "shidi", "afakhry" ],
+    "expiry_milestone": 100
   },
   {
     "name": "ash-enable-pip-rounded-corners",
@@ -620,6 +630,11 @@
   },
   {
     "name": "cct-resizable-90-maximum-height",
+    "owners": ["ctzsm", "peconn"],
+    "expiry_milestone": 105
+  },
+  {
+    "name": "cct-resizable-allow-resize-by-user-gesture",
     "owners": ["ctzsm", "peconn"],
     "expiry_milestone": 105
   },
@@ -1512,7 +1527,7 @@
   {
     "name": "enable-commerce-merchant-viewer",
     "owners": [ "chrome-shopping@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 102
   },
   {
     "name": "enable-commerce-price-tracking",
@@ -2119,6 +2134,13 @@
     "expiry_milestone": 98
   },
   {
+    "name": "enable-libinput-to-handle-touchpad",
+    "owners": [ "mmaslanka", "nicholasbishop", "chromeos-tango@google.com" ],
+    // Used for testing libinput to check if it works better than the gestures
+    // library to handle touchpad.
+    "expiry_milestone": -1
+  },
+  {
     "name": "enable-lite-video",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // This flag is used for frequent manual testing and should not be removed.
@@ -2158,11 +2180,6 @@
     "expiry_milestone": 98
   },
   {
-    "name": "enable-magnifier-panning-improvements",
-    "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 92
-  },
-  {
     "name": "enable-managed-configuration-web-api",
     "owners": [ "apotapchuk" ],
     "expiry_milestone": 92
@@ -2175,7 +2192,7 @@
   {
     "name": "enable-media-foundation-video-capture",
     "owners": [ "agpalak", "guidou" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 99
   },
   {
     "name": "enable-media-internals",
@@ -2301,6 +2318,11 @@
   {
     "name": "enable-optimization-guide-metadata-validation",
     "owners": [ "rajendrant", "robertogden", "chrome-intelligence-core@google.com"],
+    "expiry_milestone": 100
+  },
+  {
+    "name": "enable-optimization-hints-fetching-msbb",
+    "owners": [ "rajendrant", "robertogden", "chrome-intelligence-core@google.com" ],
     "expiry_milestone": 100
   },
   {
@@ -3135,7 +3157,7 @@
   {
     "name": "force-spectre-v2-mitigation",
     "owners": [ "chromeos-security@google.com" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 100
   },
   {
     "name": "force-startup-signin-promo",
@@ -4227,6 +4249,11 @@
     "expiry_milestone": 97
   },
   {
+    "name": "page-info-store-info",
+    "owners": [ "chrome-shopping@google.com" ],
+    "expiry_milestone": 102
+  },
+  {
     "name": "page-info-version-2-desktop",
     "owners": [ "bsep", "olesiamarukhno@google.com" ],
     "expiry_milestone": 97
@@ -4405,6 +4432,11 @@
     "name": "pull-to-refresh",
     "owners": [ "afakhry", "tclaiborne" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "pwa-uninstall-in-windows-os",
+    "owners": ["dmurph", "desktop-pwas-team@google.com"],
+    "expiry_milestone": 101
   },
   {
     "name": "pwa-update-dialog-for-name-and-icon",
@@ -4626,7 +4658,7 @@
   {
     "name": "run-video-capture-service-in-browser",
     "owners": [ "agpalak", "guidou" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 99
   },
   {
     "name": "safe-browsing-enhanced-protection-promo-android",
@@ -5015,7 +5047,7 @@
   {
     "name": "spectre-v2-mitigation",
     "owners": [ "chromeos-security@google.com" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 100
   },
   {
     "name": "start-surface",

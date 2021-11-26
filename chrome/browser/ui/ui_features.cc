@@ -31,6 +31,10 @@ const base::Feature kChromeTipsInMainMenuNewBadge{
 const base::Feature kChromeWhatsNewUI{"ChromeWhatsNewUI",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether to show a feedback button in the What's New UI.
+const base::FeatureParam<bool> kChromeWhatsNewUIFeedbackButton{
+    &kChromeWhatsNewUI, "ChromeWhatsNewUIFeedbackButton", false};
+
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Enables "new" badge for "Chrome What's New" in Main Chrome Menu | Help.
 const base::Feature kChromeWhatsNewInMainMenuNewBadge{
@@ -216,7 +220,7 @@ const base::Feature kToolbarUseHardwareBitmapDraw{
     "ToolbarUseHardwareBitmapDraw", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kUseRelaunchToUpdateString{
-    "UseRelaunchToUpdateString", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseRelaunchToUpdateString", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // This enables enables persistence of a WebContents in a 1-to-1 association
 // with the current Profile for WebUI bubbles. See https://crbug.com/1177048.
@@ -238,8 +242,17 @@ const base::Feature kWebUIDownloadShelf{"WebUIDownloadShelf",
 const base::Feature kWebUITabStrip{"WebUITabStrip",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// The default value of this flag is aligned with platform behavior to handle
+// context menu with touch.
+// TODO(crbug.com/1257626): Enable this flag for all platforms after launch.
 const base::Feature kWebUITabStripContextMenuAfterTap{
-    "WebUITabStripContextMenuAfterTap", base::FEATURE_DISABLED_BY_DEFAULT};
+  "WebUITabStripContextMenuAfterTap",
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Enables a WebUI Feedback UI, as opposed to the Chrome App UI. See
 // https://crbug.com/1167223.

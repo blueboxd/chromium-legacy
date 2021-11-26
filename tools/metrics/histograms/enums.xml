@@ -14502,7 +14502,8 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="Go to URL"/>
   <int value="20" label="Copy link to text"/>
   <int value="21" label="Search Image with Google Lens"/>
-  <int value="22" label="Search part of page with Google Lens"/>
+  <int value="22" label="Search Images with Google Lens"/>
+  <int value="23" label="Search Images with non-Google visual search provider"/>
 </enum>
 
 <enum name="ContextMenuOptionIOS">
@@ -46493,6 +46494,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Success"/>
   <int value="1" label="Failed to open results in a new tab"/>
   <int value="2" label="Error capturing image from selected region"/>
+  <int value="3" label="User exited the capture mode via the escape key."/>
+  <int value="4"
+      label="User exited the capture mode via the close button on the
+             instructional bubble."/>
+  <int value="5"
+      label="User navigated away from the page while capture mode was open,
+             closing the capture mode."/>
 </enum>
 
 <enum name="LensSdkError">
@@ -47738,6 +47746,7 @@ from previous Chrome versions.
   <int value="-2099457894" label="Mash:enabled"/>
   <int value="-2099035488" label="enable-data-reduction-proxy-bypass-warning"/>
   <int value="-2098610409" label="disable-lcd-text"/>
+  <int value="-2098294029" label="PageInfoStoreInfo:enabled"/>
   <int value="-2098243118" label="OmniboxTailSuggestions:disabled"/>
   <int value="-2097906903" label="ArcNearbySharing:disabled"/>
   <int value="-2097895488" label="NotificationScrollBar:enabled"/>
@@ -47966,6 +47975,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSuggestionUrlTrivialSubdomains:enabled"/>
   <int value="-1939003674" label="NetworkServiceInProcess:disabled"/>
   <int value="-1938263248" label="enable-extension-info-dialog"/>
+  <int value="-1937145719" label="EnableWebAppUninstallFromOsSettings:enabled"/>
   <int value="-1937077699" label="http-form-warning"/>
   <int value="-1936032607" label="enable-experimental-webassembly-features"/>
   <int value="-1935787681" label="SystemNotifications:disabled"/>
@@ -48133,6 +48143,7 @@ from previous Chrome versions.
   <int value="-1834151268" label="OmniboxDynamicMaxAutocomplete:disabled"/>
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
   <int value="-1832575380" label="show-saved-copy"/>
+  <int value="-1832512456" label="LibinputHandleTouchpad:disabled"/>
   <int value="-1832221649" label="disable-out-of-process-pac"/>
   <int value="-1830709105" label="OmniboxPedalsBatch3NonEnglish:disabled"/>
   <int value="-1830472348" label="CryptAuthV2DeviceSync:enabled"/>
@@ -48879,6 +48890,7 @@ from previous Chrome versions.
   <int value="-1261972671" label="OmniboxDocumentProvider:disabled"/>
   <int value="-1261263046"
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:disabled"/>
+  <int value="-1261110018" label="AllowDisableTouchpadHapticFeedback:disabled"/>
   <int value="-1259901957" label="VrBrowserKeyboard:disabled"/>
   <int value="-1259627326" label="AllowRepeatedUpdates:disabled"/>
   <int value="-1258141852" label="ScrollUnification:enabled"/>
@@ -49034,6 +49046,8 @@ from previous Chrome versions.
       label="CryptAuthV2DeviceActivityStatusUseConnectivity:enabled"/>
   <int value="-1156179600" label="OmniboxRichEntitySuggestions:enabled"/>
   <int value="-1155543191" label="CopylessPaste:disabled"/>
+  <int value="-1155071457"
+      label="CCTResizableAllowResizeByUserGesture:disabled"/>
   <int value="-1154834060" label="OmniboxRichAutocompletion:disabled"/>
   <int value="-1154819618" label="FilesNG:enabled"/>
   <int value="-1154343236" label="VrBrowsingTabsView:disabled"/>
@@ -49990,6 +50004,7 @@ from previous Chrome versions.
   <int value="-395454065" label="DisablePostScriptPrinting:disabled"/>
   <int value="-395259448" label="VideoPlayerJsModules:disabled"/>
   <int value="-394734604" label="FillingPasswordsFromAnyOrigin:disabled"/>
+  <int value="-392813122" label="LibinputHandleTouchpad"/>
   <int value="-389664522"
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRefOnInteraction:enabled"/>
   <int value="-389283574" label="IPH_PasswordsAccountStorage:disabled"/>
@@ -50899,6 +50914,7 @@ from previous Chrome versions.
   <int value="330138076" label="enable-clear-browsing-data-counters"/>
   <int value="330439654" label="SyncPseudoUSSExtensions:enabled"/>
   <int value="330653520" label="ChromeShareHighlightsAndroid:enabled"/>
+  <int value="331094131" label="WindowControlMenu:disabled"/>
   <int value="331770879" label="CrostiniAppSearch:disabled"/>
   <int value="331845034" label="enable-webgl-developer-extensions"/>
   <int value="332391072" label="cs-contextual-cards-bar-integration"/>
@@ -50918,6 +50934,7 @@ from previous Chrome versions.
   <int value="345611669"
       label="OmniboxLocalZeroSuggestFrecencyRanking:enabled"/>
   <int value="345664265" label="BlinkHeapIncrementalMarking:disabled"/>
+  <int value="346406287" label="EnableWebAppUninstallFromOsSettings:disabled"/>
   <int value="346430505" label="SidePanel:enabled"/>
   <int value="346711293" label="enable-save-password-bubble"/>
   <int value="347948074" label="WebFeedSort:disabled"/>
@@ -51525,6 +51542,7 @@ from previous Chrome versions.
   <int value="787080596" label="DynamicTcmallocTuning:enabled"/>
   <int value="787385958" label="RegionalLocalesAsDisplayUI:enabled"/>
   <int value="788130042" label="PrivacySandboxSettings2:enabled"/>
+  <int value="790411499" label="PageInfoStoreInfo:disabled"/>
   <int value="791541863" label="NtpPhotosModule:disabled"/>
   <int value="792307132"
       label="KeyboardBasedDisplayArrangementInSettings:enabled"/>
@@ -51666,6 +51684,7 @@ from previous Chrome versions.
   <int value="912119426" label="InfiniteSessionRestore:disabled"/>
   <int value="913138924" label="RecurrentInterstitialFeature:disabled"/>
   <int value="913855453" label="VirtualKeyboardFloatingResizable:disabled"/>
+  <int value="914708297" label="CCTResizableAllowResizeByUserGesture:enabled"/>
   <int value="916316159" label="disable-new-app-list-mixer"/>
   <int value="917285134" label="AutofillAddressProfileSavePrompt:enabled"/>
   <int value="917561046" label="ConversionMeasurement:disabled"/>
@@ -52280,6 +52299,7 @@ from previous Chrome versions.
   <int value="1379182781" label="MessagesForAndroidNearOomReduction:disabled"/>
   <int value="1379571437" label="ExoPointerLock:disabled"/>
   <int value="1379944457" label="EnableMessagesWebPush:disabled"/>
+  <int value="1380367827" label="AllowDisableTouchpadHapticFeedback:enabled"/>
   <int value="1381746642" label="enable-automatic-password-saving"/>
   <int value="1381817717" label="EduCoexistence:enabled"/>
   <int value="1382107019" label="LevelDBPerformRewrite:disabled"/>
@@ -53129,6 +53149,7 @@ from previous Chrome versions.
   <int value="2024172900" label="KidsManagementUrlClassification:disabled"/>
   <int value="2024298022"
       label="AutofillEnableInfoBarAccountIndicationFooterForSyncUsers:disabled"/>
+  <int value="2027729007" label="WindowControlMenu:enabled"/>
   <int value="2027793952" label="EditPasswordsInSettings:disabled"/>
   <int value="2032558514"
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:enabled"/>
@@ -53197,6 +53218,7 @@ from previous Chrome versions.
   <int value="2085186092" label="BulkPrinters:disabled"/>
   <int value="2085438501" label="ChromeHome:enabled"/>
   <int value="2087069781" label="ui-debug-tools:enabled"/>
+  <int value="2088061188" label="LibinputHandleTouchpad:enabled"/>
   <int value="2088446947" label="enable-ephemeral-guest-profiles-on-desktop"/>
   <int value="2089897928" label="enable-audio-focus"/>
   <int value="2089901626" label="QuickSettingsPWA:enabled"/>
@@ -72682,6 +72704,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="113" label="IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE"/>
   <int value="114" label="IDC_CONTENT_CONTEXT_REMOVELINKTOTEXT"/>
   <int value="115" label="IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH"/>
+  <int value="116" label="IDC_CONTENT_CONTEXT_WEB_REGION_SEARCH"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">
@@ -76495,6 +76518,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="OMNIBOX_SHARING_HUB"/>
   <int value="2" label="WEB_CONTEXT_MENU"/>
+  <int value="3" label="APP_MENU_SHARING_HUB"/>
 </enum>
 
 <enum name="ShareTargetUpdateResult">
@@ -89287,6 +89311,10 @@ Called by update_scheduler_enums.py.-->
       label="Page info opened while permission icon was shown in omnibox"/>
   <int value="2" label="Permissions opened after click on permissions icon"/>
   <int value="3" label="Permission changed after click on permissions icon"/>
+  <int value="4" label="Store icon shown in omnibox"/>
+  <int value="5"
+      label="Page info opened while store icon was shown in omnibox"/>
+  <int value="6" label="Store info opened after click on store icon"/>
 </enum>
 
 <enum name="WebSocketCloseCode">
@@ -90183,6 +90211,7 @@ Called by update_scheduler_enums.py.-->
   <int value="1" label="Load succeeded"/>
   <int value="2" label="Load failed and error page whas shown"/>
   <int value="3" label="Load failed and was redirected to NTP"/>
+  <int value="4" label="Load failed and tab was closed"/>
 </enum>
 
 <enum name="WhitelistedDownloadType">

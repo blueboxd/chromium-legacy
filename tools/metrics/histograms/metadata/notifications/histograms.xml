@@ -46,7 +46,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Android.Build" enum="BooleanSuccess"
-    expires_after="M96">
+    expires_after="2022-04-03">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -71,7 +71,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Android.SitesChannel" enum="BooleanUsage"
-    expires_after="2021-10-25">
+    expires_after="2022-04-10">
   <owner>peter@chromium.org</owner>
   <summary>
     Recorded when the Sites channel (which we hope to deprecate) is used as a
@@ -151,7 +151,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Blocker.ScreenCapture.ClosedCount"
-    units="notifications" expires_after="2022-01-23">
+    units="notifications" expires_after="2022-04-24">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -162,7 +162,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Blocker.ScreenCapture.MutedCount"
-    units="notifications" expires_after="2022-01-23">
+    units="notifications" expires_after="2022-04-10">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -175,7 +175,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Blocker.ScreenCapture.ReplacedCount"
-    units="notifications" expires_after="2022-01-23">
+    units="notifications" expires_after="2022-04-24">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -186,7 +186,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Blocker.ScreenCapture.RevealDuration" units="ms"
-    expires_after="2022-01-23">
+    expires_after="2022-04-24">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -197,7 +197,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Blocker.ScreenCapture.SessionDuration"
-    units="ms" expires_after="2022-01-23">
+    units="ms" expires_after="2022-04-17">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -208,7 +208,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Blocker.ScreenCapture.SnoozedCount"
-    units="notifications" expires_after="2021-11-21">
+    units="notifications" expires_after="2022-04-17">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -247,7 +247,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Cros.Actions" enum="NotificationTypeDetailed"
-    expires_after="2021-12-31">
+    expires_after="2022-04-03">
   <owner>tbarzic@chromium.org</owner>
   <owner>tengs@chromium.org</owner>
   <owner>gzadina@google.com</owner>
@@ -268,7 +268,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Database.DeleteBeforeWriteResult"
-    enum="NotificationDatabaseStatus" expires_after="2022-01-02">
+    enum="NotificationDatabaseStatus" expires_after="2022-05-01">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -279,7 +279,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Database.DeleteResult"
-    enum="NotificationDatabaseStatus" expires_after="2022-01-02">
+    enum="NotificationDatabaseStatus" expires_after="2022-04-24">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -299,7 +299,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Database.DestroyResult"
-    enum="NotificationDatabaseStatus" expires_after="2022-01-02">
+    enum="NotificationDatabaseStatus" expires_after="2022-04-24">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -309,7 +309,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Database.ExpiredNotificationCount"
-    units="notifications" expires_after="2022-01-02">
+    units="notifications" expires_after="2022-04-03">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -321,7 +321,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Database.OldestNotificationTimeInMinutes"
-    units="minutes" expires_after="2021-12-26">
+    units="minutes" expires_after="2022-04-17">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -352,7 +352,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Database.ReadForServiceWorkerResult"
-    enum="NotificationDatabaseStatus" expires_after="2021-10-31">
+    enum="NotificationDatabaseStatus" expires_after="2022-04-17">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -384,7 +384,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Database.ReadResult"
-    enum="NotificationDatabaseStatus" expires_after="2021-12-26">
+    enum="NotificationDatabaseStatus" expires_after="2022-04-10">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -394,7 +394,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Database.WriteResult"
-    enum="NotificationDatabaseStatus" expires_after="2021-12-26">
+    enum="NotificationDatabaseStatus" expires_after="2022-04-17">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -436,7 +436,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.LoadProfileResult" enum="BooleanSuccess"
-    expires_after="M96">
+    expires_after="2022-04-17">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -483,7 +483,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.macOS.ServiceProcessKilled" units="ms"
-    expires_after="M96">
+    expires_after="2022-04-03">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -493,7 +493,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.macOS.ServiceProcessRuntime" units="ms"
-    expires_after="2022-02-06">
+    expires_after="2022-04-10">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -549,7 +549,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.NotifierType" enum="NotifierType"
-    expires_after="2021-12-31">
+    expires_after="2022-04-17">
   <owner>tbarzic@chromium.org</owner>
   <owner>tengs@chromium.org</owner>
   <owner>gzadina@google.com</owner>
@@ -560,7 +560,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Permissions.RevokeDeleteCount" units="units"
-    expires_after="2021-10-25">
+    expires_after="2022-04-24">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -623,7 +623,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.PersistentNotificationActionCount"
-    units="buttons" expires_after="2021-12-26">
+    units="buttons" expires_after="2022-04-17">
   <owner>peter@chromium.org</owner>
   <summary>
     The number of action buttons the developer provided for a persistent Web
@@ -632,7 +632,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.PersistentNotificationDisplayResult"
-    enum="PersistentNotificationDisplayResult" expires_after="2021-12-26">
+    enum="PersistentNotificationDisplayResult" expires_after="2022-04-03">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -642,7 +642,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.PersistentWebNotificationClickEventResult"
-    enum="ServiceWorkerStatusCode" expires_after="M98">
+    enum="ServiceWorkerStatusCode" expires_after="2022-05-01">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -652,7 +652,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.PersistentWebNotificationClickResult"
-    enum="PlatformNotificationStatus" expires_after="2021-12-26">
+    enum="PlatformNotificationStatus" expires_after="2022-04-03">
   <owner>peter@chromium.org</owner>
   <owner>deepak.m1@samsung.com</owner>
   <summary>
@@ -672,7 +672,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.PersistentWebNotificationCloseResult"
-    enum="PlatformNotificationStatus" expires_after="2022-02-27">
+    enum="PlatformNotificationStatus" expires_after="2022-05-01">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -682,7 +682,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Scheduler.BackgroundTask.Event"
-    enum="NotificationSchedulerBackgroundTaskEvent" expires_after="2021-12-31">
+    enum="NotificationSchedulerBackgroundTaskEvent" expires_after="2022-05-01">
   <owner>xingliu@chromium.org</owner>
   <owner>hesen@chromium.org</owner>
   <summary>
@@ -731,7 +731,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Scheduler.IconDb.RecordCount" units="records"
-    expires_after="2021-12-31">
+    expires_after="2022-05-01">
   <owner>xingliu@chromium.org</owner>
   <owner>hesen@chromium.org</owner>
   <summary>
@@ -805,7 +805,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Scheduler.NotificationDb.InitResult"
-    enum="BooleanSuccess" expires_after="2021-12-31">
+    enum="BooleanSuccess" expires_after="2022-05-01">
   <owner>xingliu@chromium.org</owner>
   <owner>hesen@chromium.org</owner>
   <summary>
@@ -836,7 +836,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Notifications.Scheduler.NotificationLifeCycleEvent"
     enum="NotificationSchedulerNotificationLifeCycleEvent"
-    expires_after="2021-12-31">
+    expires_after="2022-04-24">
 <!-- Name completed by histogram_suffixes name="NotificationSchedulerClientType" -->
 
   <owner>xingliu@chromium.org</owner>
@@ -872,7 +872,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Scheduler.UserAction"
-    enum="NotificationSchedulerUserActionType" expires_after="2021-12-31">
+    enum="NotificationSchedulerUserActionType" expires_after="2022-05-01">
 <!-- Name completed by histogram_suffixes name="NotificationSchedulerClientType" -->
 
   <owner>xingliu@chromium.org</owner>
@@ -1043,7 +1043,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.DisplayFailure" enum="Hresult"
-    expires_after="M98">
+    expires_after="2022-05-01">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1110,7 +1110,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.GetSettingPolicyStartup"
-    enum="WindowsNotificationGetSettingPolicy" expires_after="2022-01-02">
+    enum="WindowsNotificationGetSettingPolicy" expires_after="2022-04-17">
   <owner>finnur@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
@@ -1121,7 +1121,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.GetSettingStatus"
-    enum="WindowsNotificationGetSettingStatus" expires_after="2022-01-02">
+    enum="WindowsNotificationGetSettingStatus" expires_after="2022-04-24">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1131,7 +1131,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Notifications.Windows.GetSettingStatusStartup"
-    enum="WindowsNotificationGetSettingStatus" expires_after="M98">
+    enum="WindowsNotificationGetSettingStatus" expires_after="2022-05-01">
   <owner>finnur@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>

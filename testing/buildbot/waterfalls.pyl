@@ -1108,6 +1108,20 @@
           'all',
         ],
       },
+      'android-10-x86-fyi-rel-tests': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          '10-x86-emulator',
+          'emulator-4-cores',
+          'linux-xenial-or-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'webview_cts_tests_gtest',
+        },
+        'use_swarming': True,
+      },
       'android-12-x64-fyi-rel': {
         'mixins': [
           '12-x64-emulator',
@@ -2854,20 +2868,6 @@
         },
         'use_swarming': True,
         'os_type': 'android',
-      },
-      'arm-upload-perfetto': {
-        'additional_compile_targets': [ 'trace_processor_shell' ],
-        'test_suites': {
-          'isolated_scripts': 'upload_perfetto',
-        },
-        'use_swarming': False,
-      },
-      'arm64-upload-perfetto': {
-        'additional_compile_targets': [ 'trace_processor_shell' ],
-        'test_suites': {
-          'isolated_scripts': 'upload_perfetto',
-        },
-        'use_swarming': False,
       },
       'chromeos-amd64-generic-rel (goma cache silo)': {
         'additional_compile_targets': [
@@ -4917,7 +4917,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win7_amd_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_win_nvidia_amd_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win7_nvidia_amd_release_telemetry_tests',
         },
       },
       'Win7 FYI Release (NVIDIA)': {
@@ -4929,7 +4929,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win7_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_win_nvidia_amd_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win7_nvidia_amd_release_telemetry_tests',
         },
       },
       'Win7 FYI x64 Release (NVIDIA)': {
@@ -4941,7 +4941,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win7_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_win_nvidia_amd_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win7_nvidia_amd_release_telemetry_tests',
         },
         'use_multi_dimension_trigger_script': True,
         'alternate_swarming_dimensions': [

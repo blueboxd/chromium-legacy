@@ -41,7 +41,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.ClickToCallAppsToShow" units="apps"
-    expires_after="2021-10-25">
+    expires_after="2022-05-01">
 <!-- Name completed by histogram_suffixes name="SharingClickToCallUi" -->
 
   <owner>mvanouwerkerk@chromium.org</owner>
@@ -53,7 +53,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.ClickToCallDevicesToShow" units="devices"
-    expires_after="M98">
+    expires_after="2022-04-17">
 <!-- Name completed by histogram_suffixes name="SharingClickToCallUi" -->
 
   <owner>mvanouwerkerk@chromium.org</owner>
@@ -65,7 +65,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.ClickToCallDialerPresent" enum="BooleanPresent"
-    expires_after="M98">
+    expires_after="2022-04-24">
   <owner>mvanouwerkerk@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -134,7 +134,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.DefaultSharesheetAndroid.Opened" enum="ShareOrigin"
-    expires_after="M100">
+    expires_after="2022-04-17">
   <owner>sophey@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <summary>
@@ -219,6 +219,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Sharing.LongScreenshots.BitmapSelectedHeight" units="pixels"
+    expires_after="M98">
+  <owner>skare@chromium.org</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
+  <summary>
+    Height of the long screenshot output from the region-selection dialog.
+    Recorded on region selection dialog confirmation.
+  </summary>
+</histogram>
+
 <histogram name="Sharing.LongScreenshots.Event"
     enum="SharingLongScreenshotsEvent" expires_after="M98">
   <owner>skare@chromium.org</owner>
@@ -245,7 +255,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Sharing.MessageAckTime" units="ms" expires_after="M97">
+<histogram name="Sharing.MessageAckTime" units="ms" expires_after="2022-04-24">
 <!-- Name completed by histogram_suffixes name="SharingChannelType",
      name="SharingDevicePlatform" and name="SharingMessage" -->
 
@@ -270,7 +280,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.MessageReceivedType" enum="SharingMessageType"
-    expires_after="M98">
+    expires_after="2022-05-01">
   <owner>mvanouwerkerk@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -337,7 +347,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.RemoteCopyReceivedTextSize" units="bytes"
-    expires_after="M97">
+    expires_after="2022-05-01">
   <owner>mvanouwerkerk@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -377,7 +387,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.RemoteCopyWriteTextDetectionTime" units="ms"
-    expires_after="M97">
+    expires_after="2022-05-01">
   <owner>mvanouwerkerk@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -416,7 +426,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.ScreenshotsAndroid.IsEditorDismissedOnStart"
-    enum="Boolean" expires_after="M97">
+    enum="Boolean" expires_after="2022-05-01">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>kristipark@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
@@ -424,7 +434,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.ScrollCapture.BitmapGeneratorStatus"
-    enum="SharingScrollCaptureBitmapGenerationStatus" expires_after="M98">
+    enum="SharingScrollCaptureBitmapGenerationStatus"
+    expires_after="2022-05-01">
   <owner>yashard@chromium.org</owner>
   <owner>ckitagawa@chromium.org</owner>
   <owner>src/components/paint_preview/OWNERS</owner>
@@ -437,7 +448,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.ScrollCapture.SuccessfulCaptureDuration" units="ms"
-    expires_after="M98">
+    expires_after="2022-05-01">
   <owner>yashard@chromium.org</owner>
   <owner>ckitagawa@chromium.org</owner>
   <owner>src/components/paint_preview/OWNERS</owner>
@@ -449,7 +460,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.SendAckMessageResult" enum="SharingSendMessageResult"
-    expires_after="M97">
+    expires_after="2022-04-03">
 <!-- Name completed by histogram_suffixes name="SharingChannelType",
      name="SharingDevicePlatform" and name="SharingMessage" -->
 
@@ -462,7 +473,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.SendMessageResult" enum="SharingSendMessageResult"
-    expires_after="M97">
+    expires_after="2022-04-03">
 <!-- Name completed by histogram_suffixes SharingChannelType,
     SharingDevicePlatform, SharingMessage, and SharingPulseInterval. -->
 
@@ -476,7 +487,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.SendTabToSelf.NotificationStatus"
-    enum="SendTabToSelfNotificationStatus" expires_after="M100">
+    enum="SendTabToSelfNotificationStatus" expires_after="2022-04-17">
   <owner>ellyjones@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <summary>
@@ -560,7 +571,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.ShareTargetUpdate.ResourceBundleResult"
-    enum="ShareTargetUpdateResult" expires_after="M98">
+    enum="ShareTargetUpdateResult" expires_after="2022-05-01">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>kristipark@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
@@ -589,7 +600,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.SharingHubAndroid.Opened" enum="ShareOrigin"
-    expires_after="M100">
+    expires_after="2022-04-17">
   <owner>sophey@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <summary>
@@ -614,7 +625,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.SharingHubAndroid.ThirdPartyAppUsage"
-    enum="SharingHubBottomRowIndex" expires_after="M100">
+    enum="SharingHubBottomRowIndex" expires_after="2022-04-17">
   <owner>sophey@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <summary>
@@ -623,8 +634,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram
+    name="Sharing.SharingHubAndroid.TimeToSaveScreenshotImageBeforeShare"
+    units="ms" expires_after="M98">
+  <owner>skare@chromium.org</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
+  <summary>
+    Records the amount of time taken to save the output bitmap from the image
+    editor to temporary storage and generate a URI. Recorded when the followup
+    share actions panel is displayed.
+  </summary>
+</histogram>
+
 <histogram name="Sharing.SharingHubAndroid.TimeToShare" units="ms"
-    expires_after="M100">
+    expires_after="2022-04-17">
   <owner>sophey@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <summary>
@@ -634,7 +657,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.SharingHubAndroid.TimeToShowShareSheet" units="ms"
-    expires_after="M100">
+    expires_after="2022-04-17">
   <owner>sophey@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <summary>
@@ -666,7 +689,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.SharingHubDesktop.CrOSSharesheetResult"
-    enum="SharingHubSharesheetResult" expires_after="M99">
+    enum="SharingHubSharesheetResult" expires_after="2022-04-03">
   <owner>kristipark@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <summary>
@@ -676,7 +699,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherAvailableDeviceCount" units="devices"
-    expires_after="M100">
+    expires_after="2022-04-17">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity@google.com</owner>
   <summary>
@@ -721,7 +744,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.WebRtc.IceConfigFetched" units="ice_servers"
-    expires_after="M97">
+    expires_after="2022-04-03">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>

@@ -4302,6 +4302,22 @@
             ]
         }
     ],
+    "HoldbackRemoveMobileViewportDoubleTap": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "RemoveMobileViewportDoubleTap"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSCPEPasswordGeneration": [
         {
             "platforms": [
@@ -5817,6 +5833,46 @@
                     "enable_features": [
                         "LoadModelFileForEachExecution",
                         "PageContentAnnotations"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PageInfoAboutThisSiteAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_211116",
+                    "params": {
+                        "ShowSampleContent": "false"
+                    },
+                    "enable_features": [
+                        "PageInfoAboutThisSite"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PageInfoAboutThisSiteDesktop": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows",
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_211116",
+                    "params": {
+                        "ShowSampleContent": "false"
+                    },
+                    "enable_features": [
+                        "OptimizationHintsFetchingAnonymousDataConsent",
+                        "PageInfoAboutThisSite"
                     ]
                 }
             ]

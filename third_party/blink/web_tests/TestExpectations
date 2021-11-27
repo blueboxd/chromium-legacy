@@ -350,7 +350,6 @@ crbug.com/1106590 virtual/gpu/fast/canvas/canvas-path-non-invertible-transform.h
 
 crbug.com/1237275 fast/canvas/layers-lonebeginlayer.html [ Failure Pass ]
 crbug.com/1237275 fast/canvas/layers-unmatched-beginlayer.html [ Failure Pass ]
-crbug.com/1231615 fast/canvas/layers-nested.html [ Failure Pass ]
 
 # Assorted WPT canvas tests failing
 crbug.com/1093709 external/wpt/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.resize.html [ Failure Pass ]
@@ -6360,7 +6359,6 @@ crbug.com/1197444 virtual/scroll-unification-prefer_compositing_to_lcd_text/scro
 crbug.com/1201225 external/wpt/pointerevents/pointerlock/pointerevent_pointerrawupdate_in_pointerlock.html [ Failure Pass Timeout ]
 crbug.com/1198232 [ Win ] virtual/scroll-unification/fast/events/mouseenter-mouseleave-on-drag.html [ Failure Pass ]
 crbug.com/1201346 http/tests/origin_trials/webexposed/bfcache-experiment-http-header-origin-trial.php [ Failure Pass ]
-crbug.com/1201348 [ Linux ] virtual/shared_array_buffer_on_desktop/http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-oopif.js [ Pass Timeout ]
 crbug.com/1201365 virtual/portals/http/tests/inspector-protocol/portals/device-emulation-portals.js [ Pass Timeout ]
 
 # Sheriff 2021-04-22
@@ -7332,3 +7330,9 @@ crbug.com/1273282 [ Win7 ] external/wpt/html/canvas/offscreen/manual/the-offscre
 
 # Sheriff 2021-11-24
 crbug.com/1273541 fast/block/float/float-on-clean-line-subsequently-dirtied.html [ Failure Pass ]
+
+# Sheriff 2021-11-26
+crbug.com/1201879 [ Linux ] http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-oopif.js [ Pass Failure Timeout ]
+crbug.com/1274171 inspector-protocol/debugger/debugger-setTimeout-sourceUrl-dedicated-worker-loop.js [ Pass Timeout ]
+crbug.com/1271485 http/tests/inspector-protocol/network/load-network-resource-different-frame-cookie.js [ Pass Failure Timeout ]
+crbug.com/1228803 [ Linux ] fast/peerconnection/RTCPeerConnection-garbagecollected.html [ Pass Failure ]

@@ -80,6 +80,9 @@ declare_args() {
 assert(!enable_mutex_priority_inheritance || is_chromecast,
        "Do not enable PI mutexes without consulting the security team")
 
+assert(!is_nacl || is_nacl_saigo,
+       "base must not be built in most nacl toolchains")
+
 # Determines whether libevent should be dep.
 dep_libevent =
     !is_fuchsia && !is_win && !is_mac && !(is_nacl && !is_nacl_nonsfi)
@@ -2682,7 +2685,6 @@ test("base_perftests") {
     "task/thread_pool/thread_pool_perftest.cc",
     "threading/counter_perftest.cc",
     "threading/thread_local_storage_perftest.cc",
-    "vlog_perftest.cc",
 
     # "test/run_all_unittests.cc",
     "json/json_perftest.cc",

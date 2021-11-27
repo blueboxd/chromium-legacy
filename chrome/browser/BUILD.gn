@@ -5097,6 +5097,8 @@ static_library("browser") {
       "chromeos/policy/dlp/dlp_rules_manager_impl.h",
       "feedback/show_feedback_page_lacros.cc",
       "first_run/first_run_internal_lacros.cc",
+      "lacros/account_manager/account_cache.cc",
+      "lacros/account_manager/account_cache.h",
       "lacros/account_manager/account_manager_util.cc",
       "lacros/account_manager/account_manager_util.h",
       "lacros/account_manager/account_profile_mapper.cc",
@@ -5454,7 +5456,6 @@ static_library("browser") {
       "//third_party/wtl",
       "//ui/aura_extra",
       "//ui/base:fullscreen_win",
-      "//ui/base/cursor",
     ]
     allow_circular_includes_from +=
         [ "//chrome/browser/safe_browsing/chrome_cleaner" ]

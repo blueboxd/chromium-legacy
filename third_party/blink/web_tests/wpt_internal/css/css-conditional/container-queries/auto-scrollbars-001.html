@@ -10,13 +10,13 @@
     overflow-y: auto;
   }
   #container {
-    contain: inline-size layout style;
+    container-type: inline-size;
   }
   #inner {
     height: 100px;
     border-bottom: 1px solid red;
   }
-  @container (max-width: 99px) {
+  @container size(max-width: 99px) {
     #inner {
       height: 50px;
     }

@@ -1742,6 +1742,7 @@ crbug.com/1158554 external/wpt/css/css-conditional/css-supports-042.xht [ Failur
 crbug.com/1145970 wpt_internal/css/css-conditional/container-queries/* [ Skip ]
 crbug.com/1146092 wpt_internal/css/css-contain/* [ Skip ]
 crbug.com/1145970 virtual/container-queries/* [ Pass ]
+crbug.com/1273913 virtual/container-queries/wpt_internal/css/css-conditional/container-queries/at-container-017.html [ Failure ]
 crbug.com/1249468 virtual/container-queries/wpt_internal/css/css-conditional/container-queries/block-size-and-min-height.html [ Failure ]
 crbug.com/829028 virtual/container-queries/wpt_internal/css/css-contain/multicol-block-size.html [ Failure ]
 crbug.com/829028 virtual/container-queries/wpt_internal/css/css-contain/multicol-inline-size.html [ Failure ]
@@ -5899,11 +5900,6 @@ crbug.com/1105271 [ Mac ] scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.
 crbug.com/1105274 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Failure Pass Skip Timeout ]
 crbug.com/1105275 [ Mac ] fast/dom/Window/window-onFocus.html [ Failure Pass ]
 
-# Temporarily disable tests to allow fixing of devtools path escaping
-crbug.com/1094436 http/tests/devtools/overrides/project-added-with-existing-files-bind.js [ Failure Pass Skip Timeout ]
-crbug.com/1094436 http/tests/devtools/persistence/automapping-urlencoded-paths.js [ Failure Pass ]
-crbug.com/1094436 http/tests/devtools/sources/debugger/navigator-view.js [ Crash Failure Pass ]
-
 # This test fails due to the linked bug since input is now routed through the compositor.
 crbug.com/1112508 fast/forms/number/number-wheel-event.html [ Failure ]
 
@@ -7137,7 +7133,6 @@ crbug.com/1249176 [ Mac11-arm64 ] virtual/not-site-per-process/external/wpt/html
 crbug.com/1250457 [ Mac ] virtual/scroll-unification/plugins/plugin-map-data-to-src.html [ Failure ]
 crbug.com/1250457 [ Mac ] storage/websql/open-database-set-empty-version.html [ Timeout ]
 crbug.com/1250457 [ Mac ] virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/1-iframe/parent-no-child-yes-same.sub.https.html [ Timeout ]
-crbug.com/1250457 [ Mac ] virtual/plz-dedicated-worker-cors-rfc1918/http/tests/security/cors-rfc1918/external-to-internal-xhr.php [ Timeout ]
 crbug.com/1250457 [ Mac ] virtual/portals/http/tests/devtools/portals/portals-console.js [ Skip Timeout ]
 crbug.com/1250457 [ Mac ] virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-inactive-pseudo.html [ Timeout ]
 crbug.com/1250457 [ Mac ] virtual/prerender/wpt_internal/prerender/csp-prefetch-src-allow.html [ Skip Timeout ]
@@ -7377,3 +7372,7 @@ crbug.com/1201879 [ Linux ] http/tests/inspector-protocol/issues/mixed-content-i
 crbug.com/1274171 inspector-protocol/debugger/debugger-setTimeout-sourceUrl-dedicated-worker-loop.js [ Pass Timeout ]
 crbug.com/1271485 http/tests/inspector-protocol/network/load-network-resource-different-frame-cookie.js [ Failure Pass Timeout ]
 crbug.com/1228803 [ Linux ] fast/peerconnection/RTCPeerConnection-garbagecollected.html [ Failure Pass ]
+
+# Sheriff 2021-11-29
+crbug.com/1274458 external/wpt/audio-output/selectAudioOutput-permissions-policy.https.sub.html [ Failure Pass ]
+crbug.com/1239485 [ Mac ] fast/frames/iframe-plugin-load-remove-document-crash.html [ Failure Pass ]

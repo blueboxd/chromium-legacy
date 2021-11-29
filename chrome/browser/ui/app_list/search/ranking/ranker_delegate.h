@@ -17,6 +17,9 @@ class SearchController;
 // A delegate for a series of rankers. Rankers can be added via AddRanker, and
 // all other methods will delegate the call to each ranker in the order they
 // were added.
+//
+// This is the place to configure experiments or flags that change ranking
+// behavior.
 class RankerDelegate : public Ranker {
  public:
   RankerDelegate(Profile* profile,
@@ -26,24 +29,20 @@ class RankerDelegate : public Ranker {
   RankerDelegate(const RankerDelegate&) = delete;
   RankerDelegate& operator=(const RankerDelegate&) = delete;
 
-  void AddRanker(std::unique_ptr<Ranker> ranker);
-
   // Ranker:
   void Start(const std::u16string& query,
              ResultsMap& results,
              CategoriesList& categories) override;
-  absl::optional<std::vector<double>> RankResults(
-      ResultsMap& results,
-      CategoriesList& categories,
-      ProviderType provider) override;
-  absl::optional<std::vector<double>> RankCategories(
-      ResultsMap& results,
-      CategoriesList& categories,
-      ProviderType provider) override;
+  void UpdateResultRanks(ResultsMap& results, ProviderType provider) override;
+  void UpdateCategoryRanks(const ResultsMap& results,
+                           CategoriesList& categories,
+                           ProviderType provider) override;
   void Train(const LaunchData& launch) override;
   void Remove(ChromeSearchResult* result) override;
 
  private:
+  void AddRanker(std::unique_ptr<Ranker> ranker);
+
   std::vector<std::unique_ptr<Ranker>> rankers_;
 };
 

@@ -5,14 +5,14 @@
 <link rel="stylesheet" href="/fonts/ahem.css">
 <style>
   #container {
-    contain: size layout style;
+    container-type: size;
     width: 50vw;
     height: 50vh;
   }
   #orthogonal {
     font: 50px/1 Ahem;
   }
-  @container (max-width: 100px) {
+  @container size(max-width: 100px) {
     #orthogonal {
       writing-mode: vertical-lr;
     }

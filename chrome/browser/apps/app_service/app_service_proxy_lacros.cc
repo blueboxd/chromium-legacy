@@ -288,11 +288,10 @@ void AppServiceProxyLacros::Launch(const std::string& app_id,
     return;
   }
 
-  auto launch_params = crosapi::mojom::LaunchParams::New();
-  launch_params->app_id = app_id;
-  launch_params->launch_source = launch_source;
   service->GetRemote<crosapi::mojom::AppServiceProxy>()->Launch(
-      std::move(launch_params));
+      CreateCrosapiLaunchParamsWithEventFlags(this, app_id, event_flags,
+                                              launch_source,
+                                              display::kInvalidDisplayId));
 }
 
 void AppServiceProxyLacros::LaunchAppWithFiles(
@@ -300,7 +299,25 @@ void AppServiceProxyLacros::LaunchAppWithFiles(
     int32_t event_flags,
     apps::mojom::LaunchSource launch_source,
     apps::mojom::FilePathsPtr file_paths) {
-  NOTIMPLEMENTED();
+  auto* service = chromeos::LacrosService::Get();
+
+  if (!service || !service->IsAvailable<crosapi::mojom::AppServiceProxy>()) {
+    return;
+  }
+
+  if (crosapi_app_service_proxy_version_ <
+      int{crosapi::mojom::AppServiceProxy::MethodMinVersions::
+              kLaunchMinVersion}) {
+    LOG(WARNING) << "Ash AppServiceProxy version "
+                 << crosapi_app_service_proxy_version_
+                 << " does not support Launch().";
+    return;
+  }
+  auto params = CreateCrosapiLaunchParamsWithEventFlags(
+      this, app_id, event_flags, launch_source, display::kInvalidDisplayId);
+  params->intent = apps_util::CreateCrosapiIntentForViewFiles(file_paths);
+  service->GetRemote<crosapi::mojom::AppServiceProxy>()->Launch(
+      std::move(params));
 }
 
 void AppServiceProxyLacros::LaunchAppWithIntent(
@@ -325,13 +342,13 @@ void AppServiceProxyLacros::LaunchAppWithIntent(
     return;
   }
 
-  auto launch_params = crosapi::mojom::LaunchParams::New();
-  launch_params->app_id = app_id;
-  launch_params->launch_source = launch_source;
-  launch_params->intent =
+  auto params = CreateCrosapiLaunchParamsWithEventFlags(
+      this, app_id, event_flags, launch_source,
+      window_info ? window_info->display_id : display::kInvalidDisplayId);
+  params->intent =
       apps_util::ConvertAppServiceToCrosapiIntent(intent, profile_);
   service->GetRemote<crosapi::mojom::AppServiceProxy>()->Launch(
-      std::move(launch_params));
+      std::move(params));
 }
 
 void AppServiceProxyLacros::LaunchAppWithUrl(
@@ -346,6 +363,24 @@ void AppServiceProxyLacros::LaunchAppWithUrl(
 
 void AppServiceProxyLacros::LaunchAppWithParams(AppLaunchParams&& params,
                                                 LaunchCallback callback) {
+  auto* service = chromeos::LacrosService::Get();
+
+  if (!service || !service->IsAvailable<crosapi::mojom::AppServiceProxy>()) {
+    return;
+  }
+
+  if (crosapi_app_service_proxy_version_ <
+      int{crosapi::mojom::AppServiceProxy::MethodMinVersions::
+              kLaunchMinVersion}) {
+    LOG(WARNING) << "Ash AppServiceProxy version "
+                 << crosapi_app_service_proxy_version_
+                 << " does not support Launch().";
+    return;
+  }
+
+  service->GetRemote<crosapi::mojom::AppServiceProxy>()->Launch(
+      ConvertLaunchParamsToCrosapi(params, profile_));
+
   // TODO(crbug.com/1244506): Add params on crosapi and implement this.
   std::move(callback).Run(LaunchResult());
 }

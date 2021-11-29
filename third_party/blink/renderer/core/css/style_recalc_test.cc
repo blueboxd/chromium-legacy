@@ -51,12 +51,12 @@ TEST_F(StyleRecalcTest, SkipStyleRecalcForContainer) {
     <style>
       #outer { width: 300px; }
       #outer.narrow { width: 200px; }
-      #container { contain: inline-size layout style; }
+      #container { container-type: inline-size; }
       #container.narrow { width: 100px; }
-      @container (max-width: 200px) {
+      @container size(max-width: 200px) {
         #affected { color: red; }
       }
-      @container (max-width: 100px) {
+      @container size(max-width: 100px) {
         #affected { color: green; }
       }
       .flip { color: pink; }
@@ -186,7 +186,7 @@ TEST_F(StyleRecalcTest, SkipStyleRecalcForContainerCleanSubtree) {
     <style>
       #container { container-type: inline-size; }
       #container.narrow { width: 100px; }
-      @container (max-width: 100px) {
+      @container size(max-width: 100px) {
         #affected { color: green; }
       }
     </style>
@@ -219,7 +219,7 @@ TEST_F(StyleRecalcTest, SkipAttachLayoutTreeForContainer) {
         display: inline-block;
         color: pink; /* Make sure there's a recalc to skip. */
       }
-      @container (max-width: 100px) {
+      @container size(max-width: 100px) {
         #affected { color: green; }
       }
     </style>

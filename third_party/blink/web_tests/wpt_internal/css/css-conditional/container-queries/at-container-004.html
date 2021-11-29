@@ -11,11 +11,11 @@
 <iframe id=iframe srcdoc="
   <style>
     div#container {
-      contain: size layout style;
+      container-type: size;
       height: 20px;
     }
     div#child { color: red; }
-    @container (min-width: 300px) {
+    @container size(min-width: 300px) {
       div#child { color: green; }
     }
   </style>

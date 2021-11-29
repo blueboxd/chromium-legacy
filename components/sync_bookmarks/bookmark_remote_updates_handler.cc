@@ -41,7 +41,7 @@ enum class RemoteBookmarkUpdateError {
   // Invalid unique position.
   // kDeprecatedInvalidUniquePosition = 2,
   // Permanent node creation in an incremental update.
-  kPermanentNodeCreationAfterMerge = 3,
+  // kDeprecatedPermanentNodeCreationAfterMerge = 3,
   // Parent entity not found in server.
   kMissingParentEntity = 4,
   // Parent node not found locally.
@@ -68,7 +68,7 @@ void LogProblematicBookmark(RemoteBookmarkUpdateError problem) {
   base::UmaHistogramEnumeration("Sync.ProblematicServerSideBookmarks", problem);
 }
 
-// Recursive method to traverse a forest created by ReorderUpdates() to to
+// Recursive method to traverse a forest created by ReorderValidUpdates() to
 // emit updates in top-down order. |ordered_updates| must not be null because
 // traversed updates are appended to |*ordered_updates|.
 void TraverseAndAppendChildren(
@@ -127,6 +127,40 @@ size_t ComputeChildNodeIndex(const bookmarks::BookmarkNode* parent,
       });
 
   return iter - parent->children().begin();
+}
+
+bool IsPermanentNodeUpdate(const syncer::EntityData& update_entity) {
+  return update_entity.parent_id == "0" ||
+         !update_entity.server_defined_unique_tag.empty();
+}
+
+// Checks that the |update_entity| is valid and returns false otherwise. It is
+// used to verify non-deletion updates. |update| must not be a deletion and a
+// permanent node (they are processed in a different way).
+bool IsValidUpdate(const syncer::EntityData& update_entity) {
+  DCHECK(!update_entity.is_deleted());
+  DCHECK(!IsPermanentNodeUpdate(update_entity));
+
+  if (!IsValidBookmarkSpecifics(update_entity.specifics.bookmark())) {
+    // Ignore updates with invalid specifics.
+    DLOG(ERROR)
+        << "Couldn't process an update bookmark with an invalid specifics.";
+    LogProblematicBookmark(RemoteBookmarkUpdateError::kInvalidSpecifics);
+    return false;
+  }
+
+  if (!HasExpectedBookmarkGuid(update_entity.specifics.bookmark(),
+                               update_entity.client_tag_hash,
+                               update_entity.originator_cache_guid,
+                               update_entity.originator_client_item_id)) {
+    // Ignore updates with an unexpected GUID.
+    DLOG(ERROR) << "Couldn't process an update bookmark with unexpected GUID: "
+                << update_entity.specifics.bookmark().guid();
+    LogProblematicBookmark(RemoteBookmarkUpdateError::kUnexpectedGuid);
+    return false;
+  }
+
+  return true;
 }
 
 void ApplyRemoteUpdate(
@@ -206,42 +240,12 @@ void BookmarkRemoteUpdatesHandler::Process(
   // re-encryption phase at the end.
   std::unordered_set<std::string> entities_with_up_to_date_encryption;
 
-  for (const syncer::UpdateResponseData* update : ReorderUpdates(&updates)) {
+  for (const syncer::UpdateResponseData* update :
+       ReorderValidUpdates(&updates)) {
     const syncer::EntityData& update_entity = update->entity;
 
-    // Ignore changes to the permanent nodes (e.g. bookmarks bar). We only
-    // care about their children.
-    if (!update_entity.server_defined_unique_tag.empty()) {
-      if (bookmark_tracker_->GetEntityForSyncId(update_entity.id) == nullptr) {
-        DLOG(ERROR)
-            << "Permanent nodes should have been merged during intial sync.";
-        LogProblematicBookmark(
-            RemoteBookmarkUpdateError::kPermanentNodeCreationAfterMerge);
-      }
-      continue;
-    }
-
-    // Only non-deletions should have valid specifics and unique positions.
-    if (!update_entity.is_deleted()) {
-      if (!IsValidBookmarkSpecifics(update_entity.specifics.bookmark())) {
-        // Ignore updates with invalid specifics.
-        DLOG(ERROR)
-            << "Couldn't process an update bookmark with an invalid specifics.";
-        LogProblematicBookmark(RemoteBookmarkUpdateError::kInvalidSpecifics);
-        continue;
-      }
-      if (!HasExpectedBookmarkGuid(update_entity.specifics.bookmark(),
-                                   update_entity.client_tag_hash,
-                                   update_entity.originator_cache_guid,
-                                   update_entity.originator_client_item_id)) {
-        // Ignore updates with an unexpected GUID.
-        DLOG(ERROR)
-            << "Couldn't process an update bookmark with unexpected GUID: "
-            << update_entity.specifics.bookmark().guid();
-        LogProblematicBookmark(RemoteBookmarkUpdateError::kUnexpectedGuid);
-        continue;
-      }
-    }
+    DCHECK(!IsPermanentNodeUpdate(update_entity));
+    DCHECK(update_entity.is_deleted() || IsValidUpdate(update_entity));
 
     bool should_ignore_update = false;
     const SyncedBookmarkTracker::Entity* tracked_entity =
@@ -365,9 +369,9 @@ void BookmarkRemoteUpdatesHandler::Process(
 
 // static
 std::vector<const syncer::UpdateResponseData*>
-BookmarkRemoteUpdatesHandler::ReorderUpdatesForTest(
+BookmarkRemoteUpdatesHandler::ReorderValidUpdatesForTest(
     const syncer::UpdateResponseDataList* updates) {
-  return ReorderUpdates(updates);
+  return ReorderValidUpdates(updates);
 }
 
 // static
@@ -380,7 +384,7 @@ size_t BookmarkRemoteUpdatesHandler::ComputeChildNodeIndexForTest(
 
 // static
 std::vector<const syncer::UpdateResponseData*>
-BookmarkRemoteUpdatesHandler::ReorderUpdates(
+BookmarkRemoteUpdatesHandler::ReorderValidUpdates(
     const syncer::UpdateResponseDataList* updates) {
   // This method sorts the remote updates according to the following rules:
   // 1. Creations and updates come before deletions.
@@ -408,14 +412,21 @@ BookmarkRemoteUpdatesHandler::ReorderUpdates(
                      base::StringPieceHash>
       parent_to_children;
 
-  // Add only non-deletions to |id_to_updates|.
+  // Add only valid, non-deletions to |id_to_updates|.
+  int invalid_updates_count = 0;
+  int root_node_updates_count = 0;
   for (const syncer::UpdateResponseData& update : *updates) {
     const syncer::EntityData& update_entity = update.entity;
     // Ignore updates to root nodes.
-    if (update_entity.parent_id == "0") {
+    if (IsPermanentNodeUpdate(update_entity)) {
+      ++root_node_updates_count;
       continue;
     }
     if (update_entity.is_deleted()) {
+      continue;
+    }
+    if (!IsValidUpdate(update_entity)) {
+      ++invalid_updates_count;
       continue;
     }
     id_to_updates[update_entity.id] = &update;
@@ -439,14 +450,11 @@ BookmarkRemoteUpdatesHandler::ReorderUpdates(
     TraverseAndAppendChildren(root, id_to_updates, parent_to_children,
                               &ordered_updates);
   }
-
-  int root_node_updates_count = 0;
   // Add deletions.
   for (const syncer::UpdateResponseData& update : *updates) {
     const syncer::EntityData& update_entity = update.entity;
     // Ignore updates to root nodes.
-    if (update_entity.parent_id == "0") {
-      root_node_updates_count++;
+    if (IsPermanentNodeUpdate(update_entity)) {
       continue;
     }
     if (update_entity.is_deleted()) {
@@ -454,7 +462,8 @@ BookmarkRemoteUpdatesHandler::ReorderUpdates(
     }
   }
   // All non root updates should have been included in |ordered_updates|.
-  DCHECK_EQ(updates->size(), ordered_updates.size() + root_node_updates_count);
+  DCHECK_EQ(updates->size(), ordered_updates.size() + root_node_updates_count +
+                                 invalid_updates_count);
   return ordered_updates;
 }
 
@@ -525,7 +534,7 @@ BookmarkRemoteUpdatesHandler::ProcessCreate(
     const syncer::UpdateResponseData& update) {
   const syncer::EntityData& update_entity = update.entity;
   DCHECK(!update_entity.is_deleted());
-  DCHECK(update_entity.server_defined_unique_tag.empty());
+  DCHECK(!IsPermanentNodeUpdate(update_entity));
   DCHECK(IsValidBookmarkSpecifics(update_entity.specifics.bookmark()));
 
   const bookmarks::BookmarkNode* parent_node = GetParentNode(update_entity);
@@ -576,7 +585,7 @@ void BookmarkRemoteUpdatesHandler::ProcessUpdate(
             bookmark_tracker_->GetEntityForSyncId(update_entity.id));
   // Must not be a deletion.
   DCHECK(!update_entity.is_deleted());
-  DCHECK(update_entity.server_defined_unique_tag.empty());
+  DCHECK(!IsPermanentNodeUpdate(update_entity));
   DCHECK(IsValidBookmarkSpecifics(update_entity.specifics.bookmark()));
   DCHECK(!tracked_entity->IsUnsynced());
 
@@ -661,7 +670,7 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
             bookmark_tracker_->GetEntityForSyncId(update_entity.id));
   DCHECK(!tracked_entity->bookmark_node() ||
          !tracked_entity->bookmark_node()->is_permanent_node());
-  DCHECK(update_entity.server_defined_unique_tag.empty());
+  DCHECK(!IsPermanentNodeUpdate(update_entity));
 
   if (tracked_entity->metadata()->is_deleted() && update_entity.is_deleted()) {
     // Both have been deleted, delete the corresponding entity from the tracker.

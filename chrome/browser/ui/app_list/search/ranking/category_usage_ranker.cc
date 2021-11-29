@@ -70,9 +70,10 @@ CategoryUsageRanker::CategoryUsageRanker(Profile* profile) {
   params.half_life = 10.0f;
   params.boost_factor = 10.0f;
 
-  ranker_ = std::make_unique<MrfuCache>(
+  MrfuCache::Proto proto(
       RankerStateDirectory(profile).AppendASCII("category_usage_ranker.pb"),
-      params);
+      /*write_delay=*/base::Seconds(3));
+  ranker_ = std::make_unique<MrfuCache>(std::move(proto), params);
 }
 
 CategoryUsageRanker::~CategoryUsageRanker() {}
@@ -102,10 +103,9 @@ void CategoryUsageRanker::Start(const std::u16string& query,
   }
 }
 
-absl::optional<std::vector<double>> CategoryUsageRanker::RankCategories(
-    ResultsMap& results,
-    CategoriesList& categories,
-    ProviderType provider) {
+void CategoryUsageRanker::UpdateCategoryRanks(const ResultsMap& results,
+                                              CategoriesList& categories,
+                                              ProviderType provider) {
   // TODO(crbug.com/1199206): This adds some debug information to the result
   // details. Remove once we have explicit categories in the UI.
   const auto it = results.find(provider);
@@ -115,8 +115,6 @@ absl::optional<std::vector<double>> CategoryUsageRanker::RankCategories(
     const auto details = RemoveDebugPrefix(result->details());
     result->SetDetails(base::StrCat({CategoryDebugString(category), details}));
   }
-
-  return absl::nullopt;
 }
 
 void CategoryUsageRanker::Train(const LaunchData& launch) {

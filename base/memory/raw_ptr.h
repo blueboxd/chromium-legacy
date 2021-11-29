@@ -79,9 +79,9 @@ struct RawPtrNoOpImpl {
   static ALWAYS_INLINE constexpr To* Upcast(From* wrapped_ptr) {
     static_assert(std::is_convertible<From*, To*>::value,
                   "From must be convertible to To.");
-    // static_cast may change the address if upcasting to base that lies in the
-    // middle of the derived object.
-    return static_cast<To*>(wrapped_ptr);
+    // Note, this cast may change the address if upcasting to base that lies in
+    // the middle of the derived object.
+    return wrapped_ptr;
   }
 
   // Advance the wrapped pointer by |delta| bytes.
@@ -120,15 +120,15 @@ struct BackupRefPtrImpl {
     // TODO(bartekn): Convert to |uintptr_t address|, incl. callees.
     void* ptr = const_cast<void*>(cv_ptr);
     // This covers the nullptr case, as address 0 is never in GigaCage.
-    bool ret = IsManagedByPartitionAllocBRPPool(ptr);
+    bool is_in_brp_pool = IsManagedByPartitionAllocBRPPool(ptr);
 
     // There are many situations where the compiler can prove that
-    // ReleaseWrappedPtr is called on a value that is always NULL, but the way
-    // the check above is written, the compiler can't prove that NULL is not
-    // managed by PartitionAlloc; and so the compiler has to emit a useless
+    // ReleaseWrappedPtr is called on a value that is always nullptr, but the
+    // way the check above is written, the compiler can't prove that nullptr is
+    // not managed by PartitionAlloc; and so the compiler has to emit a useless
     // check and dead code.
     // To avoid that without making the runtime check slower, explicitly promise
-    // to the compiler that ret will always be false for NULL pointers.
+    // to the compiler that is_in_brp_pool will always be false for nullptr.
     //
     // This condition would look nicer and might also theoretically be nicer for
     // the optimizer if it was written as "if (ptr == nullptr) { ... }", but
@@ -137,10 +137,10 @@ struct BackupRefPtrImpl {
     // https://reviews.llvm.org/D97848
     // https://chromium-review.googlesource.com/c/chromium/src/+/2727400/2/base/memory/checked_ptr.h#120
 #if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
-    CHECK(ptr != nullptr || !ret);
+    CHECK(ptr != nullptr || !is_in_brp_pool);
 #endif
 #if HAS_BUILTIN(__builtin_assume)
-    __builtin_assume(ptr != nullptr || !ret);
+    __builtin_assume(ptr != nullptr || !is_in_brp_pool);
 #endif
 
     // There may be pointers immediately after the allocation, e.g.
@@ -161,12 +161,12 @@ struct BackupRefPtrImpl {
     // it must be at least partition page away from the beginning of a super
     // page.
 #if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
-    if (ret) {
+    if (is_in_brp_pool) {
       CheckThatAddressIsntWithinFirstPartitionPage(ptr);
     }
 #endif
 
-    return ret;
+    return is_in_brp_pool;
   }
 
   // Wraps a pointer.
@@ -237,9 +237,9 @@ struct BackupRefPtrImpl {
   static ALWAYS_INLINE constexpr To* Upcast(From* wrapped_ptr) {
     static_assert(std::is_convertible<From*, To*>::value,
                   "From must be convertible to To.");
-    // static_cast may change the address if upcasting to base that lies in the
-    // middle of the derived object.
-    return static_cast<To*>(wrapped_ptr);
+    // Note, this cast may change the address if upcasting to base that lies in
+    // the middle of the derived object.
+    return wrapped_ptr;
   }
 
   // Advance the wrapped pointer by |delta| bytes.
@@ -526,6 +526,8 @@ class raw_ptr {
   ALWAYS_INLINE operator T*() const { return GetForExtraction(); }
   template <typename U>
   explicit ALWAYS_INLINE operator U*() const {
+    // This operator may be invoked from static_cast, meaning the types may not
+    // be implicitly convertible, hence the need for static_cast here.
     return static_cast<U*>(GetForExtraction());
   }
 
@@ -588,9 +590,7 @@ class raw_ptr {
   }
   template <typename U>
   friend ALWAYS_INLINE bool operator==(const raw_ptr& lhs, U* rhs) {
-    // Add |const volatile| when casting, in case |U| has any. Even if |T|
-    // doesn't, comparison between |T*| and |const volatile U*| is fine.
-    return lhs.GetForComparison() == static_cast<std::add_cv_t<U>*>(rhs);
+    return lhs.GetForComparison() == rhs;
   }
   template <typename U>
   friend ALWAYS_INLINE bool operator!=(const raw_ptr& lhs, U* rhs) {
@@ -654,10 +654,7 @@ class raw_ptr {
 template <typename U, typename V, typename I>
 ALWAYS_INLINE bool operator==(const raw_ptr<U, I>& lhs,
                               const raw_ptr<V, I>& rhs) {
-  // Add |const volatile| when casting, in case |V| has any. Even if |U|
-  // doesn't, comparison between |U*| and |const volatile V*| is fine.
-  return lhs.GetForComparison() ==
-         static_cast<std::add_cv_t<V>*>(rhs.GetForComparison());
+  return lhs.GetForComparison() == rhs.GetForComparison();
 }
 
 }  // namespace base

@@ -37,6 +37,8 @@
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/file_browser_handlers.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -53,6 +55,7 @@
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -72,6 +75,8 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
+#include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "ui/message_center/public/cpp/notification.h"
 
 namespace {
@@ -194,16 +199,66 @@ void ExtensionAppsChromeOs::LaunchAppWithIntent(
     apps::mojom::LaunchSource launch_source,
     apps::mojom::WindowInfoPtr window_info,
     LaunchAppWithIntentCallback callback) {
-  content::WebContents* web_contents = LaunchAppWithIntentImpl(
-      app_id, event_flags, std::move(intent), launch_source,
-      std::move(window_info), std::move(callback));
-
-  if (launch_source == apps::mojom::LaunchSource::kFromArc && web_contents) {
-    // Add a flag to remember this web_contents originated in the ARC context.
-    web_contents->SetUserData(
-        &arc::ArcWebContentsData::kArcTransitionFlag,
-        std::make_unique<arc::ArcWebContentsData>(web_contents));
+  const auto* extension = MaybeGetExtension(app_id);
+  if (!extension) {
+    std::move(callback).Run(/*success=*/false);
+    return;
   }
+  if (extension->is_app()) {
+    content::WebContents* web_contents = LaunchAppWithIntentImpl(
+        app_id, event_flags, std::move(intent), launch_source,
+        std::move(window_info), std::move(callback));
+
+    if (launch_source == apps::mojom::LaunchSource::kFromArc && web_contents) {
+      // Add a flag to remember this web_contents originated in the ARC context.
+      web_contents->SetUserData(
+          &arc::ArcWebContentsData::kArcTransitionFlag,
+          std::make_unique<arc::ArcWebContentsData>(web_contents));
+    }
+  } else {
+    DCHECK(extension->is_extension());
+    // TODO(petermarshall): Set Arc flag as above?
+    LaunchExtension(app_id, event_flags, std::move(intent), launch_source,
+                    std::move(window_info), std::move(callback));
+  }
+}
+
+void ExtensionAppsChromeOs::LaunchExtension(
+    const std::string& app_id,
+    int32_t event_flags,
+    apps::mojom::IntentPtr intent,
+    apps::mojom::LaunchSource launch_source,
+    apps::mojom::WindowInfoPtr window_info,
+    LaunchAppWithIntentCallback callback) {
+  const auto* extension = MaybeGetExtension(app_id);
+  DCHECK(extension);
+
+  std::vector<storage::FileSystemURL> file_urls;
+  if (intent->files) {
+    storage::FileSystemContext* file_system_context =
+        file_manager::util::GetFileSystemContextForSourceURL(profile(),
+                                                             extension->url());
+    for (const mojom::IntentFilePtr& file : intent->files.value()) {
+      file_urls.push_back(
+          file_system_context->CrackURLInFirstPartyContext(file->url));
+    }
+  }
+
+  DCHECK(intent->activity_name);
+  std::string action_id = intent->activity_name.value_or("");
+
+  file_manager::file_browser_handlers::ExecuteFileBrowserHandler(
+      profile(), extension, action_id, file_urls,
+      base::BindOnce(
+          [](LaunchAppWithIntentCallback callback,
+             extensions::api::file_manager_private::TaskResult result,
+             std::string error) {
+            bool success =
+                result !=
+                extensions::api::file_manager_private::TASK_RESULT_FAILED;
+            std::move(callback).Run(success);
+          },
+          std::move(callback)));
 }
 
 void ExtensionAppsChromeOs::PauseApp(const std::string& app_id) {
@@ -619,8 +674,19 @@ bool ExtensionAppsChromeOs::Accepts(const extensions::Extension* extension) {
   if (extension->id() == extension_misc::kQuickOfficeComponentExtensionId) {
     return true;
   }
-  if (!extension->is_app() || IsBlocklisted(extension->id())) {
+  if (!extension->is_app() && !extension->is_extension()) {
     return false;
+  }
+  if (IsBlocklisted(extension->id())) {
+    return false;
+  }
+  // Only accept extensions with file_browser_handlers.
+  if (extension->is_extension()) {
+    FileBrowserHandler::List* handler_list =
+        FileBrowserHandler::GetHandlers(extension);
+    if (!handler_list) {
+      return false;
+    }
   }
 
   return !extension->from_bookmark();
@@ -651,6 +717,12 @@ void ExtensionAppsChromeOs::SetShowInFields(
   // are otherwise hidden from the user.
   if (extension->id() == file_manager::kAudioPlayerAppId ||
       extension->id() == extension_misc::kQuickOfficeComponentExtensionId) {
+    app->handles_intents = apps::mojom::OptionalBool::kTrue;
+  }
+
+  // Extensions are only published if they have file_browser_handlers, which
+  // means they need to handle intents.
+  if (extension->is_extension()) {
     app->handles_intents = apps::mojom::OptionalBool::kTrue;
   }
 }
@@ -714,9 +786,16 @@ apps::mojom::AppPtr ExtensionAppsChromeOs::Convert(
   if (disable_for_lacros)
     app->show_in_management = apps::mojom::OptionalBool::kFalse;
 
-  // Add file_handlers.
-  base::Extend(app->intent_filters,
-               apps_util::CreateChromeAppIntentFilters(extension));
+  bool is_quickoffice =
+      extension->is_extension() &&
+      extension->id() == extension_misc::kQuickOfficeComponentExtensionId;
+  if (extension->is_app() || is_quickoffice) {
+    base::Extend(app->intent_filters,
+                 apps_util::CreateChromeAppIntentFilters(extension));
+  } else if (extension->is_extension()) {
+    base::Extend(app->intent_filters,
+                 apps_util::CreateExtensionIntentFilters(extension));
+  }
 
   return app;
 }

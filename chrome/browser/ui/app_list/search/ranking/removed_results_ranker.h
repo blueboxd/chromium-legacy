@@ -20,18 +20,14 @@ namespace app_list {
 // On a call to Rank(), previously removed results are filtered out.
 class RemovedResultsRanker : public Ranker {
  public:
-  explicit RemovedResultsRanker(const base::FilePath& path,
-                                const base::TimeDelta write_delay);
+  explicit RemovedResultsRanker(PersistentProto<RemovedResultsProto> proto);
   ~RemovedResultsRanker() override;
 
   RemovedResultsRanker(const RemovedResultsRanker&) = delete;
   RemovedResultsRanker& operator=(const RemovedResultsRanker&) = delete;
 
   // Ranker:
-  absl::optional<std::vector<double>> RankResults(
-      ResultsMap& results,
-      CategoriesList& categories,
-      ProviderType provider) override;
+  void UpdateResultRanks(ResultsMap& results, ProviderType provider) override;
 
   void Remove(ChromeSearchResult* result) override;
 

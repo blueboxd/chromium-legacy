@@ -4,12 +4,12 @@
 <script src="/resources/testharnessreport.js"></script>
 <style>
   #container {
-    contain: size layout style;
+    container-type: size;
     width: 200px;
     height: 50px;
   }
   div { color: red; }
-  @container (min-width: 300px) {
+  @container size(min-width: 300px) {
     div { color: green; }
   }
 </style>

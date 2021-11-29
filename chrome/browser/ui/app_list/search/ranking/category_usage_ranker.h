@@ -15,6 +15,9 @@ namespace app_list {
 class MrfuCache;
 
 // A ranker that groups results into categories.
+//
+// TODO(crbug.com/1199206): This is temporarily unused while being incorporated
+// into the FtrlCategoryRanker.
 class CategoryUsageRanker : public Ranker {
  public:
   explicit CategoryUsageRanker(Profile* profile);
@@ -27,10 +30,9 @@ class CategoryUsageRanker : public Ranker {
   void Start(const std::u16string& query,
              ResultsMap& results,
              CategoriesList& categories) override;
-  absl::optional<std::vector<double>> RankCategories(
-      ResultsMap& results,
-      CategoriesList& categories,
-      ProviderType provider) override;
+  void UpdateCategoryRanks(const ResultsMap& results,
+                           CategoriesList& categories,
+                           ProviderType provider) override;
   void Train(const LaunchData& launch) override;
 
  private:

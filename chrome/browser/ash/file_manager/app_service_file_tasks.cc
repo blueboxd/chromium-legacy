@@ -40,6 +40,7 @@
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/entry_info.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
@@ -62,7 +63,10 @@ TaskType GetTaskType(apps::mojom::AppType app_type) {
       return TASK_TYPE_WEB_APP;
     case apps::mojom::AppType::kExtension:
     case apps::mojom::AppType::kStandaloneBrowserExtension:
-      // TODO(petermarshall): Distinguish Chrome apps from Extensions.
+      // Chrome apps and Extensions both get called file_handler, even though
+      // extensions really have file_browser_handler. It doesn't matter anymore
+      // because both are executed through App Service, which can tell the
+      // difference itself.
       return TASK_TYPE_FILE_HANDLER;
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kCrostini:

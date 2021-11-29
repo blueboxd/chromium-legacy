@@ -9,20 +9,18 @@
 
 namespace app_list {
 
-RemovedResultsRanker::RemovedResultsRanker(const base::FilePath& path,
-                                           const base::TimeDelta write_delay)
-    : write_delay_(write_delay), proto_(path, write_delay) {
+RemovedResultsRanker::RemovedResultsRanker(
+    PersistentProto<RemovedResultsProto> proto)
+    : proto_(std::move(proto)) {
   proto_.Init();
 }
 
 RemovedResultsRanker::~RemovedResultsRanker() = default;
 
-absl::optional<std::vector<double>> RemovedResultsRanker::RankResults(
-    ResultsMap& results,
-    CategoriesList& categories,
-    ProviderType provider) {
+void RemovedResultsRanker::UpdateResultRanks(ResultsMap& results,
+                                             ProviderType provider) {
   if (!initialized())
-    return absl::nullopt;
+    return;
 
   const auto it = results.find(provider);
   DCHECK(it != results.end());
@@ -33,12 +31,10 @@ absl::optional<std::vector<double>> RemovedResultsRanker::RankResults(
       result->scoring().filter = true;
     }
   }
-
-  return absl::nullopt;
 }
 
 void RemovedResultsRanker::Remove(ChromeSearchResult* result) {
-  if (!proto_.initialized())
+  if (!initialized())
     return;
 
   // Record the string ID of |result| to the storage proto's map.

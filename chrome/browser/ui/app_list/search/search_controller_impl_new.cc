@@ -25,20 +25,9 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/common/string_util.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
-#include "chrome/browser/ui/app_list/search/ranking/category_item_ranker.h"
-#include "chrome/browser/ui/app_list/search/ranking/category_usage_ranker.h"
-#include "chrome/browser/ui/app_list/search/ranking/filtering_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/ranker_delegate.h"
-#include "chrome/browser/ui/app_list/search/ranking/removed_results_ranker.h"
-#include "chrome/browser/ui/app_list/search/ranking/score_normalizing_ranker.h"
-#include "chrome/browser/ui/app_list/search/ranking/top_match_ranker.h"
-#include "chrome/browser/ui/app_list/search/ranking/util.h"
 #include "chrome/browser/ui/app_list/search/search_metrics_observer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/chip_ranker.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 #include "components/metrics/structured/structured_mojo_events.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -60,18 +49,6 @@ SearchControllerImplNew::SearchControllerImplNew(
 }
 
 SearchControllerImplNew::~SearchControllerImplNew() {}
-
-void SearchControllerImplNew::InitializeRankers() {
-  // TODO(crbug.com/1199206): Add an extra state to the chrome flag that allows
-  // toggling between the CategoryItemRanker and CategoryUsageRanker.
-  ranker_->AddRanker(std::make_unique<ScoreNormalizingRanker>(profile_));
-  ranker_->AddRanker(std::make_unique<CategoryUsageRanker>(profile_));
-  ranker_->AddRanker(std::make_unique<TopMatchRanker>());
-  ranker_->AddRanker(std::make_unique<FilteringRanker>());
-  ranker_->AddRanker(std::make_unique<RemovedResultsRanker>(
-      RankerStateDirectory(profile_).AppendASCII("removed_results_ranker.pb"),
-      base::Seconds(30)));
-}
 
 void SearchControllerImplNew::Start(const std::u16string& query) {
   session_start_ = base::Time::Now();
@@ -173,9 +150,10 @@ void SearchControllerImplNew::SetResults(
 
   results_[provider_type] = std::move(results);
 
-  // Update ranking of all results and categories.
-  ranker_->RankResults(results_, categories_, provider_type);
-  ranker_->RankCategories(results_, categories_, provider_type);
+  // Update ranking of all results and categories. This ordering is important,
+  // as result scores may affect category scores.
+  ranker_->UpdateResultRanks(results_, provider_type);
+  ranker_->UpdateCategoryRanks(results_, categories_, provider_type);
 
   // Compile a single list of results and sort by their relevance.
   std::vector<ChromeSearchResult*> all_results;

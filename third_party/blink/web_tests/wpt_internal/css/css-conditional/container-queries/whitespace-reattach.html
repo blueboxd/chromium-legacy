@@ -3,12 +3,12 @@
 <link rel="match" href="change-display-in-container-ref.html">
 <style>
   #container {
-    contain: size layout style;
+    container-type: size;
     width: 400px;
     height: 200px;
   }
 
-  @container (min-width: 400px) {
+  @container size(min-width: 400px) {
     span { color: red; }
   }
 </style>

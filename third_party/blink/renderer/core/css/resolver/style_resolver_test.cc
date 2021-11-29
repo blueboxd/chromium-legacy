@@ -829,6 +829,70 @@ TEST_F(StyleResolverTest, CascadedValuesForPseudoElement) {
   EXPECT_EQ("1em", map.at(top)->CssText());
 }
 
+TEST_F(StyleResolverTest, CascadedValuesForElementInContainer) {
+  ScopedCSSContainerQueriesForTest scope(true);
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      #container { container-type: inline-size; }
+      @container size(min-width: 1px) {
+        #inner {
+          top: 1em;
+        }
+      }
+      div {
+        top: 10em;
+      }
+    </style>
+    <div id="container">
+      <div id="inner"></div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto& resolver = GetDocument().GetStyleResolver();
+  Element* inner = GetDocument().getElementById("inner");
+  ASSERT_TRUE(inner);
+
+  auto map = resolver.CascadedValuesForElement(inner, kPseudoIdNone);
+
+  CSSPropertyName top(CSSPropertyID::kTop);
+  ASSERT_TRUE(map.at(top));
+  EXPECT_EQ("1em", map.at(top)->CssText());
+}
+
+TEST_F(StyleResolverTest, CascadedValuesForPseudoElementInContainer) {
+  ScopedCSSContainerQueriesForTest scope(true);
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      #container { container-type: inline-size; }
+      @container size(min-width: 1px) {
+        #inner::before {
+          top: 1em;
+        }
+      }
+      div::before {
+        top: 10em;
+      }
+    </style>
+    <div id="container">
+      <div id="inner"></div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto& resolver = GetDocument().GetStyleResolver();
+  Element* inner = GetDocument().getElementById("inner");
+  ASSERT_TRUE(inner);
+
+  auto map = resolver.CascadedValuesForElement(inner, kPseudoIdBefore);
+
+  CSSPropertyName top(CSSPropertyID::kTop);
+  ASSERT_TRUE(map.at(top));
+  EXPECT_EQ("1em", map.at(top)->CssText());
+}
+
 TEST_F(StyleResolverTest, EnsureComputedStyleSlotFallback) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <div id="host"><span></span></div>
@@ -1266,7 +1330,7 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueries) {
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
       #a { color: red; }
-      @container (min-width: 0px) {
+      @container size(min-width: 0px) {
         #b { color: blue; }
         span { color: green; }
         #d { color: coral; }
@@ -1303,9 +1367,9 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueries) {
 TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesPseudo) {
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
-      main { contain: size layout style; width: 100px; }
+      main { container-type: size; width: 100px; }
       #a::before { content: "before"; }
-      @container (min-width: 0px) {
+      @container size(min-width: 0px) {
         #a::after { content: "after"; }
       }
     </style>
@@ -1334,7 +1398,7 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesPseudo) {
 TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesMPC) {
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
-      @container (min-width: 9999999px) {
+      @container size(min-width: 9999999px) {
         #a { color: green; }
       }
     </style>
@@ -2055,6 +2119,43 @@ TEST_F(StyleResolverTest, IsInertWithDialogAndFullscreen) {
   EXPECT_FALSE(body->GetComputedStyle()->IsInert());
   EXPECT_FALSE(div->GetComputedStyle()->IsInert());
   EXPECT_EQ(dialog->GetComputedStyle(), nullptr);
+}
+
+TEST_F(StyleResolverTestCQ, StyleRulesForElementContainerQuery) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      #container { container-type: inline-size }
+      @container size(min-width: 1px) {
+        #target { }
+      }
+      @container size(min-width: 99999px) {
+        #target { color: red }
+      }
+    </style>
+    <div id="container">
+      <div id="target"></div>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* target = GetDocument().getElementById("target");
+  auto& resolver = GetDocument().GetStyleResolver();
+
+  auto* rule_list = resolver.StyleRulesForElement(
+      target,
+      StyleResolver::kAuthorCSSRules | StyleResolver::kCrossOriginCSSRules);
+  ASSERT_FALSE(rule_list) << "A nullptr is returned if no rules were collected";
+
+  rule_list = resolver.StyleRulesForElement(
+      target, StyleResolver::kAuthorCSSRules |
+                  StyleResolver::kCrossOriginCSSRules |
+                  StyleResolver::kEmptyCSSRules);
+  ASSERT_TRUE(rule_list);
+  ASSERT_EQ(rule_list->size(), 1u)
+      << "The empty #target rule in the container query should be collected";
+  EXPECT_TRUE(rule_list->at(0)->Properties().IsEmpty())
+      << "Check that it is in fact the empty rule";
 }
 
 }  // namespace blink

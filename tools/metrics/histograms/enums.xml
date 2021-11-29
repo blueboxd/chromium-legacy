@@ -15794,8 +15794,8 @@ Called by update_net_error_codes.py.-->
   <int value="14" label="kPreflightInvalidAllowOriginValue"/>
   <int value="15" label="kPreflightAllowOriginMismatch"/>
   <int value="16" label="kPreflightInvalidAllowCredentials"/>
-  <int value="17" label="kPreflightMissingAllowExternal"/>
-  <int value="18" label="kPreflightInvalidAllowExternal"/>
+  <int value="17" label="kPreflightMissingAllowPrivateNetwork"/>
+  <int value="18" label="kPreflightInvalidAllowPrivateNetwork"/>
   <int value="19" label="kInvalidAllowMethodsPreflightResponse"/>
   <int value="20" label="kInvalidAllowHeadersPreflightResponse"/>
   <int value="21" label="kMethodDisallowedByPreflightResponse"/>
@@ -35389,7 +35389,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3890" label="HTMLFencedFrameElement"/>
   <int value="3891" label="CSSFilterLuminanceToAlpha"/>
   <int value="3892" label="HandwritingRecognitionCreateRecognizer"/>
-  <int value="3893" label="HandwritingRecognitionQuerySupport"/>
+  <int value="3893" label="OBSOLETE_HandwritingRecognitionQuerySupport"/>
   <int value="3894" label="HandwritingRecognitionStartDrawing"/>
   <int value="3895" label="HandwritingRecognitionGetPrediction"/>
   <int value="3896" label="WebBluetoothManufacturerDataFilter"/>
@@ -50227,6 +50227,7 @@ from previous Chrome versions.
   <int value="-1029920490" label="IdleTimeSpellChecking:enabled"/>
   <int value="-1028733699" label="MacViewsWebUIDialogs:disabled"/>
   <int value="-1028251580" label="GamepadPollingInterval:disabled"/>
+  <int value="-1027941917" label="SnoopingProtection:enabled"/>
   <int value="-1027254093" label="LockScreenNotifications:disabled"/>
   <int value="-1027124889" label="NtlmV2Enabled:enabled"/>
   <int value="-1026192558" label="OopRasterizationDDL:enabled"/>
@@ -53677,6 +53678,7 @@ from previous Chrome versions.
   <int value="1590278995"
       label="AutofillSendExperimentIdsInPaymentsRPCs:enabled"/>
   <int value="1590300329" label="CCTModulePostMessage:enabled"/>
+  <int value="1590837406" label="SnoopingProtection:disabled"/>
   <int value="1591653786" label="SpeculativePreconnect:enabled"/>
   <int value="1592391721" label="DesktopDetailedLanguageSettings:disabled"/>
   <int value="1593720927" label="GamepadVibration:disabled"/>
@@ -73518,7 +73520,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
       label="Remote and local bookmarks types don't match (URL vs. Folder)"/>
   <int value="1" label="Invalid specifics"/>
   <int value="2" label="Invalid unique position (deprecated)"/>
-  <int value="3" label="Permanent node creation in an incremental update"/>
+  <int value="3"
+      label="Permanent node creation in an incremental update (deprecated)"/>
   <int value="4" label="Parent entity not found in server"/>
   <int value="5" label="Parent node not found locally"/>
   <int value="6"

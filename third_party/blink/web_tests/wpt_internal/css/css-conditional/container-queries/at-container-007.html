@@ -4,7 +4,7 @@
 <script src="/resources/testharnessreport.js"></script>
 <style>
   .container {
-    contain: size layout style;
+    container-type: size;
     width: 30px;
     height: 30px;
     background: tomato;
@@ -25,11 +25,11 @@
     display: none;
   }
 
-  @container (width: 30px) {
+  @container size(width: 30px) {
     .target { --x:30; }
   }
 
-  @container (width: 50px) {
+  @container size(width: 50px) {
     .target { --x:50; }
   }
 

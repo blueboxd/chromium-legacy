@@ -3,7 +3,7 @@
 <title>Test counters depending on container queries</title>
 <style>
   #container {
-    contain: size layout style;
+    container-type: size;
     width: 200px;
     height: 200px;
   }
@@ -12,7 +12,7 @@
     content: counter(my-counter);
   }
 
-  @container (min-width: 200px) {
+  @container size(min-width: 200px) {
     #counter {
       counter-reset: my-counter 100;
     }

@@ -55,6 +55,11 @@ std::vector<apps::mojom::IntentFilterPtr> CreateWebAppIntentFilters(
 std::vector<apps::mojom::IntentFilterPtr> CreateChromeAppIntentFilters(
     const extensions::Extension* extension);
 
+// Create intent filters for an Extension (is_extension() == true) e.g. for
+// file_browser_handlers.
+std::vector<apps::mojom::IntentFilterPtr> CreateExtensionIntentFilters(
+    const extensions::Extension* extension);
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Create an intent struct with filesystem:// or file:// type URLs from the
 // file paths and mime types of a list of files.
@@ -113,23 +118,31 @@ apps::mojom::IntentFilterPtr ConvertArcToAppServiceIntentFilter(
 
 #if defined(OS_CHROMEOS)
 // Convert App Service Intent to Crosapi Intent.
+// |profile| is only needed when the intent contains files, can be filled with
+// null otherwise.
+// If |profile| is null when converting intent contains files, the files
+// fields will not be converted.
 // TODO(crbug.com/1253219): Needs manual conversion rather than mojom traits
 // because Lacros does not support FileSystemURL as Ash, this method can be
 // replaced with mojom traits after migrating the App Service Intent to use the
 // file path.
 crosapi::mojom::IntentPtr ConvertAppServiceToCrosapiIntent(
     const apps::mojom::IntentPtr& app_service_intent,
-    absl::optional<Profile*> profile);
+    Profile* profile);
 
 // Convert Crosapi Intent to App Service Intent. Note that the converted App
 // Service Intent will not contain the files field in lacros-chrome.
+// |profile| is only needed when the intent contains files, can be filled with
+// null otherwise.
+// If |profile| is null when converting intent contains files, the files
+// fields will not be converted.
 // TODO(crbug.com/1253219): Needs manual conversion rather than mojom traits
 // because Lacros does not support FileSystemURL as Ash, this method can be
 // replaced with mojom traits after migrating the App Service Intent to use the
 // file path.
 apps::mojom::IntentPtr ConvertCrosapiToAppServiceIntent(
     const crosapi::mojom::IntentPtr& crosapi_intent,
-    absl::optional<Profile*> profile);
+    Profile* profile);
 
 crosapi::mojom::IntentPtr CreateCrosapiIntentForViewFiles(
     const apps::mojom::FilePathsPtr& file_paths);

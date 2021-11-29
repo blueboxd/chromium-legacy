@@ -4,10 +4,48 @@
 
 #include "chrome/browser/ui/app_list/search/ranking/ranker_delegate.h"
 
-namespace app_list {
+#include "chrome/browser/ui/app_list/search/ranking/filtering_ranker.h"
+#include "chrome/browser/ui/app_list/search/ranking/ftrl_category_ranker.h"
+#include "chrome/browser/ui/app_list/search/ranking/ftrl_result_ranker.h"
+#include "chrome/browser/ui/app_list/search/ranking/removed_results.pb.h"
+#include "chrome/browser/ui/app_list/search/ranking/removed_results_ranker.h"
+#include "chrome/browser/ui/app_list/search/ranking/score_normalizing_ranker.h"
+#include "chrome/browser/ui/app_list/search/ranking/top_match_ranker.h"
+#include "chrome/browser/ui/app_list/search/ranking/util.h"
+#include "chrome/browser/ui/app_list/search/util/score_normalizer.pb.h"
 
-RankerDelegate::RankerDelegate(Profile* profile,
-                               SearchController* controller) {}
+namespace app_list {
+namespace {
+
+// A standard write delay used for protos without time-sensitive writes. This is
+// intended to be slightly longer than the longest conceivable latency for a
+// search.
+constexpr base::TimeDelta kStandardWriteDelay = base::Seconds(3);
+
+// No write delay for protos with time-sensitive writes.
+constexpr base::TimeDelta kNoWriteDelay = base::Seconds(0);
+
+}  // namespace
+
+RankerDelegate::RankerDelegate(Profile* profile, SearchController* controller) {
+  const auto state_dir = RankerStateDirectory(profile);
+
+  // Main result and category ranking.
+  AddRanker(std::make_unique<ScoreNormalizingRanker>(
+      PersistentProto<ScoreNormalizerProto>(
+          state_dir.AppendASCII("score_norm.pb"), kStandardWriteDelay)));
+  AddRanker(std::make_unique<FtrlResultRanker>());
+  AddRanker(std::make_unique<FtrlCategoryRanker>());
+
+  // Result post-processing.
+  AddRanker(std::make_unique<TopMatchRanker>());
+  AddRanker(std::make_unique<FilteringRanker>());
+
+  // Result removal.
+  AddRanker(std::make_unique<RemovedResultsRanker>(
+      PersistentProto<RemovedResultsProto>(
+          state_dir.AppendASCII("removed_results.pb"), kNoWriteDelay)));
+}
 
 RankerDelegate::~RankerDelegate() {}
 
@@ -18,22 +56,17 @@ void RankerDelegate::Start(const std::u16string& query,
     ranker->Start(query, results, categories);
 }
 
-absl::optional<std::vector<double>> RankerDelegate::RankResults(
-    ResultsMap& results,
-    CategoriesList& categories,
-    ProviderType provider) {
+void RankerDelegate::UpdateResultRanks(ResultsMap& results,
+                                       ProviderType provider) {
   for (auto& ranker : rankers_)
-    ranker->RankResults(results, categories, provider);
-  return absl::nullopt;
+    ranker->UpdateResultRanks(results, provider);
 }
 
-absl::optional<std::vector<double>> RankerDelegate::RankCategories(
-    ResultsMap& results,
-    CategoriesList& categories,
-    ProviderType provider) {
+void RankerDelegate::UpdateCategoryRanks(const ResultsMap& results,
+                                         CategoriesList& categories,
+                                         ProviderType provider) {
   for (auto& ranker : rankers_)
-    ranker->RankCategories(results, categories, provider);
-  return absl::nullopt;
+    ranker->UpdateCategoryRanks(results, categories, provider);
 }
 
 void RankerDelegate::Train(const LaunchData& launch) {

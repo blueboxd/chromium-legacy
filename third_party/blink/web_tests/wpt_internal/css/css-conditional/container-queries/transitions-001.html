@@ -5,15 +5,15 @@
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <style>
-  .container { contain: size layout style }
+  .container { container-type: size }
   #outer {
     width: 100px;
     color: green;
   }
-  @container (min-width: 200px) {
+  @container size(min-width: 200px) {
     #inner { color: red }
   }
-  @container (min-width: 400px) {
+  @container size(min-width: 400px) {
     #target {
       color: green;
       transition: color 1s step-start;

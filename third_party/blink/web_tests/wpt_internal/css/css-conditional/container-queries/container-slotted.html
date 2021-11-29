@@ -22,13 +22,13 @@ host.attachShadow({mode: 'open'}).innerHTML = `
 ::slotted(*) {
   background-color: green;
 }
-@container (max-height: 50px) {
+@container size(max-height: 50px) {
   ::slotted(*) {
     background-color: red;
   }
 }
 </style>
-<div style="contain:layout block-size style; width:100px; height:100px;">
+<div style="container-type: size; width:100px; height:100px;">
   <slot></slot>
 </div>
 `;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/eche_app/eche_app_notification_controller.h"
+#include "chrome/browser/ash/eche_app/eche_app_notification_controller.h"
 
 #include "ash/public/cpp/new_window_delegate.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -14,7 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
 
-namespace chromeos {
+namespace ash {
 namespace eche_app {
 
 const char kEcheAppScreenLockNotifierId[] =
@@ -26,6 +26,9 @@ const char kEcheAppRetryConnectionNotifierId[] =
 // The notification type from WebUI without any actions need to do.
 const char kEcheAppFromWebWithoudButtonNotifierId[] =
     "eche_app_notification_ids.from_web_without_button";
+
+const char kEcheAppDisabledByPhoneNotifierId[] =
+    "eche_app_notification_ids.disabled_by_phone";
 
 // TODO(crbug.com/1241352): This should probably have a ?p=<FEATURE_NAME> at
 // some point.
@@ -64,9 +67,8 @@ void EcheAppNotificationController::LaunchSettings() {
 
 void EcheAppNotificationController::LaunchLearnMore() {
   // TODO(crbug.com/1241352): Wait for UX confirm.
-  ash::NewWindowDelegate::GetInstance()->OpenUrl(
-      GURL(kEcheAppLearnMoreUrl),
-      /* from_user_interaction= */ true);
+  NewWindowDelegate::GetInstance()->OpenUrl(GURL(kEcheAppLearnMoreUrl),
+                                            /* from_user_interaction= */ true);
 }
 
 void EcheAppNotificationController::LaunchTryAgain() {
@@ -81,14 +83,11 @@ void EcheAppNotificationController::ShowNotificationFromWebUI(
     const absl::optional<std::u16string>& title,
     const absl::optional<std::u16string>& message,
     absl::variant<LaunchAppHelper::NotificationInfo::NotificationType,
-                  ash::eche_app::mojom::WebNotificationType> type) {
-  ash::eche_app::mojom::WebNotificationType web_type =
-      absl::get<ash::eche_app::mojom::WebNotificationType>(type);
+                  mojom::WebNotificationType> type) {
+  auto web_type = absl::get<mojom::WebNotificationType>(type);
   if (title && message) {
-    if (web_type ==
-            ash::eche_app::mojom::WebNotificationType::CONNECTION_FAILED ||
-        web_type ==
-            ash::eche_app::mojom::WebNotificationType::CONNECTION_LOST) {
+    if (web_type == mojom::WebNotificationType::CONNECTION_FAILED ||
+        web_type == mojom::WebNotificationType::CONNECTION_LOST) {
       // TODO(guanrulee): Show the buttons once they're completed.
       ShowNotification(CreateNotification(
           kEcheAppRetryConnectionNotifierId, title.value(), message.value(),
@@ -124,6 +123,20 @@ void EcheAppNotificationController::ShowScreenLockNotification(
       l10n_util::GetStringUTF16(IDS_ECHE_APP_SCREEN_LOCK_NOTIFICATION_MESSAGE),
       gfx::Image(), rich_notification_data,
       new NotificationDelegate(kEcheAppScreenLockNotifierId,
+                               weak_ptr_factory_.GetWeakPtr())));
+}
+
+void EcheAppNotificationController::ShowDisabledByPhoneNotification(
+    const absl::optional<std::u16string>& title) {
+  // No need to take the action.
+  ShowNotification(CreateNotification(
+      kEcheAppDisabledByPhoneNotifierId,
+      l10n_util::GetStringFUTF16(
+          IDS_ECHE_APP_DISABLED_BY_PHONE_NOTIFICATION_TITLE, title.value()),
+      l10n_util::GetStringUTF16(
+          IDS_ECHE_APP_DISABLED_BY_PHONE_NOTIFICATION_MESSAGE),
+      gfx::Image(), message_center::RichNotificationData(),
+      new NotificationDelegate(kEcheAppDisabledByPhoneNotifierId,
                                weak_ptr_factory_.GetWeakPtr())));
 }
 
@@ -166,4 +179,4 @@ void EcheAppNotificationController::NotificationDelegate::Click(
 }
 
 }  // namespace eche_app
-}  // namespace chromeos
+}  // namespace ash

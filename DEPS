@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '7e2bb2a6f882af87044e743c8e1524ac31beca78',
+  'v8_revision': '771f86a113122cd35deeb7871910921448c74bcb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -730,7 +730,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': '-EsMHRYnuAdS1LvVYMBb_eySXxM7A2rIrCJatfld05gC',
+          'version': 'LK5_G9LZLyQxOEsfut7TB0Oukcdl3rpMaWHJKmwi44MC',
         },
       ],
       'dep_type': 'cipd',
@@ -791,7 +791,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': '7I9dTCSY-LRSLvoxky6M8wzVQM44IDaB-9Mqsk2gR3QC',
+          'version': 'bv7tr6GN16C-gBBrx0QkghCPgEojjdijbMIb0_TCnh8C',
       },
     ],
     'condition': 'checkout_android',
@@ -1692,7 +1692,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ac794d15eac6446d3f9d4292f66d2f2ac747c449',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@73fa4a5bf54c885867b526883e14dd9a8ea86b27',
     'condition': 'checkout_src_internal',
   },
 
@@ -1711,7 +1711,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'p6WFSmx6ae8k4bHr6q3nZOtxuQaU4rY5jUgNxP2hjx0C',
+        'version': '0GcjqHJZegwvsIPHiLEnOFOdfaEK6L26o167s2-hedsC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1722,7 +1722,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '6V-pnuyVUBKAeakGeIaKIGGpgxqAKYmJ6meJ40FRhykC',
+        'version': 'JEmXDhN3VbzOI8bjD--35jm3lzsgob59U_G2MC1PgbUC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

@@ -572,12 +572,22 @@
   {
     "name": "borealis-big-gl",
     "owners": [ "danielng" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 103
   },
   {
     "name": "borealis-disk-management",
     "owners": [ "danielng" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 103
+  },
+  {
+    "name": "borealis-force-beta-client",
+    "owners": [ "hollingum" ],
+    "expiry_milestone": 103
+  },
+  {
+    "name": "borealis-linux-mode",
+    "owners": [ "hollingum" ],
+    "expiry_milestone": 103
   },
   {
     "name": "button-arc-network-diagnostics",
@@ -1676,7 +1686,7 @@
   {
     "name": "enable-cros-system-chinese-physical-typing",
     "owners": [ "shend", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 101
   },
   {
     "name": "enable-cros-system-japanese-physical-typing",

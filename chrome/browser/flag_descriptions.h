@@ -342,9 +342,6 @@ extern const char kCompositingBasedThrottlingDescription[];
 extern const char kDarkLightTestName[];
 extern const char kDarkLightTestDescription[];
 
-extern const char kDecodeJpeg420ImagesToYUVName[];
-extern const char kDecodeJpeg420ImagesToYUVDescription[];
-
 extern const char kDetectTargetEmbeddingLookalikesName[];
 extern const char kDetectTargetEmbeddingLookalikesDescription[];
 
@@ -3032,11 +3029,6 @@ extern const char kLauncherNudgeShortIntervalDescription[];
 // Prefer keeping this section sorted to adding new declarations down here.
 
 #endif  // #if BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-extern const char kMultiProfileAccountConsistencyName[];
-extern const char kMultiProfileAccountConsistencyDescription[];
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 extern const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersName[];

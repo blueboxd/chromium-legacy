@@ -155,6 +155,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/account_manager/account_apps_availability_factory.h"
 #include "chrome/browser/ash/browser_context_keyed_service_factories.h"
 #include "chrome/browser/ash/login/security_token_session_controller_factory.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
@@ -270,6 +271,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   AdaptiveQuietNotificationPermissionUiEnabler::Factory::GetInstance();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   app_list::AppListSyncableServiceFactory::GetInstance();
+  ash::AccountAppsAvailabilityFactory::GetInstance();
 #endif
 #if !defined(OS_ANDROID)
   apps::AppServiceProxyFactory::GetInstance();
@@ -478,7 +480,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   SigninProfileAttributesUpdaterFactory::GetInstance();
   if (site_engagement::SiteEngagementService::IsEnabled())
     site_engagement::SiteEngagementServiceFactory::GetInstance();
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+// TODO(https://crbug.com/1198523: Remove Lacros check once Dice is no longer
+// supported on Lacros.
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   SigninManagerFactory::GetInstance();
 #endif
 #if BUILDFLAG(ENABLE_SPELLCHECK)

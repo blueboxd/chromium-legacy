@@ -2796,8 +2796,9 @@ crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.
 
 crbug.com/1029514 external/wpt/html/semantics/embedded-content/the-video-element/resize-during-playback.html [ Failure Pass ]
 
-# css-pseudo-4 opacity not applied to ::first-line
+# ::first-line issues
 crbug.com/1085772 external/wpt/css/css-pseudo/first-line-opacity-001.html [ Failure ]
+crbug.com/798257 external/wpt/css/css-pseudo/first-line-line-height-002.html [ Failure ]
 
 # motion-1 issues
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-002.html [ Failure ]
@@ -3010,6 +3011,12 @@ crbug.com/626703 fast/animation/scroll-animations/scrolltimeline-root-scroller-q
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/navigation-timing-extended.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCDataChannel-close.html [ Skip Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCDataChannel-send-blob-order.html [ Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCPeerConnection-capture-video.https.html [ Skip Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCPeerConnection-iceConnectionState.https.html [ Skip Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCDataChannel-send.html [ Skip Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-onsignalingstatechanged.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/css-skew-001.html [ Crash ]
 crbug.com/626703 [ Mac10.13 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/css-transform-3d-rotateZ-negative.html [ Crash ]
 crbug.com/626703 [ Mac10.13 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/document-styles/svg-document-styles-003.html [ Crash ]
@@ -3052,10 +3059,8 @@ crbug.com/626703 [ Mac10.13 ] virtual/change-service-worker-priority-when-client
 crbug.com/626703 [ Mac10.12 ] virtual/container-queries/wpt_internal/css/css-conditional/container-queries/top-layer-001.html [ Crash Failure ]
 crbug.com/626703 [ Mac10.12 ] virtual/scalefactor200/external/wpt/element-timing/cross-origin-element.sub.html [ Crash Failure ]
 crbug.com/626703 [ Mac11 ] wpt_internal/webcodecs/reconfiguring_encoder.https.any.worker.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-pseudo/first-line-line-height-002.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/streams/piping/abort.any.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/streams/piping/abort.any.sharedworker.html [ Crash Failure ]
-crbug.com/626703 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/first-line-line-height-002.html [ Failure ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/consume-code-cache-off-thread/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/css-calc-infinity-and-nan-disabled/external/wpt/css/css-values/ch-unit-011.html [ Failure ]
 crbug.com/626703 [ Win10.20h2 ] external/wpt/html/cross-origin-embedder-policy/cross-origin-isolated-permission.https.html [ Timeout ]
@@ -7346,9 +7351,6 @@ crbug.com/1272575 [ Mac ] virtual/gpu-rasterization/images/color-profile-svg-fil
 # Flaky on mac 10.13
 crbug.com/1263709 [ Mac10.13 ] http/tests/devtools/elements/node-xpath.js [ Failure ]
 
-# Temporarily disable this test to allow DevTools CL to land: https://crrev.com/c/3306493
-crbug.com/1268754 http/tests/devtools/elements/styles-4/styles-formatting.js [ Failure Pass ]
-
 # Flaky on Mac and Windows
 crbug.com/1272199 external/wpt/websockets/stream/tentative/backpressure-receive.any.serviceworker.html?wpt_flags=h2 [ Failure Pass ]
 crbug.com/1272203 external/wpt/websockets/stream/tentative/backpressure-send.any.serviceworker.html?wpt_flags=h2 [ Failure Pass ]
@@ -7364,11 +7366,11 @@ crbug.com/1272954 external/wpt/app-history/navigate-event/navigate-history-back-
 crbug.com/1272955 http/tests/devtools/extensions/extensions-timeline-api.js [ Failure Pass ]
 
 # Flaky as depends upon order of execution.
-crbug.com/1274917 external/wpt/content-security-policy/inheritance/history.sub.html [ Timeout Failure Pass ]
-crbug.com/1274917 external/wpt/content-security-policy/inheritance/history-iframe.sub.html [ Timeout Failure Pass ]
+crbug.com/1274917 external/wpt/content-security-policy/inheritance/history.sub.html [ Failure Pass Timeout ]
+crbug.com/1274917 external/wpt/content-security-policy/inheritance/history-iframe.sub.html [ Failure Pass Timeout ]
 
 # Test is very flaky (score of 223).
-crbug.com/1274919 http/tests/inspector-protocol/page/consecutive-navigate.js [ Timeout Pass ]
+crbug.com/1274919 http/tests/inspector-protocol/page/consecutive-navigate.js [ Pass Timeout ]
 
 # Sheriff 2021-11-23
 crbug.com/1270963 wpt_internal/fenced_frame/create-credential.https.html [ Skip ]
@@ -7388,3 +7390,5 @@ crbug.com/1228803 [ Linux ] fast/peerconnection/RTCPeerConnection-garbagecollect
 crbug.com/1274458 external/wpt/audio-output/selectAudioOutput-permissions-policy.https.sub.html [ Failure Pass ]
 crbug.com/1239485 [ Mac ] fast/frames/iframe-plugin-load-remove-document-crash.html [ Failure Pass ]
 
+# Sheriff 2021-11-30
+crbug.com/1256763 [ Linux ] virtual/gpu-rasterization/images/color-profile-image-shape.html [ Failure Pass ]

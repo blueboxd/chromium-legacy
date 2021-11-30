@@ -229,7 +229,7 @@ const base::Feature kCalendarView{"CalendarView",
 // Enable or disable manual crop document page to ChromeOS camera app. The flag
 // will be deprecated after feature is fully launched: crbug.com/1259731.
 const base::Feature kCameraAppDocumentManualCrop{
-    "CameraAppDocumentManualCrop", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CameraAppDocumentManualCrop", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the camera privacy switch toasts and notification should be
 // displayed.
@@ -720,6 +720,11 @@ const base::Feature kImeMozcProto{"ImeMozcProto",
 // settings. Otherwise it will be opened in a new web page in Chrome browser.
 const base::Feature kImeOptionsInSettings{"ImeOptionsInSettings",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, used to configure the heuristic rules for some advanced IME
+// features (e.g. auto-correct).
+const base::Feature kImeRuleConfig{"ImeRuleConfig",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable system emoji picker.
 const base::Feature kImeSystemEmojiPicker{"SystemEmojiPicker",

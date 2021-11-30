@@ -1028,11 +1028,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "decode-jpeg-images-to-yuv",
-    "owners": [ "sashamcintosh", "chromeos-gfx@google.com" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "default-browser-fullscreen-promo-cta-experiment",
     "owners": [ "javierrobles", "bling-flags@google.com" ],
     "expiry_milestone": 93
@@ -3885,11 +3880,6 @@
     "name": "mouse-subframe-no-implicit-capture",
     "owners": [ "eirage", "nzolghadr", "input-dev" ],
     "expiry_milestone": 84
-  },
-  {
-    "name": "multi-profile-account-consistency",
-    "owners": [ "droger", "sinhak", "team-dent@google.com"],
-    "expiry_milestone": 102
   },
   {
     "name": "mute-notification-snooze-action",

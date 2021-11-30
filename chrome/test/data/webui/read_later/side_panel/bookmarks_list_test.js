@@ -6,13 +6,15 @@
 // finish running its tests.
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 
+import 'chrome://read-later.top-chrome/side_panel/bookmarks_list.js';
+
 import {BookmarkFolderElement, FOLDER_OPEN_CHANGED_EVENT} from 'chrome://read-later.top-chrome/side_panel/bookmark_folder.js';
-import {BookmarksApiProxy} from 'chrome://read-later.top-chrome/side_panel/bookmarks_api_proxy.js';
+import {BookmarksApiProxyImpl} from 'chrome://read-later.top-chrome/side_panel/bookmarks_api_proxy.js';
 import {BookmarksListElement, LOCAL_STORAGE_OPEN_FOLDERS_KEY} from 'chrome://read-later.top-chrome/side_panel/bookmarks_list.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {assertEquals, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.js';
+import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {flushTasks} from 'chrome://webui-test/test_util.js';
 
 import {TestBookmarksApiProxy} from './test_bookmarks_api_proxy.js';
 
@@ -90,7 +92,7 @@ suite('SidePanelBookmarksListTest', () => {
     bookmarksApi.setFolders(
         /** @type {!Array<!chrome.bookmarks.BookmarkTreeNode>} */ (
             JSON.parse(JSON.stringify(folders))));
-    BookmarksApiProxy.setInstance(bookmarksApi);
+    BookmarksApiProxyImpl.setInstance(bookmarksApi);
 
     bookmarksList = /** @type {!BookmarksListElement} */ (
         document.createElement('bookmarks-list'));
@@ -109,7 +111,7 @@ suite('SidePanelBookmarksListTest', () => {
     const bookmarkIndex = 0;
 
     const changedBookmark = folders[rootFolderIndex].children[bookmarkIndex];
-    bookmarksApi.callbackRouter.onChanged.dispatchEvent(changedBookmark.id, {
+    bookmarksApi.callbackRouter.onChanged.callListeners(changedBookmark.id, {
       title: 'New title',
       url: 'http://new/url',
     });
@@ -123,7 +125,7 @@ suite('SidePanelBookmarksListTest', () => {
     // Reverse the children of Bookmarks bar.
     const children = folders[0].children;
     const reverseOrder = children.map(child => child.id).reverse();
-    bookmarksApi.callbackRouter.onChildrenReordered.dispatchEvent(
+    bookmarksApi.callbackRouter.onChildrenReordered.callListeners(
         folders[0].id, {childIds: reverseOrder});
     flush();
 
@@ -136,7 +138,7 @@ suite('SidePanelBookmarksListTest', () => {
   });
 
   test('AddsCreatedBookmark', async () => {
-    bookmarksApi.callbackRouter.onCreated.dispatchEvent('999', {
+    bookmarksApi.callbackRouter.onCreated.callListeners('999', {
       id: '999',
       title: 'New bookmark',
       index: 0,
@@ -156,7 +158,7 @@ suite('SidePanelBookmarksListTest', () => {
 
   test('AddsCreatedBookmarkForNewFolder', () => {
     // Create a new folder without a children array.
-    bookmarksApi.callbackRouter.onCreated.dispatchEvent('1000', {
+    bookmarksApi.callbackRouter.onCreated.callListeners('1000', {
       id: '1000',
       title: 'New folder',
       index: 0,
@@ -165,7 +167,7 @@ suite('SidePanelBookmarksListTest', () => {
     flush();
 
     // Create a new bookmark within that folder.
-    bookmarksApi.callbackRouter.onCreated.dispatchEvent('1001', {
+    bookmarksApi.callbackRouter.onCreated.callListeners('1001', {
       id: '1001',
       title: 'New bookmark in new folder',
       index: 0,
@@ -181,7 +183,7 @@ suite('SidePanelBookmarksListTest', () => {
 
   test('MovesBookmarks', () => {
     const movedBookmark = folders[0].children[1].children[0];
-    bookmarksApi.callbackRouter.onMoved.dispatchEvent(movedBookmark.id, {
+    bookmarksApi.callbackRouter.onMoved.callListeners(movedBookmark.id, {
       index: 0,
       parentId: folders[0].id,                 // Moving to bookmarks bar.
       oldParentId: folders[0].children[1].id,  // Moving from child folder.
@@ -200,7 +202,7 @@ suite('SidePanelBookmarksListTest', () => {
 
   test('MovesBookmarksIntoNewFolder', () => {
     // Create a new folder without a children array.
-    bookmarksApi.callbackRouter.onCreated.dispatchEvent('1000', {
+    bookmarksApi.callbackRouter.onCreated.callListeners('1000', {
       id: '1000',
       title: 'New folder',
       index: 0,
@@ -209,7 +211,7 @@ suite('SidePanelBookmarksListTest', () => {
     flush();
 
     const movedBookmark = folders[0].children[1].children[0];
-    bookmarksApi.callbackRouter.onMoved.dispatchEvent(movedBookmark.id, {
+    bookmarksApi.callbackRouter.onMoved.callListeners(movedBookmark.id, {
       index: 0,
       parentId: '1000',
       oldParentId: folders[0].children[1].id,

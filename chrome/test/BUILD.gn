@@ -2445,6 +2445,12 @@ if (!is_android && !is_fuchsia) {
       if (is_win) {
         sources += [ "../browser/signin/signin_util_win_browsertest.cc" ]
       }
+
+      # TODO(https://crbug.com/1198523: Remove this once enable_dice_support is
+      # no longer defined on Lacros.
+      if (is_chromeos_lacros) {
+        sources -= [ "../browser/signin/signin_ui_util_browsertest.cc" ]
+      }
     } else {
       sources += [ "../browser/signin/mirror_browsertest.cc" ]
     }
@@ -2485,9 +2491,6 @@ if (!is_android && !is_fuchsia) {
           "//ppapi/native_client:irt",
           "//third_party/liblouis:liblouis_test_data",
         ]
-        if (enable_nacl_nonsfi) {
-          data_deps += [ "//components/nacl/loader:helper_nonsfi" ]
-        }
       }
 
       if (is_win || is_linux || is_chromeos) {
@@ -2501,10 +2504,6 @@ if (!is_android && !is_fuchsia) {
       }
       if (is_linux || is_chromeos) {
         data_deps += [ "//components/nacl/loader:nacl_helper" ]
-
-        if (enable_nacl_nonsfi) {
-          data_deps += [ "//components/nacl/loader:helper_nonsfi" ]
-        }
       }
     }
 
@@ -5712,6 +5711,16 @@ test("unit_tests") {
       "../browser/ui/views/profiles/dice_web_signin_interception_bubble_view_unittest.cc",
       "../browser/ui/views/profiles/profile_customization_bubble_sync_controller_unittest.cc",
     ]
+
+    # TODO(https://crbug.com/1198523: Remove this once enable_dice_support is no
+    # longer defined on Lacros.
+    if (is_chromeos_lacros) {
+      sources -= [
+        "../browser/password_manager/multi_profile_credentials_filter_unittest.cc",
+        "../browser/signin/dice_web_signin_interceptor_unittest.cc",
+        "../browser/signin/signin_manager_unittest.cc",
+      ]
+    }
   }
 
   if (is_win || is_mac || (is_linux || is_chromeos_lacros)) {
@@ -8585,6 +8594,7 @@ if (!is_android && !is_fuchsia) {
         sources += [ "../browser/ui/views/global_media_controls/media_dialog_view_interactive_browsertest.cc" ]
         deps += [
           "../browser/media/router:test_support",
+          "../browser/ui/views:test_support",
           "//components/media_router/browser:test_support",
         ]
       }

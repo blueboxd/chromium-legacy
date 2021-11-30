@@ -87,7 +87,6 @@ class PasswordStoreAndroidBackend
    public:
     using ErrorReply = base::OnceClosure;
     using MetricInfix = base::StrongAlias<struct MetricNameTag, std::string>;
-    using WasSuccess = base::StrongAlias<struct WasSuccessTag, bool>;
 
     JobReturnHandler();
     JobReturnHandler(LoginsOrErrorReply callback, MetricInfix metric_name);
@@ -110,7 +109,12 @@ class PasswordStoreAndroidBackend
     // Records metrics for this job:
     // - "PasswordManager.PasswordStoreAndroidBackend.<metric_infix_>.Latency"
     // - "PasswordManager.PasswordStoreAndroidBackend.<metric_infix_>.Success"
-    void RecordMetrics(WasSuccess success) const;
+    // In case of failure. the following are recorded in addition:
+    // - "PasswordManager.PasswordStoreAndroidBackend.APIError"
+    // - "PasswordManager.PasswordStoreAndroidBackend.ErrorCode"
+    // - "PasswordManager.PasswordStoreAndroidBackend.<metric_infix_>.APIError"
+    // - "PasswordManager.PasswordStoreAndroidBackend.<metric_infix_>.ErrorCode"
+    void RecordMetrics(absl::optional<AndroidBackendError> error) const;
 
    private:
     absl::variant<LoginsOrErrorReply, PasswordStoreChangeListReply>
@@ -134,7 +138,7 @@ class PasswordStoreAndroidBackend
                    base::OnceCallback<void(bool)> completion) override;
   void Shutdown(base::OnceClosure shutdown_completed) override;
   void GetAllLoginsAsync(LoginsOrErrorReply callback) override;
-  void GetAutofillableLoginsAsync(LoginsReply callback) override;
+  void GetAutofillableLoginsAsync(LoginsOrErrorReply callback) override;
   void FillMatchingLoginsAsync(
       LoginsReply callback,
       bool include_psl,

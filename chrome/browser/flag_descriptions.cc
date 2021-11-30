@@ -589,11 +589,6 @@ const char kDarkLightTestDescription[] =
     "Enables the dark/light mode of system UI, which includes shelf, launcher, "
     "system tray etc.";
 
-const char kDecodeJpeg420ImagesToYUVName[] = "YUV decoding for JPEG";
-const char kDecodeJpeg420ImagesToYUVDescription[] =
-    "Decode and render 4:2:0 formatted jpeg images from YUV instead of RGB."
-    "This feature requires GPU or OOP rasterization to also be enabled.";
-
 const char kDevicePostureName[] = "Device Posture API";
 const char kDevicePostureDescription[] =
     "Enables Device Posture API (foldable devices)";
@@ -5244,14 +5239,6 @@ const char kLauncherNudgeShortIntervalDescription[] =
 // Prefer keeping this section sorted to adding new definitions down here.
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-extern const char kMultiProfileAccountConsistencyName[] =
-    "Account consistency for multi-profile.";
-extern const char kMultiProfileAccountConsistencyDescription[] =
-    "Enables integration of secondary profiles with the ChromeOS Account "
-    "Manager.";
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersName[] =

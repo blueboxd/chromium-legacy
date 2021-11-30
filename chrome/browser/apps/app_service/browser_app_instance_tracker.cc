@@ -275,9 +275,6 @@ void BrowserAppInstanceTracker::OnTabStripModelChangeInsert(
     }
 #endif
     if (tab_is_new) {
-      webcontents_to_observer_map_[contents] =
-          std::make_unique<BrowserAppInstanceTracker::WebContentsObserver>(
-              contents, this);
       OnTabCreated(browser, contents);
     }
     OnTabAttached(browser, contents);
@@ -317,10 +314,6 @@ void BrowserAppInstanceTracker::OnTabStripModelChangeRemove(
     }
     if (tab_will_be_closed) {
       OnTabClosing(browser, contents);
-    }
-    if (tab_will_be_closed) {
-      DCHECK(base::Contains(webcontents_to_observer_map_, contents));
-      webcontents_to_observer_map_.erase(contents);
     }
   }
   // Last tab detached.
@@ -366,7 +359,8 @@ void BrowserAppInstanceTracker::OnBrowserFirstTabAttached(Browser* browser) {
   }
 
   tracked_browsers_.insert(browser);
-  if (browser->is_type_normal() || browser->is_type_devtools()) {
+  if (browser->is_type_normal() || browser->is_type_popup() ||
+      browser->is_type_devtools()) {
     CreateWindowInstance(browser);
   }
 }
@@ -385,6 +379,10 @@ void BrowserAppInstanceTracker::OnBrowserLastTabDetached(Browser* browser) {
 
 void BrowserAppInstanceTracker::OnTabCreated(Browser* browser,
                                              content::WebContents* contents) {
+  webcontents_to_observer_map_[contents] =
+      std::make_unique<BrowserAppInstanceTracker::WebContentsObserver>(contents,
+                                                                       this);
+
   std::string app_id = GetAppId(contents);
   if (!app_id.empty()) {
     CreateAppInstance(std::move(app_id), browser, contents);
@@ -423,6 +421,8 @@ void BrowserAppInstanceTracker::OnTabUpdated(Browser* browser,
 void BrowserAppInstanceTracker::OnTabClosing(Browser* browser,
                                              content::WebContents* contents) {
   RemoveAppInstanceIfExists(contents);
+  DCHECK(base::Contains(webcontents_to_observer_map_, contents));
+  webcontents_to_observer_map_.erase(contents);
 }
 
 void BrowserAppInstanceTracker::OnWebContentsUpdated(

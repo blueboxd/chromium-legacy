@@ -371,7 +371,10 @@ static_library("browser") {
     "content_settings/sound_content_setting_observer.h",
     "crash_upload_list/crash_upload_list.cc",
     "crash_upload_list/crash_upload_list.h",
+    "custom_handlers/chrome_protocol_handler_registry_delegate.cc",
+    "custom_handlers/chrome_protocol_handler_registry_delegate.h",
     "custom_handlers/protocol_handler_registry.cc",
+    "custom_handlers/protocol_handler_registry.h",
     "custom_handlers/protocol_handler_registry.h",
     "custom_handlers/protocol_handler_registry_factory.cc",
     "custom_handlers/protocol_handler_registry_factory.h",
@@ -2437,6 +2440,7 @@ static_library("browser") {
       "apps/digital_goods/util.h",
     ]
     deps += [
+      "//ash/components/arc/mojom",
       "//ash/components/audio",
       "//ash/components/device_activity:device_activity",
       "//ash/components/timezone",
@@ -4883,6 +4887,7 @@ static_library("browser") {
       "//ash/components/arc:arc_base",
       "//ash/components/arc:arc_base_utils",
       "//ash/components/arc/enterprise",
+      "//ash/components/arc/mojom",
       "//ash/components/geolocation",
       "//ash/components/settings",
       "//ash/public/cpp",
@@ -6347,6 +6352,15 @@ static_library("browser") {
       sources += [
         "signin/signin_util_win.cc",
         "signin/signin_util_win.h",
+      ]
+    }
+
+    # TODO(https://crbug.com/1198523: Remove this once enable_dice_support is no
+    # longer defined on Lacros.
+    if (is_chromeos_lacros) {
+      sources -= [
+        "signin/signin_manager_factory.cc",
+        "signin/signin_manager_factory.h",
       ]
     }
   }

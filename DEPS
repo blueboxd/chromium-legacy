@@ -234,7 +234,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '0ed19771c38ceda8fabb2ffcb0a6b687fcf65302',
+  'skia_revision': '4fb7dec70608ffeda5a205e0dba3d8d20b8a52b3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -309,7 +309,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '4565ee579e698f9736e8fa5c6f071c3eddb7d9ec',
+  'devtools_frontend_revision': '716813300a895fe60ba4a91e2d7833b2d74d5995',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -730,7 +730,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': '_mv2OMpjccweT-C9WjlRVvg3G6Wl8DKlaXteORrc2ccC',
+          'version': 'T1trgreQia99KgYSLmE5CEnoL0JqxLmRJDyQy0FGDAsC',
         },
       ],
       'dep_type': 'cipd',

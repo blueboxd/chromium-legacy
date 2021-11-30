@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/web_applications/web_app_shortcut_mac.h"
+#include "base/logging.h"
 
 #import <Cocoa/Cocoa.h>
 #include <stdint.h>
@@ -140,6 +141,7 @@ void RunAppLaunchCallbacks(
   // terminated, then indicate failure in |launch_callback|.
   base::Process process([app processIdentifier]);
   if (!process.IsValid() || [app isTerminated]) {
+    LOG(ERROR) << "Application has already been terminated.";
     std::move(launch_callback).Run(base::Process());
     return;
   }
@@ -425,6 +427,7 @@ void LaunchShimOnFileThread(LaunchShimUpdateBehavior update_behavior,
   // attempt to launch.
   bool launched_after_rebuild = false;
   std::vector<base::FilePath> shim_paths;
+  bool shortcuts_updated = true;
   switch (update_behavior) {
     case LaunchShimUpdateBehavior::DO_NOT_RECREATE:
       // Attempt to locate the shim's path using LaunchServices.
@@ -433,16 +436,17 @@ void LaunchShimOnFileThread(LaunchShimUpdateBehavior update_behavior,
     case LaunchShimUpdateBehavior::RECREATE_IF_INSTALLED:
       // Only attempt to launch shims that were updated.
       launched_after_rebuild = true;
-      shortcut_creator.UpdateShortcuts(false /* create_if_needed */,
-                                       &shim_paths);
+      shortcuts_updated = shortcut_creator.UpdateShortcuts(
+          false /* create_if_needed */, &shim_paths);
       break;
     case LaunchShimUpdateBehavior::RECREATE_UNCONDITIONALLY:
       // Likewise, only attempt to launch shims that were updated.
       launched_after_rebuild = true;
-      shortcut_creator.UpdateShortcuts(true /* create_if_needed */,
-                                       &shim_paths);
+      shortcuts_updated = shortcut_creator.UpdateShortcuts(
+          true /* create_if_needed */, &shim_paths);
       break;
   }
+  LOG_IF(ERROR, !shortcuts_updated) << "Could not write shortcut for app shim.";
 
   // Attempt to launch the shim.
   for (const auto& shim_path : shim_paths) {
@@ -469,6 +473,7 @@ void LaunchShimOnFileThread(LaunchShimUpdateBehavior update_behavior,
                                     std::move(terminated_callback)));
       return;
     }
+    LOG(ERROR) << "Failed to open application with path: " << shim_path;
   }
 
   content::GetUIThreadTaskRunner({})->PostTask(
@@ -1102,6 +1107,7 @@ bool WebAppShortcutCreator::UpdateShortcuts(
   }
   if (app_paths.empty()) {
     RecordCreateShortcut(CreateShortcutResult::kFailToGetApplicationPaths);
+    LOG(ERROR) << "Failed to get application paths.";
     return false;
   }
 

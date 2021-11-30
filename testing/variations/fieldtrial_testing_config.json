@@ -762,6 +762,33 @@
             ]
         }
     ],
+    "ApplyNativeOcclusionToCompositor": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Release_6",
+                    "params": {
+                        "type": "release"
+                    },
+                    "enable_features": [
+                        "ApplyNativeOcclusionToCompositor"
+                    ]
+                },
+                {
+                    "name": "Throttle_6",
+                    "params": {
+                        "type": "throttle"
+                    },
+                    "enable_features": [
+                        "ApplyNativeOcclusionToCompositor"
+                    ]
+                }
+            ]
+        }
+    ],
     "ArcEnableThrottlingNotification": [
         {
             "platforms": [
@@ -1098,6 +1125,28 @@
                         "AutofillLabelAffixRemoval",
                         "AutofillRetrieveOverallPredictionsFromCache",
                         "AutofillShadowDOM"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillDisplaceRemovedForms": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillDisplaceRemovedForms"
                     ]
                 }
             ]
@@ -2791,6 +2840,30 @@
                     "enable_features": [
                         "CanvasOopRasterization",
                         "DefaultPassthroughCommandDecoder"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DeprioritizeTimersUntilDOMContentLoaded": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "DeprioritizeTimersUntilDOMContentLoaded_20211112",
+                    "params": {
+                        "DeprioritizeDOMTimersPhase": "ondomcontentloaded"
+                    },
+                    "enable_features": [
+                        "DeprioritizeDOMTimersDuringPageLoading"
                     ]
                 }
             ]
@@ -7825,21 +7898,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "TreatPreconnectAsDefault"
-                    ]
-                }
-            ]
-        }
-    ],
-    "TriggerNetworkDataMigration": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "TriggerNetworkDataMigration",
-                    "enable_features": [
-                        "TriggerNetworkDataMigration"
                     ]
                 }
             ]

@@ -2,7 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+
+assert(is_chromeos_ash)
 
 # C++ headers and sources that can be used outside ash.
 component("cpp") {
@@ -375,6 +378,7 @@ component("cpp") {
   ]
 
   public_deps = [
+    "//ash/components/arc/mojom:notifications",
     "//ash/components/security_token_pin",
     "//ash/public/mojom",
     "//ash/webui/personalization_app/proto",
@@ -385,7 +389,6 @@ component("cpp") {
     "//chromeos/services/cellular_setup/public/mojom",
     "//chromeos/services/network_config/public/mojom",
     "//components/app_restore",
-    "//components/arc/mojom:notifications",
     "//components/session_manager:base",
     "//components/user_manager",
     "//ui/base/ime/ash:ime_types",

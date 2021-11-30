@@ -2327,7 +2327,7 @@
     },
     {
       name: "UserAgentClientHintFullVersionList",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "UserAgentReduction",
@@ -2410,6 +2410,7 @@
     },
     {
       name: "WebAppLaunchHandler",
+      origin_trial_feature_name: "Launch Handler",
       status: "experimental",
     },
     {

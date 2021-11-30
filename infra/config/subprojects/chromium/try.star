@@ -428,6 +428,23 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
+    name = "android-marshmallow-arm64-rel-compilator",
+    builderless = False,
+    cores = 64,
+    goma_jobs = goma.jobs.J300,
+    ssd = True,
+    use_java_coverage = True,
+    coverage_test_types = ["unit", "overall"],
+    properties = {
+        "orchestrator": {
+            "builder_group": "tryserver.chromium.android",
+            "builder_name": "android-marshmallow-arm64-rel",
+        },
+    },
+    executable = "recipe:chromium/compilator",
+)
+
+try_.chromium_android_builder(
     name = "android-marshmallow-arm64-rel-rts",
     builderless = not settings.is_main,
     cores = 32 if settings.is_main else 16,
@@ -641,6 +658,8 @@ try_.chromium_android_builder(
 try_.chromium_android_builder(
     name = "android_compile_x64_dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    cores = 16,
+    ssd = True,
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [
@@ -659,6 +678,8 @@ try_.chromium_android_builder(
 try_.chromium_android_builder(
     name = "android_compile_x86_dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    cores = 16,
+    ssd = True,
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [

@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
+
+assert(is_chromeos_ash)
+
 static_library("arc") {
   sources = [
     "appfuse/arc_appfuse_bridge.cc",
@@ -134,6 +138,7 @@ static_library("arc") {
     "//chromeos/ui/base",
     "//chromeos/ui/frame",
     "//components/account_id",
+    "//components/device_event_log",
     "//components/exo",
     "//components/google/core/common",
     "//components/guest_os",
@@ -276,8 +281,8 @@ static_library("notification_test_support") {
   ]
 
   public_deps = [
+    "//ash/components/arc/mojom:notifications",
     "//ash/components/arc/session:connection_holder",
-    "//components/arc/mojom:notifications",
   ]
 }
 

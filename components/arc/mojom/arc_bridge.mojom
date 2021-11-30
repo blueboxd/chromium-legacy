@@ -4,6 +4,8 @@
 
 module arc.mojom;
 
+import "ash/components/arc/mojom/notifications.mojom";
+import "ash/components/arc/mojom/oemcrypto.mojom";
 import "components/arc/mojom/accessibility_helper.mojom";
 import "components/arc/mojom/adbd.mojom";
 import "components/arc/mojom/app.mojom";
@@ -39,9 +41,7 @@ import "components/arc/mojom/metrics.mojom";
 import "components/arc/mojom/midis.mojom";
 import "components/arc/mojom/nearby_share.mojom";
 import "components/arc/mojom/net.mojom";
-import "components/arc/mojom/notifications.mojom";
 import "components/arc/mojom/obb_mounter.mojom";
-import "components/arc/mojom/oemcrypto.mojom";
 import "components/arc/mojom/payment_app.mojom";
 import "components/arc/mojom/pip.mojom";
 import "components/arc/mojom/policy.mojom";
@@ -58,7 +58,7 @@ import "components/arc/mojom/timer.mojom";
 import "components/arc/mojom/tracing.mojom";
 import "components/arc/mojom/tts.mojom";
 import "components/arc/mojom/usb_host.mojom";
-import "components/arc/mojom/video.mojom";
+import "ash/components/arc/mojom/video.mojom";
 import "components/arc/mojom/volume_mounter.mojom";
 import "components/arc/mojom/wake_lock.mojom";
 import "components/arc/mojom/wallpaper.mojom";

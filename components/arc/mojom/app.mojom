@@ -8,7 +8,7 @@ module arc.mojom;
 
 import "components/arc/mojom/app_permissions.mojom";
 import "components/arc/mojom/compatibility_mode.mojom";
-import "components/arc/mojom/gfx.mojom";
+import "ash/components/arc/mojom/gfx.mojom";
 import "components/arc/mojom/scale_factor.mojom";
 import "ui/accessibility/mojom/ax_assistant_structure.mojom";
 
@@ -479,9 +479,6 @@ interface AppInstance {
 
   // Sets notification setting for the package.
   [MinVersion=6] SetNotificationsEnabled@10(string package_name, bool enabled);
-
-  // Sends a request to ARC to start PAI flow.
-  [MinVersion=21] StartPaiFlowDeprecated@17();
 
   // Sends a request to ARC to start PAI flow and receives result status.
   [MinVersion=40] StartPaiFlow@32() => (PaiFlowState state);

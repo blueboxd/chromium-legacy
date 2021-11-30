@@ -4,6 +4,9 @@
 
 #include "ash/components/arc/test/fake_arc_bridge_host.h"
 
+#include "ash/components/arc/mojom/notifications.mojom.h"
+#include "ash/components/arc/mojom/oemcrypto.mojom.h"
+#include "ash/components/arc/mojom/video.mojom.h"
 #include "components/arc/mojom/accessibility_helper.mojom.h"
 #include "components/arc/mojom/adbd.mojom.h"
 #include "components/arc/mojom/app.mojom.h"
@@ -38,9 +41,7 @@
 #include "components/arc/mojom/midis.mojom.h"
 #include "components/arc/mojom/nearby_share.mojom.h"
 #include "components/arc/mojom/net.mojom.h"
-#include "components/arc/mojom/notifications.mojom.h"
 #include "components/arc/mojom/obb_mounter.mojom.h"
-#include "components/arc/mojom/oemcrypto.mojom.h"
 #include "components/arc/mojom/pip.mojom.h"
 #include "components/arc/mojom/policy.mojom.h"
 #include "components/arc/mojom/power.mojom.h"
@@ -56,7 +57,6 @@
 #include "components/arc/mojom/tracing.mojom.h"
 #include "components/arc/mojom/tts.mojom.h"
 #include "components/arc/mojom/usb_host.mojom.h"
-#include "components/arc/mojom/video.mojom.h"
 #include "components/arc/mojom/volume_mounter.mojom.h"
 #include "components/arc/mojom/wake_lock.mojom.h"
 #include "components/arc/mojom/wallpaper.mojom.h"

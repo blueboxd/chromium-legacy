@@ -500,6 +500,11 @@
     "expiry_milestone": 96
   },
   {
+    "name": "autofill-visual-improvements-for-suggestion-ui",
+    "owners": [ "koerber", "vasilii" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "back-forward-cache",
     "owners": [ "bfcache-dev@chromium.org" ],
     "expiry_milestone": 110
@@ -4213,7 +4218,7 @@
   {
     "name": "omnibox-tab-switch-suggestions",
     "owners": [ "gangwu", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 104
   },
   {
     "name": "omnibox-trending-zero-prefix-suggestions-on-ntp",

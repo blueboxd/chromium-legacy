@@ -97,7 +97,6 @@ source_set("chromeos_filters") {
     "//testing/buildbot/filters/chromeos.base_unittests.filter",
     "//testing/buildbot/filters/chromeos.browser_tests.filter",
     "//testing/buildbot/filters/chromeos.media_unittests.filter",
-    "//testing/buildbot/filters/chromeos.sandbox_linux_unittests.filter",
     "//testing/buildbot/filters/chromeos.services_unittests.filter",
     "//testing/buildbot/filters/chromeos.unit_tests.filter",
   ]
@@ -107,7 +106,6 @@ source_set("components_unittests_filters") {
   testonly = true
 
   data = [
-    "//testing/buildbot/filters/android.emulator_11.components_unittests.filter",
     "//testing/buildbot/filters/fuchsia.components_unittests.filter",
     "//testing/buildbot/filters/linux-lacros.components_unittests.filter",
   ]

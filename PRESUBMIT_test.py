@@ -1523,8 +1523,7 @@ class HardcodedGoogleHostsTest(unittest.TestCase):
 class ChromeOsSyncedPrefRegistrationTest(unittest.TestCase):
 
   def testWarnsOnChromeOsDirectories(self):
-    input_api = MockInputApi()
-    input_api.files = [
+    files = [
       MockFile('ash/file.cc',
                ['PrefRegistrySyncable::SYNCABLE_PREF']),
       MockFile('chrome/browser/chromeos/file.cc',
@@ -1536,9 +1535,12 @@ class ChromeOsSyncedPrefRegistrationTest(unittest.TestCase):
       MockFile('components/exo/file.cc',
                ['PrefRegistrySyncable::SYNCABLE_PREF']),
     ]
-    warnings = PRESUBMIT.CheckChromeOsSyncedPrefRegistration(
-      input_api, MockOutputApi())
-    self.assertEqual(1, len(warnings))
+    input_api = MockInputApi()
+    for file in files:
+      input_api.files = [file]
+      warnings = PRESUBMIT.CheckChromeOsSyncedPrefRegistration(
+        input_api, MockOutputApi())
+      self.assertEqual(1, len(warnings))
 
   def testDoesNotWarnOnSyncOsPref(self):
     input_api = MockInputApi()
@@ -1550,7 +1552,7 @@ class ChromeOsSyncedPrefRegistrationTest(unittest.TestCase):
       input_api, MockOutputApi())
     self.assertEqual(0, len(warnings))
 
-  def testDoesNotWarnOnCrossPlatformDirectories(self):
+  def testDoesNotWarnOnOtherDirectories(self):
     input_api = MockInputApi()
     input_api.files = [
       MockFile('chrome/browser/ui/file.cc',
@@ -1558,6 +1560,8 @@ class ChromeOsSyncedPrefRegistrationTest(unittest.TestCase):
       MockFile('components/sync/file.cc',
                ['PrefRegistrySyncable::SYNCABLE_PREF']),
       MockFile('content/browser/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+      MockFile('a/notchromeos/file.cc',
                ['PrefRegistrySyncable::SYNCABLE_PREF']),
     ]
     warnings = PRESUBMIT.CheckChromeOsSyncedPrefRegistration(
@@ -3971,6 +3975,48 @@ class MPArchApiUsage(unittest.TestCase):
          '  EXPECT_TRUE(web_contents()->GetMainFrame());',
          '}',
         ])
+
+
+class AssertAshOnlyCodeTest(unittest.TestCase):
+    def testErrorsOnlyOnAshDirectories(self):
+        files_in_ash = [
+            MockFile('ash/BUILD.gn', []),
+            MockFile('chrome/browser/ash/BUILD.gn', []),
+        ]
+        other_files = [
+            MockFile('chrome/browser/BUILD.gn', []),
+            MockFile('chrome/browser/BUILD.gn', ['assert(is_chromeos_ash)']),
+        ]
+        input_api = MockInputApi()
+        input_api.files = files_in_ash
+        errors = PRESUBMIT.CheckAssertAshOnlyCode(input_api, MockOutputApi())
+        self.assertEqual(2, len(errors))
+
+        input_api.files = other_files
+        errors = PRESUBMIT.CheckAssertAshOnlyCode(input_api, MockOutputApi())
+        self.assertEqual(0, len(errors))
+
+    def testDoesNotErrorOnNonGNFiles(self):
+        input_api = MockInputApi()
+        input_api.files = [
+            MockFile('ash/test.h', ['assert(is_chromeos_ash)']),
+            MockFile('chrome/browser/ash/test.cc',
+                     ['assert(is_chromeos_ash)']),
+        ]
+        errors = PRESUBMIT.CheckAssertAshOnlyCode(input_api, MockOutputApi())
+        self.assertEqual(0, len(errors))
+
+    def testDoesNotErrorWithAssertion(self):
+        input_api = MockInputApi()
+        input_api.files = [
+            MockFile('ash/BUILD.gn', ['assert(is_chromeos_ash)']),
+            MockFile('chrome/browser/ash/BUILD.gn',
+                     ['assert(is_chromeos_ash)']),
+            MockFile('chrome/browser/ash/BUILD.gn',
+                     ['assert(is_chromeos_ash, "test")']),
+        ]
+        errors = PRESUBMIT.CheckAssertAshOnlyCode(input_api, MockOutputApi())
+        self.assertEqual(0, len(errors))
 
 
 if __name__ == '__main__':

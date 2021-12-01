@@ -253,6 +253,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY =
             "CCTIncognitoAvailableToThirdParty";
     public static final String CCT_EXTERNAL_LINK_HANDLING = "CCTExternalLinkHandling";
+    public static final String CCT_NEW_DOWNLOAD_TAB = "CCTNewDownloadTab";
     public static final String CCT_POST_MESSAGE_API = "CCTPostMessageAPI";
     public static final String CCT_REDIRECT_PRECONNECT = "CCTRedirectPreconnect";
     public static final String CCT_REMOVE_REMOTE_VIEW_IDS = "CCTRemoveRemoteViewIds";
@@ -537,6 +538,8 @@ public abstract class ChromeFeatureList {
     public static final String TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT_WARNING =
             "TrustedWebActivityQualityEnforcementWarning";
     public static final String VIDEO_TUTORIALS = "VideoTutorials";
+    public static final String UNIFIED_CREDENTIAL_MANAGER_DRY_RUN =
+            "UnifiedCredentialManagerDryRun";
     public static final String UNIFIED_PASSWORD_MANAGER_ANDROID = "UnifiedPasswordManagerAndroid";
     public static final String UPCOMING_SHARING_FEATURES = "UpcomingSharingFeatures";
     public static final String UPDATE_NOTIFICATION_IMMEDIATE_SHOW_OPTION =

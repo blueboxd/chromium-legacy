@@ -8845,11 +8845,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_DESC" desc="Body of the account password storage reauth tab modal dialog.">
         Passwords from your Google Account will also be available on this device while you're signed in
       </message>
+      <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_DESC_ALREADY_SAVED_LOCALLY" desc="Body of the account password storage reauth tab modal dialog, shown in the case where the password was already saved locally.">
+        Chrome saved your password to this device, but you can save it to your Google Account instead. Then, all passwords in your Google Account will also be available while you're signed in.
+      </message>
       <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_CONFIRM_BUTTON_LABEL" desc="Label of the confirmation button in the account password storage reauth tab modal dialog.">
         Yes
       </message>
       <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_CLOSE_BUTTON_LABEL" desc="Label of the close button in the account password storage reauth tab modal dialog.">
         No thanks
+      </message>
+      <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_CLOSE_BUTTON_LABEL_ALREADY_SAVED_LOCALLY" desc="Label of the close button in the account password storage reauth tab modal dialog, shown in the case where the password was already saved locally.">
+        No, this device only
       </message>
 
       <message name="IDS_PLUGIN_OUTDATED_PROMPT" desc="Infobar message when an outdated plugin was disabled">
@@ -10673,6 +10679,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_TAB_AX_ANNOUNCE_TAB_REMOVED_FROM_NAMED_GROUP" is_accessibility_with_no_ui="true" desc="Screen reader announcement when the user inputs a hotkey for moving the currently-selected tab and it results in the tab being removed from a tab group with a title">
         Tab removed from group <ph name="GROUP_NAME">$1</ph> - <ph name="GROUP_CONTENTS">$2<ex>Google Search and 3 other tabs</ex></ph>
+      </message>
+      <message name="IDS_PAGE_LOADING_AX_TITLE_FORMAT" is_accessibility_with_no_ui="true" desc="Screen reader announcement when the back/forward button is focused and has been pressed. If the title of the page can be obtained, it will be included. Example: 'Loading Google News'.">
+          Loading <ph name="WINDOW_TITLE">$1<ex>Google News</ex></ph>
       </message>
 
       <!-- ProcessSingleton -->

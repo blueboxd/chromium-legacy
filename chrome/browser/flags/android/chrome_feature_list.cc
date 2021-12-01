@@ -185,6 +185,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTExternalLinkHandling,
     &kCCTIncognito,
     &kCCTIncognitoAvailableToThirdParty,
+    &kCCTNewDownloadTab,
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
     &kCCTRemoveRemoteViewIds,
@@ -339,6 +340,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kLeakDetectionUnauthenticated,
     &password_manager::features::kPasswordScriptsFetching,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
+    &password_manager::features::kUnifiedCredentialManagerDryRun,
     &password_manager::features::kUnifiedPasswordManagerAndroid,
     &performance_hints::features::kContextMenuPerformanceInfo,
     &permissions::features::kRevertDSEAutomaticPermissions,
@@ -450,6 +452,9 @@ const base::Feature kCCTBackgroundTab{"CCTBackgroundTab",
 
 const base::Feature kCCTClientDataHeader{"CCTClientDataHeader",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCCTNewDownloadTab{"CCTNewDownloadTab",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCCTExternalLinkHandling{"CCTExternalLinkHandling",
                                              base::FEATURE_ENABLED_BY_DEFAULT};

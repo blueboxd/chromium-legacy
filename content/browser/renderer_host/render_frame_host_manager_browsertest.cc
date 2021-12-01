@@ -264,9 +264,7 @@ bool HasErrorPageSiteInfo(SiteInstance* site_instance) {
 }
 
 bool HasErrorPageProcessLock(SiteInstance* site_instance) {
-  return ChildProcessSecurityPolicyImpl::GetInstance()
-      ->GetProcessLock(site_instance->GetProcess()->GetID())
-      .is_error_page();
+  return site_instance->GetProcess()->GetProcessLock().is_error_page();
 }
 
 }  // anonymous namespace
@@ -7569,8 +7567,17 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
                     ActionAfterPagehide::kNavigation, 1);
 }
 
+// TODO(crbug.com/1274974): Make this work with NavigationThreadingOptimizations
+// enabled.
+#if defined(OS_MAC)
+#define MAYBE_PostMessageAfterPagehideHistogram \
+  DISABLED_PostMessageAfterPagehideHistogram
+#else
+#define MAYBE_PostMessageAfterPagehideHistogram \
+  PostMessageAfterPagehideHistogram
+#endif
 IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
-                       PostMessageAfterPagehideHistogram) {
+                       MAYBE_PostMessageAfterPagehideHistogram) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
@@ -7624,8 +7631,17 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
   }
 }
 
+// TODO(crbug.com/1274974): Make this work with NavigationThreadingOptimizations
+// enabled.
+#if defined(OS_MAC)
+#define MAYBE_PostMessageAfterPagehideHistogramSubframe \
+  DISABLED_PostMessageAfterPagehideHistogramSubframe
+#else
+#define MAYBE_PostMessageAfterPagehideHistogramSubframe \
+  PostMessageAfterPagehideHistogramSubframe
+#endif
 IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
-                       PostMessageAfterPagehideHistogramSubframe) {
+                       MAYBE_PostMessageAfterPagehideHistogramSubframe) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a1(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
@@ -8636,7 +8652,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_EQ(siteless_url, web_contents->GetMainFrame()->GetLastCommittedURL());
   RenderProcessHost* process1 = web_contents->GetMainFrame()->GetProcess();
   EXPECT_FALSE(web_contents->GetMainFrame()->GetSiteInstance()->HasSite());
-  auto process1_lock = policy->GetProcessLock(process1->GetID());
+  auto process1_lock = process1->GetProcessLock();
   EXPECT_FALSE(process1_lock.is_invalid());
   EXPECT_TRUE(process1_lock.allows_any_site());
 

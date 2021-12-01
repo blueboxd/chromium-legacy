@@ -96,10 +96,12 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
 
   void GetRegionList(GetRegionListCallback callback) override;
   void GetSkuList(GetSkuListCallback callback) override;
+  void GetWhiteLabelList(GetWhiteLabelListCallback callback) override;
   void GetOriginalSerialNumber(
       GetOriginalSerialNumberCallback callback) override;
   void GetOriginalRegion(GetOriginalRegionCallback callback) override;
   void GetOriginalSku(GetOriginalSkuCallback callback) override;
+  void GetOriginalWhiteLabel(GetOriginalWhiteLabelCallback callback) override;
   void SetDeviceInformation(const std::string& serial_number,
                             uint8_t region_index,
                             uint8_t sku_index,
@@ -128,6 +130,10 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   void EndRmaAndReboot(EndRmaAndRebootCallback callback) override;
   void EndRmaAndShutdown(EndRmaAndShutdownCallback callback) override;
   void EndRmaAndCutoffBattery(EndRmaAndCutoffBatteryCallback callback) override;
+
+  void CriticalErrorExitToLogin(
+      CriticalErrorExitToLoginCallback callback) override;
+  void CriticalErrorReboot(CriticalErrorRebootCallback callback) override;
 
   void ObserveError(
       ::mojo::PendingRemote<mojom::ErrorObserver> observer) override;
@@ -176,6 +182,7 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   void OnGetStateResponse(Callback callback,
                           absl::optional<rmad::GetStateReply> response);
   void OnAbortRmaResponse(AbortRmaCallback callback,
+                          bool reboot,
                           absl::optional<rmad::AbortRmaReply> response);
   void OnGetLog(GetLogCallback callback, absl::optional<std::string> log);
   void OnNetworkListResponse(
@@ -230,6 +237,11 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
 
   // Provides browser functionality from //chrome to the Shimless RMA UI.
   std::unique_ptr<ShimlessRmaDelegate> shimless_rma_delegate_;
+
+  // When a critical error occurs this is set to true and never clears.
+  // It is used to allow abort requests to reboot or exit to login, even if the
+  // request fails.
+  bool critical_error_occurred_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

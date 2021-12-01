@@ -6,6 +6,7 @@
 #define CC_TREES_PROXY_IMPL_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
@@ -37,6 +38,9 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
  public:
   ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
             LayerTreeHost* layer_tree_host,
+            int id,
+            const LayerTreeSettings* settings,
+            RenderingStatsInstrumentation* rendering_stats_instrumentation,
             TaskRunnerProvider* task_runner_provider);
   ProxyImpl(const ProxyImpl&) = delete;
   ~ProxyImpl() override;
@@ -66,9 +70,11 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void ReleaseLayerTreeFrameSinkOnImpl(CompletionEvent* completion);
   void FinishGLOnImpl(CompletionEvent* completion);
   void NotifyReadyToCommitOnImpl(CompletionEvent* completion_event,
+                                 std::unique_ptr<CommitState> commit_state,
                                  LayerTreeHost* layer_tree_host,
                                  base::TimeTicks main_thread_start_time,
-                                 const viz::BeginFrameArgs& commit_args);
+                                 const viz::BeginFrameArgs& commit_args,
+                                 CommitTimestamps* commit_timestamps);
   void SetSourceURL(ukm::SourceId source_id, const GURL& url);
   void SetUkmSmoothnessDestination(
       base::WritableSharedMemoryMapping ukm_smoothness_data);
@@ -168,8 +174,25 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
 
   std::unique_ptr<Scheduler> scheduler_;
 
-  // Set when the main thread is waiting on a commit to complete.
-  std::unique_ptr<ScopedCompletionEvent> commit_completion_event_;
+  struct DataForCommit {
+    DataForCommit(
+        std::unique_ptr<ScopedCompletionEvent> commit_completion_event,
+        std::unique_ptr<CommitState> commit_state,
+        CommitTimestamps* commit_timestamps);
+
+    ~DataForCommit();
+
+    bool IsValid() const;
+
+    // Set when the main thread is waiting on a commit to complete.
+    std::unique_ptr<ScopedCompletionEvent> commit_completion_event;
+    std::unique_ptr<CommitState> commit_state;
+    // This is passed from the main thread so the impl thread can record
+    // timestamps at the beginning and end of commit.
+    CommitTimestamps* commit_timestamps = nullptr;
+  };
+
+  std::unique_ptr<DataForCommit> data_for_commit_;
 
   // Set when the main thread is waiting for activation to complete.
   std::unique_ptr<ScopedCompletionEvent> activation_completion_event_;

@@ -537,6 +537,11 @@ interface BarProp
     attribute @@toStringTag
     getter visible
     method constructor
+interface BarcodeDetector
+    static method getSupportedFormats
+    attribute @@toStringTag
+    method constructor
+    method detect
 interface BaseAudioContext : EventTarget
     attribute @@toStringTag
     getter audioWorklet
@@ -778,9 +783,11 @@ interface CSSKeywordValue : CSSStyleValue
     setter value
 interface CSSLayerBlockRule : CSSGroupingRule
     attribute @@toStringTag
+    getter name
     method constructor
 interface CSSLayerStatementRule : CSSRule
     attribute @@toStringTag
+    getter nameList
     method constructor
 interface CSSMathInvert : CSSMathValue
     attribute @@toStringTag
@@ -3446,9 +3453,13 @@ interface HTMLEmbedElement : HTMLElement
     setter width
 interface HTMLFencedFrameElement : HTMLElement
     attribute @@toStringTag
+    getter height
     getter src
+    getter width
     method constructor
+    setter height
     setter src
+    setter width
 interface HTMLFieldSetElement : HTMLElement
     attribute @@toStringTag
     getter disabled

@@ -59,9 +59,7 @@ IMECandidateWindowHandlerInterface* GetCandidateWindowHandler() {
 }
 
 bool IsFstEngine(const std::string& engine_id) {
-  return base::StartsWith(engine_id, "xkb:", base::CompareCase::SENSITIVE) ||
-         base::StartsWith(engine_id, "experimental_",
-                          base::CompareCase::SENSITIVE);
+  return base::StartsWith(engine_id, "xkb:", base::CompareCase::SENSITIVE);
 }
 
 bool IsKoreanEngine(const std::string& engine_id) {
@@ -106,11 +104,7 @@ bool ShouldRouteToNativeMojoEngine(const std::string& engine_id) {
 
 bool IsPhysicalKeyboardAutocorrectEnabled(PrefService* prefs,
                                           const std::string& engine_id) {
-  if (base::StartsWith(engine_id, "experimental_",
-                       base::CompareCase::SENSITIVE)) {
-    return true;
-  }
-
+  // The FST Mojo engine is only needed if autocorrect is enabled.
   const base::DictionaryValue* input_method_settings =
       prefs->GetDictionary(::prefs::kLanguageInputMethodSpecificSettings);
   const base::Value* autocorrect_setting = input_method_settings->FindPath(
@@ -584,7 +578,6 @@ void NativeInputMethodEngine::ImeObserver::OnActivate(
   // TODO(b/181077907): Always launch the IME service and let IME service decide
   // whether it should shutdown or not.
   if (IsFstEngine(engine_id) && ShouldRouteToNativeMojoEngine(engine_id) &&
-      // The FST Mojo engine is only needed if autocorrect is enabled.
       !IsPhysicalKeyboardAutocorrectEnabled(prefs_, engine_id) &&
       !IsPredictiveWritingEnabled(prefs_, engine_id)) {
     remote_manager_.reset();
@@ -742,6 +735,13 @@ void NativeInputMethodEngine::ImeObserver::OnKeyEvent(
         std::move(callback).Run(false);
         return;
       }
+
+      // Hot switches to turn on/off certain IME features.
+      if (IsFstEngine(engine_id) && autocorrect_manager_->DisabledByRule()) {
+        std::move(callback).Run(false);
+        return;
+      }
+
       if (filtered) {
         // TODO(b/174612548): Transform the corresponding KEY_RELEASED event to
         // use the composed character as well.
@@ -925,12 +925,7 @@ void NativeInputMethodEngine::ImeObserver::CommitText(
 
 void NativeInputMethodEngine::ImeObserver::SetComposition(
     const std::u16string& text,
-    std::vector<mojom::CompositionSpanPtr> spans,
-    uint32_t new_cursor_position) {
-  if (new_cursor_position > text.length()) {
-    return;
-  }
-
+    std::vector<mojom::CompositionSpanPtr> spans) {
   ui::CompositionText composition;
   composition.text = text;
 
@@ -939,9 +934,9 @@ void NativeInputMethodEngine::ImeObserver::SetComposition(
     composition.ime_text_spans.push_back(CompositionSpanToImeTextSpan(*span));
   }
 
-  GetInputContext()->UpdateCompositionText(std::move(composition),
-                                           /*cursor_pos=*/new_cursor_position,
-                                           /*visible=*/true);
+  GetInputContext()->UpdateCompositionText(
+      std::move(composition), /*cursor_pos=*/composition.text.length(),
+      /*visible=*/true);
 }
 
 void NativeInputMethodEngine::ImeObserver::SetCompositionRange(

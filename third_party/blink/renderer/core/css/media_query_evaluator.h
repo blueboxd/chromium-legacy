@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -132,6 +133,7 @@ class CORE_EXPORT MediaQueryEvaluator final
   KleeneValue EvalOr(const MediaQueryExpNode&,
                      const MediaQueryExpNode&,
                      Results) const;
+  KleeneValue EvalFeature(const MediaQueryExp&, Results) const;
 
   const String MediaType() const;
 

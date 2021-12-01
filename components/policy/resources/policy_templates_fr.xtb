@@ -307,6 +307,10 @@
 <translation id="1413936351612032792">Transmettre des informations sur l'utilisation des applications Linux</translation>
 <translation id="1417888712677507140">Bloquer les boîtes de dialogue JavaScript déclenchées depuis un sous-frame d'une origine différente.</translation>
 <translation id="1418387035898607074">Ignorer les vérifications de la navigation sécurisée visant à autoriser ou non le téléchargement de fichiers provenant d'une source fiable</translation>
+<translation id="1419945463533552043">Lorsqu'elle est activée, la fonctionnalité de mise à jour GREASE des indications du client user-agent aligne l'algorithme GREASE user-agent sur les dernières spécifications.
+      La spécification mise à jour peut entraîner un dysfonctionnement de certains sites qui appliquent des restrictions concernant les caractères que peuvent contenir les requêtes. Pour en savoir plus, consultez les spécifications : https://wicg.github.io/ua-client-hints/#grease
+      Si cette règle est activée ou n'est pas définie, la navigateur décidera de l'algorithme User-Agent GREASE à utiliser. Si cette règle est désactivée, l'algorithme GREASE user-agent précédent est utilisé.
+      Cette règle est une mesure temporaire qui sera supprimée dans une future version.</translation>
 <translation id="142346659686073702">Autoriser les utilisateurs non affiliés à utiliser Crostini</translation>
 <translation id="1425551776320718592">Empêche les utilisateurs de cet appareil de recourir au téléchargement indépendant adb, mais sans imposer la réinitialisation Powerwash. Cela peut remettre en question la sécurité de l'appareil.</translation>
 <translation id="1426170570389588560">Définir un délai en jours pour le stockage des métadonnées liées aux tâches d'impression</translation>
@@ -572,9 +576,6 @@ Si vous la désactivez, le défilement des pages Web vers des fragments de texte
 <translation id="1686952487081322272">Désactiver Réponses rapides</translation>
 <translation id="1690383938831887552">Empêcher le chargement de Signed HTTP Exchange</translation>
 <translation id="169467210981344373">Désactiver le cache d'authentification HTTP à portée globale</translation>
-<translation id="1697682816954321887">Si cette règle est activée ou qu'elle n'est pas configurée, les appareils enregistrés signalent l'état de sécurité du TPM de l'appareil.
-
-      Si cette règle est désactivée, les appareils enregistrés ne signalent ni n'enregistrent pas l'état de sécurité du TPM.</translation>
 <translation id="1698810555265314018">Contrôle la résolution des images imprimées lorsque <ph name="PRODUCT_NAME" /> imprime les PDF après rastérisation.
 
       Lors de l'impression d'un PDF à l'aide de l'option "Imprimer en tant qu'image", il peut être opportun d'indiquer une résolution d'impression différente des paramètres d'un appareil ou par défaut d'un PDF.  Une résolution plus élevée allonge de manière significative le délai de traitement et d'impression, mais une résolution moins élevée peut affecter la qualité de l'impression.
@@ -880,9 +881,6 @@ Si vous la désactivez, le défilement des pages Web vers des fragments de texte
 <translation id="2036522553891755455">Si cette règle est activée, la fonction de détection de partages (fonctionnalité Partages de fichiers en réseau de <ph name="PRODUCT_NAME" />) utilise le protocole <ph name="NETBIOS_PROTOCOL" /> pour détecter les partages sur le réseau. Si elle est désactivée, ce protocole n'est pas utilisé pour la détection des partages.
 
       Si cette règle n'est pas configurée, le protocole est, par défaut, désactivé pour les utilisateurs gérés et activé pour les autres.</translation>
-<translation id="2037214548071298156">Si cette règle est activée ou qu'elle n'est pas configurée, les appareils enregistrés communiquent des statistiques matérielles telles que l'utilisation du processeur et de la RAM.
-
-      Si cette règle est désactivée, les appareils enregistrés ne communiquent pas ces statistiques.</translation>
 <translation id="2039801473506609891">Désactiver la compatibilité avec HTTP 0.9 sur les ports non utilisés par défaut</translation>
 <translation id="2040479044912658454">Mode de rastérisation pour l'impression</translation>
 <translation id="2042513383871755994">Permet de dresser la liste des formats d'URL pour lesquels les sites ne sont pas autorisés à demander aux utilisateurs l'accès en lecture aux fichiers ou répertoires figurant dans le système de fichiers du système d'exploitation hôte via l'API File System.
@@ -1599,10 +1597,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 <translation id="284288632677954003">URL d'un fichier XML qui contient des URL qui ne doivent jamais déclencher un changement de navigateur.</translation>
 <translation id="2846689894646472396">Fréquence de vérification des événements réseau en millisecondes.</translation>
 <translation id="2853649500575897584">Ne pas bloquer les anciens points d'extension du processus du navigateur</translation>
-<translation id="2854607717796010700">Transmettre les informations concernant la mémoire d'un appareil.
-
-      Si la règle est définie sur "False" ou n'est pas définie, ces informations ne sont pas transmises.
-      Si elle est définie sur "True", les informations concernant la mémoire de l'appareil sont transmises.</translation>
 <translation id="285480231336205327">Activer le mode Contraste élevé</translation>
 <translation id="285627849510728211">Définir le jour de recharge de la batterie en mode avancé</translation>
 <translation id="2856674246949497058">Rétablissez et conservez la version cible si elle est antérieure à la version de l'OS. Effectuez un Powerwash pendant le processus.</translation>
@@ -2519,6 +2513,7 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
       Si cette règle est désactivée, le protocole SPDY peut être utilisé.
 
       Si cette règle n'est pas définie, le protocole SPDY est disponible.</translation>
+<translation id="3887529334667818189">Par défaut, les parcours seront visibles sur la page chrome://history/journeys. Les utilisateurs peuvent modifier ce paramètre.</translation>
 <translation id="3891357445869647828">Activer JavaScript</translation>
 <translation id="3891769546914233112">Possibilité d'imprimer le PDF en tant qu'image</translation>
 <translation id="3897218615484393758">Limiter la durée pendant laquelle un utilisateur authentifié via SAML peut se connecter hors connexion sur l'écran de verrouillage</translation>
@@ -2597,6 +2592,7 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
       Si cette règle est définie sur "True", les avertissements concernant la confidentialité se ferment après quelques secondes.
 
       Si elle est définie sur "False" ou si elle n'est pas configurée, ces avertissements restent épinglés jusqu'à ce que l'utilisateur les ferme.</translation>
+<translation id="4008395195135046807">Les parcours seront visibles sur la page chrome://history/journeys.</translation>
 <translation id="4008507541867797979">Si cette règle est définie sur True ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> affiche les utilisateurs existants sur l'écran de connexion et permet d'en choisir un.
 
       Si cette règle est définie sur False, <ph name="PRODUCT_OS_NAME" /> n'affiche pas les utilisateurs existants sur l'écran de connexion. L'écran de connexion habituel (demandant l'e-mail et le mot de passe ou le numéro de téléphone de l'utilisateur) ou l'écran interstitiel SAML (si autorisé via la règle <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) s'affiche, à moins qu'une session gérée ne soit configurée. Lorsqu'une session gérée est configurée, seuls les comptes de la session gérée s'affichent, et permettent d'en choisir un.
@@ -2780,6 +2776,9 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 
       Remarque : Sous Android, utilisez la règle <ph name="ISOLATE_ORIGINS_ANDROID_POLICY_NAME" /> à la place.</translation>
 <translation id="4261820385751181068">Paramètres régionaux de l'écran de connexion de l'appareil</translation>
+<translation id="4261964161337162399">Fréquence d'échantillonnage et de collecte des données audio. La valeur minimale autorisée est de 1 minute.
+
+      Si la règle n'est pas configurée, la fréquence par défaut (10 minutes) est appliquée.</translation>
 <translation id="4266547484666068234">Configurer cette règle autorise l'accès aux URL répertoriées (prévaut sur <ph name="URL_BLOCKLIST_POLICY_NAME" />). Consultez la description de la règle pour connaître le format des entrées de cette liste. Par exemple, définir <ph name="URL_BLOCKLIST_POLICY_NAME" /> sur "*" bloque toutes les requêtes, et vous pouvez appliquer cette règle pour autoriser l'accès à une liste limitée d'URL. Utilisez-la pour définir des exceptions à certains schémas, ports, chemins d'accès spécifiques ou sous-domaines d'autres domaines à l'aide du format spécifié sur https://www.chromium.org/administrators/url-blocklist-filter-format. Le filtre le plus spécifique détermine si une URL est bloquée ou autorisée. La règle <ph name="URL_ALLOWLIST_POLICY_NAME" /> prévaut sur <ph name="URL_BLOCKLIST_POLICY_NAME" />. Cette règle est limitée à 1 000 entrées.
 
       Elle permet aussi d'autoriser le navigateur d'une application externe enregistrée comme gestionnaire de protocoles à appeler automatiquement les protocoles répertoriés tels que "tel:" ou "ssh:".
@@ -2951,6 +2950,7 @@ Lorsque cette règle est définie, <ph name="PRODUCT_OS_NAME" /> n'autorise les 
 <translation id="449784980858429908">Autoriser automatiquement les sites à se connecter à tous les ports série.</translation>
 <translation id="450080746522343150">Bloquer tous les téléchargements.</translation>
 <translation id="4510923771103268849">L'utilisateur est autorisé à accéder à la racine des conteneurs Crostini</translation>
+<translation id="4512407512989846472">Permettre de bloquer la copie dans le presse-papiers sur les URL spécifiées</translation>
 <translation id="4513691822411041977">N'appliquez pas l'utilisation de SafeSearch dans la recherche Google ou du mode restreint sur YouTube</translation>
 <translation id="4515404363392014383">Activer la navigation sécurisée pour les sources fiables</translation>
 <translation id="4518251772179446575">Demander chaque fois qu'un site veut suivre la position géographique des utilisateurs</translation>
@@ -3396,14 +3396,11 @@ Lorsque cette règle est définie, <ph name="PRODUCT_OS_NAME" /> n'autorise les 
 <translation id="5105313908130842249">Délai de verrouillage de l'écran (batterie)</translation>
 <translation id="5108031557082757679">Imprimantes d'appareils d'entreprise désactivées</translation>
 <translation id="5109383437323376357">Déterminer la disponibilité des variantes</translation>
-<translation id="5115168755602871392">Permet de transmettre les informations du ou des processeurs d'un appareil.
-
-      Si la règle est définie sur "False" ou n'est pas définie, ces informations ne sont pas transmises.
-      Si elle est définie sur "True", le modèle de chaque processeur ainsi que son architecture et la cadence maximale de son horloge sont transmis.</translation>
 <translation id="5124368997194894978">Activer le démarrage au branchement de l'alimentation CA (courant alternatif)</translation>
 <translation id="5130213897914754028">Empêcher les sites d'utiliser SharedArrayBuffers</translation>
 <translation id="5141670636904227950">Activer la loupe plein écran sur l'écran de connexion</translation>
 <translation id="5142301680741828703">Toujours rendre les formats d'URL suivants dans <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="5143258831402123447">Les parcours ne seront pas visibles sur la page chrome://history/journeys.</translation>
 <translation id="514870861066611127">Cette règle détermine si les informations exploitables à des fins d'identification des utilisateurs, telles que la connexion au système d'exploitation, la connexion au profil <ph name="PRODUCT_NAME" />, le nom du profil <ph name="PRODUCT_NAME" />, le chemin d'accès au profil <ph name="PRODUCT_NAME" /> et le chemin d'accès exécutable <ph name="PRODUCT_NAME" />, doivent être enregistrées.
 
       Cette règle est ignorée si la règle <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> n'est pas définie ou si elle est désactivée.
@@ -3598,9 +3595,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
       Cette règle peut également être définie sur l'une des valeurs suivantes : "tls1.2" ou "tls1.3". Si elle est configurée, <ph name="PRODUCT_NAME" /> n'utilisera pas de versions de SSL/TLS supérieures à la version spécifiée. Toute valeur non reconnue sera ignorée.</translation>
 <translation id="5330684698007383292">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu suivants</translation>
 <translation id="5331746669335642668">Les règles relatives au cloud de <ph name="PRODUCT_NAME" /> sont prioritaires sur les règles relatives à la plate-forme.</translation>
-<translation id="5340105431123046323">Si cette règle est activée ou qu'elle n'est pas configurée, les appareils enregistrés communiquent la liste des interfaces réseau, avec leur type et leur adresse matérielle.
-
-      Si cette règle est désactivée, les appareils enregistrés ne communiquent pas l'interface réseau.</translation>
 <translation id="5346587320074666194">Bloquer l'accès aux capteurs sur ces sites</translation>
 <translation id="5362531528507578966">Permet d'ignorer le mode d'impression d'images de fond par défaut.</translation>
 <translation id="5365476955714838841">Paramètres de ligne de commande pour le navigateur secondaire.</translation>
@@ -5005,9 +4999,6 @@ Si vous sélectionnez les options suivantes :
 
       Actuellement, les langues compatibles sont les suivantes : af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk et vi.</translation>
 <translation id="6926703471186170050">Activer l'impression recto verso bord long</translation>
-<translation id="6928305045865155732">Si cette règle est activée ou qu'elle n'est pas configurée, les appareils enregistrés signalent leur volume audio.
-
-      Si cette règle est désactivée, les appareils enregistrés n'enregistrent ni ne signalent l'état audio.</translation>
 <translation id="6929746927224321095">Désactiver la saisie automatique</translation>
 <translation id="6931242315485576290">Désactiver la synchronisation des données avec Google</translation>
 <translation id="6940243892299228102">Ne pas autoriser les utilisateurs à se servir de modèles de bureau</translation>
@@ -5353,6 +5344,14 @@ Ces règles sont ignorées, sauf si l'hôte Bureau à distance Chrome est instal
 <translation id="7266471712301230894">Cette règle a été supprimée à partir de la version 64 de <ph name="PRODUCT_NAME" />.
 
       Les plug-ins manquants ne sont plus recherchés ni installés automatiquement.</translation>
+<translation id="7266868915753562724">Cette règle contrôle la visibilité des parcours sur la page de l'historique de Chrome.
+
+      Si elle est activée, les parcours sont visibles sur chrome://history/journeys.
+
+      Si elle est désactivée, les parcours ne sont pas visibles sur chrome://history/journeys.
+
+      Si la règle n'est pas configurée, les parcours sont visibles par défaut sur chrome://history/journeys. Les utilisateurs peuvent modifier ce paramètre.
+      </translation>
 <translation id="7267809745244694722">Les touches multimédias sont par défaut des touches de fonction</translation>
 <translation id="7269263983506766969">Utiliser la priorité par défaut pour le processus audio</translation>
 <translation id="7270001383428188269">Identifiant de ce certificat client.</translation>
@@ -5921,9 +5920,14 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
 <translation id="8028814157747157754">Activer le moteur de recherche par défaut et autoriser les utilisateurs à modifier la liste des moteurs de recherche</translation>
 <translation id="8029201909194194377">Durée maximale des sessions autorisée pour les connexions d'accès à distance</translation>
 <translation id="8029607810986641704">Verrouiller l'appareil quand il est inactif ou suspendu</translation>
-<translation id="8036964468882248070">Si cette règle est activée, les appareils enregistrés communiquent les statistiques et identifiants matériels des appareils de stockage.
+<translation id="8032201191311129122">Cette règle permet de bloquer ou non la copie de données dans le presse-papiers sur des URL précises.
 
-      Si cette règle est désactivée ou qu'elle n'est pas configurée, les appareils enregistrés ne fournissent pas ces statistiques.</translation>
+      Les listes de formats d'URL <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> et <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> déterminent quels sites sont autorisés ou non à écrire dans le presse-papiers. L'écriture dans le presse-papiers est bloquée si le format d'URL concerné figure dans la liste "enable" et pas dans la liste "disable". La copie n'est pas bloquée si le format d'URL n'est dans aucune liste.
+
+      Les formats correspondant à l'origine dans la liste sont semblables à ceux de la règle <ph name="URL_BLOCKLIST_POLICY_NAME" /> décrite à la page http://www.chromium.org/administrators/url-blocklist-filter-format.
+
+      Le champ <ph name="ENTERPRISE_CONNECTOR_MINIMUM_DATA_SIZE" /> indique la quantité minimale de données en octets à partir de laquelle le format est vérifié. Autrement dit, l'écriture dans le presse-papiers sur une URL bloquée serait autorisée si la taille des données copiées est inférieure à la valeur indiquée dans ce champ. Si ce champ n'est pas renseigné, la valeur par défaut est de 100 octets.
+      </translation>
 <translation id="8044493735196713914">Indiquer le mode de démarrage de l'appareil</translation>
 <translation id="80453040817068401">Rendre le navigateur <ph name="LACROS_NAME" /> disponible</translation>
 <translation id="804619600634661088">Autoriser l'utilisation du débogage à distance</translation>
@@ -6769,6 +6773,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
       Cette règle n'affecte que les utilisateurs qui se sont authentifiés via SAML.
 
       La valeur doit être indiquée en secondes.</translation>
+<translation id="9015578113567730893">Fréquence de collecte par télémétrie audio en millisecondes.</translation>
 <translation id="9035086760683255833">Active la fonctionnalité d'accessibilité de mise en surbrillance au clavier.
 
           Cette fonctionnalité permet de mettre en surbrillance l'objet sélectionné à l'aide du clavier.

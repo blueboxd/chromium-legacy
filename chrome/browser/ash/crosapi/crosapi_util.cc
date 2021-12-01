@@ -7,6 +7,7 @@
 #include <sys/mman.h>
 
 #include "ash/components/settings/cros_settings_provider.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "base/files/file_util.h"
@@ -89,6 +90,10 @@ namespace crosapi {
 namespace browser_util {
 
 namespace {
+
+// Capability to support reloading the lacros browser on receiving a
+// notification that the browser component was successfully updated.
+constexpr char kBrowserManagerReloadBrowserCapability[] = "crbug/1237235";
 
 // Returns the vector containing policy data of the device account. In case of
 // an error, returns nullopt.
@@ -372,6 +377,17 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
   params->accepted_internal_ash_urls =
       std::move(ChromeWebUIControllerFactory::GetInstance())
           ->GetListOfAcceptableURLs();
+
+  // Pass holding space feature flag state to lacros.
+  params->is_holding_space_incognito_profile_integration_enabled =
+      ash::features::IsHoldingSpaceIncognitoProfileIntegrationEnabled();
+  params
+      ->is_holding_space_in_progress_downloads_notification_suppression_enabled =
+      ash::features::
+          IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled();
+
+  params->ash_capabilities = {{kBrowserManagerReloadBrowserCapability}};
+
   return params;
 }
 

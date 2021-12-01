@@ -651,6 +651,7 @@ bool IsAXSetter(SEL selector) {
 
   // These attributes are required on all accessibility objects.
   NSArray* const kAllRoleAttributes = @[
+    NSAccessibilityDOMIdentifierAttribute,
     NSAccessibilityChildrenAttribute,
     NSAccessibilityParentAttribute,
     NSAccessibilityPositionAttribute,
@@ -809,7 +810,17 @@ bool IsAXSetter(SEL selector) {
 
   // Table and grid.
   if (ui::IsTableLike(role)) {
-    [axAttributes addObject:NSAccessibilityColumnHeaderUIElementsAttribute];
+    [axAttributes addObjectsFromArray:@[
+      NSAccessibilityColumnHeaderUIElementsAttribute,
+      NSAccessibilityARIAColumnCountAttribute,
+      NSAccessibilityARIARowCountAttribute,
+    ]];
+  }
+  if (ui::IsCellOrTableHeader(role)) {
+    [axAttributes addObjectsFromArray:@[
+      NSAccessibilityARIAColumnIndexAttribute,
+      NSAccessibilityARIARowIndexAttribute,
+    ]];
   }
   if (ui::IsCellOrTableHeader(role) && role != ax::mojom::Role::kColumnHeader) {
     [axAttributes addObject:NSAccessibilityColumnHeaderUIElementsAttribute];
@@ -919,6 +930,28 @@ bool IsAXSetter(SEL selector) {
   return @"false";
 }
 
+- (NSNumber*)AXARIAColumnCount {
+  if (![self instanceActive])
+    return nil;
+  absl::optional<int> ariaColCount =
+      _node->GetDelegate()->GetTableAriaColCount();
+  if (!ariaColCount)
+    return nil;
+  return @(*ariaColCount);
+}
+
+- (NSNumber*)AXARIAColumnIndex {
+  if (![self instanceActive])
+    return nil;
+
+  absl::optional<int> ariaColIndex =
+      _node->GetDelegate()->GetTableCellAriaColIndex();
+  if (!ariaColIndex)
+
+    return nil;
+  return @(*ariaColIndex);
+}
+
 - (NSString*)AXARIALive {
   if (![self instanceActive])
     return nil;
@@ -931,6 +964,26 @@ bool IsAXSetter(SEL selector) {
     return nil;
 
   return [self getStringAttribute:ax::mojom::StringAttribute::kLiveRelevant];
+}
+
+- (NSNumber*)AXARIARowCount {
+  if (![self instanceActive])
+    return nil;
+  absl::optional<int> ariaRowCount =
+      _node->GetDelegate()->GetTableAriaRowCount();
+  if (!ariaRowCount)
+    return nil;
+  return @(*ariaRowCount);
+}
+
+- (NSNumber*)AXARIARowIndex {
+  if (![self instanceActive])
+    return nil;
+  absl::optional<int> ariaRowIndex =
+      _node->GetDelegate()->GetTableCellAriaRowIndex();
+  if (!ariaRowIndex)
+    return nil;
+  return @(*ariaRowIndex);
 }
 
 - (NSString*)AXAutocompleteValue {
@@ -957,6 +1010,17 @@ bool IsAXSetter(SEL selector) {
   }
 
   return [elements count] ? elements : nil;
+}
+
+- (NSString*)AXDOMIdentifier {
+  if (![self instanceActive])
+    return nil;
+
+  std::string id;
+  if (_node->GetHtmlAttribute("id", &id))
+    return base::SysUTF8ToNSString(id);
+
+  return @"";
 }
 
 - (NSNumber*)AXRequired {

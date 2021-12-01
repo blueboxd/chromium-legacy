@@ -96,10 +96,14 @@ rmad::RmadState* CreateState(rmad::RmadState::StateCase state_case) {
 }
 
 rmad::GetStateReply CreateStateReply(rmad::RmadState::StateCase state,
-                                     rmad::RmadErrorCode error) {
+                                     rmad::RmadErrorCode error,
+                                     bool can_go_back = true,
+                                     bool can_abort = true) {
   rmad::GetStateReply reply;
   reply.set_allocated_state(CreateState(state));
   reply.set_error(error);
+  reply.set_can_go_back(can_go_back);
+  reply.set_can_abort(can_abort);
   return reply;
 }
 }  // namespace
@@ -131,6 +135,47 @@ void FakeRmadClient::CreateWithState() {
     wp_disable_rsu_state.mutable_state()
         ->mutable_wp_disable_rsu()
         ->set_allocated_challenge_url(new std::string(rsu_challenge_url));
+    rmad::GetStateReply update_device_info = CreateStateReply(
+        rmad::RmadState::kUpdateDeviceInfo, rmad::RMAD_ERROR_OK);
+    update_device_info.mutable_state()
+        ->mutable_update_device_info()
+        ->add_region_list("EMEA");
+    update_device_info.mutable_state()
+        ->mutable_update_device_info()
+        ->add_region_list("APAC");
+    update_device_info.mutable_state()
+        ->mutable_update_device_info()
+        ->add_region_list("AMER");
+    update_device_info.mutable_state()
+        ->mutable_update_device_info()
+        ->add_sku_list(1UL);
+    update_device_info.mutable_state()
+        ->mutable_update_device_info()
+        ->add_sku_list(2UL);
+    update_device_info.mutable_state()
+        ->mutable_update_device_info()
+        ->add_sku_list(3UL);
+    update_device_info.mutable_state()
+        ->mutable_update_device_info()
+        ->add_whitelabel_list("White-label 1");
+    update_device_info.mutable_state()
+        ->mutable_update_device_info()
+        ->add_whitelabel_list("White-label 2");
+    update_device_info.mutable_state()
+        ->mutable_update_device_info()
+        ->add_whitelabel_list("White-label 3");
+    update_device_info.mutable_state()
+        ->mutable_update_device_info()
+        ->set_original_serial_number("serial 0001");
+    update_device_info.mutable_state()
+        ->mutable_update_device_info()
+        ->set_original_region_index(2);
+    update_device_info.mutable_state()
+        ->mutable_update_device_info()
+        ->set_original_sku_index(1);
+    update_device_info.mutable_state()
+        ->mutable_update_device_info()
+        ->set_original_whitelabel_index(0);
 
     std::vector<rmad::GetStateReply> fake_states = {
         CreateStateReply(rmad::RmadState::kWelcome, rmad::RMAD_ERROR_OK),
@@ -147,8 +192,7 @@ void FakeRmadClient::CreateWithState() {
         CreateStateReply(rmad::RmadState::kUpdateRoFirmware,
                          rmad::RMAD_ERROR_OK),
         CreateStateReply(rmad::RmadState::kRestock, rmad::RMAD_ERROR_OK),
-        CreateStateReply(rmad::RmadState::kUpdateDeviceInfo,
-                         rmad::RMAD_ERROR_OK),
+        update_device_info,
         // TODO(gavindodd): Add calibration states when implemented.
         // rmad::RmadState::kCheckCalibration
         // rmad::RmadState::kSetupCalibration
@@ -161,6 +205,7 @@ void FakeRmadClient::CreateWithState() {
         CreateStateReply(rmad::RmadState::kRepairComplete, rmad::RMAD_ERROR_OK),
     };
     fake->SetFakeStateReplies(fake_states);
+    fake->SetAbortable(true);
   }
 }
 

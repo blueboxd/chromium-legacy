@@ -217,8 +217,8 @@
     },
 
     'chromium.dawn': {
-      'Dawn Linux x64 Builder': 'dawn_tests_with_desktop_gl_release_trybot',
-      'Dawn Linux x64 DEPS Builder': 'dawn_tests_with_desktop_gl_release_trybot',
+      'Dawn Linux x64 Builder': 'dawn_tests_with_desktop_gl_release_trybot_reclient',
+      'Dawn Linux x64 DEPS Builder': 'dawn_tests_with_desktop_gl_release_trybot_reclient',
 
       'Dawn Mac x64 Builder': 'dawn_tests_release_bot_dcheck_always_on',
       'Dawn Mac x64 DEPS Builder': 'dawn_tests_release_bot_dcheck_always_on',
@@ -950,6 +950,7 @@
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
       'linux-lacros-dbg': 'lacros_on_linux_debug_bot',
       'linux-lacros-rel': 'lacros_on_linux_release_trybot',
+      'linux-lacros-rel-code-coverage': 'lacros_on_linux_release_trybot_coverage',
       'linux-lacros-rel-rts': 'lacros_on_linux_release_trybot',
       'linux-cfm-rel': 'linux_cfm_release_trybot',
     },
@@ -1076,7 +1077,6 @@
       # the CI configuration, where no debug builder exists.
       'linux_chromium_ubsan_rel_ng': 'ubsan_vptr_release_bot',
 
-      'linux_layout_tests_composite_after_paint': 'gpu_tests_release_trybot',
       'linux_layout_tests_layout_ng_disabled': 'release_trybot',
       'linux-layout-tests-edit-ng': 'release_trybot',
       'linux-blink-web-tests-force-accessibility-rel': 'release_trybot',
@@ -2137,6 +2137,10 @@
       'dawn_tests', 'dawn_enable_desktop_gl', 'release_trybot_minimal_symbols',
     ],
 
+    'dawn_tests_with_desktop_gl_release_trybot_reclient': [
+      'dawn_tests', 'dawn_enable_desktop_gl', 'release_trybot_minimal_symbols_reclient',
+    ],
+
     'debug_bot': [
       'debug_bot',
     ],
@@ -2550,6 +2554,11 @@
       'lacros_on_linux', 'release_trybot', 'also_build_ash_chrome', 'no_symbols',
     ],
 
+    'lacros_on_linux_release_trybot_coverage': [
+      'lacros_on_linux', 'release_trybot', 'also_build_ash_chrome', 'no_symbols',
+      'use_clang_coverage', 'partial_code_coverage_instrumentation',
+    ],
+
     'lacros_on_linux_release_bot_reclient': [
       'lacros_on_linux', 'release_bot_reclient', 'also_build_ash_chrome',
     ],
@@ -2738,7 +2747,7 @@
     ],
 
     'official_goma_fuchsia_arm64_perf': [
-      'official', 'goma', 'minimal_symbols', 'fuchsia', 'fuchsia_include_astro_images', 'arm64', 'ffmpeg_branding_chrome', 'proprietary_codecs', 'test_isolate_no_emulator'
+      'official', 'goma', 'minimal_symbols', 'fuchsia', 'fuchsia_include_all_images', 'arm64', 'ffmpeg_branding_chrome', 'proprietary_codecs', 'test_isolate_no_emulator'
     ],
 
     'official_goma_linux_pgo': [
@@ -3501,8 +3510,8 @@
       'gn_args': 'fuchsia_code_coverage=true',
     },
 
-    'fuchsia_include_astro_images': {
-      'gn_args': 'fuchsia_additional_boot_images=["//third_party/fuchsia-sdk/images-internal/astro-release/"]',
+    'fuchsia_include_all_images': {
+      'gn_args': 'fuchsia_additional_boot_images=["//third_party/fuchsia-sdk/images-internal/astro-release/","//third_party/fuchsia-sdk/images-internal/sherlock-release/"]',
     },
 
     'full_symbols': {

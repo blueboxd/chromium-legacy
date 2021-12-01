@@ -247,6 +247,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="2653019840645008922">Chụp/ghi cửa sổ</translation>
 <translation id="2653659639078652383">Gửi</translation>
 <translation id="2658778018866295321">Nhấp và kéo</translation>
+<translation id="2665788051462227163"><ph name="UNAVAILABLE_APPS_ONE" /> và <ph name="UNAVAILABLE_APPS_TWO" /> không có trên thiết bị này.</translation>
 <translation id="2678852583403169292">Trình đơn Chọn để nói</translation>
 <translation id="2689613560355655046">Không gian làm việc 8</translation>
 <translation id="2700493154570097719">Đặt bàn phím</translation>
@@ -340,7 +341,6 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="3307642347673023554">Đã chuyển sang chế độ máy tính xách tay</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> vẫn có thể đăng nhập vào lúc khác.</translation>
 <translation id="3321628682574733415">Mã dành cho cha mẹ không chính xác</translation>
-<translation id="3325831752328162756">{0,plural, =0{Hạ cấp hệ điều hành trên thiết bị về phiên bản trước ngay bây giờ}=1{Hạ cấp hệ điều hành trên thiết bị về phiên bản trước trong vòng 1 giây}other{Hạ cấp hệ điều hành trên thiết bị về phiên bản trước trong vòng # giây}}</translation>
 <translation id="3341303451326249809">Đã chụp ảnh màn hình</translation>
 <translation id="334252345105450327">Chụp ảnh màn hình</translation>
 <translation id="3351879221545518001">Bạn hiện đang truyền màn hình.</translation>
@@ -419,6 +419,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="3708186454126126312">Từng được kết nối</translation>
 <translation id="371370241367527062">Micrô mặt trước</translation>
 <translation id="3713734891607377840">Mở khi hoàn tất</translation>
+<translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" />, và <ph name="UNAVAILABLE_APPS_COUNT" /> ứng dụng khác không có trên thiết bị này.</translation>
 <translation id="3742055079367172538">Ảnh màn hình đã chụp</translation>
 <translation id="3744282433224562605">Hãy nhập mật khẩu để mở khóa Chromebook của bạn</translation>
 <translation id="3771549900096082774">Chế độ tương phản cao</translation>
@@ -604,6 +605,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="4925542575807923399">Quản trị viên của tài khoản này yêu cầu tài khoản này là tài khoản đăng nhập đầu tiên trong phiên đăng nhập nhiều tài khoản.</translation>
 <translation id="4945196315133970626">Tắt thông báo</translation>
 <translation id="4946376291507881335">Chụp</translation>
+<translation id="4947229553198882488"><ph name="UNAVAILABLE_APPS" /> không có trên thiết bị này.</translation>
 <translation id="495046168593986294">Cuộn lên</translation>
 <translation id="4952936045814352993">Bạn không dùng được tính năng Tìm điện thoại khi đã tắt chuông báo</translation>
 <translation id="4960324571663582548">Theo yêu cầu của <ph name="MANAGER" />, bạn phải hạ cấp hệ điều hành trên thiết bị <ph name="DEVICE_TYPE" /> của mình. Thiết bị của bạn sẽ được đặt lại và toàn bộ dữ liệu sẽ bị xoá.</translation>
@@ -1014,6 +1016,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="7868900307798234037">Mở khóa bằng vân tay</translation>
 <translation id="7872786842639831132">Tắt</translation>
 <translation id="7875575368831396199">Có vẻ như bạn đã tắt Bluetooth trên <ph name="DEVICE_TYPE" />. Vui lòng bật Bluetooth để sử dụng Trung tâm điều khiển điện thoại.</translation>
+<translation id="7877557217297072640">{0,plural, =0{Hạ cấp hệ điều hành trên thiết bị về phiên bản trước ngay bây giờ}=1{Hạ cấp hệ điều hành trên thiết bị về phiên bản trước trong vòng 1 giây}other{Hạ cấp hệ điều hành trên thiết bị về phiên bản trước trong vòng # giây}}</translation>
 <translation id="7886169021410746335">Điều chỉnh các tùy chọn cài đặt quyền riêng tư</translation>
 <translation id="7886277072580235377">Phiên hoạt động trên Internet của bạn sẽ bị xóa khi bạn đăng xuất. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Gửi email</translation>

@@ -317,8 +317,14 @@ const base::Feature kExtraSafelistedRequestHeadersForOutOfBlinkCors{
 
 // Whether to initialize the font manager when the renderer starts on a
 // background thread.
-const base::Feature kFontManagerEarlyInit{"FontManagerEarlyInit",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kFontManagerEarlyInit {
+  "FontManagerEarlyInit",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables fixes for matching src: local() for web fonts correctly against full
 // font name or postscript name. Rolling out behind a flag, as enabling this
@@ -499,7 +505,7 @@ const base::Feature kNavigationNetworkResponseQueue{
 // Enables optimizations for renderer->browser mojo calls to avoid waiting on
 // the UI thread during navigation.
 const base::Feature kNavigationThreadingOptimizations{
-    "NavigationThreadingOptimizations", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NavigationThreadingOptimizations", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If the network service is enabled, runs it in process.
 const base::Feature kNetworkServiceInProcess {

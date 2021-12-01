@@ -412,36 +412,17 @@ try_.chromium_android_builder(
     name = "android-inverse-fieldtrials-pie-x86-fyi-rel",
 )
 
-try_.chromium_android_builder(
+try_.chromium_android_orchestrator_pair(
     name = "android-marshmallow-arm64-rel",
     branch_selector = branches.STANDARD_MILESTONE,
-    builderless = not settings.is_main,
-    cores = 32 if settings.is_main else 16,
-    goma_jobs = goma.jobs.J300,
     main_list_view = "try",
-    ssd = True,
     use_java_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    tryjob = try_.job(),
-    # TODO(crbug/1202741)
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
-)
-
-try_.chromium_android_builder(
-    name = "android-marshmallow-arm64-rel-compilator",
-    builderless = False,
-    cores = 64,
-    goma_jobs = goma.jobs.J300,
-    ssd = True,
-    use_java_coverage = True,
-    coverage_test_types = ["unit", "overall"],
-    properties = {
-        "orchestrator": {
-            "builder_group": "tryserver.chromium.android",
-            "builder_name": "android-marshmallow-arm64-rel",
-        },
-    },
-    executable = "recipe:chromium/compilator",
+    orchestrator_cores = 4,
+    orchestrator_tryjob = try_.job(),
+    compilator_cores = 64 if settings.is_main else 32,
+    compilator_goma_jobs = goma.jobs.J300,
+    compilator_name = "android-marshmallow-arm64-rel-compilator",
 )
 
 try_.chromium_android_builder(
@@ -926,6 +907,18 @@ try_.chromium_chromiumos_builder(
     main_list_view = "try",
     tryjob = try_.job(),
     os = os.LINUX_BIONIC_REMOVE,
+)
+
+try_.chromium_chromiumos_builder(
+    name = "linux-lacros-rel-code-coverage",
+    cores = 16,
+    ssd = True,
+    goma_jobs = goma.jobs.J300,
+    main_list_view = "try",
+    os = os.LINUX_BIONIC_REMOVE,
+    tryjob = try_.job(
+        experiment_percentage = 3,
+    ),
 )
 
 try_.chromium_chromiumos_builder(
@@ -1556,20 +1549,6 @@ try_.chromium_linux_builder(
 
 try_.chromium_linux_builder(
     name = "linux_chromium_ubsan_rel_ng",
-)
-
-try_.chromium_linux_builder(
-    name = "linux_layout_tests_composite_after_paint",
-    branch_selector = branches.STANDARD_MILESTONE,
-    main_list_view = "try",
-    tryjob = try_.job(
-        location_regexp = [
-            ".+/[+]/third_party/blink/renderer/core/paint/.+",
-            ".+/[+]/third_party/blink/renderer/core/svg/.+",
-            ".+/[+]/third_party/blink/renderer/platform/graphics/.+",
-            ".+/[+]/third_party/blink/web_tests/.+",
-        ],
-    ),
 )
 
 try_.chromium_linux_builder(

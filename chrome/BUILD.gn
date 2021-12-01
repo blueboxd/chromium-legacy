@@ -1380,7 +1380,10 @@ group("browser_dependencies") {
   }
 
   if (is_chromeos_lacros) {
-    public_deps += [ "//chromeos/lacros" ]
+    public_deps += [
+      "//chromeos/lacros",
+      "//chromeos/lacros/dbus",
+    ]
   }
 
   if (is_chromeos_ash) {

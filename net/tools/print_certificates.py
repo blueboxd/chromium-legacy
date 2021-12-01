@@ -68,16 +68,22 @@ def strip_indentation_whitespace(text):
 
 def strip_all_whitespace(text):
   pattern = re.compile(r'\s+')
-  return re.sub(pattern, '', text)
+  return re.sub(pattern, '', text).replace(r'\n', '\n')
 
 
 def extract_certificates_from_pem(pem_bytes):
   certificates_der = []
 
   regex = re.compile(
-      r'-----BEGIN (CERTIFICATE|PKCS7)-----(.*?)-----END \1-----', re.DOTALL)
+      r'-----BEGIN (CERTIFICATE|PKCS7)-----(.*?)(-----END \1-----|$)',
+      re.DOTALL)
 
   for match in regex.finditer(pem_bytes):
+    if not match.group(3):
+      sys.stderr.write(
+          "\nUnterminated %s block, input is corrupt or truncated\n" %
+          match.group(1))
+      continue
     der = base64.b64decode(strip_all_whitespace(match.group(2)))
     if match.group(1) == 'CERTIFICATE':
       certificates_der.append(der)
@@ -367,8 +373,8 @@ def parse_outputs(outputs):
       return []
     pretty_printers.append(output_map[output_name])
   if der_printer in pretty_printers and len(pretty_printers) > 1:
-      sys.stderr.write("Output type der must be used alone.\n")
-      return []
+    sys.stderr.write("Output type der must be used alone.\n")
+    return []
   return pretty_printers
 
 

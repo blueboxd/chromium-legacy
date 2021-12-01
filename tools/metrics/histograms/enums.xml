@@ -11263,6 +11263,13 @@ Called by update_bad_message_reasons.py.-->
   <int value="11" label="Aborted because there was no surface"/>
 </enum>
 
+<enum name="CanvasOopRasterAndGpuAcceleration">
+  <int value="0" label="Canvas2D accelerated and OOPR enabled"/>
+  <int value="1" label="Canvas2D accelerated and OOPR disabled"/>
+  <int value="2" label="Canvas2D not accelerated and OOPR enabled"/>
+  <int value="3" label="Canvas2D not accelerated and OOPR disabled"/>
+</enum>
+
 <enum name="CanvasOverdrawOp">
   <int value="0" label="None (should have 0 counts)"/>
   <int value="1" label="Total ops"/>
@@ -27843,6 +27850,7 @@ Called by update_document_policy_enum.py.-->
   <int value="8" label="Yes in browser seen in renderer with Page"/>
   <int value="9" label="Yes in browser seen in ACK to browser"/>
   <int value="10" label="Yes in browser while disconnected"/>
+  <int value="11" label="Yes in browser while RenderView was not live"/>
 </enum>
 
 <enum name="EventPreFilterResult">
@@ -49061,6 +49069,7 @@ from previous Chrome versions.
   <int value="-1931712004" label="ConsolidatedSiteStorageControls:disabled"/>
   <int value="-1930720286" label="nacl-debug-mask"/>
   <int value="-1928198763" label="enable-async-dns"/>
+  <int value="-1927968708" label="OmniboxPedalsAndroidBatch1:disabled"/>
   <int value="-1927080237" label="Vulkan:enabled"/>
   <int value="-1926124919" label="WebViewOriginTrials:enabled"/>
   <int value="-1925453192" label="BlockInsecurePrivateNetworkRequests:enabled"/>
@@ -49291,6 +49300,7 @@ from previous Chrome versions.
   <int value="-1767470652" label="out-of-process-pdf"/>
   <int value="-1766791501" label="WebUITabStrip:enabled"/>
   <int value="-1766648764" label="OmniboxShortBookmarkSuggestions:disabled"/>
+  <int value="-1766317053" label="GridTabSwitcherForTablets:enabled"/>
   <int value="-1766162197" label="AppServiceInstanceRegistry:enabled"/>
   <int value="-1766129470" label="DataSaverLiteModeRebranding:disabled"/>
   <int value="-1763899404" label="LayoutNGTable:enabled"/>
@@ -50754,6 +50764,7 @@ from previous Chrome versions.
   <int value="-703552662" label="PrefetchAndroidFonts:disabled"/>
   <int value="-702477233" label="ContentFullscreen:enabled"/>
   <int value="-700762821" label="RequestDesktopSiteForTablets:disabled"/>
+  <int value="-700388124" label="OmniboxPedalsAndroidBatch1:enabled"/>
   <int value="-700300613" label="use-fake-device-for-media-stream:disabled"/>
   <int value="-699767107" label="enable-sync-app-list"/>
   <int value="-699756444" label="ArcGhostWindow:disabled"/>
@@ -50912,6 +50923,7 @@ from previous Chrome versions.
   <int value="-580897686" label="SharedHighlightingAmp:enabled"/>
   <int value="-579192400" label="disable-input-view"/>
   <int value="-577982497" label="CupsPrintersUiOverhaul:enabled"/>
+  <int value="-577503348" label="GridTabSwitcherForTablets:disabled"/>
   <int value="-574354898" label="PostQuantumCECPQ2:enabled"/>
   <int value="-574217217" label="kSignInProfileCreationEnterprise:enabled"/>
   <int value="-574000901" label="AVIF:enabled"/>
@@ -52928,6 +52940,8 @@ from previous Chrome versions.
   <int value="966134219" label="CrostiniEnableDlc:disabled"/>
   <int value="966352185" label="PrivacyAdvisor:disabled"/>
   <int value="966415988" label="SyncPseudoUSSPasswords:enabled"/>
+  <int value="966958557"
+      label="CryptAuthV2DedupDeviceLastActivityTime:enabled"/>
   <int value="968355926" label="ExportTaggedPDF:enabled"/>
   <int value="968715406"
       label="enable-experimental-accessibility-magnifier-new-focus-following"/>
@@ -54248,6 +54262,8 @@ from previous Chrome versions.
   <int value="1935405622" label="AppServiceInstanceRegistry:disabled"/>
   <int value="1936810062" label="WebVrVsyncAlign:enabled"/>
   <int value="1937357350" label="MultilingualTyping:disabled"/>
+  <int value="1937435913"
+      label="CryptAuthV2DedupDeviceLastActivityTime:disabled"/>
   <int value="1937905990" label="AutofillCenterAlignedSuggestions:enabled"/>
   <int value="1938279796" label="PromosOnLocalNtp:disabled"/>
   <int value="1939413645" label="enable-invalid-cert-collection"/>

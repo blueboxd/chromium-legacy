@@ -141,7 +141,7 @@ template("cargo_crate") {
       # require them to be present until runtime.
       flags_file = get_label_info(":${orig_target_name}_build_script_output",
                                   "target_out_dir") + "/cargo_flags.rs"
-      rustflags += [ "@" + rebase_path(flags_file) ]
+      rustflags += [ "@" + rebase_path(flags_file, root_build_dir) ]
       sources += [ flags_file ]
       deps += [ ":${build_script_name}_output" ]
     } else {
@@ -163,13 +163,13 @@ template("cargo_crate") {
       }
       args = [
         "--build-script",
-        rebase_path(build_script),
+        rebase_path(build_script, root_build_dir),
         "--output",
-        rebase_path(flags_file),
+        rebase_path(flags_file, root_build_dir),
         "--rust-prefix",
-        rust_prefix,
+        rebase_path("${rust_sysroot}/bin"),
         "--out-dir",
-        target_out_dir,
+        rebase_path(target_out_dir, root_build_dir),
       ]
       if (defined(rust_abi_target) && rust_abi_target != "") {
         args += [

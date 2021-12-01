@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/axis.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -57,7 +58,6 @@ class CORE_EXPORT MediaQuerySet : public RefCounted<MediaQuerySet> {
   const Vector<std::unique_ptr<MediaQuery>>& QueryVector() const {
     return queries_;
   }
-  PhysicalAxes QueriedAxes() const;
 
   String MediaText() const;
   bool HasUnknown() const;

@@ -12,36 +12,12 @@ import("//mojo/public/tools/bindings/mojom.gni")
 if (is_chromeos_ash) {
   mojom("mojom") {
     sources = [
-      "anr.mojom",
       "app.mojom",
       "app_permissions.mojom",
       "compatibility_mode.mojom",
-      "enterprise_reporting.mojom",
       "file_system.mojom",
-      "iio_sensor.mojom",
-      "ime.mojom",
-      "input_method_manager.mojom",
       "intent_common.mojom",
       "intent_helper.mojom",
-      "keyboard_shortcut.mojom",
-      "keymaster.mojom",
-      "kiosk.mojom",
-      "lock_screen.mojom",
-      "media_session.mojom",
-      "memory.mojom",
-      "metrics.mojom",
-      "midis.mojom",
-      "nearby_share.mojom",
-      "net.mojom",
-      "obb_mounter.mojom",
-      "payment_app.mojom",
-      "pip.mojom",
-      "policy.mojom",
-      "power.mojom",
-      "print_common.mojom",
-      "print_spooler.mojom",
-      "process.mojom",
-      "property.mojom",
       "rotation_lock.mojom",
       "scale_factor.mojom",
       "screen_capture.mojom",
@@ -105,24 +81,6 @@ if (is_chromeos_ash) {
       {
         types = [
           {
-            mojom = "arc.mojom.TextInputType"
-            cpp = "::ui::TextInputType"
-          },
-          {
-            mojom = "arc.mojom.KeyEventData"
-            cpp = "::std::unique_ptr<::ui::KeyEvent>"
-            move_only = true
-          },
-        ]
-        traits_headers = [ "//ash/components/arc/mojom/ime_mojom_traits.h" ]
-        traits_public_deps = [
-          "//ui/base/ime",
-          "//ui/events",
-        ]
-      },
-      {
-        types = [
-          {
             mojom = "arc.mojom.IntentFilter"
             cpp = "::arc::IntentFilter"
             move_only = true
@@ -146,31 +104,6 @@ if (is_chromeos_ash) {
       {
         types = [
           {
-            mojom = "arc.mojom.PrintPageRange"
-            cpp = "::printing::PageRange"
-          },
-          {
-            mojom = "arc.mojom.PrintResolution"
-            cpp = "::gfx::Size"
-          },
-          {
-            mojom = "arc.mojom.PrinterCapabilities"
-            cpp = "::printing::PrinterSemanticCapsAndDefaults"
-          },
-        ]
-        traits_headers = [
-          "//printing/backend/print_backend.h",
-          "//printing/page_range.h",
-          "//ui/gfx/geometry/size.h",
-        ]
-
-        traits_private_headers = [ "print_mojom_traits.h" ]
-        traits_sources = [ "print_mojom_traits.cc" ]
-        traits_public_deps = [ "//printing" ]
-      },
-      {
-        types = [
-          {
             mojom = "arc.mojom.ClockId"
             cpp = "::clockid_t"
           },
@@ -188,7 +121,7 @@ if (is_chromeos_ash) {
           },
           {
             mojom = "arc.mojom.MountEvent"
-            cpp = "::chromeos::disks::DiskMountManager::MountEvent"
+            cpp = "::ash::disks::DiskMountManager::MountEvent"
           },
         ]
         traits_headers = [

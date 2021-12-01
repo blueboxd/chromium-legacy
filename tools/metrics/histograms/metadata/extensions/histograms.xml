@@ -82,6 +82,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Extensions.ApiBindingGenerationTime" units="ms"
     expires_after="2021-06-01">
+  <obsolete>
+    Code removed 2021-11.
+  </obsolete>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -95,6 +98,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Extensions.ApiBindingObjectGenerationTime"
     units="microseconds" expires_after="2021-06-01">
+  <obsolete>
+    Code removed 2021-11.
+  </obsolete>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -179,7 +185,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.AttemptedToDowngradeVersionLocation"
-    enum="ExtensionLocation" expires_after="2021-06-01">
+    enum="ExtensionLocation" expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -191,6 +197,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Extensions.AttemptedToDowngradeVersionType"
     enum="ExtensionType" expires_after="2021-06-01">
+  <obsolete>
+    Code removed 2021-11.
+  </obsolete>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -201,7 +210,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.BackgroundPageLoadTime2" units="ms"
-    expires_after="2021-12-01">
+    expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -249,7 +258,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.Bindings.NativeBindingCreationTime"
-    units="microseconds" expires_after="2021-12-01">
+    units="microseconds" expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -942,7 +951,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_Blessed" units="ms"
-    expires_after="2022-04-24">
+    expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -954,7 +963,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_BlessedWebPage" units="ms"
-    expires_after="2021-12-01">
+    expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -965,7 +974,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_ContentScript" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -976,7 +985,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_LockScreenExtension"
-    units="units" expires_after="2021-12-01">
+    units="units" expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -989,7 +998,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_Unblessed" units="ms"
-    expires_after="2021-12-01">
+    expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -1000,7 +1009,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_Unspecified" units="ms"
-    expires_after="2021-12-01">
+    expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -1011,7 +1020,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_WebPage" units="ms"
-    expires_after="2021-12-01">
+    expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -1022,7 +1031,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_WebUI" units="ms"
-    expires_after="2021-12-01">
+    expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -1395,6 +1404,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Extensions.ExtensionServiceInitTime" units="units"
     expires_after="2021-12-01">
+  <obsolete>
+    Code removed 2021-11.
+  </obsolete>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -1407,6 +1419,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Extensions.ExtensionServiceNotifyReadyListenersTime"
     units="units" expires_after="2021-06-01">
+  <obsolete>
+    Code removed 2021-11.
+  </obsolete>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2031,7 +2046,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Extensions.Functions.FailedTime{ExtensionFunctionExecutionTime}"
-    enum="ExtensionFunctions" expires_after="2021-12-12">
+    enum="ExtensionFunctions" expires_after="never">
+<!-- expires-never: Used for monitoring extension API usage. -->
+
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2089,7 +2106,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Extensions.Functions.SucceededTime{ExtensionFunctionExecutionTime}"
-    enum="ExtensionFunctions" expires_after="2021-12-12">
+    enum="ExtensionFunctions" expires_after="never">
+<!-- expires-never: Used for monitoring extension API usage. -->
+
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2366,7 +2385,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.HomepageOverrides" units="units"
-    expires_after="2021-12-05">
+    expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
   <summary>
@@ -2868,7 +2887,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.LoadUserScript" units="units"
-    expires_after="2021-12-01">
+    expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -3094,7 +3113,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.Messaging.MessageSize" units="bytes"
-    expires_after="2021-12-01">
+    expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -3789,6 +3808,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Extensions.UninstallDialogAction"
     enum="ExtensionUninstallDialogAction" expires_after="2021-12-01">
+  <obsolete>
+    Code removed 2021-11.
+  </obsolete>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>

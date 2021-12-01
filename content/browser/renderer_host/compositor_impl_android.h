@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/cancelable_callback.h"
-#include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -134,7 +133,7 @@ class CONTENT_EXPORT CompositorImpl
   void RequestNewLayerTreeFrameSink() override;
   void DidInitializeLayerTreeFrameSink() override;
   void DidFailToInitializeLayerTreeFrameSink() override;
-  void WillCommit(cc::CommitState*) override {}
+  void WillCommit(const cc::CommitState&) override {}
   void DidCommit(base::TimeTicks, base::TimeTicks) override;
   void DidCommitAndDrawFrame() override {}
   void DidReceiveCompositorFrameAck() override;

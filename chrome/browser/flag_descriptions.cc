@@ -3167,6 +3167,10 @@ const char kFeedLoadingPlaceholderDescription[] =
 const char kFeedStampName[] = "StAMP cards in the feed";
 const char kFeedStampDescription[] = "Enables StAMP cards in the feed.";
 
+const char kGridTabSwitcherForTabletsName[] = "Grid tab switcher for tablets";
+const char kGridTabSwitcherForTabletsDescription[] =
+    "Enable grid tab switcher for tablets, replacing the tab strip.";
+
 const char kHomepagePromoCardName[] =
     "Enable homepage promo card on the New Tab Page";
 const char kHomepagePromoCardDescription[] =
@@ -3642,6 +3646,10 @@ const char kXsurfaceMetricsReportingDescription[] =
 const char kWebNotesPublishName[] = "WebNotes Publish";
 const char kWebNotesPublishDescription[] =
     "Allows users to save their created notes.";
+
+const char kOmniboxPedalsAndroidBatch1Name[] = "Omnibox Pedals Android batch 1";
+const char kOmniboxPedalsAndroidBatch1Description[] =
+    "Enable the first batch of Omnibox Pedals on Android.";
 
 // Non-Android -----------------------------------------------------------------
 
@@ -4304,6 +4312,12 @@ const char kCrostiniVirtualKeyboardSupportName[] =
     "Crostini Virtual Keyboard Support";
 const char kCrostiniVirtualKeyboardSupportDescription[] =
     "Experimental support for the Virtual Keyboard on Crostini.";
+
+extern const char kCryptAuthV2DedupDeviceLastActivityTimeName[] =
+    "Dedup devices by last activity time";
+extern const char kCryptAuthV2DedupDeviceLastActivityTimeDescription[] =
+    "Deduplicates phones in multi-device setup drop-down list by last "
+    "activity time";
 
 const char kDisableBufferBWCompressionName[] =
     "Disable buffer bandwidth compression";

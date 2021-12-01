@@ -18,7 +18,6 @@
 #include <map>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/sequence_checker.h"
@@ -55,9 +54,7 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
                           std::vector<WebPluginInfo>* info,
                           std::vector<std::string>* actual_mime_types) override;
   bool GetPluginInfo(int render_process_id,
-                     int render_frame_id,
                      const GURL& url,
-                     const url::Origin& main_frame_origin,
                      const std::string& mime_type,
                      bool allow_wildcard,
                      bool* is_stale,

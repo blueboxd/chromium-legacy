@@ -206,7 +206,7 @@
 <translation id="2303600792989757991">విండో స్థూలదృష్టిని టోగుల్ చేయి</translation>
 <translation id="2318576281648121272">ఈ రోజు <ph name="TODAY_DATE" /></translation>
 <translation id="2322173485024759474">ఒక అక్షరం వెనుకకు</translation>
-<translation id="2339073806695260576">గమనికను వ్రాయడానికి, స్క్రీన్‌షాట్‌ను తీయడానికి, లేజర్ పాయింటర్ లేదా భూతద్దాన్ని ఉపయోగించడానికి అరలో స్టైలస్ బటన్‌ను నొక్కండి.</translation>
+<translation id="2339073806695260576">గమనికను రాయడానికి, స్క్రీన్‌షాట్‌ను తీయడానికి, లేజర్ పాయింటర్ లేదా భూతద్దాన్ని ఉపయోగించడానికి అరలో స్టైలస్ బటన్‌ను నొక్కండి.</translation>
 <translation id="2341729377289034582">నిలువు ప్రదర్శనకు లాక్ చేయబడింది</translation>
 <translation id="2350794187831162545"><ph name="LANGUAGE" /> స్పీచ్ ఇప్పుడు పరికరంలోనే ప్రాసెస్ చేయబడింది, ఆఫ్‌లైన్‌లో పని చేస్తుంది. సెట్టింగ్‌లు &gt; యాక్సెసిబిలిటీకి వెళ్లడం ద్వారా మీరు మీ డిక్టేషన్ భాషను మార్చవచ్చు.</translation>
 <translation id="2352467521400612932">స్టైలస్ సెట్టింగ్‌లు</translation>
@@ -248,6 +248,7 @@
 <translation id="2653019840645008922">విండోను క్యాప్చర్ చేయండి</translation>
 <translation id="2653659639078652383">సమర్పించు</translation>
 <translation id="2658778018866295321">క్లిక్ చేసి, లాగండి</translation>
+<translation id="2665788051462227163"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> ఈ పరికరంలో అందుబాటులో లేవు.</translation>
 <translation id="2678852583403169292">'వినడానికి ఎంచుకోండి' మెనూ</translation>
 <translation id="2689613560355655046">డెస్క్ 8</translation>
 <translation id="2700493154570097719">మీ కీబోర్డ్‌ని సెట్ చేయండి</translation>
@@ -341,7 +342,6 @@
 <translation id="3307642347673023554">ల్యాప్‌టాప్ మోడ్‌కు స్విచ్ చేయబడింది</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> ఇప్పటికీ తర్వాత సైన్ ఇన్ చేయవచ్చు.</translation>
 <translation id="3321628682574733415">తల్లి/తండ్రి కోడ్ తప్పు</translation>
-<translation id="3325831752328162756">{0,plural, =0{ఇప్పుడే పరికరాన్ని మునపటి వెర్షన్‌కు మార్చండి}=1{1 సెకన్‌లోపు పరికరాన్ని మునపటి వెర్షన్‌కు మార్చండి}other{# సెకన్ల‌లోపు పరికరాన్ని మునపటి వెర్షన్‌కు మార్చండి}}</translation>
 <translation id="3341303451326249809">స్క్రీన్‌షాట్ క్యాప్చర్ చేయబడింది</translation>
 <translation id="334252345105450327">స్క్రీన్‌షాట్ తీయండి</translation>
 <translation id="3351879221545518001">ప్రస్తుతం మీరు స్క్రీన్‌ని ప్రసారం చేస్తున్నారు.</translation>
@@ -420,6 +420,7 @@
 <translation id="3708186454126126312">ఇంతకు మునుపు కనెక్ట్ చేయబడినవి</translation>
 <translation id="371370241367527062">ముందువైపు మైక్రోఫోన్</translation>
 <translation id="3713734891607377840">పూర్తయినప్పుడు తెరవండి</translation>
+<translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" />, మరో<ph name="UNAVAILABLE_APPS_COUNT" /> యాప్‌లు ఈ పరికరంలో అందుబాటులో లేవు.</translation>
 <translation id="3742055079367172538">స్క్రీన్‌షాట్ తీసినప్పుడు</translation>
 <translation id="3744282433224562605">మీ Chromebookను అన్‌లాక్ చేయడానికి, పాస్‌వర్డ్‌ను ఎంటర్ చేయండి</translation>
 <translation id="3771549900096082774">అధిక కాంట్రాస్ట్ మోడ్</translation>
@@ -606,6 +607,7 @@
 <translation id="4925542575807923399">బహుళ సైన్-ఇన్ సెషన్‌లో ఈ ఖాతా మొదటిగా సైన్-ఇన్ చేసిన ఖాతాగా ఉండటం ఈ ఖాతా నిర్వాహకులకు అవసరం.</translation>
 <translation id="4945196315133970626">నోటిఫికేషన్‌లను ఆఫ్ చేయండి</translation>
 <translation id="4946376291507881335">క్యాప్చర్ చేయండి</translation>
+<translation id="4947229553198882488"><ph name="UNAVAILABLE_APPS" />ఈ పరికరంలో అందుబాటులో లేదు.</translation>
 <translation id="495046168593986294">పైకి స్క్రోల్ చేయి</translation>
 <translation id="4952936045814352993">అలారం శబ్దాలు డిజేబుల్ చేయబడినప్పుడు 'ఫోన్‌ను గుర్తించు' ఫీచర్ అందుబాటులో ఉండదు</translation>
 <translation id="4960324571663582548"><ph name="MANAGER" />, మీ <ph name="DEVICE_TYPE" /> వెర్షన్‌ను దాని మునపటి వెర్షన్‌కు మార్చాలనుకుంటోంది. మీ పరికరం రీసెట్ చేయబడుతుంది, ఇంకా మొత్తం డేటా తొలగించబడుతుంది.</translation>

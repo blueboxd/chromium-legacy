@@ -1816,6 +1816,9 @@ extern const char kFeedLoadingPlaceholderDescription[];
 extern const char kFeedStampName[];
 extern const char kFeedStampDescription[];
 
+extern const char kGridTabSwitcherForTabletsName[];
+extern const char kGridTabSwitcherForTabletsDescription[];
+
 extern const char kHomepagePromoCardName[];
 extern const char kHomepagePromoCardDescription[];
 
@@ -2094,6 +2097,9 @@ extern const char kXsurfaceMetricsReportingDescription[];
 
 extern const char kWebNotesPublishName[];
 extern const char kWebNotesPublishDescription[];
+
+extern const char kOmniboxPedalsAndroidBatch1Name[];
+extern const char kOmniboxPedalsAndroidBatch1Description[];
 
 // Non-Android ----------------------------------------------------------------
 
@@ -2478,6 +2484,9 @@ extern const char kCrostiniImeSupportDescription[];
 
 extern const char kCrostiniVirtualKeyboardSupportName[];
 extern const char kCrostiniVirtualKeyboardSupportDescription[];
+
+extern const char kCryptAuthV2DedupDeviceLastActivityTimeName[];
+extern const char kCryptAuthV2DedupDeviceLastActivityTimeDescription[];
 
 extern const char kDisableBufferBWCompressionName[];
 extern const char kDisableBufferBWCompressionDescription[];

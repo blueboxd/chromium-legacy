@@ -50,6 +50,34 @@ void BluetoothDeviceStatusUiHandler::OnDevicePaired(
   ShowToast(toast_data);
 }
 
+void BluetoothDeviceStatusUiHandler::OnDeviceDisconnected(
+    PairedBluetoothDevicePropertiesPtr device) {
+  ash::ToastData toast_data(
+      /*id=*/GetToastId(device.get()),
+      /*text=*/
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCONNECTED_TOAST,
+          GetPairedDeviceName(device.get())),
+      /*timeout_ms=*/kToastDurationMs,
+      /*dismiss_text=*/absl::nullopt,
+      /*visible_on_lock_screen=*/false);
+  ShowToast(toast_data);
+}
+
+void BluetoothDeviceStatusUiHandler::OnDeviceConnected(
+    PairedBluetoothDevicePropertiesPtr device) {
+  ash::ToastData toast_data(
+      /*id=*/GetToastId(device.get()),
+      /*text=*/
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED_OR_CONNECTED_TOAST,
+          GetPairedDeviceName(device.get())),
+      /*timeout_ms=*/kToastDurationMs,
+      /*dismiss_text=*/absl::nullopt,
+      /*visible_on_lock_screen=*/false);
+  ShowToast(toast_data);
+}
+
 void BluetoothDeviceStatusUiHandler::ShowToast(
     const ash::ToastData& toast_data) {
   ash::ToastManager::Get()->Show(toast_data);

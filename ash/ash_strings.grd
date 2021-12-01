@@ -589,6 +589,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED_OR_CONNECTED_TOAST" desc="The text used in the toast shown when a new Bluetooth device is newly paired or connected.">
       <ph name="DEVICE_NAME">$1<ex>Pixel Buds</ex></ph> connected
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCONNECTED_TOAST" desc="The text used in the toast shown when a new Bluetooth device disconnected from Chromebook.">
+      <ph name="DEVICE_NAME">$1<ex>Pixel Buds</ex></ph> disconnected
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
         Restart to update
@@ -1800,7 +1803,7 @@ This file contains the strings for ash.
         Only <ph name="MAX_DESK_LIMIT">$1<ex>8</ex></ph> desks allowed. Remove a desk to open a new one.
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_UNAVAILABLE_APP_TOAST_ONE" desc="The text of the toast displayed when user tries to launch a template with one unavailable apps.">
-        <ph name="UNAVAILABLE_APPS">$1<ex>unavailable app</ex></ph>isn't on this device.
+        <ph name="UNAVAILABLE_APPS">$1<ex>unavailable app</ex></ph> isn't on this device.
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_UNAVAILABLE_APP_TOAST_TWO" desc="The text of the toast displayed when user tries to launch a template with two unavailable apps.">
         <ph name="UNAVAILABLE_APPS_ONE">$1<ex>unavailable app one</ex></ph>, and <ph name="UNAVAILABLE_APPS_TWO">$2<ex>unavailable app two</ex></ph> aren't on this device.
@@ -3977,7 +3980,7 @@ Here are some things you can try to get started.
         off
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_ALERT_OPEN" desc="Alert spoken by screen readers on entering capture mode.">
-        Capture Mode, default is <ph name="SOURCE">$1<ex>partial</ex></ph> <ph name="TYPE">$2<ex>screenshot</ex></ph>.
+        Capture Mode, default is <ph name="SOURCE">$1<ex>partial</ex></ph> <ph name="TYPE">$2<ex>screenshot</ex></ph>. Press tab for keyboard navigation.
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_SOURCE_FULLSCREEN" desc="Spoken by screen readers for the open alert with the source as full screen.">
         full screen

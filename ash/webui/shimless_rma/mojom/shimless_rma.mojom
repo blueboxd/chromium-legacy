@@ -575,13 +575,17 @@ interface ShimlessRmaService {
   // Get the list of OEM regions for this device.
   GetRegionList() => (array<string> regions);
   // Get the list of OEM SKUs for this device.
-  GetSkuList() => (array<string> skus);
+  GetSkuList() => (array<uint64> skus);
+  // Get the list of valid white-labels for this device.
+  GetWhiteLabelList() => (array<string> whiteLabels);
   // Get the device serial number at RMA start.
   GetOriginalSerialNumber() => (string serial_number);
   // Get the device region index at RMA start.
   GetOriginalRegion() => (uint8 region_index);
   // Get the device SKU index at RMA start.
   GetOriginalSku() => (uint8 sku_index);
+  // Get the device white-label index at RMA start.
+  GetOriginalWhiteLabel() => (uint8 whiteLabel_index);
   // Attempt to set device info and transition to the next state.
   // Returns the next state to display and an error code.
   SetDeviceInformation(
@@ -674,6 +678,17 @@ interface ShimlessRmaService {
   EndRmaAndCutoffBattery()
       => (State state, bool can_cancel, bool can_go_back,
           RmadErrorCode error);
+
+  ///////////////////////////////////////
+  // Critical error handling
+  // These methods will fail if backend is not in critical error state.
+  // Currently the only critical error is when error is kRmaNotRequired
+  // (state is kUnknown).
+  //
+  // Attempt to cancel RMA and restart Chrome without checking RMA.
+  CriticalErrorExitToLogin() => (RmadErrorCode error);
+  // Attempt to cancel RMA and reboot the device.
+  CriticalErrorReboot() => (RmadErrorCode error);
 
   ///////////////////////////////////////
   // Observers

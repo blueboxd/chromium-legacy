@@ -44,7 +44,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/optional_trace_event.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/about_url_loader_factory.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -2076,12 +2075,8 @@ bool RenderFrameHostImpl::RequiresProxyToParent() {
 
 RenderFrameHost::WebExposedIsolationLevel
 RenderFrameHostImpl::GetWebExposedIsolationLevel() {
-  ProcessLock process_lock =
-      ProcessLock::FromSiteInfo(GetSiteInstance()->GetSiteInfo());
-  if (process_lock.is_invalid())
-    return RenderFrameHost::WebExposedIsolationLevel::kNotIsolated;
-
-  WebExposedIsolationInfo info = process_lock.GetWebExposedIsolationInfo();
+  WebExposedIsolationInfo info =
+      GetSiteInstance()->GetSiteInfo().web_exposed_isolation_info();
   if (info.is_isolated_application()) {
     // TODO(crbug.com/1159832): Check the document policy once it's available to
     // find out if this frame is actually isolated.
@@ -10135,9 +10130,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
       (is_same_document_navigation &&
        renderer_url_info_.was_loaded_from_load_data_with_base_url)) {
     // Allow bypass if the process isn't locked. Otherwise run normal checks.
-    bypass_checks_for_webview = !ChildProcessSecurityPolicyImpl::GetInstance()
-                                     ->GetProcessLock(process->GetID())
-                                     .is_locked_to_site();
+    bypass_checks_for_webview = !process->GetProcessLock().is_locked_to_site();
   }
 
   if (!bypass_checks_for_error_page && !bypass_checks_for_file_scheme &&
@@ -10222,11 +10215,7 @@ bool RenderFrameHostImpl::ValidateURLAndOrigin(
     case CanCommitStatus::CANNOT_COMMIT_URL:
       DLOG(ERROR) << "CANNOT_COMMIT_URL url '" << url << "'"
                   << " origin '" << origin << "'"
-                  << " lock '"
-                  << ChildProcessSecurityPolicyImpl::GetInstance()
-                         ->GetProcessLock(process->GetID())
-                         .ToString()
-                  << "'";
+                  << " lock '" << process->GetProcessLock().ToString() << "'";
       VLOG(1) << "Blocked URL " << url.spec();
       LogCannotCommitUrlCrashKeys(url, is_same_document_navigation,
                                   navigation_request);
@@ -10238,11 +10227,7 @@ bool RenderFrameHostImpl::ValidateURLAndOrigin(
     case CanCommitStatus::CANNOT_COMMIT_ORIGIN:
       DLOG(ERROR) << "CANNOT_COMMIT_ORIGIN url '" << url << "'"
                   << " origin '" << origin << "'"
-                  << " lock '"
-                  << ChildProcessSecurityPolicyImpl::GetInstance()
-                         ->GetProcessLock(process->GetID())
-                         .ToString()
-                  << "'";
+                  << " lock '" << process->GetProcessLock().ToString() << "'";
       DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, origin);
       LogCannotCommitOriginCrashKeys(is_same_document_navigation,
                                      navigation_request);
@@ -10811,7 +10796,7 @@ void RenderFrameHostImpl::MaybeGenerateCrashReport(
         return;
       break;
     case base::TERMINATION_STATUS_OOM:
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
 #endif
 #if defined(OS_ANDROID)
@@ -11299,6 +11284,11 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
   base::debug::SetCrashKeyString(
       site_lock_key,
       ProcessLock::FromSiteInfo(GetSiteInstance()->GetSiteInfo()).ToString());
+
+  static auto* const process_lock_key = base::debug::AllocateCrashKeyString(
+      "process_lock", base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(process_lock_key,
+                                 GetProcess()->GetProcessLock().ToString());
 
   if (!GetSiteInstance()->IsDefaultSiteInstance()) {
     static auto* const original_url_origin_key =
@@ -12528,15 +12518,14 @@ void RenderFrameHostImpl::BindHungDetectorHost(
 }
 
 void RenderFrameHostImpl::GetPluginInfo(const GURL& url,
-                                        const url::Origin& main_frame_origin,
                                         const std::string& mime_type,
                                         GetPluginInfoCallback callback) {
   bool allow_wildcard = true;
   WebPluginInfo info;
   std::string actual_mime_type;
   bool found = PluginServiceImpl::GetInstance()->GetPluginInfo(
-      GetProcess()->GetID(), routing_id_, url, main_frame_origin, mime_type,
-      allow_wildcard, nullptr, &info, &actual_mime_type);
+      GetProcess()->GetID(), url, mime_type, allow_wildcard, nullptr, &info,
+      &actual_mime_type);
   std::move(callback).Run(found, info, actual_mime_type);
 }
 

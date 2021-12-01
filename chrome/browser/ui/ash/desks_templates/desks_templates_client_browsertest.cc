@@ -430,39 +430,9 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   EXPECT_FALSE(data2->desk_id.has_value());
 }
 
-// Tests that launching a desk template creates a desk with the given name.
-IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, LaunchEmptyDeskTemplate) {
-  const base::GUID kDeskUuid = base::GUID::GenerateRandomV4();
-  const std::u16string kDeskName(u"Test Desk Name");
-
-  auto* desks_controller = ash::DesksController::Get();
-
-  ASSERT_EQ(0, desks_controller->GetActiveDeskIndex());
-
-  auto desk_template = std::make_unique<ash::DeskTemplate>(
-      kDeskUuid.AsLowercaseString(), ash::DeskTemplateSource::kUser,
-      base::UTF16ToUTF8(kDeskName), base::Time::Now());
-  SetAndLaunchTemplate(std::move(desk_template));
-
-  EXPECT_EQ(1, desks_controller->GetActiveDeskIndex());
-  EXPECT_EQ(kDeskName, desks_controller->GetDeskName(1));
-
-  // Verify that user prefs are updated with the correct desk names. This
-  // ensures that template created desk names are preserved on restart.
-  PrefService* primary_user_prefs =
-      ash::Shell::Get()->session_controller()->GetPrimaryUserPrefService();
-  ASSERT_TRUE(primary_user_prefs);
-  const base::ListValue* desks_names =
-      primary_user_prefs->GetList(ash::prefs::kDesksNamesList);
-  const auto& desks_names_list = desks_names->GetList();
-  EXPECT_EQ(2, desks_names->GetList().size());
-  EXPECT_EQ(base::UTF16ToUTF8(kDeskName), desks_names_list[1].GetString());
-}
-
 // Tests that launching the same desk template multiple times creates desks with
 // different/incremented names.
-IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
-                       LaunchMultipleEmptyDeskTemplates) {
+IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, LaunchMultipleDeskTemplates) {
   const base::GUID kDeskUuid = base::GUID::GenerateRandomV4();
   const std::u16string kDeskName(u"Test Desk Name");
 
@@ -470,6 +440,10 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
 
   ASSERT_EQ(0, desks_controller->GetActiveDeskIndex());
 
+  // TODO(crbug.com/1273532): Note that `SetTemplate` allows setting an empty
+  // desk template which shouldn't be possible in a real workflow. Make sure a
+  // non empty desks are launched when this test is updated to use the real
+  // workflow.
   auto desk_template = std::make_unique<ash::DeskTemplate>(
       kDeskUuid.AsLowercaseString(), ash::DeskTemplateSource::kUser,
       base::UTF16ToUTF8(kDeskName), base::Time::Now());
@@ -1054,12 +1028,14 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, NativeUILaunchBrowser) {
   ASSERT_TRUE(template_item);
   ClickButton(template_item);
 
-  // TODO(sammiequon): Investigate a better wait here after the new desk from
-  // template behavior is finalized and implemented.
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), base::Seconds(1));
-  run_loop.Run();
+  // Clicking the button is a two part, both async process. We need to wait for
+  // the template to be fetched from the model, and then wait for the desk
+  // animation to be launched.
+  // TODO(dandersson): Remove this when the desk is no longer activated on
+  // template launch.
+  ash::WaitForDesksTemplatesUI();
+  ash::DeskSwitchAnimationWaiter waiter;
+  waiter.Wait();
 
   // Wait for the tabs to load.
   content::RunAllTasksUntilIdle();

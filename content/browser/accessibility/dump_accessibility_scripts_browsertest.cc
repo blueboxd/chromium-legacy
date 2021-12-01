@@ -141,10 +141,6 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::Values(ui::AXApiType::kMac),
                          TestPassToString());
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXPressButton) {
-  RunTypedTest<kMacAction>("ax-press-button.html");
-}
-
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXAccessKey) {
   RunTypedTest<kMacAttributes>("ax-access-key.html");
 }
@@ -155,6 +151,14 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIAAtomic) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIABusy) {
   RunTypedTest<kMacAttributes>("ax-aria-busy.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIAColumnCount) {
+  RunTypedTest<kMacAttributes>("ax-aria-column-count.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIAColumnIndex) {
+  RunTypedTest<kMacAttributes>("ax-aria-column-index.html");
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIACurrent) {
@@ -169,6 +173,14 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIARelevant) {
   RunTypedTest<kMacAttributes>("ax-aria-relevant.html");
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIARowCount) {
+  RunTypedTest<kMacAttributes>("ax-aria-row-count.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIARowIndex) {
+  RunTypedTest<kMacAttributes>("ax-aria-row-index.html");
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXAutocompleteValue) {
   RunTypedTest<kMacAttributes>("ax-autocomplete-value.html");
 }
@@ -179,6 +191,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXColumnHeaderUIElements) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXDetailsElements) {
   RunTypedTest<kMacAttributes>("ax-details-elements.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXDOMIdentifier) {
+  RunTypedTest<kMacAttributes>("ax-dom-identifier.html");
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXInvalid) {
@@ -227,6 +243,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXMathSuperscript) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXMathUnder) {
   RunTypedTest<kMacAttributes>("ax-math-under.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXPressButton) {
+  RunTypedTest<kMacAction>("ax-press-button.html");
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXRequired) {

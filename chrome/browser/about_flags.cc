@@ -3063,6 +3063,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCellularUseExternalEuiccName,
      flag_descriptions::kCellularUseExternalEuiccDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCellularUseExternalEuicc)},
+    {"cryptauth-v2-dedup-device-last-activity-time",
+     flag_descriptions::kCryptAuthV2DedupDeviceLastActivityTimeName,
+     flag_descriptions::kCryptAuthV2DedupDeviceLastActivityTimeDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         ash::features::kCryptAuthV2DedupDeviceLastActivityTime)},
     {"disable-idle-sockets-close-on-memory-pressure",
      flag_descriptions::kDisableIdleSocketsCloseOnMemoryPressureName,
      flag_descriptions::kDisableIdleSocketsCloseOnMemoryPressureDescription,
@@ -4454,6 +4460,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxTabSwitchSuggestionsName,
      flag_descriptions::kOmniboxTabSwitchSuggestionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
+    {"omnibox-pedals-android-batch1",
+     flag_descriptions::kOmniboxPedalsAndroidBatch1Name,
+     flag_descriptions::kOmniboxPedalsAndroidBatch1Description, kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalsAndroidBatch1)},
 #endif  // defined(OS_ANDROID)
 
     {"omnibox-clobber-triggers-contextual-web-zero-suggest",
@@ -7654,6 +7664,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"context-menu-popup-style", flag_descriptions::kContextMenuPopupStyleName,
      flag_descriptions::kContextMenuPopupStyleDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextMenuPopupStyle)},
+
+    {"grid-tab-switcher-for-tablets",
+     flag_descriptions::kGridTabSwitcherForTabletsName,
+     flag_descriptions::kGridTabSwitcherForTabletsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kGridTabSwitcherForTablets)},
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

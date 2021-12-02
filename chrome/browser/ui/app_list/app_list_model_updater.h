@@ -57,8 +57,7 @@ class AppListModelUpdater {
   virtual void AddAppItemToFolder(std::unique_ptr<ChromeAppListItem> app_item,
                                   const std::string& folder_id,
                                   bool add_from_local) {}
-  virtual void RemoveItem(const std::string& id) {}
-  virtual void RemoveUninstalledItem(const std::string& id) {}
+  virtual void RemoveItem(const std::string& id, bool is_uninstall) {}
   virtual void SetStatus(ash::AppListModelStatus status) {}
   // For SearchModel:
   virtual void SetSearchEngineIsGoogle(bool is_google) {}
@@ -95,6 +94,7 @@ class AppListModelUpdater {
   // For AppListModel:
   virtual ChromeAppListItem* FindItem(const std::string& id) = 0;
   virtual std::vector<const ChromeAppListItem*> GetItems() const = 0;
+  virtual std::set<std::string> GetTopLevelItemIds() const = 0;
   virtual size_t ItemCount() = 0;
   virtual std::vector<ChromeAppListItem*> GetTopLevelItems() const = 0;
   virtual ChromeAppListItem* ItemAtForTest(size_t index) = 0;

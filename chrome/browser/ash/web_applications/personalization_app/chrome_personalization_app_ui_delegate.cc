@@ -329,7 +329,8 @@ void ChromePersonalizationAppUiDelegate::SelectWallpaper(
   std::vector<ash::OnlineWallpaperVariant> variants;
   for (auto entry : image_asset_id_map_) {
     const ImageInfo& image_info = entry.second;
-    if (image_info.unit_id == it->second.unit_id) {
+    if (image_info.unit_id == it->second.unit_id &&
+        image_info.collection_id == it->second.collection_id) {
       variants.emplace_back(image_info.asset_id, image_info.image_url,
                             image_info.type);
     }
@@ -350,7 +351,7 @@ void ChromePersonalizationAppUiDelegate::SelectWallpaper(
           GURL(it->second.image_url.spec()), it->second.collection_id,
           ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED, preview_mode,
           /*from_user=*/true,
-          /*daily_refresh_enabled=*/false, variants),
+          /*daily_refresh_enabled=*/false, it->second.unit_id, variants),
       base::BindOnce(
           &ChromePersonalizationAppUiDelegate::OnOnlineWallpaperSelected,
           backend_weak_ptr_factory_.GetWeakPtr()));

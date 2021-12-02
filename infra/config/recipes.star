@@ -136,13 +136,16 @@ build_recipe(
 build_recipe(
     name = "recipe:chromium/orchestrator",
     bootstrappable = True,
+    experiments = {
+        "luci.recipes.use_python3": 1,
+    },
 )
 
 build_recipe(
     name = "recipe:chromium/compilator",
     bootstrappable = True,
     experiments = {
-        "luci.recipes.use_python3": 1,
+        "luci.recipes.use_python3": 5,
     },
 )
 
@@ -191,6 +194,9 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_upload_clang",
+    experiments = {
+        "luci.recipes.use_python3": 20,
+    },
 )
 
 build_recipe(
@@ -233,6 +239,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:swarming/deterministic_build",
+    use_python3 = True,
 )
 
 build_recipe(

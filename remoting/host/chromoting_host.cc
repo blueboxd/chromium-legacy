@@ -31,6 +31,10 @@
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/webrtc_connection_to_client.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 using remoting::protocol::ConnectionToClient;
 using remoting::protocol::InputStub;
 
@@ -120,10 +124,14 @@ void ChromotingHost::StartChromotingHostServices() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!ipc_server_);
 
+#if defined(OS_LINUX) || defined(OS_WIN)
   ipc_server_ = std::make_unique<MojoIpcServer<mojom::ChromotingHostServices>>(
       GetChromotingHostServicesServerName(), this);
   ipc_server_->StartServer();
   HOST_LOG << "ChromotingHostServices IPC server has been started.";
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 void ChromotingHost::AddExtension(std::unique_ptr<HostExtension> extension) {
@@ -226,16 +234,34 @@ void ChromotingHost::OnSessionRouteChange(
     observer.OnClientRouteChange(session->client_jid(), channel_name, route);
 }
 
-void ChromotingHost::BindWebAuthnProxy(
-    mojo::PendingReceiver<mojom::WebAuthnProxy> receiver) {
+void ChromotingHost::BindSessionServices(
+    mojo::PendingReceiver<mojom::ChromotingSessionServices> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ClientSession* connected_client = GetConnectedClientSession();
   if (!connected_client) {
-    LOG(WARNING) << "No connected client is found. Binding request rejected.";
+    LOG(WARNING) << "Session services bind request rejected: "
+                 << "No connected remote desktop client was found.";
     return;
   }
-  connected_client->BindWebAuthnProxy(std::move(receiver));
+#if defined(OS_WIN)
+  DWORD peer_session_id;
+  if (!ProcessIdToSessionId(ipc_server_->current_peer_pid(),
+                            &peer_session_id)) {
+    PLOG(ERROR) << "Session services bind request rejected: "
+                   "ProcessIdToSessionId failed";
+    return;
+  }
+  if (connected_client->desktop_session_id() != peer_session_id) {
+    LOG(WARNING)
+        << "Session services bind request rejected: "
+        << "Remote desktop client is not connected to the current session.";
+    return;
+  }
+#endif
+  connected_client->BindReceiver(std::move(receiver));
+  VLOG(1) << "Session services bound for receiver ID: "
+          << ipc_server_->current_receiver();
 }
 
 void ChromotingHost::OnIncomingSession(

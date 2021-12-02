@@ -65,7 +65,8 @@ export {CrSliderElement} from 'chrome://resources/cr_elements/cr_slider/cr_slide
 export {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.js';
 export {SettingsAppearanceFontsPageElement} from './appearance_page/appearance_fonts_page.js';
 export {FontsBrowserProxy, FontsBrowserProxyImpl, FontsData} from './appearance_page/fonts_browser_proxy.js';
-export {CountryDetailManagerImpl} from './autofill_page/address_edit_dialog.js';
+export {CountryDetailManager, CountryDetailManagerImpl, SettingsAddressEditDialogElement} from './autofill_page/address_edit_dialog.js';
+export {SettingsAddressRemoveConfirmationDialogElement} from './autofill_page/address_remove_confirmation_dialog.js';
 export {AutofillManagerImpl, AutofillManagerProxy, PersonalDataChangedListener} from './autofill_page/autofill_manager_proxy.js';
 export {SettingsAutofillSectionElement} from './autofill_page/autofill_section.js';
 // <if expr="chromeos or lacros">
@@ -90,6 +91,7 @@ export {SettingsHistoryDeletionDialogElement} from './clear_browsing_data_dialog
 export {SettingsPasswordsDeletionDialogElement} from './clear_browsing_data_dialog/passwords_deletion_dialog.js';
 export {ControlledButtonElement} from './controls/controlled_button.js';
 export {SettingsCheckboxElement} from './controls/settings_checkbox.js';
+export {SettingsRadioGroupElement} from './controls/settings_radio_group.js';
 export {SettingsSliderElement} from './controls/settings_slider.js';
 export {SettingsTextareaElement} from './controls/settings_textarea.js';
 export {DownloadsBrowserProxy, DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.js';
@@ -119,6 +121,7 @@ export {PrivacyReviewDescriptionItemElement} from './privacy_page/privacy_review
 export {PrivacyReviewHistorySyncFragmentElement} from './privacy_page/privacy_review/privacy_review_history_sync_fragment.js';
 export {PrivacyReviewMsbbFragmentElement} from './privacy_page/privacy_review/privacy_review_msbb_fragment.js';
 export {SettingsPrivacyReviewPageElement} from './privacy_page/privacy_review/privacy_review_page.js';
+export {PrivacyReviewWelcomeFragmentElement} from './privacy_page/privacy_review/privacy_review_welcome_fragment.js';
 export {SettingsSecureDnsElement} from './privacy_page/secure_dns.js';
 export {SecureDnsInputElement} from './privacy_page/secure_dns_input.js';
 export {BioEnrollDialogPage, SettingsSecurityKeysBioEnrollDialogElement} from './privacy_page/security_keys_bio_enroll_dialog.js';

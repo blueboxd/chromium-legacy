@@ -33,7 +33,8 @@ void FakeAppListModelUpdater::AddAppItemToFolder(
   items_.push_back(std::move(item));
 }
 
-void FakeAppListModelUpdater::RemoveItem(const std::string& id) {
+void FakeAppListModelUpdater::RemoveItem(const std::string& id,
+                                         bool is_uninstall) {
   size_t index;
   if (FindItemIndexForTest(id, &index)) {
     const std::string folder_id = items_[index]->folder_id();
@@ -49,12 +50,8 @@ void FakeAppListModelUpdater::RemoveItem(const std::string& id) {
         ++folder_item_count;
     }
     if (!folder_item_count)
-      RemoveItem(folder_id);
+      RemoveItem(folder_id, is_uninstall);
   }
-}
-
-void FakeAppListModelUpdater::RemoveUninstalledItem(const std::string& id) {
-  RemoveItem(id);
 }
 
 void FakeAppListModelUpdater::SetItemIcon(const std::string& id,
@@ -130,6 +127,15 @@ std::vector<ChromeAppListItem*> FakeAppListModelUpdater::GetTopLevelItems()
       top_level_items.emplace_back(item.get());
   }
   return top_level_items;
+}
+
+std::set<std::string> FakeAppListModelUpdater::GetTopLevelItemIds() const {
+  std::set<std::string> item_ids;
+  for (auto& item : items_) {
+    if (item->folder_id().empty())
+      item_ids.insert(item->id());
+  }
+  return item_ids;
 }
 
 ChromeAppListItem* FakeAppListModelUpdater::ItemAtForTest(size_t index) {

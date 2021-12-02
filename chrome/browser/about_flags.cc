@@ -1399,7 +1399,8 @@ const FeatureEntry::FeatureParam kNtpChromeCartModuleAbandonedCartDiscount[] = {
     {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountUseUtmParam,
      "true"},
     {"partner-merchant-pattern",
-     "(electronicexpress.com|zazzle.com|wish.com|homesquare.com|iherb.com)"}};
+     "(electronicexpress.com|zazzle.com|wish.com|homesquare.com|iherb.com|"
+     "zappos.com)"}};
 const FeatureEntry::FeatureParam kNtpChromeCartModuleHeuristicsImprovement[] = {
     {ntp_features::kNtpChromeCartModuleHeuristicsImprovementParam, "true"}};
 const FeatureEntry::FeatureParam kNtpChromeCartModuleRBDAndCouponDiscount[] = {
@@ -4864,8 +4865,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {flag_descriptions::kScrollableTabStripFlagId,
      flag_descriptions::kScrollableTabStripName,
-     flag_descriptions::kScrollableTabStripDescription,
-     kOsMac | kOsWin | kOsLinux | kOsFuchsia,
+     flag_descriptions::kScrollableTabStripDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kScrollableTabStrip,
                                     kTabScrollingVariations,
                                     "TabScrolling")},
@@ -5834,14 +5834,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          browsing_data::features::kEnableRemovingAllThirdPartyCookies)},
-
-#if defined(OS_MAC)
-    {"enterprise-reporting-api-keychain-recreation",
-     flag_descriptions::kEnterpriseReportingApiKeychainRecreationName,
-     flag_descriptions::kEnterpriseReportingApiKeychainRecreationDescription,
-     kOsMac,
-     FEATURE_VALUE_TYPE(features::kEnterpriseReportingApiKeychainRecreation)},
-#endif  // defined(OS_MAC)
 
     {"enterprise-reporting-extension-manifest-version",
      flag_descriptions::kEnterpriseReportingExtensionManifestVersionName,

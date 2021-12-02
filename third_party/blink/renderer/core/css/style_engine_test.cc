@@ -145,15 +145,12 @@ class StyleEngineTest : public testing::Test {
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
-// It's currently not possible to use ScopedCSSContainerQueriesForTest in
-// individual tests. CSSContainerQueries implies LayoutNGGrid, and
-// LayoutNGGrid needs to be enabled early (before StyleResolver::InitialStyle
-// is created, probably). Otherwise assumptions made by e.g.
-// GridTrackList::AssignFrom do not hold.
 class StyleEngineContainerQueryTest : public StyleEngineTest,
-                                      private ScopedCSSContainerQueriesForTest {
+                                      private ScopedCSSContainerQueriesForTest,
+                                      private ScopedLayoutNGForTest {
  public:
-  StyleEngineContainerQueryTest() : ScopedCSSContainerQueriesForTest(true) {}
+  StyleEngineContainerQueryTest()
+      : ScopedCSSContainerQueriesForTest(true), ScopedLayoutNGForTest(true) {}
 };
 
 void StyleEngineTest::SetUp() {
@@ -2551,14 +2548,11 @@ TEST_F(StyleEngineTest, PseudoElementBaseComputedStyle) {
   ASSERT_TRUE(before->GetComputedStyle());
   EXPECT_TRUE(before->GetComputedStyle()->GetBaseComputedStyle());
 #if !DCHECK_IS_ON()
-  // TODO(crbug.com/1180159): @container and transitions properly.
-  if (!RuntimeEnabledFeatures::CSSContainerQueriesEnabled()) {
-    // When DCHECK is enabled, BaseComputedStyle() returns null and we
-    // repeatedly create new instances which means the pointers will be
-    // different here.
-    EXPECT_EQ(base_computed_style,
-              before->GetComputedStyle()->GetBaseComputedStyle());
-  }
+  // When DCHECK is enabled, ShouldComputeBaseComputedStyle always returns true
+  // and we repeatedly create new instances which means the pointers will be
+  // different here.
+  EXPECT_EQ(base_computed_style,
+            before->GetComputedStyle()->GetBaseComputedStyle());
 #endif
 }
 
@@ -3948,6 +3942,7 @@ TEST_F(StyleEngineTest, ContainerRelativeUnitsRuntimeFlag) {
   )CSS";
 
   {
+    ScopedCSSContainerQueriesForTest cq_feature(false);
     ScopedCSSContainerRelativeUnitsForTest feature(false);
     const CSSPropertyValueSet* set =
         css_test_helpers::ParseDeclarationBlock(css);
@@ -3957,6 +3952,7 @@ TEST_F(StyleEngineTest, ContainerRelativeUnitsRuntimeFlag) {
   }
 
   {
+    ScopedCSSContainerQueriesForTest cq_feature(false);
     ScopedCSSContainerRelativeUnitsForTest feature(true);
     const CSSPropertyValueSet* set =
         css_test_helpers::ParseDeclarationBlock(css);

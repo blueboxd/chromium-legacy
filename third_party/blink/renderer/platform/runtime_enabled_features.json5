@@ -281,7 +281,14 @@
     },
     {
       name: "BarcodeDetector",
-      status: "stable",
+      status: {
+        // Built-in barcode detection APIs are only available from some
+        // platforms. See //services/shape_detection.
+        "Android": "stable",
+        "ChromeOS": "stable",
+        "Mac": "stable",
+        "default": "test",
+      },
     },
     {
       // https://github.com/chrishtr/battery-savings/blob/master/explainer.md
@@ -451,7 +458,7 @@
     },
     {
       name: "ContainIntrinsicSizeAuto",
-      status: "test",
+      status: "stable",
     },
     {
       name: "ContentIndex",
@@ -559,6 +566,7 @@
     {
       // https://drafts.csswg.org/css-contain-3/#container-queries
       name: "CSSContainerQueries",
+      status: "test"
     },
     {
       // https://drafts.csswg.org/css-contain-3/#container-lengths
@@ -1249,7 +1257,7 @@
       // provides a convenient way for testing legacy layout code path in blink
       // unit tests.
       name: "LayoutNG",
-      implied_by: ["BidiCaretAffinity", "CSSContainerQueries"],
+      implied_by: ["BidiCaretAffinity"],
       status: "stable",
     },
     {

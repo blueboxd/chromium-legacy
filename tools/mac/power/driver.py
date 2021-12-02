@@ -2,14 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import ctypes
 import json
 import logging
 import os
+import signal
 import subprocess
 import sys
 import time
 import typing
-import ctypes
 
 import browsers
 import scenarios
@@ -116,33 +117,30 @@ class DriverContext:
 
     self.WriteScenarioSummary(scenario_driver)
 
-    output_file = \
-        f'{self._output_dir}/{scenario_driver.name}_powermetrics.plist'
+    output_file = os.path.join(self._output_dir, scenario_driver.name,
+                               "powermetrics.plist")
 
     powermetrics_process = None
     try:
       scenario_driver.Launch()
-      with open(output_file, "w") as powermetrics_output:
+      powermetrics_args = [
+          "sudo", "powermetrics", "-f", "plist", "--samplers",
+          "tasks,cpu_power,gpu_power,thermal,disk,network",
+          "--show-process-coalition", "--show-process-gpu",
+          "--show-process-energy", "-i", "10000", "--output-file", output_file
+      ]
 
-        # TODO(crbug.com/1224994): Narrow down samplers to only those of
-        # interest.
-        powermetrics_args = [
-            "sudo", "powermetrics", "-f", "plist", "--samplers", "all",
-            "--show-responsible-pid", "--show-process-gpu",
-            "--show-process-energy", "-i", "60000"
-        ]
-
-        powermetrics_process = subprocess.Popen(powermetrics_args,
-                                                stdout=powermetrics_output,
-                                                stdin=subprocess.PIPE)
-
-        # No need to add |scenario_process| to |self._started_processeds| as
-        # it's explicitly waited on.
-        scenario_driver.Wait()
+      powermetrics_process = subprocess.Popen(powermetrics_args,
+                                              stdout=subprocess.PIPE,
+                                              stdin=subprocess.PIPE)
+      scenario_driver.Wait()
 
     finally:
       scenario_driver.TearDown()
+
       if powermetrics_process:
+        # Force powermetrics to flush data.
+        utils.SendSignalToRootProcess(powermetrics_process, signal.SIGIO)
         utils.TerminateRootProcess(powermetrics_process)
 
   def Profile(self, scenario_driver: scenarios.ScenarioWithBrowserOSADriver,
@@ -166,8 +164,8 @@ class DriverContext:
 
     self.WriteScenarioSummary(scenario_driver)
 
-    dtraces_output_dir = os.path.join(
-        self._output_dir, f"{scenario_driver.name}_dtraces_{profile_mode}")
+    dtraces_output_dir = os.path.join(self._output_dir, scenario_driver.name,
+                                      f"dtraces_{profile_mode}")
     os.makedirs(dtraces_output_dir, exist_ok=True)
     scenario_driver.Launch()
     browser_process = scenario_driver.browser.browser_process
@@ -180,9 +178,8 @@ class DriverContext:
 
     try:
       with open(
-          os.path.join(self._output_dir,
-                       f'{scenario_driver.name}_dtrace_{profile_mode}_log.txt'),
-          "w") as dtrace_log:
+          os.path.join(self._output_dir, scenario_driver.name,
+                       f'dtrace_{profile_mode}_log.txt'), "w") as dtrace_log:
         # Keep looking for child processes as long as the scenario is running.
         while scenario_driver.IsRunning():
 
@@ -231,8 +228,9 @@ class DriverContext:
     """Outputs a json file describing `scenario_driver` arguments into the
         output directory
     """
-    print(self._output_dir, f'{scenario_driver.name}_summary.json')
+    os.makedirs(os.path.join(self._output_dir, scenario_driver.name),
+                exist_ok=True)
     with open(
-        os.path.join(self._output_dir, f'{scenario_driver.name}_summary.json'),
+        os.path.join(self._output_dir, scenario_driver.name, 'metadata.json'),
         'w') as summary_file:
       json.dump(scenario_driver.Summary(), summary_file, indent=2)

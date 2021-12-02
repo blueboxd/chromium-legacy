@@ -34,13 +34,17 @@
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wallpaper/wallpaper_window_state_manager.h"
+#include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -411,6 +415,33 @@ base::FilePath GetExistingOnlineWallpaperPath(const std::string& url) {
   return base::FilePath();
 }
 
+// Checks the file paths for the given online wallpaper variants. Return empty
+// map if not all paths are available.
+base::flat_map<std::string, base::FilePath> GetOnlineWallpaperVariantPaths(
+    const std::vector<OnlineWallpaperVariant>& variants) {
+  base::flat_map<std::string, base::FilePath> url_to_file_path_map;
+  WallpaperControllerImpl::WallpaperResolution resolution =
+      GetAppropriateResolution();
+
+  for (const auto& variant : variants) {
+    const std::string& url = variant.url.spec();
+    base::FilePath variant_path = GetOnlineWallpaperPath(url, resolution);
+    base::FilePath large_variant_path = GetOnlineWallpaperPath(
+        url, WallpaperControllerImpl::WALLPAPER_RESOLUTION_LARGE);
+    if (base::PathExists(variant_path)) {
+      url_to_file_path_map[url] = variant_path;
+    } else if (resolution ==
+                   WallpaperControllerImpl::WALLPAPER_RESOLUTION_SMALL &&
+               base::PathExists(large_variant_path)) {
+      // Falls back to the large wallpaper if the small one doesn't exist.
+      url_to_file_path_map[url] = large_variant_path;
+    } else {
+      return base::flat_map<std::string, base::FilePath>();
+    }
+  }
+  return url_to_file_path_map;
+}
+
 // Saves the online wallpaper with both large and small sizes to local file
 // system.
 void SaveOnlineWallpaper(const std::string& url,
@@ -475,6 +506,50 @@ user_manager::UserType GetUserType(const AccountId& id) {
   return user_manager::USER_TYPE_REGULAR;
 }
 
+// Populates online wallpaper related info in |info|.
+void PopulateOnlineWallpaperInfo(WallpaperInfo* info,
+                                 const base::Value& info_dict) {
+  const std::string* asset_id_str = info_dict.FindStringPath(
+      WallpaperControllerImpl::kNewWallpaperAssetIdNodeName);
+  const std::string* collection_id = info_dict.FindStringPath(
+      WallpaperControllerImpl::kNewWallpaperCollectionIdNodeName);
+  const std::string* unit_id_str = info_dict.FindStringPath(
+      WallpaperControllerImpl::kNewWallpaperUnitIdNodeName);
+  const base::Value* variant_list = info_dict.FindListPath(
+      WallpaperControllerImpl::kNewWallpaperVariantListNodeName);
+
+  info->collection_id = collection_id ? *collection_id : std::string();
+  if (asset_id_str) {
+    uint64_t asset_id;
+    if (base::StringToUint64(*asset_id_str, &asset_id))
+      info->asset_id = absl::make_optional(asset_id);
+  }
+  if (unit_id_str) {
+    uint64_t unit_id;
+    if (base::StringToUint64(*unit_id_str, &unit_id))
+      info->unit_id = absl::make_optional(unit_id);
+  }
+  if (variant_list) {
+    std::vector<OnlineWallpaperVariant> variants;
+    for (const auto& variant_info : variant_list->GetList()) {
+      const std::string* variant_asset_id_str = variant_info.FindStringPath(
+          WallpaperControllerImpl::kNewWallpaperAssetIdNodeName);
+      const std::string* url = variant_info.FindStringPath(
+          WallpaperControllerImpl::kOnlineWallpaperUrlNodeName);
+      absl::optional<int> type = variant_info.FindIntPath(
+          WallpaperControllerImpl::kOnlineWallpaperTypeNodeName);
+      if (variant_asset_id_str && url && type.has_value()) {
+        uint64_t variant_asset_id;
+        if (base::StringToUint64(*variant_asset_id_str, &variant_asset_id))
+          variants.emplace_back(OnlineWallpaperVariant(
+              variant_asset_id, GURL(*url),
+              static_cast<backdrop::Image::ImageType>(type.value())));
+      }
+    }
+    info->variants = std::move(variants);
+  }
+}
+
 bool GetWallpaperInfo(const AccountId& account_id,
                       const PrefService* const pref_service,
                       const std::string& pref_name,
@@ -489,10 +564,6 @@ bool GetWallpaperInfo(const AccountId& account_id,
     return false;
 
   // Use temporary variables to keep |info| untouched in the error case.
-  const std::string* asset_id_str = info_dict->FindStringPath(
-      WallpaperControllerImpl::kNewWallpaperAssetIdNodeName);
-  const std::string* collection_id = info_dict->FindStringPath(
-      WallpaperControllerImpl::kNewWallpaperCollectionIdNodeName);
   const std::string* location = info_dict->FindStringPath(
       WallpaperControllerImpl::kNewWallpaperLocationNodeName);
   absl::optional<int> layout = info_dict->FindIntPath(
@@ -513,12 +584,7 @@ bool GetWallpaperInfo(const AccountId& account_id,
   info->layout = static_cast<WallpaperLayout>(layout.value());
   info->type = static_cast<WallpaperType>(type.value());
   info->date = base::Time::FromInternalValue(date_val);
-  info->collection_id = collection_id ? *collection_id : std::string();
-  if (asset_id_str) {
-    uint64_t asset_id;
-    if (base::StringToUint64(*asset_id_str, &asset_id))
-      info->asset_id = absl::make_optional(asset_id);
-  }
+  PopulateOnlineWallpaperInfo(info, *info_dict);
   return true;
 }
 
@@ -536,6 +602,29 @@ bool SetWallpaperInfo(const AccountId& account_id,
         WallpaperControllerImpl::kNewWallpaperAssetIdNodeName,
         base::NumberToString(info.asset_id.value()));
   }
+  if (info.unit_id.has_value()) {
+    wallpaper_info_dict.SetStringPath(
+        WallpaperControllerImpl::kNewWallpaperUnitIdNodeName,
+        base::NumberToString(info.unit_id.value()));
+  }
+  base::Value online_wallpaper_variant_list(base::Value::Type::LIST);
+  for (const auto& variant : info.variants) {
+    base::Value online_wallpaper_variant_dict(base::Value::Type::DICTIONARY);
+    online_wallpaper_variant_dict.SetStringPath(
+        WallpaperControllerImpl::kNewWallpaperAssetIdNodeName,
+        base::NumberToString(variant.asset_id));
+    online_wallpaper_variant_dict.SetStringPath(
+        WallpaperControllerImpl::kOnlineWallpaperUrlNodeName,
+        variant.url.spec());
+    online_wallpaper_variant_dict.SetIntPath(
+        WallpaperControllerImpl::kOnlineWallpaperTypeNodeName,
+        static_cast<int>(variant.type));
+    online_wallpaper_variant_list.Append(
+        std::move(online_wallpaper_variant_dict));
+  }
+  wallpaper_info_dict.SetKey(
+      WallpaperControllerImpl::kNewWallpaperVariantListNodeName,
+      std::move(online_wallpaper_variant_list));
   wallpaper_info_dict.SetStringPath(
       WallpaperControllerImpl::kNewWallpaperCollectionIdNodeName,
       info.collection_id);
@@ -576,6 +665,13 @@ const char WallpaperControllerImpl::kNewWallpaperDateNodeName[] = "date";
 const char WallpaperControllerImpl::kNewWallpaperLayoutNodeName[] = "layout";
 const char WallpaperControllerImpl::kNewWallpaperLocationNodeName[] = "file";
 const char WallpaperControllerImpl::kNewWallpaperTypeNodeName[] = "type";
+const char WallpaperControllerImpl::kNewWallpaperUnitIdNodeName[] = "unit_id";
+const char WallpaperControllerImpl::kNewWallpaperVariantListNodeName[] =
+    "variants";
+
+const char WallpaperControllerImpl::kOnlineWallpaperTypeNodeName[] =
+    "online_image_type";
+const char WallpaperControllerImpl::kOnlineWallpaperUrlNodeName[] = "url";
 
 WallpaperControllerImpl::WallpaperControllerImpl(PrefService* local_state)
     : color_profiles_(GetProminentColorProfiles()),
@@ -1019,9 +1115,7 @@ void WallpaperControllerImpl::SetCustomWallpaper(
     reload_preview_wallpaper_callback_ = base::BindRepeating(
         &WallpaperControllerImpl::ShowWallpaperImage,
         weak_factory_.GetWeakPtr(), image,
-        WallpaperInfo{/*in_location=*/std::string(),
-                      /*in_asset_id=*/absl::nullopt,
-                      /*in_collection_id=*/std::string(), layout,
+        WallpaperInfo{/*in_location=*/std::string(), layout,
                       WallpaperType::kCustomized, base::Time::Now()},
         /*preview_mode=*/true, /*always_on_top=*/false);
     // Show the preview wallpaper.
@@ -1082,12 +1176,24 @@ void WallpaperControllerImpl::SetOnlineWallpaperIfExists(
     }
   }
 
-  base::PostTaskAndReplyWithResult(
-      sequenced_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&GetExistingOnlineWallpaperPath, params.url.spec()),
-      base::BindOnce(&WallpaperControllerImpl::SetOnlineWallpaperFromPath,
-                     set_wallpaper_weak_factory_.GetWeakPtr(),
-                     std::move(callback), params));
+  if (params.variants.empty()) {
+    // |params.variants| can be empty for users who use the old wallpaper
+    // picker. If that's the case, just follow the old flow.
+    base::PostTaskAndReplyWithResult(
+        sequenced_task_runner_.get(), FROM_HERE,
+        base::BindOnce(&GetExistingOnlineWallpaperPath, params.url.spec()),
+        base::BindOnce(&WallpaperControllerImpl::SetOnlineWallpaperFromPath,
+                       set_wallpaper_weak_factory_.GetWeakPtr(),
+                       std::move(callback), params));
+  } else {
+    base::PostTaskAndReplyWithResult(
+        sequenced_task_runner_.get(), FROM_HERE,
+        base::BindOnce(&GetOnlineWallpaperVariantPaths, params.variants),
+        base::BindOnce(
+            &WallpaperControllerImpl::SetOnlineWallpaperFromVariantPaths,
+            set_wallpaper_weak_factory_.GetWeakPtr(), std::move(callback),
+            params));
+  }
 }
 
 void WallpaperControllerImpl::SetOnlineWallpaperFromData(
@@ -1338,11 +1444,8 @@ void WallpaperControllerImpl::ShowSigninWallpaper() {
 void WallpaperControllerImpl::ShowOneShotWallpaper(
     const gfx::ImageSkia& image) {
   const WallpaperInfo info = {/*in_location=*/std::string(),
-                              /*in_asset_id=*/absl::nullopt,
-                              /*in_collection_id=*/std::string(),
                               WallpaperLayout::WALLPAPER_LAYOUT_STRETCH,
-                              WallpaperType::kOneShot,
-                              base::Time::Now()};
+                              WallpaperType::kOneShot, base::Time::Now()};
   ShowWallpaperImage(image, info, /*preview_mode=*/false,
                      /*always_on_top=*/false);
 }
@@ -1351,11 +1454,8 @@ void WallpaperControllerImpl::ShowAlwaysOnTopWallpaper(
     const base::FilePath& image_path) {
   is_always_on_top_wallpaper_ = true;
   const WallpaperInfo info = {/*in_location=*/std::string(),
-                              /*in_asset_id=*/absl::nullopt,
-                              /*in_collection_id=*/std::string(),
                               WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
-                              WallpaperType::kOneShot,
-                              base::Time::Now()};
+                              WallpaperType::kOneShot, base::Time::Now()};
   ReparentWallpaper(GetWallpaperContainerId(locked_));
   ReadAndDecodeWallpaper(
       base::BindOnce(&WallpaperControllerImpl::OnAlwaysOnTopWallpaperDecoded,
@@ -1600,13 +1700,13 @@ void WallpaperControllerImpl::OnColorModeChanged(bool dark_mode_enabled) {
     case WallpaperType::kDaily:
     case WallpaperType::kOnline: {
       // TODO(b/205035933): Handle setting the right variant.
-      std::vector<OnlineWallpaperVariant> variants;
       SetOnlineWallpaper(
-          OnlineWallpaperParams{
-              account_id, local_info.asset_id, GURL(local_info.location),
-              local_info.collection_id, local_info.layout,
-              /*preview_mode=*/false,
-              /*from_user=*/false, daily_refresh_enabled, variants},
+          OnlineWallpaperParams{account_id, local_info.asset_id,
+                                GURL(local_info.location),
+                                local_info.collection_id, local_info.layout,
+                                /*preview_mode=*/false,
+                                /*from_user=*/false, daily_refresh_enabled,
+                                local_info.unit_id, local_info.variants},
           base::DoNothing());
       break;
     }
@@ -1922,11 +2022,8 @@ bool WallpaperControllerImpl::SetDefaultWallpaperInfo(
     const AccountId& account_id,
     const base::Time& date) {
   const WallpaperInfo info = {/*in_location=*/std::string(),
-                              /*in_asset_id=*/absl::nullopt,
-                              /*in_collection_id=*/std::string(),
                               WALLPAPER_LAYOUT_CENTER_CROPPED,
-                              WallpaperType::kDefault,
-                              date};
+                              WallpaperType::kDefault, date};
   return SetUserWallpaperInfo(account_id, info);
 }
 
@@ -1945,6 +2042,22 @@ void WallpaperControllerImpl::SetOnlineWallpaperFromPath(
                      set_wallpaper_weak_factory_.GetWeakPtr(), params,
                      /*save_file=*/false, std::move(callback)),
       sequenced_task_runner_, file_path);
+}
+
+void WallpaperControllerImpl::SetOnlineWallpaperFromVariantPaths(
+    SetOnlineWallpaperCallback callback,
+    const OnlineWallpaperParams& params,
+    const base::flat_map<std::string, base::FilePath>& url_to_file_path_map) {
+  if (url_to_file_path_map.empty()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  ReadAndDecodeWallpaper(
+      base::BindOnce(&WallpaperControllerImpl::OnOnlineWallpaperDecoded,
+                     set_wallpaper_weak_factory_.GetWeakPtr(), params,
+                     /*save_file=*/false, std::move(callback)),
+      sequenced_task_runner_, url_to_file_path_map.at(params.url.spec()));
 }
 
 void WallpaperControllerImpl::OnOnlineWallpaperDecoded(
@@ -1976,9 +2089,7 @@ void WallpaperControllerImpl::OnOnlineWallpaperDecoded(
         weak_factory_.GetWeakPtr(), params, image, /*show_wallpaper=*/false);
     reload_preview_wallpaper_callback_ = base::BindRepeating(
         &WallpaperControllerImpl::ShowWallpaperImage,
-        weak_factory_.GetWeakPtr(), image,
-        WallpaperInfo{params.url.spec(), params.asset_id, params.collection_id,
-                      params.layout, WallpaperType::kOnline, base::Time::Now()},
+        weak_factory_.GetWeakPtr(), image, WallpaperInfo(params),
         /*preview_mode=*/true, /*always_on_top=*/false);
     // Show the preview wallpaper.
     reload_preview_wallpaper_callback_.Run();
@@ -1991,14 +2102,7 @@ void WallpaperControllerImpl::SetOnlineWallpaperImpl(
     const OnlineWallpaperParams& params,
     const gfx::ImageSkia& image,
     bool show_wallpaper) {
-  WallpaperInfo wallpaper_info = {params.url.spec(),
-                                  params.asset_id,
-                                  params.collection_id,
-                                  params.layout,
-                                  params.daily_refresh_enabled
-                                      ? WallpaperType::kDaily
-                                      : WallpaperType::kOnline,
-                                  base::Time::Now()};
+  WallpaperInfo wallpaper_info = WallpaperInfo(params);
   if (!SetUserWallpaperInfo(params.account_id, wallpaper_info)) {
     LOG(ERROR) << "Setting user wallpaper info fails. This should never happen "
                   "except in tests.";
@@ -2087,9 +2191,7 @@ void WallpaperControllerImpl::OnDefaultWallpaperDecoded(
   }
 
   if (show_wallpaper) {
-    WallpaperInfo info(cached_default_wallpaper_.file_path.value(),
-                       /*in_asset_id=*/absl::nullopt,
-                       /*in_collection_id=*/std::string(), layout,
+    WallpaperInfo info(cached_default_wallpaper_.file_path.value(), layout,
                        WallpaperType::kDefault, base::Time::Now());
     ShowWallpaperImage(cached_default_wallpaper_.image, info,
                        /*preview_mode=*/false, /*always_on_top=*/false);
@@ -2146,12 +2248,7 @@ void WallpaperControllerImpl::SaveAndSetWallpaperWithCompletionFilesId(
       base::FilePath(wallpaper_files_id).Append(file_name).value();
   // User's custom wallpaper path is determined by relative path and the
   // appropriate wallpaper resolution.
-  WallpaperInfo info = {relative_path,
-                        /*in_asset_id=*/absl::nullopt,
-                        /*in_collection_id=*/std::string(),
-                        layout,
-                        type,
-                        base::Time::Now()};
+  WallpaperInfo info = {relative_path, layout, type, base::Time::Now()};
   if (!SetUserWallpaperInfo(account_id, info)) {
     LOG(ERROR) << "Setting user wallpaper info fails. This should never happen "
                   "except in tests.";
@@ -2403,11 +2500,8 @@ void WallpaperControllerImpl::OnDevicePolicyWallpaperDecoded(
     SetDefaultWallpaperImpl(EmptyAccountId(), /*show_wallpaper=*/true);
   } else {
     WallpaperInfo info = {device_policy_wallpaper_path_.value(),
-                          /*in_asset_id=*/absl::nullopt,
-                          /*in_collection_id=*/std::string(),
                           WALLPAPER_LAYOUT_CENTER_CROPPED,
-                          WallpaperType::kDevice,
-                          base::Time::Now()};
+                          WallpaperType::kDevice, base::Time::Now()};
     ShowWallpaperImage(image, info, /*preview_mode=*/false,
                        /*always_on_top=*/false);
   }
@@ -2476,13 +2570,13 @@ void WallpaperControllerImpl::HandleWallpaperInfoSyncedIn(
       break;
     case WallpaperType::kOnline: {
       // TODO(b/205035933): Retrieve online wallpaper variants.
-      std::vector<OnlineWallpaperVariant> variants;
       SetOnlineWallpaper(
           OnlineWallpaperParams{account_id, info.asset_id, GURL(info.location),
                                 info.collection_id, info.layout,
                                 /*preview_mode=*/false,
                                 /*from_user=*/false,
-                                /*daily_refresh_enabled=*/false, variants},
+                                /*daily_refresh_enabled=*/false, info.unit_id,
+                                info.variants},
           base::DoNothing());
       break;
     }
@@ -2505,12 +2599,74 @@ void WallpaperControllerImpl::OnAttemptSetOnlineWallpaper(
     std::move(callback).Run(true);
     return;
   }
-  std::string url = params.url.spec() + GetBackdropWallpaperSuffix();
-  ImageDownloader::Get()->Download(
-      GURL(url), NO_TRAFFIC_ANNOTATION_YET,
-      base::BindOnce(&WallpaperControllerImpl::OnOnlineWallpaperDecoded,
-                     set_wallpaper_weak_factory_.GetWeakPtr(), params,
-                     /*save_file=*/true, std::move(callback)));
+
+  const std::vector<OnlineWallpaperVariant>& variants = params.variants;
+  if (variants.empty()) {
+    // |variants| can be empty for users who have just migrated from the old
+    // wallpaper picker to the new one.
+    std::string url = params.url.spec() + GetBackdropWallpaperSuffix();
+    ImageDownloader::Get()->Download(
+        GURL(url), NO_TRAFFIC_ANNOTATION_YET,
+        base::BindOnce(&WallpaperControllerImpl::OnOnlineWallpaperDecoded,
+                       set_wallpaper_weak_factory_.GetWeakPtr(), params,
+                       /*save_file=*/true, std::move(callback)));
+  } else {
+    // Start fetching the wallpaper variants.
+    url_to_image_map_.clear();
+    auto on_done = base::BarrierClosure(
+        variants.size(),
+        base::BindOnce(
+            &WallpaperControllerImpl::OnAllOnlineWallpaperVariantsDownloaded,
+            weak_factory_.GetWeakPtr(), params, std::move(callback)));
+
+    for (size_t i = 0; i < variants.size(); i++) {
+      ImageDownloader::Get()->Download(
+          GURL(variants.at(i).url), NO_TRAFFIC_ANNOTATION_YET,
+          base::BindOnce(
+              &WallpaperControllerImpl::OnOnlineWallpaperVariantDownloaded,
+              set_wallpaper_weak_factory_.GetWeakPtr(), params, on_done,
+              /*current_index=*/i));
+    }
+  }
+}
+
+void WallpaperControllerImpl::OnOnlineWallpaperVariantDownloaded(
+    const OnlineWallpaperParams& params,
+    base::RepeatingClosure on_done,
+    size_t current_index,
+    const gfx::ImageSkia& image) {
+  if (image.isNull()) {
+    std::move(on_done).Run();
+    return;
+  }
+
+  const std::vector<OnlineWallpaperVariant>& variants = params.variants;
+  const OnlineWallpaperVariant& current_variant = variants.at(current_index);
+  // Keep track of each downloaded image.
+  url_to_image_map_.insert({current_variant.url.spec(), image});
+
+  // Save the image to disk.
+  image.EnsureRepsForSupportedScales();
+  gfx::ImageSkia deep_copy(image.DeepCopy());
+  sequenced_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SaveOnlineWallpaper, current_variant.url.spec(),
+                     params.layout, deep_copy));
+  std::move(on_done).Run();
+}
+
+void WallpaperControllerImpl::OnAllOnlineWallpaperVariantsDownloaded(
+    const OnlineWallpaperParams& params,
+    SetOnlineWallpaperCallback callback) {
+  bool success = url_to_image_map_.size() == params.variants.size() &&
+                 !url_to_image_map_.at(params.url.spec()).isNull();
+  if (!success) {
+    std::move(callback).Run(success);
+    return;
+  }
+
+  OnOnlineWallpaperDecoded(params, /*save_file=*/false, std::move(callback),
+                           url_to_image_map_.at(params.url.spec()));
 }
 
 constexpr bool WallpaperControllerImpl::IsWallpaperTypeSyncable(
@@ -2632,11 +2788,13 @@ void WallpaperControllerImpl::SetDailyWallpaper(
     // TODO(b/205035933): Retrieve online wallpaper variants for the daily
     // wallpaper.
     std::vector<OnlineWallpaperVariant> variants;
+    absl::optional<uint64_t> unit_id;
     SetOnlineWallpaper(
         OnlineWallpaperParams{account_id, asset_id, GURL(image_url),
                               collection_id, layout, preview_mode,
                               /*from_user=*/false,
-                              /*daily_refresh_enabled=*/true, variants},
+                              /*daily_refresh_enabled=*/true, unit_id,
+                              variants},
         base::BindOnce(&WallpaperControllerImpl::OnSetDailyWallpaper,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   } else {

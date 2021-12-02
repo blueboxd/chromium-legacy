@@ -4,9 +4,11 @@
 
 import abc
 import logging
+import os
+import plistlib
 import subprocess
 import time
-import os
+import typing
 
 import utils
 
@@ -15,10 +17,11 @@ class BrowserDriver(abc.ABC):
   """Abstract Base Class encapsulating browser setup and tear down.
   """
 
-  def __init__(self, browser_name: str, process_name: str):
+  def __init__(self, browser_name: str, process_name: str, executable: str):
     self.name = browser_name
     self.process_name = process_name
     self.browser_process = None
+    self.executable = executable
 
   @abc.abstractmethod
   def Launch(self):
@@ -33,6 +36,28 @@ class BrowserDriver(abc.ABC):
     if self.browser_process:
       utils.TerminateProcess(self.browser_process)
 
+  def GetApplicationInfo(self) -> typing.Dict:
+    """ Returns the Info.plist data in the application folder. """
+    # `executable` may be either a path or an identifier.
+    if os.path.splitext(self.executable)[1]:
+      executable_path = self.executable
+    else:
+      executable_path = os.path.join("/Applications", f"{self.executable}.app")
+
+    plist_path = os.path.join(executable_path, "Contents", "Info.plist")
+    with open(plist_path, 'rb') as plist_file:
+      return plistlib.load(plist_file)
+
+  def Summary(self):
+    """Returns a dictionary describing the browser.
+    """
+    info = self.GetApplicationInfo()
+    return {
+        'name': self.name,
+        'version': info['CFBundleShortVersionString'],
+        'identifier': info['CFBundleIdentifier']
+    }
+
   def _EnsureStarted(self):
     """Waits until a browser with the given `process_name` is running.
     """
@@ -45,7 +70,7 @@ class BrowserDriver(abc.ABC):
 
 class SafariDriver(BrowserDriver):
   def __init__(self, extra_args=[]):
-    super().__init__("safari", "Safari")
+    super().__init__("safari", "Safari", "Safari")
     self.extra_args = extra_args
 
   def Launch(self):
@@ -68,11 +93,11 @@ class ChromiumDriver(BrowserDriver):
                process_name: str,
                executable_path=None,
                extra_args=[]):
-    super().__init__(browser_name, process_name)
     if executable_path:
-      self.executable = executable_path
+      executable = executable_path
     else:
-      self.executable = process_name
+      executable = process_name
+    super().__init__(browser_name, process_name, executable)
     self.extra_args = extra_args
 
   def Launch(self):
@@ -81,6 +106,17 @@ class ChromiumDriver(BrowserDriver):
                     self.extra_args)
 
     self._EnsureStarted()
+
+  def Summary(self):
+    """Returns a dictionary describing the browser.
+    """
+    info = self.GetApplicationInfo()
+    return {
+        'name': self.name,
+        'identifier': info['CFBundleIdentifier'],
+        'version': info['CFBundleShortVersionString'],
+        'commit': info['SCMRevision']
+    }
 
 
 # Helper functions to get default browser configurations.
@@ -91,19 +127,22 @@ def Safari():
 
 
 def Chrome(extra_args=[]):
-  return ChromiumDriver("chrome", "Google Chrome", extra_args)
+  return ChromiumDriver("chrome", "Google Chrome", extra_args=extra_args)
 
 
 def Canary(extra_args=[]):
-  return ChromiumDriver("canary", "Google Chrome Canary", extra_args)
+  return ChromiumDriver("canary", "Google Chrome Canary", extra_args=extra_args)
 
 
 def Chromium(executable_path=None, extra_args=[]):
-  return ChromiumDriver("chromium", "Chromium", executable_path, extra_args)
+  return ChromiumDriver("chromium",
+                        "Chromium",
+                        executable_path=executable_path,
+                        extra_args=extra_args)
 
 
 def Edge(extra_args=[]):
-  return ChromiumDriver("edge", "Microsoft Edge", extra_args)
+  return ChromiumDriver("edge", "Microsoft Edge", extra_args=extra_args)
 
 
 PROCESS_NAMES = [
@@ -131,7 +170,7 @@ def MakeBrowserDriver(browser_name: str,
     else:
       chrome_extra_arg = ["--guest"]
     if browser_name == "chrome":
-      return Chrome(chrome_extra_arg)
+      return Chrome(extra_args=chrome_extra_arg)
     elif browser_name == "chromium":
       return Chromium(executable_path=chromium_path,
                       extra_args=chrome_extra_arg)

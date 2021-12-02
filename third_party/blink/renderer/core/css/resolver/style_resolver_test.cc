@@ -63,9 +63,11 @@ class StyleResolverTest : public PageTestBase {
 };
 
 class StyleResolverTestCQ : public StyleResolverTest,
-                            public ScopedCSSContainerQueriesForTest {
+                            public ScopedCSSContainerQueriesForTest,
+                            public ScopedLayoutNGForTest {
  protected:
-  StyleResolverTestCQ() : ScopedCSSContainerQueriesForTest(true) {}
+  StyleResolverTestCQ()
+      : ScopedCSSContainerQueriesForTest(true), ScopedLayoutNGForTest(true) {}
 };
 
 TEST_F(StyleResolverTest, StyleForTextInDisplayNone) {
@@ -358,28 +360,6 @@ TEST_P(StyleResolverFontRelativeUnitTest,
 INSTANTIATE_TEST_SUITE_P(All,
                          StyleResolverFontRelativeUnitTest,
                          testing::Values("em", "rem", "ex", "ch"));
-
-// TODO(crbug.com/1180159): Remove this test when @container and transitions
-// work properly.
-TEST_F(StyleResolverTestCQ, BaseNotReusableWithContainerQueries) {
-  GetDocument().documentElement()->setInnerHTML("<div id=div>Test</div>");
-  UpdateAllLifecyclePhasesForTest();
-  Element* div = GetDocument().getElementById("div");
-
-  auto* effect = CreateSimpleKeyframeEffectForTest(div, CSSPropertyID::kWidth,
-                                                   "50px", "100px");
-  GetDocument().Timeline().Play(effect);
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_EQ("50px", ComputedValue("width", *StyleForId("div")));
-
-  div->SetNeedsAnimationStyleRecalc();
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  StyleForId("div");
-
-  StyleResolverState state(GetDocument(), *div);
-  EXPECT_FALSE(StyleResolver::CanReuseBaseComputedStyle(state));
-}
 
 namespace {
 
@@ -829,9 +809,7 @@ TEST_F(StyleResolverTest, CascadedValuesForPseudoElement) {
   EXPECT_EQ("1em", map.at(top)->CssText());
 }
 
-TEST_F(StyleResolverTest, CascadedValuesForElementInContainer) {
-  ScopedCSSContainerQueriesForTest scope(true);
-
+TEST_F(StyleResolverTestCQ, CascadedValuesForElementInContainer) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       #container { container-type: inline-size; }
@@ -861,9 +839,7 @@ TEST_F(StyleResolverTest, CascadedValuesForElementInContainer) {
   EXPECT_EQ("1em", map.at(top)->CssText());
 }
 
-TEST_F(StyleResolverTest, CascadedValuesForPseudoElementInContainer) {
-  ScopedCSSContainerQueriesForTest scope(true);
-
+TEST_F(StyleResolverTestCQ, CascadedValuesForPseudoElementInContainer) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       #container { container-type: inline-size; }

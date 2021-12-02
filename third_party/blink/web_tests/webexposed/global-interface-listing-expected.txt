@@ -537,11 +537,6 @@ interface BarProp
     attribute @@toStringTag
     getter visible
     method constructor
-interface BarcodeDetector
-    static method getSupportedFormats
-    attribute @@toStringTag
-    method constructor
-    method detect
 interface BaseAudioContext : EventTarget
     attribute @@toStringTag
     getter audioWorklet
@@ -702,6 +697,9 @@ interface CSSColorValue
 interface CSSConditionRule : CSSGroupingRule
     attribute @@toStringTag
     getter conditionText
+    method constructor
+interface CSSContainerRule : CSSConditionRule
+    attribute @@toStringTag
     method constructor
 interface CSSCounterStyleRule : CSSRule
     attribute @@toStringTag
@@ -11382,6 +11380,12 @@ namespace CSS
     method percent
     method pt
     method px
+    method qb
+    method qh
+    method qi
+    method qmax
+    method qmin
+    method qw
     method rad
     method registerProperty
     method rem

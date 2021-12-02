@@ -1663,7 +1663,7 @@ try_.chromium_mac_orchestrator_pair(
     compilator_os = os.MAC_11,
     compilator_name = "mac11-arm64-rel-compilator",
     # TODO (crbug/1271287): Revert when root issue is fixed
-    compilator_grace_period = 3 * time.minute,
+    compilator_grace_period = 4 * time.minute,
 )
 
 # NOTE: the following trybots aren't sensitive to Mac version on which
@@ -1968,11 +1968,13 @@ try_.chromium_win_orchestrator_pair(
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     main_list_view = "try",
-    orchestrator_cores = 4,
+    orchestrator_cores = "2|4",
     orchestrator_tryjob = try_.job(),
     compilator_cores = 32,
     compilator_goma_jobs = goma.jobs.J300,
     compilator_name = "win10_chromium_x64_rel_ng-compilator",
+    # TODO (crbug/1271287): Revert when root issue is fixed
+    compilator_grace_period = 3 * time.minute,
 )
 
 try_.chromium_win_builder(

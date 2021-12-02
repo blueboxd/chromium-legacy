@@ -53,8 +53,9 @@ NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(
                  &Node().GetDocument()),
       layout_info_for_devtools_(layout_info_for_devtools) {
   // TODO(almaher): Support multi-line and row fragmentation.
-  has_block_fragmentation_ = ConstraintSpace().HasBlockFragmentation() &&
-                             !is_horizontal_flow_ && !algorithm_.IsMultiline();
+  involved_in_block_fragmentation_ =
+      InvolvedInBlockFragmentation(container_builder_) &&
+      !is_horizontal_flow_ && !algorithm_.IsMultiline();
 }
 
 bool NGFlexLayoutAlgorithm::MainAxisIsInlineAxis(
@@ -398,8 +399,8 @@ NGConstraintSpace NGFlexLayoutAlgorithm::BuildSpaceForLayout(
     // into both the "measure" and "layout" cache slots. So the stretch
     // layout will reuse this "measure" result if it can.
     space_builder.SetCacheSlot(NGCacheSlot::kMeasure);
-  } else if (block_offset_for_fragmentation) {
-    DCHECK(ConstraintSpace().HasBlockFragmentation());
+  } else if (block_offset_for_fragmentation &&
+             ConstraintSpace().HasBlockFragmentation()) {
     if (min_block_size_should_encompass_intrinsic_size)
       space_builder.SetMinBlockSizeShouldEncompassIntrinsicSize();
     SetupSpaceBuilderForFragmentation(ConstraintSpace(), flex_item_node,
@@ -780,6 +781,9 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
           *result->GetEarlyBreak());
     case NGLayoutResult::kNeedsRelayoutWithNoChildScrollbarChanges:
       return RelayoutIgnoringChildScrollbarChanges();
+    case NGLayoutResult::kDisableFragmentation:
+      DCHECK(ConstraintSpace().HasBlockFragmentation());
+      return RelayoutWithoutFragmentation<NGFlexLayoutAlgorithm>();
     default:
       return result;
   }
@@ -808,18 +812,11 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
 
   PaintLayerScrollableArea::DelayScrollOffsetClampScope delay_clamp_scope;
 
-  // |total_intrinsic_block_size| is the intrinsic block size for the entire
-  // flex container, whereas |intrinsic_block_size_| is tracked during layout
-  // when fragmenting and is the intrinsic block size of the flex container in
-  // the current fragmentainer. When not fragmenting,
-  // |total_intrinsic_block_size| and |intrinsic_block_size_| will be
-  // equivalent.
-  LayoutUnit total_intrinsic_block_size;
   Vector<NGFlexLine> flex_line_outputs;
   bool use_empty_line_block_size;
   if (IsResumingLayout(BreakToken())) {
     auto& flex_data = BreakToken()->FlexData();
-    total_intrinsic_block_size = flex_data.intrinsic_block_size;
+    total_intrinsic_block_size_ = flex_data.intrinsic_block_size;
     flex_line_outputs = flex_data.flex_lines;
 
     use_empty_line_block_size =
@@ -829,12 +826,11 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
 
     use_empty_line_block_size =
         flex_line_outputs.IsEmpty() && Node().HasLineIfEmpty();
-    total_intrinsic_block_size =
-        CalculateTotalIntrinsicBlockSize(use_empty_line_block_size);
+    CalculateTotalIntrinsicBlockSize(use_empty_line_block_size);
   }
 
   total_block_size_ = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), BorderPadding(), total_intrinsic_block_size,
+      ConstraintSpace(), Style(), BorderPadding(), total_intrinsic_block_size_,
       container_builder_.InlineSize());
 
   if (!IsResumingLayout(BreakToken())) {
@@ -850,24 +846,25 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
     previously_consumed_block_size = BreakToken()->ConsumedBlockSize();
 
   intrinsic_block_size_ = BorderScrollbarPadding().block_start;
-  if (use_empty_line_block_size && ConstraintSpace().HasBlockFragmentation()) {
+  if (use_empty_line_block_size &&
+      InvolvedInBlockFragmentation(container_builder_)) {
     intrinsic_block_size_ =
-        (total_intrinsic_block_size - BorderScrollbarPadding().block_end -
+        (total_intrinsic_block_size_ - BorderScrollbarPadding().block_end -
          previously_consumed_block_size)
             .ClampNegativeToZero();
   }
 
-  if (has_block_fragmentation_) {
+  if (involved_in_block_fragmentation_) {
     NGLayoutResult::EStatus status =
-        GiveItemsFinalPositionAndSizeForFragmentation(
-            &flex_line_outputs, &total_intrinsic_block_size);
+        GiveItemsFinalPositionAndSizeForFragmentation(&flex_line_outputs);
     if (status != NGLayoutResult::kSuccess)
       return container_builder_.Abort(status);
   }
 
   LayoutUnit block_size;
-  if (has_block_fragmentation_ || (use_empty_line_block_size &&
-                                   ConstraintSpace().HasBlockFragmentation())) {
+  if (involved_in_block_fragmentation_ ||
+      (use_empty_line_block_size &&
+       InvolvedInBlockFragmentation(container_builder_))) {
     intrinsic_block_size_ = ClampIntrinsicBlockSize(
         ConstraintSpace(), Node(), BorderScrollbarPadding(),
         intrinsic_block_size_ + BorderScrollbarPadding().block_end);
@@ -877,7 +874,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
         previously_consumed_block_size + intrinsic_block_size_,
         container_builder_.InlineSize());
   } else {
-    intrinsic_block_size_ = total_intrinsic_block_size;
+    intrinsic_block_size_ = total_intrinsic_block_size_;
     block_size = total_block_size_;
   }
 
@@ -891,8 +888,12 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
     NGBreakStatus break_status = FinishFragmentation(
         Node(), ConstraintSpace(), BorderPadding().block_end,
         FragmentainerSpaceAtBfcStart(ConstraintSpace()), &container_builder_);
-    if (break_status == NGBreakStatus::kNeedsEarlierBreak)
-      return container_builder_.Abort(NGLayoutResult::kNeedsEarlierBreak);
+    if (break_status != NGBreakStatus::kContinue) {
+      if (break_status == NGBreakStatus::kNeedsEarlierBreak)
+        return container_builder_.Abort(NGLayoutResult::kNeedsEarlierBreak);
+      DCHECK_EQ(break_status, NGBreakStatus::kDisableFragmentation);
+      return container_builder_.Abort(NGLayoutResult::kDisableFragmentation);
+    }
   } else {
 #if DCHECK_IS_ON()
     // If we're not participating in a fragmentation context, no block
@@ -909,7 +910,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
   if (ConstraintSpace().HasBlockFragmentation()) {
     container_builder_.SetFlexBreakTokenData(
         std::make_unique<NGFlexBreakTokenData>(flex_line_outputs,
-                                               total_intrinsic_block_size));
+                                               total_intrinsic_block_size_));
   }
 
   // Un-freeze descendant scrollbars before we run the OOF layout part.
@@ -1018,18 +1019,18 @@ void NGFlexLayoutAlgorithm::PlaceFlexItems(
   }
 }
 
-LayoutUnit NGFlexLayoutAlgorithm::CalculateTotalIntrinsicBlockSize(
+void NGFlexLayoutAlgorithm::CalculateTotalIntrinsicBlockSize(
     bool use_empty_line_block_size) {
-  LayoutUnit total_intrinsic_block_size = BorderScrollbarPadding().block_start;
+  total_intrinsic_block_size_ = BorderScrollbarPadding().block_start;
 
   if (use_empty_line_block_size)
-    total_intrinsic_block_size += Node().EmptyLineBlockSize(BreakToken());
+    total_intrinsic_block_size_ += Node().EmptyLineBlockSize(BreakToken());
   else
-    total_intrinsic_block_size += algorithm_.IntrinsicContentBlockSize();
+    total_intrinsic_block_size_ += algorithm_.IntrinsicContentBlockSize();
 
-  return ClampIntrinsicBlockSize(
+  total_intrinsic_block_size_ = ClampIntrinsicBlockSize(
       ConstraintSpace(), Node(), BorderScrollbarPadding(),
-      total_intrinsic_block_size + BorderScrollbarPadding().block_end);
+      total_intrinsic_block_size_ + BorderScrollbarPadding().block_end);
 }
 
 void NGFlexLayoutAlgorithm::ApplyFinalAlignmentAndReversals(
@@ -1120,7 +1121,7 @@ NGLayoutResult::EStatus NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSize(
 
       NGBoxFragment fragment(ConstraintSpace().GetWritingDirection(),
                              physical_fragment);
-      if (!has_block_fragmentation_) {
+      if (!involved_in_block_fragmentation_) {
         container_builder_.AddResult(*layout_result,
                                      {location.X(), location.Y()});
 
@@ -1143,16 +1144,16 @@ NGLayoutResult::EStatus NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSize(
 
   // Set the baseline to the fallback, if we didn't find any children with
   // baseline alignment.
-  if (!has_block_fragmentation_ && !container_builder_.Baseline() &&
+  if (!involved_in_block_fragmentation_ && !container_builder_.Baseline() &&
       fallback_baseline)
     container_builder_.SetBaseline(*fallback_baseline);
 
   // TODO(crbug.com/1131352): Avoid control-specific handling.
   if (Node().IsButton()) {
-    DCHECK(!has_block_fragmentation_);
+    DCHECK(!involved_in_block_fragmentation_);
     AdjustButtonBaseline(final_content_cross_size);
   } else if (Node().IsSlider()) {
-    DCHECK(!has_block_fragmentation_);
+    DCHECK(!involved_in_block_fragmentation_);
     container_builder_.SetBaseline(BorderScrollbarPadding().BlockSum() +
                                    final_content_cross_size);
   }
@@ -1163,9 +1164,8 @@ NGLayoutResult::EStatus NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSize(
 
 NGLayoutResult::EStatus
 NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSizeForFragmentation(
-    Vector<NGFlexLine>* flex_line_outputs,
-    LayoutUnit* total_intrinsic_block_size) {
-  DCHECK(has_block_fragmentation_);
+    Vector<NGFlexLine>* flex_line_outputs) {
+  DCHECK(involved_in_block_fragmentation_);
 
   absl::optional<LayoutUnit> fallback_baseline;
   NGFlexItemIterator item_iterator(*flex_line_outputs, BreakToken());
@@ -1236,7 +1236,7 @@ NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSizeForFragmentation(
     // TODO(almaher): Special break behavior will be needed for row flex
     // containers.
     NGBreakStatus break_status = NGBreakStatus::kContinue;
-    if (!early_break_) {
+    if (!early_break_ && ConstraintSpace().HasBlockFragmentation()) {
       bool has_container_separation =
           last_line_idx_to_process_first_child_ == flex_line_idx;
       break_status = BreakBeforeChildIfNeeded(
@@ -1269,7 +1269,7 @@ NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSizeForFragmentation(
       // expansion.
       LayoutUnit expansion = -flex_item->total_remaining_block_size;
       line_output.item_offset_adjustment += expansion;
-      *total_intrinsic_block_size += expansion;
+      total_intrinsic_block_size_ += expansion;
     }
 
     // TODO(almaher): What to do in the case where the line extends past
@@ -1517,6 +1517,7 @@ void NGFlexLayoutAlgorithm::ConsumeRemainingFragmentainerSpace(
     // content, due to the break) should still be occupied by this container.
     LayoutUnit expansion = FragmentainerSpaceAvailable();
     intrinsic_block_size_ += expansion;
+    total_intrinsic_block_size_ += expansion;
     flex_line.item_offset_adjustment += expansion;
   }
 }

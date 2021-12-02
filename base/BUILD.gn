@@ -523,6 +523,7 @@ component("base") {
     "process/process_iterator.h",
     "process/process_metrics.cc",
     "process/process_metrics.h",
+    "process/process_metrics_iocounters.h",
     "profiler/arm_cfi_table.cc",
     "profiler/arm_cfi_table.h",
     "profiler/frame.cc",
@@ -1388,6 +1389,7 @@ component("base") {
     ":cfi_buildflags",
     ":clang_profiling_buildflags",
     ":debugging_buildflags",
+    ":feature_list_buildflags",
     ":logging_buildflags",
     ":orderfile_buildflags",
     ":profiler_buildflags",
@@ -1932,6 +1934,7 @@ component("base") {
         "allocator/partition_allocator/oom_callback.h",
         "allocator/partition_allocator/page_allocator.cc",
         "allocator/partition_allocator/page_allocator.h",
+        "allocator/partition_allocator/page_allocator_constants.h",
         "allocator/partition_allocator/page_allocator_internal.h",
         "allocator/partition_allocator/partition_address_space.cc",
         "allocator/partition_allocator/partition_address_space.h",
@@ -2491,6 +2494,19 @@ buildflag_header("debugging_buildflags") {
     "EXPENSIVE_DCHECKS_ARE_ON=$enable_expensive_dchecks",
     "ENABLE_STACK_TRACE_LINE_NUMBERS=$enable_stack_trace_line_numbers",
   ]
+}
+
+buildflag_header("feature_list_buildflags") {
+  header = "feature_list_buildflags.h"
+
+  if (is_chromeos_ash) {
+    flags = [
+      "ENABLE_BANNED_BASE_FEATURE_PREFIX=true",
+      "BANNED_BASE_FEATURE_PREFIX=\"CrOSLateBoot\"",
+    ]
+  } else {
+    flags = [ "ENABLE_BANNED_BASE_FEATURE_PREFIX=false" ]
+  }
 }
 
 buildflag_header("logging_buildflags") {
@@ -3278,6 +3294,7 @@ test("base_unittests") {
     ":base",
     ":base_stack_sampling_profiler_test_util",
     ":base_unittests_tasktraits",
+    ":feature_list_buildflags",
     ":i18n",
     ":sanitizer_buildflags",
     "//base/allocator:buildflags",

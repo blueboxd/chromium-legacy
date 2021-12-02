@@ -34,8 +34,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
       app_list::AppListSyncableService::SyncItem* sync_item,
       bool update_name,
       bool update_folder) override;
-  void RemoveItem(const std::string& id) override;
-  void RemoveUninstalledItem(const std::string& id) override;
+  void RemoveItem(const std::string& id, bool is_uninstall) override;
   void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
   void SetItemFolderId(const std::string& id,
                        const std::string& folder_id) override;
@@ -54,6 +53,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   // For AppListModel:
   ChromeAppListItem* FindItem(const std::string& id) override;
   std::vector<const ChromeAppListItem*> GetItems() const override;
+  std::set<std::string> GetTopLevelItemIds() const override;
   size_t ItemCount() override;
   std::vector<ChromeAppListItem*> GetTopLevelItems() const override;
   ChromeAppListItem* ItemAtForTest(size_t index) override;

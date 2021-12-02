@@ -697,6 +697,12 @@
   <message name="IDS_OS_SETTINGS_AMBIENT_MODE_DISABLED" desc="Sub label for the ambient mode row in settings page when it is disabled.">
     Disabled
   </message>
+  <message name="IDS_OS_SETTINGS_OPEN_PERSONALIZATION_HUB" desc="Title for the link to open personalization hub.">
+    Personalize your device
+  </message>
+  <message name="IDS_OS_SETTINGS_OPEN_PERSONALIZATION_HUB_SUBTITLE" desc="Description for the link to open personalization hub.">
+    Customize wallpaper, avatar, screensaver and more
+  </message>
 
   <!-- Ambient Mode Page -->
   <message name="IDS_OS_SETTINGS_AMBIENT_MODE_PAGE_DESCRIPTION" desc="Description for the ambient mode settings page.">
@@ -1972,6 +1978,9 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_SETTINGS_ANDROID_APPS_MANAGE_APP_LINKS" desc="Label for accessing app preferrences on ARC side.">
     Manage Play app links
+  </message>
+  <message name="IDS_SETTINGS_APPS_ARC_VM_SHARED_USB_DEVICES_DESCRIPTION" desc="Description for managing shared USB devices. Do not translate 'ARCVM'.">
+    Let Android apps access USB devices on this Chromebook. Permission will be requested each time you plug in a USB device. Individual Android apps will ask for additional permissions.
   </message>
 
   <!-- Device Stylus (OS settings) -->

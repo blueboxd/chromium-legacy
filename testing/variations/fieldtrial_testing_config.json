@@ -144,7 +144,6 @@
                         "promo_card_max_shown": "3"
                     },
                     "enable_features": [
-                        "ContextualSearchLongpressResolve",
                         "ContextualSearchNewSettings",
                         "ContextualSearchTranslations"
                     ]
@@ -591,7 +590,7 @@
             ]
         }
     ],
-    "AndroidMessagesSavePassword": [
+    "AndroidMessagesSaveUpdatePassword": [
         {
             "platforms": [
                 "android"
@@ -600,7 +599,8 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "MessagesForAndroidPasswords"
+                        "MessagesForAndroidPasswords",
+                        "MessagesForAndroidUpdatePassword"
                     ]
                 }
             ]
@@ -616,21 +616,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MessagesForAndroidSyncError"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AndroidMessagesUpdatePassword": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MessagesForAndroidUpdatePassword"
                     ]
                 }
             ]
@@ -1162,7 +1147,23 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_2020-02-25",
+                    "name": "Enabled_2021-12-01",
+                    "enable_features": [
+                        "AutofillEnableSupportForMoreStructureInAddresses"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillEnableSupportForMoreStructureInAddressesOnWebView": [
+        {
+            "platforms": [
+                "android_webview",
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_2021-12-01",
                     "enable_features": [
                         "AutofillEnableSupportForMoreStructureInAddresses"
                     ]
@@ -1183,7 +1184,23 @@
             ],
             "experiments": [
                 {
-                    "name": "EnableSupportForMoreStructureInNames",
+                    "name": "Enabled_2021-12-01",
+                    "enable_features": [
+                        "AutofillEnableSupportForMoreStructureInNames"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillEnableSupportForMoreStructureInNamesOnWebView": [
+        {
+            "platforms": [
+                "android_webview",
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_2021-12-01",
                     "enable_features": [
                         "AutofillEnableSupportForMoreStructureInNames"
                     ]
@@ -2135,6 +2152,47 @@
                     ]
                 },
                 {
+                    "name": "CandidateB_CacheDisabled",
+                    "params": {
+                        "hide_switch_when_no_incognito_tabs": "true",
+                        "image_memory_cache_size_percentage": "0",
+                        "open_ntp_instead_of_start": "true",
+                        "show_last_active_tab_only": "true",
+                        "signin_promo_NTP_reset_after_hours": "336",
+                        "signin_promo_NTP_since_first_time_shown_limit_hours": "672",
+                        "start_surface_variation": "single",
+                        "support_accessibility": "true",
+                        "tab_count_button_on_start_surface": "true",
+                        "tab_switcher_on_return_time_ms": "3600000"
+                    },
+                    "enable_features": [
+                        "FeedImageMemoryCacheSizePercentage",
+                        "StartSurfaceAndroid",
+                        "TabSwitcherOnReturn"
+                    ]
+                },
+                {
+                    "name": "CandidateB_ClearCacheReduced",
+                    "params": {
+                        "hide_switch_when_no_incognito_tabs": "true",
+                        "image_memory_cache_size_percentage": "50",
+                        "open_ntp_instead_of_start": "true",
+                        "show_last_active_tab_only": "true",
+                        "signin_promo_NTP_reset_after_hours": "336",
+                        "signin_promo_NTP_since_first_time_shown_limit_hours": "672",
+                        "start_surface_variation": "single",
+                        "support_accessibility": "true",
+                        "tab_count_button_on_start_surface": "true",
+                        "tab_switcher_on_return_time_ms": "3600000"
+                    },
+                    "enable_features": [
+                        "FeedClearImageMemoryCache",
+                        "FeedImageMemoryCacheSizePercentage",
+                        "StartSurfaceAndroid",
+                        "TabSwitcherOnReturn"
+                    ]
+                },
+                {
                     "name": "CandidateA",
                     "params": {
                         "hide_switch_when_no_incognito_tabs": "true",
@@ -2469,6 +2527,25 @@
             ]
         }
     ],
+    "ConsolidatedSiteStorageControls": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ConsolidatedSiteStorageControls"
+                    ]
+                }
+            ]
+        }
+    ],
     "ConsumeCodeCacheOffThread": [
         {
             "platforms": [
@@ -2621,7 +2698,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Launch-candidate_20210915",
+                    "name": "Launch-candidate_20211129",
+                    "enable_features": [
+                        "ContextualSearchLongpressResolve"
+                    ],
                     "disable_features": [
                         "ContextualSearchLiteralSearchTap"
                     ]
@@ -3578,49 +3658,6 @@
                     },
                     "enable_features": [
                         "ExploreSites"
-                    ]
-                }
-            ]
-        }
-    ],
-    "FeedImageMemoryCache": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "ClearCache_Reduced",
-                    "params": {
-                        "image_memory_cache_size_percentage": "50"
-                    },
-                    "enable_features": [
-                        "FeedClearImageMemoryCache",
-                        "FeedImageMemoryCacheSizePercentage"
-                    ]
-                },
-                {
-                    "name": "CacheDisabled",
-                    "params": {
-                        "image_memory_cache_size_percentage": "0"
-                    },
-                    "enable_features": [
-                        "FeedImageMemoryCacheSizePercentage"
-                    ]
-                },
-                {
-                    "name": "CacheReduced",
-                    "params": {
-                        "image_memory_cache_size_percentage": "50"
-                    },
-                    "enable_features": [
-                        "FeedImageMemoryCacheSizePercentage"
-                    ]
-                },
-                {
-                    "name": "ClearCache",
-                    "enable_features": [
-                        "FeedClearImageMemoryCache"
                     ]
                 }
             ]
@@ -5256,25 +5293,6 @@
             ]
         }
     ],
-    "NavigationPredictor": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_Logistic_Precision_15_M79_20191029",
-                    "params": {
-                        "random_anchor_sampling_period": "100"
-                    },
-                    "enable_features": [
-                        "NavigationPredictor"
-                    ]
-                }
-            ]
-        }
-    ],
     "NavigationThreadingOptimizations": [
         {
             "platforms": [
@@ -6203,7 +6221,7 @@
             ]
         }
     ],
-    "PreconnectToSearch": [
+    "PreconnectToSearchDesktop": [
         {
             "platforms": [
                 "linux",
@@ -6214,10 +6232,10 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledWithoutStartupDelay",
+                    "name": "EnabledWithStartupDelayForegroundOnly",
                     "params": {
                         "skip_in_background": "true",
-                        "startup_delay_ms": "0"
+                        "startup_delay_ms": "5000"
                     },
                     "enable_features": [
                         "PreconnectToSearch"
@@ -7126,12 +7144,7 @@
     "SendTabToSelfWhenSignedIn": [
         {
             "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
+                "chromeos"
             ],
             "experiments": [
                 {

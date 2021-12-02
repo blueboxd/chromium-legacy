@@ -98,10 +98,6 @@ extern const base::Feature kAutofillHighlightOnlyChangedValuesInPreviewMode;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillServerTypeTakesPrecedence;
 COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillRefillWithRendererIds;
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillNameSectionsWithRendererIds;
-COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillKeyboardAccessory;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillLabelAffixRemoval;
@@ -142,8 +138,6 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillSilentProfileUpdateForInsufficientImport;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillSkipComparingInferredLabels;
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillStrictContextualCardNameConditions;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillTokenPrefixMatching;
 COMPONENT_EXPORT(AUTOFILL) extern const base::Feature kAutofillUploadThrottling;

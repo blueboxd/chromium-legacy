@@ -248,18 +248,6 @@ const base::Feature kAutofillHighlightOnlyChangedValuesInPreviewMode{
 const base::Feature kAutofillServerTypeTakesPrecedence{
     "AutofillServerTypeTakesPrecedence", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, Autofill will use FormRendererIds instead of
-// GetIdentifierForRefill() to identify forms during refills.
-// TODO(crbug/896689): Remove once experiment is finished.
-const base::Feature kAutofillRefillWithRendererIds{
-    "AutofillRefillWithRendererIds", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// When enabled, Autofill will use FormRendererIds instead of
-// unique_name() to create unique section names.
-// TODO(crbug/896689): Remove once experiment is finished.
-const base::Feature kAutofillNameSectionsWithRendererIds{
-    "AutofillNameSectionsWithRendererIds", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled, Autofill suggestions are displayed in the keyboard accessory
 // instead of the regular popup.
 const base::Feature kAutofillKeyboardAccessory{
@@ -374,13 +362,6 @@ const base::Feature kAutofillSilentProfileUpdateForInsufficientImport{
 // FormFieldData.SimilarFieldAs.
 const base::Feature kAutofillSkipComparingInferredLabels{
     "AutofillSkipComparingInferredLabels", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether we require an expiration date or verification field when a
-// name field is detected for a credit card, but we aren't confident it's not
-// a non-credit card specific name field.
-const base::Feature kAutofillStrictContextualCardNameConditions{
-    "AutofillStrictContextualCardNameConditions",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether Autofill should search prefixes of all words/tokens when
 // filtering profiles, or only on prefixes of the whole string.

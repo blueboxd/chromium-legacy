@@ -25,6 +25,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace IPC {
+class Channel;
 class MessageFilter;
 }
 
@@ -77,9 +78,11 @@ class CONTENT_EXPORT ChildProcessHostImpl
   bool IsChannelOpening() override;
   void AddFilter(IPC::MessageFilter* filter) override;
   void BindReceiver(mojo::GenericPendingReceiver receiver) override;
+#if BUILDFLAG(IS_CHROMECAST)
   void RunServiceDeprecated(
       const std::string& service_name,
       mojo::ScopedMessagePipeHandle service_pipe) override;
+#endif
 
   base::Process& GetPeerProcess();
   mojom::ChildProcess* child_process() { return child_process_.get(); }

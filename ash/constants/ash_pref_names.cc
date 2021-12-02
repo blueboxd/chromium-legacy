@@ -598,6 +598,9 @@ const char kPowerSmartDimEnabled[] = "power.smart_dim_enabled";
 // Boolean controlling whether ALS logging is enabled.
 const char kPowerAlsLoggingEnabled[] = "power.als_logging_enabled";
 
+// Boolean controlling whether quick dim is enabled.
+const char kPowerQuickDimEnabled[] = "power.quick_dim_enabled";
+
 // Boolean controlling whether the settings is enabled. This pref is intended to
 // be set only by policy not by user.
 const char kOsSettingsEnabled[] = "os_settings_enabled";
@@ -887,6 +890,16 @@ const char kProjectorCreationFlowLanguage[] =
 // List of Drive Folder Shortcuts in the Files app. Used to sync the shortcuts
 // across devices.
 const char kFilesAppFolderShortcuts[] = "ash.filesapp.folder_shortcuts";
+
+// An integer pref counting the number of times the Onboarding flow has been
+// shown to the user inside the Projector Gallery.
+const char kProjectorGalleryOnboardingShowCount[] =
+    "ash.projector.projectorGalleryOnboardingShowCount";
+
+// An integer pref counting the number of times the Onboarding flow has been
+// shown to the user inside the Projector Viewer.
+const char kProjectorViewerOnboardingShowCount[] =
+    "ash.projector.projectorViewerOnboardingShowCount";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

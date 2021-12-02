@@ -184,7 +184,10 @@ if (include_js_tests) {
       sources += [ "tab_strip/tab_strip_browsertest.js" ]
     }
     if (!is_android) {
-      sources += [ "commander/commander_browsertest.js" ]
+      sources += [
+        "access_code_cast/access_code_cast_browsertest.js",
+        "commander/commander_browsertest.js"
+      ]
     }
     if (is_cfm) {
       sources += [
@@ -387,6 +390,7 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_os_lifetime_browser_proxy.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_os_reset_browser_proxy.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_os_sync_browser_proxy.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_personalization_hub_browser_proxy.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_wallpaper_browser_proxy.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/tether_connection_dialog_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/text_to_speech_subpage_tests.m.js",

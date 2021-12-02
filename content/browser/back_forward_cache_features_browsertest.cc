@@ -199,10 +199,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheWithDedicatedWorkerBrowserTest,
   ExpectRestored(FROM_HERE);
 }
 
-// TODO(crbug.com/1273603): Test is flaky.
 IN_PROC_BROWSER_TEST_F(
     BackForwardCacheWithDedicatedWorkerBrowserTest,
-    DISABLED_DoNotCacheWithDedicatedWorkerWithWebTransportAndDocumentWithBroadcastChannel) {
+    DoNotCacheWithDedicatedWorkerWithWebTransportAndDocumentWithBroadcastChannel) {
   CreateHttpsServer();
   ASSERT_TRUE(https_server()->Start());
 
@@ -244,9 +243,10 @@ IN_PROC_BROWSER_TEST_F(
       {}, {}, {}, FROM_HERE);
 }
 
+// TODO(crbug.com/1273603): Test is flaky.
 IN_PROC_BROWSER_TEST_F(
     BackForwardCacheWithDedicatedWorkerBrowserTest,
-    DoNotCacheWithDedicatedWorkerWithClosedWebTransportAndDocumentWithBroadcastChannel) {
+    DISABLED_DoNotCacheWithDedicatedWorkerWithClosedWebTransportAndDocumentWithBroadcastChannel) {
   CreateHttpsServer();
   ASSERT_TRUE(https_server()->Start());
 
@@ -298,8 +298,9 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the case when the page starts fetching in a dedicated worker, goes to
 // BFcache, and then a redirection happens. The cached page should evicted in
 // this case.
+// TODO(crbug.com/1275477): Test is flaky.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheWithDedicatedWorkerBrowserTest,
-                       FetchRedirectedWhileStoring) {
+                       DISABLED_FetchRedirectedWhileStoring) {
   CreateHttpsServer();
 
   net::test_server::ControllableHttpResponse fetch1_response(https_server(),
@@ -365,8 +366,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheWithDedicatedWorkerBrowserTest,
 // Tests the case when the page starts fetching in a nested dedicated worker,
 // goes to BFcache, and then a redirection happens. The cached page should
 // evicted in this case.
+// TODO(crbug.com/1275477): Test is flaky.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheWithDedicatedWorkerBrowserTest,
-                       FetchRedirectedWhileStoring_Nested) {
+                       DISABLED_FetchRedirectedWhileStoring_Nested) {
   CreateHttpsServer();
 
   net::test_server::ControllableHttpResponse fetch1_response(https_server(),

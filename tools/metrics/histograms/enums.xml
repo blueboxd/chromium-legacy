@@ -5112,6 +5112,20 @@ others/histograms.xml -->
   <int value="4" label="Document destroyed"/>
 </enum>
 
+<enum name="AudioOutputDeviceMixerMixedPlaybackStatus">
+  <int value="0" label="Ok"/>
+  <int value="1" label="Failed to open rendering stream"/>
+  <int value="2" label="Error during rendering"/>
+</enum>
+
+<enum name="AudioOutputDeviceMixerStreamStatus">
+  <int value="0" label="Ok"/>
+  <int value="1" label="Failed to open independent rendering stream"/>
+  <int value="2" label="Error during independent rendering"/>
+  <int value="3" label="Failed to start mixed playback"/>
+  <int value="4" label="Error during mixed playback"/>
+</enum>
+
 <enum name="AudioOutputProxyStreamFormat">
   <int value="0" label="Bitstream"/>
   <int value="1" label="Linear PCM"/>
@@ -27346,6 +27360,7 @@ Called by update_document_policy_enum.py.-->
   <int value="927" label="ChromadToCloudMigrationEnabled"/>
   <int value="928" label="CopyPreventionSettings"/>
   <int value="929" label="ReportDeviceAudioStatusCheckingRateMs"/>
+  <int value="930" label="FullscreenNotificationUrlExemptList"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -50342,6 +50357,7 @@ from previous Chrome versions.
   <int value="-1019760093" label="PrintWithPostScriptType42Fonts:enabled"/>
   <int value="-1019492310"
       label="OmniboxUIExperimentJogTextfieldOnPopup:enabled"/>
+  <int value="-1018983714" label="FedCm:enabled"/>
   <int value="-1018454657" label="SharingPeerConnectionReceiver:enabled"/>
   <int value="-1016669222" label="CloudPrinterHandler:enabled"/>
   <int value="-1016202433" label="disable-add-to-shelf"/>
@@ -50651,6 +50667,7 @@ from previous Chrome versions.
   <int value="-787876637" label="HomeLauncherGestures:enabled"/>
   <int value="-787426248" label="ChromeHomeSurvey:disabled"/>
   <int value="-787238455" label="OmniboxZeroSuggestionsOnSERP:disabled"/>
+  <int value="-785528415" label="FedCm:disabled"/>
   <int value="-784199026" label="EnableFilesAppCopyImage:enabled"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
   <int value="-778126349" label="DownloadsLocationChange:enabled"/>

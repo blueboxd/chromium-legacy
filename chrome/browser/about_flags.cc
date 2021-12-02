@@ -2325,6 +2325,13 @@ const FeatureEntry::FeatureVariation kDrawPredictedPointVariations[] = {
      kDrawPredictedPointExperiment2Points3Ms,
      base::size(kDrawPredictedPointExperiment2Points3Ms), nullptr}};
 
+const FeatureEntry::FeatureParam kFedCmVariationInterception[] = {
+    {features::kFedCmInterceptionFieldTrialParamName, "true"}};
+const FeatureEntry::FeatureVariation kFedCmFeatureVariations[] = {
+    {"- with FedCM HTTP filtering (very experimental)",
+     kFedCmVariationInterception, base::size(kFedCmVariationInterception),
+     nullptr}};
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const FeatureEntry::Choice kForceControlFaceAeChoices[] = {
     {"Default", "", ""},
@@ -4157,10 +4164,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSystemKoreanPhysicalTypingName,
      flag_descriptions::kSystemKoreanPhysicalTypingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kSystemKoreanPhysicalTyping)},
-    {"enable-cros-virtual-keyboard-api",
-     flag_descriptions::kVirtualKeyboardApiName,
-     flag_descriptions::kVirtualKeyboardApiDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardApi)},
     {"enable-cros-virtual-keyboard-bordered-key",
      flag_descriptions::kVirtualKeyboardBorderedKeyName,
      flag_descriptions::kVirtualKeyboardBorderedKeyDescription, kOsCrOS,
@@ -5667,6 +5670,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSkiaRendererDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kUseSkiaRenderer)},
 
+#if defined(OS_CHROMEOS)
+    {"bluetooth-advertisement-monitoring",
+     flag_descriptions::kBluetoothAdvertisementMonitoringName,
+     flag_descriptions::kBluetoothAdvertisementMonitoringDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kBluetoothAdvertisementMonitoring)},
+#endif  // defined(OS_CHROMEOS)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"allow-disable-mouse-acceleration",
      flag_descriptions::kAllowDisableMouseAccelerationName,
@@ -5690,11 +5700,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAllowTouchpadHapticClickSettingsName,
      flag_descriptions::kAllowTouchpadHapticClickSettingsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAllowTouchpadHapticClickSettings)},
-
-    {"bluetooth-advertisement-monitoring",
-     flag_descriptions::kBluetoothAdvertisementMonitoringName,
-     flag_descriptions::kBluetoothAdvertisementMonitoringDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kBluetoothAdvertisementMonitoring)},
 
     {"enable-neural-stylus-palm-rejection",
      flag_descriptions::kEnableNeuralStylusPalmRejectionName,
@@ -7116,9 +7121,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMediaSessionWebRTCDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kMediaSessionWebRTC)},
 
-    {"webid", flag_descriptions::kWebIdName,
-     flag_descriptions::kWebIdDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kWebID)},
+    {"fedcm", flag_descriptions::kFedCmName,
+     flag_descriptions::kFedCmDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kFedCm,
+                                    kFedCmFeatureVariations,
+                                    "FedCmFeatureVariations")},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"bluetooth-sessionized-metrics",

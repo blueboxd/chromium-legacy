@@ -1333,6 +1333,10 @@ const char kEffectiveConnectionType2GDescription[] = "2G";
 const char kEffectiveConnectionType3GDescription[] = "3G";
 const char kEffectiveConnectionType4GDescription[] = "4G";
 
+const char kFedCmName[] = "FedCM";
+const char kFedCmDescription[] =
+    "Enables JavaScript API to intermediate federated identity requests.";
+
 const char kFileHandlingAPIName[] = "File Handling API";
 const char kFileHandlingAPIDescription[] =
     "Enables the file handling API, allowing websites to register as file "
@@ -2682,11 +2686,6 @@ const char kWebBundlesName[] = "Web Bundles";
 const char kWebBundlesDescription[] =
     "Enables experimental supports for Web Bundles (Bundled HTTP Exchanges) "
     "navigation.";
-
-const char kWebIdName[] = "WebID";
-const char kWebIdDescription[] =
-    "Enables WebID HTTP filtering and JavaScript "
-    "API to intermediate federated identity requests.";
 
 const char kWebMidiName[] = "Web MIDI";
 const char kWebMidiDescription[] =
@@ -4125,13 +4124,6 @@ const char kAudioUrlDescription[] =
     "Enable chrome://audio that is designed for debugging ChromeOS audio "
     "issues";
 
-const char kBluetoothAdvertisementMonitoringName[] =
-    "Bluetooth Advertisement Monitoring";
-const char kBluetoothAdvertisementMonitoringDescription[] =
-    "Advertisement monitoring allows applications to register low energy "
-    "scanners that filter low energy advertisements in a power-efficient "
-    "manner.";
-
 const char kBluetoothFixA2dpPacketSizeName[] = "Bluetooth fix A2DP packet size";
 const char kBluetoothFixA2dpPacketSizeDescription[] =
     "Fixes Bluetooth A2DP packet size to a smaller default value to improve "
@@ -5171,10 +5163,6 @@ const char kVirtualKeyboardDescription[] =
     "Always show virtual keyboard regardless of having a physical keyboard "
     "present";
 
-const char kVirtualKeyboardApiName[] = "Virtual Keyboard API";
-const char kVirtualKeyboardApiDescription[] =
-    "Enable the JS Virtual keyboard API, allowing manual control of the VK.";
-
 const char kVirtualKeyboardBorderedKeyName[] = "Virtual Keyboard Bordered Key";
 const char kVirtualKeyboardBorderedKeyDescription[] =
     "Show virtual keyboard with bordered key";
@@ -5251,6 +5239,13 @@ const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersDescription[] =
     "(chrome://flags/#enable-migrate-default-chrome-app-to-web-apps-gsuite and "
     "chrome://flags/#enable-migrate-default-chrome-app-to-web-apps-non-gsuite) "
     "are ignored for managed Chrome OS users unless this feature is enabled.";
+
+const char kBluetoothAdvertisementMonitoringName[] =
+    "Bluetooth Advertisement Monitoring";
+const char kBluetoothAdvertisementMonitoringDescription[] =
+    "Advertisement monitoring allows applications to register low energy "
+    "scanners that filter low energy advertisements in a power-efficient "
+    "manner.";
 
 const char kDefaultCalculatorWebAppName[] = "Default install Calculator PWA";
 const char kDefaultCalculatorWebAppDescription[] =

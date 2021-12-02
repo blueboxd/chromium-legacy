@@ -766,6 +766,9 @@ extern const char kEffectiveConnectionType2GDescription[];
 extern const char kEffectiveConnectionType3GDescription[];
 extern const char kEffectiveConnectionType4GDescription[];
 
+extern const char kFedCmName[];
+extern const char kFedCmDescription[];
+
 extern const char kFileHandlingAPIName[];
 extern const char kFileHandlingAPIDescription[];
 
@@ -1534,9 +1537,6 @@ extern const char kWebBluetoothNewPermissionsBackendDescription[];
 
 extern const char kWebBundlesName[];
 extern const char kWebBundlesDescription[];
-
-extern const char kWebIdName[];
-extern const char kWebIdDescription[];
 
 extern const char kWebMidiName[];
 extern const char kWebMidiDescription[];
@@ -2377,9 +2377,6 @@ extern const char kAshEnableUnifiedDesktopDescription[];
 extern const char kAudioUrlName[];
 extern const char kAudioUrlDescription[];
 
-extern const char kBluetoothAdvertisementMonitoringName[];
-extern const char kBluetoothAdvertisementMonitoringDescription[];
-
 extern const char kBluetoothFixA2dpPacketSizeName[];
 extern const char kBluetoothFixA2dpPacketSizeDescription[];
 
@@ -2987,9 +2984,6 @@ extern const char kVaapiWebPImageDecodeAccelerationDescription[];
 extern const char kVirtualKeyboardName[];
 extern const char kVirtualKeyboardDescription[];
 
-extern const char kVirtualKeyboardApiName[];
-extern const char kVirtualKeyboardApiDescription[];
-
 extern const char kVirtualKeyboardBorderedKeyName[];
 extern const char kVirtualKeyboardBorderedKeyDescription[];
 
@@ -3037,6 +3031,9 @@ extern const char kLauncherNudgeShortIntervalDescription[];
 extern const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersName[];
 extern const char
     kAllowDefaultWebAppMigrationForChromeOsManagedUsersDescription[];
+
+extern const char kBluetoothAdvertisementMonitoringName[];
+extern const char kBluetoothAdvertisementMonitoringDescription[];
 
 extern const char kDefaultCalculatorWebAppName[];
 extern const char kDefaultCalculatorWebAppDescription[];

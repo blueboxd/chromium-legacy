@@ -29,6 +29,7 @@
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -192,7 +193,8 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
   }
 }
 
-void MaybeAppendManualFallback(std::vector<autofill::Suggestion>* suggestions) {
+void MaybeAppendManagePasswordsEntry(
+    std::vector<autofill::Suggestion>* suggestions) {
   bool has_no_fillable_suggestions = base::ranges::none_of(
       *suggestions,
       [](int id) {
@@ -241,7 +243,11 @@ autofill::Suggestion CreateEntryToOptInToAccountStorageThenGenerate() {
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD));
   suggestion.frontend_id =
       autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE;
-  suggestion.icon = "google";
+  suggestion.icon =
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillVisualImprovementsForSuggestionUi)
+          ? "keyIcon"
+          : "google";
   return suggestion;
 }
 
@@ -657,8 +663,12 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
                               : CreateGenerationEntry());
   }
 
-  // Add "Manage all passwords" link to settings.
-  MaybeAppendManualFallback(&suggestions);
+  // TODO(crbug.com/1274134): Delete once improvements are launched.
+  if (!base::FeatureList::IsEnabled(
+          autofill::features::kAutofillVisualImprovementsForSuggestionUi)) {
+    // Add "Manage all passwords" link to settings.
+    MaybeAppendManagePasswordsEntry(&suggestions);
+  }
 
   // Add button to opt into using the account storage for passwords and then
   // suggest.
@@ -669,6 +679,13 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
   if (show_account_storage_resignin)
     suggestions.push_back(CreateEntryToReSignin());
 
+  // TODO(crbug.com/1274134): Remove feature flag once improvements are
+  // launched.
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillVisualImprovementsForSuggestionUi)) {
+    // Add "Manage all passwords" link to settings.
+    MaybeAppendManagePasswordsEntry(&suggestions);
+  }
   return suggestions;
 }
 

@@ -339,7 +339,6 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/webui/camera_app_ui/url_constants.h"
 #include "ash/webui/scanning/url_constants.h"
-#include "base/containers/contains.h"
 #include "chrome/app/chrome_crash_reporter_client.h"
 #include "chrome/browser/ash/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_backend_delegate.h"
@@ -358,6 +357,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/smb_client/fileapi/smbfs_file_system_backend_delegate.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
+#include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_loader_factory.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/fileapi/mtp_file_system_backend_delegate.h"
@@ -2578,6 +2578,24 @@ ChromeContentBrowserClient::AllowServiceWorker(
       scope, site_for_cookies, top_frame_origin,
       CookieSettingsFactory::GetForProfile(profile).get(),
       HostContentSettingsMapFactory::GetForProfile(profile));
+}
+
+void ChromeContentBrowserClient::WillStartServiceWorker(
+    content::BrowserContext* context,
+    const GURL& script_url,
+    content::RenderProcessHost* render_process_host) {
+  DCHECK(context);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!SystemExtensionsProvider::IsEnabled())
+    return;
+
+  auto* system_extensions_provider =
+      SystemExtensionsProvider::Get(Profile::FromBrowserContext(context));
+  if (system_extensions_provider)
+    system_extensions_provider->WillStartServiceWorker(script_url,
+                                                       render_process_host);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 bool ChromeContentBrowserClient::AllowSharedWorker(

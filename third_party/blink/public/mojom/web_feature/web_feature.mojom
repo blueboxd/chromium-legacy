@@ -1874,7 +1874,7 @@ enum WebFeature {
   kV8FunctionTokenOffsetTooLongForToString = 2497,
   kServiceWorkerImportScriptNotInstalled = 2498,
   kNestedDedicatedWorker = 2499,
-  kClientHintsMetaAcceptCHLifetime = 2500,
+  kOBSOLETE_ClientHintsMetaAcceptCHLifetime = 2500,
   kCSSFillAvailableLogicalWidth = 2507,
   kCSSFillAvailableLogicalHeight = 2508,
   kPopupOpenWhileFileChooserOpened = 2509,
@@ -3391,6 +3391,8 @@ enum WebFeature {
   kCSSMatchMediaUnknown = 4082,
   kCSSMediaListUnknown = 4083,
   kCSSOMMediaConditionUnknown = 4084,
+  kDocumentDomainSettingWithoutOriginAgentClusterHeader = 4085,
+
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

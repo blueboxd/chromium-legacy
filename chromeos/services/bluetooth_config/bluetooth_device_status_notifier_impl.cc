@@ -37,13 +37,6 @@ void BluetoothDeviceStatusNotifierImpl::CheckForDeviceStateChange() {
     return;
   }
 
-  // TODO(b/208469977): Remove vectors and notify observers immediately.
-  std::vector<mojom::PairedBluetoothDevicePropertiesPtr> newly_paired_devices;
-  std::vector<mojom::PairedBluetoothDevicePropertiesPtr>
-      newly_disconnected_devices;
-  std::vector<mojom::PairedBluetoothDevicePropertiesPtr>
-      newly_connected_devices;
-
   // Store old map in a temporary map, this is done so if a device is unpaired
   // |devices_id_to_properties_map_| will always contain only currently paired
   // devices.
@@ -59,10 +52,13 @@ void BluetoothDeviceStatusNotifierImpl::CheckForDeviceStateChange() {
     auto it = previous_devices_id_to_properties_map.find(
         device->device_properties->id);
 
-    // Check if device is not in previous map. If it is not, this means a new
-    // paired device was found.
+    // Check if device is not in previous map and is connected. If it is not,
+    // this means a new paired device was found.
     if (it == previous_devices_id_to_properties_map.end()) {
-      newly_paired_devices.push_back(device.Clone());
+      if (device->device_properties->connection_state ==
+          mojom::DeviceConnectionState::kConnected) {
+        NotifyDeviceNewlyPaired(device);
+      }
       continue;
     }
 
@@ -71,7 +67,7 @@ void BluetoothDeviceStatusNotifierImpl::CheckForDeviceStateChange() {
             mojom::DeviceConnectionState::kConnected &&
         device->device_properties->connection_state ==
             mojom::DeviceConnectionState::kNotConnected) {
-      newly_disconnected_devices.push_back(device.Clone());
+      NotifyDeviceNewlyDisconnected(device);
       continue;
     }
 
@@ -80,14 +76,10 @@ void BluetoothDeviceStatusNotifierImpl::CheckForDeviceStateChange() {
             mojom::DeviceConnectionState::kConnected &&
         device->device_properties->connection_state ==
             mojom::DeviceConnectionState::kConnected) {
-      newly_connected_devices.push_back(device.Clone());
+      NotifyDeviceNewlyConnected(device);
       continue;
     }
   }
-
-  NotifyDevicesNewlyPaired(newly_paired_devices);
-  NotifyDevicesNewlyDisconnected(newly_disconnected_devices);
-  NotifyDevicesNewlyConnected(newly_connected_devices);
 }
 
 }  // namespace bluetooth_config

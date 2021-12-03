@@ -1263,6 +1263,11 @@ void LayoutBox::UpdateAfterLayout() {
     document.IncLayoutCallsCounterNG();
 }
 
+bool LayoutBox::ShouldUseAutoIntrinsicSize() const {
+  DisplayLockContext* context = GetDisplayLockContext();
+  return context && context->IsAuto() && context->IsLocked();
+}
+
 bool LayoutBox::HasOverrideIntrinsicContentWidth() const {
   NOT_DESTROYED();
   if (!ShouldApplySizeContainment())
@@ -1286,7 +1291,7 @@ LayoutUnit LayoutBox::OverrideIntrinsicContentWidth() const {
   const absl::optional<StyleIntrinsicLength>& intrinsic_length =
       style.ContainIntrinsicWidth();
   DCHECK(intrinsic_length);
-  if (intrinsic_length->HasAuto()) {
+  if (intrinsic_length->HasAuto() && ShouldUseAutoIntrinsicSize()) {
     const Element* elem = DynamicTo<Element>(GetNode());
     const ResizeObserverSize* size = elem ? elem->LastIntrinsicSize() : nullptr;
     if (size)
@@ -1304,7 +1309,7 @@ LayoutUnit LayoutBox::OverrideIntrinsicContentHeight() const {
   const absl::optional<StyleIntrinsicLength>& intrinsic_length =
       style.ContainIntrinsicHeight();
   DCHECK(intrinsic_length);
-  if (intrinsic_length->HasAuto()) {
+  if (intrinsic_length->HasAuto() && ShouldUseAutoIntrinsicSize()) {
     const Element* elem = DynamicTo<Element>(GetNode());
     const ResizeObserverSize* size = elem ? elem->LastIntrinsicSize() : nullptr;
     if (size)
@@ -1506,7 +1511,7 @@ void LayoutBox::SetLocationAndUpdateOverflowControlsIfNeeded(
   }
   // The Layer does not yet have the up to date subpixel accumulation
   // so we base the size strictly on the frame rect's location.
-  IntSize old_pixel_snapped_border_rect_size =
+  gfx::Size old_pixel_snapped_border_rect_size =
       PixelSnappedBorderBoxRect().size();
   SetLocation(location);
   // TODO(crbug.com/1020913): This is problematic because this function may be
@@ -5712,8 +5717,8 @@ LayoutUnit LayoutBox::ContainingBlockLogicalWidthForPositioned(
     if (LocalFrameView* frame_view = view->GetFrameView()) {
       // Don't use visibleContentRect since the PaintLayer's size has not been
       // set yet.
-      LayoutSize viewport_size(
-          frame_view->LayoutViewport()->ExcludeScrollbars(frame_view->Size()));
+      LayoutSize viewport_size(frame_view->LayoutViewport()->ExcludeScrollbars(
+          ToGfxSize(frame_view->Size())));
       return LayoutUnit(containing_block->IsHorizontalWritingMode()
                             ? viewport_size.Width()
                             : viewport_size.Height());
@@ -5785,8 +5790,8 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPositioned(
     if (LocalFrameView* frame_view = view->GetFrameView()) {
       // Don't use visibleContentRect since the PaintLayer's size has not been
       // set yet.
-      LayoutSize viewport_size(
-          frame_view->LayoutViewport()->ExcludeScrollbars(frame_view->Size()));
+      LayoutSize viewport_size(frame_view->LayoutViewport()->ExcludeScrollbars(
+          ToGfxSize(frame_view->Size())));
       return containing_block->IsHorizontalWritingMode()
                  ? viewport_size.Height()
                  : viewport_size.Width();

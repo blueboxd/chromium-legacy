@@ -48,6 +48,7 @@ enum AcceleratorAction {
   FOCUS_PREVIOUS_PANE,
   FOCUS_SHELF,
   FOCUS_PIP,
+  KEYBOARD_BACKLIGHT_TOGGLE,
   KEYBOARD_BRIGHTNESS_DOWN,
   KEYBOARD_BRIGHTNESS_UP,
   LAUNCH_APP_0,
@@ -141,6 +142,7 @@ enum AcceleratorAction {
 
   // Debug accelerators are intentionally at the end, so that if you remove one
   // you don't need to update tests which check hashes of the ids.
+  DEBUG_KEYBOARD_BACKLIGHT_TOGGLE,
   DEBUG_MICROPHONE_MUTE_TOGGLE,
   DEBUG_PRINT_LAYER_HIERARCHY,
   DEBUG_PRINT_VIEW_HIERARCHY,

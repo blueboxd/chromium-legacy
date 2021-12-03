@@ -1358,6 +1358,7 @@ try_.chromium_linux_builder(
 
 try_.chromium_linux_orchestrator_pair(
     name = "linux-rel",
+    bootstrap = True,
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     use_clang_coverage = True,
@@ -1523,6 +1524,7 @@ try_.chromium_linux_builder(
 
 try_.chromium_linux_builder(
     name = "linux_chromium_msan_rel_ng",
+    execution_timeout = 6 * time.hour,
     goma_jobs = goma.jobs.J150,
 )
 
@@ -2425,6 +2427,10 @@ chrome_internal_verifier(
 
 chrome_internal_verifier(
     builder = "linux-chromeos-chrome",
+)
+
+chrome_internal_verifier(
+    builder = "linux-nearby-chrome-fyi",
 )
 
 chrome_internal_verifier(

@@ -268,6 +268,12 @@ const char kDnsOverHttpsDescription[] =
     "try to use a secure HTTPS connection to look up the addresses of websites "
     "and other web resources.";
 
+extern const char kAssistantConsentSimplifiedTextName[] =
+    "AssistantConsentSimplifiedText";
+extern const char kAssistantConsentSimplifiedTextDescription[] =
+    "Enables simplified consent copy in the Assistant voice search consent "
+    "dialog.";
+
 extern const char kAssistantConsentV2Name[] = "AssistanConsentV2";
 extern const char kAssistantConsentV2Description[] =
     "Enables different strategies for handling backing off from the consent "
@@ -1156,6 +1162,10 @@ const char kMemlogStackModeMixed[] = "Mixed";
 const char kMemlogStackModeNative[] = "Native";
 const char kMemlogStackModeNativeWithThreadNames[] = "Native with thread names";
 const char kMemlogStackModePseudo[] = "Trace events";
+
+const char kEnableAutomaticSnoozeName[] = "Enable Automatic Snooze";
+const char kEnableAutomaticSnoozeDescription[] =
+    "Enables automatic snoozing on In-Product Help with no snooze button.";
 
 const char kEnableLensRegionSearchFlagId[] = "enable-lens-region-search";
 const char kEnableLensRegionSearchName[] =
@@ -3955,6 +3965,11 @@ const char kMetalDescription[] =
     "Use Metal instead of OpenGL for rasterization (if out-of-process "
     "rasterization is enabled) and display (if the Skia renderer is enabled)";
 
+const char kScreenTimeName[] = "Screen Time";
+const char kScreenTimeDescription[] =
+    "Integrate with the macOS Screen Time system. Only enabled on macOS 12.1 "
+    "and later.";
+
 const char kUseAngleDescriptionMac[] =
     "Choose the graphics backend for ANGLE. The OpenGL backend is soon to be "
     "deprecated on Mac, and may contain driver bugs that are not planned to be "
@@ -5171,16 +5186,6 @@ const char kVirtualKeyboardDisabledName[] = "Disable Virtual Keyboard";
 const char kVirtualKeyboardDisabledDescription[] =
     "Always disable virtual keyboard regardless of device mode. Workaround for "
     "virtual keyboard showing with some external keyboards.";
-
-const char kVirtualKeyboardMultipasteName[] = "Virtual Keyboard MultiPaste";
-const char kVirtualKeyboardMultipasteDescription[] =
-    "Show virtual keyboard with multipaste UI";
-
-const char kVirtualKeyboardMultipasteSuggestionName[] =
-    "Virtual Keyboard MultiPaste Suggestion";
-const char kVirtualKeyboardMultipasteSuggestionDescription[] =
-    "Show multipaste items in virtual keyboard suggestion bar if they are "
-    "copied recently";
 
 const char kWakeOnWifiAllowedName[] = "Allow enabling wake on WiFi features";
 const char kWakeOnWifiAllowedDescription[] =

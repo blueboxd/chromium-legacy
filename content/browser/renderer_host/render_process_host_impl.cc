@@ -2247,6 +2247,26 @@ void RenderProcessHostImpl::WriteIntoTrace(perfetto::TracedValue context) {
   dict.Add("process_lock", GetProcessLock().ToString());
 }
 
+void RenderProcessHostImpl::EnableBlinkRuntimeFeatures(
+    const std::vector<std::string>& features) {
+  // To enable runtime features, the render process must be locked to the site
+  // (unless site isolation is explicitly disabled). These features are highly
+  // privileged, so the renderer process with such features enabled shouldn't
+  // be used for other sites.
+  //
+  // For WebUI schemes, process isolation is provided by SiteInfo
+  // ShouldLockProcessToSite().
+  //
+  // To isolate other sites, the embedder can override ContentBrowserClient
+  // ShouldLockProcessToSite().
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSiteIsolation)) {
+    CHECK(GetProcessLock().is_locked_to_site());
+  }
+
+  GetRendererInterface()->EnableBlinkRuntimeFeatures(features);
+}
+
 void RenderProcessHostImpl::WriteIntoTrace(
     perfetto::TracedProto<perfetto::protos::pbzero::RenderProcessHost> proto) {
   int id = GetID();
@@ -4319,6 +4339,8 @@ void RenderProcessHost::SetRunRendererInProcess(bool value) {
 
 // static
 void RenderProcessHost::ShutDownInProcessRenderer() {
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope
+      allow_base_sync_primitives;
   RenderProcessHostImpl::ShutDownInProcessRenderer();
 }
 
@@ -4949,8 +4971,10 @@ void RenderProcessHostImpl::UpdateControllerServiceWorkerProcessPriority() {
 
   for (const auto& kv : context->GetRunningServiceWorkerInfos()) {
     ServiceWorkerVersion* version = context->GetLiveVersion(kv.first);
-    DCHECK(version);
-    if (version->IsControlleeProcessID(GetID())) {
+    // TODO(https://crbug.com/1271393): It appears that some times `version` is
+    // nullptr here, but we don't know why.  Once that is solved revert this
+    // runtime check back to a DCHECK.
+    if (version && version->IsControlleeProcessID(GetID())) {
       version->UpdateForegroundPriority();
       break;
     }

@@ -387,7 +387,8 @@ void LayerTreeHost::FinishCommitOnImplThread(
   {
     TRACE_EVENT0("cc", "LayerTreeHost::PushProperties");
 
-    PushPropertyTreesTo(commit_state, unsafe_state, sync_tree);
+    sync_tree->PullPropertyTreesFrom(unsafe_state.root_layer.get(),
+                                     unsafe_state.property_trees);
     sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kSyncedPropertyTrees);
 
     if (commit_state.needs_surface_ranges_sync) {
@@ -400,7 +401,7 @@ void LayerTreeHost::FinishCommitOnImplThread(
         LayerTreeLifecycle::kSyncedLayerProperties);
 
     PushLayerTreePropertiesTo(commit_state, sync_tree);
-    PushLayerTreeHostPropertiesTo(commit_state, host_impl);
+    host_impl->PullLayerTreeHostPropertiesFrom(commit_state);
 
     sync_tree->PassSwapPromises(std::move(commit_state.swap_promises));
     sync_tree->AppendEventsMetricsFromMainThread(
@@ -493,26 +494,6 @@ void LayerTreeHost::ImageDecodesFinished(
     std::move(it->second).Run(pair.second);
     pending_image_decodes_.erase(it);
   }
-}
-
-void LayerTreeHost::PushPropertyTreesTo(CommitState& commit_state,
-                                        ThreadUnsafeCommitState& unsafe_state,
-                                        LayerTreeImpl* tree_impl) {
-  bool property_trees_changed_on_active_tree =
-      tree_impl->IsActiveTree() && tree_impl->property_trees()->changed;
-  // Property trees may store damage status. We preserve the sync tree damage
-  // status by pushing the damage status from sync tree property trees to main
-  // thread property trees or by moving it onto the layers.
-  if (unsafe_state.root_layer.get() && property_trees_changed_on_active_tree) {
-    if (unsafe_state.property_trees.sequence_number ==
-        tree_impl->property_trees()->sequence_number)
-      tree_impl->property_trees()->PushChangeTrackingTo(
-          &unsafe_state.property_trees);
-    else
-      tree_impl->MoveChangeTrackingToLayers();
-  }
-
-  tree_impl->SetPropertyTrees(&unsafe_state.property_trees);
 }
 
 void LayerTreeHost::SetNextCommitWaitsForActivation() {
@@ -857,32 +838,6 @@ void LayerTreeHost::DidPresentCompositorFrame(
 
 void LayerTreeHost::DidCompletePageScaleAnimation() {
   did_complete_scale_animation_ = true;
-}
-
-void LayerTreeHost::RecordGpuRasterizationHistogram(
-    const LayerTreeHostImpl* host_impl,
-    const CommitState& commit_state) {
-  // Gpu rasterization is only supported for Renderer compositors.
-  // Checking for IsSingleThreaded() to exclude Browser compositors.
-  if (!commit_state.needs_gpu_rasterization_histogram)
-    return;
-
-  bool gpu_rasterization_enabled = false;
-  if (host_impl->layer_tree_frame_sink()) {
-    viz::ContextProvider* compositor_context_provider =
-        host_impl->layer_tree_frame_sink()->context_provider();
-    if (compositor_context_provider) {
-      gpu_rasterization_enabled =
-          compositor_context_provider->ContextCapabilities().gpu_rasterization;
-    }
-  }
-
-  // Record how widely gpu rasterization is enabled.
-  // This number takes device/gpu allowlist/denylist into account.
-  // Note that we do not consider the forced gpu rasterization mode, which is
-  // mostly used for debugging purposes.
-  UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationEnabled",
-                        gpu_rasterization_enabled);
 }
 
 std::string LayerTreeHost::LayersAsString() const {
@@ -1789,26 +1744,6 @@ void LayerTreeHost::PushLayerTreePropertiesTo(CommitState& state,
   // Transfer page transition directives.
   for (auto& request : state.document_transition_requests)
     tree_impl->AddDocumentTransitionRequest(std::move(request));
-}
-
-void LayerTreeHost::PushLayerTreeHostPropertiesTo(
-    const CommitState& commit_state,
-    LayerTreeHostImpl* host_impl) {
-  // TODO(bokan): The |external_pinch_gesture_active| should not be going
-  // through the LayerTreeHost but directly from InputHandler to InputHandler.
-  host_impl->SetExternalPinchGestureActive(
-      commit_state.is_external_pinch_gesture_active);
-
-  RecordGpuRasterizationHistogram(host_impl, commit_state);
-
-  host_impl->SetDebugState(commit_state.debug_state);
-  host_impl->SetVisualDeviceViewportSize(
-      commit_state.visual_device_viewport_size);
-  host_impl->set_viewport_mobile_optimized(
-      commit_state.is_viewport_mobile_optimized);
-  host_impl->SetPrefersReducedMotion(commit_state.prefers_reduced_motion);
-  host_impl->SetMayThrottleIfUndrawnFrames(
-      commit_state.may_throttle_if_undrawn_frames);
 }
 
 Layer* LayerTreeHost::LayerByElementId(ElementId element_id) {

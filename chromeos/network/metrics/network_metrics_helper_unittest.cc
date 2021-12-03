@@ -9,7 +9,10 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
-#include "chromeos/network/network_state_test_helper.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/network/cellular_esim_profile_handler_impl.h"
+#include "chromeos/network/network_handler_test_helper.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -27,9 +30,17 @@ const char kCellularESimConnectResultAllHistogram[] =
 const char kCellularPSimConnectResultAllHistogram[] =
     "Network.Cellular.PSim.ConnectionResult.All";
 
+// LogAllConnectionResult() VPN histograms.
+const char kVpnConnectResultAllHistogram[] = "Network.VPN.ConnectionResult.All";
+const char kVpnBuiltInConnectResultAllHistogram[] =
+    "Network.VPN.TypeBuiltIn.ConnectionResult.All";
+const char kVpnThirdPartyConnectResultAllHistogram[] =
+    "Network.VPN.TypeThirdParty.ConnectionResult.All";
+
 const char kTestGuid[] = "test_guid";
 const char kTestServicePath[] = "/service/network";
 const char kTestName[] = "network_name";
+const char kTestVpnHost[] = "test host";
 
 }  // namespace
 
@@ -43,37 +54,43 @@ class NetworkMetricsHelperTest : public testing::Test {
   ~NetworkMetricsHelperTest() override = default;
 
   void SetUp() override {
-    network_metrics_helper_.reset(new NetworkMetricsHelper());
-    network_metrics_helper_->Init(
-        network_state_test_helper_.network_state_handler());
+    network_handler_test_helper_ = std::make_unique<NetworkHandlerTestHelper>();
     histogram_tester_ = std::make_unique<base::HistogramTester>();
-    shill_service_client_ = network_state_test_helper_.service_test();
+
+    shill_service_client_ = ShillServiceClient::Get()->GetTestInterface();
+    shill_service_client_->ClearServices();
+    base::RunLoop().RunUntilIdle();
+
+    CellularESimProfileHandlerImpl::RegisterLocalStatePrefs(
+        local_state_.registry());
+    chromeos::NetworkHandler::Get()->InitializePrefServices(&profile_prefs_,
+                                                            &local_state_);
   }
 
   void TearDown() override {
-    network_state_test_helper_.ClearServices();
-    network_metrics_helper_.reset();
+    shill_service_client_->ClearServices();
+    network_handler_test_helper_.reset();
   }
 
  protected:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
-  NetworkStateTestHelper network_state_test_helper_{
-      false /* use_default_devices_and_services */};
+  std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
   ShillServiceClient::TestInterface* shill_service_client_;
-  std::unique_ptr<NetworkMetricsHelper> network_metrics_helper_;
+  TestingPrefServiceSimple profile_prefs_;
+  TestingPrefServiceSimple local_state_;
 };
 
 TEST_F(NetworkMetricsHelperTest, LogAllConnectionResultCellularESim) {
   shill_service_client_->AddService(kTestServicePath, kTestGuid, kTestName,
                                     shill::kTypeCellular, shill::kStateIdle,
-                                    true);
+                                    /*visible=*/true);
   shill_service_client_->SetServiceProperty(
-      kTestServicePath, shill::kEidProperty, base::Value(kTestGuid));
+      kTestServicePath, shill::kEidProperty, base::Value("eid"));
   base::RunLoop().RunUntilIdle();
 
-  network_metrics_helper_->LogAllConnectionResult(kTestGuid,
-                                                  shill::kErrorNotRegistered);
+  NetworkMetricsHelper::LogAllConnectionResult(kTestGuid,
+                                               shill::kErrorNotRegistered);
   histogram_tester_->ExpectTotalCount(kCellularConnectResultAllHistogram, 1);
   histogram_tester_->ExpectTotalCount(kCellularESimConnectResultAllHistogram,
                                       1);
@@ -84,16 +101,62 @@ TEST_F(NetworkMetricsHelperTest, LogAllConnectionResultCellularESim) {
 TEST_F(NetworkMetricsHelperTest, LogAllConnectionResultCellularPSim) {
   shill_service_client_->AddService(kTestServicePath, kTestGuid, kTestName,
                                     shill::kTypeCellular, shill::kStateIdle,
-                                    true);
+                                    /*visible=*/true);
   base::RunLoop().RunUntilIdle();
 
-  network_metrics_helper_->LogAllConnectionResult(kTestGuid,
-                                                  shill::kErrorNotRegistered);
+  NetworkMetricsHelper::LogAllConnectionResult(kTestGuid,
+                                               shill::kErrorNotRegistered);
   histogram_tester_->ExpectTotalCount(kCellularConnectResultAllHistogram, 1);
   histogram_tester_->ExpectTotalCount(kCellularPSimConnectResultAllHistogram,
                                       1);
   histogram_tester_->ExpectTotalCount(kCellularESimConnectResultAllHistogram,
                                       0);
+}
+
+TEST_F(NetworkMetricsHelperTest, LogAllConnectionResultVPN) {
+  const std::vector<const std::string> kProviders{{
+      shill::kProviderL2tpIpsec,
+      shill::kProviderArcVpn,
+      shill::kProviderOpenVpn,
+      shill::kProviderThirdPartyVpn,
+      shill::kProviderWireGuard,
+  }};
+
+  size_t expected_all_count = 0;
+  size_t expected_built_in_count = 0;
+  size_t expected_third_party_count = 0;
+
+  for (const auto& provider : kProviders) {
+    shill_service_client_->AddService(kTestServicePath, kTestGuid, kTestName,
+                                      shill::kTypeVPN, shill::kStateIdle,
+                                      /*visible=*/true);
+    shill_service_client_->SetServiceProperty(
+        kTestServicePath, shill::kProviderTypeProperty, base::Value(provider));
+    shill_service_client_->SetServiceProperty(kTestServicePath,
+                                              shill::kProviderHostProperty,
+                                              base::Value(kTestVpnHost));
+    base::RunLoop().RunUntilIdle();
+
+    if (provider == shill::kProviderThirdPartyVpn ||
+        provider == shill::kProviderArcVpn) {
+      ++expected_third_party_count;
+    } else {
+      ++expected_built_in_count;
+    }
+    ++expected_all_count;
+
+    NetworkMetricsHelper::LogAllConnectionResult(kTestGuid,
+                                                 shill::kErrorNotRegistered);
+    histogram_tester_->ExpectTotalCount(kVpnConnectResultAllHistogram,
+                                        expected_all_count);
+    histogram_tester_->ExpectTotalCount(kVpnBuiltInConnectResultAllHistogram,
+                                        expected_built_in_count);
+    histogram_tester_->ExpectTotalCount(kVpnThirdPartyConnectResultAllHistogram,
+                                        expected_third_party_count);
+
+    shill_service_client_->RemoveService(kTestServicePath);
+    base::RunLoop().RunUntilIdle();
+  }
 }
 
 }  // namespace chromeos

@@ -92,8 +92,6 @@ source_set("platform") {
       "fuchsia/accessibility_bridge_fuchsia.h",
       "fuchsia/accessibility_bridge_fuchsia_registry.cc",
       "fuchsia/accessibility_bridge_fuchsia_registry.h",
-      "fuchsia/fuchsia_types.cc",
-      "fuchsia/fuchsia_types.h",
     ]
 
     public_deps +=
@@ -154,6 +152,8 @@ source_set("platform") {
         "ax_private_roles_mac.h",
         "ax_private_webkit_constants_mac.h",
         "ax_private_webkit_constants_mac.mm",
+        "inspect/ax_inspect_utils_mac.h",
+        "inspect/ax_inspect_utils_mac.mm",
       ]
 
       frameworks = [

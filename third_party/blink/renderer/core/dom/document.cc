@@ -5127,10 +5127,22 @@ void Document::NotifyUpdateCharacterData(CharacterData* character_data,
       });
 }
 
-void Document::NotifyChangeChildren(const ContainerNode& container) {
+void Document::NotifyChangeChildren(
+    const ContainerNode& container,
+    const ContainerNode::ChildrenChange& change) {
   synchronous_mutation_observer_set_.ForEachObserver(
       [&](SynchronousMutationObserver* observer) {
-        observer->DidChangeChildren(container);
+        observer->DidChangeChildren(container, change);
+      });
+}
+
+void Document::NotifyAttributeChanged(const Element& element,
+                                      const QualifiedName& name,
+                                      const AtomicString& old_value,
+                                      const AtomicString& new_value) {
+  synchronous_mutation_observer_set_.ForEachObserver(
+      [&](SynchronousMutationObserver* observer) {
+        observer->AttributeChanged(element, name, old_value, new_value);
       });
 }
 
@@ -5601,6 +5613,24 @@ void Document::setDomain(const String& raw_domain,
         "document.domain mutation is ignored because the surrounding agent "
         "cluster is origin-keyed."));
     return;
+  }
+
+  // TODO(crbug.com/1259920): Remove this check once the Origin-Agent-Cluster
+  // default behaviour change has been default-enabled.
+  if (base::FeatureList::IsEnabled(
+          blink::features::kOriginAgentClusterDefaultWarning) &&
+      Loader()) {
+    const AtomicString& origin_agent_cluster_header =
+        Loader()->GetResponse().HttpHeaderField(
+            http_names::kOriginAgentCluster);
+    if (origin_agent_cluster_header != "?0" &&
+        origin_agent_cluster_header != "?1") {
+      DCHECK(!dom_window_->GetAgent()->IsOriginKeyed());
+      Deprecation::CountDeprecation(
+          GetExecutionContext(),
+          WebFeature::kDocumentDomainSettingWithoutOriginAgentClusterHeader);
+      // No return; warning only.
+    }
   }
 
   if (GetFrame()) {

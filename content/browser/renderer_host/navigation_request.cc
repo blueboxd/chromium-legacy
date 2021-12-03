@@ -1811,9 +1811,10 @@ void NavigationRequest::BeginNavigationImpl() {
                                         pending_ad_components_map);
 
     if (!mapped_url) {
+      StartNavigation();
       OnRequestFailedInternal(
           network::URLLoaderCompletionStatus(net::ERR_INVALID_URL),
-          true /* skip_throttles */, absl::nullopt /* error_page_content*/,
+          false /* skip_throttles */, absl::nullopt /* error_page_content*/,
           false /* collapse_frame */);
       return;
     }
@@ -2625,14 +2626,28 @@ bool NavigationRequest::IsOptInIsolationRequested() {
   if (!SiteIsolationPolicy::IsOriginAgentClusterEnabled())
     return false;
 
-  // Origin agent cluster defaults to false, so comparing against kTrue
-  // handle both cases.
   return response_head_->parsed_headers->origin_agent_cluster ==
          network::mojom::OriginAgentClusterValue::kTrue;
 }
 
-void NavigationRequest::DetermineOriginAgentClusterEndResult(
-    bool is_requested) {
+bool NavigationRequest::IsIsolationImplied() {
+  if (!response())
+    return false;
+
+  // Do not attempt isolation if the feature is not enabled.
+  if (!SiteIsolationPolicy::IsOriginAgentClusterEnabled())
+    return false;
+
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kOriginAgentClusterDefaultEnabled)) {
+    return false;
+  }
+
+  return response_head_->parsed_headers->origin_agent_cluster ==
+         network::mojom::OriginAgentClusterValue::kAbsent;
+}
+
+void NavigationRequest::DetermineOriginAgentClusterEndResult() {
   DCHECK_EQ(state_, WILL_PROCESS_RESPONSE);
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
@@ -2646,12 +2661,14 @@ void NavigationRequest::DetermineOriginAgentClusterEndResult(
   const IsolationContext& isolation_context =
       render_frame_host_->GetSiteInstance()->GetIsolationContext();
 
+  bool is_requested = IsOptInIsolationRequested();
+  bool expects_origin_agent_cluster = is_requested || IsIsolationImplied();
   bool requires_origin_keyed_process =
       is_requested &&
       SiteIsolationPolicy::IsProcessIsolationForOriginAgentClusterEnabled();
 
   OriginAgentClusterIsolationState requested_isolation_state =
-      is_requested /* is_origin_agent_cluster */
+      expects_origin_agent_cluster
           ? OriginAgentClusterIsolationState::CreateForOriginAgentCluster(
                 requires_origin_keyed_process)
           : OriginAgentClusterIsolationState::CreateNonIsolated();
@@ -2811,15 +2828,15 @@ UrlInfo NavigationRequest::GetUrlInfo() {
   // active simultaneously for the same navigation.
   uint32_t isolation_flags = UrlInfo::OriginIsolationRequest::kNone;
 
-  // TODO(wjmaclean): allow kOriginAgentCluster to be set independently of
-  // kRequiresOriginKeyedProcess, to allow for logical OAC even when
-  // process-isolation for origins is available.
-  if (IsOptInIsolationRequested()) {
+  // An origin-keyed agent cluster is used if requested by header
+  // (or possibly by default, if no opt-out is requested), while an
+  // origin-keyed process is currently only used if requested by header.
+  if (IsOptInIsolationRequested() || IsIsolationImplied())
     isolation_flags |= UrlInfo::OriginIsolationRequest::kOriginAgentCluster;
-    if (SiteIsolationPolicy::IsProcessIsolationForOriginAgentClusterEnabled()) {
-      isolation_flags |=
-          UrlInfo::OriginIsolationRequest::kRequiresOriginKeyedProcess;
-    }
+  if (IsOptInIsolationRequested() &&
+      SiteIsolationPolicy::IsProcessIsolationForOriginAgentClusterEnabled()) {
+    isolation_flags |=
+        UrlInfo::OriginIsolationRequest::kRequiresOriginKeyedProcess;
   }
 
   if (ShouldRequestSiteIsolationForCOOP())
@@ -3198,7 +3215,7 @@ void NavigationRequest::OnResponseStarted(
     DCHECK(!response_should_be_rendered_);
 
   if (render_frame_host_)
-    DetermineOriginAgentClusterEndResult(IsOptInIsolationRequested());
+    DetermineOriginAgentClusterEndResult();
 
   cross_origin_embedder_policy_ = cross_origin_embedder_policy;
 
@@ -3540,8 +3557,7 @@ void NavigationRequest::OnRequestFailedInternal(
   // The check for WebUI should be performed only if error page isolation is
   // enabled for this failed navigation. It is possible for subframe error page
   // to be committed in a WebUI process as shown in https://crbug.com/944086.
-  if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(
-          frame_tree_node_->IsMainFrame())) {
+  if (frame_tree_node_->IsErrorPageIsolationEnabled()) {
     if (!Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
             render_frame_host_, GetUrlInfo(),
             /* is_renderer_initiated_check */ false)) {
@@ -3565,10 +3581,8 @@ NavigationRequest::ErrorPageProcess NavigationRequest::ComputeErrorPageProcess(
     int net_error) {
   // By policy we can isolate all error pages from both the current and
   // destination processes.
-  if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(
-          frame_tree_node_->IsMainFrame())) {
+  if (frame_tree_node_->IsErrorPageIsolationEnabled())
     return ErrorPageProcess::kIsolatedProcess;
-  }
 
   // Decide whether to leave the error page in the original process.
   // * If this was a renderer-initiated navigation, and the request is blocked

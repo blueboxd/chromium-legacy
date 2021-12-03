@@ -25,12 +25,19 @@ constexpr int kDateInOneWeek = 7;
 
 // The padding in each date cell view.
 constexpr int kDateVerticalPadding = 13;
-constexpr int kDateHorizontalPadding = 2;
-constexpr int kColumnSetPadding = 2;
+constexpr int kDateHorizontalPadding = 12;
+constexpr int kColumnSetPadding = 3;
 
 // The insets within a Date cell.
 constexpr gfx::Insets kDateCellInsets{kDateVerticalPadding,
                                       kDateHorizontalPadding};
+
+// Duration of opacity animation for visibility changes.
+constexpr base::TimeDelta kAnimationDurationForVisibility =
+    base::Milliseconds(100);
+
+// Duration of moving animation.
+constexpr base::TimeDelta kAnimationDurationForMoving = base::Milliseconds(300);
 
 // Checks if the `selected_date` is local time today.
 bool IsToday(const base::Time::Exploded& selected_date);

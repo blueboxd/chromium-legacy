@@ -115,18 +115,18 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(
       SourceImageStatus*,
-      const FloatSize&,
+      const gfx::SizeF&,
       const AlphaDisposition alpha_disposition = kPremultiplyAlpha) override;
 
-  FloatSize ElementSize(const FloatSize&,
-                        const RespectImageOrientationEnum) const override;
+  gfx::SizeF ElementSize(const gfx::SizeF&,
+                         const RespectImageOrientationEnum) const override;
   bool IsVideoFrame() const override;
   bool IsOpaque() const override;
   bool IsAccelerated() const override;
 
   // ImageBitmapSource implementation
   static constexpr uint64_t kCpuEfficientFrameSize = 320u * 240u;
-  IntSize BitmapSourceSize() const override;
+  gfx::Size BitmapSourceSize() const override;
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   absl::optional<gfx::Rect> crop_rect,
                                   const ImageBitmapOptions*,

@@ -17,11 +17,10 @@ class BrowserDriver(abc.ABC):
   """Abstract Base Class encapsulating browser setup and tear down.
   """
 
-  def __init__(self, browser_name: str, process_name: str, executable: str):
+  def __init__(self, browser_name: str, process_name: str):
     self.name = browser_name
     self.process_name = process_name
     self.browser_process = None
-    self.executable = executable
 
   @abc.abstractmethod
   def Launch(self):
@@ -32,17 +31,18 @@ class BrowserDriver(abc.ABC):
   def TearDown(self):
     """Terminates the browser and ensures it's cleaned up before returning.
     """
-    logging.info(f"Tearing down {self.process_name}")
+    logging.debug(f"Tearing down {self.process_name}")
     if self.browser_process:
       utils.TerminateProcess(self.browser_process)
 
   def GetApplicationInfo(self) -> typing.Dict:
     """ Returns the Info.plist data in the application folder. """
     # `executable` may be either a path or an identifier.
-    if os.path.splitext(self.executable)[1]:
+    if self.executable is not None:
       executable_path = self.executable
     else:
-      executable_path = os.path.join("/Applications", f"{self.executable}.app")
+      executable_path = os.path.join("/Applications",
+                                     f"{self.process_name}.app")
 
     plist_path = os.path.join(executable_path, "Contents", "Info.plist")
     with open(plist_path, 'rb') as plist_file:
@@ -64,8 +64,8 @@ class BrowserDriver(abc.ABC):
     while not self.browser_process:
       self.browser_process = utils.FindProcess(self.process_name)
       time.sleep(0.100)
-      logging.info(f"Waiting for {self.process_name} to start")
-    logging.info(f"{self.process_name} started")
+      logging.debug(f"Waiting for {self.process_name} to start")
+    logging.debug(f"{self.process_name} started")
 
 
 class SafariDriver(BrowserDriver):
@@ -93,15 +93,16 @@ class ChromiumDriver(BrowserDriver):
                process_name: str,
                executable_path=None,
                extra_args=[]):
-    if executable_path:
-      executable = executable_path
-    else:
-      executable = process_name
-    super().__init__(browser_name, process_name, executable)
+    self.executable = executable_path
+    super().__init__(browser_name, process_name)
     self.extra_args = extra_args
 
   def Launch(self):
-    subprocess.call(["open", "-a", self.executable, "--args"] +
+    if self.executable is not None:
+      open_args = [self.executable]
+    else:
+      open_args = ["-a", self.process_name]
+    subprocess.call(["open"] + open_args + ["--args"] +
                     ["--enable-benchmarking", "--disable-stack-profiler"] +
                     self.extra_args)
 
@@ -164,13 +165,15 @@ def MakeBrowserDriver(browser_name: str,
 
   if "safari" == browser_name:
     return Safari()
-  if browser_name in ["chrome", "chromium"]:
+  if browser_name in ["chrome", "chromium", "canary"]:
     if chrome_user_dir:
       chrome_extra_arg = [f"--user-data-dir={chrome_user_dir}"]
     else:
       chrome_extra_arg = ["--guest"]
     if browser_name == "chrome":
       return Chrome(extra_args=chrome_extra_arg)
+    if browser_name == "canary":
+      return Canary(extra_args=chrome_extra_arg)
     elif browser_name == "chromium":
       return Chromium(executable_path=chromium_path,
                       extra_args=chrome_extra_arg)

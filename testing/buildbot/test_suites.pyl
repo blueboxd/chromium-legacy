@@ -4048,6 +4048,9 @@
           '--flag-specific=webgpu-with-backend-validation',
           # Increase the timeout when using backend validation layers (crbug.com/1208253)
           '--time-out-ms=30000',
+          # TODO(crbug.com/1274975): Remove this once loading on newer NVIDIA
+          # GPUs is fixed.
+          '--additional-driver-flag=--disable-gpu-sandbox',
         ],
         'win64_args': [ '--target=Release_x64' ],
         'mac_args': [
@@ -4080,6 +4083,9 @@
           # crbug.com/953991 Ensure WebGPU is ready before running tests
           '--initialize-webgpu-adapter-at-startup-timeout-ms=60000',
           '--flag-specific=webgpu',
+          # TODO(crbug.com/1274975): Remove this once loading on newer NVIDIA
+          # GPUs is fixed.
+          '--additional-driver-flag=--disable-gpu-sandbox',
         ],
         'win64_args': [ '--target=Release_x64' ],
         'mac_args': [
@@ -4116,6 +4122,9 @@
           '--flag-specific=webgpu-with-partial-backend-validation',
           # Increase the timeout when using backend validation layers (crbug.com/1208253)
           '--time-out-ms=30000',
+          # TODO(crbug.com/1274975): Remove this once loading on newer NVIDIA
+          # GPUs is fixed.
+          '--additional-driver-flag=--disable-gpu-sandbox',
         ],
         'win64_args': [ '--target=Release_x64' ],
         'mac_args': [
@@ -4290,14 +4299,12 @@
       },
     },
 
-    # create this temporary lacros arm test suites that runs on skylab, which
-    # focuses on the tast tests; create this new suite instead of using
-    # lacros_skylab_tests which may be altered later
-    # TODO(crbug.com/1247425): remove it and use lacros_skylab_poc instead if
-    # we want to add ozone unit test
+    # create this temporary lacros arm test suites that runs on skylab
+    # TODO(crbug.com/1247425): remove it if it is the same as
+    # lacros_skylab_poc
     'lacros_skylab_arm_tests': {
       'lacros_all_tast_tests': {
-        'tast_expr': '("group:mainline" && "dep:lacros" && !informational)',
+        'tast_expr': '("group:mainline" && "dep:lacros" && "dep:lacros_unstable")',
         'timeout_sec': 10800,
       },
     },

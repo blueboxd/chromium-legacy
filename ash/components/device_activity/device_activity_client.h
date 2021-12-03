@@ -8,11 +8,23 @@
 #include <memory>
 
 #include "base/component_export.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "third_party/private_membership/src/private_membership_rlwe_client.h"
+#include "url/gurl.h"
+
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
+
+class PrefService;
 
 namespace ash {
 namespace device_activity {
@@ -25,7 +37,7 @@ namespace device_activity {
 class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) DeviceActivityClient
     : public chromeos::NetworkStateHandlerObserver {
  public:
-  // For a given use case (DAILY), tracks the state the client is currently in.
+  // Tracks the state the client is in, given the use case (i.e DAILY).
   enum class State {
     kIdle,  // Wait on network connection OR |report_timer_| to trigger.
     kCheckingMembershipOprf,   // Phase 1 of the |CheckMembership| request.
@@ -34,9 +46,11 @@ class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) DeviceActivityClient
     kHealthCheck,              // Query to perform server health check.
   };
 
-  // Constructor fires device active pings while the device network is
-  // connected.
-  DeviceActivityClient(NetworkStateHandler* handler);
+  // Fires device active pings while the device network is connected.
+  DeviceActivityClient(
+      NetworkStateHandler* handler,
+      PrefService* local_state,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   DeviceActivityClient(const DeviceActivityClient&) = delete;
   DeviceActivityClient& operator=(const DeviceActivityClient&) = delete;
   ~DeviceActivityClient() override;
@@ -56,6 +70,9 @@ class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) DeviceActivityClient
   // Handles device network connecting successfully.
   void OnNetworkOnline();
 
+  // Return Fresnel server network request endpoints determined by the |state_|.
+  GURL GetFresnelURL() const;
+
   // Called when device network comes online as well as by |report_timer_|.
   void TransitionOutOfIdle();
 
@@ -65,7 +82,7 @@ class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) DeviceActivityClient
   void TransitionToHealthCheck();
 
   // Callback from asynchronous method |TransitionToHealthCheck|.
-  void OnHealthCheckDone();
+  void OnHealthCheckDone(std::unique_ptr<std::string> response_body);
 
   // Send Oprf network request and update |state_|.
   // Before method: |state_| set to |kIdle|.
@@ -102,17 +119,31 @@ class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) DeviceActivityClient
   // Keep track of whether the device is connected to the network.
   bool network_connected_ = false;
 
-  // TODO(hirthanan): Retrieve the derived secret from VPD.
+  // API key used to authenticate with the Fresnel server. This key is read from
+  // the chrome-internal repository and is not publicly exposed in Chromium.
+  const std::string api_key_;
+
+  // TODO(https://crbug.com/1262151): Retrieve the derived secret from VPD.
   // The ChromeOS platform code will provide a derived stable device secret.
   // This secret is used to generate a PSM identifier for the reporting window.
   const std::string derived_stable_device_secret_;
 
-  // Time the network last connected successfully.
-  base::Time last_time_network_came_online_;
+  // Generated on demand each time the state machine leaves the idle state.
+  // It is reused by several states. It is reset to nullopt.
+  // This field is used apart of PSM Import request.
+  absl::optional<std::string> current_day_window_id_;
+
+  // Generated on demand each time the state machine leaves the idle state.
+  // It is reused by several states. It is reset to nullopt.
+  // This field is used apart of PSM Oprf, Query, and Import requests.
+  absl::optional<std::string> current_day_psm_id_;
+
+  // Time the device last transitioned out of idle state.
+  base::Time last_transition_out_of_idle_time__;
 
   // Tries reporting device actives every |kTimeToRepeat| from when this class
   // is initialized. Time of class initialization depends on when the device is
-  // turned on (chrome_browser_main_chromeos.cc |PostBrowserStart|).
+  // turned on (when |ChromeBrowserMainPartsAsh::PostBrowserStart| is run).
   std::unique_ptr<base::RepeatingTimer> report_timer_;
 
   // Tracks the visible networks and their properties.
@@ -121,6 +152,24 @@ class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) DeviceActivityClient
   // part of the |dbus_services_|, before |DeviceActivityClient| is initialized.
   // Similarly, |DeviceActivityClient| is destructed before |dbus_services_|.
   NetworkStateHandler* const network_state_handler_;
+
+  // Update last stored device active ping timestamps for PSM use cases.
+  // On powerwash/recovery update |local_state_| to the most recent timestamp
+  // |CheckMembership| was performed, as |local_state_| gets deleted.
+  // |local_state_| outlives the lifetime of this class.
+  // Used local state prefs are initialized by |DeviceActivityController|.
+  PrefService* const local_state_;
+
+  // Shared |url_loader_| object used to handle ongoing network requests.
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
+
+  // The URLLoaderFactory we use to issue network requests.
+  // |url_loader_factory_| outlives |url_loader_|.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  // Automatically cancels callbacks when the referent of weakptr gets
+  // destroyed.
+  base::WeakPtrFactory<DeviceActivityClient> weak_factory_{this};
 };
 
 }  // namespace device_activity

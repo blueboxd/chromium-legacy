@@ -44,6 +44,10 @@ class CORE_EXPORT HTMLSelectMenuElement final
   // returns that HTMLSelectMenuElement. Else returns null.
   static HTMLSelectMenuElement* OwnerSelectMenu(Node* node);
 
+  // For use in the implementation of HTMLOptionElement.
+  void OptionSelectionStateChanged(HTMLOptionElement*, bool option_is_selected);
+  void OptionElementChildrenChanged(const HTMLOptionElement& option);
+
   PartType AssignedPartType(Node* node) const;
 
   Element* ButtonPart() const { return button_part_; }
@@ -54,12 +58,14 @@ class CORE_EXPORT HTMLSelectMenuElement final
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
   void OpenListbox();
   void CloseListbox();
-  void UpdatePartElements();
 
   HTMLOptionElement* FirstOptionPart() const;
   Element* FirstValidButtonPart() const;
   Element* FirstValidListboxPart() const;
   Element* FirstValidSelectedValuePart() const;
+  void EnsureButtonPartIsValid();
+  void EnsureSelectedValuePartIsValid();
+  void EnsureListboxPartIsValid();
   void EnsureSelectedOptionIsValid();
   HTMLOptionElement* SelectedOption();
   void SetSelectedOption(HTMLOptionElement* selected_option);

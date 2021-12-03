@@ -639,13 +639,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void SetPropertyTreesNeedRebuild();
 
-  void PushPropertyTreesTo(CommitState& commit_state,
-                           ThreadUnsafeCommitState& unsafe_state,
-                           LayerTreeImpl* tree_impl);
   static void PushLayerTreePropertiesTo(CommitState& commit_state,
                                         LayerTreeImpl* tree_impl);
-  void PushLayerTreeHostPropertiesTo(const CommitState& commit_state,
-                                     LayerTreeHostImpl* host_impl);
   void MoveChangeTrackingToLayers(ThreadUnsafeCommitState& unsafe_state,
                                   LayerTreeImpl* tree_impl);
 
@@ -849,9 +844,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   }
 
   void OnCommitForSwapPromises();
-
-  void RecordGpuRasterizationHistogram(const LayerTreeHostImpl* host_impl,
-                                       const CommitState& commit_state);
 
   MicroBenchmarkController micro_benchmark_controller_;
 

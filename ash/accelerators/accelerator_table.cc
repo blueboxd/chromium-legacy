@@ -64,6 +64,7 @@ static_assert(kDeprecatedAcceleratorsLength ==
 
 const AcceleratorData kDebugAcceleratorData[] = {
     {true, ui::VKEY_N, kDebugModifier, TOGGLE_WIFI},
+    {true, ui::VKEY_X, kDebugModifier, DEBUG_KEYBOARD_BACKLIGHT_TOGGLE},
     {true, ui::VKEY_M, kDebugModifier, DEBUG_MICROPHONE_MUTE_TOGGLE},
     {true, ui::VKEY_O, kDebugModifier, DEBUG_SHOW_TOAST},
     {true, ui::VKEY_P, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
@@ -131,7 +132,9 @@ const AcceleratorAction kPreferredActions[] = {
 const size_t kPreferredActionsLength = base::size(kPreferredActions);
 
 const AcceleratorAction kReservedActions[] = {
-    POWER_PRESSED, POWER_RELEASED, SUSPEND,
+    POWER_PRESSED,
+    POWER_RELEASED,
+    SUSPEND,
 };
 
 const size_t kReservedActionsLength = base::size(kReservedActions);
@@ -148,6 +151,7 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
     DEBUG_TOGGLE_TABLET_MODE,
     DEV_ADD_REMOVE_DISPLAY,
     DISABLE_CAPS_LOCK,
+    KEYBOARD_BACKLIGHT_TOGGLE,
     KEYBOARD_BRIGHTNESS_DOWN,
     KEYBOARD_BRIGHTNESS_UP,
     MAGNIFIER_ZOOM_IN,   // Control+F7
@@ -212,12 +216,14 @@ const size_t kActionsAllowedAtPowerMenuLength =
 const AcceleratorAction kActionsAllowedAtModalWindow[] = {
     BRIGHTNESS_DOWN,
     BRIGHTNESS_UP,
+    DEBUG_KEYBOARD_BACKLIGHT_TOGGLE,
     DEBUG_MICROPHONE_MUTE_TOGGLE,
     DEBUG_TOGGLE_TOUCH_PAD,
     DEBUG_TOGGLE_TOUCH_SCREEN,
     DEV_ADD_REMOVE_DISPLAY,
     DISABLE_CAPS_LOCK,
     EXIT,
+    KEYBOARD_BACKLIGHT_TOGGLE,
     KEYBOARD_BRIGHTNESS_DOWN,
     KEYBOARD_BRIGHTNESS_UP,
     LOCK_SCREEN,
@@ -290,6 +296,7 @@ const size_t kRepeatableActionsLength = base::size(kRepeatableActions);
 const AcceleratorAction kActionsAllowedInAppModeOrPinnedMode[] = {
     BRIGHTNESS_DOWN,
     BRIGHTNESS_UP,
+    DEBUG_KEYBOARD_BACKLIGHT_TOGGLE,
     DEBUG_MICROPHONE_MUTE_TOGGLE,
     DEBUG_PRINT_LAYER_HIERARCHY,
     DEBUG_PRINT_VIEW_HIERARCHY,
@@ -298,6 +305,7 @@ const AcceleratorAction kActionsAllowedInAppModeOrPinnedMode[] = {
     DEBUG_TOGGLE_TOUCH_SCREEN,
     DEV_ADD_REMOVE_DISPLAY,
     DISABLE_CAPS_LOCK,
+    KEYBOARD_BACKLIGHT_TOGGLE,
     KEYBOARD_BRIGHTNESS_DOWN,
     KEYBOARD_BRIGHTNESS_UP,
     MAGNIFIER_ZOOM_IN,   // Control+F7
@@ -380,6 +388,7 @@ const size_t kActionsNeedingWindowLength = base::size(kActionsNeedingWindow);
 const AcceleratorAction kActionsKeepingMenuOpen[] = {
     BRIGHTNESS_DOWN,
     BRIGHTNESS_UP,
+    DEBUG_KEYBOARD_BACKLIGHT_TOGGLE,
     DEBUG_MICROPHONE_MUTE_TOGGLE,
     DEBUG_TOGGLE_TOUCH_PAD,
     DEBUG_TOGGLE_TOUCH_SCREEN,
@@ -391,6 +400,7 @@ const AcceleratorAction kActionsKeepingMenuOpen[] = {
     DESKS_NEW_DESK,
     DESKS_REMOVE_CURRENT_DESK,
     DISABLE_CAPS_LOCK,
+    KEYBOARD_BACKLIGHT_TOGGLE,
     KEYBOARD_BRIGHTNESS_DOWN,
     KEYBOARD_BRIGHTNESS_UP,
     MEDIA_FAST_FORWARD,

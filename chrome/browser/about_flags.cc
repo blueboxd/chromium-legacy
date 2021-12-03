@@ -252,6 +252,7 @@
 
 #if defined(OS_MAC)
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/cocoa/screentime/screentime_features.h"
 #endif  // OS_MAC
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1400,7 +1401,7 @@ const FeatureEntry::FeatureParam kNtpChromeCartModuleAbandonedCartDiscount[] = {
      "true"},
     {"partner-merchant-pattern",
      "(electronicexpress.com|zazzle.com|wish.com|homesquare.com|iherb.com|"
-     "zappos.com)"}};
+     "zappos.com|otterbox.com)"}};
 const FeatureEntry::FeatureParam kNtpChromeCartModuleHeuristicsImprovement[] = {
     {ntp_features::kNtpChromeCartModuleHeuristicsImprovementParam, "true"}};
 const FeatureEntry::FeatureParam kNtpChromeCartModuleRBDAndCouponDiscount[] = {
@@ -3486,6 +3487,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVoiceButtonInTopToolbarName,
      flag_descriptions::kVoiceButtonInTopToolbarDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kVoiceButtonInTopToolbar)},
+    {"assistant-consent-simplified-text",
+     flag_descriptions::kAssistantConsentSimplifiedTextName,
+     flag_descriptions::kAssistantConsentSimplifiedTextDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAssistantConsentSimplifiedText)},
     {"assistant-consent-v2", flag_descriptions::kAssistantConsentV2Name,
      flag_descriptions::kAssistantConsentV2Description, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kAssistantConsentV2,
@@ -3531,6 +3536,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLightweightReactionsAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(content_creation::kLightweightReactions)},
 #endif  // OS_ANDROID
+    {"enable-automatic-snooze", flag_descriptions::kEnableAutomaticSnoozeName,
+     flag_descriptions::kEnableAutomaticSnoozeDescription, kOsAll,
+     FEATURE_VALUE_TYPE(feature_engagement::kEnableAutomaticSnooze)},
     {"in-product-help-demo-mode-choice",
      flag_descriptions::kInProductHelpDemoModeChoiceName,
      flag_descriptions::kInProductHelpDemoModeChoiceDescription, kOsAll,
@@ -3652,7 +3660,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNavigationPredictorDescription,
      kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(blink::features::kNavigationPredictor)},
-#endif  // BUILDFLAG(IS_CHROMEOS) || OS_LINUX
+#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
     {"enable-preconnect-to-search",
      flag_descriptions::kEnablePreconnectToSearchName,
      flag_descriptions::kEnablePreconnectToSearchDescription, kOsAll,
@@ -4168,16 +4176,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVirtualKeyboardBorderedKeyName,
      flag_descriptions::kVirtualKeyboardBorderedKeyDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardBorderedKey)},
-    {"enable-cros-virtual-keyboard-multipaste",
-     flag_descriptions::kVirtualKeyboardMultipasteName,
-     flag_descriptions::kVirtualKeyboardMultipasteDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardMultipaste)},
-    {"enable-cros-virtual-keyboard-multipaste-suggestion",
-     flag_descriptions::kVirtualKeyboardMultipasteSuggestionName,
-     flag_descriptions::kVirtualKeyboardMultipasteSuggestionDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         chromeos::features::kVirtualKeyboardMultipasteSuggestion)},
     {"enable-experimental-accessibility-dictation-extension",
      flag_descriptions::kExperimentalAccessibilityDictationExtensionName,
      flag_descriptions::kExperimentalAccessibilityDictationExtensionDescription,
@@ -6224,6 +6222,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"metal", flag_descriptions::kMetalName,
      flag_descriptions::kMetalDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kMetal)},
+    {"screentime", flag_descriptions::kScreenTimeName,
+     flag_descriptions::kScreenTimeDescription, kOsMac,
+     FEATURE_VALUE_TYPE(screentime::kScreenTime)},
 #endif
 
     {"enable-de-jelly", flag_descriptions::kEnableDeJellyName,

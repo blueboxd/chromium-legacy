@@ -1238,22 +1238,13 @@ const base::Feature kUserActivityPrediction{"UserActivityPrediction",
 const base::Feature kVirtualKeyboardBorderedKey{
     "VirtualKeyboardBorderedKey", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable or disable multipaste feature for virtual keyboard on Chrome OS.
-const base::Feature kVirtualKeyboardMultipaste{
-    "VirtualKeyboardMultipaste", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable or disable showing multipaste suggestions in virtual keyboard on
-// Chrome OS.
-const base::Feature kVirtualKeyboardMultipasteSuggestion{
-    "VirtualKeyboardMultipasteSuggestion", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether to allow enabling wake on WiFi features in shill.
 const base::Feature kWakeOnWifiAllowed{"WakeOnWifiAllowed",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable new wallpaper experience in WebUI inside system settings.
+// Enable new wallpaper experience SWA.
 const base::Feature kWallpaperWebUI{"WallpaperWebUI",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable full screen wallpaper preview in new wallpaper experience. Requires
 // |kWallpaperWebUI| to also be enabled.

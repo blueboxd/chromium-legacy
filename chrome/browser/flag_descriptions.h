@@ -165,6 +165,9 @@ extern const char kUseCustomMessagesDomainDescription[];
 extern const char kAndroidPictureInPictureAPIName[];
 extern const char kAndroidPictureInPictureAPIDescription[];
 
+extern const char kAssistantConsentSimplifiedTextName[];
+extern const char kAssistantConsentSimplifiedTextDescription[];
+
 extern const char kAssistantConsentV2Name[];
 extern const char kAssistantConsentV2Description[];
 
@@ -356,6 +359,9 @@ extern const char kDnsOverHttpsDescription[];
 
 extern const char kDnsHttpssvcName[];
 extern const char kDnsHttpssvcDescription[];
+
+extern const char kEnableAutomaticSnoozeName[];
+extern const char kEnableAutomaticSnoozeDescription[];
 
 extern const char kEnableFirstPartySetsName[];
 extern const char kEnableFirstPartySetsDescription[];
@@ -2276,6 +2282,9 @@ extern const char kMacSyscallSandboxDescription[];
 extern const char kMetalName[];
 extern const char kMetalDescription[];
 
+extern const char kScreenTimeName[];
+extern const char kScreenTimeDescription[];
+
 extern const char kUseAngleDescriptionMac[];
 extern const char kUseAngleMetal[];
 
@@ -2989,12 +2998,6 @@ extern const char kVirtualKeyboardBorderedKeyDescription[];
 
 extern const char kVirtualKeyboardDisabledName[];
 extern const char kVirtualKeyboardDisabledDescription[];
-
-extern const char kVirtualKeyboardMultipasteName[];
-extern const char kVirtualKeyboardMultipasteDescription[];
-
-extern const char kVirtualKeyboardMultipasteSuggestionName[];
-extern const char kVirtualKeyboardMultipasteSuggestionDescription[];
 
 extern const char kWakeOnWifiAllowedName[];
 extern const char kWakeOnWifiAllowedDescription[];

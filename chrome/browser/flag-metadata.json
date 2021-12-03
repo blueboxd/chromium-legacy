@@ -314,6 +314,14 @@
     "expiry_milestone": 96
   },
   {
+    "name": "assistant-consent-simplified-text",
+    "owners": [
+      "jds@google.com",
+      "chrome-voice@google.com"
+    ],
+    "expiry_milestone": 103
+  },
+  {
     "name": "assistant-consent-v2",
     "owners": [
       "basiaz@google.com",
@@ -1504,6 +1512,11 @@
     "name": "enable-autofill-upi-vpa",
     "owners": [ "cfroussios" ],
     "expiry_milestone": 98
+  },
+  {
+    "name": "enable-automatic-snooze",
+    "owners": [ "shaktisahu", "haileywang" ],
+    "expiry_milestone": 101
   },
   {
     "name": "enable-background-blur",
@@ -4809,6 +4822,11 @@
     "expiry_milestone": 92
   },
   {
+    "name": "screentime",
+    "owners": [ "lgrey", "chrome-mac-dev@google.com" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "scroll-capture",
     "owners": [ "ckitagawa", "fredmello", "yashard" ],
     "expiry_milestone": 100
@@ -5646,14 +5664,9 @@
     "expiry_milestone": 114
   },
   {
-    "name": "web-view-native-context-menu",
-    "owners": ["gambard","bling-flags@google.com"],
-    "expiry_milestone": 100
-  },
-  {
     "name": "webnotes-publish",
     "owners": [ "sebsg", "gayane"],
-    "expiry_milestone": 97
+    "expiry_milestone": 100
   },
   {
     "name": "webpage-alternative-text-zoom",

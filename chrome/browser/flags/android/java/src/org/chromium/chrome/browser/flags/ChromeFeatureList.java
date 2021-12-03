@@ -221,6 +221,7 @@ public abstract class ChromeFeatureList {
     public static final String ANDROID_SEARCH_ENGINE_CHOICE_NOTIFICATION =
             "AndroidSearchEngineChoiceNotification";
     public static final String APP_LANGUAGE_PROMPT = "AppLanguagePrompt";
+    public static final String ASSISTANT_CONSENT_SIMPLIFIED_TEXT = "AssistantConsentSimplifiedText";
     public static final String ASSISTANT_CONSENT_V2 = "AssistantConsentV2";
     public static final String ASSISTANT_INTENT_EXPERIMENT_ID = "AssistantIntentExperimentId";
     public static final String ASSISTANT_INTENT_PAGE_URL = "AssistantIntentPageUrl";
@@ -330,6 +331,7 @@ public abstract class ChromeFeatureList {
     public static final String ELIDE_PRIORITIZATION_OF_PRE_NATIVE_BOOTSTRAP_TASKS =
             "ElidePrioritizationOfPreNativeBootstrapTasks";
     public static final String ELIDE_TAB_PRELOAD_AT_STARTUP = "ElideTabPreloadAtStartup";
+    public static final String ENABLE_AUTOMATIC_SNOOZE = "EnableAutomaticSnooze";
     public static final String ENABLE_DANGEROUS_DOWNLOAD_DIALOG = "EnableDangerousDownloadDialog";
     public static final String ENABLE_DUPLICATE_DOWNLOAD_DIALOG = "EnableDuplicateDownloadDialog";
     public static final String ENHANCED_PROTECTION_PROMO_CARD = "EnhancedProtectionPromoCard";

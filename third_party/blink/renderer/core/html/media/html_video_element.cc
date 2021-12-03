@@ -382,7 +382,7 @@ void HTMLVideoElement::RequestExitPictureInPicture() {
 }
 
 void HTMLVideoElement::PaintCurrentFrame(cc::PaintCanvas* canvas,
-                                         const IntRect& dest_rect,
+                                         const gfx::Rect& dest_rect,
                                          const PaintFlags* flags) const {
   if (!GetWebMediaPlayer())
     return;
@@ -396,7 +396,7 @@ void HTMLVideoElement::PaintCurrentFrame(cc::PaintCanvas* canvas,
     media_flags.setBlendMode(SkBlendMode::kSrc);
   }
 
-  GetWebMediaPlayer()->Paint(canvas, ToGfxRect(dest_rect), media_flags);
+  GetWebMediaPlayer()->Paint(canvas, dest_rect, media_flags);
 }
 
 bool HTMLVideoElement::HasAvailableVideoFrame() const {
@@ -527,7 +527,7 @@ scoped_refptr<StaticBitmapImage> HTMLVideoElement::CreateStaticBitmapImage(
   if (!media_video_frame || !video_renderer)
     return nullptr;
 
-  const auto intrinsic_size = IntSize(media_video_frame->natural_size());
+  const gfx::Size intrinsic_size = media_video_frame->natural_size();
   if (!resource_provider_ ||
       allow_accelerated_images != resource_provider_->IsAccelerated() ||
       intrinsic_size != resource_provider_->Size()) {
@@ -557,7 +557,7 @@ scoped_refptr<StaticBitmapImage> HTMLVideoElement::CreateStaticBitmapImage(
 
 scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    const FloatSize&,
+    const gfx::SizeF&,
     const AlphaDisposition alpha_disposition) {
   // UnpremultiplyAlpha is not implemented yet.
   DCHECK_EQ(alpha_disposition, kPremultiplyAlpha);
@@ -576,14 +576,14 @@ bool HTMLVideoElement::WouldTaintOrigin() const {
   return !IsMediaDataCorsSameOrigin();
 }
 
-FloatSize HTMLVideoElement::ElementSize(
-    const FloatSize&,
+gfx::SizeF HTMLVideoElement::ElementSize(
+    const gfx::SizeF&,
     const RespectImageOrientationEnum) const {
-  return FloatSize(videoWidth(), videoHeight());
+  return gfx::SizeF(videoWidth(), videoHeight());
 }
 
-IntSize HTMLVideoElement::BitmapSourceSize() const {
-  return IntSize(videoWidth(), videoHeight());
+gfx::Size HTMLVideoElement::BitmapSourceSize() const {
+  return gfx::Size(videoWidth(), videoHeight());
 }
 
 ScriptPromise HTMLVideoElement::CreateImageBitmap(

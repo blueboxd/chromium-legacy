@@ -2204,7 +2204,7 @@ Try tapping the mic to ask me anything.
       </message>
       <!-- Manual write protect disable complete page -->
       <message name="IDS_SHIMLESS_RMA_WP_DISABLE_COMPLETE_PAGE_TITLE" translateable="false" desc="Title for the manual write protect disable complete page. Displays next steps, either reassemble device or leave wp disabled until further notice.">
-        Hardware Write Protection Disabled Manually
+        Manual write-protect disable complete
       </message>
       <message name="IDS_SHIMLESS_RMA_WP_DISABLE_SKIPPED_MESSAGE" translateable="false" desc="If the device already had write protection disabled before reaching the 'choose method' page the flow skips straight to this page and informs the user they can manually re-enable if it is currently manually disabled. It is not possible for the device to determine this automatically, so the instructions must cover both cases.">
         Write protection is already disabled. If the device is disassembled you may reassemble it now.
@@ -2213,7 +2213,7 @@ Try tapping the mic to ask me anything.
         Write protection disable complete, you can reassemble the device.
       </message>
       <message name="IDS_SHIMLESS_RMA_WP_DISABLE_LEAVE_DISASSEMBLED_MESSAGE" translateable="false" desc="If the device needs write protection to remain disabled for the remainder of RMA then inform user they can must leave it disabled.">
-        Write protection disable complete, you can reassemble the device.
+        Write protection disable complete, you must keep the device disassembled.
       </message>
       <!-- Check calibration page -->
       <message name="IDS_SHIMLESS_RMA_CHECK_CALIBRATION_PAGE_TITLE" translateable="false" desc="Title for the page shown when confirming components to calibrate.">
@@ -2323,20 +2323,8 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_STARTING" translateable="false" desc="Message to display when when waiting for calibration to start.">
         Calibration starting...
       </message>
-      <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPONENT_WAITING" translateable="false" desc="Status message for a single component waiting to calibrate.">
-        Waiting to calibrate <ph name="COMPONENT_NAME">$1<ex>Audio</ex></ph>
-      </message>
-      <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPONENT_PROGRESS" translateable="false" desc="Status message for a single component waiting to calibrate.">
-        Calibrating <ph name="COMPONENT_NAME">$1<ex>Audio</ex></ph> <ph name="CALIBRATION_PROGRESS">$2<ex>25</ex></ph>% complete
-      </message>
-      <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPONENT_COMPLETE" translateable="false" desc="Status message for a single component waiting to calibrate.">
-        Calibrated <ph name="COMPONENT_NAME">$1<ex>Audio</ex></ph>
-      </message>
-      <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPONENT_FAILED" translateable="false" desc="Status message for a single component waiting to calibrate.">
-        Failed to calibrate <ph name="COMPONENT_NAME">$1<ex>Audio</ex></ph>
-      </message>
-      <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPONENT_SKIPPED" translateable="false" desc="Status message for a single component waiting to calibrate.">
-        Skipped calibrating <ph name="COMPONENT_NAME">$1<ex>Audio</ex></ph>
+      <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATING_COMPONENT" translateable="false" desc="Status message for a single component while it's being calibrated.">
+        Calibrating <ph name="COMPONENT_NAME">$1<ex>Audio</ex></ph>...
       </message>
       <!-- OS update page -->
       <message name="IDS_SHIMLESS_RMA_UPDATE_OS_PAGE_TITLE" translateable="false" desc="Title of Chrome OS update page.">
@@ -2371,7 +2359,7 @@ Try tapping the mic to ask me anything.
       </message>
       <!-- Manually disable wp page -->
       <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_INSTRUCTIONS" translateable="false" desc="The text instructions for how to manually disable write-protect on the device.">
-        Disable write-protect to continue to the next screen. Learn how to disable write-proect for this device by viewing the instructions at <ph name="HELP_LINK">$1<ex>g.co/help</ex></ph> or scanning the QR code. Once you disable write-protect, you will need to leave it disabled until the repair process is finished.
+        Disable write-protect to continue to the next screen. Learn how to disable write-protect for this device by viewing the instructions at the device manufacturer's support page. Once you disable write-protect, you will need to leave it disabled until the repair process is finished. Please expect a reboot after disabling write protection.
       </message>
       <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_TITLE" translateable="false" desc="The title for the page to manually disable write-protect on the device.">
         Manually disable write-protect

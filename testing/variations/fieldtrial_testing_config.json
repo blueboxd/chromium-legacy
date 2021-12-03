@@ -831,6 +831,9 @@
                 {
                     "name": "RAM",
                     "params": {
+                        "critical_kib": "322560",
+                        "moderate_kib": "0",
+                        "reclaim_kib": "322560",
                         "shift_mib": "0"
                     },
                     "enable_features": [
@@ -840,6 +843,9 @@
                 {
                     "name": "RAM - 512",
                     "params": {
+                        "critical_kib": "322560",
+                        "moderate_kib": "0",
+                        "reclaim_kib": "322560",
                         "shift_mib": "-512"
                     },
                     "enable_features": [
@@ -2092,21 +2098,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ChromeOSSharingHub"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ChromeOSWallpaperMigration": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WallpaperWebUI"
                     ]
                 }
             ]
@@ -5492,6 +5483,9 @@
             "experiments": [
                 {
                     "name": "AndroidExperiments",
+                    "params": {
+                        "OmniboxDynamicMaxAutocompleteIncreasedLimit": "15"
+                    },
                     "enable_features": [
                         "OmniboxDynamicMaxAutocomplete",
                         "OmniboxOnFocusSuggestionsContextualWebAllowSRP",
@@ -5840,6 +5834,35 @@
                         "write_to_history_service": "false"
                     },
                     "enable_features": [
+                        "LoadModelFileForEachExecution",
+                        "PageContentAnnotations"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PageContentAnnotationsDesktop": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "PageContentAnnotationsWithVisibility_JourneysWithOmniboxAction_20211202",
+                    "params": {
+                        "annotate_title_instead_of_page_content": "true",
+                        "bag_of_words_entities": "false",
+                        "extract_related_searches": "true",
+                        "min_page_topics_model_version_for_visibility": "2110051800",
+                        "models_to_execute": "OPTIMIZATION_TARGET_PAGE_TOPICS,OPTIMIZATION_TARGET_PAGE_ENTITIES",
+                        "write_to_history_service": "true"
+                    },
+                    "enable_features": [
+                        "Journeys",
+                        "JourneysOmniboxAction",
                         "LoadModelFileForEachExecution",
                         "PageContentAnnotations"
                     ]
@@ -6413,31 +6436,6 @@
                     "disable_features": [
                         "QueryTilesEnableQueryEditing",
                         "QueryTilesInOmnibox"
-                    ]
-                },
-                {
-                    "name": "EnabledExploreSegmentation2",
-                    "params": {
-                        "base_url": "https://chromeupboarding-pa.googleapis.com",
-                        "experiment_tag": "{maxLevels : 1}",
-                        "image_prefetch_mode": "top",
-                        "is_unmetered_network_required": "false",
-                        "max_trending_tile_impressions": "1",
-                        "most_visited_max_rows_normal_screen": "1",
-                        "most_visited_max_rows_small_screen": "1",
-                        "mv_tile_click_threshold": "1",
-                        "small_screen_height_threshold_dp": "700"
-                    },
-                    "enable_features": [
-                        "QueryTiles",
-                        "QueryTilesInNTP",
-                        "QueryTilesLocalOrdering",
-                        "QueryTilesSegmentation"
-                    ],
-                    "disable_features": [
-                        "QueryTilesEnableQueryEditing",
-                        "QueryTilesInOmnibox",
-                        "QueryTilesRemoveTrendingAfterInactivity"
                     ]
                 },
                 {
@@ -7106,11 +7104,7 @@
     "SendTabToSelfV2": [
         {
             "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
+                "android"
             ],
             "experiments": [
                 {
@@ -9189,21 +9183,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "Win11StyleMenus"
-                    ]
-                }
-            ]
-        }
-    ],
-    "XsurfaceMetricsReporting": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "XsurfaceMetricsReporting"
                     ]
                 }
             ]

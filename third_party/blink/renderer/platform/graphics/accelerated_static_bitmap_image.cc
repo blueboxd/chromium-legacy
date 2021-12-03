@@ -99,8 +99,8 @@ AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-IntSize AcceleratedStaticBitmapImage::SizeInternal() const {
-  return IntSize(sk_image_info_.width(), sk_image_info_.height());
+gfx::Size AcceleratedStaticBitmapImage::SizeInternal() const {
+  return gfx::Size(sk_image_info_.width(), sk_image_info_.height());
 }
 
 scoped_refptr<StaticBitmapImage>
@@ -118,7 +118,7 @@ bool AcceleratedStaticBitmapImage::CopyToTexture(
     bool unpack_premultiply_alpha,
     bool unpack_flip_y,
     const gfx::Point& dest_point,
-    const IntRect& source_sub_rectangle) {
+    const gfx::Rect& source_sub_rectangle) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!IsValid())
     return false;
@@ -209,8 +209,8 @@ PaintImage AcceleratedStaticBitmapImage::PaintImageForCurrentFrame() {
 
 void AcceleratedStaticBitmapImage::Draw(cc::PaintCanvas* canvas,
                                         const cc::PaintFlags& flags,
-                                        const FloatRect& dst_rect,
-                                        const FloatRect& src_rect,
+                                        const gfx::RectF& dst_rect,
+                                        const gfx::RectF& src_rect,
                                         const ImageDrawOptions& draw_options) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto paint_image = PaintImageForCurrentFrame();

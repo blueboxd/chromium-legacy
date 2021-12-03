@@ -1469,7 +1469,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   PropertyTrees pending_property_trees;
   pending_property_trees.sequence_number =
       host_impl_->active_tree()->property_trees()->sequence_number + 1;
-  host_impl_->pending_tree()->SetPropertyTrees(&pending_property_trees);
+  host_impl_->pending_tree()->SetPropertyTrees(pending_property_trees);
   SetupRootLayer<LayerImpl>(host_impl_->pending_tree(), gfx::Size(100, 100));
   host_impl_->ActivateSyncTree();
 
@@ -14046,7 +14046,9 @@ TEST_F(LayerTreeHostImplTest, FrameCounterReset) {
       BEGINFRAME_FROM_HERE, 1u /*source_id*/, 2u /*sequence_number*/, now,
       deadline, interval, viz::BeginFrameArgs::NORMAL);
 
-  dropped_frame_counter->OnEndFrame(args, true);
+  dropped_frame_counter->OnEndFrame(args,
+                                    {FrameInfo::FrameFinalState::kDropped,
+                                     FrameInfo::SmoothThread::kSmoothBoth});
   // FCP not received, so the total_smoothness_dropped_ won't increase.
   EXPECT_EQ(dropped_frame_counter->total_smoothness_dropped(), 0u);
 
@@ -14054,7 +14056,9 @@ TEST_F(LayerTreeHostImplTest, FrameCounterReset) {
   begin_frame_metrics.should_measure_smoothness = true;
   host_impl_->ReadyToCommit(args, &begin_frame_metrics);
   dropped_frame_counter->SetTimeFcpReceivedForTesting(args.frame_time);
-  dropped_frame_counter->OnEndFrame(args, true);
+  dropped_frame_counter->OnEndFrame(args,
+                                    {FrameInfo::FrameFinalState::kDropped,
+                                     FrameInfo::SmoothThread::kSmoothBoth});
   EXPECT_EQ(dropped_frame_counter->total_smoothness_dropped(), 1u);
 
   total_frame_counter->set_total_frames_for_testing(1u);

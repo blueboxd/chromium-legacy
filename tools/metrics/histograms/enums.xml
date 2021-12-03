@@ -15097,6 +15097,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="ContextMenuOptionIOS">
+  <obsolete>
+    Deprecated in M94
+  </obsolete>
   <summary>The item selected from a context menu on iOS.</summary>
   <int value="0" label="Open in new tab"/>
   <int value="1" label="Open in incognito tab"/>
@@ -17507,6 +17510,15 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
 <enum name="CredentialPhishedStatus">
   <int value="0" label="Marked as phished"/>
   <int value="1" label="Site marked as legitimate"/>
+</enum>
+
+<enum name="CreditCardSeamlessFill">
+  <int value="0" label=":-D Full fill"/>
+  <int value="1" label=":-) Optional name missing"/>
+  <int value="2" label=":-) Optional CVC missing"/>
+  <int value="3" label=":-) Optional name and CVC missing"/>
+  <int value="4" label=":-| Full fill but exp. date missing"/>
+  <int value="5" label=":-( Partial fill"/>
 </enum>
 
 <enum name="CreditCardUploadDisallowedNetwork">
@@ -24031,7 +24043,8 @@ Called by update_document_policy_enum.py.-->
   <int value="5" label="Failed to Generate a Response"/>
   <int value="6" label="Failed to Sign the Response"/>
   <int value="7" label="Failed to Serialize the Response"/>
-  <int value="8" label="Success"/>
+  <int value="8" label="Serialized Response is Empty"/>
+  <int value="9" label="Success"/>
 </enum>
 
 <enum name="DTLS_SRTPCryptoSuite">
@@ -35698,6 +35711,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4082" label="CSSMatchMediaUnknown"/>
   <int value="4083" label="CSSMediaListUnknown"/>
   <int value="4084" label="CSSOMMediaConditionUnknown"/>
+  <int value="4085"
+      label="DocumentDomainSettingWithoutOriginAgentClusterHeader"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41776,6 +41791,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3"
       label="InitOK attributes.canRecoverFromContextLoss=True
              gpu_info.can_lose_context=True"/>
+</enum>
+
+<enum name="GridTabSwitcherMessageDisableReason">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="User taps the primary button on message"/>
+  <int value="2" label="User dismisses the message"/>
+  <int value="3" label="User ignores the message many times"/>
 </enum>
 
 <enum name="GridTabSwitcherThumbnailFetchingResult">
@@ -50817,6 +50839,7 @@ from previous Chrome versions.
   <int value="-680589442" label="MacRTL:disabled"/>
   <int value="-679500267" label="UseXpsForPrinting:disabled"/>
   <int value="-678184617" label="TranslateSubFrames:disabled"/>
+  <int value="-677938988" label="AssistantConsentSimplifiedText:disabled"/>
   <int value="-674804217" label="SoleIntegration:enabled"/>
   <int value="-673804828" label="EnablePlayStoreAppSearch:disabled"/>
   <int value="-673149604" label="RelatedSearches:enabled"/>
@@ -51223,6 +51246,7 @@ from previous Chrome versions.
   <int value="-354783358" label="NTPSaveToOffline:disabled"/>
   <int value="-353182790" label="ConsistentOmniboxGeolocation:disabled"/>
   <int value="-353180213" label="DevicePosture:disabled"/>
+  <int value="-351830087" label="AssistantConsentSimplifiedText:enabled"/>
   <int value="-351552989" label="disable-hosted-apps-in-windows"/>
   <int value="-351127770" label="enable-offline-pages-as-bookmarks"/>
   <int value="-349437334" label="UseDdljsonApi:disabled"/>
@@ -51396,6 +51420,7 @@ from previous Chrome versions.
   <int value="-221649438" label="AllowTouchpadHapticClickSettings:disabled"/>
   <int value="-220599034" label="UsePdfCompositorServiceForPrint:enabled"/>
   <int value="-220298483" label="ImeOptionsInSettings:enabled"/>
+  <int value="-217930860" label="EnableAutomaticSnooze:disabled"/>
   <int value="-217885320" label="CdmFactoryDaemon:disabled"/>
   <int value="-216219963" label="ash-shelf-color-scheme"/>
   <int value="-216189310"
@@ -54443,6 +54468,7 @@ from previous Chrome versions.
   <int value="2047503404" label="FilesSWA:enabled"/>
   <int value="2047695652" label="DelegateOverscrollSwipes:enabled"/>
   <int value="2049432745" label="VaapiWebPImageDecodeAcceleration:enabled"/>
+  <int value="2049674680" label="EnableAutomaticSnooze:enabled"/>
   <int value="2050985807" label="AllowPopupsDuringPageUnload:enabled"/>
   <int value="2051403297" label="ShowBluetoothDeviceBattery:disabled"/>
   <int value="2051886966" label="PwaInstallUseBottomSheet:enabled"/>
@@ -57634,7 +57660,6 @@ Called by update_use_counter_css.py.-->
   <int value="21" label="AutoDarkWebContents"/>
   <int value="22" label="TestMessage"/>
   <int value="23" label="TailoredSecurityEnabled"/>
-  <int value="24" label="VrServicesUpgrade"/>
 </enum>
 
 <enum name="MessageLoopProblems">

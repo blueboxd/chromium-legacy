@@ -90,7 +90,7 @@ class CORE_EXPORT HTMLVideoElement final
   //
   // PaintFlags is optional. If unspecified, its blend mode defaults to kSrc.
   void PaintCurrentFrame(cc::PaintCanvas*,
-                         const IntRect&,
+                         const gfx::Rect&,
                          const cc::PaintFlags*) const;
 
   bool HasAvailableVideoFrame() const;
@@ -112,12 +112,12 @@ class CORE_EXPORT HTMLVideoElement final
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(
       SourceImageStatus*,
-      const FloatSize&,
+      const gfx::SizeF&,
       const AlphaDisposition alpha_disposition = kPremultiplyAlpha) override;
   bool IsVideoElement() const override { return true; }
   bool WouldTaintOrigin() const override;
-  FloatSize ElementSize(const FloatSize&,
-                        const RespectImageOrientationEnum) const override;
+  gfx::SizeF ElementSize(const gfx::SizeF&,
+                         const RespectImageOrientationEnum) const override;
   const KURL& SourceURL() const override { return currentSrc(); }
   bool IsHTMLVideoElement() const override { return true; }
   // Video elements currently always go through RAM when used as a canvas image
@@ -125,7 +125,7 @@ class CORE_EXPORT HTMLVideoElement final
   bool IsAccelerated() const override { return false; }
 
   // ImageBitmapSource implementation
-  IntSize BitmapSourceSize() const override;
+  gfx::Size BitmapSourceSize() const override;
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   absl::optional<gfx::Rect> crop_rect,
                                   const ImageBitmapOptions*,

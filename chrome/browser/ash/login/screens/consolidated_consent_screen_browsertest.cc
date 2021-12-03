@@ -6,6 +6,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "base/hash/sha1.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/test/fake_arc_tos_mixin.h"
@@ -14,22 +15,37 @@
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/ash/login/test/user_policy_mixin.h"
 #include "chrome/browser/ash/login/test/webview_content_extractor.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/consent_auditor/consent_auditor_factory.h"
+#include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chromeos/login/consolidated_consent_screen_handler.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/consent_auditor/fake_consent_auditor.h"
 #include "content/public/test/browser_test.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace ash {
 namespace {
 
+using ::consent_auditor::FakeConsentAuditor;
+using ::sync_pb::UserConsentTypes;
 using ::testing::_;
+using ArcPlayTermsOfServiceConsent =
+    ::sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent;
+using ArcBackupAndRestoreConsent =
+    ::sync_pb::UserConsentTypes::ArcBackupAndRestoreConsent;
+using ArcGoogleLocationServiceConsent =
+    ::sync_pb::UserConsentTypes::ArcGoogleLocationServiceConsent;
+
+const char kManagedUser[] = "user@example.com";
+const char kManagedGaiaID[] = "33333";
 
 constexpr char kConsolidatedConsentId[] = "consolidated-consent";
 
@@ -109,6 +125,46 @@ const test::UIPath kPrivacyPolicyWebview = {kConsolidatedConsentId,
 const test::UIPath kPrivacyPolicyOkButton = {kConsolidatedConsentId,
                                              "privacyOkButton"};
 
+ArcPlayTermsOfServiceConsent BuildArcPlayTermsOfServiceConsent(
+    const std::string& tos_content) {
+  ArcPlayTermsOfServiceConsent play_consent;
+  play_consent.set_status(sync_pb::UserConsentTypes::GIVEN);
+  play_consent.set_confirmation_grd_id(
+      IDS_CONSOLIDATED_CONSENT_ACCEPT_AND_CONTINUE);
+  play_consent.set_consent_flow(ArcPlayTermsOfServiceConsent::SETUP);
+  play_consent.set_play_terms_of_service_hash(
+      base::SHA1HashString(tos_content));
+  play_consent.set_play_terms_of_service_text_length(tos_content.length());
+  return play_consent;
+}
+
+ArcBackupAndRestoreConsent BuildArcBackupAndRestoreConsent(bool accepted) {
+  ArcBackupAndRestoreConsent backup_and_restore_consent;
+  backup_and_restore_consent.set_confirmation_grd_id(
+      IDS_CONSOLIDATED_CONSENT_ACCEPT_AND_CONTINUE);
+  backup_and_restore_consent.add_description_grd_ids(
+      IDS_CONSOLIDATED_CONSENT_BACKUP_OPT_IN_TITLE);
+  backup_and_restore_consent.add_description_grd_ids(
+      IDS_CONSOLIDATED_CONSENT_BACKUP_OPT_IN);
+  backup_and_restore_consent.set_status(accepted ? UserConsentTypes::GIVEN
+                                                 : UserConsentTypes::NOT_GIVEN);
+
+  return backup_and_restore_consent;
+}
+
+ArcGoogleLocationServiceConsent BuildArcGoogleLocationServiceConsent(
+    bool accepted) {
+  ArcGoogleLocationServiceConsent location_service_consent;
+  location_service_consent.set_confirmation_grd_id(
+      IDS_CONSOLIDATED_CONSENT_ACCEPT_AND_CONTINUE);
+  location_service_consent.add_description_grd_ids(
+      IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN_TITLE);
+  location_service_consent.add_description_grd_ids(
+      IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN);
+  location_service_consent.set_status(accepted ? UserConsentTypes::GIVEN
+                                               : UserConsentTypes::NOT_GIVEN);
+  return location_service_consent;
+}
 }  // namespace
 
 // Regular user flow with ARC not enabled
@@ -343,6 +399,214 @@ IN_PROC_BROWSER_TEST_F(ConsolidatedConsentScreenArcEnabledTest,
   test::OobeJS().ExpectDialogOpen(kFooterLearnMorePopUp);
   test::OobeJS().ClickOnPath(kFooterLearnMorePopUpClose);
   test::OobeJS().ExpectDialogClosed(kFooterLearnMorePopUp);
+}
+
+// There are two toggles for enabling/disabling ARC backup restore and
+// ARC location service. This parameterized test executes all 4 combinations
+// of enabled/disabled states and checks that advancing to the next screen by
+// accepting.
+class ConsolidatedConsentScreenParametrizedTest
+    : public ConsolidatedConsentScreenArcEnabledTest,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
+ public:
+  void SetUp() override {
+    std::tie(accept_backup_restore_, accept_location_service_) = GetParam();
+    ConsolidatedConsentScreenArcEnabledTest::SetUp();
+  }
+
+  // Common routine that enables/disables toggles based on test parameters.
+  // `play_consent`, `backup_and_restore_consent` and `location_service_consent`
+  // are the expected consents recordings.
+  void AdvanceNextScreenWithExpectations(
+      ArcPlayTermsOfServiceConsent play_consent,
+      ArcBackupAndRestoreConsent backup_and_restore_consent,
+      ArcGoogleLocationServiceConsent location_service_consent) {
+    Profile* profile = ProfileManager::GetActiveUserProfile();
+    FakeConsentAuditor* auditor = static_cast<FakeConsentAuditor*>(
+        ConsentAuditorFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile, base::BindRepeating(&BuildFakeConsentAuditor)));
+
+    if (!accept_backup_restore_)
+      test::OobeJS().ClickOnPath(kBackupToggle);
+
+    if (!accept_location_service_)
+      test::OobeJS().ClickOnPath(kLocationToggle);
+
+    EXPECT_CALL(*auditor, RecordArcPlayConsent(
+                              testing::_,
+                              consent_auditor::ArcPlayConsentEq(play_consent)));
+
+    EXPECT_CALL(*auditor,
+                RecordArcBackupAndRestoreConsent(
+                    testing::_, consent_auditor::ArcBackupAndRestoreConsentEq(
+                                    backup_and_restore_consent)));
+
+    EXPECT_CALL(
+        *auditor,
+        RecordArcGoogleLocationServiceConsent(
+            testing::_, consent_auditor::ArcGoogleLocationServiceConsentEq(
+                            location_service_consent)));
+
+    test::OobeJS().ClickOnPath(kAcceptButton);
+  }
+
+ protected:
+  bool accept_backup_restore_;
+  bool accept_location_service_;
+};
+
+// Tests that clicking on "Accept" button records the expected consents.
+// When TOS are accepted we should also record whether backup restores and
+// location services are enabled.
+IN_PROC_BROWSER_TEST_P(ConsolidatedConsentScreenParametrizedTest, ClickAccept) {
+  fake_arc_tos_.set_serve_tos_with_privacy_policy_footer(false);
+  LoginAsRegularUser();
+  OobeScreenWaiter(ConsolidatedConsentScreenView::kScreenId).Wait();
+  test::OobeJS().CreateVisibilityWaiter(true, kLoadedDialog)->Wait();
+
+  ArcPlayTermsOfServiceConsent play_consent =
+      BuildArcPlayTermsOfServiceConsent(fake_arc_tos_.GetArcTosContent());
+  ArcBackupAndRestoreConsent backup_and_restore_consent =
+      BuildArcBackupAndRestoreConsent(accept_backup_restore_);
+  ArcGoogleLocationServiceConsent location_service_consent =
+      BuildArcGoogleLocationServiceConsent(accept_location_service_);
+
+  AdvanceNextScreenWithExpectations(play_consent, backup_and_restore_consent,
+                                    location_service_consent);
+
+  WaitForScreenExit();
+  EXPECT_EQ(screen_result_, ConsolidatedConsentScreen::Result::ACCEPTED);
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ConsolidatedConsentScreenParametrizedTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
+
+class ConsolidatedConsentScreenManagedUserTest
+    : public ConsolidatedConsentScreenArcEnabledTest {
+ public:
+  enum class ArcManagedOptin {
+    kManagedDisabled,
+    kNotManaged,
+    kManagedEnabled,
+  };
+
+  void LoginManagedUser() {
+    LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build =
+        true;
+    login_manager_mixin_.LoginWithDefaultContext(managed_user_);
+  }
+
+  void SetUpArcEnabledPolicy() {
+    std::unique_ptr<ScopedUserPolicyUpdate> scoped_user_policy_update =
+        user_policy_mixin_.RequestPolicyUpdate();
+    scoped_user_policy_update->policy_payload()
+        ->mutable_arcenabled()
+        ->set_value(true);
+  }
+
+  void SetUpManagedOptIns(ArcManagedOptin backup_opt_in,
+                          ArcManagedOptin location_opt_in) {
+    std::unique_ptr<ScopedUserPolicyUpdate> scoped_user_policy_update =
+        user_policy_mixin_.RequestPolicyUpdate();
+    scoped_user_policy_update->policy_payload()
+        ->mutable_arcbackuprestoreserviceenabled()
+        ->set_value(int(backup_opt_in));
+    scoped_user_policy_update->policy_payload()
+        ->mutable_arcgooglelocationservicesenabled()
+        ->set_value(int(location_opt_in));
+  }
+
+  void CheckTogglesState(ArcManagedOptin backup_opt_in,
+                         ArcManagedOptin location_opt_in) {
+    test::OobeJS().ExpectVisiblePath(kBackup);
+    test::OobeJS().ExpectVisiblePath(kLocation);
+
+    switch (backup_opt_in) {
+      case ArcManagedOptin::kManagedDisabled:
+        test::OobeJS().ExpectDisabledPath(kBackupToggle);
+        test::OobeJS().ExpectHasNoAttribute("checked", kBackupToggle);
+        break;
+      case ArcManagedOptin::kManagedEnabled:
+        test::OobeJS().ExpectDisabledPath(kBackupToggle);
+        test::OobeJS().ExpectHasAttribute("checked", kBackupToggle);
+        break;
+      case ArcManagedOptin::kNotManaged:
+        test::OobeJS().ExpectEnabledPath(kBackupToggle);
+        break;
+    }
+    switch (location_opt_in) {
+      case ArcManagedOptin::kManagedDisabled:
+        test::OobeJS().ExpectDisabledPath(kLocationToggle);
+        test::OobeJS().ExpectHasNoAttribute("checked", kLocationToggle);
+        break;
+      case ArcManagedOptin::kManagedEnabled:
+        test::OobeJS().ExpectDisabledPath(kLocationToggle);
+        test::OobeJS().ExpectHasAttribute("checked", kLocationToggle);
+        break;
+      case ArcManagedOptin::kNotManaged:
+        test::OobeJS().ExpectEnabledPath(kLocationToggle);
+        break;
+    }
+  }
+
+ private:
+  const LoginManagerMixin::TestUserInfo managed_user_{
+      AccountId::FromUserEmailGaiaId(kManagedUser, kManagedGaiaID)};
+  UserPolicyMixin user_policy_mixin_{&mixin_host_, managed_user_.account_id};
+};
+
+IN_PROC_BROWSER_TEST_F(ConsolidatedConsentScreenManagedUserTest,
+                       BackupOptinManagedEnabled) {
+  SetUpArcEnabledPolicy();
+  SetUpManagedOptIns(ArcManagedOptin::kManagedEnabled,
+                     ArcManagedOptin::kNotManaged);
+  LoginManagedUser();
+  CheckTogglesState(ArcManagedOptin::kManagedEnabled,
+                    ArcManagedOptin::kNotManaged);
+}
+
+IN_PROC_BROWSER_TEST_F(ConsolidatedConsentScreenManagedUserTest,
+                       BackupOptinManagedDisabled) {
+  SetUpArcEnabledPolicy();
+  SetUpManagedOptIns(ArcManagedOptin::kManagedDisabled,
+                     ArcManagedOptin::kNotManaged);
+  LoginManagedUser();
+  CheckTogglesState(ArcManagedOptin::kManagedDisabled,
+                    ArcManagedOptin::kNotManaged);
+}
+
+IN_PROC_BROWSER_TEST_F(ConsolidatedConsentScreenManagedUserTest,
+                       LocationOptinManagedEnabled) {
+  SetUpArcEnabledPolicy();
+  SetUpManagedOptIns(ArcManagedOptin::kNotManaged,
+                     ArcManagedOptin::kManagedEnabled);
+  LoginManagedUser();
+  CheckTogglesState(ArcManagedOptin::kNotManaged,
+                    ArcManagedOptin::kManagedEnabled);
+}
+
+IN_PROC_BROWSER_TEST_F(ConsolidatedConsentScreenManagedUserTest,
+                       LocationOptinManagedDisabled) {
+  SetUpArcEnabledPolicy();
+  SetUpManagedOptIns(ArcManagedOptin::kNotManaged,
+                     ArcManagedOptin::kManagedDisabled);
+  LoginManagedUser();
+  CheckTogglesState(ArcManagedOptin::kNotManaged,
+                    ArcManagedOptin::kManagedDisabled);
+}
+
+// When both ARC opt ins are managed, skip the screen.
+// TODO(crbug.com/1273975): this test should be updated once the per user
+// metrics is integrated into consolidated consent.
+IN_PROC_BROWSER_TEST_F(ConsolidatedConsentScreenManagedUserTest, Skip) {
+  SetUpArcEnabledPolicy();
+  SetUpManagedOptIns(ArcManagedOptin::kManagedEnabled,
+                     ArcManagedOptin::kManagedEnabled);
+  LoginManagedUser();
+  WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(),
+            ConsolidatedConsentScreen::Result::NOT_APPLICABLE);
 }
 
 }  // namespace ash

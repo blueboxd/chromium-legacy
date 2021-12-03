@@ -215,6 +215,10 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ("opened",
             EvalJs(current_frame_host(),
                    JsReplace("window.testOpenWebTransport($1);", port())));
+  // testOpenWebTransport sends the IPC (BackForwardCacheController.
+  // DidChangeBackForwardCacheDisablingFeatures) from a renderer. Run a script
+  // to wait for the IPC reaching to the browser.
+  EXPECT_EQ(42, EvalJs(current_frame_host(), "42;"));
   EXPECT_TRUE(
       DedicatedWorkerHostsForDocument::GetOrCreateForCurrentDocument(
           current_frame_host())
@@ -243,10 +247,9 @@ IN_PROC_BROWSER_TEST_F(
       {}, {}, {}, FROM_HERE);
 }
 
-// TODO(crbug.com/1273603): Test is flaky.
 IN_PROC_BROWSER_TEST_F(
     BackForwardCacheWithDedicatedWorkerBrowserTest,
-    DISABLED_DoNotCacheWithDedicatedWorkerWithClosedWebTransportAndDocumentWithBroadcastChannel) {
+    DoNotCacheWithDedicatedWorkerWithClosedWebTransportAndDocumentWithBroadcastChannel) {
   CreateHttpsServer();
   ASSERT_TRUE(https_server()->Start());
 
@@ -260,6 +263,10 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ("opened",
             EvalJs(current_frame_host(),
                    JsReplace("window.testOpenWebTransport($1);", port())));
+  // testOpenWebTransport sends the IPC (BackForwardCacheController.
+  // DidChangeBackForwardCacheDisablingFeatures) from a renderer. Run a script
+  // to wait for the IPC reaching to the browser.
+  EXPECT_EQ(42, EvalJs(current_frame_host(), "42;"));
   EXPECT_TRUE(
       DedicatedWorkerHostsForDocument::GetOrCreateForCurrentDocument(
           current_frame_host())
@@ -270,6 +277,10 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ("closed",
             EvalJs(current_frame_host(),
                    JsReplace("window.testCloseWebTransport($1);", port())));
+  // testOpenWebTransport sends the IPC (BackForwardCacheController.
+  // DidChangeBackForwardCacheDisablingFeatures) from a renderer. Run a script
+  // to wait for the IPC reaching to the browser.
+  EXPECT_EQ(42, EvalJs(current_frame_host(), "42;"));
   EXPECT_TRUE(DedicatedWorkerHostsForDocument::GetOrCreateForCurrentDocument(
                   current_frame_host())
                   ->GetBackForwardCacheDisablingFeatures()
@@ -442,9 +453,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheWithDedicatedWorkerBrowserTest,
 // Tests the case when the page starts fetching in a dedicated worker, goes to
 // BFcache, and then the response amount reaches the threshold. The cached page
 // should evicted in this case.
+// TODO(crbug.com/1275106): Test flaky.
 IN_PROC_BROWSER_TEST_F(
     BackForwardCacheWithDedicatedWorkerBrowserTest,
-    FetchStillLoading_ResponseStartedWhileFrozen_ExceedsPerRequestBytesLimit) {
+    DISABLED_FetchStillLoading_ResponseStartedWhileFrozen_ExceedsPerRequestBytesLimit) {
   CreateHttpsServer();
 
   net::test_server::ControllableHttpResponse image_response(https_server(),
@@ -499,9 +511,10 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the case when the page starts fetching in a nested dedicated worker,
 // goes to BFcache, and then the response amount reaches the threshold. The
 // cached page should evicted in this case.
+// TODO(crbug.com/1275106): Test flaky.
 IN_PROC_BROWSER_TEST_F(
     BackForwardCacheWithDedicatedWorkerBrowserTest,
-    FetchStillLoading_ResponseStartedWhileFrozen_ExceedsPerRequestBytesLimit_Nested) {
+    DISABLED_FetchStillLoading_ResponseStartedWhileFrozen_ExceedsPerRequestBytesLimit_Nested) {
   CreateHttpsServer();
 
   net::test_server::ControllableHttpResponse image_response(https_server(),

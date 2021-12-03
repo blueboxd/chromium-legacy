@@ -1264,6 +1264,7 @@ void Controller::ResetState() {
   status_message_.clear();
   details_.clear();
   info_box_.reset();
+  progress_visible_ = true;
   progress_bar_error_state_ = false;
   progress_active_step_ = 0;
   step_progress_bar_configuration_ =
@@ -2293,7 +2294,8 @@ void Controller::OnInputTextFocusChanged(bool is_text_focused) {
 
 ElementArea* Controller::touchable_element_area() {
   if (!touchable_element_area_) {
-    touchable_element_area_ = std::make_unique<ElementArea>(this);
+    touchable_element_area_ =
+        std::make_unique<ElementArea>(&settings_, GetWebController());
     touchable_element_area_->SetOnUpdate(base::BindRepeating(
         &Controller::OnTouchableAreaChanged, weak_ptr_factory_.GetWeakPtr()));
   }

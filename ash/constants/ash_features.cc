@@ -668,6 +668,11 @@ const base::Feature kHelpAppDiscoverTabNotificationAllChannels{
 const base::Feature kHelpAppLauncherSearch{"HelpAppLauncherSearch",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the flag to synchronize launcher item colors. It is
+// in effect only when kLauncherAppSort is enabled.
+const base::Feature kLauncherItemColorSync{"LauncherItemColorSync",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable the search service integration in the Help app.
 const base::Feature kHelpAppSearchServiceIntegration{
     "HelpAppSearchServiceIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -714,10 +719,6 @@ const base::Feature kHoldingSpaceIncognitoProfileIntegration{
 // Controls whether the snooping protection prototype is enabled.
 const base::Feature kSnoopingProtection{"SnoopingProtection",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether the HPS Sense prototype is enabled.
-const base::Feature kLeaveDetection{"LeaveDetection",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable MOZC IME to use protobuf as interactive message format.
 const base::Feature kImeMozcProto{"ImeMozcProto",
@@ -914,6 +915,10 @@ const base::Feature kOnDeviceSpeechRecognition{
 const base::Feature kOobeConsolidatedConsent{"OobeConsolidatedConsent",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the Oobe quick start flow.
+const base::Feature kOobeQuickStart{"OobeQuickStart",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the feedback tool new UX on Chrome OS.
 // This tool under development will be rolled out via Finch.
 // Enabling this flag will use the new feedback tool instead of the current
@@ -1002,6 +1007,9 @@ const base::Feature kProjectorFeaturePod{"ProjectorFeaturePod",
 // We are deprecating the old marker tools in favor of the annotator tools.
 const base::Feature kProjectorAnnotator{"ProjectorAnnotator",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether the quick dim prototype is enabled.
+const base::Feature kQuickDim{"QuickDim", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the Quick Settings Network revamp, which updates Network
 // Quick Settings UI and related infrastructure. See https://crbug.com/1169479.
@@ -1238,6 +1246,15 @@ const base::Feature kUserActivityPrediction{"UserActivityPrediction",
 const base::Feature kVirtualKeyboardBorderedKey{
     "VirtualKeyboardBorderedKey", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable or disable multipaste feature for virtual keyboard on Chrome OS.
+const base::Feature kVirtualKeyboardMultipaste{
+    "VirtualKeyboardMultipaste", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enable or disable showing multipaste suggestions in virtual keyboard on
+// Chrome OS.
+const base::Feature kVirtualKeyboardMultipasteSuggestion{
+    "VirtualKeyboardMultipasteSuggestion", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to allow enabling wake on WiFi features in shill.
 const base::Feature kWakeOnWifiAllowed{"WakeOnWifiAllowed",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1415,6 +1432,11 @@ bool IsClipboardHistoryNudgeSessionResetEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryNudgeSessionReset);
 }
 
+bool IsLauncherItemColorSyncEnabled() {
+  return IsLauncherAppSortEnabled() &&
+         base::FeatureList::IsEnabled(kLauncherItemColorSync);
+}
+
 bool IsClipboardHistoryScreenshotNudgeEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryScreenshotNudge);
 }
@@ -1531,10 +1553,6 @@ bool IsHostnameSettingEnabled() {
 
 bool IsSnoopingProtectionEnabled() {
   return base::FeatureList::IsEnabled(kSnoopingProtection);
-}
-
-bool IsLeaveDetectionEnabled() {
-  return base::FeatureList::IsEnabled(kLeaveDetection);
 }
 
 bool IsIdleInhibitEnabled() {
@@ -1665,6 +1683,10 @@ bool IsOobeConsolidatedConsentEnabled() {
   return base::FeatureList::IsEnabled(kOobeConsolidatedConsent);
 }
 
+bool IsOobeQuickStartEnabled() {
+  return base::FeatureList::IsEnabled(kOobeQuickStart);
+}
+
 bool IsPcieBillboardNotificationEnabled() {
   return base::FeatureList::IsEnabled(kPcieBillboardNotification);
 }
@@ -1737,6 +1759,10 @@ bool IsProjectorFeaturePodEnabled() {
 bool IsProjectorAnnotatorEnabled() {
   return IsProjectorEnabled() &&
          base::FeatureList::IsEnabled(kProjectorAnnotator);
+}
+
+bool IsQuickDimEnabled() {
+  return base::FeatureList::IsEnabled(kQuickDim);
 }
 
 bool IsQuickSettingsNetworkRevampEnabled() {

@@ -1092,6 +1092,9 @@ Unknown properties are collapsed to zero. -->
     The bottom sheet was suppressed as the user hit consecutive active dismissal
     limit.
   </int>
+  <int value="17" label="SigninTimeoutErrorShown">
+    The sign-in time out error was shown to the user.
+  </int>
 </enum>
 
 <enum name="AccountConsistencyPromoAfterDismissal">
@@ -7978,6 +7981,8 @@ Called by update_bad_message_reasons.py.-->
   <int value="4" label="RFH_DISPLAY_CAPTURE_PERMISSION_MISSING"/>
   <int value="5" label="MSFD_MULTIPLE_CLOSURES_OF_FOCUSABILITY_WINDOW"/>
   <int value="6" label="MSFD_MULTIPLE_EXPLICIT_CALLS_TO_FOCUS"/>
+  <int value="7" label="PVM_SCRIPTED_PRINT_FENCED_FRAME"/>
+  <int value="8" label="PVMB_SCRIPTED_PRINT_FENCED_FRAME"/>
 </enum>
 
 <enum name="BadMessageReasonContent">
@@ -64631,6 +64636,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1113"
       label="Privacy: Enable/Disable peripheral data access protection"/>
   <int value="1114" label="Privacy: Snooping Protection"/>
+  <int value="1115" label="Privacy: Lock On Leave"/>
   <int value="1200" label="Add Language"/>
   <int value="1201" label="Show Input Options In Shelf"/>
   <int value="1202" label="Show Personal Information Suggestions"/>

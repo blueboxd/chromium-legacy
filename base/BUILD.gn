@@ -1433,6 +1433,7 @@ component("base") {
       sources += [
         "allocator/allocator_shim_override_mac_default_zone.h",
         "allocator/allocator_shim_override_mac_symbols.h",
+        "allocator/early_zone_registration_mac.h",
       ]
     }
     if (is_chromeos || is_linux) {
@@ -3616,6 +3617,7 @@ test("base_unittests") {
     frameworks = [
       "CoreFoundation.framework",
       "Foundation.framework",
+      "OpenCL.framework",
     ]
     if (current_cpu == "x64") {
       deps += [ ":base_profiler_test_support_library" ]

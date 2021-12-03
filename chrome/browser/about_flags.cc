@@ -118,7 +118,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
-#include "components/page_info/features.h"
+#include "components/page_info/core/features.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/paint_preview/features/features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -4176,6 +4176,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVirtualKeyboardBorderedKeyName,
      flag_descriptions::kVirtualKeyboardBorderedKeyDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardBorderedKey)},
+    {"enable-cros-virtual-keyboard-multipaste",
+     flag_descriptions::kVirtualKeyboardMultipasteName,
+     flag_descriptions::kVirtualKeyboardMultipasteDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardMultipaste)},
+    {"enable-cros-virtual-keyboard-multipaste-suggestion",
+     flag_descriptions::kVirtualKeyboardMultipasteSuggestionName,
+     flag_descriptions::kVirtualKeyboardMultipasteSuggestionDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         chromeos::features::kVirtualKeyboardMultipasteSuggestion)},
     {"enable-experimental-accessibility-dictation-extension",
      flag_descriptions::kExperimentalAccessibilityDictationExtensionName,
      flag_descriptions::kExperimentalAccessibilityDictationExtensionDescription,

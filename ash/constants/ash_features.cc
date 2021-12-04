@@ -253,7 +253,7 @@ const base::Feature kCellularForbidAttachApn{"CellularForbidAttachApn",
 
 // If enabled, send the LTE attach APN configuration to the modem.
 const base::Feature kCellularUseAttachApn{"CellularUseAttachApn",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, use external euicc in Cellular Setup and Settings.
 const base::Feature kCellularUseExternalEuicc{
@@ -707,7 +707,7 @@ const base::Feature kHoldingSpaceInProgressDownloadsIntegration{
 // content and transfer or access it later.
 const base::Feature kHoldingSpaceInProgressDownloadsNotificationSuppression{
     "HoldingSpaceInProgressNotificationSuppression",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables incognito profile integration with the productivity feature that
 // aims to reduce context switching by enabling users to collect content and
@@ -841,6 +841,14 @@ const base::Feature kMediaAppHandlesAudio{"MediaAppHandlesAudio",
 // Whether PDF files are opened by default in the ChromeOS media app.
 const base::Feature kMediaAppHandlesPdf{"MediaAppHandlesPdf",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature to continuously log PSI memory pressure data to UMA.
+const base::Feature kMemoryPressureMetricsDetail{
+    "MemoryPressureMetricsDetail", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls how frequently memory pressure is logged
+const base::FeatureParam<int> kMemoryPressureMetricsDetailLogPeriod{
+    &kMemoryPressureMetricsDetail, "period", 10};
 
 // Enables notification of when a microphone-using app is launched while the
 // microphone is muted.

@@ -229,9 +229,9 @@ public class ContextualSearchManager
     /** Tap Experiments and other variable behavior. */
     private QuickAnswersHeuristic mQuickAnswersHeuristic;
 
-    // Counter for how many times we've called SelectWordAroundCaret without an ACK returned.
+    // Counter for how many times we've called SelectAroundCaret without an ACK returned.
     // TODO(donnd): replace with a more systematic approach using the InternalStateController.
-    private int mSelectWordAroundCaretCounter;
+    private int mSelectAroundCaretCounter;
 
     /** An observer that reports selected context to GSA for search quality. */
     private ContextualSearchObserver mContextReportingObserver;
@@ -1488,10 +1488,10 @@ public class ContextualSearchManager
 
         @Override
         public void selectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {
-            if (mSelectWordAroundCaretCounter > 0) mSelectWordAroundCaretCounter--;
-            if (mSelectWordAroundCaretCounter > 0
+            if (mSelectAroundCaretCounter > 0) mSelectAroundCaretCounter--;
+            if (mSelectAroundCaretCounter > 0
                     || !mInternalStateController.isStillWorkingOn(
-                               InternalState.START_SHOWING_TAP_UI)) {
+                            InternalState.START_SHOWING_TAP_UI)) {
                 return;
             }
 
@@ -1648,8 +1648,8 @@ public class ContextualSearchManager
 
     /**
      * Notifies this class that the selection has changed. This may be due to the user moving the
-     * selection handles after a long-press, or after a Tap gesture has called selectWordAroundCaret
-     * to expand the selection to a whole word.
+     * selection handles after a long-press, or after a Tap gesture has called selectAroundCaret
+     * to expand the selection to a whole word or sentence.
      */
     @Override
     public void handleSelection(
@@ -1860,8 +1860,10 @@ public class ContextualSearchManager
                 if (baseWebContents != null) {
                     mInternalStateController.notifyStartingWorkOn(
                             InternalState.START_SHOWING_TAP_UI);
-                    mSelectWordAroundCaretCounter++;
-                    baseWebContents.selectWordAroundCaret();
+                    mSelectAroundCaretCounter++;
+                    baseWebContents.selectAroundCaret(mPolicy.getSelectionSize(),
+                            mPolicy.getSelectionShouldShowHandles(),
+                            mPolicy.getSelectionShouldShowMenu());
                     // Let the policy know that a valid tap gesture has been received.
                     mPolicy.registerTap();
                 } else {

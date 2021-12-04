@@ -148,6 +148,7 @@ crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-alignment-implies-siz
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-alignment-implies-size-change-035.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-alignment-implies-size-change-036.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-baseline-004.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-content-alignment-overflow-002.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-content-alignment-with-abspos-001.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-item-aspect-ratio-stretch-1.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-item-aspect-ratio-stretch-2.html [ Failure ]
@@ -698,12 +699,12 @@ crbug.com/591099 http/tests/csslayout/* [ Skip ]
 
 ### Container Queries tests require enabled LayoutNG
 crbug.com/1145970 external/wpt/css/css-contain/container-queries/* [ Skip ]
+crbug.com/1145970 external/wpt/css/css-contain/contain-inline-size-* [ Skip ]
 crbug.com/1145970 inspector-protocol/css/css-get-styles-for-node.js [ Skip ]
 crbug.com/1145970 inspector-protocol/css/container-queries/* [ Skip ]
 crbug.com/1145970 inspector-protocol/dom/container-queries/* [ Skip ]
 crbug.com/1145970 inspector-protocol/overlay/overlay-container-query.js [ Skip ]
 crbug.com/1145970 wpt_internal/css/css-conditional/container-queries/* [ Skip ]
-crbug.com/1145970 wpt_internal/css/css-contain/* [ Skip ]
 
 ### virtual/controls-refresh-hc/
 virtual/controls-refresh-hc/* [ Skip ]

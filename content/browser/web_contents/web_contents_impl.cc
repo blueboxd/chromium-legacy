@@ -3321,22 +3321,26 @@ RenderWidgetHostImpl* WebContentsImpl::GetRenderWidgetHostWithPageFocus() {
       ->GetRenderWidgetHost();
 }
 
-bool WebContentsImpl::CanEnterFullscreenMode() {
+bool WebContentsImpl::CanEnterFullscreenMode(
+    RenderFrameHostImpl* requesting_frame,
+    const blink::mojom::FullscreenOptions& options) {
   // It's possible that this WebContents was spawned while blocking UI was on
   // the screen, or that it was downstream from a WebContents when UI was
   // blocked. Therefore, disqualify it from fullscreen if it or any upstream
   // WebContents has an active blocker.
   auto openers = GetAllOpeningWebContents(this);
-  return std::all_of(openers.begin(), openers.end(), [](auto* opener) {
-    return opener->fullscreen_blocker_count_ == 0;
-  });
+  return std::all_of(openers.begin(), openers.end(),
+                     [](auto* opener) {
+                       return opener->fullscreen_blocker_count_ == 0;
+                     }) &&
+         delegate_->CanEnterFullscreenModeForTab(requesting_frame, options);
 }
 
 void WebContentsImpl::EnterFullscreenMode(
     RenderFrameHostImpl* requesting_frame,
     const blink::mojom::FullscreenOptions& options) {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::EnterFullscreenMode");
-  DCHECK(CanEnterFullscreenMode());
+  DCHECK(CanEnterFullscreenMode(requesting_frame, options));
   DCHECK(requesting_frame->IsActive());
 
   if (delegate_) {
@@ -3617,6 +3621,15 @@ void WebContentsImpl::RequestToLockMouse(
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::RequestToLockMouse",
                         "render_widget_host", render_widget_host, "privileged",
                         privileged);
+  if (render_widget_host->frame_tree()->type() ==
+      FrameTree::Type::kFencedFrame) {
+    // The renderer should have checked and disallowed the request for fenced
+    // frames in PointerLockController and dispatched pointerlockerror. Ignore
+    // the request and mark it as bad if it didn't happen for some reason.
+    ReceivedBadMessage(render_widget_host->GetProcess(),
+                       bad_message::WCI_REQUEST_LOCK_MOUSE_FENCED_FRAME);
+    return;
+  }
   for (WebContentsImpl* current = this; current;
        current = current->GetOuterWebContents()) {
     if (current->mouse_lock_widget_) {

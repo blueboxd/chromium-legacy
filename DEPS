@@ -192,6 +192,11 @@ vars = {
   'checkout_simplechrome': '"{cros_boards}" != ""',
   'checkout_simplechrome_with_vms': '"{cros_boards_with_qemu_images}" != ""',
 
+  # By default, do not check out versions of toolschains and sdks that are
+  # specifically only needed by Lacros.
+  'checkout_lacros_sdk': False,
+  'lacros_sdk_version': '14335.0.0',
+
   # Generate location tag metadata to include in tests result data uploaded
   # to ResultDB. This isn't needed on some configs and the tool that generates
   # the data may not run on them, so we make it possible for this to be
@@ -238,11 +243,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '506bca90fdc425f4d7a2ab61900107f183652174',
+  'v8_revision': '40c401648f74508c693a9a905f4cf713d300353b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '24241724920ac9d5de0200dda61ef81a4132b562',
+  'angle_revision': '10e5f34d1439f0bcd5b30bea5bfbf6bdaafd4935',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -250,7 +255,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'e56acd05988619a908acc892e5ef381c3b5aef5e',
+  'pdfium_revision': '44d713879adae6354898669073d7d0380b3b8762',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -309,7 +314,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '5e8c630490f1e4d1d07f61a24fd3a74bffd39974',
+  'devtools_frontend_revision': 'af1837abe64789e88297fd38903206ddea3def54',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -349,7 +354,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'e8965c915692a5b48651105c8990476f4633a28b',
+  'dawn_revision': '5db89fbd38bbed26252fca5e31f59c4e8fc9d673',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -719,7 +724,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': '17xcgL2d1K7sf1Y2GD5SbmTqUaKfUUw9ws34csG8SR4C',
+          'version': 'Txjc3Gk0ErFvlz8CCgU8sNdM-GDukOTZJS_y3R7RfIMC',
         },
       ],
       'dep_type': 'cipd',
@@ -730,7 +735,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'PNjOKaWgWbbkv2DcmyLqLDRNZowyiWPc3cxsVm-IXh8C',
+          'version': '62pg2TM9w_Z5WZnfHSr_1810ilPWKvsRUoeGWQ5oXxsC',
         },
       ],
       'dep_type': 'cipd',
@@ -791,7 +796,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'BiHIWI3ORdbZw8B_2h7gImobPywyLwGqroTTr6TfGfoC',
+          'version': 'EbzW51u6th7WfrgkEzgcWtsF88-z4Q5g_3so8Od-xkQC',
       },
     ],
     'condition': 'checkout_android',
@@ -1010,7 +1015,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '9b0cd5c87ce9a8fe42d17ed565bfab950f6ffbcb',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '2eaf6fdb17be788309ca1ec74f1f9b48ec8ac4da',
       'condition': 'checkout_chromeos',
   },
 
@@ -1733,7 +1738,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'nkKCD25Vfnbj43LBo9zHaHzhWfq62hz_u8K-rgUnQv8C',
+        'version': 'ufCjpiqK8yNrlWKLV6DKEJRFgC52zxfpbyXRtYpweZgC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -4492,8 +4497,6 @@ hooks = [
     ],
   },
 
-  # Download public CrOS simplechrome artifacts. The first hooks is for boards
-  # that support VM images, the second hook for all other boards.
   {
     'name': 'cros_simplechrome_artifacts_with_vm',
     'pattern': '.',
@@ -4530,6 +4533,22 @@ hooks = [
     ],
   },
   {
+    'name': 'cros_simplechrome_artifacts_with_no_vm_internal',
+    'pattern': '.',
+    'condition': 'checkout_simplechrome and checkout_src_internal',
+    'action': [
+      'src/third_party/chromite/bin/cros',
+      'chrome-sdk',
+      '--fallback-versions=10',
+      '--nogoma',
+      '--nogn-gen',
+      '--no-shell',
+      '--log-level=warning',
+      '--cache-dir=src/build/cros_cache/',
+      '--boards={cros_boards}',
+    ],
+  },
+  {
     'name': 'cros_simplechrome_artifacts_with_vm_internal',
     'pattern': '.',
     'condition': 'checkout_simplechrome_with_vms and checkout_src_internal',
@@ -4546,10 +4565,68 @@ hooks = [
       '--download-vm',
     ],
   },
+  # Download Lacros's version of the simplechrome sdks. VMs are disregarded
+  # because this version of sdk is only used for compiling Lacros.
   {
-    'name': 'cros_simplechrome_artifacts_with_no_vm_internal',
+    'name': 'cros_simplechrome_artifacts_with_vm for lacros',
     'pattern': '.',
-    'condition': 'checkout_simplechrome and checkout_src_internal',
+    'condition': 'checkout_simplechrome_with_vms and not checkout_src_internal and checkout_lacros_sdk',
+    'action': [
+      'src/third_party/chromite/bin/cros',
+      'chrome-sdk',
+      '--fallback-versions=10',
+      '--nogoma',
+      '--nogn-gen',
+      '--no-shell',
+      '--log-level=warning',
+      '--cache-dir=src/build/cros_cache/',
+      '--use-external-config',
+      '--boards={cros_boards_with_qemu_images}',
+      '--is-lacros',
+      '--version={lacros_sdk_version}',
+    ],
+  },
+  {
+    'name': 'cros_simplechrome_artifacts_with_no_vm for lacros',
+    'pattern': '.',
+    'condition': 'checkout_simplechrome and not checkout_src_internal and checkout_lacros_sdk',
+    'action': [
+      'src/third_party/chromite/bin/cros',
+      'chrome-sdk',
+      '--fallback-versions=10',
+      '--nogoma',
+      '--nogn-gen',
+      '--no-shell',
+      '--log-level=warning',
+      '--cache-dir=src/build/cros_cache/',
+      '--use-external-config',
+      '--boards={cros_boards}',
+      '--is-lacros',
+      '--version={lacros_sdk_version}',
+    ],
+  },
+  {
+    'name': 'cros_simplechrome_artifacts_with_vm_internal for lacros',
+    'pattern': '.',
+    'condition': 'checkout_simplechrome_with_vms and checkout_src_internal and checkout_lacros_sdk',
+    'action': [
+      'src/third_party/chromite/bin/cros',
+      'chrome-sdk',
+      '--fallback-versions=10',
+      '--nogoma',
+      '--nogn-gen',
+      '--no-shell',
+      '--log-level=warning',
+      '--cache-dir=src/build/cros_cache/',
+      '--boards={cros_boards_with_qemu_images}',
+      '--is-lacros',
+      '--version={lacros_sdk_version}',
+    ],
+  },
+  {
+    'name': 'cros_simplechrome_artifacts_with_no_vm_internal for lacros',
+    'pattern': '.',
+    'condition': 'checkout_simplechrome and checkout_src_internal and checkout_lacros_sdk',
     'action': [
       'src/third_party/chromite/bin/cros',
       'chrome-sdk',
@@ -4560,6 +4637,8 @@ hooks = [
       '--log-level=warning',
       '--cache-dir=src/build/cros_cache/',
       '--boards={cros_boards}',
+      '--is-lacros',
+      '--version={lacros_sdk_version}',
     ],
   },
 

@@ -239,11 +239,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '40ba900d2e9411bf8fd1376a61d4b6e187db5b04',
+  'skia_revision': '493d7910a7f5553f9a2fa376ec3c6acfe942c2ff',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '40c401648f74508c693a9a905f4cf713d300353b',
+  'v8_revision': '4745e98f1c7b142131683e40be41fd79cd6fbbff',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -314,7 +314,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'af1837abe64789e88297fd38903206ddea3def54',
+  'devtools_frontend_revision': 'fa45ccaa0ef25b38b83800b6e9e6ad6227741326',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -354,7 +354,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '1c7d3efcd0efece0379555c19bedfa6773781b94',
+  'dawn_revision': '3a464767a5301d85380a0e9256cde1deaaa18d42',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -713,7 +713,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'nS2rzStfqyEUXTjYGFBaNlrqZ1ij-QvtKbRjJz8fSToC',
+          'version': 'AxO6qnn07qs_9nkUrfWZ-uhTEUVx4sWgzlHRqLo5-GIC',
         },
       ],
       'dep_type': 'cipd',
@@ -724,7 +724,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'Txjc3Gk0ErFvlz8CCgU8sNdM-GDukOTZJS_y3R7RfIMC',
+          'version': 'uC7XwenKOipep1osgR1Q6N6CWkhGyJCTFJLVpbcaE78C',
         },
       ],
       'dep_type': 'cipd',
@@ -735,7 +735,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': '62pg2TM9w_Z5WZnfHSr_1810ilPWKvsRUoeGWQ5oXxsC',
+          'version': 'Fq2od_FseaVp_KJx4BOVLcw9BtYO6MeTS7Tdi82_ggsC',
         },
       ],
       'dep_type': 'cipd',

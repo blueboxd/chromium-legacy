@@ -251,7 +251,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'f9c39655a610a2ef636b834316fbc94669d6aadd',
+  'swiftshader_revision': '3e61a772b24838bc1ccab8cc8450412b5f952069',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -354,7 +354,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '5db89fbd38bbed26252fca5e31f59c4e8fc9d673',
+  'dawn_revision': '1c7d3efcd0efece0379555c19bedfa6773781b94',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -713,7 +713,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'YnYxuR3-Pl-rZ8lB5serlpQISczWymh7WIDQjP3yqqwC',
+          'version': 'nS2rzStfqyEUXTjYGFBaNlrqZ1ij-QvtKbRjJz8fSToC',
         },
       ],
       'dep_type': 'cipd',
@@ -796,7 +796,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'EbzW51u6th7WfrgkEzgcWtsF88-z4Q5g_3so8Od-xkQC',
+          'version': 'VcOuel-N-Hgl9PTt4swv-1od43yNDaMT1_HTpbIPAQAC',
       },
     ],
     'condition': 'checkout_android',
@@ -1600,7 +1600,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '62d7d0c928c9a040dce96aa2f16c00e7e67d59cb',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@9970c397e55e642e6e670452316cac91e6162959',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@5b3be708ab2f018d0d641244ea9666f959ee4271',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + '5e49f57a6e71a026a54eb42e366de09a4142d24e',
@@ -1716,7 +1716,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'QNuudicI0N5URXq0r6KaxzEpVIhhPAW7atpaJbtEIaUC',
+        'version': 'mH82IwG7q67elr196aD36CmeLEChxX0IUY2VbNQBmK8C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1727,7 +1727,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'ailvTeCPag5-zK1wWXIFM7qWCA9tEEgRmCGBSmI5XUsC',
+        'version': 'ONpaSPSdaiKv7Z99_3Ql80jNjkYNRCqpVR6W85FEbdgC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

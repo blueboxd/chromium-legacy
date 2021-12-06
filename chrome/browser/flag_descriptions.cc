@@ -2690,7 +2690,8 @@ const char kWebBluetoothNewPermissionsBackendName[] =
     "Use the new permissions backend for Web Bluetooth";
 const char kWebBluetoothNewPermissionsBackendDescription[] =
     "Enables the new permissions backend for Web Bluetooth. This will enable "
-    "persistent storage of device permissions.";
+    "persistent storage of device permissions and Web Bluetooth features such "
+    "as BluetoothDevice.watchAdvertisements() and Bluetooth.getDevices()";
 
 const char kWebBundlesName[] = "Web Bundles";
 const char kWebBundlesDescription[] =
@@ -4140,6 +4141,11 @@ const char kAudioUrlName[] = "Enable chrome://audio";
 const char kAudioUrlDescription[] =
     "Enable chrome://audio that is designed for debugging ChromeOS audio "
     "issues";
+
+const char kAutoFramingOverrideName[] = "Auto-framing control override";
+const char kAutoFramingOverrideDescription[] =
+    "Overrides the default to forcibly enable or disable the auto-framing "
+    "feature";
 
 const char kBluetoothFixA2dpPacketSizeName[] = "Bluetooth fix A2DP packet size";
 const char kBluetoothFixA2dpPacketSizeDescription[] =

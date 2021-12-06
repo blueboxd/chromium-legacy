@@ -239,15 +239,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '493d7910a7f5553f9a2fa376ec3c6acfe942c2ff',
+  'skia_revision': 'f333f5614a9b55fa478222ec1994cea699460892',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '4745e98f1c7b142131683e40be41fd79cd6fbbff',
+  'v8_revision': 'c62f8590372851e11eb673764e2188620339b297',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '10e5f34d1439f0bcd5b30bea5bfbf6bdaafd4935',
+  'angle_revision': '60e457b8badc184adc8d36c7bdbac851e8d3073c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -306,7 +306,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '32ccf21284278a0aec08f116d838e89a8da7e34d',
+  'catapult_revision': '02439f647cbdebb896ed7bb50b841859f7d218a6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -314,7 +314,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'fa45ccaa0ef25b38b83800b6e9e6ad6227741326',
+  'devtools_frontend_revision': '0980f52facf75b6c03e14472d13fe27968d4732b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -354,7 +354,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '3a464767a5301d85380a0e9256cde1deaaa18d42',
+  'dawn_revision': '13d6af93fbf5ed3436b7ad701769992d842848c8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -796,7 +796,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'VcOuel-N-Hgl9PTt4swv-1od43yNDaMT1_HTpbIPAQAC',
+          'version': '1kq1iXXaUuk31wMfTFdArbZ_DsnzladyCDH9sHQJNp0C',
       },
     ],
     'condition': 'checkout_android',
@@ -1035,7 +1035,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '203a6447ad7a3d534829525e1daa3dde23455451',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '440d06ad1a2160bdb10a83c30f5c5264814ccbb4',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1418,7 +1418,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'e9e81c01529610f02f63a87122c5bd878972ef7b',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'b54e61f0f24427ef4b48fe9510b423624cf8a60e',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1738,7 +1738,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'ufCjpiqK8yNrlWKLV6DKEJRFgC52zxfpbyXRtYpweZgC',
+        'version': 'i7EK97odXDVeEHF291--ccszH_Vpi_gJmwR1xWlKrL8C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

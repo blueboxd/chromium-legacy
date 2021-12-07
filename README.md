@@ -46,9 +46,9 @@ Or, you can [use a downloader](https://github.com/blueboxd/chromium-legacy/discu
 
 ### Chrome stable channel
 
-[96.0.4664.55](../../releases/tag/stable)
+See [releases/tag/stable](../../releases/tag/stable) for current stable channel release.
 
-Or, you can [find the branch position](https://omahaproxy.appspot.com/all?os=mac&channel=stable) of the current Chrome stable channel.
+You can [find the branch position](https://omahaproxy.appspot.com/all?os=mac&channel=stable) of the current Chrome stable channel.
 
 ## limitations
 

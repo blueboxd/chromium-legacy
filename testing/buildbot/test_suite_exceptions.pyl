@@ -2709,7 +2709,7 @@
           ],
       },
       # TODO(crbug.com/1131588) Tests are flaky only on CQ.
-      'Mac10.15 Tests': {
+      'Mac11 Tests': {
         'precommit_args': [
             '--gtest_filter=-*',
           ],
@@ -2888,6 +2888,8 @@
       'Mac10.11 Tests',
       'Mac10.13 Tests',
       'Mac10.15 Tests',
+      # TODO crbug.com/1277277
+      'Mac11 Tests',
       'Mac10.15 Tests (dbg)',
       'Linux - Future (dbg)',  # client.v8.chromium
       'Win10 Tests x64',

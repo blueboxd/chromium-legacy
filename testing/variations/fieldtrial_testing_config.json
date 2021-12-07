@@ -556,21 +556,6 @@
             ]
         }
     ],
-    "AndroidMessagesReaderMode": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MessagesForAndroidReaderMode"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidMessagesSaveCard": [
         {
             "platforms": [
@@ -2113,21 +2098,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WallpaperWebUI"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ChromeShareLongScreenshot": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ChromeShareLongScreenshot"
                     ]
                 }
             ]

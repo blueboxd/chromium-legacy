@@ -30,7 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/onc/network_onc_utils.h"
 #include "components/onc/onc_constants.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -312,7 +312,7 @@ std::string GetFilteredJSONPolicies(policy::PolicyService* const policy_service,
     filtered_policies.SetBoolKey(ArcPolicyBridge::kResetAndroidIdEnabled, true);
   }
 
-  if (profile->IsSupervised() &&
+  if (profile->IsChild() &&
       chromeos::ProfileHelper::Get()->IsPrimaryProfile(profile)) {
     // Adds "playStoreMode" policy. The policy value is used to restrict the
     // user from being able to toggle between different accounts in ARC++.

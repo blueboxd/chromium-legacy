@@ -1358,6 +1358,7 @@ virtual/layout_ng_block_frag/external/wpt/css/css-break/transform-004.html [ Pas
 virtual/layout_ng_block_frag/external/wpt/css/css-break/transform-005.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/transform-006.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/transform-008.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-inline-size-multicol.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-size-monolithic-002.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-position/multicol/static-position/vlr-ltr-rtl-in-multicol.tentative.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-position/multicol/static-position/vlr-rtl-ltr-in-multicol.tentative.html [ Pass ]
@@ -3206,7 +3207,6 @@ crbug.com/626703 external/wpt/selection/contenteditable/initial-selection-on-foc
 crbug.com/626703 [ Mac10.13 ] wpt_internal/bluetooth/requestDevice/filter-does-not-match.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/css/css-sizing/aspect-ratio/replaced-element-003.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] wpt_internal/bluetooth/requestDevice/filter-does-not-match.https.html [ Timeout ]
-crbug.com/1275806 external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/scheduler/post-task-without-signals.any.serviceworker.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/scheduler/post-task-without-signals.any.worker.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/scheduler/tentative/current-task-signal.any.serviceworker.html [ Crash ]
@@ -7118,6 +7118,7 @@ crbug.com/1243568 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/window-d
 # Gesture of WPT Test Driver doesn't work well in MPArch Fenced Frame on some Mac try bots.
 crbug.com/1275997 [ Mac ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/pointer-lock.https.html [ Timeout Pass ]
 crbug.com/1275997 [ Mac ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/web-bluetooth.https.html [ Timeout Pass ]
+crbug.com/1275997 [ Mac ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/web-share.https.html [ Timeout Pass ]
 
 # Sheriff 2021-10-15, 2021-12-07
 crbug.com/1256763 [ Win ] virtual/gpu-rasterization/images/color-profile-image-pseudo-content.html [ Failure Pass ]

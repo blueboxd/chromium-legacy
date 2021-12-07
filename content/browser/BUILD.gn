@@ -234,7 +234,7 @@ source_set("browser") {
     "//ui/base:buildflags",
     "//ui/base:data_exchange",
     "//ui/base/clipboard",
-    "//ui/base/cursor:cursor_base",
+    "//ui/base/cursor",
     "//ui/base/cursor/mojom:cursor_type",
     "//ui/base/dragdrop:types",
     "//ui/base/dragdrop/mojom",
@@ -1357,6 +1357,8 @@ source_set("browser") {
     "renderer_host/back_forward_cache_metrics.h",
     "renderer_host/blocked_scheme_navigation_throttle.cc",
     "renderer_host/blocked_scheme_navigation_throttle.h",
+    "renderer_host/browsing_context_state.cc",
+    "renderer_host/browsing_context_state.h",
     "renderer_host/clipboard_host_impl.cc",
     "renderer_host/clipboard_host_impl.h",
     "renderer_host/close_listener_host.cc",
@@ -2461,6 +2463,7 @@ source_set("browser") {
         "media/capture/mouse_cursor_overlay_controller.cc",
         "media/capture/mouse_cursor_overlay_controller.h",
       ]
+      public_deps += [ "//ui/base/cursor" ]
       deps += [ "//third_party/webrtc_overrides:webrtc_component" ]
     }
     if (use_aura) {

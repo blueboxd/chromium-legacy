@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/core_probes_inl.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
+#include "third_party/blink/renderer/core/probe/async_task_context.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
@@ -99,6 +100,21 @@ AsyncTask::AsyncTask(ExecutionContext* context,
     ad_tracker_->DidStartAsyncTask(task_);
 }
 
+AsyncTask::AsyncTask(ExecutionContext* execution_context,
+                     AsyncTaskContext* async_context,
+                     const char* step,
+                     bool enabled,
+                     AdTrackingType ad_tracking_type)
+    : AsyncTask(execution_context,
+                &async_context->async_task_id_,
+                step,
+                enabled,
+                ad_tracking_type) {
+  // TODO(crbug.com/1275875): Verify that `async_context` was scheduled, but
+  // not yet canceled. Currently we don't have enough confidence that such
+  // a CHECK wouldn't break blink.
+}
+
 AsyncTask::~AsyncTask() {
   if (debugger_) {
     debugger_->AsyncTaskFinished(AsyncId(task_));
@@ -157,6 +173,24 @@ void AllAsyncTasksCanceled(ExecutionContext* context) {
     if (ThreadDebugger* debugger = ThreadDebugger::From(context->GetIsolate()))
       debugger->AllAsyncTasksCanceled();
   }
+}
+
+AsyncTaskContext::~AsyncTaskContext() {
+  Cancel();
+}
+
+void AsyncTaskContext::Schedule(ExecutionContext* context,
+                                const StringView& name) {
+  // TODO(crbug.com/1275875): Verify that this context was not already
+  // scheduled or has already been canceled. Currently we don't have enough
+  // confidence that such a CHECK wouldn't break blink.
+  isolate_ = context ? context->GetIsolate() : nullptr;
+  AsyncTaskScheduled(context, name, &async_task_id_);
+}
+
+void AsyncTaskContext::Cancel() {
+  if (ThreadDebugger* debugger = ThreadDebugger::From(isolate_))
+    debugger->AsyncTaskCanceled(AsyncId(&async_task_id_));
 }
 
 }  // namespace probe

@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/text_link_colors.h"
-#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/color_blend.h"
 #include "third_party/blink/renderer/platform/graphics/gradient.h"
 #include "third_party/blink/renderer/platform/graphics/gradient_generated_image.h"
@@ -51,6 +50,7 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace blink {
 namespace cssvalue {
@@ -482,8 +482,8 @@ void AdjustGradientRadiiForOffsetRange(CSSGradientValue::GradientDesc& desc,
   DCHECK_LE(first_offset, last_offset);
 
   // Radial offsets are relative to the [0 , endRadius] segment.
-  float adjusted_r0 = desc.r1 * first_offset;
-  float adjusted_r1 = desc.r1 * last_offset;
+  float adjusted_r0 = ClampTo<float>(desc.r1 * first_offset);
+  float adjusted_r1 = ClampTo<float>(desc.r1 * last_offset);
   DCHECK_LE(adjusted_r0, adjusted_r1);
   // Unlike linear gradients (where we can adjust the points arbitrarily),
   // we cannot let our radii turn negative here.

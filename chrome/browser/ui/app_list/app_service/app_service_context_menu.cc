@@ -87,6 +87,23 @@ void CreateNewWindow(bool incognito, bool post_task) {
       incognito, /*should_trigger_session_restore=*/false);
 }
 
+void ShowOptionsPage(AppListControllerDelegate* controller,
+                     Profile* profile,
+                     const std::string& app_id,
+                     bool post_task) {
+  DCHECK(controller);
+  DCHECK(profile);
+
+  if (post_task) {
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(ShowOptionsPage, controller, profile, app_id,
+                                  /*post_task=*/false));
+    return;
+  }
+
+  controller->ShowOptionsPage(profile, app_id);
+}
+
 }  // namespace
 
 AppServiceContextMenu::AppServiceContextMenu(
@@ -157,7 +174,7 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
       break;
 
     case ash::OPTIONS:
-      controller()->ShowOptionsPage(profile(), app_id());
+      ShowOptionsPage(controller(), profile(), app_id(), /*post_task=*/true);
       ash::full_restore::FullRestoreService::MaybeCloseNotification(profile());
       break;
 
@@ -263,7 +280,7 @@ bool AppServiceContextMenu::IsCommandIdChecked(int command_id) const {
       }
       return AppContextMenu::IsCommandIdChecked(command_id);
 
-    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kChromeApp:
       if (command_id >= ash::USE_LAUNCH_TYPE_COMMAND_START &&
           command_id < ash::USE_LAUNCH_TYPE_COMMAND_END) {
         return static_cast<int>(
@@ -320,7 +337,7 @@ void AppServiceContextMenu::OnGetMenuModel(
   // The special rule to ensure that FilesManager's first menu item is "New
   // window".
   const bool build_extension_menu_before_default =
-      (app_type_ == apps::mojom::AppType::kExtension &&
+      (app_type_ == apps::mojom::AppType::kChromeApp &&
        app_id() == extension_misc::kFilesManagerAppId);
 
   if (build_extension_menu_before_default)
@@ -411,7 +428,7 @@ void AppServiceContextMenu::SetLaunchType(int command_id) {
         proxy_->SetWindowMode(app_id(), user_window_mode);
       return;
     }
-    case apps::mojom::AppType::kExtension: {
+    case apps::mojom::AppType::kChromeApp: {
       // Hosted apps can only toggle between LAUNCH_TYPE_WINDOW and
       // LAUNCH_TYPE_REGULAR.
       extensions::LaunchType launch_type =

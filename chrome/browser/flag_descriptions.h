@@ -2159,6 +2159,9 @@ extern const char kNtpModulesDragAndDropDescription[];
 extern const char kNtpModulesRedesignedName[];
 extern const char kNtpModulesRedesignedDescription[];
 
+extern const char kNtpModulesRedesignedLayoutName[];
+extern const char kNtpModulesRedesignedLayoutDescription[];
+
 extern const char kNtpRealboxPedalsName[];
 extern const char kNtpRealboxPedalsDescription[];
 
@@ -2785,6 +2788,9 @@ extern const char kImeAssistMultiWordLacrosSupportDescription[];
 extern const char kImeAssistPersonalInfoName[];
 extern const char kImeAssistPersonalInfoDescription[];
 
+extern const char kVirtualKeyboardDarkModeName[];
+extern const char kVirtualKeyboardDarkModeDescription[];
+
 extern const char kImeEmojiSuggestAdditionName[];
 extern const char kImeEmojiSuggestAdditionDescription[];
 
@@ -3094,9 +3100,6 @@ extern const char kWebUIBrandingUpdateDescription[];
 
 extern const char kWebuiFeedbackName[];
 extern const char kWebuiFeedbackDescription[];
-
-extern const char kSettingsLandingPageRedesignName[];
-extern const char kSettingsLandingPageRedesignDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS) || defined(OS_FUCHSIA)

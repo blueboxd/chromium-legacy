@@ -4108,7 +4108,13 @@
             ],
             "experiments": [
                 {
-                    "name": "DisablePush2"
+                    "name": "Enabled6",
+                    "params": {
+                        "http2_grease_settings": "true"
+                    },
+                    "enable_features": [
+                        "Http2Grease"
+                    ]
                 }
             ]
         }
@@ -4913,6 +4919,24 @@
                     "enable_features": [
                         "LiveCaption",
                         "UseSodaForLiveCaption"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MacCAOverlayQuadsM97": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_300",
+                    "params": {
+                        "MacCAOverlayQuadMaxNum": "300"
+                    },
+                    "enable_features": [
+                        "MacCAOverlayQuads"
                     ]
                 }
             ]
@@ -5846,7 +5870,7 @@
             ]
         }
     ],
-    "PageContentAnnotationsAndroid": [
+    "PageContentAnnotations": [
         {
             "platforms": [
                 "android"
@@ -5863,9 +5887,7 @@
                     ]
                 }
             ]
-        }
-    ],
-    "PageContentAnnotationsDesktop": [
+        },
         {
             "platforms": [
                 "chromeos",

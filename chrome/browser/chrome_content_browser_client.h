@@ -107,6 +107,10 @@ class ChromeXrIntegrationClient;
 }
 #endif
 
+#if defined(OS_ANDROID)
+class BackgroundAttributionFlusher;
+#endif
+
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
   ChromeContentBrowserClient();
@@ -706,6 +710,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const std::string& data,
       IsClipboardPasteContentAllowedCallback callback) override;
 
+  bool IsClipboardCopyAllowed(content::BrowserContext* browser_context,
+                              const GURL& url,
+                              size_t data_size_in_bytes,
+                              std::u16string& replacement_data) override;
+
 #if BUILDFLAG(ENABLE_PLUGINS)
   bool ShouldAllowPluginCreation(
       const url::Origin& embedder_origin,
@@ -757,6 +766,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void OnWebContentsCreated(content::WebContents* web_contents) override;
 
   bool IsFindInPageDisabledForOrigin(const url::Origin& origin) override;
+
+  void FlushBackgroundAttributions(base::OnceClosure callback) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);
@@ -854,7 +865,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   StartupData startup_data_;
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  std::unique_ptr<BackgroundAttributionFlusher> background_attribution_flusher_;
+#else
   std::unique_ptr<ChromeSerialDelegate> serial_delegate_;
   std::unique_ptr<ChromeHidDelegate> hid_delegate_;
   std::unique_ptr<ChromeFontAccessDelegate> font_access_delegate_;

@@ -820,6 +820,7 @@ try_.chromium_chromiumos_builder(
     name = "chromeos-arm-generic-rel",
     branch_selector = branches.CROS_LTS_MILESTONE,
     bootstrap = True,
+    mirrors = ["ci/chromeos-arm-generic-rel"],
     builderless = not settings.is_main,
     main_list_view = "try",
     os = os.LINUX_BIONIC_REMOVE,
@@ -1364,7 +1365,7 @@ try_.chromium_linux_orchestrator_pair(
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    orchestrator_cores = "2|4",
+    orchestrator_cores = 2,
     orchestrator_tryjob = try_.job(),
     compilator_cores = 16,
     compilator_goma_jobs = goma.jobs.J150,
@@ -1642,7 +1643,6 @@ try_.chromium_mac_builder(
 
 try_.chromium_mac_orchestrator_pair(
     name = "mac-rel-orchestrator",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     use_clang_coverage = True,
     orchestrator_cores = 2,
@@ -1656,7 +1656,6 @@ try_.chromium_mac_orchestrator_pair(
 
 try_.chromium_mac_orchestrator_pair(
     name = "mac11-arm64-rel",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     orchestrator_cores = 2,
     orchestrator_tryjob = try_.job(
@@ -1971,7 +1970,7 @@ try_.chromium_win_orchestrator_pair(
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     main_list_view = "try",
-    orchestrator_cores = "2|4",
+    orchestrator_cores = 2,
     orchestrator_tryjob = try_.job(),
     compilator_cores = 32,
     compilator_goma_jobs = goma.jobs.J300,

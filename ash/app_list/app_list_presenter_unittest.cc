@@ -30,6 +30,7 @@
 #include "ash/app_list/views/paged_apps_grid_view.h"
 #include "ash/app_list/views/privacy_container_view.h"
 #include "ash/app_list/views/productivity_launcher_search_view.h"
+#include "ash/app_list/views/remove_query_confirmation_dialog.h"
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_actions_view.h"
@@ -110,6 +111,7 @@ namespace ash {
 namespace {
 
 constexpr int kAppListBezelMargin = 50;
+constexpr int kBestMatchContainerIndex = 1;
 
 AppListModel* GetAppListModel() {
   return AppListModelProvider::Get()->model();
@@ -402,12 +404,12 @@ class AppListBubbleAndTabletTest
     if (should_show_bubble_launcher()) {
       return GetAppListTestHelper()
           ->GetProductivityLauncherSearchView()
-          ->result_container_views_for_test()[0];
+          ->result_container_views_for_test()[kBestMatchContainerIndex];
     }
     if (productivity_launcher_param()) {
       return GetFullscreenSearchPage()
           ->productivity_launcher_search_view_for_test()
-          ->result_container_views_for_test()[0];
+          ->result_container_views_for_test()[kBestMatchContainerIndex];
     }
     return GetFullscreenSearchPage()->GetSearchResultListViewForTest();
   }
@@ -434,11 +436,32 @@ class AppListBubbleAndTabletTest
                : GetAppListTestHelper()->GetFullscreenSearchPageDialog();
   }
 
-  views::DialogDelegate* GetSearchResultPageDialogDelegate() {
-    return GetSearchResultPageDialog()
-        ->widget()
-        ->widget_delegate()
-        ->AsDialogDelegate();
+  void CancelSearchResultPageDialog() {
+    views::WidgetDelegate* widget_delegate =
+        GetSearchResultPageDialog()->widget()->widget_delegate();
+    if (!productivity_launcher_param()) {
+      widget_delegate->AsDialogDelegate()->CancelDialog();
+    } else {
+      GetEventGenerator()->GestureTapAt(
+          static_cast<RemoveQueryConfirmationDialog*>(widget_delegate)
+              ->cancel_button_for_test()
+              ->GetBoundsInScreen()
+              .CenterPoint());
+    }
+  }
+
+  void AcceptSearchResultPageDialog() {
+    views::WidgetDelegate* widget_delegate =
+        GetSearchResultPageDialog()->widget()->widget_delegate();
+    if (!productivity_launcher_param()) {
+      widget_delegate->AsDialogDelegate()->AcceptDialog();
+    } else {
+      GetEventGenerator()->GestureTapAt(
+          static_cast<RemoveQueryConfirmationDialog*>(widget_delegate)
+              ->accept_button_for_test()
+              ->GetBoundsInScreen()
+              .CenterPoint());
+    }
   }
 
   ContinueSectionView* GetContinueSectionView() {
@@ -948,7 +971,7 @@ TEST_P(AppListBubbleAndTabletTest, RemoveSuggestionShowsConfirmDialog) {
   // Cancel the dialog - the app list should remain in the search result page,
   // the suggestion removal dialog should be hidden, and no result action should
   // be invoked.
-  GetSearchResultPageDialogDelegate()->CancelDialog();
+  CancelSearchResultPageDialog();
 
   EXPECT_TRUE(AppListSearchResultPageVisible());
   EXPECT_FALSE(GetSearchResultPageDialog());
@@ -968,7 +991,7 @@ TEST_P(AppListBubbleAndTabletTest, RemoveSuggestionShowsConfirmDialog) {
 
   // Expect the removal confirmation dialog - this time, accept it.
   ASSERT_TRUE(GetSearchResultPageDialog());
-  GetSearchResultPageDialogDelegate()->AcceptDialog();
+  AcceptSearchResultPageDialog();
 
   // The app list should remain showing search results, the dialog should be
   // closed, and result removal action should be invoked.
@@ -1031,7 +1054,7 @@ TEST_P(AppListBubbleAndTabletTest, RemoveSuggestionUsingLongTap) {
   // Cancel the dialog - the app list should remain in the search result page,
   // the suggestion removal dialog should be hidden, and no result action should
   // be invoked.
-  GetSearchResultPageDialogDelegate()->CancelDialog();
+  CancelSearchResultPageDialog();
 
   EXPECT_TRUE(AppListSearchResultPageVisible());
   EXPECT_FALSE(GetSearchResultPageDialog());
@@ -1047,7 +1070,7 @@ TEST_P(AppListBubbleAndTabletTest, RemoveSuggestionUsingLongTap) {
 
   // Expect the removal confirmation dialog - this time, accept it.
   ASSERT_TRUE(GetSearchResultPageDialog());
-  GetSearchResultPageDialogDelegate()->AcceptDialog();
+  AcceptSearchResultPageDialog();
 
   // The app list should remain showing search results, the dialog should be
   // closed, and result removal action should be invoked.

@@ -4139,6 +4139,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeAssistPersonalInfoName,
      flag_descriptions::kImeAssistPersonalInfoDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kAssistPersonalInfo)},
+    {"enable-cros-virtual-keyboard-dark-mode",
+     flag_descriptions::kVirtualKeyboardDarkModeName,
+     flag_descriptions::kVirtualKeyboardDarkModeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardDarkMode)},
     {"enable-cros-ime-emoji-suggest-addition",
      flag_descriptions::kImeEmojiSuggestAdditionName,
      flag_descriptions::kImeEmojiSuggestAdditionDescription, kOsCrOS,
@@ -4998,6 +5002,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-modules-redesigned", flag_descriptions::kNtpModulesRedesignedName,
      flag_descriptions::kNtpModulesRedesignedDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kNtpModulesRedesigned)},
+
+    {"ntp-modules-redesigned-layout",
+     flag_descriptions::kNtpModulesRedesignedLayoutName,
+     flag_descriptions::kNtpModulesRedesignedLayoutDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpModulesRedesignedLayout)},
 
     {"ntp-realbox-pedals", flag_descriptions::kNtpRealboxPedalsName,
      flag_descriptions::kNtpRealboxPedalsDescription, kOsDesktop,
@@ -6940,11 +6949,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kOmniboxTriggerForPrerender2)},
 
 #if !defined(OS_ANDROID)
-    {"settings-landing-page-redesign",
-     flag_descriptions::kSettingsLandingPageRedesignName,
-     flag_descriptions::kSettingsLandingPageRedesignDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kSettingsLandingPageRedesign)},
-
     {"webui-branding-update", flag_descriptions::kWebUIBrandingUpdateName,
      flag_descriptions::kWebUIBrandingUpdateDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kWebUIBrandingUpdate)},

@@ -3162,6 +3162,19 @@ views::CloseRequestResult BrowserView::OnWindowCloseRequested() {
     frame_->Hide();
     result = views::CloseRequestResult::kCannotClose;
   }
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+  // Persist the side search browser controller's window side panel state for
+  // use during session restoration. Since the side panel is closed by default,
+  // we only want to persist the state if the side panel is currently open.
+  if (side_search_controller_ &&
+      side_search_controller_->GetSidePanelToggledOpen()) {
+    side_search::MaybeSaveSideSearchWindowSessionData(
+        GetProfile(), browser()->session_id(),
+        side_search_controller_->GetSidePanelToggledOpen());
+  }
+#endif
+
   browser_->OnWindowClosing();
   return result;
 }
@@ -3887,8 +3900,7 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
   profiles::BubbleViewMode bubble_view_mode;
   profiles::BubbleViewModeFromAvatarBubbleMode(mode, GetProfile(),
                                                &bubble_view_mode);
-// TODO(https://crbug.com/1260291): Add support for Lacros.
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   if (SigninViewController::ShouldShowSigninForMode(bubble_view_mode)) {
     browser_->signin_view_controller()->ShowSignin(bubble_view_mode,
                                                    access_point);

@@ -1742,6 +1742,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "enable-cros-virtual-keyboard-dark-mode",
+    "owners": ["jopalmer", "essential-inputs-team@google.com"],
+    "expiry_milestone" : 105
+  },
+  {
     "name": "enable-cros-virtual-keyboard-multipaste",
     "owners": [ "jiwan", "essential-inputs-team@google.com" ],
     "expiry_milestone": 100
@@ -2142,7 +2147,7 @@
   {
     "name": "enable-hostname-setting",
     "owners": [ "khorimoto", "cros-connectivity@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 105
   },
   {
     "name": "enable-idle-inhibit",
@@ -2609,7 +2614,7 @@
   {
     "name": "enable-shortcut-customization-app",
     "owners": [ "jimmyxgong", "zentaro", "cros-peripherals@google.com"],
-    "expiry_milestone": 97
+    "expiry_milestone": 104
   },
   {
     "name": "enable-shortened-password-auto-fill-instruction",
@@ -3255,7 +3260,7 @@
   {
     "name": "force-show-continue-section",
     "owners":["anasalazar@chromium.org", "gzadina@google.com"],
-    "expiry_milestone": 97
+    "expiry_milestone": 101
   },
   {
     "name": "force-show-update-menu-badge",
@@ -4007,6 +4012,11 @@
   {
     "name": "ntp-modules-redesigned",
     "owners": [ "doei", "mahmadi", "tiborg" ],
+    "expiry_milestone": 100
+  },
+  {
+    "name": "ntp-modules-redesigned-layout",
+    "owners": [ "pauladedeji", "tiborg" ],
     "expiry_milestone": 100
   },
   {
@@ -4966,7 +4976,7 @@
   {
     "name": "shared-highlighting-ios",
     "owners": ["tmartino"],
-    "expiry_milestone": 97
+    "expiry_milestone": 101
   },
   {
     "name": "shared-highlighting-use-blocklist",

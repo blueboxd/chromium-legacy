@@ -29,6 +29,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
@@ -4391,10 +4392,12 @@ void WebContentsImpl::GetNFC(
 
 void WebContentsImpl::SendScreenRects() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::SendScreenRects");
-  for (FrameTreeNode* node : primary_frame_tree_.Nodes()) {
-    if (node->current_frame_host()->is_local_root())
-      node->current_frame_host()->GetRenderWidgetHost()->SendScreenRects();
-  }
+  GetMainFrame()->ForEachRenderFrameHost(
+      base::BindRepeating([](RenderFrameHostImpl* render_frame_host) {
+        if (render_frame_host->is_local_root()) {
+          render_frame_host->GetRenderWidgetHost()->SendScreenRects();
+        }
+      }));
 }
 
 TextInputManager* WebContentsImpl::GetTextInputManager() {
@@ -9153,6 +9156,24 @@ void WebContentsImpl::UpdateBrowserControlsState(
 
 void WebContentsImpl::SetTabSwitchStartTime(base::TimeTicks start_time,
                                             bool destination_is_loaded) {
+  // TODO(crbug.com/1164477): Remove this UMA once the TabSwitchMetrics2
+  // experiment ends.
+  //
+  // The experiment is showing a mix shift, with more records received in
+  // the experiment group. The control group should preserve the old
+  // behaviour where Browser.Tabs.* metrics were never recorded if there
+  // was no RenderWidgetHostView at the time of the tab switch. To verify
+  // that this accounts for the mix shift, expect that:
+  //
+  // 1. The difference in Browser.Tabs.* record count between the control
+  //    and enabled groups will match the count of
+  //    Browser.Tabs.TabSwitchHasRWHV == false in the enabled group.
+  //
+  // 2. The count of Browser.Tabs.TabSwitchHasRWHV in the control and
+  //    enabled groups are equal.
+  base::UmaHistogramBoolean("Browser.Tabs.TabSwitchHasRWHV",
+                            GetRenderWidgetHostView());
+
   auto* trigger = GetVisibleTimeRequestTrigger();
   if (!trigger)
     return;

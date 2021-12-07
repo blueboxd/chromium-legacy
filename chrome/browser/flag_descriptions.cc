@@ -3745,6 +3745,10 @@ const char kNtpModulesRedesignedName[] = "NTP Modules Redesigned";
 const char kNtpModulesRedesignedDescription[] =
     "Shows the redesigned modules on the New Tab Page.";
 
+const char kNtpModulesRedesignedLayoutName[] = "Ntp Modules Redesigned Layout";
+const char kNtpModulesRedesignedLayoutDescription[] =
+    "Changes the layout of modules on New Tab Page";
+
 const char kNtpRealboxPedalsName[] = "NTP Realbox Pedals";
 const char kNtpRealboxPedalsDescription[] =
     "Shows pedals in the NTP Realbox when enabled.";
@@ -4830,6 +4834,12 @@ const char kImeAssistPersonalInfoName[] = "Enable assistive personal info";
 const char kImeAssistPersonalInfoDescription[] =
     "Enable auto-complete suggestions on personal infomation for native IME.";
 
+const char kVirtualKeyboardDarkModeName[] =
+    "Enable Dark Mode support for virtual keyboard";
+const char kVirtualKeyboardDarkModeDescription[] =
+    "Enable dark mode colors for the virtual keyboard when dark mode is "
+    "active.";
+
 const char kImeEmojiSuggestAdditionName[] =
     "Enable emoji suggestion (addition)";
 const char kImeEmojiSuggestAdditionDescription[] =
@@ -5339,12 +5349,6 @@ const char kWebuiFeedbackName[] = "WebUI Feedback";
 const char kWebuiFeedbackDescription[] =
     "If enabled, Chrome will show the Feedback WebUI, as opposed to Chrome "
     "App Feedback UI, when clicking on \"Report an issue...\"";
-
-const char kSettingsLandingPageRedesignName[] =
-    "Settings Landing Page Redesign";
-const char kSettingsLandingPageRedesignDescription[] =
-    "Changes the layout of the chrome://settings page to only show one section "
-    "at a time.";
 
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS) || defined(OS_FUCHSIA)

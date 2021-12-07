@@ -128,7 +128,7 @@ views::View* CreateUserAvatarView(int user_index) {
     // In guest mode, the user avatar is just a disabled button pod.
     auto* image_view = new IconButton(
         views::Button::PressedCallback(), IconButton::Type::kSmall,
-        kSystemMenuGuestIcon, IDS_ASH_STATUS_TRAY_GUEST_LABEL);
+        &kSystemMenuGuestIcon, IDS_ASH_STATUS_TRAY_GUEST_LABEL);
     image_view->SetEnabled(false);
     return image_view;
   }
@@ -177,9 +177,7 @@ UserItemButton::UserItemButton(PressedCallback callback,
                        &UserChooserDetailedViewController::HandleUserSwitch,
                        base::Unretained(controller),
                        user_index)),
-      // The button for the currently active user is not clickable.
-      role_(user_index == 0 ? ax::mojom::Role::kLabelText
-                            : ax::mojom::Role::kButton),
+      user_index_(user_index),
       capture_icon_(new views::ImageView),
       name_(new views::Label),
       email_(new views::Label) {
@@ -239,7 +237,7 @@ UserItemButton::UserItemButton(PressedCallback callback,
         base::BindRepeating(
             &UserChooserDetailedViewController::TransitionToMainView,
             base::Unretained(controller)),
-        IconButton::Type::kSmall, views::kIcCloseIcon, IDS_APP_ACCNAME_CLOSE));
+        IconButton::Type::kSmall, &views::kIcCloseIcon, IDS_APP_ACCNAME_CLOSE));
   }
 
   SetTooltipText(GetUserItemAccessibleString(user_index));
@@ -278,7 +276,10 @@ std::u16string UserItemButton::GetTooltipText(const gfx::Point& p) const {
 }
 
 void UserItemButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = role_;
+  // The button for the currently active user is not clickable.
+  node_data->role =
+      user_index_ == 0 ? ax::mojom::Role::kLabelText : ax::mojom::Role::kButton;
+  node_data->SetName(GetUserItemAccessibleString(user_index_));
 }
 
 UserChooserView::UserChooserView(

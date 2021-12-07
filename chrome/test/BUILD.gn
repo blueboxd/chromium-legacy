@@ -1559,6 +1559,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/history/redirect_browsertest.cc",
       "../browser/history_clusters/history_clusters_metrics_browsertest.cc",
       "../browser/icon_loader_browsertest.cc",
+      "../browser/icon_transcoder/svg_icon_transcoder_browsertest.cc",
       "../browser/idle/idle_browsertest.cc",
       "../browser/iframe_browsertest.cc",
       "../browser/image_fetcher/image_fetcher_impl_browsertest.cc",
@@ -2055,6 +2056,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/ui/webui/support_tool_ui_browsertest.cc",
       "../browser/ui/webui/tab_search/tab_search_ui_browsertest.cc",
       "../browser/ui/webui/webui_load_timer_browsertest.cc",
+      "../browser/ui/webui/webui_webview_browsertest.cc",
       "../browser/ui/zoom/zoom_controller_browsertest.cc",
       "../browser/ukm_worker_browsertest.cc",
       "../browser/unload_browsertest.cc",
@@ -2136,9 +2138,6 @@ if (!is_android && !is_fuchsia) {
         # https://crbug.com/1252812 The intent picker (launch icon) actions
         # are not working on Lacros.
         "../browser/ui/views/web_apps/web_app_integration_browsertest.cc",
-
-        # Lacros does not seem to have any actual WebView-based UI to test.
-        "../browser/ui/webui/webui_webview_browsertest.cc",
       ]
     }
 
@@ -2358,6 +2357,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/policy/test/hardware_acceleration_mode_enabled_browsertest.cc",
         "../browser/policy/test/variation_restrict_parameter_policy_browsertest.cc",
         "../browser/profiles/profile_window_browsertest.cc",
+        "../browser/ui/signin_reauth_view_controller_browsertest.cc",
         "../browser/ui/views/accessibility/accessibility_focus_highlight_browsertest.cc",
         "../browser/ui/views/profiles/signin_view_controller_delegate_views_browsertest.cc",
       ]
@@ -2448,12 +2448,16 @@ if (!is_android && !is_fuchsia) {
         "../browser/signin/dice_browsertest.cc",
         "../browser/signin/dice_web_signin_interceptor_browsertest.cc",
         "../browser/signin/signin_ui_util_browsertest.cc",
-        "../browser/ui/signin_reauth_view_controller_browsertest.cc",
-        "../browser/ui/views/sync/inline_login_ui_browsertest.cc",
         "../browser/unified_consent/unified_consent_browsertest.cc",
       ]
       if (is_win) {
         sources += [ "../browser/signin/signin_util_win_browsertest.cc" ]
+      }
+
+      # TODO(https://crbug.com/1198523: Remove this once enable_dice_support is
+      # no longer defined on Lacros.
+      if (is_chromeos_lacros) {
+        sources -= [ "../browser/signin/signin_ui_util_browsertest.cc" ]
       }
     } else {
       sources += [ "../browser/signin/mirror_browsertest.cc" ]
@@ -2983,6 +2987,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view_impl_browsertest.cc",
         "../browser/ui/views/session_crashed_bubble_view_browsertest.cc",
         "../browser/ui/views/status_bubble_views_browsertest.cc",
+        "../browser/ui/views/sync/inline_login_ui_browsertest.cc",
         "../browser/ui/views/sync/profile_signin_confirmation_dialog_views_browsertest.cc",
         "../browser/ui/views/tab_sharing/tab_sharing_ui_views_browsertest.cc",
         "../browser/ui/views/tabs/tab_group_editor_bubble_view_browsertest.cc",
@@ -3098,6 +3103,10 @@ if (!is_android && !is_fuchsia) {
         "../browser/ash/app_mode/kiosk_app_update_service_browsertest.cc",
         "../browser/ash/app_mode/kiosk_crash_restore_browsertest.cc",
         "../browser/ash/app_mode/web_app/web_kiosk_app_data_browsertest.cc",
+        "../browser/ash/app_restore/app_restore_arc_test_helper.cc",
+        "../browser/ash/app_restore/app_restore_arc_test_helper.h",
+        "../browser/ash/app_restore/app_restore_test_util.cc",
+        "../browser/ash/app_restore/app_restore_test_util.h",
         "../browser/ash/app_restore/full_restore_app_launch_handler_browsertest.cc",
         "../browser/ash/app_restore/full_restore_policy_browsertest.cc",
         "../browser/ash/apps/apk_web_app_installer_browsertest.cc",
@@ -3147,6 +3156,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/ash/file_manager/file_tasks_browsertest.cc",
         "../browser/ash/file_manager/image_loader_jstest.cc",
         "../browser/ash/first_run/drive_first_run_browsertest.cc",
+        "../browser/ash/guest_os/guest_os_registry_service_icon_browsertest.cc",
         "../browser/ash/input_method/input_method_engine_browsertests.cc",
         "../browser/ash/input_method/native_input_method_engine_browsertest.cc",
         "../browser/ash/input_method/textinput_browsertest.cc",
@@ -3651,6 +3661,9 @@ if (!is_android && !is_fuchsia) {
 
         # chromeos does not use the profile chooser view
         "../browser/ui/views/profiles/profile_menu_view_browsertest.cc",
+
+        # inline login UI is disabled on chromeos
+        "../browser/ui/views/sync/inline_login_ui_browsertest.cc",
         "../browser/ui/views/sync/profile_signin_confirmation_dialog_views_browsertest.cc",
         "../browser/ui/webui/profile_helper_browsertest.cc",
 
@@ -5624,6 +5637,8 @@ test("unit_tests") {
       "../browser/ui/cocoa/profiles/profile_menu_controller_unittest.mm",
       "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_unittest.mm",
       "../browser/ui/cocoa/scoped_menu_bar_lock_unittest.mm",
+      "../browser/ui/cocoa/screentime/history_bridge_unittest.cc",
+      "../browser/ui/cocoa/screentime/screentime_tab_helper_unittest.mm",
       "../browser/ui/cocoa/status_icons/status_icon_mac_unittest.mm",
       "../browser/ui/cocoa/tab_menu_bridge_unittest.mm",
       "../browser/ui/cocoa/test/run_loop_testing_unittest.mm",
@@ -5715,10 +5730,19 @@ test("unit_tests") {
       "../browser/signin/process_dice_header_delegate_impl_unittest.cc",
       "../browser/signin/signin_manager_unittest.cc",
       "../browser/ui/passwords/account_storage_auth_helper_unittest.cc",
-      "../browser/ui/startup/startup_browser_policy_unittest.cc",
       "../browser/ui/views/profiles/dice_web_signin_interception_bubble_view_unittest.cc",
       "../browser/ui/views/profiles/profile_customization_bubble_sync_controller_unittest.cc",
     ]
+
+    # TODO(https://crbug.com/1198523: Remove this once enable_dice_support is no
+    # longer defined on Lacros.
+    if (is_chromeos_lacros) {
+      sources -= [
+        "../browser/password_manager/multi_profile_credentials_filter_unittest.cc",
+        "../browser/signin/dice_web_signin_interceptor_unittest.cc",
+        "../browser/signin/signin_manager_unittest.cc",
+      ]
+    }
   }
 
   if (is_win || is_mac || (is_linux || is_chromeos_lacros)) {
@@ -6155,6 +6179,7 @@ test("unit_tests") {
       "../browser/ui/webui/settings/metrics_reporting_handler_unittest.cc",
       "../browser/ui/webui/settings/on_startup_handler_unittest.cc",
       "../browser/ui/webui/settings/people_handler_unittest.cc",
+      "../browser/ui/webui/settings/privacy_review_handler_unittest.cc",
       "../browser/ui/webui/settings/privacy_sandbox_handler_unittest.cc",
       "../browser/ui/webui/settings/profile_info_handler_unittest.cc",
       "../browser/ui/webui/settings/recent_site_settings_helper_unittest.cc",
@@ -6379,7 +6404,6 @@ test("unit_tests") {
       "../browser/devtools/protocol/cast_handler_unittest.cc",
       "../browser/devtools/serialize_host_descriptions_unittest.cc",
       "../browser/download/download_dir_policy_handler_unittest.cc",
-      "../browser/icon_transcoder/svg_icon_transcoder_unittest.cc",
       "../browser/media/webrtc/webrtc_log_uploader_unittest.cc",
       "../browser/media/webrtc/webrtc_rtp_dump_handler_unittest.cc",
       "../browser/media/webrtc/webrtc_rtp_dump_writer_unittest.cc",
@@ -7293,6 +7317,9 @@ test("unit_tests") {
       "../browser/ui/startup/startup_browser_creator_impl_unittest.cc",
       "../browser/ui/startup/startup_tab_provider_unittest.cc",
     ]
+  }
+  if (!is_android && !is_chromeos_ash) {
+    sources += [ "../browser/ui/startup/startup_browser_policy_unittest.cc" ]
   }
 
   if (use_gio) {

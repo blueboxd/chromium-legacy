@@ -12,7 +12,7 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
 import '/common/icons.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -20,6 +20,7 @@ import {setFullscreenEnabledAction} from '../personalization_actions.js';
 import {CurrentWallpaper, WallpaperImage, WallpaperLayout, WallpaperProviderInterface} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {getWallpaperLayoutEnum} from '../utils.js';
+import {isFilePath} from '../utils.js';
 
 import {cancelPreviewWallpaper, confirmPreviewWallpaper, selectWallpaper} from './wallpaper_controller.js';
 import {getWallpaperProvider} from './wallpaper_interface_provider.js';
@@ -27,7 +28,7 @@ import {getWallpaperProvider} from './wallpaper_interface_provider.js';
 const fullscreenClass = 'fullscreen-preview';
 
 export interface WallpaperFullscreen {
-  $: {container: HTMLDivElement;};
+  $: {container: HTMLDivElement; exit: HTMLElement;};
 }
 
 export class WallpaperFullscreen extends WithPersonalizationStore {
@@ -139,26 +140,32 @@ export class WallpaperFullscreen extends WithPersonalizationStore {
       cancelPreviewWallpaper(this.wallpaperProvider_);
       this.dispatch(setFullscreenEnabledAction(/*enabled=*/ false));
       document.body.classList.remove(fullscreenClass);
+    } else {
+      this.$.exit.focus();
     }
   }
 
-  private onClickExit_() {
-    cancelPreviewWallpaper(this.wallpaperProvider_);
+  private async onClickExit_() {
+    await cancelPreviewWallpaper(this.wallpaperProvider_);
     this.exitFullscreen();
   }
 
-  private onClickConfirm_() {
-    confirmPreviewWallpaper(this.wallpaperProvider_);
+  private async onClickConfirm_() {
+    // Wait for wallpaper to be confirmed before exiting full screen mode.
+    await confirmPreviewWallpaper(this.wallpaperProvider_);
     this.exitFullscreen();
   }
 
   private async onClickLayout_(event: MouseEvent) {
-    assert(this.pendingSelected_?.hasOwnProperty('path'));
+    if (!isFilePath(this.pendingSelected_)) {
+      assertNotReached('pendingSelected must be a local image to set layout');
+      return;
+    }
     const layout = getWallpaperLayoutEnum(
         (event.currentTarget as HTMLButtonElement).dataset['layout']!);
     await selectWallpaper(
-        /** @type {!DisplayableImage} */ (this.pendingSelected_),
-        this.wallpaperProvider_, this.getStore(), layout);
+        this.pendingSelected_, this.wallpaperProvider_, this.getStore(),
+        layout);
     this.selectedLayout_ = layout;
   }
 

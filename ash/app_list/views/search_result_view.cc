@@ -12,11 +12,13 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/legacy_remove_query_confirmation_dialog.h"
 #include "ash/app_list/views/remove_query_confirmation_dialog.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_actions_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -55,20 +57,21 @@ namespace {
 constexpr int kPreferredWidth = 640;
 constexpr int kClassicViewHeight = 48;
 constexpr int kDefaultViewHeight = 40;
-constexpr int kInlineAnswerViewHeight = 80;
+constexpr int kAnswerCardViewHeight = 80;
 constexpr int kPreferredIconViewWidth = 56;
 constexpr int kTextTrailPadding = 16;
 // Extra margin at the right of the rightmost action icon.
 constexpr int kActionButtonRightMargin = 8;
 // Text line height in the search result.
 constexpr int kPrimaryTextHeight = 20;
-constexpr int kInlineAnswerDetailsLineHeight = 18;
+constexpr int kAnswerCardDetailsLineHeight = 18;
 
 // Corner radius for downloaded image icons.
 constexpr int kImageIconCornerRadius = 4;
 
 constexpr int kSearchRatingStarPadding = 4;
 constexpr int kSearchRatingStarSize = 16;
+constexpr gfx::Insets kAnswerCardBorder(12, 12, 12, 12);
 }  // namespace
 
 // static
@@ -162,15 +165,7 @@ SearchResultView::SearchResultView(
   text_container_->GetViewAccessibility().OverrideIsIgnored(true);
   text_container_->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
 
-  switch (view_type_) {
-    case SearchResultViewType::kDefault:
-      text_container_->SetOrientation(views::LayoutOrientation::kHorizontal);
-      break;
-    case SearchResultViewType::kClassic:
-    case SearchResultViewType::kInlineAnswer:
-      text_container_->SetOrientation(views::LayoutOrientation::kVertical);
-      break;
-  }
+  SetSearchResultViewType(view_type);
 
   auto setup_flex_specifications = [](views::View* view) {
     view->SetProperty(
@@ -231,7 +226,7 @@ SearchResultView::SearchResultView(
       rating_->SetTextStyle(STYLE_CLASSIC_LAUNCHER);
       break;
     case SearchResultViewType::kDefault:
-    case SearchResultViewType::kInlineAnswer:
+    case SearchResultViewType::kAnswerCard:
       title_label_->SetTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
       separator_label_->SetTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
       details_label_->SetTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
@@ -251,29 +246,52 @@ void SearchResultView::OnResultChanged() {
   SchedulePaint();
 }
 
+void SearchResultView::SetSearchResultViewType(SearchResultViewType type) {
+  view_type_ = type;
+
+  switch (view_type_) {
+    case SearchResultViewType::kDefault:
+      text_container_->SetOrientation(views::LayoutOrientation::kHorizontal);
+      SetBorder(views::CreateEmptyBorder(gfx::Insets()));
+      break;
+    case SearchResultViewType::kClassic:
+      text_container_->SetOrientation(views::LayoutOrientation::kVertical);
+      SetBorder(views::CreateEmptyBorder(gfx::Insets()));
+      break;
+    case SearchResultViewType::kAnswerCard:
+      text_container_->SetOrientation(views::LayoutOrientation::kVertical);
+      SetBorder(views::CreateEmptyBorder(kAnswerCardBorder));
+      break;
+  }
+}
+
+views::LayoutOrientation SearchResultView::GetLayoutOrientationForTest() {
+  return text_container_->GetOrientation();
+}
+
 int SearchResultView::PreferredHeight() const {
   switch (view_type_) {
     case SearchResultViewType::kClassic:
       return kClassicViewHeight;
     case SearchResultViewType::kDefault:
       return kDefaultViewHeight;
-    case SearchResultViewType::kInlineAnswer:
-      return kInlineAnswerViewHeight;
+    case SearchResultViewType::kAnswerCard:
+      return kAnswerCardViewHeight;
   }
 }
 int SearchResultView::PrimaryTextHeight() const {
   switch (view_type_) {
     case SearchResultViewType::kClassic:
     case SearchResultViewType::kDefault:
-    case SearchResultViewType::kInlineAnswer:
+    case SearchResultViewType::kAnswerCard:
       return kPrimaryTextHeight;
   }
 }
 int SearchResultView::SecondaryTextHeight() const {
   switch (view_type_) {
     case SearchResultViewType::kClassic:
-    case SearchResultViewType::kInlineAnswer:
-      return kInlineAnswerDetailsLineHeight;
+    case SearchResultViewType::kAnswerCard:
+      return kAnswerCardDetailsLineHeight;
     case SearchResultViewType::kDefault:
       return kPrimaryTextHeight;
   }
@@ -306,7 +324,7 @@ void SearchResultView::UpdateDetailsText() {
         separator_label_->SetVisible(true);
         break;
       case SearchResultViewType::kClassic:
-      case SearchResultViewType::kInlineAnswer:
+      case SearchResultViewType::kAnswerCard:
 
         separator_label_->SetVisible(false);
     }
@@ -442,7 +460,7 @@ void SearchResultView::Layout() {
         break;
       }
       case SearchResultViewType::kClassic:
-      case SearchResultViewType::kInlineAnswer: {
+      case SearchResultViewType::kAnswerCard: {
         gfx::Size title_size(text_bounds.width(), PrimaryTextHeight());
         gfx::Size details_size(text_bounds.width(), SecondaryTextHeight());
         int total_height = title_size.height() + details_size.height();
@@ -645,10 +663,18 @@ void SearchResultView::OnSearchResultActionActivated(size_t index) {
       case SearchResultActionType::kRemove: {
         RecordZeroStateSearchResultUserActionHistogram(
             ZeroStateSearchResultUserActionType::kRemoveResult);
-        auto dialog = std::make_unique<RemoveQueryConfirmationDialog>(
-            result()->title(),
-            base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
-                           weak_ptr_factory_.GetWeakPtr()));
+        std::unique_ptr<views::WidgetDelegate> dialog;
+        if (features::IsProductivityLauncherEnabled()) {
+          dialog = std::make_unique<RemoveQueryConfirmationDialog>(
+              result()->title(),
+              base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
+                             weak_ptr_factory_.GetWeakPtr()));
+        } else {
+          dialog = std::make_unique<LegacyRemoveQueryConfirmationDialog>(
+              result()->title(),
+              base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
+                             weak_ptr_factory_.GetWeakPtr()));
+        }
         dialog_controller_->Show(std::move(dialog));
         break;
       }

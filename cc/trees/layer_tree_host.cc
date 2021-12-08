@@ -351,140 +351,6 @@ void LayerTreeHost::RequestMainFrameUpdate(bool report_metrics) {
     pending_commit_state()->begin_main_frame_metrics.reset();
 }
 
-// This function commits the LayerTreeHost to an impl tree. When modifying
-// this function, keep in mind that the function *runs* on the impl thread! Any
-// code that is logically a main thread operation, e.g. deletion of a Layer,
-// should be delayed until the LayerTreeHost::CommitComplete, which will run
-// after the commit, but on the main thread.
-void LayerTreeHost::FinishCommitOnImplThread(
-    LayerTreeHostImpl* host_impl,
-    CommitState& commit_state,
-    ThreadUnsafeCommitState& unsafe_state) {
-  DCHECK(task_runner_provider_->IsImplThread());
-
-  TRACE_EVENT0("cc,benchmark", "LayerTreeHost::FinishCommitOnImplThread");
-
-  LayerTreeImpl* sync_tree = host_impl->sync_tree();
-  sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kBeginningSync);
-
-  if (commit_state.next_commit_forces_redraw)
-    sync_tree->ForceRedrawNextActivation();
-  if (commit_state.next_commit_forces_recalculate_raster_scales)
-    sync_tree->ForceRecalculateRasterScales();
-  if (!commit_state.pending_presentation_time_callbacks.empty()) {
-    sync_tree->AddPresentationCallbacks(
-        std::move(commit_state.pending_presentation_time_callbacks));
-  }
-
-  if (commit_state.needs_full_tree_sync)
-    TreeSynchronizer::SynchronizeTrees(unsafe_state, sync_tree);
-
-  if (commit_state.clear_caches_on_next_commit) {
-    proxy_->ClearHistory();
-    host_impl->ClearCaches();
-  }
-
-  {
-    TRACE_EVENT0("cc", "LayerTreeHost::PushProperties");
-
-    sync_tree->PullPropertyTreesFrom(unsafe_state.root_layer.get(),
-                                     unsafe_state.property_trees);
-    sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kSyncedPropertyTrees);
-
-    if (commit_state.needs_surface_ranges_sync) {
-      sync_tree->ClearSurfaceRanges();
-      sync_tree->SetSurfaceRanges(commit_state.SurfaceRanges());
-    }
-    TreeSynchronizer::PushLayerProperties(commit_state, unsafe_state,
-                                          sync_tree);
-    sync_tree->lifecycle().AdvanceTo(
-        LayerTreeLifecycle::kSyncedLayerProperties);
-
-    sync_tree->PullLayerTreePropertiesFrom(commit_state);
-    host_impl->PullLayerTreeHostPropertiesFrom(commit_state);
-
-    sync_tree->PassSwapPromises(std::move(commit_state.swap_promises));
-    sync_tree->AppendEventsMetricsFromMainThread(
-        std::move(commit_state.event_metrics));
-
-    sync_tree->set_ui_resource_request_queue(
-        commit_state.ui_resource_request_queue);
-
-    // This must happen after synchronizing property trees and after pushing
-    // properties, which updates the clobber_active_value flag.
-    // TODO(pdr): Enforce this comment with DCHECKS and a lifecycle state.
-    sync_tree->property_trees()->scroll_tree.PushScrollUpdatesFromMainThread(
-        property_trees(), sync_tree, settings_.commit_fractional_scroll_deltas);
-
-    // This must happen after synchronizing property trees and after push
-    // properties, which updates property tree indices, but before animation
-    // host pushes properties as animation host push properties can change
-    // KeyframeModel::InEffect and we want the old InEffect value for updating
-    // property tree scrolling and animation.
-    // TODO(pdr): Enforce this comment with DCHECKS and a lifecycle state.
-    sync_tree->UpdatePropertyTreeAnimationFromMainThread();
-
-    TRACE_EVENT0("cc", "LayerTreeHost::AnimationHost::PushProperties");
-    DCHECK(host_impl->mutator_host());
-    mutator_host_->PushPropertiesTo(host_impl->mutator_host());
-    MoveChangeTrackingToLayers(unsafe_state, sync_tree);
-
-    // Updating elements affects whether animations are in effect based on their
-    // properties so run after pushing updated animation properties.
-    host_impl->UpdateElements(ElementListType::PENDING);
-
-    sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kNotSyncing);
-  }
-
-  // Transfer image decode requests to the impl thread.
-  for (auto& entry : commit_state.queued_image_decodes) {
-    host_impl->QueueImageDecode(entry.first, *entry.second);
-  }
-
-  for (auto& benchmark : commit_state.benchmarks)
-    host_impl->ScheduleMicroBenchmark(std::move(benchmark));
-
-  unsafe_state.property_trees.ResetAllChangeTracking();
-
-  // Dump property trees and layers if run with:
-  //   --vmodule=layer_tree_host=3
-  if (VLOG_IS_ON(3)) {
-    const char* client_name = GetClientNameForMetrics();
-    if (!client_name)
-      client_name = "<unknown client>";
-    VLOG(3) << "After finishing (" << client_name
-            << ") commit on impl, the sync tree:"
-            << "\nproperty_trees:\n"
-            << sync_tree->property_trees()->ToString() << "\n"
-            << "cc::LayerImpls:\n"
-            << sync_tree->LayerListAsJson();
-  }
-}
-
-void LayerTreeHost::MoveChangeTrackingToLayers(
-    ThreadUnsafeCommitState& unsafe_state,
-    LayerTreeImpl* tree_impl) {
-  // This is only true for single-thread compositing (i.e. not via Blink).
-  bool property_trees_changed_on_active_tree =
-      tree_impl->IsActiveTree() && tree_impl->property_trees()->changed;
-
-  if (property_trees_changed_on_active_tree) {
-    // Property trees may store damage status. We preserve the sync tree damage
-    // status by pushing the damage status from sync tree property trees to main
-    // thread property trees or by moving it onto the layers.
-    if (unsafe_state.root_layer.get()) {
-      if (unsafe_state.property_trees.sequence_number ==
-          tree_impl->property_trees()->sequence_number)
-        tree_impl->property_trees()->PushChangeTrackingTo(
-            &unsafe_state.property_trees);
-      else
-        tree_impl->MoveChangeTrackingToLayers();
-    }
-  } else {
-    tree_impl->MoveChangeTrackingToLayers();
-  }
-}
-
 void LayerTreeHost::ImageDecodesFinished(
     const std::vector<std::pair<int, bool>>& results) {
   // Issue stored callbacks and remove them from the pending list.
@@ -617,29 +483,54 @@ void LayerTreeHost::DidFailToInitializeLayerTreeFrameSink() {
 
 std::unique_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
     LayerTreeHostImplClient* client) {
+  // This method is special: it should be the only LayerTreeHost method that
+  // runs on the impl thread. As such, it cannot use LayerTreeHost getter
+  // methods that enforce DCHECK(IsMainThread()). Because it only ever runs when
+  // the main thread is blocked, it's safe to access member variables directly.
   DCHECK(task_runner_provider_->IsImplThread());
+  DCHECK(task_runner_provider_->IsMainThreadBlocked());
+  return CreateLayerTreeHostImplInternal(
+      client, thread_unsafe_commit_state_.mutator_host, settings_,
+      task_runner_provider_.get(), dark_mode_filter_, id_, task_graph_runner_,
+      image_worker_task_runner_, scheduling_client_,
+      rendering_stats_instrumentation_.get(), ukm_recorder_factory_,
+      compositor_delegate_weak_ptr_);
+}
 
+std::unique_ptr<LayerTreeHostImpl>
+LayerTreeHost::CreateLayerTreeHostImplInternal(
+    LayerTreeHostImplClient* client,
+    MutatorHost* mutator_host,
+    const LayerTreeSettings& settings,
+    TaskRunnerProvider* task_runner_provider,
+    raw_ptr<RasterDarkModeFilter>& dark_mode_filter,
+    int id,
+    raw_ptr<TaskGraphRunner>& task_graph_runner,
+    scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner,
+    LayerTreeHostSchedulingClient* scheduling_client,
+    RenderingStatsInstrumentation* rendering_stats_instrumentation,
+    std::unique_ptr<UkmRecorderFactory>& ukm_recorder_factory,
+    base::WeakPtr<CompositorDelegateForInput>& compositor_delegate_weak_ptr) {
   std::unique_ptr<MutatorHost> mutator_host_impl =
-      mutator_host()->CreateImplInstance();
+      mutator_host->CreateImplInstance();
 
-  if (!settings_.scroll_animation_duration_for_testing.is_zero()) {
-    mutator_host()->SetScrollAnimationDurationForTesting(  // IN-TEST
-        settings_.scroll_animation_duration_for_testing);
+  if (!settings.scroll_animation_duration_for_testing.is_zero()) {
+    mutator_host->SetScrollAnimationDurationForTesting(  // IN-TEST
+        settings.scroll_animation_duration_for_testing);
   }
 
   std::unique_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
-      settings_, client, task_runner_provider_.get(),
-      rendering_stats_instrumentation_.get(), task_graph_runner_,
-      std::move(mutator_host_impl), dark_mode_filter_, id_,
-      std::move(image_worker_task_runner_), scheduling_client_);
-  if (ukm_recorder_factory_) {
-    host_impl->InitializeUkm(ukm_recorder_factory_->CreateRecorder());
-    ukm_recorder_factory_.reset();
+      settings, client, task_runner_provider, rendering_stats_instrumentation,
+      task_graph_runner, std::move(mutator_host_impl), dark_mode_filter, id,
+      std::move(image_worker_task_runner), scheduling_client);
+  if (ukm_recorder_factory) {
+    host_impl->InitializeUkm(ukm_recorder_factory->CreateRecorder());
+    ukm_recorder_factory.reset();
   }
 
-  task_graph_runner_ = nullptr;
-  dark_mode_filter_ = nullptr;
-  compositor_delegate_weak_ptr_ = host_impl->AsWeakPtr();
+  task_graph_runner = nullptr;
+  dark_mode_filter = nullptr;
+  compositor_delegate_weak_ptr = host_impl->AsWeakPtr();
   return host_impl;
 }
 
@@ -1828,11 +1719,6 @@ void LayerTreeHost::MaximumScaleChanged(ElementId element_id,
                                         float maximum_scale) {
   DCHECK_EQ(ElementListType::ACTIVE, list_type);
   property_trees()->MaximumAnimationScaleChanged(element_id, maximum_scale);
-}
-
-gfx::PointF LayerTreeHost::GetScrollOffsetForAnimation(
-    ElementId element_id) const {
-  return property_trees()->scroll_tree.current_scroll_offset(element_id);
 }
 
 void LayerTreeHost::QueueImageDecode(const PaintImage& image,

@@ -3438,7 +3438,8 @@ String AXNodeObject::TextFromDescendants(
     // accessible name of object inside hidden subtrees (for example, if
     // aria-labelledby points to an object that's hidden).
     if (child->AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden) ||
-        child->IsHiddenForTextAlternativeCalculation()) {
+        child->IsHiddenForTextAlternativeCalculation(
+            aria_label_or_description_root)) {
       continue;
     }
 
@@ -5733,19 +5734,17 @@ String AXNodeObject::PlaceholderFromNativeAttribute() const {
 }
 
 String AXNodeObject::GetValueContributionToName() const {
-  if (CanSetValueAttribute()) {
-    if (IsTextField())
-      return SlowGetValueForControlIncludingContentEditable();
+  if (IsTextField())
+    return SlowGetValueForControlIncludingContentEditable();
 
-    if (IsRangeValueSupported()) {
-      const AtomicString& aria_valuetext =
-          GetAOMPropertyOrARIAAttribute(AOMStringProperty::kValueText);
-      if (!aria_valuetext.IsNull())
-        return aria_valuetext.GetString();
-      float value;
-      if (ValueForRange(&value))
-        return String::Number(value);
-    }
+  if (IsRangeValueSupported()) {
+    const AtomicString& aria_valuetext =
+        GetAOMPropertyOrARIAAttribute(AOMStringProperty::kValueText);
+    if (!aria_valuetext.IsNull())
+      return aria_valuetext.GetString();
+    float value;
+    if (ValueForRange(&value))
+      return String::Number(value);
   }
 
   // "If the embedded control has role combobox or listbox, return the text

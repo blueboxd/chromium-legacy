@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
 #include "chrome/browser/ui/ash/projector/projector_app_client_impl.h"
 #include "chrome/browser/ui/ash/projector/projector_client_impl.h"
-#include "chrome/browser/ui/ash/quick_answers/quick_answers_browser_client_impl.h"
 #include "chrome/browser/ui/ash/screen_orientation_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/shelf/app_service/exo_app_type_resolver.h"
@@ -54,12 +53,12 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_item_factory.h"
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/browser/ui/ash/tab_cluster_ui_client.h"
-#include "chrome/browser/ui/ash/tab_scrubber.h"
 #include "chrome/browser/ui/ash/tablet_mode_page_behavior.h"
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
+#include "chrome/browser/ui/views/tabs/tab_scrubber_chromeos.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/services/bluetooth_config/fast_pair_delegate.h"
@@ -146,9 +145,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   // Needed by AmbientController in ash.
   if (chromeos::features::IsAmbientModeEnabled())
     ambient_client_ = std::make_unique<AmbientClientImpl>();
-
-  quick_answers_browser_client_ =
-      std::make_unique<QuickAnswersBrowserClientImpl>();
 
   ash_shell_init_ = std::make_unique<AshShellInit>();
 
@@ -283,8 +279,8 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 
   ash_web_view_factory_ = std::make_unique<AshWebViewFactoryImpl>();
 
-  // Initialize TabScrubber after the Ash Shell has been initialized.
-  TabScrubber::GetInstance();
+  // Initialize TabScrubberChromeOS after the Ash Shell has been initialized.
+  TabScrubberChromeOS::GetInstance();
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {

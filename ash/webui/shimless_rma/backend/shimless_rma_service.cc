@@ -457,64 +457,16 @@ void ShimlessRmaService::ReworkMainboard(ReworkMainboardCallback callback) {
   TransitionNextStateGeneric(std::move(callback));
 }
 
-void ShimlessRmaService::ReimageRequired(ReimageRequiredCallback callback) {
+void ShimlessRmaService::RoFirmwareUpdateComplete(
+    RoFirmwareUpdateCompleteCallback callback) {
   if (state_proto_.state_case() != rmad::RmadState::kUpdateRoFirmware) {
-    LOG(ERROR) << "ReimageRequired called from incorrect state "
-               << state_proto_.state_case();
-    std::move(callback).Run(true);
-    return;
-  }
-  std::move(callback).Run(!state_proto_.update_ro_firmware().optional());
-}
-
-void ShimlessRmaService::ReimageSkipped(ReimageSkippedCallback callback) {
-  if (state_proto_.state_case() != rmad::RmadState::kUpdateRoFirmware) {
-    LOG(ERROR) << "ReimageSkipped called from incorrect state "
+    LOG(ERROR) << "RoFirmwareUpdateComplete called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
                             can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
-  // TODO(gavindodd): Is it better to just rely on rmad to enforce this?
-  if (!state_proto_.update_ro_firmware().optional()) {
-    LOG(ERROR) << "ReimageSkipped called when reimage required.";
-    std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
-                            can_abort_, can_go_back_,
-                            rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
-    return;
-  }
-  state_proto_.mutable_update_ro_firmware()->set_update(
-      rmad::UpdateRoFirmwareState::RMAD_UPDATE_SKIP);
-  TransitionNextStateGeneric(std::move(callback));
-}
-
-void ShimlessRmaService::ReimageFromDownload(
-    ReimageFromDownloadCallback callback) {
-  if (state_proto_.state_case() != rmad::RmadState::kUpdateRoFirmware) {
-    LOG(ERROR) << "ReimageFromDownload called from incorrect state "
-               << state_proto_.state_case();
-    std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
-                            can_abort_, can_go_back_,
-                            rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
-    return;
-  }
-  state_proto_.mutable_update_ro_firmware()->set_update(
-      rmad::UpdateRoFirmwareState::RMAD_UPDATE_FIRMWARE_DOWNLOAD);
-  TransitionNextStateGeneric(std::move(callback));
-}
-
-void ShimlessRmaService::ReimageFromUsb(ReimageFromUsbCallback callback) {
-  if (state_proto_.state_case() != rmad::RmadState::kUpdateRoFirmware) {
-    LOG(ERROR) << "ReimageFromUsb called from incorrect state "
-               << state_proto_.state_case();
-    std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
-                            can_abort_, can_go_back_,
-                            rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
-    return;
-  }
-  state_proto_.mutable_update_ro_firmware()->set_update(
-      rmad::UpdateRoFirmwareState::RMAD_UPDATE_FIRMWARE_RECOVERY_UTILITY);
   TransitionNextStateGeneric(std::move(callback));
 }
 
@@ -935,6 +887,14 @@ void ShimlessRmaService::FinalizationProgress(
   }
 }
 
+void ShimlessRmaService::RoFirmwareUpdateProgress(
+    rmad::UpdateRoFirmwareStatus status) {
+  last_update_ro_firmware_progress_ = status;
+  if (update_ro_firmware_observer_.is_bound()) {
+    update_ro_firmware_observer_->OnUpdateRoFirmwareStatusChanged(status);
+  }
+}
+
 void ShimlessRmaService::ObserveError(
     ::mojo::PendingRemote<mojom::ErrorObserver> observer) {
   error_observer_.Bind(std::move(observer));
@@ -1004,6 +964,15 @@ void ShimlessRmaService::ObserveFinalizationStatus(
     finalization_observer_->OnFinalizationUpdated(
         last_finalization_progress_->status(),
         last_finalization_progress_->progress());
+  }
+}
+
+void ShimlessRmaService::ObserveRoFirmwareUpdateProgress(
+    ::mojo::PendingRemote<mojom::UpdateRoFirmwareObserver> observer) {
+  update_ro_firmware_observer_.Bind(std::move(observer));
+  if (last_update_ro_firmware_progress_) {
+    update_ro_firmware_observer_->OnUpdateRoFirmwareStatusChanged(
+        *last_update_ro_firmware_progress_);
   }
 }
 

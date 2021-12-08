@@ -712,8 +712,7 @@ URLLoader::URLLoader(
 
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(net::features::kRecordRadioWakeupTrigger)) {
-    RadioMonitorAndroid::GetInstance().MaybeRecordURLLoader(request,
-                                                            traffic_annotation);
+    MaybeRecordURLLoaderCreationForWakeupTrigger(request, traffic_annotation);
   }
 #endif
 
@@ -1758,8 +1757,12 @@ void URLLoader::OnBeforeURLRequest() {
     return url_loader_factory_->OnBeforeURLRequest();
 }
 
-net::LoadState URLLoader::GetLoadStateForTesting() const {
+net::LoadState URLLoader::GetLoadState() const {
   return url_request_->GetLoadState().state;
+}
+
+net::UploadProgress URLLoader::GetUploadProgress() const {
+  return url_request_->GetUploadProgress();
 }
 
 int32_t URLLoader::GetProcessId() const {

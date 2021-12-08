@@ -280,6 +280,7 @@
 <translation id="2942350706960889382">Закріплена лупа</translation>
 <translation id="2942516765047364088">Розташування полиці</translation>
 <translation id="2946119680249604491">Додати з’єднання</translation>
+<translation id="2960314608273155470">Режим зйомки. За умовчанням – <ph name="TYPE" /> <ph name="SOURCE" />. Для навігації за допомогою клавіатури натисніть клавішу Tab.</translation>
 <translation id="2961963223658824723">Сталася помилка. Повторіть спробу за кілька секунд.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="296762781903199866">Не вдалося завантажити файли живих субтитрів для такої мови: <ph name="LANGUAGE" /></translation>
@@ -431,7 +432,6 @@
 <translation id="383629559565718788">Показати налаштування клавіатури</translation>
 <translation id="384082539148746321">Видалити шаблон?</translation>
 <translation id="3842239759367498783">Продовжити читати з мобільного пристрою <ph name="TITLE" /></translation>
-<translation id="3846214748874656680">Вийти з повноекранного режиму</translation>
 <translation id="3846575436967432996">Інформація про мережу не доступна</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="385300504083504382">На початок</translation>
@@ -856,7 +856,6 @@
 <translation id="6820676911989879663">Зробіть перерву!</translation>
 <translation id="6836499262298959512">Небезпечний файл</translation>
 <translation id="6837064795450991317">Сховати панель</translation>
-<translation id="6850010208275816200">Поточний додаток розгорнуто на весь екран. Якщо з'явиться запит пароля, спершу вийдіть із цього режиму.</translation>
 <translation id="6852052252232534364">Активувати</translation>
 <translation id="6857725247182211756"><ph name="SECONDS" /> с</translation>
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{Залишилась одна цифра}one{Залишилася # цифра}few{Залишилося # цифри}many{Залишилося # цифр}other{Залишилося # цифри}}</translation>
@@ -886,6 +885,7 @@
 <translation id="7042322267639375032">Згорнути панель стану</translation>
 <translation id="7045033600005038336">Замінити шаблон?</translation>
 <translation id="7045595904618419789">Увімкнути лупу</translation>
+<translation id="7051244143160304048">Пристрій <ph name="DEVICE_NAME" /> від’єднано</translation>
 <translation id="7055381872777910864">Ср</translation>
 <translation id="7055910611768509537">Стилус не використовувався більше ніж тиждень</translation>
 <translation id="7066646422045619941">Ваш адміністратор вимкнув цю мережу.</translation>
@@ -1079,6 +1079,7 @@
 <translation id="8412677897383510995">Показати налаштування дисплея</translation>
 <translation id="8413272770729657668">Зараз почнеться запис: 3, 2, 1</translation>
 <translation id="8416730306157376817"><ph name="BATTERY_PERCENTAGE" />% (Футляр)</translation>
+<translation id="8421270167862077762">Додаток <ph name="UNAVAILABLE_APPS" /> не встановлено на цьому пристрої.</translation>
 <translation id="8425213833346101688">Змінити</translation>
 <translation id="8426708595819210923">Доброго вечора, <ph name="GIVEN_NAME" />!</translation>
 <translation id="8428213095426709021">Налаштування</translation>
@@ -1206,6 +1207,7 @@
 <translation id="938963181863597773">Які події заплановано?</translation>
 <translation id="945522503751344254">Надіслати відгук</translation>
 <translation id="951991426597076286">Відхилити</translation>
+<translation id="96080156868846968">Сканується</translation>
 <translation id="974545358917229949">Показано результати (<ph name="RESULT_COUNT" />) для запиту "<ph name="QUERY" />"</translation>
 <translation id="98515147261107953">Альбомна</translation>
 <translation id="990277280839877440">Вікно <ph name="WINDOW_TITILE" /> закрито.</translation>

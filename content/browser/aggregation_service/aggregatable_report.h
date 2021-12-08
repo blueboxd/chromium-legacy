@@ -30,8 +30,8 @@ class AggregatableReportRequest;
 struct CONTENT_EXPORT AggregationServicePayloadContents {
   // TODO(alexmt): Add kDistinctCount option.
   enum class Operation {
-    kHierarchicalHistogram = 0,
-    kMaxValue = kHierarchicalHistogram,
+    kHistogram = 0,
+    kMaxValue = kHistogram,
   };
 
   enum class ProcessingType {
@@ -94,10 +94,10 @@ class CONTENT_EXPORT AggregatableReport {
     // }
     // For the kSingleServer processing type, the "dpf_key" field is replaced
     // with:
-    //   "data": { "bucket": <bucket>, "value": <value> }
+    //   "data": [{ "bucket": <bucket>, "value": <value> }]
     // If two processing origins are provided, one payload (chosen randomly)
     // would contain that data and the other would instead contain:
-    //   "data": {}
+    //   "data": []
     std::vector<uint8_t> payload;
 
     // Indicates the chosen encryption key.

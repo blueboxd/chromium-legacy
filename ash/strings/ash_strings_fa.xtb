@@ -432,7 +432,6 @@
 <translation id="383629559565718788">نمایش تنظیمات صفحه‌کلید</translation>
 <translation id="384082539148746321">الگو حذف شود؟</translation>
 <translation id="3842239759367498783">ادامه خواندن در دستگاه همراه <ph name="TITLE" /></translation>
-<translation id="3846214748874656680">خروج از حالت تمام صفحه</translation>
 <translation id="3846575436967432996">اطلاعات شبکه در دسترس نیست</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="385300504083504382">آغاز</translation>
@@ -857,7 +856,6 @@
 <translation id="6820676911989879663">استراحت کنید!</translation>
 <translation id="6836499262298959512">فایل خطرناک</translation>
 <translation id="6837064795450991317">پنهان کردن نوار میزکار</translation>
-<translation id="6850010208275816200">برنامه فعلی شما درحالت تمام‌صفحه است. اگر برنامه گذرواژه‌تان را درخواست کرد، ابتدا از حالت تمام‌صفحه خارج شوید.</translation>
 <translation id="6852052252232534364">کلیک برای فعال‌سازی</translation>
 <translation id="6857725247182211756"><ph name="SECONDS" /> ثانیه</translation>
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{یک رقم باقی‌مانده است}one{# رقم باقی‌مانده است}other{# رقم باقی‌مانده است}}</translation>
@@ -1209,6 +1207,7 @@
 <translation id="938963181863597773">‏?What's on my calendar (در تقویم من چه رویدادی هست؟)</translation>
 <translation id="945522503751344254">ارسال بازخورد</translation>
 <translation id="951991426597076286">رد کردن</translation>
+<translation id="96080156868846968">درحال اسکن شدن</translation>
 <translation id="974545358917229949">نمایش <ph name="RESULT_COUNT" /> نتیجه برای <ph name="QUERY" /></translation>
 <translation id="98515147261107953">افقی</translation>
 <translation id="990277280839877440">پنجره <ph name="WINDOW_TITILE" /> بسته شد.</translation>

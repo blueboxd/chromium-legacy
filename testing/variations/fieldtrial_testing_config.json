@@ -3679,29 +3679,6 @@
             ]
         }
     ],
-    "FileTypePoliciesTag": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20210914",
-                    "params": {
-                        "policy_omaha_tag": "46"
-                    },
-                    "enable_features": [
-                        "FileTypePoliciesTag"
-                    ]
-                }
-            ]
-        }
-    ],
     "FillingAcrossAffiliatedWebsites": [
         {
             "platforms": [
@@ -4500,21 +4477,6 @@
             ]
         }
     ],
-    "IOSUserAgentInWebClient": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UseDefaultUserAgentInWebClient"
-                    ]
-                }
-            ]
-        }
-    ],
     "IdentifiabilityStudy": [
         {
             "platforms": [
@@ -5059,6 +5021,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MinimizeAudioProcessingForUnusedOutput"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MixedContentDownloadDialog": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableMixedContentDownloadDialog"
                     ]
                 }
             ]
@@ -7250,9 +7227,26 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "EnabledFixed",
+                    "enable_features": [
+                        "ShareUsageRanking",
+                        "ShareUsageRankingFixedMore"
+                    ]
+                },
+                {
+                    "name": "Control",
+                    "disable_features": [
+                        "ShareUsageRanking",
+                        "ShareUsageRankingFixedMore"
+                    ]
+                },
+                {
+                    "name": "EnabledVariable",
                     "enable_features": [
                         "ShareUsageRanking"
+                    ],
+                    "disable_features": [
+                        "ShareUsageRankingFixedMore"
                     ]
                 }
             ]
@@ -9157,6 +9151,36 @@
                     "name": "Enabled",
                     "enable_features": [
                         "Win11StyleMenus"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WinDelaySpellcheckServiceInit": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WinDelaySpellcheckServiceInit"
+                    ]
+                }
+            ]
+        }
+    ],
+    "XsurfaceMetricsReporting": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "XsurfaceMetricsReporting"
                     ]
                 }
             ]

@@ -638,8 +638,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   }
 
   void SetPropertyTreesNeedRebuild();
-  void MoveChangeTrackingToLayers(ThreadUnsafeCommitState& unsafe_state,
-                                  LayerTreeImpl* tree_impl);
 
   // Returns the layer with the given |element_id|. In layer-list mode, only
   // scrollable layers are registered in this map.
@@ -674,9 +672,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time);
   void AnimateLayers(base::TimeTicks monotonic_frame_begin_time);
   void RequestMainFrameUpdate(bool report_metrics);
-  void FinishCommitOnImplThread(LayerTreeHostImpl* host_impl,
-                                CommitState& commit_state,
-                                ThreadUnsafeCommitState& unsafe_state);
   // If has_updates is true, returns the CommitState that will drive the commit.
   // Otherwise, returns nullptr.
   std::unique_ptr<CommitState> WillCommit(
@@ -688,7 +683,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void RequestNewLayerTreeFrameSink();
   void DidInitializeLayerTreeFrameSink();
   void DidFailToInitializeLayerTreeFrameSink();
-  virtual std::unique_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
+  std::unique_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
       LayerTreeHostImplClient* client);
   void DidLoseLayerTreeFrameSink();
   void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
@@ -767,7 +762,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       PaintWorkletInput::PropertyValue property_value) override {}
 
   void ScrollOffsetAnimationFinished() override {}
-  gfx::PointF GetScrollOffsetForAnimation(ElementId element_id) const override;
 
   void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
                                          ElementListType tree_type) override {}
@@ -858,6 +852,20 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // This is the number of consecutive frames in which we want the content to be
   // free of slow-paths before toggling the flag.
   enum { kNumFramesToConsiderBeforeRemovingSlowPathFlag = 60 };
+
+  virtual std::unique_ptr<LayerTreeHostImpl> CreateLayerTreeHostImplInternal(
+      LayerTreeHostImplClient* client,
+      MutatorHost* mutator_host,
+      const LayerTreeSettings& settings,
+      TaskRunnerProvider* task_runner_provider,
+      raw_ptr<RasterDarkModeFilter>& dark_mode_filter,
+      int id,
+      raw_ptr<TaskGraphRunner>& task_graph_runner,
+      scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner,
+      LayerTreeHostSchedulingClient* scheduling_client,
+      RenderingStatsInstrumentation* rendering_stats_instrumentation,
+      std::unique_ptr<UkmRecorderFactory>& ukm_recorder_factory,
+      base::WeakPtr<CompositorDelegateForInput>& compositor_delegate_weak_ptr);
 
   void ApplyViewportChanges(const CompositorCommitData& commit_data);
   void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);

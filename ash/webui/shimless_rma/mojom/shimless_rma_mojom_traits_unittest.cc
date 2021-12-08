@@ -74,8 +74,7 @@ TEST_F(ShimlessRmaMojoToProtoTest, StatesMatch) {
        {mojom::State::kWaitForManualWPDisable,
         rmad::RmadState::kWpDisablePhysical},
        {mojom::State::kWPDisableComplete, rmad::RmadState::kWpDisableComplete},
-       {mojom::State::kChooseFirmwareReimageMethod,
-        rmad::RmadState::kUpdateRoFirmware},
+       {mojom::State::kUpdateRoFirmware, rmad::RmadState::kUpdateRoFirmware},
        {mojom::State::kRestock, rmad::RmadState::kRestock},
        {mojom::State::kUpdateDeviceInformation,
         rmad::RmadState::kUpdateDeviceInfo},
@@ -283,6 +282,26 @@ TEST_F(ShimlessRmaMojoToProtoTest, WriteProtectDisableCompleteActionMatch) {
            {mojom::WriteProtectDisableCompleteAction::kCompleteKeepDeviceOpen,
             rmad::WriteProtectDisableCompleteState::
                 RMAD_WP_DISABLE_COMPLETE_KEEP_DEVICE_OPEN}});
+
+  TestProtoToMojo(enums);
+  TestMojoToProto(enums);
+}
+
+TEST_F(ShimlessRmaMojoToProtoTest, UpdateRoFirmwareStatusMatch) {
+  constexpr auto enums = base::MakeFixedFlatMap<mojom::UpdateRoFirmwareStatus,
+                                                rmad::UpdateRoFirmwareStatus>(
+      {{mojom::UpdateRoFirmwareStatus::kWaitUsb,
+        rmad::UpdateRoFirmwareStatus::RMAD_UPDATE_RO_FIRMWARE_WAIT_USB},
+       {mojom::UpdateRoFirmwareStatus::kFileNotFound,
+        rmad::UpdateRoFirmwareStatus::RMAD_UPDATE_RO_FIRMWARE_FILE_NOT_FOUND},
+       {mojom::UpdateRoFirmwareStatus::kDownloading,
+        rmad::UpdateRoFirmwareStatus::RMAD_UPDATE_RO_FIRMWARE_DOWNLOADING},
+       {mojom::UpdateRoFirmwareStatus::kUpdating,
+        rmad::UpdateRoFirmwareStatus::RMAD_UPDATE_RO_FIRMWARE_UPDATING},
+       {mojom::UpdateRoFirmwareStatus::kRebooting,
+        rmad::UpdateRoFirmwareStatus::RMAD_UPDATE_RO_FIRMWARE_REBOOTING},
+       {mojom::UpdateRoFirmwareStatus::kComplete,
+        rmad::UpdateRoFirmwareStatus::RMAD_UPDATE_RO_FIRMWARE_COMPLETE}});
 
   TestProtoToMojo(enums);
   TestMojoToProto(enums);

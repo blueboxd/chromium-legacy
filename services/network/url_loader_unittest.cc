@@ -112,6 +112,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/radio_utils.h"
+#include "net/android/radio_activity_tracker.h"
 #include "services/network/radio_monitor_android.h"
 #endif
 
@@ -133,7 +134,7 @@ URLLoader::DeleteCallback DeleteLoaderCallback(
     std::unique_ptr<URLLoader>* url_loader) {
   return base::BindOnce(
       [](base::RunLoop* run_loop, std::unique_ptr<URLLoader>* url_loader,
-         mojom::URLLoader* url_loader_ptr) {
+         URLLoader* url_loader_ptr) {
         DCHECK_EQ(url_loader->get(), url_loader_ptr);
         url_loader->reset();
         run_loop->Quit();
@@ -146,7 +147,7 @@ URLLoader::DeleteCallback DeleteLoaderCallback(
 // this method, as URLLoaders don't expect to be alive after they invoke their
 // delete callback.
 URLLoader::DeleteCallback NeverInvokedDeleteLoaderCallback() {
-  return base::BindOnce([](mojom::URLLoader* /* loader*/) { NOTREACHED(); });
+  return base::BindOnce([](URLLoader* /* loader*/) { NOTREACHED(); });
 }
 
 constexpr char kBodyReadFromNetBeforePausedHistogram[] =
@@ -3634,8 +3635,7 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
   for (const auto& pair : loaders) {
     URLLoader* loader = pair.first.get();
     ASSERT_NE(loader, nullptr);
-    EXPECT_EQ(net::LOAD_STATE_WAITING_FOR_RESPONSE,
-              loader->GetLoadStateForTesting());
+    EXPECT_EQ(net::LOAD_STATE_WAITING_FOR_RESPONSE, loader->GetLoadState());
   }
 
   mojo::PendingRemote<mojom::URLLoader> loader_remote;
@@ -3656,15 +3656,14 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
   base::RunLoop().RunUntilIdle();
 
   // Make sure that the ResourceScheduler throttles this request.
-  EXPECT_EQ(net::LOAD_STATE_WAITING_FOR_DELEGATE,
-            loader->GetLoadStateForTesting());
+  EXPECT_EQ(net::LOAD_STATE_WAITING_FOR_DELEGATE, loader->GetLoadState());
 
   loader->SetPriority(net::HIGHEST, 0 /* intra_priority_value */);
   base::RunLoop().RunUntilIdle();
 
   // Make sure that the ResourceScheduler stops throtting.
   EXPECT_EQ(net::LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET,
-            loader->GetLoadStateForTesting());
+            loader->GetLoadState());
 }
 
 // This tests that case where a read pipe is closed while there's a post task to
@@ -7301,9 +7300,10 @@ void CheckRadioWakeupTriggerHistograms(base::HistogramTester& histograms,
 TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_Record) {
   base::HistogramTester histograms;
 
-  RadioMonitorAndroid::GetInstance().OverrideRadioActivityForTesting(
-      base::android::RadioDataActivity::kDormant);
-  RadioMonitorAndroid::GetInstance().OverrideRadioTypeForTesting(
+  net::android::RadioActivityTracker::GetInstance()
+      .OverrideRadioActivityForTesting(
+          base::android::RadioDataActivity::kDormant);
+  net::android::RadioActivityTracker::GetInstance().OverrideRadioTypeForTesting(
       base::android::RadioConnectionType::kCell);
 
   LoadAndCompareFile("simple_page.html");
@@ -7314,9 +7314,10 @@ TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_Record) {
 TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_RadioTypeIsNotCell) {
   base::HistogramTester histograms;
 
-  RadioMonitorAndroid::GetInstance().OverrideRadioActivityForTesting(
-      base::android::RadioDataActivity::kDormant);
-  RadioMonitorAndroid::GetInstance().OverrideRadioTypeForTesting(
+  net::android::RadioActivityTracker::GetInstance()
+      .OverrideRadioActivityForTesting(
+          base::android::RadioDataActivity::kDormant);
+  net::android::RadioActivityTracker::GetInstance().OverrideRadioTypeForTesting(
       base::android::RadioConnectionType::kWifi);
 
   LoadAndCompareFile("simple_page.html");
@@ -7327,9 +7328,10 @@ TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_RadioTypeIsNotCell) {
 TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_RadioActivityIsNotDormant) {
   base::HistogramTester histograms;
 
-  RadioMonitorAndroid::GetInstance().OverrideRadioActivityForTesting(
-      base::android::RadioDataActivity::kInOut);
-  RadioMonitorAndroid::GetInstance().OverrideRadioTypeForTesting(
+  net::android::RadioActivityTracker::GetInstance()
+      .OverrideRadioActivityForTesting(
+          base::android::RadioDataActivity::kInOut);
+  net::android::RadioActivityTracker::GetInstance().OverrideRadioTypeForTesting(
       base::android::RadioConnectionType::kCell);
 
   LoadAndCompareFile("simple_page.html");
@@ -7340,12 +7342,13 @@ TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_RadioActivityIsNotDormant) {
 TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_IntervalTooShort) {
   base::HistogramTester histograms;
 
-  RadioMonitorAndroid::GetInstance().OverrideRadioActivityForTesting(
-      base::android::RadioDataActivity::kDormant);
-  RadioMonitorAndroid::GetInstance().OverrideRadioTypeForTesting(
+  net::android::RadioActivityTracker::GetInstance()
+      .OverrideRadioActivityForTesting(
+          base::android::RadioDataActivity::kDormant);
+  net::android::RadioActivityTracker::GetInstance().OverrideRadioTypeForTesting(
       base::android::RadioConnectionType::kCell);
-  RadioMonitorAndroid::GetInstance().OverrideLastCheckTimeForTesting(
-      base::TimeTicks::Now());
+  net::android::RadioActivityTracker::GetInstance()
+      .OverrideLastCheckTimeForTesting(base::TimeTicks::Now());
 
   LoadAndCompareFile("simple_page.html");
 

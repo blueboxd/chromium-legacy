@@ -3546,6 +3546,25 @@ TEST_F(WallpaperControllerWallpaperWebUiTest, HandleWallpaperInfoSyncedOnline) {
   EXPECT_EQ(controller_->GetWallpaperType(), WallpaperType::kOnline);
 }
 
+TEST_F(WallpaperControllerWallpaperWebUiTest,
+       HandleWallpaperInfoSyncedInactiveUser) {
+  CacheOnlineWallpaper(kDummyUrl);
+
+  // Make account_id_1 the inactive user.
+  SimulateUserLogin(account_id_2);
+
+  // Attempt to set an online wallpaper without providing the image data. Verify
+  // it succeeds this time because |SetOnlineWallpaperFromData| has saved the
+  // file.
+  ClearWallpaperCount();
+  PutWallpaperInfoInPrefs(account_id_1, InfoWithType(WallpaperType::kOnline),
+                          GetProfilePrefService(account_id_1),
+                          prefs::kSyncableWallpaperInfo);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(0, GetWallpaperCount());
+  EXPECT_NE(controller_->GetWallpaperType(), WallpaperType::kOnline);
+}
+
 TEST_F(WallpaperControllerWallpaperWebUiTest, UpdateDailyRefreshWallpaper) {
   std::string expected{"fun_collection"};
   SimulateUserLogin(account_id_1);
@@ -4033,6 +4052,87 @@ TEST_F(WallpaperControllerWallpaperWebUiTest, SetOnlineWallpaperIfExists) {
   run_loop->Run();
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), WallpaperType::kOnline);
+}
+
+TEST_F(WallpaperControllerWallpaperWebUiTest,
+       HandleWallpaperInfoSyncedForDarkLightWallpapers_NotSynced) {
+  SimulateUserLogin(account_id_1);
+  CacheOnlineWallpaper(kDummyUrl);
+  ClearWallpaperCount();
+
+  std::vector<OnlineWallpaperVariant> variants;
+  variants.emplace_back(kAssetId.value(), GURL(kDummyUrl),
+                        backdrop::Image::IMAGE_TYPE_LIGHT_MODE);
+  variants.emplace_back(kAssetId2.value(), GURL(kDummyUrl2),
+                        backdrop::Image::IMAGE_TYPE_DARK_MODE);
+  const OnlineWallpaperParams& params = OnlineWallpaperParams(
+      account_id_1, kAssetId, GURL(kDummyUrl), kDummyCollectionId,
+      WALLPAPER_LAYOUT_CENTER_CROPPED,
+      /*preview_mode=*/false, /*from_user=*/true,
+      /*daily_refresh_enabled=*/false, absl::nullopt, variants);
+  // local info doesn't have unit_id.
+  const WallpaperInfo& local_info = WallpaperInfo(params);
+  PutWallpaperInfoInPrefs(account_id_1, local_info, GetLocalPrefService(),
+                          prefs::kUserWallpaperInfo);
+
+  const OnlineWallpaperParams& params2 =
+      OnlineWallpaperParams(account_id_1, kAssetId2, GURL(kDummyUrl2),
+                            kDummyCollectionId, WALLPAPER_LAYOUT_CENTER_CROPPED,
+                            /*preview_mode=*/false, /*from_user=*/true,
+                            /*daily_refresh_enabled=*/false, kUnitId, variants);
+  // synced info tracks dark variant.
+  const WallpaperInfo& synced_info = WallpaperInfo(params2);
+  PutWallpaperInfoInPrefs(account_id_1, synced_info,
+                          GetProfilePrefService(account_id_1),
+                          prefs::kSyncableWallpaperInfo);
+  RunAllTasksUntilIdle();
+
+  WallpaperInfo actual_info;
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &actual_info));
+  EXPECT_EQ(synced_info, actual_info);
+  // Verify the wallpaper is set.
+  EXPECT_EQ(1, GetWallpaperCount());
+}
+
+TEST_F(WallpaperControllerWallpaperWebUiTest,
+       HandleWallpaperInfoSyncedForDarkLightWallpapers_AlreadySynced) {
+  SimulateUserLogin(account_id_1);
+  CacheOnlineWallpaper(kDummyUrl);
+  ClearWallpaperCount();
+
+  std::vector<OnlineWallpaperVariant> variants;
+  variants.emplace_back(kAssetId.value(), GURL(kDummyUrl),
+                        backdrop::Image::IMAGE_TYPE_LIGHT_MODE);
+  variants.emplace_back(kAssetId2.value(), GURL(kDummyUrl2),
+                        backdrop::Image::IMAGE_TYPE_DARK_MODE);
+  const OnlineWallpaperParams& params =
+      OnlineWallpaperParams(account_id_1, kAssetId, GURL(kDummyUrl),
+                            kDummyCollectionId, WALLPAPER_LAYOUT_CENTER_CROPPED,
+                            /*preview_mode=*/false, /*from_user=*/true,
+                            /*daily_refresh_enabled=*/false, kUnitId, variants);
+  // local info tracks light variant.
+  const WallpaperInfo& local_info = WallpaperInfo(params);
+  PutWallpaperInfoInPrefs(account_id_1, local_info, GetLocalPrefService(),
+                          prefs::kUserWallpaperInfo);
+
+  const OnlineWallpaperParams& params2 =
+      OnlineWallpaperParams(account_id_1, kAssetId2, GURL(kDummyUrl2),
+                            kDummyCollectionId, WALLPAPER_LAYOUT_CENTER_CROPPED,
+                            /*preview_mode=*/false, /*from_user=*/true,
+                            /*daily_refresh_enabled=*/false, kUnitId, variants);
+  // synced info tracks dark variant.
+  const WallpaperInfo& synced_info = WallpaperInfo(params2);
+  PutWallpaperInfoInPrefs(account_id_1, synced_info,
+                          GetProfilePrefService(account_id_1),
+                          prefs::kSyncableWallpaperInfo);
+  RunAllTasksUntilIdle();
+
+  WallpaperInfo actual_info;
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &actual_info));
+  EXPECT_EQ(local_info, synced_info);
+  EXPECT_EQ(local_info, actual_info);
+  // Verify the wallpaper is not set again.
+  EXPECT_EQ(0, GetWallpaperCount());
 }
 
 }  // namespace ash

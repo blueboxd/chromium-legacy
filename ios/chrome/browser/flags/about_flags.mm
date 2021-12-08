@@ -485,11 +485,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillSaveCardDismissOnNavigation)},
-    {"default-user-agent",
-     flag_descriptions::kUseDefaultUserAgentInWebClientName,
-     flag_descriptions::kUseDefaultUserAgentInWebClientDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kUseDefaultUserAgentInWebClient)},
     {"url-blocklist-ios", flag_descriptions::kURLBlocklistIOSName,
      flag_descriptions::kURLBlocklistIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kURLBlocklistIOS)},
@@ -690,15 +685,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncTrustedVaultPassphraseRecoveryDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(::switches::kSyncTrustedVaultPassphraseRecovery)},
-    {"enable-autofill-save-card-info-bar-account-indication-footer",
-     flag_descriptions::
-         kEnableAutofillSaveCardInfoBarAccountIndicationFooterName,
-     flag_descriptions::
-         kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::
-             kAutofillEnableSaveCardInfoBarAccountIndicationFooter)},
     {"wait-threshold-seconds-for-capabilities-api",
      flag_descriptions::kWaitThresholdMillisecondsForCapabilitiesApiName,
      flag_descriptions::kWaitThresholdMillisecondsForCapabilitiesApiDescription,
@@ -750,9 +736,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"download-vcard", flag_descriptions::kDownloadVcardName,
      flag_descriptions::kDownloadVcardDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDownloadVcard)},
-    {"old-sync-string-fre", flag_descriptions::kOldSyncStringFREName,
-     flag_descriptions::kOldSyncStringFREDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kOldSyncStringFRE)},
     {"enable-discover-feed-static-resource-serving",
      flag_descriptions::kEnableDiscoverFeedStaticResourceServingName,
      flag_descriptions::kEnableDiscoverFeedStaticResourceServingDescription,

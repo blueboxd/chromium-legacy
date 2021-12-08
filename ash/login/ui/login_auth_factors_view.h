@@ -44,6 +44,7 @@ class ASH_EXPORT LoginAuthFactorsView : public views::View {
     views::Label* label();
     views::View* auth_factor_icon_row();
     ArrowButtonView* arrow_button();
+    AuthIconView* arrow_nudge_animation();
     AuthIconView* checkmark_icon();
 
    private:
@@ -62,6 +63,11 @@ class ASH_EXPORT LoginAuthFactorsView : public views::View {
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void OnThemeChanged() override;
+
+  // Should be called when the visibility of PIN authentication changes.
+  // Used to determine whether strings should mention that PIN can be used as an
+  // authentication mechanism.
+  void SetCanUsePin(bool can_use_pin);
 
  private:
   // Recomputes the state and updates the label and icons. Should be called
@@ -82,16 +88,30 @@ class ASH_EXPORT LoginAuthFactorsView : public views::View {
   // Ready state.
   int GetReadyLabelId() const;
 
+  // Gets the label to be shown when no auth factor can be used.
+  int GetDefaultLabelId() const;
+
   // Causes screen readers to read the label as an alert.
   void FireAlert();
 
   // Should be called when the "click to enter" button is pressed.
   void ArrowButtonPressed(const ui::Event& event);
 
+  // Used when |arrow_nudge_animation_| is pressed. It prevents arrow button
+  // from receiving its click event directly, so it relays the click event.
+  void RelayArrowButtonPressed();
+
   // Should be called when the error timer expires. Communicates the timeout to
   // the auth factor models.
   void OnErrorTimeout();
 
+  // Calls views::View::SetLayoutManager with views::BoxLayout for provided
+  // view.
+  void SetBoxLayout(views::View* parent_view);
+
+  // Sets visibility of |arrow_icon_container_|, |arrow_button_|, and
+  // |arrow_nudge_animation_| and starts/stops arrow animations accordingly.
+  void SetArrowVisibility(bool is_visible);
   /////////////////////////////////////////////////////////////////////////////
   // Child views, owned by the Views hierarchy
 
@@ -101,9 +121,20 @@ class ASH_EXPORT LoginAuthFactorsView : public views::View {
   // The label shown under the icons. Always visible.
   AuthFactorsLabel* label_;
 
+  // A container laying arrow button and its corresponding animation view on top
+  // of each other.
+  views::View* arrow_icon_container_;
+
+  // A box layout container for arrow button and its label.
+  views::View* arrow_button_container_;
+
   // A button with an arrow icon. Only visible when an auth factor is in the
   // kClickRequired state.
   ArrowButtonView* arrow_button_;
+
+  // A view with nudge animation expanding from arrow icon to encourage user to
+  // tap. Only visible when an auth factor is in the kClickRequired state.
+  AuthIconView* arrow_nudge_animation_;
 
   // A green checkmark icon (or animation) shown when an auth factor reaches
   // the kAuthenticated state, just before the login/lock screen is dismissed.

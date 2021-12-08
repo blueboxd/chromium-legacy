@@ -101,7 +101,7 @@
 #include "components/flags_ui/flags_ui_metrics.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/heavy_ad_intervention/heavy_ad_features.h"
-#include "components/history_clusters/core/memories_features.h"
+#include "components/history_clusters/core/features.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/lens/lens_features.h"
@@ -6395,13 +6395,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"reduce-user-agent", flag_descriptions::kReduceUserAgentName,
      flag_descriptions::kReduceUserAgentDescription, kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(blink::features::kReduceUserAgent)},
-
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-user-data-snapshot", flag_descriptions::kUserDataSnapshotName,
-     flag_descriptions::kUserDataSnapshotDescription,
-     kOsMac | kOsWin | kOsLinux | kOsFuchsia,
-     FEATURE_VALUE_TYPE(features::kUserDataSnapshot)},
-#endif
 
 #if defined(OS_WIN)
     {"run-video-capture-service-in-browser",

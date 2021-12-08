@@ -104,7 +104,6 @@
 <translation id="1832848789136765277">സമന്വയിപ്പിക്കുന്ന ഡാറ്റ നിങ്ങൾക്ക് എപ്പോഴും ആക്‌സസ് ചെയ്യാനാകുമെന്ന് ഉറപ്പാക്കാൻ ഇത് നിങ്ങളാണെന്ന് പരിശോധിച്ചുറപ്പിക്കുക</translation>
 <translation id="1870148520156231997">പാസ്‌വേഡ് വെളിപ്പെടുത്തുക</translation>
 <translation id="1872096359983322073">ടോർച്ച്</translation>
-<translation id="1894205589103145703">സൈൻ ഇൻ ചെയ്യുമ്പോൾ എന്തോ കുഴപ്പമുണ്ടായി.</translation>
 <translation id="1911619930368729126">Google ഡ്രൈവിലേക്ക് അപ്‌ലോഡ് ചെയ്യുക</translation>
 <translation id="1923342640370224680">കഴിഞ്ഞ മണിക്കൂർ</translation>
 <translation id="1930989359703290198">ചില അക്കൗണ്ടുകൾ ഉപയോഗിച്ച് മാത്രമേ സൈൻ ഇൻ ചെയ്യാൻ നിങ്ങളുടെ സ്ഥാപനം അനുവദിക്കൂ. അനുവദനീയമല്ലാത്ത അക്കൗണ്ടുകൾ മറച്ചിരിക്കുന്നു. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
@@ -169,6 +168,7 @@
 <translation id="2584132361465095047">അക്കൗണ്ട് ചേർക്കുക...</translation>
 <translation id="2600682495497606169">സൈറ്റ് കുക്കികൾ മായ്‌ക്കുക</translation>
 <translation id="2625189173221582860">പാസ്‌വേഡ് പകർത്തി</translation>
+<translation id="2626236249646841566">നിങ്ങളുടെ കണക്ഷൻ പരിശോധിച്ച ശേഷം വീണ്ടും സൈൻ ഇൻ ചെയ്ത് നോക്കുക.</translation>
 <translation id="2647269890314209800">ഉപയോഗത്തിലുള്ള കുക്കികൾ</translation>
 <translation id="2648803196158606475">വായിച്ചവ ഇല്ലാതാക്കുക</translation>
 <translation id="2653659639078652383">സമര്‍പ്പിക്കുക</translation>
@@ -364,6 +364,7 @@
 <translation id="4508750114462689118">സൈൻ ഇൻ പ്രമോ അടയ്‌ക്കുക</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> എന്നതിൽ സംരക്ഷിച്ച പാസ്‌വേഡുകൾ കാണുക, നിയന്ത്രിക്കുക</translation>
 <translation id="4536418791685807335">വീണ്ടും സൈൻ ഇൻ ചെയ്യാൻ ശ്രമിക്കുക.</translation>
+<translation id="4540780316273593836">എന്തോ കുഴപ്പമുണ്ടായി</translation>
 <translation id="457386861538956877">കൂടുതൽ‍‌...</translation>
 <translation id="4592368184551360546">കീബോഡ്</translation>
 <translation id="461440297010471931">Google ഉപയോഗിച്ച് തിരയുന്നു</translation>
@@ -464,7 +465,6 @@
 <translation id="5513681519188741830"><ph name="TIME" /> മണിക്കൂർ മുമ്പ്</translation>
 <translation id="5523579157975978438">ഓഫാക്കാൻ, <ph name="BEGIN_LINK" />ക്രമീകരണം<ph name="END_LINK" /> തുറന്ന് പാസ്‌വേഡുകൾ എന്നതിലേക്ക് പോകുക.</translation>
 <translation id="5525269841082836315">പാസ്‌ഫ്രെയ്‌സ് സൃഷ്‌ടിക്കുക</translation>
-<translation id="5532698011560297095">പ്രവേശിക്കാന്‍‌ കഴിയില്ല</translation>
 <translation id="5548760955356983418">ഈ ഉപകരണത്തിൽ ഒരു വെബ്‌സൈറ്റ് ബ്രൗസ് ചെയ്യാൻ ആരംഭിച്ചതിനുശേഷം Mac-ൽ എളുപ്പത്തിൽ തുടരാൻ 'ഹാൻഡ്ഓഫ്' അനുവദിക്കുന്നു. നിലവിൽ തുറന്ന വെബ്‌സൈറ്റ് നിങ്ങളുടെ Mac-ന്റെ ഡോക്കിൽ ദൃശ്യമാകും.
 
 ക്രമീകരണത്തിന്റെ പൊതു വിഭാഗത്തിലും Handoff പ്രവർത്തനക്ഷമമായിരിക്കുകയും നിങ്ങളുടെ ഉപകരണങ്ങൾ ഒരേ iCloud അക്കൗണ്ട് തന്നെ ഉപയോഗിക്കുകയും വേണം.</translation>
@@ -480,6 +480,7 @@
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">പതിപ്പ് <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5690398455483874150">{count,plural, =1{ഇപ്പോൾ ഒരു Chrome വിൻഡോ കാണിക്കുന്നു}other{ഇപ്പോൾ {count} Chrome വിൻഡോകൾ കാണിക്കുന്നു}}</translation>
+<translation id="5704908597376970822">സൈൻ ഇൻ ചെയ്യാനാകുന്നില്ല.</translation>
 <translation id="5706552126692816153">ഒരു ദിവസം മുമ്പ് സജീവമായിരുന്നു</translation>
 <translation id="5711039611392265845">സ്വകാര്യത, സുരക്ഷ, ഡാറ്റാ ശേഖരണം എന്നിവയുമായി ബന്ധപ്പെട്ട കൂടുതൽ ക്രമീകരണത്തിന് <ph name="BEGIN_LINK" />സമന്വയവും Google സേവനങ്ങളും<ph name="END_LINK" /> കാണുക.</translation>
 <translation id="5724941645893276623">വെബ് സ്വകാര്യമായി ബ്രൗസ് ചെയ്യാൻ, പുതിയ ടാബ് ചേർക്കുക</translation>

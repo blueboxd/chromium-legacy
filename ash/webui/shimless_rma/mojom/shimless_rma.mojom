@@ -55,7 +55,7 @@ enum State {
   kEnterRSUWPDisableCode,
   kWaitForManualWPDisable,
   kWPDisableComplete,
-  kChooseFirmwareReimageMethod,
+  kUpdateRoFirmware,
   kRestock,
   kUpdateDeviceInformation,
   kCheckCalibration,
@@ -269,6 +269,22 @@ enum WriteProtectDisableCompleteAction {
   kCompleteKeepDeviceOpen = 3,
 };
 
+// Status of device read only firmware reimaging.
+// In some cases device firmware must be re-written from a recovery image for
+// device security.
+// This must remain in sync with
+// UpdateRoFirmwareStatus in //third_party/cros_system_api/dbus/rmad/rmad.proto.
+// See shimless_rma_mojom_traits.cc\h.
+enum UpdateRoFirmwareStatus {
+  kUnknown = 0,
+  kWaitUsb = 1,
+  kFileNotFound = 2,
+  kDownloading = 3,
+  kUpdating = 4,
+  kRebooting = 5,
+  kComplete = 6,
+};
+
 // Enumeration of all instructions needed for calibration that require manual
 // setup.
 enum CalibrationSetupInstruction {
@@ -383,6 +399,13 @@ interface HardwareVerificationStatusObserver {
 interface FinalizationObserver {
   // OnFinalizationUpdated is called to report progress of device finalization.
   OnFinalizationUpdated(FinalizationStatus status, float progress);
+};
+
+// Implemented by clients to receive status of RO firmware update progress.
+interface UpdateRoFirmwareObserver {
+  // OnUpdateRoFirmwareStatusChanged is called to report progress of RO firmware
+  // update.
+  OnUpdateRoFirmwareStatusChanged(UpdateRoFirmwareStatus status);
 };
 
 // Enables clients in the webui to manage the RMA flow.
@@ -534,27 +557,13 @@ interface ShimlessRmaService {
           RmadErrorCode error);
 
   ///////////////////////////////////////
-  // Methods for kChooseFirmwareReimageMethod state.
+  // Method for kUpdateRoFirmware state.
   //
-  // Indicate the device requires reimaging, or if it is optional.
-  ReimageRequired() => (bool required);
-  // Indicate that the user has chosen to skip device reimaging and move to the
-  // next state.
-  // Returns the next state to display and an error code.
-  ReimageSkipped()
+  // Continue after firmware reimaging completes.
+  RoFirmwareUpdateComplete()
       => (State state, bool can_cancel, bool can_go_back,
           RmadErrorCode error);
-  // TODO(gavindod): Does reimaging require an observer?
-  // Attempt to reimage by downloading the firmware.
-  // Returns the next state to display and an error code.
-  ReimageFromDownload()
-      => (State state, bool can_cancel, bool can_go_back,
-          RmadErrorCode error);
-  // Attempt to reimage with firmware loaded from a USB drive.
-  // Returns the next state to display and an error code.
-  ReimageFromUsb()
-      => (State state, bool can_cancel, bool can_go_back,
-          RmadErrorCode error);
+
 
   ///////////////////////////////////////
   // Methods for kRestock state.
@@ -714,4 +723,7 @@ interface ShimlessRmaService {
       pending_remote<HardwareVerificationStatusObserver> observer);
   // Registers an observer for status of finalization.
   ObserveFinalizationStatus(pending_remote<FinalizationObserver> observer);
+  // Registers an observer for status of RO firmware update.
+  ObserveRoFirmwareUpdateProgress(
+      pending_remote<UpdateRoFirmwareObserver> observer);
 };

@@ -17,6 +17,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event.h"
 #include "ui/views/accessibility/ax_event_manager.h"
 #include "ui/views/accessibility/ax_event_observer.h"
@@ -126,17 +127,23 @@ class LoginAuthFactorsViewUnittest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    view_ = new LoginAuthFactorsView(base::BindRepeating(
-        &LoginAuthFactorsViewUnittest::set_click_to_enter_called,
-        base::Unretained(this), true));
-
     // We proxy |view_| inside of |container_| so we can control layout.
     // TODO(crbug.com/1233614): Add layout tests to check positioning/ordering
     // of icons.
-    container_ = new views::View();
+    container_ = std::make_unique<views::View>();
     container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical));
-    container_->AddChildView(view_);
+
+    view_ = container_->AddChildView(
+        std::make_unique<LoginAuthFactorsView>(base::BindRepeating(
+            &LoginAuthFactorsViewUnittest::set_click_to_enter_called,
+            base::Unretained(this), true)));
+  }
+
+  void TearDown() override {
+    container_.reset();
+    view_ = nullptr;
+    AshTestBase::TearDown();
   }
 
   void AddAuthFactors(std::vector<AuthFactorType> types) {
@@ -163,9 +170,8 @@ class LoginAuthFactorsViewUnittest : public AshTestBase {
   }
 
   base::test::ScopedFeatureList feature_list_;
-  views::View* container_ = nullptr;  // Owned by test widget view hierarchy.
-  LoginAuthFactorsView* view_ =
-      nullptr;  // Owned by test widget view hierarchy.
+  std::unique_ptr<views::View> container_;
+  LoginAuthFactorsView* view_ = nullptr;  // Owned by container.
   std::vector<FakeAuthFactorModel*> auth_factors_;
   bool click_to_enter_called_ = false;
 };
@@ -245,6 +251,7 @@ TEST_F(LoginAuthFactorsViewUnittest, SingleIconInAvailableState) {
   EXPECT_TRUE(test_api.auth_factor_icon_row()->GetVisible());
   EXPECT_FALSE(test_api.checkmark_icon()->GetVisible());
   EXPECT_FALSE(test_api.arrow_button()->GetVisible());
+  EXPECT_FALSE(test_api.arrow_nudge_animation()->GetVisible());
 
   // The number of icons should match the number of auth factors initialized.
   EXPECT_EQ(auth_factors_.size(),
@@ -268,6 +275,7 @@ TEST_F(LoginAuthFactorsViewUnittest, MultipleAuthFactorsInReadyState) {
   EXPECT_TRUE(test_api.auth_factor_icon_row()->GetVisible());
   EXPECT_FALSE(test_api.checkmark_icon()->GetVisible());
   EXPECT_FALSE(test_api.arrow_button()->GetVisible());
+  EXPECT_FALSE(test_api.arrow_nudge_animation()->GetVisible());
 
   // The number of icons should match the number of auth factors initialized.
   EXPECT_EQ(auth_factors_.size(),
@@ -283,19 +291,49 @@ TEST_F(LoginAuthFactorsViewUnittest, MultipleAuthFactorsInReadyState) {
 }
 
 TEST_F(LoginAuthFactorsViewUnittest, ClickRequired) {
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
   AddAuthFactors({AuthFactorType::kFingerprint, AuthFactorType::kSmartLock});
   LoginAuthFactorsView::TestApi test_api(view_);
   auth_factors_[0]->state_ = AuthFactorState::kReady;
   auth_factors_[1]->state_ = AuthFactorState::kClickRequired;
   test_api.UpdateState();
 
-  // Check that only the arrow button is shown and that the label has been
-  // updated.
+  // Check that the arrow button and arrow nudge animation is shown and that the
+  // label has been updated.
   EXPECT_TRUE(test_api.arrow_button()->GetVisible());
+  EXPECT_TRUE(test_api.arrow_nudge_animation()->GetVisible());
   EXPECT_FALSE(test_api.checkmark_icon()->GetVisible());
   EXPECT_FALSE(test_api.auth_factor_icon_row()->GetVisible());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTH_FACTOR_LABEL_CLICK_TO_ENTER),
             test_api.label()->GetText());
+}
+
+TEST_F(LoginAuthFactorsViewUnittest, ClickingArrowButton) {
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  AddAuthFactors({AuthFactorType::kFingerprint, AuthFactorType::kSmartLock});
+  LoginAuthFactorsView::TestApi test_api(view_);
+  auth_factors_[0]->state_ = AuthFactorState::kReady;
+  auth_factors_[1]->state_ = AuthFactorState::kClickRequired;
+  test_api.UpdateState();
+
+  // Check that the arrow button and arrow nudge animation is shown.
+  EXPECT_TRUE(test_api.arrow_button()->GetVisible());
+  EXPECT_TRUE(test_api.arrow_nudge_animation()->GetVisible());
+
+  // Simulate clicking arrow nudge animation, which sits on top of arrow button
+  // and should relay arrow button click.
+  const gfx::Point point(0, 0);
+  test_api.arrow_nudge_animation()->OnMousePressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, point, point, base::TimeTicks::Now(), 0, 0));
+
+  // Check that arrow button is still visible and that arrow nudge animation is
+  // no longer shown.
+  EXPECT_TRUE(test_api.arrow_button()->GetVisible());
+  EXPECT_FALSE(test_api.arrow_nudge_animation()->GetVisible());
 }
 
 TEST_F(LoginAuthFactorsViewUnittest, Authenticated) {
@@ -309,6 +347,7 @@ TEST_F(LoginAuthFactorsViewUnittest, Authenticated) {
   // updated.
   EXPECT_TRUE(test_api.checkmark_icon()->GetVisible());
   EXPECT_FALSE(test_api.arrow_button()->GetVisible());
+  EXPECT_FALSE(test_api.arrow_nudge_animation()->GetVisible());
   EXPECT_FALSE(test_api.auth_factor_icon_row()->GetVisible());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTH_FACTOR_LABEL_UNLOCKED),
             test_api.label()->GetText());
@@ -324,6 +363,7 @@ TEST_F(LoginAuthFactorsViewUnittest, ErrorTemporary) {
   EXPECT_TRUE(test_api.auth_factor_icon_row()->GetVisible());
   EXPECT_FALSE(test_api.checkmark_icon()->GetVisible());
   EXPECT_FALSE(test_api.arrow_button()->GetVisible());
+  EXPECT_FALSE(test_api.arrow_nudge_animation()->GetVisible());
 
   // Only the error should be visible for the first three seconds after the
   // state update.
@@ -345,6 +385,7 @@ TEST_F(LoginAuthFactorsViewUnittest, ErrorPermanent) {
   EXPECT_TRUE(test_api.auth_factor_icon_row()->GetVisible());
   EXPECT_FALSE(test_api.checkmark_icon()->GetVisible());
   EXPECT_FALSE(test_api.arrow_button()->GetVisible());
+  EXPECT_FALSE(test_api.arrow_nudge_animation()->GetVisible());
 
   // Only the error should be visible for the first three seconds after the
   // state update.
@@ -387,6 +428,17 @@ TEST_F(LoginAuthFactorsViewUnittest, ErrorPermanent) {
   // After timeout, permanent errors are shown alongside ready auth factors.
   test_api.UpdateState();
   EXPECT_EQ(2u, GetVisibleIconCount());
+}
+
+TEST_F(LoginAuthFactorsViewUnittest, CanUsePin) {
+  AddAuthFactors({AuthFactorType::kSmartLock, AuthFactorType::kFingerprint});
+
+  for (bool can_use_pin : {true, false}) {
+    view_->SetCanUsePin(can_use_pin);
+    EXPECT_EQ(can_use_pin, AuthFactorModel::can_use_pin());
+    EXPECT_EQ(can_use_pin, auth_factors_[0]->can_use_pin());
+    EXPECT_EQ(can_use_pin, auth_factors_[1]->can_use_pin());
+  }
 }
 
 }  // namespace ash

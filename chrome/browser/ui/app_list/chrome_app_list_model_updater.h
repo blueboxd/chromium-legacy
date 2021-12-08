@@ -65,6 +65,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater,
   void SetItemPosition(const std::string& id,
                        const syncer::StringOrdinal& new_position) override;
   void SetItemIsPersistent(const std::string& id, bool is_persistent) override;
+  void SetIsNewInstall(const std::string& id, bool is_new_install) override;
   void SetItemFolderId(const std::string& id,
                        const std::string& folder_id) override;
   void SetNotificationBadgeColor(const std::string& id,
@@ -175,6 +176,10 @@ class ChromeAppListModelUpdater : public AppListModelUpdater,
 
   // Commits item positions under the temporary sort.
   void CommitTemporaryPositions();
+
+  // If folder with the provided ID has a single child, it reparents the child
+  // to the root app list.
+  void ClearFolderIfItHasSingleChild(const std::string& folder_id);
 
   // Indicates the profile that the model updater is associated with.
   Profile* const profile_ = nullptr;

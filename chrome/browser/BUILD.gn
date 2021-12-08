@@ -178,8 +178,6 @@ static_library("browser") {
     "autofill/strike_database_factory.h",
     "autofill/validation_rules_storage_factory.cc",
     "autofill/validation_rules_storage_factory.h",
-    "availability/availability_prober.cc",
-    "availability/availability_prober.h",
     "background_fetch/background_fetch_delegate_factory.cc",
     "background_fetch/background_fetch_delegate_factory.h",
     "background_fetch/background_fetch_delegate_impl.cc",
@@ -1288,8 +1286,12 @@ static_library("browser") {
     "prefetch/prefetch_proxy/chrome_speculation_host_delegate.h",
     "prefetch/prefetch_proxy/prefetch_container.cc",
     "prefetch/prefetch_proxy/prefetch_container.h",
+    "prefetch/prefetch_proxy/prefetch_proxy_canary_checker.cc",
+    "prefetch/prefetch_proxy/prefetch_proxy_canary_checker.h",
     "prefetch/prefetch_proxy/prefetch_proxy_cookie_listener.cc",
     "prefetch/prefetch_proxy/prefetch_proxy_cookie_listener.h",
+    "prefetch/prefetch_proxy/prefetch_proxy_dns_prober.cc",
+    "prefetch/prefetch_proxy/prefetch_proxy_dns_prober.h",
     "prefetch/prefetch_proxy/prefetch_proxy_features.cc",
     "prefetch/prefetch_proxy/prefetch_proxy_features.h",
     "prefetch/prefetch_proxy/prefetch_proxy_from_string_url_loader.cc",
@@ -1937,7 +1939,6 @@ static_library("browser") {
   ]
   deps = [
     ":active_use_util",
-    ":availability_protos",
     ":browser_process",
     ":buildflags",
     ":dev_ui_browser_resources_grit",
@@ -2606,6 +2607,7 @@ static_library("browser") {
       "android/autofill_assistant/assistant_overlay_delegate.h",
       "android/autofill_assistant/client_android.cc",
       "android/autofill_assistant/client_android.h",
+      "android/autofill_assistant/features_android.cc",
       "android/autofill_assistant/generic_ui_events_android.cc",
       "android/autofill_assistant/generic_ui_events_android.h",
       "android/autofill_assistant/generic_ui_interactions_android.cc",
@@ -4902,6 +4904,7 @@ static_library("browser") {
       "//ash/components/arc/enterprise",
       "//ash/components/arc/mojom",
       "//ash/components/geolocation",
+      "//ash/components/login/session",
       "//ash/components/settings",
       "//ash/public/cpp",
       "//ash/public/cpp/external_arc",
@@ -4939,7 +4942,6 @@ static_library("browser") {
       "//chromeos/dbus/session_manager",
       "//chromeos/dbus/update_engine",
       "//chromeos/login/login_state",
-      "//chromeos/login/session",
       "//chromeos/memory",
       "//chromeos/network",
       "//chromeos/services/assistant/public/cpp",
@@ -6370,15 +6372,6 @@ static_library("browser") {
         "signin/signin_util_win.h",
       ]
     }
-
-    # TODO(https://crbug.com/1198523: Remove this once enable_dice_support is no
-    # longer defined on Lacros.
-    if (is_chromeos_lacros) {
-      sources -= [
-        "signin/signin_manager_factory.cc",
-        "signin/signin_manager_factory.h",
-      ]
-    }
   }
 
   if (enable_media_remoting) {
@@ -7280,10 +7273,6 @@ source_set("theme_properties") {
     "//skia",
     "//ui/gfx",
   ]
-}
-
-proto_library("availability_protos") {
-  sources = [ "availability/proto/availability_prober_cache_entry.proto" ]
 }
 
 proto_library("resource_prefetch_predictor_proto") {

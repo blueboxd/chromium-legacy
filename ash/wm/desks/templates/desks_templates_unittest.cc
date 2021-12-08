@@ -585,9 +585,13 @@ TEST_F(DesksTemplatesTest, DesksTemplatesGridItems) {
                          return DesksTemplatesItemViewTestApi(v).uuid() == uuid;
                        });
       ASSERT_NE(grid_items.end(), iter);
-      DesksTemplatesItemViewTestApi test_api(*iter);
-      EXPECT_EQ(base::UTF8ToUTF16(name), test_api.name_view()->GetText());
-      EXPECT_FALSE(test_api.time_view()->GetText().empty());
+
+      DesksTemplatesItemView* item_view = *iter;
+      EXPECT_EQ(base::UTF8ToUTF16(name), item_view->name_view()->GetText());
+      EXPECT_FALSE(DesksTemplatesItemViewTestApi(item_view)
+                       .time_view()
+                       ->GetText()
+                       .empty());
     };
 
     verify_template_grid_item(uuid_1, name_1);
@@ -1074,9 +1078,17 @@ TEST_F(DesksTemplatesTest, OverviewTabbing) {
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(first_item, GetHighlightedView());
 
+  // Testing that we traverse to the `name_view` of the first item.
+  SendKey(ui::VKEY_TAB);
+  EXPECT_EQ(first_item->name_view(), GetHighlightedView());
+
   // When we're done with the first item, we'll go on to the second.
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(second_item, GetHighlightedView());
+
+  // Testing that we traverse to the `name_view` of the second item.
+  SendKey(ui::VKEY_TAB);
+  EXPECT_EQ(second_item->name_view(), GetHighlightedView());
 }
 
 // Tests that the desks bar returns to zero state if the second-to-last desk is
@@ -1168,6 +1180,24 @@ TEST_F(DesksTemplatesTest, UnsupportedAppsDialog) {
   EXPECT_TRUE(GetOverviewGridList()[0]->desks_templates_grid_widget());
 
   ASSERT_EQ(1ul, GetAllEntries().size());
+}
+
+// Tests that the save desk as template button is disabled when all windows on
+// the desk are unsupported.
+TEST_F(DesksTemplatesTest, AllUnsupportedAppsDisablesSaveTemplates) {
+  auto* root = Shell::Get()->GetPrimaryRootWindow();
+
+  // Use `CreateTestWindow` instead of `CreateAppWindow`, which by default
+  // creates a supported window.
+  auto test_window = CreateTestWindow();
+
+  EXPECT_EQ(0, DesksController::Get()->active_desk()->num_supported_windows());
+
+  ToggleOverview();
+
+  auto* save_template = static_cast<PillButton*>(
+      GetSaveDeskAsTemplateButtonForRoot(root)->GetContentsView());
+  EXPECT_EQ(views::Button::STATE_DISABLED, save_template->GetState());
 }
 
 // Tests the mouse and touch hover behavior on the template item view.

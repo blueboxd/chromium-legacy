@@ -141,12 +141,6 @@ extern const char
 extern const char kEnableAutofillAddressSavePromptName[];
 extern const char kEnableAutofillAddressSavePromptDescription[];
 
-// Title and description for the flag to enable account indication in the save
-// card dialog.
-extern const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterName[];
-extern const char
-    kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription[];
-
 // Title and description for the flag to enable the discover feed discofeed
 // endpoint.
 extern const char kEnableDiscoverFeedDiscoFeedEndpointName[];
@@ -319,11 +313,6 @@ extern const char kNewOverflowMenuDescription[];
 extern const char kNTPViewHierarchyRepairName[];
 extern const char kNTPViewHierarchyRepairDescription[];
 
-// Title and description for the flag to use the previous sync screen in the new
-// FRE.
-extern const char kOldSyncStringFREName[];
-extern const char kOldSyncStringFREDescription[];
-
 // Title and description for the flag to change the max number of autocomplete
 // matches in the omnibox popup.
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
@@ -483,11 +472,6 @@ extern const char kUpdateHistoryEntryPointsInIncognitoDescription[];
 // enterprise policy.
 extern const char kURLBlocklistIOSName[];
 extern const char kURLBlocklistIOSDescription[];
-
-// Title and description for the flag to have the web client choosing the
-// default user agent.
-extern const char kUseDefaultUserAgentInWebClientName[];
-extern const char kUseDefaultUserAgentInWebClientDescription[];
 
 // Title and description for the flag to enable using Lens to search for an
 // image from the long press context menu.

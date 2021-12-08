@@ -156,12 +156,6 @@ const char kEnableAutofillAddressSavePromptName[] =
 const char kEnableAutofillAddressSavePromptDescription[] =
     "Enable the Autofill address save prompts.";
 
-const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterName[] =
-    "Display save card infobar with account indication information";
-const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription[] =
-    "When enabled, UI indicating user's e-mail address will appear at the"
-    "bottom of save card infobar.";
-
 const char kEnableDiscoverFeedDiscoFeedEndpointName[] =
     "Enable discover feed discofeed";
 const char kEnableDiscoverFeedDiscoFeedEndpointDescription[] =
@@ -352,11 +346,6 @@ const char kNTPViewHierarchyRepairName[] = "NTP View Hierarchy Repair";
 const char kNTPViewHierarchyRepairDescription[] =
     "Checks if NTP view hierarchy is broken and fixes it if necessary.";
 
-const char kOldSyncStringFREName[] = "Use previous sync screen strings";
-const char kOldSyncStringFREDescription[] =
-    "When enabled, the strings of the previous sync screen are used in the "
-    "new FRE.";
-
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";
 const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
@@ -540,12 +529,6 @@ const char kURLBlocklistIOSName[] = "URL Blocklist Policy";
 const char kURLBlocklistIOSDescription[] =
     "When enabled, URLs can be blocked/allowed by the URLBlocklist/URLAllowlist"
     "enterprise policies.";
-
-const char kUseDefaultUserAgentInWebClientName[] =
-    "[Refactoring] Let the client choose default mode";
-const char kUseDefaultUserAgentInWebClientDescription[] =
-    "When enabled, the web client will choose the default mode. It is a "
-    "refactoring, no visible impact.";
 
 const char kUseLensToSearchForImageName[] =
     "Use Google Lens to Search for images";

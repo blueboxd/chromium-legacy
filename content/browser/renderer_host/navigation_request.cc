@@ -150,8 +150,14 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
+#include "ui/compositor/compositor_lock.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
+
+#if defined(OS_ANDROID)
+#include "ui/android/window_android.h"
+#include "ui/android/window_android_compositor.h"
+#endif
 
 namespace content {
 
@@ -309,7 +315,8 @@ bool NeedsHTTPOrigin(net::HttpRequestHeaders* headers,
 // values of relevant headers like Sec-CH-UA-Reduced.  If `user_agent_override`
 // is non-empty, `user_agent_override` is returned as the header value.
 std::string ComputeUserAgentValue(const net::HttpRequestHeaders& headers,
-                                  const std::string& user_agent_override) {
+                                  const std::string& user_agent_override,
+                                  content::BrowserContext* context) {
   if (!user_agent_override.empty()) {
     base::UmaHistogramEnumeration("Navigation.UserAgentStringType",
                                   UserAgentStringType::kOverriden);
@@ -327,7 +334,8 @@ std::string ComputeUserAgentValue(const net::HttpRequestHeaders& headers,
                                 reduced ? UserAgentStringType::kReducedVersion
                                         : UserAgentStringType::kFullVersion);
   return reduced ? GetContentClient()->browser()->GetReducedUserAgent()
-                 : GetContentClient()->browser()->GetUserAgent();
+                 : GetContentClient()->browser()->GetUserAgentBasedOnPolicy(
+                       context);
 }
 
 // TODO(clamy): This should match what's happening in
@@ -362,7 +370,7 @@ void AddAdditionalRequestHeaders(
 
   headers->SetHeaderIfMissing(
       net::HttpRequestHeaders::kUserAgent,
-      ComputeUserAgentValue(*headers, user_agent_override));
+      ComputeUserAgentValue(*headers, user_agent_override, browser_context));
 
   if (!render_prefs.enable_referrers) {
     *referrer =
@@ -676,7 +684,7 @@ void EnterChildTraceEvent(const char* name,
 
 network::mojom::RequestDestination GetDestinationFromFrameTreeNode(
     FrameTreeNode* frame_tree_node) {
-  if (frame_tree_node->IsFencedFrameRoot())
+  if (frame_tree_node->IsInFencedFrameTree())
     return network::mojom::RequestDestination::kFencedframe;
 
   if (frame_tree_node->IsMainFrame()) {
@@ -1605,6 +1613,31 @@ NavigationRequest::NavigationRequest(
   }
 
   begin_params_->headers = headers.ToString();
+
+#if defined(OS_ANDROID)
+  static constexpr base::Feature kOptimizeEarlyNavigation{
+      "OptimizeEarlyNavigation", base::FEATURE_DISABLED_BY_DEFAULT};
+  static constexpr base::FeatureParam<base::TimeDelta> kCompositorLockTimeout{
+      &kOptimizeEarlyNavigation, "compositor_lock_timeout",
+      base::Milliseconds(150)};
+
+  RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
+      frame_tree_node_->current_frame_host()->GetRenderWidgetHost());
+  if (base::FeatureList::IsEnabled(kOptimizeEarlyNavigation) &&
+      NeedsUrlLoader() && frame_tree_node_->IsMainFrame() && host &&
+      !host->is_hidden() && host->GetView() &&
+      host->GetView()->GetNativeView() &&
+      host->GetView()->GetNativeView()->GetWindowAndroid()) {
+    // If the compositor changes, we will just let the lock timeout instead of
+    // trying to deal with it explicitly.
+    ui::WindowAndroidCompositor* compositor =
+        host->GetView()->GetNativeView()->GetWindowAndroid()->GetCompositor();
+    if (compositor) {
+      compositor_lock_ =
+          compositor->GetCompositorLock(kCompositorLockTimeout.Get());
+    }
+  }
+#endif
 }
 
 NavigationRequest::~NavigationRequest() {
@@ -3104,11 +3137,12 @@ void NavigationRequest::OnResponseStarted(
 
   const auto& url = common_params_->url;
 
-  // The root fenced frames are required to have the Supports-Loading-Mode HTTP
-  // response header "fenced-frame" to be able to load.
+  // The fenced frame root and the nested iframes are required to have the
+  // Supports-Loading-Mode HTTP response header "fenced-frame" to be able to
+  // load.
   const bool should_enforce_fenced_frame_opt_in =
       response_should_be_rendered_ && response_head_->headers &&
-      frame_tree_node_->IsFencedFrameRoot() &&
+      frame_tree_node_->IsInFencedFrameTree() &&
       !(url.IsAboutBlank() || url.SchemeIsBlob() ||
         url.SchemeIs(url::kDataScheme));
   if (should_enforce_fenced_frame_opt_in &&
@@ -3858,6 +3892,9 @@ void NavigationRequest::OnStartChecksComplete(
   network::mojom::WebSandboxFlags sandbox_flags =
       commit_params_->frame_policy.sandbox_flags;
 
+  // Reset the compositor lock before starting the loader.
+  compositor_lock_.reset();
+
   loader_ = NavigationURLLoader::Create(
       browser_context, partition,
       std::make_unique<NavigationRequestInfo>(
@@ -3881,6 +3918,7 @@ void NavigationRequest::OnStartChecksComplete(
       NetworkServiceDevToolsObserver::MakeSelfOwned(frame_tree_node_),
       std::move(cached_response_head), std::move(interceptor));
   DCHECK(!render_frame_host_);
+
   loader_->Start();
   // DO NOT ADD CODE after this. The previous call to
   // NavigationURLLoader::Start() could cause the destruction of the
@@ -3984,7 +4022,8 @@ void NavigationRequest::OnRedirectChecksComplete(
     if (!devtools_user_agent_override_) {
       modified_headers.SetHeader(
           net::HttpRequestHeaders::kUserAgent,
-          ComputeUserAgentValue(modified_headers, GetUserAgentOverride()));
+          ComputeUserAgentValue(modified_headers, GetUserAgentOverride(),
+                                browser_context));
     }
   }
 
@@ -6516,8 +6555,9 @@ void NavigationRequest::SetIsOverridingUserAgent(bool override_ua) {
         common_params_->url, client_hints_delegate, is_overriding_user_agent(),
         frame_tree_node_, &headers);
   }
-  headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
-                    ComputeUserAgentValue(headers, GetUserAgentOverride()));
+  headers.SetHeader(
+      net::HttpRequestHeaders::kUserAgent,
+      ComputeUserAgentValue(headers, GetUserAgentOverride(), browser_context));
   begin_params_->headers = headers.ToString();
   // |request_headers_| comes from |begin_params_|. Clear |request_headers_| now
   // so that if |request_headers_| are needed, they will be updated.

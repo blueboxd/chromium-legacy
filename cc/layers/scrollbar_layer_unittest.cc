@@ -249,7 +249,8 @@ TEST_F(ScrollbarLayerTest, SetNeedsDisplayDoesNotRequireUpdate) {
   // Simulate commit to compositor thread.
   scrollbar_layer->PushPropertiesTo(
       scrollbar_layer->CreateLayerImpl(layer_tree_host_->active_tree()).get(),
-      *layer_tree_host_->GetPendingCommitState());
+      *layer_tree_host_->GetPendingCommitState(),
+      layer_tree_host_->GetThreadUnsafeCommitState());
   scrollbar_layer->fake_scrollbar()->set_needs_repaint_thumb(false);
   scrollbar_layer->fake_scrollbar()->set_needs_repaint_track(false);
 
@@ -366,8 +367,7 @@ TEST_F(ScrollbarLayerTest, ScrollElementIdPushedAcrossCommit) {
   {
     DebugScopedSetImplThread scoped_impl_thread(
         layer_tree_host_->GetTaskRunnerProvider());
-    layer_tree_host_->FinishCommitOnImplThread(layer_tree_host_->host_impl(),
-                                               *commit_state, unsafe_state);
+    layer_tree_host_->host_impl()->FinishCommit(*commit_state, unsafe_state);
   }
   layer_tree_host_->CommitComplete({base::TimeTicks(), base::TimeTicks::Now()});
 
@@ -1337,7 +1337,8 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   // Simulate commit to compositor thread.
   scrollbar_layer->PushPropertiesTo(
       scrollbar_layer->CreateLayerImpl(layer_tree_host_->active_tree()).get(),
-      *layer_tree_host_->GetPendingCommitState());
+      *layer_tree_host_->GetPendingCommitState(),
+      layer_tree_host_->GetThreadUnsafeCommitState());
   scrollbar_layer->fake_scrollbar()->set_needs_repaint_thumb(false);
   scrollbar_layer->fake_scrollbar()->set_needs_repaint_track(false);
 

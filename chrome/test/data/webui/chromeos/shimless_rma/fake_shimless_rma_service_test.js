@@ -4,7 +4,7 @@
 
 import {fakeCalibrationComponents} from 'chrome://shimless-rma/fake_data.js';
 import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_service.js';
-import {CalibrationComponentStatus, CalibrationObserverRemote, CalibrationOverallStatus, CalibrationSetupInstruction, CalibrationStatus, ComponentRepairStatus, ComponentType, ErrorObserverRemote, FinalizationObserverRemote, FinalizationStatus, HardwareVerificationStatusObserverRemote, HardwareWriteProtectionStateObserverRemote, OsUpdateObserverRemote, OsUpdateOperation, PowerCableStateObserverRemote, ProvisioningObserverRemote, ProvisioningStatus, RmadErrorCode, State, WriteProtectDisableCompleteAction} from 'chrome://shimless-rma/shimless_rma_types.js';
+import {CalibrationComponentStatus, CalibrationObserverRemote, CalibrationOverallStatus, CalibrationSetupInstruction, CalibrationStatus, ComponentRepairStatus, ComponentType, ErrorObserverRemote, FinalizationObserverRemote, FinalizationStatus, HardwareVerificationStatusObserverRemote, HardwareWriteProtectionStateObserverRemote, OsUpdateObserverRemote, OsUpdateOperation, PowerCableStateObserverRemote, ProvisioningObserverRemote, ProvisioningStatus, RmadErrorCode, State, UpdateRoFirmwareObserverRemote, UpdateRoFirmwareStatus, WriteProtectDisableCompleteAction} from 'chrome://shimless-rma/shimless_rma_types.js';
 
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 
@@ -417,79 +417,27 @@ export function fakeShimlessRmaServiceTestSuite() {
     });
   });
 
-  test('ReimageSkippedOk', () => {
+  test('ReimageRoFirmwareUpdateCompleteOk', () => {
     let states = [
-      {state: State.kChooseFirmwareReimageMethod, error: RmadErrorCode.kOk},
+      {state: State.kUpdateRoFirmware, error: RmadErrorCode.kOk},
       {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
-    return service.reimageSkipped().then((state) => {
+    return service.roFirmwareUpdateComplete().then((state) => {
       assertEquals(state.state, State.kUpdateOs);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
-  test('ReimageSkippedWrongStateFails', () => {
+  test('ReimageRoFirmwareUpdateCompleteWrongStateFails', () => {
     let states = [
       {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
       {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
-    return service.reimageSkipped().then((state) => {
-      assertEquals(state.state, State.kWelcomeScreen);
-      assertEquals(state.error, RmadErrorCode.kRequestInvalid);
-    });
-  });
-
-  test('ReimageFromDownloadOk', () => {
-    let states = [
-      {state: State.kChooseFirmwareReimageMethod, error: RmadErrorCode.kOk},
-      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
-    ];
-    service.setStates(states);
-
-    return service.reimageFromDownload().then((state) => {
-      assertEquals(state.state, State.kUpdateOs);
-      assertEquals(state.error, RmadErrorCode.kOk);
-    });
-  });
-
-  test('ReimageFromDownloadWrongStateFails', () => {
-    let states = [
-      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
-    ];
-    service.setStates(states);
-
-    return service.reimageFromDownload().then((state) => {
-      assertEquals(state.state, State.kWelcomeScreen);
-      assertEquals(state.error, RmadErrorCode.kRequestInvalid);
-    });
-  });
-
-  test('ReimageFromUsbOk', () => {
-    let states = [
-      {state: State.kChooseFirmwareReimageMethod, error: RmadErrorCode.kOk},
-      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
-    ];
-    service.setStates(states);
-
-    return service.reimageFromUsb().then((state) => {
-      assertEquals(state.state, State.kUpdateOs);
-      assertEquals(state.error, RmadErrorCode.kOk);
-    });
-  });
-
-  test('ReimageFromUsbWrongStateFails', () => {
-    let states = [
-      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
-    ];
-    service.setStates(states);
-
-    return service.reimageFromUsb().then((state) => {
+    return service.roFirmwareUpdateComplete().then((state) => {
       assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kRequestInvalid);
     });
@@ -847,6 +795,24 @@ export function fakeShimlessRmaServiceTestSuite() {
     service.observeOsUpdateProgress(osUpdateObserver);
     return service.triggerOsUpdateObserver(
         OsUpdateOperation.kDownloading, 0.75, 0);
+  });
+
+  test('ObserveRoFirmwareUpdate', () => {
+    /** @type {!UpdateRoFirmwareObserverRemote} */
+    const roFirmwareUpdateObserver =
+        /** @type {!UpdateRoFirmwareObserverRemote} */ ({
+          /**
+           * Implements
+           * UpdateRoFirmwareObserver.onUpdateRoFirmwareStatusChanged()
+           * @param {!UpdateRoFirmwareStatus} status
+           */
+          onUpdateRoFirmwareStatusChanged(status) {
+            assertEquals(UpdateRoFirmwareStatus.kDownloading, status);
+          }
+        });
+    service.observeRoFirmwareUpdateProgress(roFirmwareUpdateObserver);
+    return service.triggerUpdateRoFirmwareObserver(
+        UpdateRoFirmwareStatus.kDownloading, 0);
   });
 
   test('ObserveCalibrationUpdated', () => {

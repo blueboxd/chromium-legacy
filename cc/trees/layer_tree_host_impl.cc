@@ -471,7 +471,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   if (is_ui) {
     dropped_frame_counter_.EnableReporForUI();
     compositor_frame_reporting_controller_->SetThreadAffectsSmoothness(
-        FrameSequenceMetrics::ThreadType::kMain, true);
+        FrameInfo::SmoothEffectDrivingThread::kMain, true);
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -600,6 +600,44 @@ void LayerTreeHostImpl::BeginCommit(int source_frame_number) {
   if (!CommitToActiveTree())
     CreatePendingTree();
   sync_tree()->set_source_frame_number(source_frame_number);
+}
+
+// This function commits the LayerTreeHost, as represented by CommitState, to an
+// impl tree.  When modifying this function -- and all code that it calls into
+// -- care must be taken to avoid using LayerTreeHost directly (e.g., via
+// state.root_layer->layer_tree_host()) as that will likely introduce thread
+// safety violations.  Any information that is needed from LayerTreeHost should
+// instead be plumbed through CommitState (see
+// LayerTreeHost::ActivateCommitState() for reference).
+void LayerTreeHostImpl::FinishCommit(CommitState& state,
+                                     ThreadUnsafeCommitState& unsafe_state) {
+  TRACE_EVENT0("cc,benchmark", "LayerTreeHostImpl::FinishCommit");
+  LayerTreeImpl* tree = sync_tree();
+  tree->PullPropertiesFrom(state, unsafe_state);
+  PullLayerTreeHostPropertiesFrom(state);
+
+  // Transfer image decode requests to the impl thread.
+  for (auto& entry : state.queued_image_decodes)
+    QueueImageDecode(entry.first, *entry.second);
+
+  for (auto& benchmark : state.benchmarks)
+    ScheduleMicroBenchmark(std::move(benchmark));
+
+  unsafe_state.property_trees.ResetAllChangeTracking();
+
+  // Dump property trees and layers if run with:
+  //   --vmodule=layer_tree_host=3
+  if (VLOG_IS_ON(3)) {
+    const char* client_name = GetClientNameForMetrics();
+    if (!client_name)
+      client_name = "<unknown client>";
+    VLOG(3) << "After finishing (" << client_name
+            << ") commit on impl, the sync tree:"
+            << "\nproperty_trees:\n"
+            << tree->property_trees()->ToString() << "\n"
+            << "cc::LayerImpls:\n"
+            << tree->LayerListAsJson();
+  }
 }
 
 void LayerTreeHostImpl::PullLayerTreeHostPropertiesFrom(
@@ -3707,6 +3745,14 @@ LayerTreeHostImpl::TakeFinishedTransitionRequestSequenceIds() {
   return result;
 }
 
+void LayerTreeHostImpl::ClearHistory() {
+  client_->ClearHistory();
+}
+
+size_t LayerTreeHostImpl::CommitDurationSampleCountForTesting() const {
+  return client_->CommitDurationSampleCountForTesting();  // IN-TEST
+}
+
 void LayerTreeHostImpl::ClearCaches() {
   // It is safe to clear the decode policy tracking on navigations since it
   // comes with an invalidation and the image ids are never re-used.
@@ -4977,16 +5023,6 @@ void LayerTreeHostImpl::NotifyAnimationWorkletStateChange(
       SetNeedsRedraw();
     }
   }
-}
-
-gfx::PointF LayerTreeHostImpl::GetScrollOffsetForAnimation(
-    ElementId element_id) const {
-  if (active_tree()) {
-    return active_tree()->property_trees()->scroll_tree.current_scroll_offset(
-        element_id);
-  }
-
-  return gfx::PointF();
 }
 
 bool LayerTreeHostImpl::CommitToActiveTree() const {

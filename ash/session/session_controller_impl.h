@@ -49,6 +49,9 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   bool session_state_change_in_progress() const {
     return session_state_change_in_progress_;
   }
+  FullscreenController* fullscreen_controller() {
+    return fullscreen_controller_.get();
+  }
 
   // Returns the number of signed in users. If 0 is returned, there is either
   // no session in progress or no active user.
@@ -192,7 +195,6 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   void UpdateUserSession(const UserSession& user_session) override;
   void SetUserSessionOrder(
       const std::vector<uint32_t>& user_session_order) override;
-  void PrepareForLock(PrepareForLockCallback callback) override;
   void StartLock(StartLockCallback callback) override;
   void NotifyChromeLockAnimationsComplete() override;
   void RunUnlockAnimation(RunUnlockAnimationCallback callback) override;
@@ -218,10 +220,6 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
 
   // Test helpers.
   void ClearUserSessionsForTest();
-
-  FullscreenController* fullscreen_controller_for_test() {
-    return fullscreen_controller_.get();
-  }
 
  private:
   friend class TestSessionControllerClient;

@@ -11,6 +11,9 @@
 
 namespace floss {
 
+// All Floss D-Bus methods return immediately, so the timeout can be very short.
+int kDBusTimeoutMs = 2000;
+
 namespace {
 
 template <typename T>
@@ -73,6 +76,7 @@ const char kCancelDiscovery[] = "CancelDiscovery";
 const char kCreateBond[] = "CreateBond";
 const char kCancelBondProcess[] = "CancelBondProcess";
 const char kGetConnectionState[] = "GetConnectionState";
+const char kGetBondState[] = "GetBondState";
 const char kConnectAllEnabledProfiles[] = "ConnectAllEnabledProfiles";
 const char kRegisterCallback[] = "RegisterCallback";
 const char kRegisterConnectionCallback[] = "RegisterConnectionCallback";

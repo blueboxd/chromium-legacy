@@ -186,6 +186,7 @@
 #include "chrome/browser/ash/net/system_proxy_manager.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_manager_impl.h"
 #include "chrome/browser/ash/policy/networking/euicc_status_uploader.h"
+#include "chrome/browser/ash/settings/hardware_data_usage_controller.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
 #include "chrome/browser/chromeos/extensions/extensions_permissions_tracker.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
@@ -277,6 +278,7 @@
 #include "ash/public/cpp/ash_prefs.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics_service.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
+#include "chrome/browser/ash/account_manager/account_apps_availability.h"
 #include "chrome/browser/ash/account_manager/account_manager_edu_coexistence_controller.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
@@ -1006,6 +1008,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ash::device_activity::DeviceActivityController::RegisterPrefs(registry);
   chromeos::EnableDebuggingScreenHandler::RegisterPrefs(registry);
   chromeos::FastTransitionObserver::RegisterPrefs(registry);
+  ash::HWDataUsageController::RegisterLocalStatePrefs(registry);
   ash::KerberosCredentialsManager::RegisterLocalStatePrefs(registry);
   ash::KioskAppManager::RegisterPrefs(registry);
   ash::KioskCryptohomeRemover::RegisterPrefs(registry);
@@ -1311,6 +1314,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   apps::webapk_prefs::RegisterProfilePrefs(registry);
   arc::prefs::RegisterProfilePrefs(registry);
   ArcAppListPrefs::RegisterProfilePrefs(registry);
+  ash::AccountAppsAvailability::RegisterPrefs(registry);
   account_manager::AccountManager::RegisterPrefs(registry);
   ash::ApkWebAppService::RegisterProfilePrefs(registry);
   ash::app_time::AppActivityRegistry::RegisterProfilePrefs(registry);

@@ -286,6 +286,7 @@
         // platforms. See //services/shape_detection.
         "Android": "stable",
         "ChromeOS": "stable",
+        "Lacros": "stable",
         "Mac": "stable",
         "default": "test",
       },
@@ -1280,7 +1281,7 @@
     },
     {
       name: "LayoutNGBlockFragmentation",
-      implied_by: ["LayoutNGFlexFragmentation", "LayoutNGGridFragmentation", "LayoutNGPrinting"],
+      implied_by: ["LayoutNGFlexFragmentation", "LayoutNGGridFragmentation", "LayoutNGPrinting", "LayoutNGTableFragmentation"],
     },
     {
       name: "LayoutNGBlockInInline",
@@ -1329,6 +1330,12 @@
       name: "LayoutNGSubgrid",
       depends_on: ["LayoutNGGrid"],
       status: "test"
+    },
+    {
+      // Block fragmentation support in the table layout algorithm.
+      // https://drafts.csswg.org/css-tables-3/#fragmentation
+      name: "LayoutNGTableFragmentation",
+      depends_on: ["LayoutNG"],
     },
     {
       name: "LayoutNGTextCombine",

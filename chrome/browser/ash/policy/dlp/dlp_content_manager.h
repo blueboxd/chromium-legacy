@@ -14,12 +14,12 @@
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/ash/policy/dlp/dlp_confidential_contents.h"
-#include "chrome/browser/ash/policy/dlp/dlp_warn_dialog.h"
 #include "chrome/browser/ash/policy/dlp/dlp_window_observer.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_confidential_contents.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_observer.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_restriction_set.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_warn_dialog.h"
 #include "chrome/browser/ui/ash/screenshot_area.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/media_stream_request.h"
@@ -332,9 +332,10 @@ class DlpContentManager : public DlpContentObserver,
   void ReportWarningEvent(const RestrictionLevelAndUrl& restriction_info,
                           DlpRulesManager::Restriction restriction);
 
-  // Returns the set of cached user allowed contents for given |restriction|.
-  DlpConfidentialContents& GetUserAllowedContents(
-      DlpRulesManager::Restriction restriction);
+  // Removes all elements of |contents| that the user has recently already
+  // acknowledged the warning for.
+  void RemoveAllowedContents(DlpConfidentialContents& contents,
+                             DlpRulesManager::Restriction restriction);
 
   // Map from currently known confidential WebContents to the restrictions.
   base::flat_map<content::WebContents*, DlpContentRestrictionSet>
@@ -355,9 +356,7 @@ class DlpContentManager : public DlpContentObserver,
 
   // Keeps track of the contents for which the user allowed the action after
   // being shown a warning for each type of restriction.
-  // TODO(crbug.com/1264803): Change to DlpConfidentialContentsCache
-  base::flat_map<DlpRulesManager::Restriction, DlpConfidentialContents>
-      user_allowed_contents_;
+  DlpConfidentialContentsCache user_allowed_contents_cache_;
 
   DlpReportingManager* reporting_manager_;
 

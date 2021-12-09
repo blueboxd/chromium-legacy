@@ -204,7 +204,8 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
           // |*this|. The lifetime of |decoder_| must be shorter than |*this|.
           base::BindRepeating(&VideoDecoderClient::ResolutionChangeTask,
                               base::Unretained(this)),
-          gfx::ColorSpace(), frame_renderer_.get(), gpu_memory_buffer_factory_);
+          gfx::ColorSpace(), frame_renderer_.get(), gpu_memory_buffer_factory_,
+          decoder_client_config_.linear_output);
       break;
   }
 
@@ -308,9 +309,14 @@ void VideoDecoderClient::DecodeNextFragmentTask() {
     return;
   }
   bitstream_buffer->set_timestamp(base::TimeTicks::Now().since_origin());
-  bool has_config_info = media::test::EncodedDataHelper::HasConfigInfo(
-      bitstream_buffer->data(), bitstream_buffer->data_size(),
-      video_->Profile());
+
+  bool has_config_info = false;
+  if (video_->Codec() == media::VideoCodec::kH264 ||
+      video_->Codec() == media::VideoCodec::kHEVC) {
+    has_config_info = media::test::EncodedDataHelper::HasConfigInfo(
+        bitstream_buffer->data(), bitstream_buffer->data_size(),
+        video_->Profile());
+  }
 
   VideoDecoder::DecodeCB decode_cb = base::BindOnce(
       CallbackThunk<decltype(&VideoDecoderClient::DecodeDoneTask),

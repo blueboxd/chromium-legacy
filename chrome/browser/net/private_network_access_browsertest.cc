@@ -15,6 +15,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/net/profile_network_context_service.h"
+#include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -27,6 +29,8 @@
 #include "components/embedder_support/switches.h"
 #include "components/error_page/content/browser/net_error_auto_reloader.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
+#include "components/proxy_config/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
@@ -125,6 +129,7 @@ std::vector<WebFeature> AllAddressSpaceFeatures() {
       WebFeature::kAddressSpacePublicNonSecureContextNavigatedToPrivate,
       WebFeature::kAddressSpaceUnknownSecureContextNavigatedToPrivate,
       WebFeature::kAddressSpaceUnknownNonSecureContextNavigatedToPrivate,
+      WebFeature::kPrivateNetworkAccessIgnoredPreflightError,
   };
 }
 
@@ -209,6 +214,7 @@ class PrivateNetworkAccessWithFeatureEnabledBrowserTest
                 features::kBlockInsecurePrivateNetworkRequests,
                 features::kBlockInsecurePrivateNetworkRequestsFromPrivate,
                 features::kBlockInsecurePrivateNetworkRequestsDeprecationTrial,
+                features::kPrivateNetworkAccessSendPreflights,
                 dom_distiller::kReaderMode,
             },
             {}) {}
@@ -294,6 +300,32 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureDisabledBrowserTest,
       AllZeroFeatureCounts(AllAddressSpaceFeatures()),
       {
           {WebFeature::kAddressSpacePublicSecureContextEmbeddedLocal, 1},
+      }));
+}
+
+// This test verifies that when a preflight request is sent ahead of a private
+// network request, fails, and enforcement is not enabled, the correct
+// WebFeature is use-counted to reflect the suppressed error.
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
+                       RecordsAddressSpaceFeatureForFetchWithPreflight) {
+  std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
+
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), PublicSecureURL(*server)));
+
+  WebFeatureHistogramTester feature_histogram_tester;
+
+  // The server does not reply with valid CORS headers, so the preflight fails.
+  // The enforcement feature is not enabled however, so the error is suppressed.
+  // Instead, a warning is shown in DevTools and a WebFeature use-counted.
+  EXPECT_EQ(true, content::EvalJs(web_contents(), R"(
+    fetch("/defaultresponse").then(response => response.ok)
+  )"));
+
+  feature_histogram_tester.ExpectCounts(AddFeatureCounts(
+      AllZeroFeatureCounts(AllAddressSpaceFeatures()),
+      {
+          {WebFeature::kAddressSpacePublicSecureContextEmbeddedLocal, 1},
+          {WebFeature::kPrivateNetworkAccessIgnoredPreflightError, 1},
       }));
 }
 
@@ -622,6 +654,28 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
           WebFeature::
               kPrivateNetworkAccessNonSecureContextsAllowedDeprecationTrial),
       1);
+}
+
+// This test verifies that resources proxied through a proxy on localhost can
+// be fetched from documents in the public IP address space.
+// Regression test for https://crbug.com/1253239.
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
+                       ProxiedResourcesAllowed) {
+  auto server = NewServer();
+
+  EXPECT_TRUE(
+      content::NavigateToURL(web_contents(), PublicNonSecureURL(*server)));
+
+  browser()->profile()->GetPrefs()->Set(
+      proxy_config::prefs::kProxy,
+      ProxyConfigDictionary::CreateFixedServers(
+          server->host_port_pair().ToString(), ""));
+  ProfileNetworkContextServiceFactory::GetForContext(browser()->profile())
+      ->FlushProxyConfigMonitorForTesting();
+
+  EXPECT_EQ(true, content::EvalJs(web_contents(), R"(
+    fetch("/defaultresponse").then(response => response.ok)
+  )"));
 }
 
 // ====================

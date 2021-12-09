@@ -7,8 +7,8 @@
 
 #include <memory>
 #include "base/time/time.h"
-#include "chrome/browser/ash/policy/dlp/dlp_confidential_contents.h"
 #include "chrome/browser/ash/policy/dlp/dlp_content_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_confidential_contents.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_restriction_set.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 
@@ -21,7 +21,7 @@ namespace policy {
 class DlpReportingManager;
 
 // This class is an interface to DlpContentManager and is used in tests to
-// access some of it's private methods.
+// access some of its private methods.
 class DlpContentManagerTestHelper {
  public:
   DlpContentManagerTestHelper();
@@ -38,8 +38,11 @@ class DlpContentManagerTestHelper {
 
   void ResetWarnNotifierForTesting();
 
-  const DlpConfidentialContents& GetUserAllowedContentsForRestriction(
+  bool HasContentCachedForRestriction(
+      content::WebContents* web_contents,
       DlpRulesManager::Restriction restriction) const;
+
+  bool HasAnyContentCached() const;
 
   base::TimeDelta GetPrivacyScreenOffDelay() const;
 

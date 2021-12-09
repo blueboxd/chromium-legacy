@@ -38,7 +38,6 @@
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/commerce/commerce_feature_list.h"
 #include "chrome/browser/flag_descriptions.h"
-#include "chrome/browser/lite_video/lite_video_switches.h"
 #include "chrome/browser/login_detection/login_detection_util.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_features.h"
 #include "chrome/browser/navigation_predictor/search_engine_preconnector.h"
@@ -280,6 +279,7 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "chrome/browser/win/titlebar_config.h"
+#include "ui/color/color_switches.h"  // nogncheck
 #endif  // OS_WIN
 
 #if defined(TOOLKIT_VIEWS)
@@ -337,35 +337,6 @@ const FeatureEntry::Choice kTouchTextSelectionStrategyChoices[] = {
      blink::switches::kTouchTextSelectionStrategy, "character"},
     {flag_descriptions::kTouchSelectionStrategyDirection,
      blink::switches::kTouchTextSelectionStrategy, "direction"}};
-
-const FeatureEntry::Choice kLiteVideoDefaultDownlinkBandwidthKbps[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {"100", lite_video::switches::kLiteVideoDefaultDownlinkBandwidthKbps,
-     "100"},
-    {"150", lite_video::switches::kLiteVideoDefaultDownlinkBandwidthKbps,
-     "150"},
-    {"200", lite_video::switches::kLiteVideoDefaultDownlinkBandwidthKbps,
-     "200"},
-    {"250", lite_video::switches::kLiteVideoDefaultDownlinkBandwidthKbps,
-     "250"},
-    {"300", lite_video::switches::kLiteVideoDefaultDownlinkBandwidthKbps,
-     "300"},
-    {"350", lite_video::switches::kLiteVideoDefaultDownlinkBandwidthKbps,
-     "350"},
-    {"400", lite_video::switches::kLiteVideoDefaultDownlinkBandwidthKbps,
-     "400"},
-    {"450", lite_video::switches::kLiteVideoDefaultDownlinkBandwidthKbps,
-     "450"},
-    {"500", lite_video::switches::kLiteVideoDefaultDownlinkBandwidthKbps,
-     "500"},
-    {"600", lite_video::switches::kLiteVideoDefaultDownlinkBandwidthKbps,
-     "600"},
-    {"700", lite_video::switches::kLiteVideoDefaultDownlinkBandwidthKbps,
-     "700"},
-    {"800", lite_video::switches::kLiteVideoDefaultDownlinkBandwidthKbps,
-     "800"},
-    {"900", lite_video::switches::kLiteVideoDefaultDownlinkBandwidthKbps,
-     "900"}};
 
 #if defined(OS_WIN)
 const FeatureEntry::Choice kUseAngleChoicesWindows[] = {
@@ -2189,26 +2160,6 @@ const FeatureEntry::FeatureVariation kRequestDesktopSiteForTabletsVariations[] =
       base::size(kRequestDesktopSiteForTablets1920), nullptr}};
 #endif  // OS_ANDROID
 
-#if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kOmniboxOnDeviceHeadSuggestRelevance1000[] = {
-    {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput, "1000"},
-    {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode, "decrease-relevances"}};
-const FeatureEntry::FeatureParam
-    kOmniboxOnDeviceHeadSuggestNoDelayRelevance1000[] = {
-        {OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "0"},
-        {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput, "1000"},
-        {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode,
-         "decrease-relevances"}};
-
-const FeatureEntry::FeatureVariation
-    kOmniboxOnDeviceHeadSuggestNonIncognitoExperimentVariations[] = {
-        {"relevance-1000", kOmniboxOnDeviceHeadSuggestRelevance1000,
-         base::size(kOmniboxOnDeviceHeadSuggestRelevance1000), nullptr},
-        {"no-delay-relevance-1000",
-         kOmniboxOnDeviceHeadSuggestNoDelayRelevance1000,
-         base::size(kOmniboxOnDeviceHeadSuggestNoDelayRelevance1000), nullptr}};
-#endif  // defined(OS_ANDROID)
-
 // TODO(crbug.com/991082,1015377): Remove after proper support for back-forward
 // cache is implemented.
 const FeatureEntry::FeatureParam kBackForwardCache_ForceCaching[] = {
@@ -2575,6 +2526,9 @@ const FeatureEntry::FeatureParam kReadLaterInAppMenu[] = {
 const FeatureEntry::FeatureParam kReadLaterSemiIntegrated[] = {
     {"use_root_bookmark_as_default", "true"},
     {"allow_bookmark_type_swapping", "true"}};
+const FeatureEntry::FeatureParam kReadLaterNoCustomTab[] = {
+    {"use_root_bookmark_as_default", "true"},
+    {"use_cct", "false"}};
 
 const FeatureEntry::FeatureVariation kReadLaterVariations[] = {
     {"(use root bookmark as default)", kReadLaterUseRootBookmarkAsDefault,
@@ -2582,7 +2536,9 @@ const FeatureEntry::FeatureVariation kReadLaterVariations[] = {
     {"(with app menu item)", kReadLaterInAppMenu,
      base::size(kReadLaterInAppMenu), nullptr},
     {"(bookmarks semi-integration)", kReadLaterSemiIntegrated,
-     base::size(kReadLaterSemiIntegrated), nullptr}};
+     base::size(kReadLaterSemiIntegrated), nullptr},
+    {"(no custom tab)", kReadLaterNoCustomTab,
+     base::size(kReadLaterNoCustomTab), nullptr}};
 
 const FeatureEntry::FeatureParam kBookmarksRefreshVisuals[] = {
     {"bookmark_visuals_enabled", "true"}};
@@ -4143,10 +4099,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVirtualKeyboardDarkModeName,
      flag_descriptions::kVirtualKeyboardDarkModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardDarkMode)},
-    {"enable-cros-ime-emoji-suggest-addition",
-     flag_descriptions::kImeEmojiSuggestAdditionName,
-     flag_descriptions::kImeEmojiSuggestAdditionDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kEmojiSuggestAddition)},
     {"enable-cros-ime-mozc-proto", flag_descriptions::kImeMozcProtoName,
      flag_descriptions::kImeMozcProtoDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kImeMozcProto)},
@@ -4158,6 +4110,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeSystemEmojiPickerClipboardName,
      flag_descriptions::kImeSystemEmojiPickerClipboardDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kImeSystemEmojiPickerClipboard)},
+    {"enable-cros-ime-system-emoji-picker-extension",
+     flag_descriptions::kImeSystemEmojiPickerExtensionName,
+     flag_descriptions::kImeSystemEmojiPickerExtensionDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kImeSystemEmojiPickerExtension)},
     {"enable-cros-ime-stylus-handwriting",
      flag_descriptions::kImeStylusHandwritingName,
      flag_descriptions::kImeStylusHandwritingDescription, kOsCrOS,
@@ -4226,13 +4182,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilitySwitchAccessText)},
-    {"enable-experimental-accessibility-switch-access-setup-guide",
-     flag_descriptions::kExperimentalAccessibilitySwitchAccessSetupGuideName,
-     flag_descriptions::
-         kExperimentalAccessibilitySwitchAccessSetupGuideDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         features::kExperimentalAccessibilitySwitchAccessSetupGuide)},
     {"enable-experimental-accessibility-switch-access-multistep-automation",
      flag_descriptions::
          kExperimentalAccessibilitySwitchAccessMultistepAutomationName,
@@ -4256,8 +4205,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-docked-magnifier-resizing",
      flag_descriptions::kDockedMagnifierResizingName,
      flag_descriptions::kDockedMagnifierResizingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         features::kMagnifierContinuousMouseFollowingModeSetting)},
+     FEATURE_VALUE_TYPE(features::kDockedMagnifierResizing)},
     {"enable-system-proxy-for-system-services",
      flag_descriptions::kSystemProxyForSystemServicesName,
      flag_descriptions::kSystemProxyForSystemServicesDescription, kOsCrOS,
@@ -4510,22 +4458,6 @@ const FeatureEntry kFeatureEntries[] = {
          kOmniboxOnFocusSuggestionsContextualWebVariations,
          "OmniboxGoogleOnContent")},
 
-    {"omnibox-on-device-head-suggestions-incognito",
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoName,
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoDescription,
-     kOsAll, FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProviderIncognito)},
-
-#if defined(OS_ANDROID)
-    {"omnibox-on-device-head-suggestions-non-incognito",
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsNonIncognitoName,
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription,
-     kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         omnibox::kOnDeviceHeadProviderNonIncognito,
-         kOmniboxOnDeviceHeadSuggestNonIncognitoExperimentVariations,
-         "OmniboxOnDeviceHeadNonIncognitoTuningMobile")},
-#endif  // defined(OS_ANDROID)
-
     {"omnibox-on-focus-suggestions-contextual-web",
      flag_descriptions::kOmniboxOnFocusSuggestionsContextualWebName,
      flag_descriptions::kOmniboxOnFocusSuggestionsContextualWebDescription,
@@ -4761,7 +4693,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"history-journeys", flag_descriptions::kJourneysName,
      flag_descriptions::kJourneysDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(history_clusters::kJourneys)},
+     FEATURE_VALUE_TYPE(history_clusters::internal::kJourneys)},
 
     {"history-journeys-omnibox-action",
      flag_descriptions::kJourneysOmniboxActionName,
@@ -5016,6 +4948,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpRealboxSuggestionAnswersName,
      flag_descriptions::kNtpRealboxSuggestionAnswersDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kNtpRealboxSuggestionAnswers)},
+
+    {"ntp-realbox-tail-suggest", flag_descriptions::kNtpRealboxTailSuggestName,
+     flag_descriptions::kNtpRealboxTailSuggestDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kNtpRealboxTailSuggest)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(DCHECK_IS_CONFIGURABLE)
@@ -6492,10 +6428,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kCopyLinkToText)},
 #endif  // !defined(OS_ANDROID)
 
-    {"shared-highlighting-use-blocklist",
-     flag_descriptions::kSharedHighlightingUseBlocklistName,
-     flag_descriptions::kSharedHighlightingUseBlocklistDescription, kOsAll,
-     FEATURE_VALUE_TYPE(shared_highlighting::kSharedHighlightingUseBlocklist)},
     {"shared-highlighting-v2", flag_descriptions::kSharedHighlightingV2Name,
      flag_descriptions::kSharedHighlightingV2Description, kOsAll,
      FEATURE_VALUE_TYPE(shared_highlighting::kSharedHighlightingV2)},
@@ -6634,20 +6566,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableBluetoothSerialPortProfileInSerialApiDescription,
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableBluetoothSerialPortProfileInSerialApi)},
-
-    {"enable-lite-video", flag_descriptions::kLiteVideoName,
-     flag_descriptions::kLiteVideoDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kLiteVideo)},
-
-    {"lite-video-default-downlink-bandwidth-kbps",
-     flag_descriptions::kLiteVideoDownlinkBandwidthKbpsName,
-     flag_descriptions::kLiteVideoDownlinkBandwidthKbpsDescription, kOsAll,
-     MULTI_VALUE_TYPE(kLiteVideoDefaultDownlinkBandwidthKbps)},
-
-    {"lite-video-force-override-decision",
-     flag_descriptions::kLiteVideoForceOverrideDecisionName,
-     flag_descriptions::kLiteVideoForceOverrideDecisionDescription, kOsAll,
-     SINGLE_VALUE_TYPE(lite_video::switches::kLiteVideoForceOverrideDecision)},
 
     {"add-passwords-in-settings",
      flag_descriptions::kAddPasswordsInSettingsName,
@@ -7683,6 +7601,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kGridTabSwitcherForTabletsName,
      flag_descriptions::kGridTabSwitcherForTabletsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kGridTabSwitcherForTablets)},
+
+    {"enable-tab-groups-for-tablets",
+     flag_descriptions::kTabGroupsForTabletsName,
+     flag_descriptions::kTabGroupsForTabletsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabGroupsForTablets)},
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -7724,6 +7647,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(ash::features::kSnoopingProtection,
                                     kSnoopingProtectionVariations,
                                     "SnoopingProtection")},
+#endif
+
+#if defined(OS_WIN)
+    {"pervasive-system-accent-color",
+     flag_descriptions::kPervasiveSystemAccentColorName,
+     flag_descriptions::kPervasiveSystemAccentColorDescription, kOsWin,
+     SINGLE_VALUE_TYPE(switches::kPervasiveSystemAccentColor)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

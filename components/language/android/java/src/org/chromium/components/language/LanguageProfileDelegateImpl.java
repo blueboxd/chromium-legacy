@@ -12,20 +12,21 @@ import java.util.List;
  */
 public class LanguageProfileDelegateImpl implements LanguageProfileDelegate {
     /**
-     * @return True if ULP is currently available.
+     * @return True if ULP is currently supported.
      */
     @Override
-    public boolean isULPAvailable() {
-        // ULP is not available in the default implementation.
+    public boolean isULPSupported() {
+        // ULP is not supported in the default implementation.
         return false;
     }
 
     /**
      * @param accountName Account to get profile or null if the default profile should be returned.
+     * @param timeoutInSeconds Seconds to wait before timing out on call to device.
      * @return A list of language tags ordered by preference for |accountName|
      */
     @Override
-    public List<String> getLanguagePreferences(String accountName) {
+    public List<String> getLanguagePreferences(String accountName, int timeoutInSeconds) {
         // The default implementation always returns an empty list.
         return new ArrayList<String>();
     }

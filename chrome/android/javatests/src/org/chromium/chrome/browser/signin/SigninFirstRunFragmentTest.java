@@ -25,7 +25,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
@@ -79,6 +78,7 @@ import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.policy.PolicyService;
 import org.chromium.components.signin.base.CoreAccountInfo;
@@ -95,8 +95,8 @@ public class SigninFirstRunFragmentTest {
     private static final String FULL_NAME1 = "Test Account1";
     private static final String GIVEN_NAME1 = "Account1";
     private static final String TEST_EMAIL2 = "test.account2@gmail.com";
-    private static final Account CHILD_ACCOUNT =
-            AccountManagerTestRule.createChildAccount("account@gmail.com");
+    private static final String CHILD_ACCOUNT_NAME =
+            AccountManagerTestRule.generateChildEmail("account@gmail.com");
     private static final String CHILD_FULL_NAME = "Test Child";
 
     /**
@@ -211,7 +211,7 @@ public class SigninFirstRunFragmentTest {
         onView(withText(R.string.signin_fre_dismiss_button)).check(matches(isDisplayed()));
 
         mAccountManagerTestRule.addAccount(
-                CHILD_ACCOUNT.name, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
+                CHILD_ACCOUNT_NAME, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
 
         checkFragmentWithChildAccount();
     }
@@ -220,11 +220,11 @@ public class SigninFirstRunFragmentTest {
     @MediumTest
     public void testFragmentWhenRemovingChildAccountDynamically() {
         mAccountManagerTestRule.addAccount(
-                CHILD_ACCOUNT.name, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
+                CHILD_ACCOUNT_NAME, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
         TestThreadUtils.runOnUiThreadBlocking(() -> { mFragment.onNativeInitialized(); });
         launchActivityWithFragment();
 
-        mAccountManagerTestRule.removeAccount(CHILD_ACCOUNT.name);
+        mAccountManagerTestRule.removeAccount(CHILD_ACCOUNT_NAME);
 
         CriteriaHelper.pollUiThread(() -> {
             return !mFragment.getView().findViewById(R.id.signin_fre_selected_account).isShown();
@@ -384,7 +384,7 @@ public class SigninFirstRunFragmentTest {
     public void testFragmentWithChildAccount() {
         TestThreadUtils.runOnUiThreadBlocking(() -> { mFragment.onNativeInitialized(); });
         mAccountManagerTestRule.addAccount(
-                CHILD_ACCOUNT.name, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
+                CHILD_ACCOUNT_NAME, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
 
         launchActivityWithFragment();
 
@@ -510,7 +510,7 @@ public class SigninFirstRunFragmentTest {
     public void testContinueButtonWithChildAccount() {
         TestThreadUtils.runOnUiThreadBlocking(() -> { mFragment.onNativeInitialized(); });
         mAccountManagerTestRule.addAccount(
-                CHILD_ACCOUNT.name, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
+                CHILD_ACCOUNT_NAME, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
         launchActivityWithFragment();
         final String continueAsText = mChromeActivityTestRule.getActivity().getString(
                 R.string.signin_promo_continue_as, CHILD_FULL_NAME);
@@ -740,8 +740,8 @@ public class SigninFirstRunFragmentTest {
                     mFragment.getView().findViewById(R.id.signin_fre_progress_spinner);
             // Replace the progress bar with a dummy to allow other checks. Currently the
             // progress bar cannot be stopped otherwise due to some espresso issues (crbug/1115067).
-            progressBar.setIndeterminateDrawable(
-                    new ColorDrawable(mFragment.getResources().getColor(R.color.default_bg_color)));
+            progressBar.setIndeterminateDrawable(new ColorDrawable(
+                    SemanticColorUtils.getDefaultBgColor(mFragment.getContext())));
         });
         onView(withText(R.string.fre_welcome)).check(matches(isDisplayed()));
         onView(withText(TEST_EMAIL1)).check(matches(not(isDisplayed())));
@@ -762,7 +762,7 @@ public class SigninFirstRunFragmentTest {
         onView(withText(R.string.fre_welcome)).check(matches(isDisplayed()));
         Assert.assertFalse(
                 mFragment.getView().findViewById(R.id.signin_fre_selected_account).isEnabled());
-        onView(withText(CHILD_ACCOUNT.name)).check(matches(isDisplayed()));
+        onView(withText(CHILD_ACCOUNT_NAME)).check(matches(isDisplayed()));
         onView(withText(CHILD_FULL_NAME)).check(matches(isDisplayed()));
         onView(withId(R.id.signin_fre_selected_account_expand_icon))
                 .check(matches(not(isDisplayed())));

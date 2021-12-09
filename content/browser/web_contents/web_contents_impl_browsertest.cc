@@ -4699,21 +4699,19 @@ class WebContentsImplBrowserTestWindowControlsOverlay
     EXPECT_EQ(
         expected_rect.x(),
         EvalJs(web_contents,
-               "navigator.windowControlsOverlay.getBoundingClientRect().x"));
+               "navigator.windowControlsOverlay.getTitlebarAreaRect().x"));
     EXPECT_EQ(
         expected_rect.y(),
         EvalJs(web_contents,
-               "navigator.windowControlsOverlay.getBoundingClientRect().y"));
+               "navigator.windowControlsOverlay.getTitlebarAreaRect().y"));
     EXPECT_EQ(
         expected_rect.width(),
-        EvalJs(
-            web_contents,
-            "navigator.windowControlsOverlay.getBoundingClientRect().width"));
+        EvalJs(web_contents,
+               "navigator.windowControlsOverlay.getTitlebarAreaRect().width"));
     EXPECT_EQ(
         expected_rect.height(),
-        EvalJs(
-            web_contents,
-            "navigator.windowControlsOverlay.getBoundingClientRect().height"));
+        EvalJs(web_contents,
+               "navigator.windowControlsOverlay.getTitlebarAreaRect().height"));
 
     // When the overlay is not visible, the environment variables should be
     // undefined, and the the fallback value should be used.
@@ -5077,6 +5075,29 @@ IN_PROC_BROWSER_TEST_F(WebContentsFencedFrameBrowserTest, RemainsVisible) {
   ASSERT_TRUE(NavigateToURL(shell(), same_origin_url));
   ASSERT_TRUE(WaitForLoadStop(web_contents()));
   EXPECT_EQ(Visibility::VISIBLE, web_contents()->GetVisibility());
+}
+
+// Tests that AXTreeIDForMainFrameHasChanged() works only with the primary page
+// by checking if it's not called on the fenced frame loading.
+IN_PROC_BROWSER_TEST_F(WebContentsFencedFrameBrowserTest, DoNotUpdateAXTree) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  testing::NiceMock<MockWebContentsObserver> observer(web_contents());
+  const GURL main_url =
+      embedded_test_server()->GetURL("fencedframe.test", "/title1.html");
+
+  EXPECT_CALL(observer, AXTreeIDForMainFrameHasChanged())
+      .Times(testing::AtLeast(1));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // Create fenced frame.
+  const GURL fenced_frame_url = embedded_test_server()->GetURL(
+      "fencedframe.test", "/fenced_frames/title1.html");
+  EXPECT_CALL(observer, AXTreeIDForMainFrameHasChanged()).Times(0);
+  RenderFrameHost* fenced_frame_rfh =
+      fenced_frame_test_helper().CreateFencedFrame(
+          web_contents()->GetMainFrame(), fenced_frame_url);
+  EXPECT_NE(nullptr, fenced_frame_rfh);
 }
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)

@@ -916,15 +916,6 @@ extern const char kLargeFaviconFromGoogleDescription[];
 extern const char kLensCameraAssistedSearchName[];
 extern const char kLensCameraAssistedSearchDescription[];
 
-extern const char kLiteVideoName[];
-extern const char kLiteVideoDescription[];
-
-extern const char kLiteVideoDownlinkBandwidthKbpsName[];
-extern const char kLiteVideoDownlinkBandwidthKbpsDescription[];
-
-extern const char kLiteVideoForceOverrideDecisionName[];
-extern const char kLiteVideoForceOverrideDecisionDescription[];
-
 extern const char kLogJsConsoleMessagesName[];
 extern const char kLogJsConsoleMessagesDescription[];
 
@@ -1061,12 +1052,6 @@ extern const char kOmniboxMaxURLMatchesDescription[];
 
 extern const char kOmniboxDynamicMaxAutocompleteName[];
 extern const char kOmniboxDynamicMaxAutocompleteDescription[];
-
-extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[];
-extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[];
-
-extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoName[];
-extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[];
 
 extern const char kOmniboxWebUIOmniboxPopupName[];
 extern const char kOmniboxWebUIOmniboxPopupDescription[];
@@ -1613,9 +1598,6 @@ extern const char kZeroCopyDescription[];
 extern const char kEnableVulkanName[];
 extern const char kEnableVulkanDescription[];
 
-extern const char kSharedHighlightingUseBlocklistName[];
-extern const char kSharedHighlightingUseBlocklistDescription[];
-
 extern const char kSharedHighlightingV2Name[];
 extern const char kSharedHighlightingV2Description[];
 
@@ -2036,6 +2018,9 @@ extern const char kSharingHubLinkToggleDescription[];
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
 
+extern const char kTabGroupsForTabletsName[];
+extern const char kTabGroupsForTabletsDescription[];
+
 extern const char kThemeRefactorAndroidName[];
 extern const char kThemeRefactorAndroidDescription[];
 
@@ -2165,6 +2150,9 @@ extern const char kNtpRealboxPedalsDescription[];
 extern const char kNtpRealboxSuggestionAnswersName[];
 extern const char kNtpRealboxSuggestionAnswersDescription[];
 
+extern const char kNtpRealboxTailSuggestName[];
+extern const char kNtpRealboxTailSuggestDescription[];
+
 extern const char kEnableReaderModeName[];
 extern const char kEnableReaderModeDescription[];
 
@@ -2221,6 +2209,9 @@ extern const char kHardwareSecureDecryptionExperimentDescription[];
 
 extern const char kMediaFoundationClearName[];
 extern const char kMediaFoundationClearDescription[];
+
+extern const char kPervasiveSystemAccentColorName[];
+extern const char kPervasiveSystemAccentColorDescription[];
 
 extern const char kPwaUninstallInWindowsOsName[];
 extern const char kPwaUninstallInWindowsOsDescription[];
@@ -2695,9 +2686,6 @@ extern const char kExperimentalAccessibilityDictationCommandsDescription[];
 extern const char kExperimentalAccessibilitySwitchAccessTextName[];
 extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
 
-extern const char kExperimentalAccessibilitySwitchAccessSetupGuideName[];
-extern const char kExperimentalAccessibilitySwitchAccessSetupGuideDescription[];
-
 extern const char
     kExperimentalAccessibilitySwitchAccessMultistepAutomationName[];
 extern const char
@@ -2788,9 +2776,6 @@ extern const char kImeAssistPersonalInfoDescription[];
 extern const char kVirtualKeyboardDarkModeName[];
 extern const char kVirtualKeyboardDarkModeDescription[];
 
-extern const char kImeEmojiSuggestAdditionName[];
-extern const char kImeEmojiSuggestAdditionDescription[];
-
 extern const char kImeMozcProtoName[];
 extern const char kImeMozcProtoDescription[];
 
@@ -2799,6 +2784,9 @@ extern const char kCrosLanguageSettingsImeOptionsInSettingsDescription[];
 
 extern const char kImeSystemEmojiPickerName[];
 extern const char kImeSystemEmojiPickerDescription[];
+
+extern const char kImeSystemEmojiPickerExtensionName[];
+extern const char kImeSystemEmojiPickerExtensionDescription[];
 
 extern const char kImeSystemEmojiPickerClipboardName[];
 extern const char kImeSystemEmojiPickerClipboardDescription[];

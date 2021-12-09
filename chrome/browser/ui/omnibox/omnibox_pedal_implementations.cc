@@ -8,30 +8,22 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/omnibox/browser/actions/omnibox_pedal.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/buildflags.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/omnibox/resources/grit/omnibox_pedal_synonyms.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 
-// This carefully simplifies preprocessor condition usage below.
-#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR))
-#define SUPPORTS_DESKTOP_ICONS 1
-#else
-#define SUPPORTS_DESKTOP_ICONS 0
-#endif
-
-#if SUPPORTS_DESKTOP_ICONS
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/app/vector_icons/vector_icons.h"
-#endif
-#include "components/omnibox/browser/vector_icons.h"  // nogncheck
-#include "components/vector_icons/vector_icons.h"     // nogncheck
 #endif
 
 // =============================================================================
@@ -581,11 +573,10 @@ class OmniboxPedalCreateGoogleDoc : public OmniboxPedalAuthRequired {
                 IDS_OMNIBOX_PEDAL_CREATE_GOOGLE_DOC_SUGGESTION_CONTENTS,
                 IDS_ACC_OMNIBOX_PEDAL_CREATE_GOOGLE_DOC_SUFFIX,
                 IDS_ACC_OMNIBOX_PEDAL_CREATE_GOOGLE_DOC)) {}
-#if SUPPORTS_DESKTOP_ICONS
+
   const gfx::VectorIcon& GetVectorIcon() const override {
     return omnibox::kDriveDocsIcon;
   }
-#endif
 
   std::vector<SynonymGroupSpec> SpecifySynonymGroups(
       bool locale_is_english) const override {
@@ -626,11 +617,10 @@ class OmniboxPedalCreateGoogleSheet : public OmniboxPedalAuthRequired {
                 IDS_OMNIBOX_PEDAL_CREATE_GOOGLE_SHEET_SUGGESTION_CONTENTS,
                 IDS_ACC_OMNIBOX_PEDAL_CREATE_GOOGLE_SHEET_SUFFIX,
                 IDS_ACC_OMNIBOX_PEDAL_CREATE_GOOGLE_SHEET)) {}
-#if SUPPORTS_DESKTOP_ICONS
+
   const gfx::VectorIcon& GetVectorIcon() const override {
     return omnibox::kDriveSheetsIcon;
   }
-#endif
 
   std::vector<SynonymGroupSpec> SpecifySynonymGroups(
       bool locale_is_english) const override {
@@ -671,11 +661,10 @@ class OmniboxPedalCreateGoogleSlide : public OmniboxPedalAuthRequired {
                 IDS_OMNIBOX_PEDAL_CREATE_GOOGLE_SLIDE_SUGGESTION_CONTENTS,
                 IDS_ACC_OMNIBOX_PEDAL_CREATE_GOOGLE_SLIDE_SUFFIX,
                 IDS_ACC_OMNIBOX_PEDAL_CREATE_GOOGLE_SLIDE)) {}
-#if SUPPORTS_DESKTOP_ICONS
+
   const gfx::VectorIcon& GetVectorIcon() const override {
     return omnibox::kDriveSlidesIcon;
   }
-#endif
 
   std::vector<SynonymGroupSpec> SpecifySynonymGroups(
       bool locale_is_english) const override {
@@ -717,7 +706,7 @@ class OmniboxPedalCreateGoogleCalendarEvent : public OmniboxPedalAuthRequired {
                 IDS_ACC_OMNIBOX_PEDAL_CREATE_GOOGLE_CALENDAR_EVENT_SUFFIX,
                 IDS_ACC_OMNIBOX_PEDAL_CREATE_GOOGLE_CALENDAR_EVENT)) {}
 
-#if SUPPORTS_DESKTOP_ICONS && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   const gfx::VectorIcon& GetVectorIcon() const override {
     return kGoogleCalendarIcon;
   }
@@ -762,7 +751,7 @@ class OmniboxPedalCreateGoogleSite : public OmniboxPedalAuthRequired {
                 IDS_OMNIBOX_PEDAL_CREATE_GOOGLE_SITE_SUGGESTION_CONTENTS,
                 IDS_ACC_OMNIBOX_PEDAL_CREATE_GOOGLE_SITE_SUFFIX,
                 IDS_ACC_OMNIBOX_PEDAL_CREATE_GOOGLE_SITE)) {}
-#if SUPPORTS_DESKTOP_ICONS && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   const gfx::VectorIcon& GetVectorIcon() const override {
     return kGoogleSitesIcon;
   }
@@ -808,7 +797,7 @@ class OmniboxPedalCreateGoogleKeepNote : public OmniboxPedalAuthRequired {
                 IDS_ACC_OMNIBOX_PEDAL_CREATE_GOOGLE_KEEP_NOTE_SUFFIX,
                 IDS_ACC_OMNIBOX_PEDAL_CREATE_GOOGLE_KEEP_NOTE)) {}
 
-#if SUPPORTS_DESKTOP_ICONS && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   const gfx::VectorIcon& GetVectorIcon() const override {
     return kGoogleKeepNoteIcon;
   }
@@ -853,11 +842,10 @@ class OmniboxPedalCreateGoogleForm : public OmniboxPedalAuthRequired {
                 IDS_OMNIBOX_PEDAL_CREATE_GOOGLE_FORM_SUGGESTION_CONTENTS,
                 IDS_ACC_OMNIBOX_PEDAL_CREATE_GOOGLE_FORM_SUFFIX,
                 IDS_ACC_OMNIBOX_PEDAL_CREATE_GOOGLE_FORM)) {}
-#if SUPPORTS_DESKTOP_ICONS
+
   const gfx::VectorIcon& GetVectorIcon() const override {
     return omnibox::kDriveFormsIcon;
   }
-#endif
 
   std::vector<SynonymGroupSpec> SpecifySynonymGroups(
       bool locale_is_english) const override {
@@ -939,7 +927,7 @@ class OmniboxPedalManageGoogleAccount : public OmniboxPedalAuthRequired {
                 IDS_ACC_OMNIBOX_PEDAL_MANAGE_GOOGLE_ACCOUNT_SUFFIX,
                 IDS_ACC_OMNIBOX_PEDAL_MANAGE_GOOGLE_ACCOUNT)) {}
 
-#if SUPPORTS_DESKTOP_ICONS && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   const gfx::VectorIcon& GetVectorIcon() const override {
     return kGoogleSuperGIcon;
   }
@@ -985,7 +973,7 @@ class OmniboxPedalChangeGooglePassword : public OmniboxPedalAuthRequired {
                 IDS_ACC_OMNIBOX_PEDAL_CHANGE_GOOGLE_PASSWORD_SUFFIX,
                 IDS_ACC_OMNIBOX_PEDAL_CHANGE_GOOGLE_PASSWORD)) {}
 
-#if SUPPORTS_DESKTOP_ICONS && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   const gfx::VectorIcon& GetVectorIcon() const override {
     return kGoogleSuperGIcon;
   }
@@ -1032,11 +1020,9 @@ class OmniboxPedalCloseIncognitoWindows : public OmniboxPedal {
                 IDS_ACC_OMNIBOX_PEDAL_CLOSE_INCOGNITO_WINDOWS),
             GURL()) {}
 
-#if SUPPORTS_DESKTOP_ICONS
   const gfx::VectorIcon& GetVectorIcon() const override {
     return omnibox::kIncognitoIcon;
   }
-#endif
 
   std::vector<SynonymGroupSpec> SpecifySynonymGroups(
       bool locale_is_english) const override {
@@ -1095,11 +1081,9 @@ class OmniboxPedalPlayChromeDinoGame : public OmniboxPedal {
                 IDS_ACC_OMNIBOX_PEDAL_PLAY_CHROME_DINO_GAME),
             GURL("chrome://dino")) {}
 
-#if SUPPORTS_DESKTOP_ICONS
   const gfx::VectorIcon& GetVectorIcon() const override {
     return omnibox::kDinoIcon;
   }
-#endif
 
   std::vector<SynonymGroupSpec> SpecifySynonymGroups(
       bool locale_is_english) const override {
@@ -1179,7 +1163,7 @@ class OmniboxPedalFindMyPhone : public OmniboxPedalAuthRequired {
     return {};
   }
 
-#if SUPPORTS_DESKTOP_ICONS && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   const gfx::VectorIcon& GetVectorIcon() const override {
     return kGoogleSuperGIcon;
   }
@@ -1218,7 +1202,7 @@ class OmniboxPedalManageGooglePrivacy : public OmniboxPedalAuthRequired {
     return {};
   }
 
-#if SUPPORTS_DESKTOP_ICONS && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   const gfx::VectorIcon& GetVectorIcon() const override {
     return kGoogleSuperGIcon;
   }
@@ -1359,27 +1343,9 @@ class OmniboxPedalShareThisPage : public OmniboxPedal {
     return {};
   }
 
-#if SUPPORTS_DESKTOP_ICONS
   const gfx::VectorIcon& GetVectorIcon() const override {
-    // Prefer the idiomatic icon for each platform. This icon selection
-    // logic follows that of the sharing hub.
-    // See: chrome/browser/ui/views/sharing_hub/sharing_hub_icon_view.cc
-    // Note: When pedals are implemented on Android, we may want to
-    // consider using omnibox::kShareIcon (three dots with lines).
-    // TODO(orinj): Eliminate the code duplication here and get the
-    // same icon from SharingHubIconView::GetVectorIcon once pedals
-    // are moved to src-internal.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    return omnibox::kShareIcon;
-#elif defined(OS_MAC)
-    return omnibox::kShareMacIcon;
-#elif defined(OS_WIN)
-    return omnibox::kShareWinIcon;
-#else
-    return omnibox::kSendIcon;
-#endif
+    return GetSharingHubVectorIcon();
   }
-#endif
 
   bool IsReadyToTrigger(
       const AutocompleteInput& input,
@@ -1570,6 +1536,18 @@ class OmniboxPedalCustomizeSearchEngines : public OmniboxPedal {
 };
 
 // =============================================================================
+
+const gfx::VectorIcon& GetSharingHubVectorIcon() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return omnibox::kShareIcon;
+#elif defined(OS_MAC)
+  return omnibox::kShareMacIcon;
+#elif defined(OS_WIN)
+  return omnibox::kShareWinIcon;
+#else
+  return omnibox::kSendIcon;
+#endif
+}
 
 std::unordered_map<OmniboxPedalId, scoped_refptr<OmniboxPedal>>
 GetPedalImplementations(bool incognito, bool testing) {

@@ -11,6 +11,7 @@
 #include "ash/public/cpp/rounded_image_view.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/style/close_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/wm/desks/desk_mini_view.h"
@@ -33,6 +34,7 @@
 #include "ash/wm/overview/overview_test_base.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_util.h"
 #include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
@@ -44,6 +46,7 @@
 #include "components/app_restore/window_info.h"
 #include "components/app_restore/window_properties.h"
 #include "components/prefs/pref_service.h"
+#include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -776,13 +779,13 @@ TEST_F(DesksTemplatesTest, IconsOrder) {
 // Tests that icons are ordered such that active tabs and windows are ordered
 // before inactive tabs.
 TEST_F(DesksTemplatesTest, IconsOrderWithInactiveTabs) {
-  const std::string kAppId1 = "app_1";
+  const std::string kAppId1 = extension_misc::kChromeAppId;
   constexpr int kWindowId1 = 1;
   constexpr int kActiveTabIndex1 = 1;
   const std::vector<GURL> kTabs1{GURL("http://a.com"), GURL("http://b.com"),
                                  GURL("http://c.com")};
 
-  const std::string kAppId2 = "app_2";
+  const std::string kAppId2 = extension_misc::kChromeAppId;
   constexpr int kWindowId2 = 2;
   constexpr int kActiveTabIndex2 = 2;
   const std::vector<GURL> kTabs2{GURL("http://d.com"), GURL("http://e.com"),
@@ -1403,6 +1406,82 @@ TEST_F(DesksTemplatesTest, ShowTemplatesInAlphabeticalOrder) {
   EXPECT_EQ(
       u"B_template",
       static_cast<DesksTemplatesItemView*>(grid_views[2])->GetAccessibleName());
+}
+
+// Tests that the color of the desks templates button border is as expected.
+// Regression test for https://crbug.com/1265003.
+TEST_F(DesksTemplatesTest, DesksTemplatesButtonBorderColor) {
+  DesksController::Get()->NewDesk(DesksCreationRemovalSource::kKeyboard);
+  AddEntry(base::GUID::GenerateRandomV4(), "name", base::Time::Now());
+
+  auto* color_provider = AshColorProvider::Get();
+  const SkColor active_color = color_provider->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kCurrentDeskColor);
+  const SkColor focused_color = color_provider->GetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kFocusRingColor);
+
+  ToggleOverview();
+  WaitForDesksTemplatesUI();
+
+  views::View* button = GetDesksTemplatesButtonForRoot(
+      Shell::GetPrimaryRootWindow(), /*zero_state=*/false);
+  ASSERT_TRUE(button);
+
+  // Helper to get the color of the border of the desks templates button.
+  auto get_border_color = [button]() {
+    // The inner button is the one where the border is applied to.
+    DeskButtonBase* inner_button =
+        static_cast<ExpandedDesksBarButton*>(button)->inner_button();
+    views::Border* border = inner_button->GetBorder();
+    DCHECK(border);
+    return border->color();
+  };
+
+  // The templates button starts of neither focused nor active.
+  EXPECT_EQ(SK_ColorTRANSPARENT, get_border_color());
+
+  // Tests that when we are viewing the templates grid, the button border is
+  // active.
+  ClickOnView(button);
+  EXPECT_EQ(active_color, get_border_color());
+
+  // Tests that when focused, the templates button border has a focused color.
+  SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_EQ(focused_color, get_border_color());
+
+  // Shift focus away from the templates button. The button border should be
+  // active.
+  SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_EQ(active_color, get_border_color());
+}
+
+// Tests that if we save a template (and get dropped into the templates grid),
+// delete all the templates (and the templates grid gets hidden), the windows in
+// overview get activated and restored when selected.
+TEST_F(DesksTemplatesTest, WindowActivatableAfterSaveAndDeleteTemplate) {
+  // Create a test window.
+  auto test_window = CreateAppWindow();
+
+  // Open overview and save a template.
+  OpenOverviewAndSaveTemplate(Shell::Get()->GetPrimaryRootWindow());
+  std::vector<DeskTemplate*> entries = GetAllEntries();
+  ASSERT_EQ(1ul, entries.size());
+
+  // Delete the one and only template, which should hide the templates grid but
+  // remain in overview.
+  DeleteTemplate(entries[0]->uuid(), /*expected_current_item_count=*/1);
+  ASSERT_TRUE(InOverviewSession());
+
+  // Click on the `test_window` to activate it.
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseToCenterOf(test_window.get());
+  event_generator->ClickLeftButton();
+
+  // Verify that we exit the overview session.
+  EXPECT_FALSE(InOverviewSession());
+
+  // Check that the window is active.
+  EXPECT_EQ(test_window.get(), window_util::GetActiveWindow());
 }
 
 }  // namespace ash

@@ -19616,6 +19616,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="NewTabPage_Promos_PrivacyGuide">
+  <owner>msramek@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <description>
+    Recorded when the user clicks a Privacy Guide promotion on the New Tab Page.
+  </description>
+</action>
+
 <action name="NewTabPage_Promos_SafetyCheck">
   <owner>msramek@chromium.org</owner>
   <description>
@@ -23916,6 +23924,18 @@ should be able to be added at any place in this file.
     This user action is of special interest to the chrome-analysis-team@. Do not
     change its semantics or retire it without talking to them first.
   </description>
+</action>
+
+<action name="SafeBrowsing.Download.WarningBypassed">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <description>User bypasses a download warning.</description>
+</action>
+
+<action name="SafeBrowsing.Download.WarningShown" not_user_triggered="true">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <description>A download warning is shown.</description>
 </action>
 
 <action name="SafeBrowsing.Settings.DisableSafeBrowsingClicked">

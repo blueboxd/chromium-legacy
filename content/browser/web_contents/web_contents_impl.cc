@@ -5704,6 +5704,7 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     }
     OnThemeColorChanged(page);
     OnBackgroundColorChanged(page);
+    DidInferColorScheme(page);
     AXTreeIDForMainFrameHasChanged();
   }
 }
@@ -5769,6 +5770,15 @@ void WebContentsImpl::OnBackgroundColorChanged(PageImpl& page) {
       static_cast<RenderWidgetHostViewBase*>(view)->SetContentBackgroundColor(
           page.background_color().value());
     }
+  }
+}
+
+void WebContentsImpl::DidInferColorScheme(PageImpl& page) {
+  // If the page is primary, notify embedders that the current inferred color
+  // scheme for this WebContents has changed.
+  if (page.IsPrimary()) {
+    observers_.NotifyObservers(&WebContentsObserver::InferredColorSchemeUpdated,
+                               page.inferred_color_scheme());
   }
 }
 
@@ -8630,16 +8640,6 @@ void WebContentsImpl::MediaEffectivelyFullscreenChanged(bool is_fullscreen) {
       &WebContentsObserver::MediaEffectivelyFullscreenChanged, is_fullscreen);
 }
 
-void WebContentsImpl::MediaBufferUnderflow(const MediaPlayerId& id) {
-  OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::MediaBufferUnderflow");
-  observers_.NotifyObservers(&WebContentsObserver::MediaBufferUnderflow, id);
-}
-
-void WebContentsImpl::MediaPlayerSeek(const MediaPlayerId& id) {
-  OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::MediaPlayerSeek");
-  observers_.NotifyObservers(&WebContentsObserver::MediaPlayerSeek, id);
-}
-
 void WebContentsImpl::MediaDestroyed(const MediaPlayerId& id) {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::MediaDestroyed");
   observers_.NotifyObservers(&WebContentsObserver::MediaDestroyed, id);
@@ -9214,7 +9214,8 @@ std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
 
   if (frame_tree_node_id != FrameTreeNode::kFrameTreeNodeInvalidId) {
     return std::make_unique<PrerenderHandleImpl>(
-        GetPrerenderHostRegistry()->GetWeakPtr(), frame_tree_node_id);
+        GetPrerenderHostRegistry()->GetWeakPtr(), frame_tree_node_id,
+        prerendering_url);
   }
   return nullptr;
 }

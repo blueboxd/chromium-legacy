@@ -1,0 +1,222 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import {Token} from 'chrome://resources/mojo/mojo/public/mojom/base/token.mojom-webui.js';
+import {ProfileData, RecentlyClosedTab, Tab, Window} from 'chrome://tab-search.top-chrome/tab_search.js';
+
+export const SAMPLE_WINDOW_HEIGHT: number = 448;
+
+export const SAMPLE_WINDOW_DATA: Window[] = [
+  {
+    active: true,
+    height: SAMPLE_WINDOW_HEIGHT,
+    tabs: [
+      {
+        alertStates: [],
+        index: 0,
+        tabId: 1,
+        title: 'Google',
+        url: {url: 'https://www.google.com'},
+        lastActiveTimeTicks: {internalValue: BigInt(5)},
+        lastActiveElapsedText: '',
+        active: false,
+        faviconUrl: undefined,
+        groupId: undefined,
+        isDefaultFavicon: false,
+        pinned: false,
+        showIcon: false,
+      },
+      {
+        alertStates: [],
+        index: 1,
+        tabId: 5,
+        title: 'Amazon',
+        url: {url: 'https://www.amazon.com'},
+        lastActiveTimeTicks: {internalValue: BigInt(4)},
+        lastActiveElapsedText: '',
+        active: false,
+        faviconUrl: undefined,
+        groupId: undefined,
+        isDefaultFavicon: false,
+        pinned: false,
+        showIcon: false,
+      },
+      {
+        alertStates: [],
+        index: 2,
+        tabId: 6,
+        title: 'Apple',
+        url: {url: 'https://www.apple.com'},
+        lastActiveTimeTicks: {internalValue: BigInt(3)},
+        lastActiveElapsedText: '',
+        active: false,
+        faviconUrl: undefined,
+        groupId: undefined,
+        isDefaultFavicon: false,
+        pinned: false,
+        showIcon: false,
+      },
+    ],
+  },
+  {
+    active: false,
+    height: SAMPLE_WINDOW_HEIGHT,
+    tabs: [
+      {
+        alertStates: [],
+        index: 0,
+        tabId: 2,
+        title: 'Bing',
+        url: {url: 'https://www.bing.com/'},
+        lastActiveTimeTicks: {internalValue: BigInt(2)},
+        lastActiveElapsedText: '',
+        active: false,
+        faviconUrl: undefined,
+        groupId: undefined,
+        isDefaultFavicon: false,
+        pinned: false,
+        showIcon: false,
+      },
+      {
+        alertStates: [],
+        index: 1,
+        tabId: 3,
+        title: 'Yahoo',
+        url: {url: 'https://www.yahoo.com'},
+        lastActiveTimeTicks: {internalValue: BigInt(1)},
+        lastActiveElapsedText: '',
+        active: false,
+        faviconUrl: undefined,
+        groupId: undefined,
+        isDefaultFavicon: false,
+        pinned: false,
+        showIcon: false,
+      },
+      {
+        alertStates: [],
+        index: 2,
+        tabId: 4,
+        title: 'Apple',
+        url: {url: 'https://www.apple.com/'},
+        lastActiveTimeTicks: {internalValue: BigInt(0)},
+        lastActiveElapsedText: '',
+        active: false,
+        faviconUrl: undefined,
+        groupId: undefined,
+        isDefaultFavicon: false,
+        pinned: false,
+        showIcon: false,
+      },
+    ],
+  }
+];
+
+export const SAMPLE_RECENTLY_CLOSED_DATA: RecentlyClosedTab[] = [
+  {
+    tabId: 100,
+    title: 'PayPal',
+    url: {url: 'https://www.paypal.com'},
+    lastActiveTime: {internalValue: BigInt(11)},
+    lastActiveElapsedText: '',
+    groupId: undefined,
+  },
+  {
+    tabId: 101,
+    title: 'Stripe',
+    url: {url: 'https://www.stripe.com'},
+    lastActiveTime: {internalValue: BigInt(12)},
+    lastActiveElapsedText: '',
+    groupId: undefined,
+  },
+];
+
+export function sampleData(): ProfileData {
+  return {
+    windows: SAMPLE_WINDOW_DATA,
+    recentlyClosedTabs: [],
+    tabGroups: [],
+    recentlyClosedTabGroups: [],
+    recentlyClosedSectionExpanded: false,
+  };
+}
+
+export function sampleSiteNames(count: number): string[] {
+  return Array.from({length: count}, (_, i) => (i + 1).toString());
+}
+
+/**
+ * Generates sample tabs based on some given site names.
+ * @param hasIndex Whether the items have an index property.
+ */
+export function generateSampleTabsFromSiteNames(
+    siteNames: string[], hasIndex: boolean = true): Tab[] {
+  return siteNames.map((siteName, i) => {
+    const tab: Tab = {
+      alertStates: [],
+      tabId: i + 1,
+      title: siteName,
+      url: {url: 'https://www.' + siteName.toLowerCase() + '.com'},
+      lastActiveTimeTicks: {internalValue: BigInt(siteNames.length - i)},
+      lastActiveElapsedText: '',
+
+      active: false,
+      faviconUrl: undefined,
+      groupId: undefined,
+      index: hasIndex ? i : 0,
+      isDefaultFavicon: false,
+      pinned: false,
+      showIcon: false,
+    };
+
+    return tab;
+  });
+}
+
+export function generateSampleRecentlyClosedTabs(
+    titlePrefix: string, count: number, groupId?: Token): RecentlyClosedTab[] {
+  return Array.from({length: count}, (_, i) => {
+    const tabId = i + 1;
+    const tab: RecentlyClosedTab = {
+      tabId,
+      title: `${titlePrefix} ${tabId}`,
+      url: {url: `https://www.sampletab.com?q=${tabId}`},
+      lastActiveTime: {internalValue: BigInt(count - i)},
+      lastActiveElapsedText: '',
+      groupId: undefined,
+    };
+
+    if (groupId !== undefined) {
+      tab.groupId = groupId;
+    }
+
+    return tab;
+  });
+}
+
+/**
+ * Generates profile data for a window with a series of tabs.
+ */
+export function generateSampleDataFromSiteNames(siteNames: string[]):
+    ProfileData {
+  return {
+    windows: [{
+      active: true,
+      height: SAMPLE_WINDOW_HEIGHT,
+      tabs: generateSampleTabsFromSiteNames(siteNames)
+    }],
+    recentlyClosedTabs: [],
+    tabGroups: [],
+    recentlyClosedTabGroups: [],
+    recentlyClosedSectionExpanded: false,
+  };
+}
+
+export function sampleToken(high: bigint, low: bigint): Token {
+  const token = new Token();
+  token.high = high;
+  token.low = low;
+  Object.freeze(token);
+
+  return token;
+}

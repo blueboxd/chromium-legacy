@@ -175,6 +175,11 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
     self.navigationItem.rightBarButtonItem.accessibilityIdentifier =
         kPasswordsAddPasswordSaveButtonId;
 
+    password_manager::metrics_util::
+        LogUserInteractionsWhenAddingCredentialFromSettings(
+            password_manager::metrics_util::
+                AddCredentialFromSettingsUserInteractions::kAddDialogOpened);
+
     [self loadModel];
   } else {
     UILabel* titleLabel = [[UILabel alloc] init];
@@ -188,7 +193,12 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
-  if (self.credentialType != CredentialTypeNew) {
+  if (self.credentialType == CredentialTypeNew) {
+    password_manager::metrics_util::
+        LogUserInteractionsWhenAddingCredentialFromSettings(
+            password_manager::metrics_util::
+                AddCredentialFromSettingsUserInteractions::kAddDialogClosed);
+  } else {
     [self.handler passwordDetailsTableViewControllerDidDisappear];
   }
   [super viewDidDisappear:animated];
@@ -568,6 +578,11 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
       }
       break;
     case ItemTypeDuplicateCredentialButton:
+      password_manager::metrics_util::
+          LogUserInteractionsWhenAddingCredentialFromSettings(
+              password_manager::metrics_util::
+                  AddCredentialFromSettingsUserInteractions::
+                      kDuplicateCredentialViewed);
       [self reauthAndShowExistingCredential];
       break;
   }
@@ -726,6 +741,11 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
   [self toggleNavigationBarRightButtonItem];
   TableViewModel* model = self.tableViewModel;
   if (duplicateFound) {
+    password_manager::metrics_util::
+        LogUserInteractionsWhenAddingCredentialFromSettings(
+            password_manager::metrics_util::
+                AddCredentialFromSettingsUserInteractions::
+                    kDuplicatedCredentialEntered);
     [self
         performBatchTableViewUpdates:^{
           NSUInteger passwordSectionIndex = [self.tableViewModel

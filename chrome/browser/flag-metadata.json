@@ -1661,11 +1661,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "enable-cros-ime-emoji-suggest-addition",
-    "owners": [ "myy", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 100
-  },
-  {
     "name": "enable-cros-ime-mozc-proto",
     "owners": [ "essential-inputs-team@google.com" ],
     "expiry_milestone": 95
@@ -1684,6 +1679,11 @@
     "name": "enable-cros-ime-system-emoji-picker-clipboard",
     "owners": [ "jopalmer", "essential-inputs-team@google.com" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "enable-cros-ime-system-emoji-picker-extension",
+    "owners": [ "hdchuong", "curtismcmullan", "myy", "essential-inputs-team@google.com" ],
+    "expiry_milestone": 105
   },
   {
     "name": "enable-cros-language-settings-ime-options-in-settings",
@@ -2711,6 +2711,11 @@
     "name": "enable-tab-groups-continuation",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 98
+  },
+  {
+    "name": "enable-tab-groups-for-tablets",
+    "owners": [ "skavuluru", "clank-app-team@google.com" ],
+    "expiry_milestone": 104
   },
   {
     "name": "enable-tab-groups-ui-improvements",
@@ -4014,6 +4019,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "ntp-realbox-tail-suggest",
+    "owners": [ "mahmadi", "mfacey" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "ntp-recipe-tasks-module",
     "owners": [ "mahmadi", "tiborg" ],
     "expiry_milestone": 100
@@ -4344,12 +4354,12 @@
   {
     "name": "paint-preview-demo",
     "owners": [ "ckitagawa", "fredmello", "yashard" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 101
   },
   {
     "name": "paint-preview-startup",
     "owners": [ "ckitagawa", "fredmello", "yashard" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 101
   },
   {
     "name": "partitioned-cookies",
@@ -4452,6 +4462,11 @@
     "name": "personalization-hub",
     "owners": ["jasontt", "assistive-eng@google.com"],
     "expiry_milestone": 105
+  },
+  {
+    "name": "pervasive-system-accent-color",
+    "owners": ["pkasting"],
+    "expiry_milestone": 110
   },
   {
     "name": "photo-picker-video-support",
@@ -4951,11 +4966,6 @@
     "name": "shared-highlighting-ios",
     "owners": ["tmartino"],
     "expiry_milestone": 101
-  },
-  {
-    "name": "shared-highlighting-use-blocklist",
-    "owners": ["tmartino"],
-    "expiry_milestone": 97
   },
   {
     "name": "shared-highlighting-v2",

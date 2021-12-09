@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "chrome/browser/ash/policy/dlp/dlp_content_manager.h"
-#include "chrome/browser/ash/policy/dlp/dlp_warn_notifier.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_warn_notifier.h"
 
 namespace policy {
 
@@ -55,11 +55,17 @@ void DlpContentManagerTestHelper::ResetWarnNotifierForTesting() {
   manager_->ResetWarnNotifierForTesting();
 }
 
-const DlpConfidentialContents&
-DlpContentManagerTestHelper::GetUserAllowedContentsForRestriction(
+bool DlpContentManagerTestHelper::HasContentCachedForRestriction(
+    content::WebContents* web_contents,
     DlpRulesManager::Restriction restriction) const {
   DCHECK(manager_);
-  return manager_->user_allowed_contents_[restriction];
+  return manager_->user_allowed_contents_cache_.Contains(web_contents,
+                                                         restriction);
+}
+
+bool DlpContentManagerTestHelper::HasAnyContentCached() const {
+  DCHECK(manager_);
+  return manager_->user_allowed_contents_cache_.GetSizeForTesting() != 0;
 }
 
 base::TimeDelta DlpContentManagerTestHelper::GetPrivacyScreenOffDelay() const {

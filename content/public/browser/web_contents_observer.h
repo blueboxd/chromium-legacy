@@ -24,6 +24,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-forward.h"
@@ -497,6 +498,12 @@ class CONTENT_EXPORT WebContentsObserver {
   virtual void FrameNameChanged(RenderFrameHost* render_frame_host,
                                 const std::string& name) {}
 
+  // Invoked when the color scheme of the primary main document of the
+  // WebContents is updated (either because the primary main document's color
+  // has been inferred or the primary main document has changed).
+  virtual void InferredColorSchemeUpdated(
+      absl::optional<blink::mojom::PreferredColorScheme> color_scheme) {}
+
   // Called when a frame receives user activation. This may be called multiple
   // times for the same frame. This should not be used to determine a
   // RenderFrameHost's user activation state. Does not include frames activated
@@ -704,8 +711,6 @@ class CONTENT_EXPORT WebContentsObserver {
   virtual void MediaEffectivelyFullscreenChanged(bool is_fullscreen) {}
   virtual void MediaPictureInPictureChanged(bool is_picture_in_picture) {}
   virtual void MediaMutedStatusChanged(const MediaPlayerId& id, bool muted) {}
-  virtual void MediaBufferUnderflow(const MediaPlayerId& id) {}
-  virtual void MediaPlayerSeek(const MediaPlayerId& id) {}
   virtual void MediaDestroyed(const MediaPlayerId& id) {}
 
   // Invoked when the renderer process changes the page scale factor.

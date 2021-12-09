@@ -347,6 +347,8 @@ class CaptureModeSessionTestApi {
            session_->folder_selection_dialog_controller_->dialog_window();
   }
 
+  bool IsAllUisVisible() const { return session_->is_all_uis_visible_; }
+
  private:
   const CaptureModeSession* const session_;
 };
@@ -394,6 +396,12 @@ class CaptureModeTest : public AshTestBase {
     auto* session = CaptureModeController::Get()->capture_mode_session();
     DCHECK(session);
     return CaptureModeSessionTestApi(session).IsFolderSelectionDialogShown();
+  }
+
+  bool IsAllCaptureSessionUisVisible() const {
+    auto* session = CaptureModeController::Get()->capture_mode_session();
+    DCHECK(session);
+    return CaptureModeSessionTestApi(session).IsAllUisVisible();
   }
 
   CaptureModeToggleButton* GetImageToggleButton() const {
@@ -599,10 +607,10 @@ class CaptureModeTest : public AshTestBase {
 
   base::FilePath CreateFolderOnDriveFS(const std::string& custom_folder_name) {
     auto* test_delegate = CaptureModeController::Get()->delegate_for_testing();
-    base::FilePath root_drive_folder;
-    EXPECT_TRUE(test_delegate->GetDriveFsMountPointPath(&root_drive_folder));
+    base::FilePath mount_point_path;
+    EXPECT_TRUE(test_delegate->GetDriveFsMountPointPath(&mount_point_path));
     base::FilePath folder_on_drive_fs =
-        root_drive_folder.Append(custom_folder_name);
+        mount_point_path.Append("root").Append(custom_folder_name);
     base::ScopedAllowBlockingForTesting allow_blocking;
     const bool result = base::CreateDirectory(folder_on_drive_fs);
     EXPECT_TRUE(result);
@@ -2480,8 +2488,9 @@ TEST_P(CaptureModeSaveFileTest, CaptureModeSaveToLocationMetric) {
   // a specific folder on drive.
   const auto downloads_folder = test_delegate->GetUserDefaultDownloadsFolder();
   const base::FilePath custom_folder = CreateCustomFolder("test");
-  base::FilePath root_drive_folder;
-  test_delegate->GetDriveFsMountPointPath(&root_drive_folder);
+  base::FilePath mount_point_path;
+  test_delegate->GetDriveFsMountPointPath(&mount_point_path);
+  const auto root_drive_folder = mount_point_path.Append("root");
   const base::FilePath non_root_drive_folder = CreateFolderOnDriveFS("test");
   struct {
     base::FilePath set_save_file_folder;
@@ -4777,7 +4786,8 @@ class ProjectorCaptureModeIntegrationTests
     auto* projector_controller = ProjectorController::Get();
     projector_controller->SetClient(&projector_client_);
     // Simulate the availability of speech recognition.
-    projector_controller->OnSpeechRecognitionAvailable(true);
+    projector_controller->OnSpeechRecognitionAvailabilityChanged(
+        SpeechRecognitionAvailability::kAvailable);
     window_ = CreateTestWindow(gfx::Rect(20, 30, 200, 200));
     CaptureModeController::Get()->SetUserCaptureRegion(kUserRegion,
                                                        /*by_user=*/true);
@@ -5475,6 +5485,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, SelectFolderFromDialog) {
 
   ClickOnView(test_api.GetSelectFolderMenuItem(), event_generator);
   EXPECT_TRUE(IsFolderSelectionDialogShown());
+  EXPECT_FALSE(IsAllCaptureSessionUisVisible());
 
   auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
   auto* dialog_window = dialog_factory->GetDialogWindow();
@@ -5490,6 +5501,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, SelectFolderFromDialog) {
   dialog_factory->AcceptPath(custom_folder);
   WaitForSettingsMenuToBeRefreshed();
   EXPECT_FALSE(IsFolderSelectionDialogShown());
+  EXPECT_TRUE(IsAllCaptureSessionUisVisible());
   EXPECT_TRUE(save_to_menu_group->IsOptionChecked(kCustomFolder));
   EXPECT_FALSE(save_to_menu_group->IsOptionChecked(kDownloadsFolder));
   EXPECT_EQ(u"test",

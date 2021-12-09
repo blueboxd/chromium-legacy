@@ -163,8 +163,7 @@ def _GetTargetPackageName(test_apk):
 class LocalDeviceInstrumentationTestRun(
     local_device_test_run.LocalDeviceTestRun):
   def __init__(self, env, test_instance):
-    super(LocalDeviceInstrumentationTestRun, self).__init__(
-        env, test_instance)
+    super().__init__(env, test_instance)
     self._chrome_proxy = None
     self._context_managers = collections.defaultdict(list)
     self._flag_changers = {}
@@ -536,9 +535,19 @@ class LocalDeviceInstrumentationTestRun(
       else:
         other_tests.append(test)
 
+    def dict2list(d):
+      if isinstance(d, dict):
+        return sorted([(k, dict2list(v)) for k, v in d.items()])
+      if isinstance(d, list):
+        return [dict2list(v) for v in d]
+      if isinstance(d, tuple):
+        return tuple(dict2list(v) for v in d)
+      return d
+
     all_tests = []
     for _, btests in list(batched_tests.items()):
-      btests.sort()  # Ensure a consistent ordering across external shards.
+      # Ensure a consistent ordering across external shards.
+      btests.sort(key=dict2list)
       all_tests.extend([
           btests[i:i + _TEST_BATCH_MAX_GROUP_SIZE]
           for i in range(0, len(btests), _TEST_BATCH_MAX_GROUP_SIZE)
@@ -1054,8 +1063,8 @@ class LocalDeviceInstrumentationTestRun(
     if device.FileExists(trace_device_file.name):
       try:
         java_trace_json = device.ReadFile(trace_device_file.name)
-      except IOError:
-        raise Exception('error pulling trace file from device')
+      except IOError as e:
+        raise Exception('error pulling trace file from device') from e
       finally:
         trace_device_file.close()
 

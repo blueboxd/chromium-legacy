@@ -883,9 +883,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                       : nullptr;
 }
 
+// TODO(crbug.com/1265565): Remove once kSingleNtp feature is launched and
+// directly reference |self.ntpCoordinator|.
 - (NewTabPageCoordinator*)ntpCoordinatorForWebState:(web::WebState*)webState {
   if (IsSingleNtpEnabled()) {
-    return self.isNTPActiveForCurrentWebState ? _ntpCoordinator : nil;
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(webState);
+    BOOL activeNtp = self.isNTPActiveForCurrentWebState ||
+                     (NTPHelper && NTPHelper->IsActive());
+    DCHECK(activeNtp);
+    return _ntpCoordinator;
   }
   auto found = _ntpCoordinatorsForWebStates.find(webState);
   if (found != _ntpCoordinatorsForWebStates.end())
@@ -3985,6 +3992,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   UIViewController* lensViewController =
       [_lensController postCaptureViewControllerForImage:command.image];
+  [lensViewController setModalPresentationStyle:UIModalPresentationFullScreen];
+
   // TODO(crbug.com/1234532): Integrate Lens with the browser's navigation
   // stack.
   [self presentViewController:lensViewController animated:YES completion:nil];

@@ -17,13 +17,14 @@
 #include "base/observer_list.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_policy.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
 #include "content/browser/attribution_reporting/rate_limit_table.h"
-#include "content/browser/attribution_reporting/sent_report_info.h"
+#include "content/browser/attribution_reporting/sent_report.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/storable_trigger.h"
 #include "content/test/test_content_browser_client.h"
@@ -50,6 +51,23 @@ class MockAttributionReportingContentBrowserClient
                const url::Origin* impression_origin,
                const url::Origin* conversion_origin,
                const url::Origin* reporting_origin),
+              (override));
+};
+
+class MockAttributionHost : public AttributionHost {
+ public:
+  explicit MockAttributionHost(WebContents* contents);
+
+  ~MockAttributionHost() override;
+
+  MOCK_METHOD(void,
+              RegisterImpression,
+              (const blink::Impression& impression),
+              (override));
+
+  MOCK_METHOD(void,
+              RegisterConversion,
+              (blink::mojom::ConversionPtr conversion),
               (override));
 };
 
@@ -139,63 +157,51 @@ class TestManagerProvider : public AttributionManager::Provider {
   raw_ptr<AttributionManager> manager_ = nullptr;
 };
 
-// Test AttributionManager which can be injected into tests to monitor calls to
-// a AttributionManager instance.
-class TestAttributionManager : public AttributionManager {
+class MockAttributionManager : public AttributionManager {
  public:
-  TestAttributionManager();
-  ~TestAttributionManager() override;
+  MockAttributionManager();
+  ~MockAttributionManager() override;
 
   // AttributionManager:
+  MOCK_METHOD(void, HandleSource, (StorableSource source), (override));
+
+  MOCK_METHOD(void, HandleTrigger, (StorableTrigger trigger), (override));
+
+  MOCK_METHOD(void,
+              GetActiveSourcesForWebUI,
+              (base::OnceCallback<void(std::vector<StorableSource>)> callback),
+              (override));
+
+  MOCK_METHOD(
+      void,
+      GetPendingReportsForWebUI,
+      (base::OnceCallback<void(std::vector<AttributionReport>)> callback),
+      (override));
+
+  MOCK_METHOD(void, SendReportsForWebUI, (base::OnceClosure done), (override));
+
+  MOCK_METHOD(void,
+              ClearData,
+              (base::Time delete_begin,
+               base::Time delete_end,
+               base::RepeatingCallback<bool(const url::Origin&)> filter,
+               base::OnceClosure done),
+              (override));
+
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  void HandleSource(StorableSource source) override;
-  void HandleTrigger(StorableTrigger trigger) override;
-  void GetActiveSourcesForWebUI(
-      base::OnceCallback<void(std::vector<StorableSource>)> callback) override;
-  void GetPendingReportsForWebUI(
-      base::OnceCallback<void(std::vector<AttributionReport>)> callback)
-      override;
-  void SendReportsForWebUI(base::OnceClosure done) override;
   const AttributionPolicy& GetAttributionPolicy() const override;
-  void ClearData(base::Time delete_begin,
-                 base::Time delete_end,
-                 base::RepeatingCallback<bool(const url::Origin&)> filter,
-                 base::OnceClosure done) override;
-
-  void SetActiveSourcesForWebUI(std::vector<StorableSource> sources);
-  void SetReportsForWebUI(std::vector<AttributionReport> reports);
 
   void NotifySourcesChanged();
   void NotifyReportsChanged();
   void NotifySourceDeactivated(
       const AttributionStorage::DeactivatedSource& source);
-  void NotifyReportSent(const SentReportInfo& info);
+  void NotifyReportSent(const SentReport& info);
   void NotifyReportDropped(
       const AttributionStorage::CreateReportResult& result);
 
-  // Resets all counters on this.
-  void Reset();
-
-  const std::vector<StorableSource>& handled_sources() const
-      WARN_UNUSED_RESULT {
-    return handled_sources_;
-  }
-
-  const std::vector<StorableTrigger>& handled_triggers() const
-      WARN_UNUSED_RESULT {
-    return handled_triggers_;
-  }
-
  private:
   AttributionPolicy policy_;
-
-  std::vector<StorableSource> handled_sources_;
-  std::vector<StorableTrigger> handled_triggers_;
-
-  std::vector<StorableSource> sources_;
-  std::vector<AttributionReport> reports_;
-
   base::ObserverList<Observer, /*check_empty=*/true> observers_;
 };
 
@@ -325,7 +331,7 @@ bool operator==(const StorableSource& a, const StorableSource& b);
 
 bool operator==(const AttributionReport& a, const AttributionReport& b);
 
-bool operator==(const SentReportInfo& a, const SentReportInfo& b);
+bool operator==(const SentReport& a, const SentReport& b);
 
 bool operator==(const AttributionStorage::DeactivatedSource& a,
                 const AttributionStorage::DeactivatedSource& b);
@@ -348,9 +354,9 @@ std::ostream& operator<<(std::ostream& out, const StorableSource& impression);
 
 std::ostream& operator<<(std::ostream& out, const AttributionReport& report);
 
-std::ostream& operator<<(std::ostream& out, SentReportInfo::Status status);
+std::ostream& operator<<(std::ostream& out, SentReport::Status status);
 
-std::ostream& operator<<(std::ostream& out, const SentReportInfo& info);
+std::ostream& operator<<(std::ostream& out, const SentReport& info);
 
 std::ostream& operator<<(std::ostream& out,
                          StorableSource::AttributionLogic attribution_logic);

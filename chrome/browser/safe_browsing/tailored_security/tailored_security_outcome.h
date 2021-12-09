@@ -13,7 +13,9 @@ enum class TailoredSecurityOutcome {
   kAccepted = 0,
   kDismissed = 1,
   kSettings = 2,
-  kMaxValue = kSettings,
+  kShown = 3,
+  kRejected = 4,
+  kMaxValue = kRejected,
 };
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_TAILORED_SECURITY_TAILORED_SECURITY_OUTCOME_H_

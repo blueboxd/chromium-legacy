@@ -25,13 +25,11 @@
 #include "cc/trees/transform_node.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
-#include "third_party/blink/renderer/platform/testing/fake_graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/testing/layer_tree_host_embedder.h"
 #include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
@@ -146,10 +144,7 @@ class PaintArtifactCompositorTest : public testing::Test,
       const WTF::Vector<const TransformPaintPropertyNode*>&
           scroll_translation_nodes = {}) {
     paint_artifact_compositor_->SetNeedsUpdate();
-    HeapVector<PreCompositedLayerInfo> pre_composited_layers = {
-        {PaintChunkSubset(artifact)}};
-    paint_artifact_compositor_->Update(pre_composited_layers,
-                                       viewport_properties,
+    paint_artifact_compositor_->Update(artifact, viewport_properties,
                                        scroll_translation_nodes, {});
     layer_tree_->layer_tree_host()->LayoutAndUpdateLayers();
   }
@@ -4568,43 +4563,6 @@ TEST_P(PaintArtifactCompositorTest, AddNonCompositedScrollNodes) {
   EXPECT_FALSE(scroll_node->is_composited);
 }
 
-TEST_P(PaintArtifactCompositorTest, PreCompositedLayerNonCompositedScrolling) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
-  FakeGraphicsLayerClient& client =
-      *(MakeGarbageCollected<FakeGraphicsLayerClient>());
-  Member<GraphicsLayer> graphics_layer =
-      MakeGarbageCollected<GraphicsLayer>(client);
-  auto parent_scroll_translation = CreateScrollTranslation(
-      t0(), 10, 20, gfx::Rect(0, 0, 100, 100), gfx::Size(200, 200),
-      CompositingReason::kRootScroller);
-  PropertyTreeState layer_state(*parent_scroll_translation, c0(), e0());
-  graphics_layer->SetLayerState(layer_state, gfx::Vector2d());
-  auto scroll_translation = CreateScrollTranslation(
-      *parent_scroll_translation, 10, 20, gfx::Rect(0, 0, 150, 150),
-      gfx::Size(200, 200), CompositingReason::kNone);
-
-  TestPaintArtifact artifact;
-  CreateScrollableChunk(artifact, *scroll_translation, c0(), e0());
-  HeapVector<PreCompositedLayerInfo> pre_composited_layers = {
-      {PaintChunkSubset(artifact.Build()), graphics_layer}};
-  GetPaintArtifactCompositor().SetNeedsUpdate();
-  GetPaintArtifactCompositor().Update(
-      pre_composited_layers, PaintArtifactCompositor::ViewportProperties(), {},
-      {});
-
-  EXPECT_EQ(1u, LayerCount());
-  EXPECT_EQ(&graphics_layer->CcLayer(), LayerAt(0));
-  EXPECT_EQ(gfx::Rect(0, 0, 150, 150),
-            graphics_layer->CcLayer().non_fast_scrollable_region().bounds());
-  EXPECT_EQ(parent_scroll_translation->CcNodeId(
-                graphics_layer->CcLayer().property_tree_sequence_number()),
-            graphics_layer->CcLayer().scroll_tree_index());
-
-  graphics_layer->Destroy();
-}
-
 TEST_P(PaintArtifactCompositorTest, RepaintIndirectScrollHitTest) {
   CompositorElementId scroll_element_id = ScrollElementId(2);
   auto scroll = CreateScroll(ScrollPaintPropertyNode::Root(), ScrollState1(),
@@ -4617,9 +4575,7 @@ TEST_P(PaintArtifactCompositorTest, RepaintIndirectScrollHitTest) {
   Update(artifact);
   scroll_translation->ClearChangedToRoot();
 
-  HeapVector<PreCompositedLayerInfo> pre_composited_layers = {
-      {PaintChunkSubset(artifact)}};
-  GetPaintArtifactCompositor().UpdateRepaintedLayers(pre_composited_layers);
+  GetPaintArtifactCompositor().UpdateRepaintedLayers(artifact);
   // This test passes if no CHECK occurs.
 }
 

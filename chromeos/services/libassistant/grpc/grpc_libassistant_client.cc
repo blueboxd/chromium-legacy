@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/check.h"
+#include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/libassistant_util.h"
 #include "chromeos/assistant/internal/proto/shared/proto/v2/alarm_timer_interface.pb.h"
 #include "chromeos/assistant/internal/proto/shared/proto/v2/audio_utils_interface.pb.h"
@@ -16,6 +17,7 @@
 #include "chromeos/assistant/internal/proto/shared/proto/v2/delegate/action_interface.pb.h"
 #include "chromeos/assistant/internal/proto/shared/proto/v2/display_interface.pb.h"
 #include "chromeos/assistant/internal/proto/shared/proto/v2/event_notification_interface.pb.h"
+#include "chromeos/assistant/internal/proto/shared/proto/v2/experiment_interface.pb.h"
 
 namespace chromeos {
 namespace libassistant {
@@ -28,6 +30,14 @@ GetLibassistGrpcMethodName<::assistant::api::RegisterCustomerRequest>() {
   // libassistant services.
   return chromeos::assistant::GetLibassistGrpcMethodName(
       "CustomerRegistrationService", "RegisterCustomer");
+}
+
+template <>
+std::string
+GetLibassistGrpcMethodName<::assistant::api::UpdateExperimentIdsRequest>() {
+  // ExperimentService.
+  return chromeos::assistant::GetLibassistGrpcMethodName("ExperimentService",
+                                                         "UpdateExperimentIds");
 }
 
 template <>
@@ -58,8 +68,9 @@ GetLibassistGrpcMethodName<::assistant::api::OnDisplayRequestRequest>() {
 template <>
 std::string GetLibassistGrpcMethodName<::assistant::api::SendQueryRequest>() {
   // QueryService handles queries sent from libassistant customers.
-  return chromeos::assistant::GetLibassistGrpcMethodName("QueryService",
-                                                         "SendQuery");
+  return chromeos::assistant::GetLibassistGrpcMethodName(
+      chromeos::assistant::kQueryServiceName,
+      chromeos::assistant::kSendQueryMethodName);
 }
 
 template <>
@@ -68,7 +79,23 @@ GetLibassistGrpcMethodName<::assistant::api::RegisterActionModuleRequest>() {
   // QueryService handles RegisterActionModule sent from
   // libassistant customers to register themselves to handle actions.
   return chromeos::assistant::GetLibassistGrpcMethodName(
-      "QueryService", "RegisterActionModule");
+      chromeos::assistant::kQueryServiceName,
+      chromeos::assistant::kRegisterActionModuleMethodName);
+}
+
+template <>
+std::string
+GetLibassistGrpcMethodName<::assistant::api::StartVoiceQueryRequest>() {
+  return chromeos::assistant::GetLibassistGrpcMethodName(
+      chromeos::assistant::kQueryServiceName,
+      chromeos::assistant::kStartVoiceQueryMethodName);
+}
+
+template <>
+std::string GetLibassistGrpcMethodName<::assistant::api::StopQueryRequest>() {
+  return chromeos::assistant::GetLibassistGrpcMethodName(
+      chromeos::assistant::kQueryServiceName,
+      chromeos::assistant::kStopQueryMethodName);
 }
 
 template <>

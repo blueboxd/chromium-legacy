@@ -1582,20 +1582,6 @@ const char kLensCameraAssistedSearchDescription[] =
     "Enable an entry point to Google Lens to allow users to search what they "
     "see using their mobile camera.";
 
-const char kLiteVideoName[] = "Enable LiteVideos";
-const char kLiteVideoDescription[] =
-    "Enable the LiteVideo optimization to throttle media requests to "
-    "reduce data usage";
-
-const char kLiteVideoDownlinkBandwidthKbpsName[] =
-    "Lite Video: Adjust throttling downlink (in Kbps).";
-const char kLiteVideoDownlinkBandwidthKbpsDescription[] =
-    "Specify the throttling bandwidth to be used";
-
-const char kLiteVideoForceOverrideDecisionName[] = "Force LiteVideos decision";
-const char kLiteVideoForceOverrideDecisionDescription[] =
-    "Force the LiteVideo decision to be allowed on every navigation.";
-
 const char kLogJsConsoleMessagesName[] =
     "Log JS console messages in system logs";
 const char kLogJsConsoleMessagesDescription[] =
@@ -1851,18 +1837,6 @@ const char kOmniboxDynamicMaxAutocompleteName[] =
 const char kOmniboxDynamicMaxAutocompleteDescription[] =
     "Configures the maximum number of autocomplete matches displayed in the "
     "Omnibox UI dynamically based on the number of URL matches.";
-
-const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[] =
-    "Omnibox on device head suggestions (incognito only)";
-const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[] =
-    "Google head non personalized search suggestions provided by a compact on "
-    "device model for incognito";
-
-const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoName[] =
-    "Omnibox on device head suggestions (non-incognito only)";
-const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[] =
-    "Google head non personalized search suggestions provided by a compact on "
-    "device model for non-incognito";
 
 const char kOmniboxWebUIOmniboxPopupName[] = "WebUI Omnibox Popup";
 const char kOmniboxWebUIOmniboxPopupDescription[] =
@@ -2799,14 +2773,6 @@ const char kZeroCopyDescription[] =
 const char kEnableVulkanName[] = "Vulkan";
 const char kEnableVulkanDescription[] = "Use vulkan as the graphics backend.";
 
-const char kSharedHighlightingUseBlocklistName[] =
-    "Shared Highlighting blocklist";
-const char kSharedHighlightingUseBlocklistDescription[] =
-    "Uses a blocklist to disable Shared Highlighting link generation on "
-    "certain sites where personalized or dynamic content or other technical "
-    "restrictions make it unlikely that a URL can be generated and actually "
-    "work when shared.";
-
 const char kSharedHighlightingV2Name[] = "Shared Highlighting 2.0";
 const char kSharedHighlightingV2Description[] =
     "Improvements to Shared Highlighting. Including ability to reshare or "
@@ -3543,6 +3509,9 @@ const char kStrictSiteIsolationDescription[] =
     "#site-isolation-trial-opt-out for how to disable site isolation for "
     "testing.";
 
+const char kTabGroupsForTabletsName[] = "Tab groups on tablets";
+const char kTabGroupsForTabletsDescription[] = "Enable tab groups on tablets.";
+
 const char kThemeRefactorAndroidName[] = "Theme refactor on Android";
 const char kThemeRefactorAndroidDescription[] =
     "Enables the theme refactoring on Android.";
@@ -3748,6 +3717,10 @@ const char kNtpRealboxSuggestionAnswersName[] =
 const char kNtpRealboxSuggestionAnswersDescription[] =
     "Shows suggestion answers in the NTP Realbox when enabled.";
 
+const char kNtpRealboxTailSuggestName[] = "NTP Realbox Tail Suggest";
+const char kNtpRealboxTailSuggestDescription[] =
+    "Properly formats the tail suggestions to match the Omnibox";
+
 const char kEnableReaderModeName[] = "Enable Reader Mode";
 const char kEnableReaderModeDescription[] =
     "Allows viewing of simplified web pages by selecting 'Customize and "
@@ -3863,6 +3836,12 @@ const char kMediaFoundationClearName[] = "MediaFoundation for Clear";
 const char kMediaFoundationClearDescription[] =
     "Enable/Disable the use of MediaFoundation for non-protected content "
     "playback on supported systems.";
+
+const char kPervasiveSystemAccentColorName[] = "Pervasive system accent color";
+const char kPervasiveSystemAccentColorDescription[] =
+    "Use the Windows system accent color as the Chrome accent color, if \"Show "
+    "accent color on title bars and windows borders\" is toggled on in the "
+    "Windows system settings.";
 
 const char kPwaUninstallInWindowsOsName[] =
     "Enable PWAs to register as an uninstallable app in Windows on "
@@ -4680,12 +4659,6 @@ const char kExperimentalAccessibilitySwitchAccessTextDescription[] =
     "Enable experimental or in-progress Switch Access features for improved "
     "text input";
 
-const char kExperimentalAccessibilitySwitchAccessSetupGuideName[] =
-    "Enable setup guide for Switch Access.";
-const char kExperimentalAccessibilitySwitchAccessSetupGuideDescription[] =
-    "Enable a setup guide to walk through the steps of initially configuring "
-    "Switch Access.";
-
 const char kExperimentalAccessibilitySwitchAccessMultistepAutomationName[] =
     "Enable multistep automation for Switch Access.";
 const char
@@ -4703,7 +4676,7 @@ const char kMagnifierContinuousMouseFollowingModeSettingDescription[] =
 const char kDockedMagnifierResizingName[] =
     "Enable ability to resize Docked Magnifier";
 const char kDockedMagnifierResizingDescription[] =
-    "Enable feature which adds ability for user to grab and resize divider of"
+    "Enable feature which adds ability for user to grab and resize divider of "
     "Docked Magnifier.";
 
 const char kFilesArchivemountName[] = "Archivemount in Files App (1st Tier)";
@@ -4830,11 +4803,6 @@ const char kVirtualKeyboardDarkModeDescription[] =
     "Enable dark mode colors for the virtual keyboard when dark mode is "
     "active.";
 
-const char kImeEmojiSuggestAdditionName[] =
-    "Enable emoji suggestion (addition)";
-const char kImeEmojiSuggestAdditionDescription[] =
-    "Enable emoji suggestion as addition to the text written for native IME.";
-
 const char kImeMozcProtoName[] = "Enable protobuf on Japanese IME";
 const char kImeMozcProtoDescription[] =
     "Enable Japanese IME to use protobuf as interactive message format to "
@@ -4850,6 +4818,13 @@ const char kImeSystemEmojiPickerClipboardName[] =
 const char kImeSystemEmojiPickerClipboardDescription[] =
     "Emoji picker will insert emoji into clipboard if they can't be inserted "
     "into a text field";
+
+const char kImeSystemEmojiPickerExtensionName[] =
+    "System emoji picker extension";
+const char kImeSystemEmojiPickerExtensionDescription[] =
+    "Emoji picker extension allows users to select emoticons and symbols to "
+    "input.";
+
 const char kImeStylusHandwritingName[] = "Stylus Handwriting";
 const char kImeStylusHandwritingDescription[] =
     "Enable VK UI for stylus in text fields";

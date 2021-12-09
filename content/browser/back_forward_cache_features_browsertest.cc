@@ -5,6 +5,7 @@
 #include "content/browser/back_forward_cache_browsertest.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/presentation/presentation_test_utils.h"
 #include "content/browser/renderer_host/back_forward_cache_disable.h"
@@ -453,10 +454,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheWithDedicatedWorkerBrowserTest,
 // Tests the case when the page starts fetching in a dedicated worker, goes to
 // BFcache, and then the response amount reaches the threshold. The cached page
 // should evicted in this case.
-// TODO(crbug.com/1275106): Test flaky.
 IN_PROC_BROWSER_TEST_F(
     BackForwardCacheWithDedicatedWorkerBrowserTest,
-    DISABLED_FetchStillLoading_ResponseStartedWhileFrozen_ExceedsPerRequestBytesLimit) {
+    FetchStillLoading_ResponseStartedWhileFrozen_ExceedsPerRequestBytesLimit) {
   CreateHttpsServer();
 
   net::test_server::ControllableHttpResponse image_response(https_server(),
@@ -485,8 +485,12 @@ IN_PROC_BROWSER_TEST_F(
   image_response.WaitForRequest();
 
   // Navigate away.
+  PageLifecycleStateManagerTestDelegate delegate(
+      rfh_a->render_view_host()->GetPageLifecycleStateManager());
   EXPECT_TRUE(
       NavigateToURL(shell(), https_server()->GetURL("b.test", "/title2.html")));
+  delegate.WaitForInBackForwardCacheAck();
+
   // The worker was still loading when we navigated away, but it's still
   // eligible for back-forward cache.
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
@@ -511,10 +515,9 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the case when the page starts fetching in a nested dedicated worker,
 // goes to BFcache, and then the response amount reaches the threshold. The
 // cached page should evicted in this case.
-// TODO(crbug.com/1275106): Test flaky.
 IN_PROC_BROWSER_TEST_F(
     BackForwardCacheWithDedicatedWorkerBrowserTest,
-    DISABLED_FetchStillLoading_ResponseStartedWhileFrozen_ExceedsPerRequestBytesLimit_Nested) {
+    FetchStillLoading_ResponseStartedWhileFrozen_ExceedsPerRequestBytesLimit_Nested) {
   CreateHttpsServer();
 
   net::test_server::ControllableHttpResponse image_response(https_server(),
@@ -549,8 +552,11 @@ IN_PROC_BROWSER_TEST_F(
   image_response.WaitForRequest();
 
   // Navigate away.
+  PageLifecycleStateManagerTestDelegate delegate(
+      rfh_a->render_view_host()->GetPageLifecycleStateManager());
   EXPECT_TRUE(
       NavigateToURL(shell(), https_server()->GetURL("b.test", "/title2.html")));
+  delegate.WaitForInBackForwardCacheAck();
   // The worker was still loading when we navigated away, but it's still
   // eligible for back-forward cache.
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());

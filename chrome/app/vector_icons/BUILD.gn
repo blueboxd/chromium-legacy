@@ -24,6 +24,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "autofill/webauthn_dialog_header.icon",
     "autofill/webauthn_dialog_header_dark.icon",
     "back_arrow_touch.icon",
+    "backspace.icon",
     "blocked_redirect.icon",
     "bookmarkbar_touch_overflow.icon",
     "browser_tools.icon",
@@ -97,6 +98,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "remove_box.icon",
     "resize_handle.icon",
     "sad_tab.icon",
+    "safety_check.icon",
     "save_group.icon",
     "save_page.icon",
     "scrolling_tabstrip_leading.icon",
@@ -104,6 +106,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "security.icon",
     "send_tab_to_self.icon",
     "sharing_hub_screenshot.icon",
+    "shield_bad.icon",
     "side_panel.icon",
     "side_panel_touch.icon",
     "sign_out.icon",
@@ -255,10 +258,6 @@ aggregate_vector_icons("chrome_vector_icons") {
 
   if (is_chrome_branded && is_chromeos_ash) {
     sources += [ "google_chrome/assistant.icon" ]
-  }
-
-  if (is_android) {
-    sources += [ "safety_check.icon" ]
   }
 }
 

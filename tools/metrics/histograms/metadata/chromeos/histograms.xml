@@ -986,6 +986,16 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
+<histogram name="ChromeOS.Intents.IntentPickerIconEvent"
+    enum="IntentPickerIconEvent" expires_after="2022-06-01">
+  <owner>tsergeant@chromium.org</owner>
+  <owner>chromeos-apps-foundation-team@google.com</owner>
+  <summary>
+    Records events associated with the intent picker icon in the omnibox.
+    Recorded when the icon is shown or interacted with.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.IsLacrosBrowser" enum="Boolean" expires_after="never">
 <!-- expires-never: Used to identify lacros binary in metrics backend. -->
 
@@ -1376,6 +1386,24 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
     Writable+executable mount events are checked every thirty seconds, but each
     anomalous event is reported only once per boot.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.SecurityAnomalyUploadSuccess" enum="Boolean"
+    expires_after="2022-04-03">
+  <owner>jorgelo@chromium.org</owner>
+  <owner>chromeos-security-core@google.com</owner>
+  <summary>
+    Records the result (boolean success or failure) of attempting to report a
+    Chrome OS system as anomalous via the crash reporting service.
+
+    Reporting is only attempted if one or more anomalies are detected (see the
+    previous histogram's description for the types of anomalies considered),
+    *and* once per boot, even if reporting fails.
+
+    So this histogram will be recorded at most once per boot, and only if a
+    system is detected as anomalous (i.e. presents any of the tracked
+    anomalies.)
   </summary>
 </histogram>
 
@@ -1869,6 +1897,21 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
+<histogram name="ChromeOS.Sharesheet.CopyToClipboard.MimeType" units="mimetype"
+    expires_after="2022-10-08">
+  <owner>melzhang@chromium.org</owner>
+  <owner>chromeos-apps-foundation-team@google.com</owner>
+  <summary>
+    Records the mime type of the content being copied after the Copy To
+    Clipboard action is invoked from the Sharesheet by the user.
+
+    This histogram could record multiple times in a single share in the event
+    that the user shares data of mime types at once. However, a single share
+    will not record the same mime type twice. E.g. sharing 2 images in one share
+    will record the image mimetype once.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.Sharesheet.FileCount" units="files"
     expires_after="2022-10-08">
   <owner>dominickn@chromium.org</owner>
@@ -2241,7 +2284,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.WebAPK.{InstallType}.ArcInstallResult"
-    enum="WebApkArcInstallResultChromeOS" expires_after="2022-01-14">
+    enum="WebApkArcInstallResultChromeOS" expires_after="2022-04-14">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -2258,7 +2301,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.WebAPK.{InstallType}.Result"
-    enum="WebApkInstallResultChromeOS" expires_after="2022-01-14">
+    enum="WebApkInstallResultChromeOS" expires_after="2022-04-14">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>

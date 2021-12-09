@@ -496,10 +496,10 @@ class WebAppFrameToolbarBrowserTest_WindowControlsOverlay
   gfx::Rect GetWindowControlOverlayBoundingClientRect() {
     const std::string kRectValueList =
         "var rect = "
-        "[navigator.windowControlsOverlay.getBoundingClientRect().x, "
-        "navigator.windowControlsOverlay.getBoundingClientRect().y, "
-        "navigator.windowControlsOverlay.getBoundingClientRect().width, "
-        "navigator.windowControlsOverlay.getBoundingClientRect().height];";
+        "[navigator.windowControlsOverlay.getTitlebarAreaRect().x, "
+        "navigator.windowControlsOverlay.getTitlebarAreaRect().y, "
+        "navigator.windowControlsOverlay.getTitlebarAreaRect().width, "
+        "navigator.windowControlsOverlay.getTitlebarAreaRect().height];";
     return helper()->GetXYWidthHeightRect(
         helper()->browser_view()->GetActiveWebContents(), kRectValueList,
         "rect");
@@ -776,8 +776,16 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
+// TODO(https://crbug.com/1277860): Flaky on Mac builders.
+#if defined(OS_MAC)
+#define MAYBE_WindowControlsOverlayDraggableRegions \
+  DISABLED_WindowControlsOverlayDraggableRegions
+#else
+#define MAYBE_WindowControlsOverlayDraggableRegions \
+  WindowControlsOverlayDraggableRegions
+#endif
 IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
-                       WindowControlsOverlayDraggableRegions) {
+                       MAYBE_WindowControlsOverlayDraggableRegions) {
   InstallAndLaunchWebApp();
   ToggleWindowControlsOverlayAndWait();
 

@@ -71,13 +71,14 @@ constexpr int kMainRightViewVerticalSpacing = 4;
 // action buttons.
 constexpr gfx::Insets kMainRightViewChildPadding(0, 14, 0, 0);
 
-constexpr gfx::Insets kActionButtonsRowPadding(0, 22, 0, 4);
+constexpr gfx::Insets kImageContainerPadding(12, 0, 0, 0);
+
+constexpr gfx::Insets kActionButtonsRowPadding(16, 22, 0, 4);
 constexpr int kActionsRowHorizontalSpacing = 8;
 
 constexpr int kContentRowHorizontalSpacing = 16;
 constexpr int kLeftContentVerticalSpacing = 4;
 constexpr int kTitleRowSpacing = 6;
-constexpr int kHeaderRowSpacing = 4;
 
 // Bullet character. The divider symbol between the title and the timestamp.
 constexpr char16_t kTitleRowDivider[] = u"\u2022";
@@ -327,7 +328,8 @@ AshNotificationView::AshNotificationView(
                   // consider making changes to this code when the bug is fixed.
                   .SetMaximumWidth(GetExpandedMessageViewWidth()))
           .AddChild(CreateInlineSettingsBuilder())
-          .AddChild(CreateImageContainerBuilder());
+          .AddChild(CreateImageContainerBuilder().SetBorder(
+              views::CreateEmptyBorder(kImageContainerPadding)));
 
   ConfigureLabelStyle(message_view_in_expanded_state_, kMessageLabelSize,
                       false);
@@ -390,8 +392,12 @@ AshNotificationView::AshNotificationView(
                                views::MaximumFlexSizeRule::kUnbounded));
 
   static_cast<views::FlexLayout*>(header_row()->GetLayoutManager())
-      ->SetDefault(views::kMarginsKey, gfx::Insets(0, 0, 0, kHeaderRowSpacing))
+      ->SetDefault(views::kMarginsKey, gfx::Insets())
       .SetInteriorMargin(gfx::Insets());
+  header_row()->ConfigureLabelsStyle(
+      gfx::FontList({kGoogleSansFont}, gfx::Font::NORMAL, kHeaderViewLabelSize,
+                    gfx::Font::Weight::NORMAL),
+      gfx::Insets(), true);
 
   if (shown_in_popup_ && !notification.group_child()) {
     layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
@@ -809,6 +815,12 @@ AshNotificationView::GenerateNotificationLabelButton(
 
 gfx::Size AshNotificationView::GetIconViewSize() const {
   return gfx::Size(kIconViewSize, kIconViewSize);
+}
+
+int AshNotificationView::GetLargeImageViewMaxWidth() const {
+  return message_center::kNotificationWidth - kNotificationViewPadding.width() -
+         kAppIconViewSize - kMainRightViewPadding.width() -
+         kMainRightViewChildPadding.width();
 }
 
 void AshNotificationView::ToggleInlineSettings(const ui::Event& event) {

@@ -349,14 +349,11 @@ TEST_F('ChromeVoxBackgroundTest', 'ShowContextMenu', function() {
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree('<p>before</p><a href="a">a</a>', function(rootNode) {
     const go = rootNode.find({role: RoleType.LINK});
-    // Menus no longer nest a message loop, so we can launch menu and confirm
-    // expected speech. The menu will not block test shutdown.
     mockFeedback.call(go.focus.bind(go))
         .expectSpeech('a', 'Link')
         .call(doCmd('contextMenu'))
         .expectSpeech(/menu opened/)
         .call(press(KeyCode.ESCAPE))
-        .expectSpeech(/menu closed/)
         .expectSpeech('a', 'Link');
     mockFeedback.replay();
   }.bind(this));
@@ -2208,6 +2205,58 @@ TEST_F('ChromeVoxBackgroundTest', 'NonModalDialogHeadingJump', function() {
         .expectSpeech('Heading inside dialog')
         .call(doCmd('previousHeading'))
         .expectSpeech('Heading outside dialog')
+        .replay();
+  });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'LevelEndsForNestedLists', function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `
+    <div>
+      <ul>
+        <li>Berries
+          <ul>
+            <li>Strawberries</li>
+            <li>Blueberries</li>
+            <li>Raspberries</li>
+          </ul>
+        </li>
+        <li>Citruses
+          <ul>
+              <li>Oranges
+                <ul>
+                  <li>Grapefruits</li>
+                  <li>Mandarins</li>
+                </ul>
+              </li>
+          </ul>
+        </li>
+        <li>Bananas</li>
+      </ul>
+    </div>
+  `;
+
+  this.runWithLoadedTree(site, function(root) {
+    const blueberries = root.find({attributes: {name: 'Blueberries'}});
+    const grapefruits = root.find({attributes: {name: 'Grapefruits'}});
+
+    mockFeedback
+        .call(() => {
+          ChromeVoxState.instance.setCurrentRange(
+              cursors.Range.fromNode(blueberries));
+        })
+        .call(doCmd('nextObject'))
+        .expectSpeech(
+            '◦ Raspberries', 'List item', 'List end', 'nested level 2')
+        .call(() => {
+          ChromeVoxState.instance.setCurrentRange(
+              cursors.Range.fromNode(grapefruits));
+        })
+        .call(doCmd('nextObject'))
+        .expectSpeech('■ Mandarins', 'List item', 'List end', 'nested level 3')
+        .call(doCmd('nextObject'))
+        // Nested level is not mentioned for level 1.
+        .expectSpeech('• Bananas', 'List item', 'List end')
         .replay();
   });
 });

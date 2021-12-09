@@ -457,10 +457,6 @@ const base::Feature kEcheSWAResizing{"EcheSWAResizing",
 const base::Feature kEcheSWADebugMode{"EcheSWADebugMode",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, emoji suggestion will be shown when user type "space".
-const base::Feature kEmojiSuggestAddition{"EmojiSuggestAddition",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables background blur for the app list, shelf, unified system tray,
 // autoclick menu, etc. Also enables the AppsGridView mask layer, slower devices
 // may have choppier app list animations while in this mode. crbug.com/765292.
@@ -614,13 +610,6 @@ const base::Feature kFiltersInRecents{"FiltersInRecents",
 const base::Feature kFirmwareUpdaterApp = {"FirmwareUpdaterApp",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, there will be an alert bubble showing up when the device
-// returns from low brightness (e.g., sleep, closed cover) without a lock screen
-// and the active window is in fullscreen.
-// TODO(https://crbug.com/1107185): Remove this after the feature is launched.
-const base::Feature kFullscreenAlertBubble{"EnableFullscreenBubble",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable ChromeOS FuseBox service.
 const base::Feature kFuseBox{"FuseBox", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -711,7 +700,7 @@ const base::Feature kHoldingSpaceInProgressDownloadsIntegration{
 // content and transfer or access it later.
 const base::Feature kHoldingSpaceInProgressDownloadsNotificationSuppression{
     "HoldingSpaceInProgressNotificationSuppression",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables incognito profile integration with the productivity feature that
 // aims to reduce context switching by enabling users to collect content and
@@ -749,6 +738,10 @@ const base::Feature kImeSystemEmojiPicker{"SystemEmojiPicker",
 // Enable or disable system emoji picker falling back to clipboard.
 const base::Feature kImeSystemEmojiPickerClipboard{
     "SystemEmojiPickerClipboard", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable or disable system emoji picker extension
+const base::Feature kImeSystemEmojiPickerExtension{
+    "SystemEmojiPickerExtension", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable a new UI for stylus writing on the virtual keyboard
 const base::Feature kImeStylusHandwriting{"StylusHandwriting",
@@ -1527,10 +1520,6 @@ bool IsFileManagerSwaEnabled() {
 
 bool IsFirmwareUpdaterAppEnabled() {
   return base::FeatureList::IsEnabled(kFirmwareUpdaterApp);
-}
-
-bool IsFullscreenAlertBubbleEnabled() {
-  return base::FeatureList::IsEnabled(kFullscreenAlertBubble);
 }
 
 bool IsGaiaCloseViewMessageEnabled() {

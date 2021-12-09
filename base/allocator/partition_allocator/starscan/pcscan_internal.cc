@@ -92,6 +92,22 @@ thread_local size_t ReentrantScannerGuard::guard_ = 0;
 struct [[maybe_unused]] ReentrantScannerGuard final{};
 #endif  // defined(PA_HAS_ALLOCATION_GUARD)
 
+// Scope that disables MTE checks. Only used inside scanning to avoid the race:
+// a slot tag is changed by the mutator, while the scanner sees an old value.
+struct DisableMTEScope final {
+  DisableMTEScope() {
+    memory::ChangeMemoryTaggingModeForCurrentThread(
+        memory::TagViolationReportingMode::kDisabled);
+  }
+  ~DisableMTEScope() {
+    memory::ChangeMemoryTaggingModeForCurrentThread(parent_tagging_mode);
+  }
+
+ private:
+  memory::TagViolationReportingMode parent_tagging_mode =
+      memory::GetMemoryTaggingModeForCurrentThread();
+};
+
 #if PA_STARSCAN_USE_CARD_TABLE
 // Bytemap that represent regions (cards) that contain quarantined objects.
 // A single PCScan cycle consists of the following steps:
@@ -766,6 +782,7 @@ class PCScanScanLoop final : public ScanLoop<PCScanScanLoop> {
   }
 
   const PCScanTask& task_;
+  DisableMTEScope disable_mte_;
   size_t quarantine_size_ = 0;
 };
 
@@ -906,7 +923,8 @@ struct SweepStat {
 
 void UnmarkInCardTable(void* object, SlotSpanMetadata<ThreadSafe>* slot_span) {
 #if PA_STARSCAN_USE_CARD_TABLE
-  const uintptr_t object_as_uintptr = reinterpret_cast<uintptr_t>(object);
+  const uintptr_t object_as_uintptr =
+      reinterpret_cast<uintptr_t>(memory::UnmaskPtr(object));
   // Reset card(s) for this quarantined object. Please note that the
   // cards may still contain quarantined objects (which were
   // promoted in this scan cycle), but
@@ -992,7 +1010,7 @@ void UnmarkInCardTable(void* object, SlotSpanMetadata<ThreadSafe>* slot_span) {
   size_t freelist_entries = 0;
 
   const auto bitmap_iterator = [&](uintptr_t ptr) {
-    auto* ptr_void = reinterpret_cast<void*>(ptr);
+    auto* ptr_void = memory::RemaskPtr(reinterpret_cast<void*>((ptr)));
     SlotSpan* current_slot_span = SlotSpan::FromSlotStartPtr(ptr_void);
     auto* entry = new (ptr_void) PartitionFreelistEntry();
 

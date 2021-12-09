@@ -5373,6 +5373,13 @@ void RenderFrameHostImpl::DidUpdatePreferredColorScheme(
   preferred_color_scheme_ = preferred_color_scheme;
 }
 
+void RenderFrameHostImpl::DidInferColorScheme(
+    blink::mojom::PreferredColorScheme color_scheme) {
+  if (is_main_frame()) {
+    GetPage().DidInferColorScheme(color_scheme);
+  }
+}
+
 void RenderFrameHostImpl::UpdateEncoding(const std::string& encoding_name) {
   // This message is only sent for top-level frames. TODO(avi): when frame tree
   // mirroring works correctly, add a check here to enforce it.
@@ -12613,9 +12620,10 @@ void RenderFrameHostImpl::SetEmbeddingToken(
       ax_tree_id);
 
   // Also important to notify the delegate so that the relevant observers can
-  // adapt to the fact that the AXTreeID has changed for the main frame (e.g.
-  // the WebView needs to update the ID tracking its child accessibility tree).
-  if (is_main_frame())
+  // adapt to the fact that the AXTreeID has changed for the primary main frame
+  // (e.g. the WebView needs to update the ID tracking its child accessibility
+  // tree).
+  if (IsInPrimaryMainFrame())
     delegate_->AXTreeIDForMainFrameHasChanged();
 
   // Propagate the embedding token to the RenderFrameProxyHost representing the

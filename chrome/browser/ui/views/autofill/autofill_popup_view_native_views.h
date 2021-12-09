@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -76,8 +77,9 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
                                      public AutofillPopupView {
  public:
   METADATA_HEADER(AutofillPopupViewNativeViews);
-  AutofillPopupViewNativeViews(AutofillPopupController* controller,
-                               views::Widget* parent_widget);
+  AutofillPopupViewNativeViews(
+      base::WeakPtr<AutofillPopupController> controller,
+      views::Widget* parent_widget);
   AutofillPopupViewNativeViews(const AutofillPopupViewNativeViews&) = delete;
   AutofillPopupViewNativeViews& operator=(const AutofillPopupViewNativeViews&) =
       delete;
@@ -101,7 +103,7 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   // methods in AutofillPopupBaseView.
   void OnMouseMoved(const ui::MouseEvent& event) override {}
 
-  AutofillPopupController* controller() { return controller_; }
+  base::WeakPtr<AutofillPopupController> controller() { return controller_; }
 
  private:
   void OnSelectedRowChanged(absl::optional<int> previous_row_selection,
@@ -110,7 +112,8 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
 
   // Creates child views based on the suggestions given by |controller_|.
   // This method expects that all non-footer suggestions precede footer
-  // suggestions. Separator views can be both a footer or non-footer suggestion.
+  // suggestions. Separator views can be both a footer or non-footer suggestion
+  // but they are not allowed to be the first or last item.
   void CreateChildViews();
 
   // Applies certain rounding rules to the given width, such as matching the
@@ -121,7 +124,7 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   bool DoUpdateBoundsAndRedrawPopup() override;
 
   // Controller for this view.
-  raw_ptr<AutofillPopupController> controller_ = nullptr;
+  base::WeakPtr<AutofillPopupController> controller_ = nullptr;
   std::vector<AutofillPopupRowView*> rows_;
   raw_ptr<views::BoxLayout> layout_ = nullptr;
   raw_ptr<views::ScrollView> scroll_view_ = nullptr;

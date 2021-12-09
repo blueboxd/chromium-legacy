@@ -128,31 +128,6 @@ const FeatureEntry::Choice
         {"5000", signin::kWaitThresholdMillisecondsForCapabilitiesApi, "5000"},
 };
 
-const FeatureEntry::FeatureVariation
-    kOmniboxOnDeviceHeadSuggestNonIncognitoExperimentVariations[] = {
-        {
-            "relevance-1000",
-            (FeatureEntry::FeatureParam[]){
-                {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput,
-                 "1000"},
-                {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode,
-                 "decrease-relevances"}},
-            2,
-            nullptr,
-        },
-        {
-            "no-delay-relevance-1000",
-            (FeatureEntry::FeatureParam[]){
-                {OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs,
-                 "0"},
-                {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput,
-                 "1000"},
-                {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode,
-                 "decrease-relevances"}},
-            3,
-            nullptr,
-        }};
-
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches4[] = {
@@ -423,19 +398,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"toolbar-container", flag_descriptions::kToolbarContainerName,
      flag_descriptions::kToolbarContainerDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(toolbar_container::kToolbarContainerEnabled)},
-    {"omnibox-on-device-head-suggestions-incognito",
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoName,
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProviderIncognito)},
-    {"omnibox-on-device-head-suggestions-non-incognito",
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsNonIncognitoName,
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription,
-     flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         omnibox::kOnDeviceHeadProviderNonIncognito,
-         kOmniboxOnDeviceHeadSuggestNonIncognitoExperimentVariations,
-         "OmniboxOnDeviceHeadNonIncognitoTuningMobile")},
     {"omnibox-ui-max-autocomplete-matches",
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesName,
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesDescription,
@@ -578,11 +540,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxNewImplementationName,
      flag_descriptions::kOmniboxNewImplementationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIOSNewOmniboxImplementation)},
-    {"shared-highlighting-use-blocklist",
-     flag_descriptions::kSharedHighlightingUseBlocklistIOSName,
-     flag_descriptions::kSharedHighlightingUseBlocklistIOSDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(shared_highlighting::kSharedHighlightingUseBlocklist)},
     {"start-surface", flag_descriptions::kStartSurfaceName,
      flag_descriptions::kStartSurfaceDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kStartSurface,

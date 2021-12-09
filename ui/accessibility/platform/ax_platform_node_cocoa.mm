@@ -802,10 +802,7 @@ bool IsAXSetter(SEL selector) {
     [axAttributes addObject:NSAccessibilityDetailsElementsAttribute];
   }
 
-  // Anything focusable or any control:
-  if (_node->HasIntAttribute(ax::mojom::IntAttribute::kRestriction) ||
-      _node->HasIntAttribute(ax::mojom::IntAttribute::kInvalidState) ||
-      _node->HasState(ax::mojom::State::kFocusable)) {
+  if (ui::SupportsRequired(role)) {
     [axAttributes addObject:NSAccessibilityRequiredAttributeChrome];
   }
 
@@ -829,6 +826,13 @@ bool IsAXSetter(SEL selector) {
   }
   if (ui::IsCellOrTableHeader(role) && role != ax::mojom::Role::kColumnHeader) {
     [axAttributes addObject:NSAccessibilityColumnHeaderUIElementsAttribute];
+  }
+
+  // Popup
+  if (_node->HasIntAttribute(ax::mojom::IntAttribute::kHasPopup)) {
+    [axAttributes addObjectsFromArray:@[
+      NSAccessibilityHasPopupAttribute, NSAccessibilityPopupValueAttribute
+    ]];
   }
 
   return axAttributes.autorelease();
@@ -1029,15 +1033,10 @@ bool IsAXSetter(SEL selector) {
   return @"";
 }
 
-- (NSNumber*)AXRequired {
-  return [self accessibilityRequired];
-}
-
-- (NSString*)AXRole {
-  if (!_node)
+- (NSNumber*)AXHasPopup {
+  if (![self instanceActive])
     return nil;
-
-  return [[self class] nativeRoleFromAXRole:_node->GetRole()];
+  return @(_node->HasIntAttribute(ax::mojom::IntAttribute::kHasPopup));
 }
 
 - (NSString*)AXInvalid {
@@ -1050,6 +1049,39 @@ bool IsAXSetter(SEL selector) {
     case ax::mojom::InvalidState::kTrue:
       return @"true";
   }
+}
+
+- (NSString*)AXPopupValue {
+  if (![self instanceActive])
+    return nil;
+  int hasPopup = _node->GetIntAttribute(ax::mojom::IntAttribute::kHasPopup);
+  switch (static_cast<ax::mojom::HasPopup>(hasPopup)) {
+    case ax::mojom::HasPopup::kFalse:
+      return @"false";
+    case ax::mojom::HasPopup::kTrue:
+      return @"true";
+    case ax::mojom::HasPopup::kMenu:
+      return @"menu";
+    case ax::mojom::HasPopup::kListbox:
+      return @"listbox";
+    case ax::mojom::HasPopup::kTree:
+      return @"tree";
+    case ax::mojom::HasPopup::kGrid:
+      return @"grid";
+    case ax::mojom::HasPopup::kDialog:
+      return @"dialog";
+  }
+}
+
+- (NSNumber*)AXRequired {
+  return [self accessibilityRequired];
+}
+
+- (NSString*)AXRole {
+  if (!_node)
+    return nil;
+
+  return [[self class] nativeRoleFromAXRole:_node->GetRole()];
 }
 
 - (NSString*)AXRoleDescription {
@@ -1244,37 +1276,37 @@ bool IsAXSetter(SEL selector) {
 // Parameterized text-specific attributes.
 
 - (id)AXLineForIndex:(id)parameter {
-  DCHECK([parameter isKindOfClass:[NSNumber class]]);
   // TODO: multiline is not supported on views.
   return @0;
 }
 
 - (id)AXRangeForLine:(id)parameter {
-  DCHECK([parameter isKindOfClass:[NSNumber class]]);
-  DCHECK_EQ(0, [parameter intValue]);
+  if (![parameter isKindOfClass:[NSNumber class]] || [parameter intValue] != 0)
+    return nil;
+
   return [NSValue valueWithRange:{0, [[self getAXValueAsString] length]}];
 }
 
 - (id)AXStringForRange:(id)parameter {
-  DCHECK([parameter isKindOfClass:[NSValue class]]);
+  if (![parameter isKindOfClass:[NSValue class]] ||
+      (0 != strcmp([parameter objCType], @encode(NSRange))))
+    return nil;
+
   return [[self getAXValueAsString] substringWithRange:[parameter rangeValue]];
 }
 
 - (id)AXRangeForPosition:(id)parameter {
-  DCHECK([parameter isKindOfClass:[NSValue class]]);
   // TODO(tapted): Hit-test [parameter pointValue] and return an NSRange.
   NOTIMPLEMENTED();
   return nil;
 }
 
 - (id)AXRangeForIndex:(id)parameter {
-  DCHECK([parameter isKindOfClass:[NSNumber class]]);
   NOTIMPLEMENTED();
   return nil;
 }
 
 - (id)AXBoundsForRange:(id)parameter {
-  DCHECK([parameter isKindOfClass:[NSValue class]]);
   // TODO(tapted): Provide an accessor on AXPlatformNodeDelegate to obtain this
   // from ui::TextInputClient::GetCompositionCharacterBounds().
   NOTIMPLEMENTED();
@@ -1282,20 +1314,23 @@ bool IsAXSetter(SEL selector) {
 }
 
 - (id)AXRTFForRange:(id)parameter {
-  DCHECK([parameter isKindOfClass:[NSValue class]]);
   NOTIMPLEMENTED();
   return nil;
 }
 
 - (id)AXStyleRangeForIndex:(id)parameter {
-  DCHECK([parameter isKindOfClass:[NSNumber class]]);
+  if (![parameter isKindOfClass:[NSNumber class]])
+    return nil;
+
   // TODO(https://crbug.com/958811): Implement this for real.
   return [NSValue
       valueWithRange:NSMakeRange(0, [self accessibilityNumberOfCharacters])];
 }
 
 - (id)AXAttributedStringForRange:(id)parameter {
-  DCHECK([parameter isKindOfClass:[NSValue class]]);
+  if (![parameter isKindOfClass:[NSValue class]])
+    return nil;
+
   // TODO(https://crbug.com/958811): Implement this for real.
   base::scoped_nsobject<NSAttributedString> attributedString(
       [[NSAttributedString alloc]

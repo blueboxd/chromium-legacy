@@ -190,7 +190,7 @@
                 {
                     "name": "EnabledWithMessages_20210831",
                     "params": {
-                        "max-number": "10",
+                        "max-number": "100",
                         "site-id": "78FakAwAN0tK1KeaPYj0PoiAHrrQ"
                     },
                     "enable_features": [
@@ -4856,7 +4856,7 @@
             ]
         }
     ],
-    "MacCAOverlayQuadsM97": [
+    "MacCAOverlayQuads": [
         {
             "platforms": [
                 "mac"
@@ -5306,6 +5306,26 @@
             ]
         }
     ],
+    "NoWakeUpsForCanceledTasks": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NoWakeUpsForCanceledTasks"
+                    ]
+                }
+            ]
+        }
+    ],
     "NtpRealboxAnswersInSuggest": [
         {
             "platforms": [
@@ -5490,27 +5510,6 @@
                     "name": "Enabled ",
                     "enable_features": [
                         "OmniboxDocumentProvider"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OmniboxOnDeviceHeadNonIncognitoTuningMobile": [
-        {
-            "platforms": [
-                "android",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "NoDelayWithScore1K",
-                    "params": {
-                        "DelayOnDeviceHeadSuggestRequestMs": "0",
-                        "DemoteOnDeviceSearchSuggestionsMode": "decrease-relevances",
-                        "OnDeviceSuggestMaxScoreForNonUrlInput": "1000"
-                    },
-                    "enable_features": [
-                        "OmniboxOnDeviceHeadProviderNonIncognito"
                     ]
                 }
             ]
@@ -6282,27 +6281,21 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_Prefetch_Prefetch1_NSP6_Small_20210301",
+                    "name": "Prefetch_2_With_Decoys_20211129",
                     "params": {
                         "dns_canary_url": "http://dns-tunnel-check.googlezip.net/connect",
                         "do_no_state_prefetch": "true",
+                        "ineligible_decoy_request_probability": "1",
                         "lite_mode_only": "false",
-                        "max_srp_prefetches": "1",
-                        "max_subresource_count_per_prerender": "6",
-                        "tls_canary_url": "http://tls-tunnel-check.googlezip.net/connect"
+                        "max_srp_prefetches": "5",
+                        "max_subresource_count_per_prerender": "0",
+                        "start_spare_renderer": "true",
+                        "tls_canary_url": "http://tls-tunnel-check.googlezip.net/connect",
+                        "use_speculation_rules": "true"
                     },
                     "enable_features": [
                         "IsolatePrerenders",
                         "IsolatePrerendersMustProbeOrigin"
-                    ]
-                },
-                {
-                    "name": "NoPrefetches_CounterFactualControl_Small_2_20210301",
-                    "params": {
-                        "max_srp_prefetches": "0"
-                    },
-                    "enable_features": [
-                        "IsolatePrerenders"
                     ]
                 }
             ]
@@ -6488,28 +6481,6 @@
                     "enable_features": [
                         "IPH_QuietNotificationPrompts",
                         "QuietNotificationPrompts"
-                    ]
-                }
-            ]
-        }
-    ],
-    "RTCDisallowPlanBOutsideDeprecationTrial": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "RTCDisallowPlanBOutsideDeprecationTrial"
                     ]
                 }
             ]
@@ -8833,6 +8804,8 @@
         {
             "platforms": [
                 "android",
+                "android_weblayer",
+                "android_webview",
                 "chromeos",
                 "chromeos_lacros",
                 "ios",
@@ -9166,21 +9139,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WinDelaySpellcheckServiceInit"
-                    ]
-                }
-            ]
-        }
-    ],
-    "XsurfaceMetricsReporting": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "XsurfaceMetricsReporting"
                     ]
                 }
             ]

@@ -59,6 +59,7 @@
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/download_request_utils.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -210,6 +211,7 @@ class DownloadItemFactoryImpl : public download::DownloadItemFactory {
         state, danger_type, interrupt_reason, false /* paused */,
         false /* allow_metered */, opened, last_access_time, transient,
         received_slices, reroute_info, absl::nullopt /*download_schedule*/,
+        download::kInvalidRange, download::kInvalidRange,
         nullptr /* download_entry */);
   }
 
@@ -368,10 +370,12 @@ download::DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
 
   downloads_[id] = base::WrapUnique(download);
   downloads_by_guid_[download->GetGuid()] = download;
+  GlobalRenderFrameHostId global_id(info.render_process_id,
+                                    info.render_frame_id);
   DownloadItemUtils::AttachInfo(
       download, GetBrowserContext(),
-      WebContentsImpl::FromRenderFrameHostID(info.render_process_id,
-                                             info.render_frame_id));
+      WebContentsImpl::FromRenderFrameHostID(global_id), global_id);
+
   return download;
 }
 
@@ -814,9 +818,12 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
   download::DownloadItemImpl* download_item = item_factory_->CreateSavePageItem(
       this, id, main_file_path, page_url, mime_type,
       std::move(cancel_request_callback));
-  DownloadItemUtils::AttachInfo(download_item, GetBrowserContext(),
-                                WebContentsImpl::FromRenderFrameHostID(
-                                    render_process_id, render_frame_id));
+
+  GlobalRenderFrameHostId global_id(render_process_id, render_frame_id);
+  DownloadItemUtils::AttachInfo(
+      download_item, GetBrowserContext(),
+      WebContentsImpl::FromRenderFrameHostID(global_id), global_id);
+
   OnDownloadCreated(base::WrapUnique(download_item));
   if (!item_created.is_null())
     std::move(item_created).Run(download_item);
@@ -1059,7 +1066,8 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
   }
 #endif
   download::DownloadItemImpl* download = item.get();
-  DownloadItemUtils::AttachInfo(download, GetBrowserContext(), nullptr);
+  DownloadItemUtils::AttachInfo(download, GetBrowserContext(), nullptr,
+                                GlobalRenderFrameHostId());
   OnDownloadCreated(std::move(item));
   return download;
 }
@@ -1131,7 +1139,8 @@ void DownloadManagerImpl::ImportInProgressDownloads(uint32_t id) {
         in_progress_manager_->RemoveInProgressDownload(item->GetGuid());
     }
     item->SetDelegate(this);
-    DownloadItemUtils::AttachInfo(item.get(), GetBrowserContext(), nullptr);
+    DownloadItemUtils::AttachInfo(item.get(), GetBrowserContext(), nullptr,
+                                  GlobalRenderFrameHostId());
     download = in_progress_downloads_.erase(download);
     OnDownloadCreated(std::move(item));
   }

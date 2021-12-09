@@ -467,10 +467,10 @@ enum PolicyType {
 message CUPRequestData {
   // A serialized ScriptActionRequestProto.
   optional bytes request = 1;
-  // The ID of the public key that the client will use to verify the response
-  // signature.
-  optional bytes public_key_id = 2;
-  optional bytes nonce = 3;
+  // Combination of public key id and random nonce.
+  optional bytes query_cup2key = 2;
+  // SHA2 hash of the request.
+  optional bytes hash_hex = 3;
 }
 
 message ScriptActionRequestProto {
@@ -2405,6 +2405,8 @@ message ProfileProto {
 message PaymentInstrumentProto {
   // The values for the card, where the key is one of autofill::ServerFieldType.
   map<int32, AutofillEntryProto> card_values = 2;
+  // The network of the card.
+  optional string network = 5;
   // The values for the billing address, where the key is one of
   // autofill::ServerFieldType.
   map<int32, AutofillEntryProto> address_values = 3;

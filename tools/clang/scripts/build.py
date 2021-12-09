@@ -278,6 +278,94 @@ def AddZlibToPath():
   return zlib_dir
 
 
+def BuildLibXml2():
+  """Download and build libxml2"""
+  # The .tar.gz on GCS was uploaded as follows.
+  # The gitlab page has more up-to-date packages than http://xmlsoft.org/,
+  # and the official releases on xmlsoft.org are only available over ftp too.
+  # $ VER=v2.9.12
+  # $ curl -O \
+  #   https://gitlab.gnome.org/GNOME/libxml2/-/archive/$VER/libxml2-$VER.tar.gz
+  # $ gsutil cp -n -a public-read libxml2-$VER.tar.gz \
+  #   gs://chromium-browser-clang/tools
+
+  # TODO(thakis): Use this locally built statically linked libxml2 on all
+  # platforms. fewer dynamic deps, and guaranteed(ish) to have same behavior
+  # across platforms.
+
+  libxml2_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'libxml2-v2.9.12')
+  if os.path.exists(libxml2_dir):
+    RmTree(libxml2_dir)
+  zip_name = 'libxml2-v2.9.12.tar.gz'
+  DownloadAndUnpack(CDS_URL + '/tools/' + zip_name, LLVM_BUILD_TOOLS_DIR)
+  os.chdir(libxml2_dir)
+  os.mkdir('build')
+  os.chdir('build')
+
+  libxml2_install_dir = os.path.join(libxml2_dir, 'build', 'install')
+
+  # Disable everything except WITH_TREE and WITH_OUTPUT, both needed by LLVM's
+  # WindowsManifestMerger.
+  RunCommand(
+      [
+          'cmake',
+          '-GNinja',
+          '-DCMAKE_BUILD_TYPE=Release',
+          '-DCMAKE_INSTALL_PREFIX=install',
+          '-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded',  # /MT to match LLVM.
+          '-DBUILD_SHARED_LIBS=OFF',
+          '-DLIBXML2_WITH_C14N=OFF',
+          '-DLIBXML2_WITH_CATALOG=OFF',
+          '-DLIBXML2_WITH_DEBUG=OFF',
+          '-DLIBXML2_WITH_DOCB=OFF',
+          '-DLIBXML2_WITH_FTP=OFF',
+          '-DLIBXML2_WITH_HTML=OFF',
+          '-DLIBXML2_WITH_HTTP=OFF',
+          '-DLIBXML2_WITH_ICONV=OFF',
+          '-DLIBXML2_WITH_ICU=OFF',
+          '-DLIBXML2_WITH_ISO8859X=OFF',
+          '-DLIBXML2_WITH_LEGACY=OFF',
+          '-DLIBXML2_WITH_LZMA=OFF',
+          '-DLIBXML2_WITH_MEM_DEBUG=OFF',
+          '-DLIBXML2_WITH_MODULES=OFF',
+          '-DLIBXML2_WITH_OUTPUT=ON',
+          '-DLIBXML2_WITH_PATTERN=OFF',
+          '-DLIBXML2_WITH_PROGRAMS=OFF',
+          '-DLIBXML2_WITH_PUSH=OFF',
+          '-DLIBXML2_WITH_PYTHON=OFF',
+          '-DLIBXML2_WITH_READER=OFF',
+          '-DLIBXML2_WITH_REGEXPS=OFF',
+          '-DLIBXML2_WITH_RUN_DEBUG=OFF',
+          '-DLIBXML2_WITH_SAX1=OFF',
+          '-DLIBXML2_WITH_SCHEMAS=OFF',
+          '-DLIBXML2_WITH_SCHEMATRON=OFF',
+          '-DLIBXML2_WITH_TESTS=OFF',
+          '-DLIBXML2_WITH_THREADS=OFF',
+          '-DLIBXML2_WITH_THREAD_ALLOC=OFF',
+          '-DLIBXML2_WITH_TREE=ON',
+          '-DLIBXML2_WITH_VALID=OFF',
+          '-DLIBXML2_WITH_WRITER=OFF',
+          '-DLIBXML2_WITH_XINCLUDE=OFF',
+          '-DLIBXML2_WITH_XPATH=OFF',
+          '-DLIBXML2_WITH_XPTR=OFF',
+          '-DLIBXML2_WITH_ZLIB=OFF',
+          '..',
+      ],
+      msvc_arch='x64')
+  RunCommand(['ninja', 'install'], msvc_arch='x64')
+
+  libxml2_include_dir = os.path.join(libxml2_install_dir, 'include', 'libxml2')
+  libxml2_lib = os.path.join(libxml2_install_dir, 'lib', 'libxml2s.lib')
+  extra_cmake_flags = [
+      '-DLLVM_ENABLE_LIBXML2=FORCE_ON',
+      '-DLIBXML2_INCLUDE_DIR=' + libxml2_include_dir.replace('\\', '/'),
+      '-DLIBXML2_LIBRARIES=' + libxml2_lib.replace('\\', '/'),
+  ]
+  extra_cflags = ['-DLIBXML_STATIC']
+
+  return extra_cmake_flags, extra_cflags
+
+
 def DownloadRPMalloc():
   """Download rpmalloc."""
   rpmalloc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'rpmalloc')
@@ -615,6 +703,12 @@ def main():
     cflags.append('-I' + zlib_dir)
     cxxflags.append('-I' + zlib_dir)
     ldflags.append('-LIBPATH:' + zlib_dir)
+
+    # Statically link libxml2 to make lld-link not require mt.exe
+    libxml_cmake_args, libxml_cflags = BuildLibXml2()
+    base_cmake_args += libxml_cmake_args
+    cflags += libxml_cflags
+    cxxflags += libxml_cflags
 
     # Use rpmalloc. For faster ThinLTO linking.
     rpmalloc_dir = DownloadRPMalloc()
@@ -965,6 +1059,10 @@ def main():
         '-DCOMPILER_RT_BUILD_PROFILE=ON',
         '-DCOMPILER_RT_BUILD_SANITIZERS=OFF',
         '-DCOMPILER_RT_BUILD_XRAY=OFF',
+
+        # The libxml2 we built above is 64-bit. Since it's only needed by
+        # lld-link and not compiler-rt, just turn it off down here.
+        '-DLLVM_ENABLE_LIBXML2=OFF',
     ]
     RunCommand(['cmake'] + compiler_rt_args +
                [os.path.join(LLVM_DIR, 'llvm')],

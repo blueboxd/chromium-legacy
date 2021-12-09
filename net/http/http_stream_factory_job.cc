@@ -158,12 +158,9 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
       negotiated_protocol_(kProtoUnknown),
       num_streams_(0),
       pushed_stream_id_(kNoPushedStreamFound),
-      spdy_session_direct_(
-          !(proxy_info.is_https() && origin_url_.SchemeIs(url::kHttpScheme))),
       spdy_session_key_(
           using_quic_ ? SpdySessionKey()
-                      : GetSpdySessionKey(spdy_session_direct_,
-                                          proxy_info_.proxy_server(),
+                      : GetSpdySessionKey(proxy_info_.proxy_server(),
                                           origin_url_,
                                           request_info_.privacy_mode,
                                           request_info_.socket_tag,
@@ -174,6 +171,12 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
   // Websocket `destination` schemes should be converted to HTTP(S).
   DCHECK(base::LowerCaseEqualsASCII(destination_.scheme(), url::kHttpScheme) ||
          base::LowerCaseEqualsASCII(destination_.scheme(), url::kHttpsScheme));
+
+  // This class is specific to a single `ProxyServer`, so `proxy_info_` must be
+  // non-empty. Entries beyond the first are ignored. It should simply take a
+  // `ProxyServer`, but the full `ProxyInfo` is passed back to
+  // `HttpNetworkTransaction`, which consumes additional fields.
+  DCHECK(!proxy_info_.is_empty());
 
   // QUIC can only be spoken to servers, never to proxies.
   if (alternative_protocol == kProtoQUIC)
@@ -367,7 +370,6 @@ bool HttpStreamFactory::Job::ShouldForceQuic(
 
 // static
 SpdySessionKey HttpStreamFactory::Job::GetSpdySessionKey(
-    bool spdy_session_direct,
     const ProxyServer& proxy_server,
     const GURL& origin_url,
     PrivacyMode privacy_mode,
@@ -375,8 +377,8 @@ SpdySessionKey HttpStreamFactory::Job::GetSpdySessionKey(
     const NetworkIsolationKey& network_isolation_key,
     SecureDnsPolicy secure_dns_policy) {
   // In the case that we're using an HTTPS proxy for an HTTP url, look for a
-  // HTTP/2 proxy session *to* the proxy, instead of to the  origin server.
-  if (!spdy_session_direct) {
+  // HTTP/2 proxy session *to* the proxy, instead of to the origin server.
+  if (proxy_server.is_https() && origin_url.SchemeIs(url::kHttpScheme)) {
     return SpdySessionKey(proxy_server.host_port_pair(), ProxyServer::Direct(),
                           PRIVACY_MODE_DISABLED,
                           SpdySessionKey::IsProxySession::kTrue, socket_tag,
@@ -850,26 +852,13 @@ int HttpStreamFactory::Job::DoInitConnectionImplQuic() {
   GURL url(request_info_.url);
   if (proxy_info_.is_quic()) {
     ssl_config = &proxy_ssl_config_;
-    GURL::Replacements replacements;
-    replacements.SetSchemeStr(url::kHttpsScheme);
     const HostPortPair& proxy_endpoint =
         proxy_info_.proxy_server().host_port_pair();
-    // A proxy's certificate is expected to be valid for the proxy hostname.
-    replacements.SetHostStr(proxy_endpoint.host());
-    const std::string new_port = base::NumberToString(proxy_endpoint.port());
-    replacements.SetPortStr(new_port);
-    replacements.ClearUsername();
-    replacements.ClearPassword();
-    replacements.ClearPath();
-    replacements.ClearQuery();
-    replacements.ClearRef();
-    url = url.ReplaceComponents(replacements);
-    destination = url::SchemeHostPort(url);
+    destination = url::SchemeHostPort(url::kHttpsScheme, proxy_endpoint.host(),
+                                      proxy_endpoint.port());
+    url = destination.GetURL();
   } else {
     DCHECK(using_ssl_);
-    // The certificate of a QUIC alternative server is expected to be valid
-    // for the origin of the request (in addition to being valid for the
-    // server itself).
     destination = destination_;
     ssl_config = &server_ssl_config_;
   }

@@ -42,19 +42,26 @@ class MockAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
   MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
   MOCK_CONST_METHOD0(element_bounds, gfx::RectF&());
   MOCK_CONST_METHOD0(IsRTL, bool());
+
+  base::WeakPtr<AutofillPopupViewDelegate> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+ private:
+  base::WeakPtrFactory<MockAutofillPopupViewDelegate> weak_ptr_factory_{this};
 };
 
 }  // namespace
 
 class AutofillPopupBaseViewTest : public InProcessBrowserTest {
  public:
-  AutofillPopupBaseViewTest() {}
+  AutofillPopupBaseViewTest() = default;
 
   AutofillPopupBaseViewTest(const AutofillPopupBaseViewTest&) = delete;
   AutofillPopupBaseViewTest& operator=(const AutofillPopupBaseViewTest&) =
       delete;
 
-  ~AutofillPopupBaseViewTest() override {}
+  ~AutofillPopupBaseViewTest() override = default;
 
   void SetUpOnMainThread() override {
     content::WebContents* web_contents =
@@ -66,9 +73,10 @@ class AutofillPopupBaseViewTest : public InProcessBrowserTest {
         .WillRepeatedly(Return(web_contents));
     EXPECT_CALL(mock_delegate_, ViewDestroyed());
 
-    view_ = new AutofillPopupBaseView(
-        &mock_delegate_, views::Widget::GetWidgetForNativeWindow(
-                             browser()->window()->GetNativeWindow()));
+    view_ =
+        new AutofillPopupBaseView(mock_delegate_.GetWeakPtr(),
+                                  views::Widget::GetWidgetForNativeWindow(
+                                      browser()->window()->GetNativeWindow()));
   }
 
   void ShowView() { view_->DoShow(); }
@@ -87,13 +95,8 @@ class AutofillPopupBaseViewTest : public InProcessBrowserTest {
   raw_ptr<AutofillPopupBaseView> view_;
 };
 
-#if defined(OS_CHROMEOS)
-// Fails on ChromeOS. http://crbug.com/1277271
-#define MAYBE_CorrectBoundsTest DISABLED_CorrectBoundsTest
-#else
-#define MAYBE_CorrectBoundsTest CorrectBoundsTest
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, MAYBE_CorrectBoundsTest) {
+// Regression test for crbug.com/391316
+IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, CorrectBoundsTest) {
   gfx::RectF bounds(100, 150, 5, 5);
   EXPECT_CALL(mock_delegate_, element_bounds())
       .WillRepeatedly(ReturnRef(bounds));

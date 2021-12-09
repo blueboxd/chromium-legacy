@@ -265,6 +265,16 @@
           'shards': 25,
         },
       },
+      'Mac11 Tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': None,
+            },
+          ],
+          'shards': 25,
+        },
+      },
       'Mac11 Tests (dbg)': {
         'experiment_percentage': 100,
         'args': [
@@ -2329,6 +2339,12 @@
       'ToTWin64(dll)',
       'ToTWinCFI',
       'ToTWinCFI64',
+    ],
+  },
+  'overlay_prioritization_viz_unittests': {
+    'remove_from': [
+      # Reduce CQ load
+      'Linux Tests (Wayland)',
     ],
   },
   'ozone_unittests': {

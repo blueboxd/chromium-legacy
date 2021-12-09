@@ -6,7 +6,7 @@ import * as animate from '../animation.js';
 import {
   assert,
   assertInstanceof,
-} from '../chrome_util.js';
+} from '../assert.js';
 import {
   PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
   VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
@@ -1039,7 +1039,7 @@ export class Camera extends View {
       photoRs = await deviceOperator.getPhotoResolutions(deviceId);
     } else {
       resolCandidates = this.modes_.getFakeResolutionCandidates(mode, deviceId);
-      photoRs = resolCandidates;
+      photoRs = resolCandidates.map((c) => c.resolution);
     }
     const maxResolution =
         photoRs.reduce((maxR, r) => r.area > maxR.area ? r : maxR);

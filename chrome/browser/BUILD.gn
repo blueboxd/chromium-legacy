@@ -371,9 +371,6 @@ static_library("browser") {
     "crash_upload_list/crash_upload_list.h",
     "custom_handlers/chrome_protocol_handler_registry_delegate.cc",
     "custom_handlers/chrome_protocol_handler_registry_delegate.h",
-    "custom_handlers/protocol_handler_registry.cc",
-    "custom_handlers/protocol_handler_registry.h",
-    "custom_handlers/protocol_handler_registry.h",
     "custom_handlers/protocol_handler_registry_factory.cc",
     "custom_handlers/protocol_handler_registry_factory.h",
     "data_reduction_proxy/data_reduction_proxy_chrome_settings.cc",
@@ -2061,6 +2058,7 @@ static_library("browser") {
     "//components/country_codes",
     "//components/crash/core/browser",
     "//components/crx_file",
+    "//components/custom_handlers",
     "//components/data_reduction_proxy/core/browser",
     "//components/data_use_measurement/core:ascriber",
     "//components/device_event_log",
@@ -3417,8 +3415,6 @@ static_library("browser") {
       "//chrome/browser/ui/webui/feed_internals:mojo_bindings",
       "//chrome/browser/video_tutorials/internal",
       "//chrome/browser/video_tutorials/internal:jni_headers",
-      "//chrome/browser/webapps/android:android",
-      "//chrome/browser/webapps/android:jni_headers",
       "//chrome/common:non_code_constants",
       "//chrome/services/media_gallery_util/public/cpp",
       "//components/assist_ranker/proto",
@@ -3525,14 +3521,7 @@ static_library("browser") {
       "//url:origin_android",
     ]
 
-    allow_circular_includes_from += [
-      # chrome/browser depends on webapps, but that module needs
-      # app_banner_manager_android.h from chrome. However, the .h file will soon
-      # be moved to a component (when WebLayer starts relying on it). Allow the
-      # circular dependency until then.
-      "//chrome/browser/webapps/android:android",
-      "//chrome/browser/share",
-    ]
+    allow_circular_includes_from += [ "//chrome/browser/share" ]
 
     deps -= [ "//components/storage_monitor" ]
 

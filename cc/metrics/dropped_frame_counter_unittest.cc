@@ -14,6 +14,7 @@
 #include "build/chromeos_buildflags.h"
 #include "cc/animation/animation_host.h"
 #include "cc/test/fake_content_layer_client.h"
+#include "cc/test/fake_frame_info.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_test.h"
 
@@ -21,9 +22,9 @@ namespace cc {
 namespace {
 
 FrameInfo CreateStubFrameInfo(bool is_dropped) {
-  return {is_dropped ? FrameInfo::FrameFinalState::kDropped
-                     : FrameInfo::FrameFinalState::kPresentedAll,
-          FrameInfo::SmoothThread::kSmoothBoth};
+  return CreateFakeFrameInfo(is_dropped
+                                 ? FrameInfo::FrameFinalState::kDropped
+                                 : FrameInfo::FrameFinalState::kPresentedAll);
 }
 
 class DroppedFrameCounterTestBase : public LayerTreeTest {
@@ -310,8 +311,17 @@ class DroppedFrameCounterTest : public testing::Test {
     viz::BeginFrameArgs args_ = SimulateBeginFrameArgs();
     dropped_frame_counter_.OnBeginFrame(args_, /*is_scroll_active=*/false);
     dropped_frame_counter_.OnBeginFrame(args_, /*is_scroll_active=*/false);
-    dropped_frame_counter_.OnEndFrame(args_, CreateStubFrameInfo(main_dropped));
-    dropped_frame_counter_.OnEndFrame(args_, CreateStubFrameInfo(impl_dropped));
+
+    // End the 'main thread' arm of the fork.
+    auto main_info = CreateStubFrameInfo(main_dropped);
+    main_info.main_thread_response = FrameInfo::MainThreadResponse::kIncluded;
+    dropped_frame_counter_.OnEndFrame(args_, main_info);
+
+    // End the 'compositor thread' arm of the fork.
+    auto impl_info = CreateStubFrameInfo(impl_dropped);
+    impl_info.main_thread_response = FrameInfo::MainThreadResponse::kMissing;
+    dropped_frame_counter_.OnEndFrame(args_, impl_info);
+
     sequence_number_++;
     frame_time_ += interval_;
   }
@@ -347,6 +357,14 @@ class DroppedFrameCounterTest : public testing::Test {
 
   double PercentDroppedFrame95Percentile() {
     return dropped_frame_counter_.SlidingWindow95PercentilePercentDropped();
+  }
+
+  double PercentDroppedFrameMedian() {
+    return dropped_frame_counter_.SlidingWindowMedianPercentDropped();
+  }
+
+  double PercentDroppedFrameVariance() {
+    return dropped_frame_counter_.SlidingWindowPercentDroppedVariance();
   }
 
   double GetTotalFramesInWindow() { return base::Seconds(1) / interval_; }
@@ -412,7 +430,9 @@ TEST_F(DroppedFrameCounterTest, SimplePattern1) {
   // Which means a max of 67 dropped frames.
   EXPECT_EQ(std::round(MaxPercentDroppedFrame()), 67);
   EXPECT_EQ(PercentDroppedFrame95Percentile(), 67);  // all values are in the
-  // 67th bucket, and as a result 95th percentile is also 67.
+  // 65th-67th bucket, and as a result 95th percentile is also 67.
+  EXPECT_EQ(PercentDroppedFrameMedian(), 65);
+  EXPECT_LE(PercentDroppedFrameVariance(), 1);
 }
 
 TEST_F(DroppedFrameCounterTest, SimplePattern2) {
@@ -423,14 +443,18 @@ TEST_F(DroppedFrameCounterTest, SimplePattern2) {
   EXPECT_FLOAT_EQ(MaxPercentDroppedFrame(), expected_percent_dropped_frame);
   EXPECT_EQ(PercentDroppedFrame95Percentile(), 20);  // all values are in the
   // 20th bucket, and as a result 95th percentile is also 20.
+  EXPECT_EQ(PercentDroppedFrameMedian(), 20);
+  EXPECT_LE(PercentDroppedFrameVariance(), 1);
 }
 
 TEST_F(DroppedFrameCounterTest, IncompleteWindow) {
-  // There are only 5 frames submitted and both Max and 95pct should report
-  // zero.
+  // There are only 5 frames submitted, so Max, 95pct, median and variance
+  // should report zero.
   SimulateFrameSequence({false, false, false, false, true}, 1);
   EXPECT_EQ(MaxPercentDroppedFrame(), 0.0);
   EXPECT_EQ(PercentDroppedFrame95Percentile(), 0);
+  EXPECT_EQ(PercentDroppedFrameMedian(), 0);
+  EXPECT_LE(PercentDroppedFrameVariance(), 1);
 }
 
 TEST_F(DroppedFrameCounterTest, MaxPercentDroppedChanges) {
@@ -442,6 +466,8 @@ TEST_F(DroppedFrameCounterTest, MaxPercentDroppedChanges) {
   EXPECT_EQ(MaxPercentDroppedFrame(), expected_percent_dropped_frame1);
   EXPECT_FLOAT_EQ(PercentDroppedFrame95Percentile(), 20);  // There is only one
   // element in the histogram and that is 20.
+  EXPECT_EQ(PercentDroppedFrameMedian(), 20);
+  EXPECT_LE(PercentDroppedFrameVariance(), 1);
 
   // 30 new frames are added that have 18 dropped frames.
   // and the 30 frame before that had 6 dropped frames.

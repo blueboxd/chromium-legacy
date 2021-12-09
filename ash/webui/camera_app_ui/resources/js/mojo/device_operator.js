@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert, assertNotReached} from '../assert.js';
 import {AsyncJobQueue} from '../async_job_queue.js';
-import {assert, assertNotReached} from '../chrome_util.js';
 import {reportError} from '../error.js';
 import {Point} from '../geometry.js';
 import {
@@ -16,7 +16,6 @@ import {
   VideoConfig,     // eslint-disable-line no-unused-vars
 } from '../type.js';
 import {WaitableEvent} from '../waitable_event.js';
-
 
 import {
   AndroidInfoSupportedHardwareLevel,
@@ -682,10 +681,7 @@ export class DeviceOperator {
   /**
    * Creates a new instance of DeviceOperator if it is not set. Returns the
    *     exist instance.
-   * TODO(b/172340451): Use force casting rather than template for the type
-   *     checking of Proxy after switching to TypeScript.
-   * @return {!Promise<?T>} The singleton instance.
-   * @template T
+   * @return {!Promise<!DeviceOperator>} The singleton instance.
    */
   static async getInstance() {
     await readyEvent.wait();
@@ -706,7 +702,7 @@ export class DeviceOperator {
         return target[property];
       },
     };
-    return /** @type {!T} */ (new Proxy(instance, deviceOperatorWrapper));
+    return new Proxy(instance, deviceOperatorWrapper);
   }
 
   /**

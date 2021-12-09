@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/modules/mediastream/media_stream_audio_processor.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
 #include <string>
 #include <vector>
 
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -25,12 +26,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/mediastream/media_stream_request.h"
-#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream_audio_processor.h"
-#include "third_party/blink/renderer/modules/mediastream/mock_constraint_factory.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
-#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
@@ -70,11 +67,6 @@ void ReadDataFromSpeechFile(char* data, int length) {
   DCHECK(data_file_size64 > length);
 }
 
-MediaStreamAudioProcessor::LogCallback LogCallbackForTest() {
-  return base::BindRepeating(
-      [](const std::string& message) { VLOG(1) << message; });
-}
-
 }  // namespace
 
 class MediaStreamAudioProcessorTest : public ::testing::Test {
@@ -94,7 +86,8 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
       int expected_output_channels,
       int expected_output_buffer_size) {
     // Read the audio data from a file.
-    const media::AudioParameters& params = audio_processor.InputFormat();
+    const media::AudioParameters& params =
+        audio_processor.GetInputFormatForTesting();
     const int packet_size = params.frames_per_buffer() * 2 * params.channels();
     const size_t length = packet_size * kNumberOfPacketsForTest;
     std::unique_ptr<char[]> capture_data(new char[length]);
@@ -124,8 +117,10 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
           data_ptr, data_bus->frames());
 
       // 1. Provide playout audio, if echo cancellation is enabled.
-      webrtc::AudioProcessing* ap = audio_processor.audio_processing_.get();
-      const bool is_aec_enabled = ap && ap->GetConfig().echo_canceller.enabled;
+      const bool is_aec_enabled =
+          audio_processor.has_webrtc_audio_processing() &&
+          (*audio_processor.GetAudioProcessingModuleConfigForTesting())
+              .echo_canceller.enabled;
       if (is_aec_enabled) {
         if (has_keyboard_mic) {
           for (int channel = 0; channel < data_bus_playout->channels();
@@ -146,8 +141,6 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
                               absl::optional<double> new_volume) {
             EXPECT_EQ(audio_capture_time, input_capture_time);
           });
-      data_bus->FromInterleaved<media::SignedInt16SampleTypeTraits>(
-          data_ptr, data_bus->frames());
       audio_processor.ProcessCapturedAudio(*data_bus, input_capture_time,
                                            num_preferred_channels, 1.0, false);
       EXPECT_EQ(expected_output_sample_rate,
@@ -167,10 +160,9 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
   }
 
   void VerifyDefaultComponents(MediaStreamAudioProcessor& audio_processor) {
-    webrtc::AudioProcessing* audio_processing =
-        audio_processor.audio_processing_.get();
+    EXPECT_TRUE(audio_processor.has_webrtc_audio_processing());
     const webrtc::AudioProcessing::Config config =
-        audio_processing->GetConfig();
+        *audio_processor.GetAudioProcessingModuleConfigForTesting();
     EXPECT_TRUE(config.echo_canceller.enabled);
     EXPECT_TRUE(config.gain_controller1.enabled);
     EXPECT_TRUE(config.high_pass_filter.enabled);
@@ -211,9 +203,9 @@ TEST_P(MediaStreamAudioProcessorTestMultichannel, MAYBE_WithAudioProcessing) {
   blink::AudioProcessingProperties properties;
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
       new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-          mock_capture_callback_.Get(), LogCallbackForTest(), properties,
-          use_multichannel_processing, webrtc_audio_device));
-  EXPECT_TRUE(audio_processor->has_audio_processing());
+          mock_capture_callback_.Get(), properties, use_multichannel_processing,
+          webrtc_audio_device));
+  EXPECT_TRUE(audio_processor->has_webrtc_audio_processing());
   audio_processor->OnCaptureFormatChanged(params_);
   VerifyDefaultComponents(*audio_processor);
 
@@ -237,9 +229,9 @@ TEST_F(MediaStreamAudioProcessorTest, TurnOffDefaultConstraints) {
       new rtc::RefCountedObject<WebRtcAudioDeviceImpl>());
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
       new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-          mock_capture_callback_.Get(), LogCallbackForTest(), properties,
+          mock_capture_callback_.Get(), properties,
           /*use_capture_multi_channel_processing=*/true, webrtc_audio_device));
-  EXPECT_FALSE(audio_processor->has_audio_processing());
+  EXPECT_FALSE(audio_processor->has_webrtc_audio_processing());
   audio_processor->OnCaptureFormatChanged(params_);
 
   ProcessDataAndVerifyFormat(*audio_processor, mock_capture_callback_,
@@ -264,9 +256,9 @@ TEST_P(MediaStreamAudioProcessorTestMultichannel, MAYBE_TestAllSampleRates) {
   blink::AudioProcessingProperties properties;
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
       new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-          mock_capture_callback_.Get(), LogCallbackForTest(), properties,
-          use_multichannel_processing, webrtc_audio_device));
-  EXPECT_TRUE(audio_processor->has_audio_processing());
+          mock_capture_callback_.Get(), properties, use_multichannel_processing,
+          webrtc_audio_device));
+  EXPECT_TRUE(audio_processor->has_webrtc_audio_processing());
 
   static const int kSupportedSampleRates[] = {
     8000,
@@ -280,17 +272,18 @@ TEST_P(MediaStreamAudioProcessorTestMultichannel, MAYBE_TestAllSampleRates) {
     96000
 #endif  // BUILDFLAG(IS_CHROMECAST)
   };
-  for (size_t i = 0; i < base::size(kSupportedSampleRates); ++i) {
-    int buffer_size = kSupportedSampleRates[i] / 100;
+  for (int sample_rate : kSupportedSampleRates) {
+    SCOPED_TRACE(testing::Message() << "sample_rate=" << sample_rate);
+    int buffer_size = sample_rate / 100;
     media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                  media::CHANNEL_LAYOUT_STEREO,
-                                  kSupportedSampleRates[i], buffer_size);
+                                  media::CHANNEL_LAYOUT_STEREO, sample_rate,
+                                  buffer_size);
     audio_processor->OnCaptureFormatChanged(params);
     VerifyDefaultComponents(*audio_processor);
 
     int expected_sample_rate =
 #if BUILDFLAG(IS_CHROMECAST)
-        std::min(kSupportedSampleRates[i], media::kAudioProcessingSampleRateHz);
+        std::min(sample_rate, media::kAudioProcessingSampleRateHz);
 #else
         media::kAudioProcessingSampleRateHz;
 #endif  // BUILDFLAG(IS_CHROMECAST)
@@ -319,7 +312,7 @@ TEST_F(MediaStreamAudioProcessorTest, StartStopAecDump) {
   {
     scoped_refptr<MediaStreamAudioProcessor> audio_processor(
         new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-            mock_capture_callback_.Get(), LogCallbackForTest(), properties,
+            mock_capture_callback_.Get(), properties,
             /*use_capture_multi_channel_processing=*/true,
             webrtc_audio_device));
 
@@ -384,9 +377,9 @@ TEST_P(MediaStreamAudioProcessorTestMultichannel, TestStereoAudio) {
     properties.goog_audio_mirroring = true;
     scoped_refptr<MediaStreamAudioProcessor> audio_processor(
         new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-            mock_capture_callback_.Get(), LogCallbackForTest(), properties,
+            mock_capture_callback_.Get(), properties,
             use_multichannel_processing, webrtc_audio_device));
-    EXPECT_EQ(audio_processor->has_audio_processing(), use_apm);
+    EXPECT_EQ(audio_processor->has_webrtc_audio_processing(), use_apm);
     audio_processor->OnCaptureFormatChanged(source_params);
     // There's no sense in continuing if this fails.
     ASSERT_EQ(2, audio_processor->OutputFormat().channels());
@@ -455,9 +448,9 @@ TEST_P(MediaStreamAudioProcessorTestMultichannel,
   blink::AudioProcessingProperties properties;
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
       new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-          mock_capture_callback_.Get(), LogCallbackForTest(), properties,
-          use_multichannel_processing, webrtc_audio_device));
-  EXPECT_TRUE(audio_processor->has_audio_processing());
+          mock_capture_callback_.Get(), properties, use_multichannel_processing,
+          webrtc_audio_device));
+  EXPECT_TRUE(audio_processor->has_webrtc_audio_processing());
 
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                 media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC,
@@ -485,9 +478,9 @@ TEST_F(MediaStreamAudioProcessorTest, DiscreteChannelLayout) {
       new rtc::RefCountedObject<WebRtcAudioDeviceImpl>());
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
       new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-          mock_capture_callback_.Get(), LogCallbackForTest(), properties,
+          mock_capture_callback_.Get(), properties,
           /*use_capture_multi_channel_processing=*/true, webrtc_audio_device));
-  EXPECT_TRUE(audio_processor->has_audio_processing());
+  EXPECT_TRUE(audio_processor->has_webrtc_audio_processing());
 
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                 media::CHANNEL_LAYOUT_DISCRETE, 48000, 480);
@@ -514,9 +507,9 @@ TEST(MediaStreamAudioProcessorCallbackTest,
       new rtc::RefCountedObject<WebRtcAudioDeviceImpl>());
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
       new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-          mock_capture_callback.Get(), LogCallbackForTest(), properties,
+          mock_capture_callback.Get(), properties,
           /*use_capture_multi_channel_processing=*/true, webrtc_audio_device));
-  ASSERT_TRUE(audio_processor->has_audio_processing());
+  ASSERT_TRUE(audio_processor->has_webrtc_audio_processing());
 
   // Set buffer size to 4 ms.
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
@@ -571,9 +564,9 @@ TEST(MediaStreamAudioProcessorCallbackTest,
       new rtc::RefCountedObject<WebRtcAudioDeviceImpl>());
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
       new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-          mock_capture_callback.Get(), LogCallbackForTest(), properties,
+          mock_capture_callback.Get(), properties,
           /*use_capture_multi_channel_processing=*/true, webrtc_audio_device));
-  ASSERT_TRUE(audio_processor->has_audio_processing());
+  ASSERT_TRUE(audio_processor->has_webrtc_audio_processing());
 
   // Set buffer size to 35 ms.
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
@@ -618,9 +611,9 @@ TEST(MediaStreamAudioProcessorCallbackTest,
       new rtc::RefCountedObject<WebRtcAudioDeviceImpl>());
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
       new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-          mock_capture_callback.Get(), LogCallbackForTest(), properties,
+          mock_capture_callback.Get(), properties,
           /*use_capture_multi_channel_processing=*/true, webrtc_audio_device));
-  ASSERT_FALSE(audio_processor->has_audio_processing());
+  ASSERT_FALSE(audio_processor->has_webrtc_audio_processing());
 
   // Set buffer size to 4 ms.
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
@@ -662,9 +655,9 @@ TEST(MediaStreamAudioProcessorCallbackTest,
       new rtc::RefCountedObject<WebRtcAudioDeviceImpl>());
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
       new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-          mock_capture_callback.Get(), LogCallbackForTest(), properties,
+          mock_capture_callback.Get(), properties,
           /*use_capture_multi_channel_processing=*/true, webrtc_audio_device));
-  ASSERT_FALSE(audio_processor->has_audio_processing());
+  ASSERT_FALSE(audio_processor->has_webrtc_audio_processing());
 
   // Set buffer size to 35 ms.
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
@@ -695,6 +688,171 @@ TEST(MediaStreamAudioProcessorCallbackTest,
                                         1.0, false);
 
   audio_processor->Stop();
+}
+
+namespace {
+scoped_refptr<MediaStreamAudioProcessor> CreateAudioProcessorWithProperties(
+    AudioProcessingProperties properties) {
+  MockProcessedCaptureCallback mock_capture_callback;
+  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
+      new rtc::RefCountedObject<WebRtcAudioDeviceImpl>());
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor(
+      new rtc::RefCountedObject<MediaStreamAudioProcessor>(
+          mock_capture_callback.Get(), properties,
+          /*use_capture_multi_channel_processing=*/true, webrtc_audio_device));
+  return audio_processor;
+}
+}  // namespace
+
+TEST(MediaStreamAudioProcessorWouldModifyAudioTest, TrueByDefault) {
+  blink::AudioProcessingProperties properties;
+  EXPECT_TRUE(MediaStreamAudioProcessor::WouldModifyAudio(properties));
+
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor =
+      CreateAudioProcessorWithProperties(properties);
+  EXPECT_TRUE(audio_processor->has_webrtc_audio_processing());
+}
+
+TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
+     FalseWhenEverythingIsDisabled) {
+  blink::AudioProcessingProperties properties;
+  properties.DisableDefaultProperties();
+  EXPECT_FALSE(MediaStreamAudioProcessor::WouldModifyAudio(properties));
+
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor =
+      CreateAudioProcessorWithProperties(properties);
+  EXPECT_FALSE(audio_processor->has_webrtc_audio_processing());
+}
+
+TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
+     FalseWhenOnlyHardwareEffectsAreUsed) {
+  blink::AudioProcessingProperties properties;
+  properties.DisableDefaultProperties();
+  properties.echo_cancellation_type =
+      AudioProcessingProperties::EchoCancellationType::kEchoCancellationSystem;
+  properties.system_gain_control_activated = true;
+  properties.system_noise_suppression_activated = true;
+  EXPECT_FALSE(MediaStreamAudioProcessor::WouldModifyAudio(properties));
+
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor =
+      CreateAudioProcessorWithProperties(properties);
+  EXPECT_FALSE(audio_processor->has_webrtc_audio_processing());
+}
+
+TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
+     TrueWhenSoftwareEchoCancellationIsEnabled) {
+  blink::AudioProcessingProperties properties;
+  properties.DisableDefaultProperties();
+  properties.echo_cancellation_type =
+      AudioProcessingProperties::EchoCancellationType::kEchoCancellationAec3;
+  // WouldModifyAudio overrides this effect on iOS, but not the audio processor.
+  // TODO(https://crbug.com/1269364): Make these functions behave consistently.
+#if !defined(OS_IOS)
+  EXPECT_TRUE(MediaStreamAudioProcessor::WouldModifyAudio(properties));
+#else
+  EXPECT_FALSE(MediaStreamAudioProcessor::WouldModifyAudio(properties));
+#endif
+
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor =
+      CreateAudioProcessorWithProperties(properties);
+  EXPECT_TRUE(audio_processor->has_webrtc_audio_processing());
+}
+
+TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
+     TrueWhenStereoMirroringIsEnabled) {
+  blink::AudioProcessingProperties properties;
+  properties.DisableDefaultProperties();
+  properties.goog_audio_mirroring = true;
+  EXPECT_TRUE(MediaStreamAudioProcessor::WouldModifyAudio(properties));
+
+  // Unlike other settings, audio mirroring is not a WebRTC effect.
+  // This is really an implementation detail of the audio processor, not part of
+  // the API, but it is necessary to have test coverage to avoid inconsistencies
+  // between the static MSAP::WouldModifyAudio and the internals of the audio
+  // processor.
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor =
+      CreateAudioProcessorWithProperties(properties);
+  EXPECT_FALSE(audio_processor->has_webrtc_audio_processing());
+}
+
+TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
+     TrueWhenGainControlIsEnabled) {
+  blink::AudioProcessingProperties properties;
+  properties.DisableDefaultProperties();
+  properties.goog_auto_gain_control = true;
+  // WouldModifyAudio overrides this effect on iOS, but not the audio processor.
+  // TODO(https://crbug.com/1269364): Make these functions behave consistently.
+#if !defined(OS_IOS)
+  EXPECT_TRUE(MediaStreamAudioProcessor::WouldModifyAudio(properties));
+#else
+  EXPECT_FALSE(MediaStreamAudioProcessor::WouldModifyAudio(properties));
+#endif
+
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor =
+      CreateAudioProcessorWithProperties(properties);
+  EXPECT_TRUE(audio_processor->has_webrtc_audio_processing());
+}
+
+// "Experimental echo cancellation" does not map to any real effect, but still
+// enables audio processing.
+// TODO(https://crbug.com/1269723): Remove the experimental AEC option. This
+// test documents *current* behavior, not *desired* behavior.
+TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
+     TrueWhenExperimentalEchoCancellationIsEnabled) {
+  blink::AudioProcessingProperties properties;
+  properties.DisableDefaultProperties();
+  properties.goog_experimental_echo_cancellation = true;
+  // WouldModifyAudio overrides this effect on iOS and Android.
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  EXPECT_TRUE(MediaStreamAudioProcessor::WouldModifyAudio(properties));
+#else
+  EXPECT_FALSE(MediaStreamAudioProcessor::WouldModifyAudio(properties));
+#endif
+
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor =
+      CreateAudioProcessorWithProperties(properties);
+  // WouldModifyAudio overrides this effect on iOS and Android.
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  EXPECT_TRUE(audio_processor->has_webrtc_audio_processing());
+#else
+  EXPECT_FALSE(audio_processor->has_webrtc_audio_processing());
+#endif
+}
+
+TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
+     TrueWhenNoiseSuppressionIsEnabled) {
+  blink::AudioProcessingProperties properties;
+  properties.DisableDefaultProperties();
+  properties.goog_noise_suppression = true;
+  EXPECT_TRUE(MediaStreamAudioProcessor::WouldModifyAudio(properties));
+
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor =
+      CreateAudioProcessorWithProperties(properties);
+  EXPECT_TRUE(audio_processor->has_webrtc_audio_processing());
+}
+
+TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
+     TrueWhenExperimentalNoiseSuppression) {
+  blink::AudioProcessingProperties properties;
+  properties.DisableDefaultProperties();
+  properties.goog_experimental_noise_suppression = true;
+  EXPECT_TRUE(MediaStreamAudioProcessor::WouldModifyAudio(properties));
+
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor =
+      CreateAudioProcessorWithProperties(properties);
+  EXPECT_TRUE(audio_processor->has_webrtc_audio_processing());
+}
+
+TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
+     TrueWhenHighpassFilterIsEnabled) {
+  blink::AudioProcessingProperties properties;
+  properties.DisableDefaultProperties();
+  properties.goog_highpass_filter = true;
+  EXPECT_TRUE(MediaStreamAudioProcessor::WouldModifyAudio(properties));
+
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor =
+      CreateAudioProcessorWithProperties(properties);
+  EXPECT_TRUE(audio_processor->has_webrtc_audio_processing());
 }
 
 }  // namespace blink

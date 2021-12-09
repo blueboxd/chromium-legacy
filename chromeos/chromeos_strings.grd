@@ -2372,20 +2372,23 @@ Try tapping the mic to ask me anything.
       </message>
       <!-- Restock mainboard page -->
       <message name="IDS_SHIMLESS_RMA_RESTOCK_PAGE_TITLE" translateable="false" desc="The title for the page notifying user device is in a good state for restocking the mainboard.">
-        Restock mainboard
+        [Shimless RMA]
       </message>
       <message name="IDS_SHIMLESS_RMA_RESTOCK_INSTRUCTIONS" translateable="false" desc="Instructions for what to do in the restock state. As the device will return to this state when rebooted after restocking the user can shutdown or continue RMA">
-        Choose to shutdown and restock mainboard or continue to finalize this device.
+        Continue where you left off, or shut down to restock the board.
       </message>
       <message name="IDS_SHIMLESS_RMA_RESTOCK_SHUTDOWN_BUTTON" translateable="false" desc="Label for the button that triggers device shutdown on the restock page.">
         Shutdown
+      </message>
+      <message name="IDS_SHIMLESS_RMA_RESTOCK_CONTINUE_BUTTON" translateable="false" desc="Label for the continue button on the restock page.">
+        Continue
       </message>
       <!-- Manually enable wp page -->
       <message name="IDS_SHIMLESS_RMA_MANUALLY_ENABLE_WP_TITLE" translateable="false" desc="The title for the page to manually enable write-protect on the device, afer device provisioning completes.">
         Manually enable write-protect
       </message>
       <message name="IDS_SHIMLESS_RMA_MANUALLY_ENABLE_WP_INSTRUCTIONS" translateable="false" desc="The text instructions to manually enable write-protect on the device.">
-        Enable write-protect to continue to the next screen.
+        Enable write-protect to continue to the next screen. Learn how to enable write-protect for this device by viewing the manufacturer's instructions.
       </message>
       <message name="IDS_SHIMLESS_RMA_MANUALLY_ENABLED_WP_MESSAGE" translateable="false" desc="Message to inform user hardware write protection has been enabled and RMA is ready to continue.">
         Hardware write protection enabled. Click 'Next' to continue.

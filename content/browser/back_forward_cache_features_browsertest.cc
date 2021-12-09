@@ -310,9 +310,8 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the case when the page starts fetching in a dedicated worker, goes to
 // BFcache, and then a redirection happens. The cached page should evicted in
 // this case.
-// TODO(crbug.com/1275477): Test is flaky.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheWithDedicatedWorkerBrowserTest,
-                       DISABLED_FetchRedirectedWhileStoring) {
+                       FetchRedirectedWhileStoring) {
   CreateHttpsServer();
 
   net::test_server::ControllableHttpResponse fetch1_response(https_server(),
@@ -345,7 +344,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheWithDedicatedWorkerBrowserTest,
   fetch1_response.WaitForRequest();
 
   // Navigate to B.
+  PageLifecycleStateManagerTestDelegate delegate(
+      rfh_a->render_view_host()->GetPageLifecycleStateManager());
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  delegate.WaitForInBackForwardCacheAck();
 
   // Page A is initially stored in the back-forward cache.
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
@@ -378,9 +380,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheWithDedicatedWorkerBrowserTest,
 // Tests the case when the page starts fetching in a nested dedicated worker,
 // goes to BFcache, and then a redirection happens. The cached page should
 // evicted in this case.
-// TODO(crbug.com/1275477): Test is flaky.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheWithDedicatedWorkerBrowserTest,
-                       DISABLED_FetchRedirectedWhileStoring_Nested) {
+                       FetchRedirectedWhileStoring_Nested) {
   CreateHttpsServer();
 
   net::test_server::ControllableHttpResponse fetch1_response(https_server(),
@@ -421,7 +422,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheWithDedicatedWorkerBrowserTest,
   fetch1_response.WaitForRequest();
 
   // Navigate to B.
+  PageLifecycleStateManagerTestDelegate delegate(
+      rfh_a->render_view_host()->GetPageLifecycleStateManager());
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  delegate.WaitForInBackForwardCacheAck();
 
   // Page A is initially stored in the back-forward cache.
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
@@ -685,6 +689,129 @@ IN_PROC_BROWSER_TEST_F(
   ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
                          kNetworkRequestDatapipeDrainedAsBytesConsumer},
                     {}, {}, {}, {}, FROM_HERE);
+}
+
+// Tests the case when fetch started in a dedicated worker, but the response
+// never ends after the page is frozen. This should result in an eviction due to
+// timeout.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheWithDedicatedWorkerBrowserTest,
+                       ImageStillLoading_ResponseStartedWhileFrozen_Timeout) {
+  CreateHttpsServer();
+
+  net::test_server::ControllableHttpResponse image_response(https_server(),
+                                                            "/image.png");
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL url_a(https_server()->GetURL("a.test", "/title1.html"));
+  GURL url_b(https_server()->GetURL("b.test", "/title1.html"));
+
+  // Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+
+  // Call fetch in a dedicated worker before navigating away.
+  std::string worker_script =
+      JsReplace(R"(
+    fetch($1);
+  )",
+                https_server()->GetURL("a.test", "/image.png"));
+  EXPECT_TRUE(ExecJs(rfh_a.get(), JsReplace(R"(
+    const blob = new Blob([$1]);
+    const blobURL = URL.createObjectURL(blob);
+    const worker = new Worker(blobURL);
+  )",
+                                            worker_script)));
+
+  // Wait for the image request, but don't send anything yet.
+  image_response.WaitForRequest();
+
+  // Navigate away.
+  PageLifecycleStateManagerTestDelegate delegate(
+      rfh_a->render_view_host()->GetPageLifecycleStateManager());
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  delegate.WaitForInBackForwardCacheAck();
+  // The page was still loading when we navigated away, but it's still eligible
+  // for back-forward cache.
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  RenderFrameDeletedObserver delete_observer(rfh_a.get());
+  // Start sending the image response while in the back-forward cache, but never
+  // finish the request. Eventually the page will get deleted due to network
+  // request timeout.
+  image_response.Send(net::HTTP_OK, "image/png");
+  delete_observer.WaitUntilDeleted();
+
+  // 3) Go back to the first page. We should not restore the page from the
+  // back-forward cache.
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kNetworkRequestTimeout}, {},
+      {}, {}, {}, FROM_HERE);
+}
+
+// Tests the case when fetch started in a nested dedicated worker, but the
+// response never ends after the page is frozen. This should result in an
+// eviction due to timeout.
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheWithDedicatedWorkerBrowserTest,
+    ImageStillLoading_ResponseStartedWhileFrozen_Timeout_Nested) {
+  CreateHttpsServer();
+
+  net::test_server::ControllableHttpResponse image_response(https_server(),
+                                                            "/image.png");
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL url_a(https_server()->GetURL("a.test", "/title1.html"));
+  GURL url_b(https_server()->GetURL("b.test", "/title1.html"));
+
+  // Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+
+  // Call fetch in a dedicated worker before navigating away.
+  std::string child_worker_script =
+      JsReplace(R"(
+    fetch($1);
+  )",
+                https_server()->GetURL("a.test", "/image.png"));
+  std::string parent_worker_script = JsReplace(R"(
+    const blob = new Blob([$1]);
+    const blobURL = URL.createObjectURL(blob);
+    const worker = new Worker(blobURL);
+  )",
+                                               child_worker_script);
+  EXPECT_TRUE(ExecJs(rfh_a.get(), JsReplace(R"(
+    const blob = new Blob([$1]);
+    const blobURL = URL.createObjectURL(blob);
+    const worker = new Worker(blobURL);
+  )",
+                                            parent_worker_script)));
+
+  // Wait for the image request, but don't send anything yet.
+  image_response.WaitForRequest();
+
+  // Navigate away.
+  PageLifecycleStateManagerTestDelegate delegate(
+      rfh_a->render_view_host()->GetPageLifecycleStateManager());
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  delegate.WaitForInBackForwardCacheAck();
+  // The page was still loading when we navigated away, but it's still eligible
+  // for back-forward cache.
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  RenderFrameDeletedObserver delete_observer(rfh_a.get());
+  // Start sending the image response while in the back-forward cache, but never
+  // finish the request. Eventually the page will get deleted due to network
+  // request timeout.
+  image_response.Send(net::HTTP_OK, "image/png");
+  delete_observer.WaitUntilDeleted();
+
+  // 3) Go back to the first page. We should not restore the page from the
+  // back-forward cache.
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kNetworkRequestTimeout}, {},
+      {}, {}, {}, FROM_HERE);
 }
 
 // TODO(https://crbug.com/154571): Shared workers are not available on Android.

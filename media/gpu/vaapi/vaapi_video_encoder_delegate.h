@@ -69,14 +69,18 @@ class VaapiVideoEncoderDelegate {
   // calling VaapiWrapper::DownloadFromVABuffer().
   class EncodeResult {
    public:
-    EncodeResult(std::unique_ptr<ScopedVABuffer> coded_buffer,
+    EncodeResult(scoped_refptr<VASurface> surface,
+                 std::unique_ptr<ScopedVABuffer> coded_buffer,
                  const BitstreamBufferMetadata& metadata);
     ~EncodeResult();
 
+    VASurfaceID input_surface_id() const;
     VABufferID coded_buffer_id() const;
+
     const BitstreamBufferMetadata& metadata() const;
 
    private:
+    const scoped_refptr<VASurface> surface_;
     const std::unique_ptr<ScopedVABuffer> coded_buffer_;
     const BitstreamBufferMetadata metadata_;
   };
@@ -96,8 +100,7 @@ class VaapiVideoEncoderDelegate {
     // Constructor for VA-API.
     EncodeJob(scoped_refptr<VideoFrame> input_frame,
               bool keyframe,
-              VASurfaceID input_surface_id,
-              const gfx::Size& input_surface_size,
+              scoped_refptr<VASurface> input_surface,
               scoped_refptr<CodecPicture> picture,
               std::unique_ptr<ScopedVABuffer> coded_buffer);
 
@@ -126,8 +129,7 @@ class VaapiVideoEncoderDelegate {
 
     // VA-API specific methods.
     VABufferID coded_buffer_id() const;
-    VASurfaceID input_surface_id() const;
-    const gfx::Size& input_surface_size() const;
+    const scoped_refptr<VASurface>& input_surface() const;
     const scoped_refptr<CodecPicture>& picture() const;
 
    private:
@@ -138,9 +140,8 @@ class VaapiVideoEncoderDelegate {
     bool keyframe_;
 
     // VA-API specific members.
-    // Input surface ID and size for video frame data or scaled data.
-    const VASurfaceID input_surface_id_;
-    const gfx::Size input_surface_size_;
+    // Input surface for video frame data or scaled data.
+    const scoped_refptr<VASurface> input_surface_;
     const scoped_refptr<CodecPicture> picture_;
     // Buffer that will contain the output bitstream data for this frame.
     std::unique_ptr<ScopedVABuffer> coded_buffer_;

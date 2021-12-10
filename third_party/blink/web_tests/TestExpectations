@@ -5903,6 +5903,10 @@ crbug.com/1060837 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-em
 
 crbug.com/1143102 virtual/plz-dedicated-worker/http/tests/inspector-protocol/fetch/dedicated-worker-main-script.js [ Skip ]
 
+# Should be fixed before PlzDedicatedWorker is shipped.
+crbug.com/1143102 virtual/plz-dedicated-worker/http/tests/devtools/network/network-worker-fetch.js [ Skip ]
+crbug.com/1143102 virtual/plz-dedicated-worker/http/tests/devtools/network/network-worker-fetch-parallel.js [ Skip ]
+
 # These timeout because COEP reporting to a worker is not implemented.
 crbug.com/1197041 external/wpt/html/cross-origin-embedder-policy/reporting-to-worker-owner.https.html [ Skip ]
 crbug.com/1197041 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/reporting-to-worker-owner.https.html [ Skip ]
@@ -6945,3 +6949,6 @@ crbug.com/804275 [ Fuchsia ] external/wpt/webrtc/protocol/sdes-dont-dont-dont.ht
 
 # Sheriff 2021-12-03
 crbug.com/1198781 [ Linux ] virtual/scroll-unification-layout_ng_block_frag/fast/forms/fieldset/fieldset-custom-scrollbar.html [ Failure Pass ]
+
+# Sherrif 2021-12-10
+crbug.com/1278588 [ Win7 ] svg/filters/filter-hidden-content.svg [ Failure ]

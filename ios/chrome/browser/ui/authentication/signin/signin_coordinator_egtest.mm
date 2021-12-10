@@ -66,6 +66,12 @@ typedef NS_ENUM(NSInteger, OpenSigninMethod) {
 
 namespace {
 
+// Label used to find the 'Learn more' link.
+NSString* const kLearnMoreLabel = @"Learn More";
+
+// Text displayed in the chrome://management page.
+char const kManagedText[] = "Your browser is managed by your administrator.";
+
 NSString* const kPassphrase = @"hello";
 
 // Closes the sign-in import data dialog and choose either to combine the data
@@ -466,7 +472,15 @@ void ExpectSyncConsentHistogram(
 
 // Verifies that the user is signed in when selecting "Yes I'm In", after the
 // advanced settings were swiped to dismiss.
-- (void)testSwipeDownInAdvancedSettings {
+// TODO(crbug.com/1277545): Flaky on iOS simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testSwipeDownInAdvancedSettings \
+  DISABLED_testSwipeDownInAdvancedSettings
+#else
+#define MAYBE_testSwipeDownInAdvancedSettings \
+  testSwipeDownInAdvancedSettings
+#endif
+- (void)MAYBE_testSwipeDownInAdvancedSettings {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   [self openSigninFromView:OpenSigninMethodFromSettings tapSettingsLink:YES];
@@ -913,7 +927,15 @@ void ExpectSyncConsentHistogram(
 
 // Tests that Sync is on when introducing passphrase from settings, after
 // logging in.
-- (void)testSyncOnWhenPassphraseIntroducedAfterSignIn {
+// TODO(crbug.com/1277545): Flaky on iOS simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testSyncOnWhenPassphraseIntroducedAfterSignIn \
+  DISABLED_testSyncOnWhenPassphraseIntroducedAfterSignIn
+#else
+#define MAYBE_testSyncOnWhenPassphraseIntroducedAfterSignIn \
+  testSyncOnWhenPassphraseIntroducedAfterSignIn
+#endif
+- (void)MAYBE_testSyncOnWhenPassphraseIntroducedAfterSignIn {
   [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
@@ -987,7 +1009,7 @@ void ExpectSyncConsentHistogram(
 
 // Tests that when the syncTypesListDisabled policy is enabled, the signin promo
 // description is updated and when opening the sign-in screen a policy warning
-// is displayed.
+// is displayed with a link that opens the policy management page.
 - (void)testSynTypesDisabledPolicy {
   // Set policy.
   std::vector<base::Value> values;
@@ -1021,6 +1043,17 @@ void ExpectSyncConsentHistogram(
       selectElementWithMatcher:grey_allOf(grey_text(policyText),
                                           grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_notNil()];
+
+  // Check that the "learn more link" works.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityLabel(kLearnMoreLabel),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitLink),
+                                   nil)] performAction:grey_tap()];
+
+  // Check that the policy management page was opened.
+  [ChromeEarlGrey waitForWebStateContainingText:kManagedText];
 }
 
 @end

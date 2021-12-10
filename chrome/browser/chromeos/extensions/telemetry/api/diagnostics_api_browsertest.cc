@@ -24,6 +24,8 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
       cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryDischarge,
       cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
       cros_healthd::mojom::DiagnosticRoutineEnum::kCpuCache,
+      cros_healthd::mojom::DiagnosticRoutineEnum::kFloatingPointAccuracy,
+      cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
       cros_healthd::mojom::DiagnosticRoutineEnum::kCpuStress,
       cros_healthd::mojom::DiagnosticRoutineEnum::kMemory,
   });
@@ -41,6 +43,8 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
               "battery_discharge",
               "battery_health",
               "cpu_cache",
+              "cpu_floating_point_accuracy",
+              "cpu_prime_search",
               "cpu_stress",
               "memory"
             ]
@@ -255,6 +259,46 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
   )");
   EXPECT_EQ(cros_healthd::FakeCrosHealthdClient::Get()->GetLastRunRoutine(),
             cros_healthd::mojom::DiagnosticRoutineEnum::kCpuCache);
+}
+
+IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunCpuFloatingPointAccuracyRoutineSuccess) {
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function runCpuFloatingPointAccuracyRoutine() {
+        const response =
+          await chrome.os.diagnostics.runCpuFloatingPointAccuracyRoutine(
+            {
+              length_seconds: 120
+            }
+          );
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+  EXPECT_EQ(cros_healthd::FakeCrosHealthdClient::Get()->GetLastRunRoutine(),
+            cros_healthd::mojom::DiagnosticRoutineEnum::kFloatingPointAccuracy);
+}
+
+IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunCpuPrimeSearchRoutineSuccess) {
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function runCpuPrimeSearchRoutine() {
+        const response =
+          await chrome.os.diagnostics.runCpuPrimeSearchRoutine(
+            {
+              length_seconds: 120
+            }
+          );
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+  EXPECT_EQ(cros_healthd::FakeCrosHealthdClient::Get()->GetLastRunRoutine(),
+            cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch);
 }
 
 IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,

@@ -2415,7 +2415,6 @@ if (!is_android && !is_fuchsia) {
           deps += [
             "//ash/webui/demo_mode_app_ui:browser_tests_js",
             "//ash/webui/sample_system_web_app_ui:browser_tests_js",
-            "//ash/webui/telemetry_extension_ui/test:browser_tests_js",
           ]
         }
       }
@@ -3589,12 +3588,10 @@ if (!is_android && !is_fuchsia) {
         sources += [
           "../browser/ash/web_applications/demo_mode_app_integration_browsertest.cc",
           "../browser/ash/web_applications/sample_system_web_app_integration_browsertest.cc",
-          "../browser/ash/web_applications/telemetry_extension_integration_browsertest.cc",
         ]
         deps += [
           "//ash/webui/demo_mode_app_ui",
           "//ash/webui/sample_system_web_app_ui",
-          "//ash/webui/telemetry_extension_ui",
         ]
       }
       if (use_dbus) {
@@ -3718,6 +3715,7 @@ if (!is_android && !is_fuchsia) {
         "//chrome/services/wilco_dtc_supportd/public/mojom",
         "//chromeos:test_support",
         "//chromeos/assistant:buildflags",
+        "//chromeos/components/onc:test_support",
         "//chromeos/components/quick_answers/public/cpp:cpp",
         "//chromeos/cryptohome",
         "//chromeos/dbus:test_support",
@@ -6260,7 +6258,6 @@ test("unit_tests") {
       "//chrome/browser/ui/color:mixers",
       "//chrome/browser/ui/webui/discards:mojo_bindings",
       "//chrome/browser/web_applications:web_applications_test_support",
-      "//chrome/services/speech:unit_tests",
       "//components/chrome_cleaner/test:test_name_helper",
       "//components/enterprise",
       "//components/enterprise:test_support",
@@ -6706,6 +6703,7 @@ test("unit_tests") {
       "//chrome/services/sharing/nearby/decoder:unit_tests",
       "//chrome/services/sharing/nearby/platform:unit_tests",
       "//chromeos/assistant:buildflags",
+      "//chromeos/components/onc",
       "//chromeos/components/quick_answers:quick_answers",
       "//chromeos/components/quick_answers/public/cpp:cpp",
       "//chromeos/constants",

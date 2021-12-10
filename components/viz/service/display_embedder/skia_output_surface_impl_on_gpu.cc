@@ -488,14 +488,9 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame,
   SwapBuffersInternal(std::move(frame));
 }
 
-void SkiaOutputSurfaceImplOnGpu::AllocateFrameBuffers(size_t n) {
+void SkiaOutputSurfaceImplOnGpu::ReleaseFrameBuffers(int n) {
   MakeCurrent(/*need_framebuffer=*/false);
-  output_device_->AllocateFrameBuffers(n);
-}
-
-void SkiaOutputSurfaceImplOnGpu::ReleaseFrameBuffers(size_t n) {
-  MakeCurrent(/*need_framebuffer=*/false);
-  for (size_t i = 0; i < n; ++i) {
+  for (int i = 0; i < n; ++i) {
     output_device_->ReleaseOneFrameBuffer();
   }
 }
@@ -1510,7 +1505,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
       if (gl_surface_->IsSurfaceless()) {
 #if defined(USE_OZONE)
         bool needs_background_image = ui::OzonePlatform::GetInstance()
-                                          ->GetPlatformProperties()
+                                          ->GetPlatformRuntimeProperties()
                                           .needs_background_image;
         bool supports_non_backed_solid_color_images =
             ui::OzonePlatform::GetInstance()
@@ -1590,7 +1585,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
 
 #if defined(USE_OZONE)
   bool needs_background_image = ui::OzonePlatform::GetInstance()
-                                    ->GetPlatformProperties()
+                                    ->GetPlatformRuntimeProperties()
                                     .needs_background_image;
   bool supports_non_backed_solid_color_images =
       ui::OzonePlatform::GetInstance()

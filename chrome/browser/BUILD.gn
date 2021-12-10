@@ -2475,6 +2475,7 @@ static_library("browser") {
       "//chromeos/components/local_search_service/public/cpp:cpp",
       "//chromeos/components/local_search_service/public/mojom",
       "//chromeos/components/multidevice/debug_webui",
+      "//chromeos/components/onc",
       "//chromeos/components/quick_answers/public/cpp:cpp",
       "//chromeos/components/quick_answers/public/cpp:prefs",
       "//chromeos/dbus/attestation",
@@ -2510,8 +2511,6 @@ static_library("browser") {
         "//ash/webui/sample_system_web_app_ui",
         "//ash/webui/sample_system_web_app_ui/mojom:shared",
         "//ash/webui/sample_system_web_app_ui/mojom:trusted",
-        "//ash/webui/telemetry_extension_ui",
-        "//ash/webui/telemetry_extension_ui/mojom",
       ]
     }
 

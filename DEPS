@@ -239,7 +239,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'eb6851ab510554632125a4c3e1a9fcd43f148d91',
+  'skia_revision': '53f3fda2839f08898b2546f3eda5ecba89570bef',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -247,11 +247,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '663831aa676c59829cc3d822340812f016bf77f6',
+  'angle_revision': '9d5faed87dd8c618a94eca7a9b7b7fbb19fdcccb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '1706ad2969267813d16a4d7a5f96903904ceafba',
+  'swiftshader_revision': '4c62980da8c1b067c48c2425a206b026eaa38cd4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -306,7 +306,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'd16203a89ed9ac8af19f92a11e4c2cea48744d99',
+  'catapult_revision': 'fa35beefb3429605035f98211ddb8750dee6a13d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -314,7 +314,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'b6f648d8921ea8be8f2b32c2061fec7503b56610',
+  'devtools_frontend_revision': '701f62d1395f2a076c37999603dd0333bd702c54',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -354,7 +354,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '1b1b658d365591b6a8d4bfb0c3524832c89afc99',
+  'dawn_revision': '5819d52bc450b65a3c4c3d6bd4aa261077539b4c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -799,7 +799,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'SslThg2dX5Pb3BvhX9vVp7Zz61e2mXOlbta1WPB3brkC',
+          'version': 'g7O7GcLsARLjD0AJbj0PKPchHjuf3xILSH5_7CT3u9wC',
       },
     ],
     'condition': 'checkout_android',
@@ -1313,7 +1313,7 @@ deps = {
     Var('chromium_git') + '/webm/libwebm.git' + '@' + 'e4fbea0c9751ae8aa86629b197a28d8276a2b0da',
 
   'src/third_party/libyuv':
-    Var('chromium_git') + '/libyuv/libyuv.git' + '@' + 'd13d9d5972ec99e9f923ec5ca2afb8c1d21b8e5a',
+    Var('chromium_git') + '/libyuv/libyuv.git' + '@' + 'fdc71956bdade0012b0628b5011b567c06c72308',
 
   'src/third_party/lighttpd': {
       'url': Var('chromium_git') + '/chromium/deps/lighttpd.git' + '@' + Var('lighttpd_revision'),
@@ -1421,7 +1421,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '4d37a2c7619497cb339efdd820cfb1aeccf582ca',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '0ae6700b6b9cc6f8934df113ea29ec69146d6a89',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1603,7 +1603,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '62d7d0c928c9a040dce96aa2f16c00e7e67d59cb',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@38603b300bcee065a9d9f0203eb389775a06e1ee',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@267fa481ccad51f1b43b98b6d60e0db607f005ca',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + '5e49f57a6e71a026a54eb42e366de09a4142d24e',
@@ -1639,7 +1639,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'b1f3776e4913637221733a4da09f3339e783b771',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'c7db2bd770483d359a66ff5d43c81d43677043e9',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'aa6dcde554d68ea68684af3e6699541ff6067793',
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + 'a6b138d6b4ef3a5b2c87f899b67f3b5c8dd3c002',
@@ -1679,7 +1679,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': 'BkeCwTnJJi2hffEKlsGWTiP5quyDianpBWnloFZ49ZEC',
+          'version': 'SSrgf0lBIrCHRZ2acvLwXzzm4KTPzRg17PGIiqsMxBQC',
         },
       ],
       'dep_type': 'cipd',
@@ -1700,7 +1700,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b9131a70da0bd29f3c8c2aa208fe89de4424935f',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6943b07cd67d829c171c8661979b029912e1ca06',
     'condition': 'checkout_src_internal',
   },
 
@@ -1741,7 +1741,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'pwWl45e8CwnjoRUQRA15C1LdV_vlCgTKrcx6pX5_CY0C',
+        'version': 'F7BdZByQ0z6oQAh2IRbqmJFi0GFgObrk9Q9RJdVZNv8C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

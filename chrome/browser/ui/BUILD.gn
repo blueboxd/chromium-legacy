@@ -1966,10 +1966,13 @@ static_library("ui") {
       "app_list/search/help_app_provider.h",
       "app_list/search/mixer.cc",
       "app_list/search/mixer.h",
+      "app_list/search/omnibox_answer_result.cc",
+      "app_list/search/omnibox_answer_result.h",
       "app_list/search/omnibox_provider.cc",
       "app_list/search/omnibox_provider.h",
       "app_list/search/omnibox_result.cc",
       "app_list/search/omnibox_result.h",
+      "app_list/search/omnibox_util.h",
       "app_list/search/os_settings_provider.cc",
       "app_list/search/os_settings_provider.h",
       "app_list/search/ranking/answer_ranker.cc",
@@ -2114,6 +2117,8 @@ static_library("ui") {
       "ash/desks_templates/desks_templates_app_launch_handler.h",
       "ash/desks_templates/desks_templates_client.cc",
       "ash/desks_templates/desks_templates_client.h",
+      "ash/fwupd_download_client_impl.cc",
+      "ash/fwupd_download_client_impl.h",
       "ash/holding_space/holding_space_client_impl.cc",
       "ash/holding_space/holding_space_client_impl.h",
       "ash/holding_space/holding_space_downloads_delegate.cc",
@@ -2977,6 +2982,7 @@ static_library("ui") {
       "//chromeos/components/multidevice",
       "//chromeos/components/multidevice/debug_webui",
       "//chromeos/components/multidevice/logging",
+      "//chromeos/components/onc",
       "//chromeos/components/quick_answers",
       "//chromeos/components/quick_answers/public/cpp:cpp",
       "//chromeos/components/quick_answers/public/cpp:prefs",
@@ -3096,7 +3102,6 @@ static_library("ui") {
       deps += [
         "//ash/webui/demo_mode_app_ui",
         "//ash/webui/sample_system_web_app_ui",
-        "//ash/webui/telemetry_extension_ui",
       ]
     }
   }

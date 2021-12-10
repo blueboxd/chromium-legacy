@@ -3326,7 +3326,7 @@
       'mac-code-coverage': {
         'mixins': [
           'isolate_profile_data',
-          'mac_10.13',
+          'mac_11_x64',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
@@ -4231,7 +4231,6 @@
         'os_type': 'linux',
         'browser_config': 'release',
         'mixins': [
-          'limited_capacity_bot',
           'linux_intel_uhd_630_stable',
         ],
         'test_suites': {

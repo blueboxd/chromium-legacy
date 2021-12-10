@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 
+#include <algorithm>
 #include <map>
 #include <string>
 #include <utility>
@@ -133,6 +134,7 @@ class KSAdminApp : public App {
   void Register();
   void Delete();
   void PrintTag();
+  int PrintKeystoneTag(const std::string& app_id);
   void PrintUsage(const std::string& error_message);
   void PrintVersion();
   void PrintTickets();
@@ -164,6 +166,7 @@ void KSAdminApp::PrintUsage(const std::string& error_message) {
       "                       -e, -a, -K, -H, -g.\n"
       "Action parameters:\n"
       "  --brand-key,-b      Set the brand code key. Use with -P and -B.\n"
+      "                      Value must be empty or KSBrandID.\n"
       "  --brand-path,-B     Set the brand code path. Use with -P and -b.\n"
       "  --productid,-P id   ProductID.\n"
       "  --system-store,-S   Use the system-wide ticket store.\n"
@@ -183,11 +186,19 @@ void KSAdminApp::PrintUsage(const std::string& error_message) {
 void KSAdminApp::Register() {
   RegistrationRequest registration;
   registration.app_id = SwitchValue(kCommandProductId);
-  registration.brand_code = "";  // TODO(crbug.com/1250524): Implement.
   registration.ap = SwitchValue(kCommandTag);
   registration.version = base::Version(SwitchValue(kCommandVersion));
   registration.existence_checker_path =
       base::FilePath(SwitchValue(kCommandXCPath));
+
+  const std::string brand_key = SwitchValue(kCommandBrandKey);
+  if (brand_key.empty() ||
+      brand_key == base::SysNSStringToUTF8(kCRUTicketBrandKey)) {
+    registration.brand_path = base::FilePath(SwitchValue(kCommandBrandPath));
+  } else {
+    PrintUsage("Unsupported brand key.");
+    return;
+  }
 
   if (registration.app_id.empty() || !registration.version.IsValid()) {
     PrintUsage("Registration information invalid.");
@@ -278,16 +289,7 @@ NSDictionary<NSString*, KSTicket*>* KSAdminApp::LoadTicketStore() {
                                 .AsUTF8Unsafe())];
 }
 
-void KSAdminApp::PrintTag() {
-  // TODO(crbug.com/1250524): Print tag pointed by matching ticket in Chromium
-  // Updater if such ticket exists, and suppress printing the legacy tag.
-  std::string app_id = SwitchValue(kCommandProductId);
-  if (app_id.empty()) {
-    PrintUsage("productid missing");
-    return;
-  }
-
-  int exit_code = 0;
+int KSAdminApp::PrintKeystoneTag(const std::string& app_id) {
   @autoreleasepool {
     NSDictionary<NSString*, KSTicket*>* store = LoadTicketStore();
     KSTicket* ticket =
@@ -296,10 +298,48 @@ void KSAdminApp::PrintTag() {
       printf("%s\n", base::SysNSStringToUTF8([ticket determineTag]).c_str());
     } else {
       printf("No ticket for %s\n", app_id.c_str());
-      exit_code = 1;
+      return 1;
     }
   }
-  Shutdown(exit_code);
+  return 0;
+}
+
+void KSAdminApp::PrintTag() {
+  const std::string app_id = SwitchValue(kCommandProductId);
+  if (app_id.empty()) {
+    PrintUsage("productid missing");
+    return;
+  }
+
+  service_proxy_->GetAppStates(base::BindOnce(
+      [](const std::string& app_id,
+         base::OnceCallback<int(const std::string&)> fallback_cb,
+         base::OnceCallback<void(int)> done_cb,
+         const std::vector<updater::UpdateService::AppState>& states) {
+        int exit_code = 0;
+
+        std::vector<updater::UpdateService::AppState>::const_iterator it =
+            std::find_if(
+                std::begin(states), std::end(states),
+                [&app_id](const updater::UpdateService::AppState& state) {
+                  return base::EqualsCaseInsensitiveASCII(state.app_id, app_id);
+                });
+        if (it != std::end(states)) {
+          KSTicket* ticket =
+              [[[KSTicket alloc] initWithAppState:*it] autorelease];
+          printf("%s\n",
+                 base::SysNSStringToUTF8([ticket determineTag]).c_str());
+
+        } else {
+          // Fallback to print tag from legacy Keystone tickets if there's no
+          // matching app registered with the Chromium updater.
+          exit_code = std::move(fallback_cb).Run(app_id);
+        }
+
+        std::move(done_cb).Run(exit_code);
+      },
+      app_id, base::BindOnce(&KSAdminApp::PrintKeystoneTag, this),
+      base::BindOnce(&KSAdminApp::Shutdown, this)));
 }
 
 void KSAdminApp::PrintVersion() {
@@ -326,7 +366,7 @@ void KSAdminApp::PrintTickets() {
       [](base::OnceCallback<void()> fallback_cb,
          base::OnceCallback<void(int)> done_cb,
          const std::vector<updater::UpdateService::AppState>& states) {
-        for (const auto& state : states) {
+        for (const updater::UpdateService::AppState& state : states) {
           KSTicket* ticket =
               [[[KSTicket alloc] initWithAppState:state] autorelease];
           printf("%s\n", base::SysNSStringToUTF8([ticket description]).c_str());

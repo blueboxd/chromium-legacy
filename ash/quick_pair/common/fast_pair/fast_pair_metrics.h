@@ -6,9 +6,12 @@
 #define ASH_QUICK_PAIR_COMMON_FAST_PAIR_FAST_PAIR_METRICS_H_
 
 #include "base/component_export.h"
+#include "base/time/time.h"
 
 namespace ash {
 namespace quick_pair {
+
+struct Device;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. The numbers here correspond to the
@@ -25,7 +28,12 @@ enum COMPONENT_EXPORT(QUICK_PAIR_COMMON) FastPairEngagementFlowEvent {
 };
 
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
-void RecordFastPairEngagementFlow(FastPairEngagementFlowEvent event);
+void AttemptRecordingFastPairEngagementFlow(const Device& device,
+                                            FastPairEngagementFlowEvent event);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void AttemptRecordingTotalUxPairTime(const Device& device,
+                                     base::TimeDelta total_pair_time);
 
 }  // namespace quick_pair
 }  // namespace ash

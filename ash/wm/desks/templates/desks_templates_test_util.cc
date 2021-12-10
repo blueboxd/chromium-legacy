@@ -66,7 +66,15 @@ DesksTemplatesIconViewTestApi::DesksTemplatesIconViewTestApi(
 
 DesksTemplatesIconViewTestApi::~DesksTemplatesIconViewTestApi() = default;
 
-DesksTemplatesItemView* GetItemViewFromOverviewGrid(int grid_item_index) {
+DesksTemplatesNameViewTestApi::DesksTemplatesNameViewTestApi(
+    const DesksTemplatesNameView* desks_templates_name_view)
+    : desks_templates_name_view_(desks_templates_name_view) {
+  DCHECK(desks_templates_name_view_);
+}
+
+DesksTemplatesNameViewTestApi::~DesksTemplatesNameViewTestApi() = default;
+
+DesksTemplatesItemView* GetItemViewFromTemplatesGrid(int grid_item_index) {
   const auto* overview_grid = GetPrimaryOverviewGrid();
   if (!overview_grid)
     return nullptr;
@@ -120,7 +128,7 @@ views::Button* GetSaveDeskAsTemplateButton() {
 }
 
 views::Button* GetTemplateItemButton(int index) {
-  auto* item = GetItemViewFromOverviewGrid(index);
+  auto* item = GetItemViewFromTemplatesGrid(index);
   return item ? static_cast<views::Button*>(item) : nullptr;
 }
 

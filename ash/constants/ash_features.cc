@@ -845,7 +845,7 @@ const base::Feature kMediaAppHandlesPdf{"MediaAppHandlesPdf",
 
 // Feature to continuously log PSI memory pressure data to UMA.
 const base::Feature kMemoryPressureMetricsDetail{
-    "MemoryPressureMetricsDetail", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MemoryPressureMetricsDetail", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls how frequently memory pressure is logged
 const base::FeatureParam<int> kMemoryPressureMetricsDetailLogPeriod{
@@ -1005,6 +1005,10 @@ const base::Feature kProductivityLauncherAnimation{
 
 // Controls whether to enable Projector.
 const base::Feature kProjector{"Projector", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to enable Projector for managed users.
+const base::Feature kProjectorManagedUser{"ProjectorManagedUser",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to enable Projector in status tray.
 const base::Feature kProjectorFeaturePod{"ProjectorFeaturePod",
@@ -1757,7 +1761,15 @@ bool IsProductivityLauncherAnimationEnabled() {
 }
 
 bool IsProjectorEnabled() {
+  return IsProjectorAllUserEnabled() || IsProjectorManagedUserEnabled();
+}
+
+bool IsProjectorAllUserEnabled() {
   return base::FeatureList::IsEnabled(kProjector);
+}
+
+bool IsProjectorManagedUserEnabled() {
+  return base::FeatureList::IsEnabled(kProjectorManagedUser);
 }
 
 bool IsProjectorFeaturePodEnabled() {

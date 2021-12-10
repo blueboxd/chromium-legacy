@@ -1199,6 +1199,26 @@
             ]
         }
     ],
+    "AutofillEnableVirtualCardsRiskBasedAuthentication": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillEnableVirtualCardsRiskBasedAuthentication"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillIgnoreAutocompleteForImport": [
         {
             "platforms": [
@@ -1230,6 +1250,27 @@
                         "AutofillKeyboardAccessory",
                         "AutofillManualFallbackAndroid",
                         "RecoverFromNeverSaveAndroid"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillMorePredictableDesktopUI": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_2021-12-09",
+                    "enable_features": [
+                        "AutofillCenterAlignedSuggestions",
+                        "AutofillTypeSpecificPopupWidth",
+                        "AutofillUseConsistentPopupSettingsIcons"
                     ]
                 }
             ]
@@ -3173,6 +3214,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DexFixer"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DialEnforceUrlIPAddress": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "DialEnforceUrlIPAddress",
+                    "enable_features": [
+                        "DialEnforceUrlIPAddress"
                     ]
                 }
             ]
@@ -5849,7 +5909,7 @@
                         "bag_of_words_entities": "false",
                         "extract_related_searches": "true",
                         "min_page_topics_model_version_for_visibility": "2110051800",
-                        "models_to_execute": "OPTIMIZATION_TARGET_PAGE_TOPICS,OPTIMIZATION_TARGET_PAGE_ENTITIES",
+                        "models_to_execute_v2": "OPTIMIZATION_TARGET_PAGE_TOPICS:en,OPTIMIZATION_TARGET_PAGE_ENTITIES:en",
                         "write_to_history_service": "true"
                     },
                     "enable_features": [
@@ -6769,7 +6829,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Experiment_20211021",
+                    "name": "Experiment_V2_20211129",
+                    "params": {
+                        "RetailCouponsWithCodeParam": "true"
+                    },
                     "enable_features": [
                         "RetailCoupons"
                     ]
@@ -8735,7 +8798,7 @@
                         "mode": "0",
                         "reference_window_delay": "5",
                         "reference_window_length": "5",
-                        "use_predicted_step": "false",
+                        "use_predicted_step": "true",
                         "window_length": "5"
                     },
                     "enable_features": [

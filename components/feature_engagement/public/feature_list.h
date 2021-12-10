@@ -100,6 +100,21 @@ DEFINE_VARIATION_PARAM(kIPHDownloadInfoBarDownloadContinuingFeature,
 DEFINE_VARIATION_PARAM(kIPHDownloadInfoBarDownloadsAreFasterFeature,
                        "IPH_DownloadInfoBarDownloadsAreFaster");
 DEFINE_VARIATION_PARAM(kIPHEphemeralTabFeature, "IPH_EphemeralTab");
+DEFINE_VARIATION_PARAM(
+    kIPHFeatureNotificationGuideDefaultBrowserNotificationShownFeature,
+    "IPH_FeatureNotificationGuideDefaultBrowserNotificationShown");
+DEFINE_VARIATION_PARAM(
+    kIPHFeatureNotificationGuideSignInNotificationShownFeature,
+    "IPH_FeatureNotificationGuideSignInNotificationShown");
+DEFINE_VARIATION_PARAM(
+    kIPHFeatureNotificationGuideIncognitoTabNotificationShownFeature,
+    "IPH_FeatureNotificationGuideIncognitoTabNotificationShown");
+DEFINE_VARIATION_PARAM(
+    kIPHFeatureNotificationGuideNTPSuggestionCardNotificationShownFeature,
+    "IPH_FeatureNotificationGuideNTPSuggestionCardNotificationShown");
+DEFINE_VARIATION_PARAM(
+    kIPHFeatureNotificationGuideVoiceSearchNotificationShownFeature,
+    "IPH_FeatureNotificationGuideVoiceSearchNotificationShown");
 DEFINE_VARIATION_PARAM(kIPHFeedCardMenuFeature, "IPH_FeedCardMenu");
 DEFINE_VARIATION_PARAM(kIPHHomepagePromoCardFeature, "IPH_HomepagePromoCard");
 DEFINE_VARIATION_PARAM(kIPHIdentityDiscFeature, "IPH_IdentityDisc");
@@ -133,6 +148,8 @@ DEFINE_VARIATION_PARAM(kIPHReadLaterAppMenuBookmarksFeature,
                        "IPH_ReadLaterAppMenuBookmarks");
 DEFINE_VARIATION_PARAM(kIPHReadLaterBottomSheetFeature,
                        "IPH_ReadLaterBottomSheet");
+DEFINE_VARIATION_PARAM(kIPHShoppingListMenuItemFeature,
+                       "IPH_ShoppingListMenuItem");
 DEFINE_VARIATION_PARAM(kIPHTabGroupsQuicklyComparePagesFeature,
                        "IPH_TabGroupsQuicklyComparePages");
 DEFINE_VARIATION_PARAM(kIPHTabGroupsTapToSeeAnotherTabFeature,
@@ -283,6 +300,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHReadLaterAppMenuBookmarkThisPageFeature),
         VARIATION_ENTRY(kIPHReadLaterAppMenuBookmarksFeature),
         VARIATION_ENTRY(kIPHReadLaterBottomSheetFeature),
+        VARIATION_ENTRY(kIPHShoppingListMenuItemFeature),
         VARIATION_ENTRY(kIPHTabGroupsQuicklyComparePagesFeature),
         VARIATION_ENTRY(kIPHTabGroupsTapToSeeAnotherTabFeature),
         VARIATION_ENTRY(kIPHTabGroupsYourTabsAreTogetherFeature),

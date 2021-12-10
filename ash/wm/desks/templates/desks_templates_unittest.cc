@@ -23,6 +23,7 @@
 #include "ash/wm/desks/templates/desks_templates_icon_container.h"
 #include "ash/wm/desks/templates/desks_templates_icon_view.h"
 #include "ash/wm/desks/templates/desks_templates_item_view.h"
+#include "ash/wm/desks/templates/desks_templates_metrics_util.h"
 #include "ash/wm/desks/templates/desks_templates_name_view.h"
 #include "ash/wm/desks/templates/desks_templates_presenter.h"
 #include "ash/wm/desks/templates/desks_templates_test_util.h"
@@ -40,6 +41,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/app_restore/app_launch_info.h"
@@ -616,6 +618,9 @@ TEST_F(DesksTemplatesTest, DeleteTemplate) {
   // This window should be hidden whenever the desk templates grid is open.
   auto test_window = CreateAppWindow();
 
+  // This action should record deletions and grid shows in a UMA histogram.
+  base::HistogramTester histogram_tester;
+
   OpenOverviewAndShowTemplatesGrid();
 
   // The window is hidden because the desk templates grid is open.
@@ -646,6 +651,13 @@ TEST_F(DesksTemplatesTest, DeleteTemplate) {
   auto* save_template =
       GetSaveDeskAsTemplateButtonForRoot(Shell::GetPrimaryRootWindow());
   EXPECT_TRUE(save_template->IsVisible());
+
+  // Assert that histogram metrics were recorded.
+  // note: deleting a template that doesn't exist counts as a delete according
+  // to the desks model hence expected_deletes being set to two.
+  const int expected_deletes = 2;
+  histogram_tester.ExpectTotalCount(kDeleteTemplateHistogramName,
+                                    expected_deletes);
 }
 
 // Tests that the save desk as template button is disabled when the maximum
@@ -716,7 +728,7 @@ TEST_F(DesksTemplatesTest, LaunchTemplate) {
   // Click on the grid item to launch the template.
   {
     DeskSwitchAnimationWaiter waiter;
-    ClickOnView(GetItemViewFromOverviewGrid(/*grid_item_index=*/0));
+    ClickOnView(GetItemViewFromTemplatesGrid(/*grid_item_index=*/0));
     WaitForDesksTemplatesUI();
     waiter.Wait();
   }
@@ -734,7 +746,7 @@ TEST_F(DesksTemplatesTest, LaunchTemplate) {
   OpenOverviewAndShowTemplatesGrid();
   {
     DeskSwitchAnimationWaiter waiter;
-    DesksTemplatesItemView* item_view = GetItemViewFromOverviewGrid(
+    DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
         /*grid_item_index=*/0);
     ClickOnView(DesksTemplatesItemViewTestApi(item_view).launch_button());
     WaitForDesksTemplatesUI();
@@ -755,7 +767,7 @@ TEST_F(DesksTemplatesTest, IconsOrder) {
   OpenOverviewAndShowTemplatesGrid();
 
   // Get the icon views.
-  DesksTemplatesItemView* item_view = GetItemViewFromOverviewGrid(
+  DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
   const std::vector<DesksTemplatesIconView*>& icon_views =
       DesksTemplatesItemViewTestApi(item_view).icon_views();
@@ -820,7 +832,7 @@ TEST_F(DesksTemplatesTest, IconsOrderWithInactiveTabs) {
   OpenOverviewAndShowTemplatesGrid();
 
   // Get the icon views.
-  DesksTemplatesItemView* item_view = GetItemViewFromOverviewGrid(
+  DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
   const std::vector<DesksTemplatesIconView*>& icon_views =
       DesksTemplatesItemViewTestApi(item_view).icon_views();
@@ -850,7 +862,7 @@ TEST_F(DesksTemplatesTest, OverflowIconView) {
   OpenOverviewAndShowTemplatesGrid();
 
   // Get the icon views.
-  DesksTemplatesItemView* item_view = GetItemViewFromOverviewGrid(
+  DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
   const std::vector<DesksTemplatesIconView*>& icon_views =
       DesksTemplatesItemViewTestApi(item_view).icon_views();
@@ -887,7 +899,7 @@ TEST_F(DesksTemplatesTest, OverflowIconViewIncrementsForHiddenIcons) {
   OpenOverviewAndShowTemplatesGrid();
 
   // Get the icon views.
-  DesksTemplatesItemView* item_view = GetItemViewFromOverviewGrid(
+  DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
   const std::vector<DesksTemplatesIconView*>& icon_views =
       DesksTemplatesItemViewTestApi(item_view).icon_views();
@@ -940,7 +952,7 @@ TEST_F(DesksTemplatesTest, IconViewMoreThan9Windows) {
   OpenOverviewAndShowTemplatesGrid();
 
   // Get the icon views.
-  DesksTemplatesItemView* item_view = GetItemViewFromOverviewGrid(
+  DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
   const std::vector<DesksTemplatesIconView*>& icon_views =
       DesksTemplatesItemViewTestApi(item_view).icon_views();
@@ -971,7 +983,7 @@ TEST_F(DesksTemplatesTest, OverflowIconViewHiddenOnNoOverflow) {
   OpenOverviewAndShowTemplatesGrid();
 
   // Get the icon views.
-  DesksTemplatesItemView* item_view = GetItemViewFromOverviewGrid(
+  DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
   const std::vector<DesksTemplatesIconView*>& icon_views =
       DesksTemplatesItemViewTestApi(item_view).icon_views();
@@ -1074,8 +1086,8 @@ TEST_F(DesksTemplatesTest, OverviewTabbing) {
   AddEntry(base::GUID::GenerateRandomV4(), "template2", base::Time::Now());
 
   OpenOverviewAndShowTemplatesGrid();
-  DesksTemplatesItemView* first_item = GetItemViewFromOverviewGrid(0);
-  DesksTemplatesItemView* second_item = GetItemViewFromOverviewGrid(1);
+  DesksTemplatesItemView* first_item = GetItemViewFromTemplatesGrid(0);
+  DesksTemplatesItemView* second_item = GetItemViewFromTemplatesGrid(1);
 
   // Testing that we first traverse the views of the first item.
   SendKey(ui::VKEY_TAB);
@@ -1210,8 +1222,8 @@ TEST_F(DesksTemplatesTest, HoverOnTemplateItemView) {
   AddEntry(base::GUID::GenerateRandomV4(), "template2", base::Time::Now());
 
   OpenOverviewAndShowTemplatesGrid();
-  DesksTemplatesItemView* first_item = GetItemViewFromOverviewGrid(0);
-  DesksTemplatesItemView* second_item = GetItemViewFromOverviewGrid(1);
+  DesksTemplatesItemView* first_item = GetItemViewFromTemplatesGrid(0);
+  DesksTemplatesItemView* second_item = GetItemViewFromTemplatesGrid(1);
   auto* hover_container_view1 =
       DesksTemplatesItemViewTestApi(first_item).hover_container();
   auto* hover_container_view2 =
@@ -1299,7 +1311,7 @@ TEST_F(DesksTemplatesTest, LaunchTemplateWithMinimizedOverviewWindow) {
   // Click on the grid item to launch the template. We should exit overview and
   // there should be no crash.
   DeskSwitchAnimationWaiter waiter;
-  ClickOnView(GetItemViewFromOverviewGrid(/*grid_item_index=*/0));
+  ClickOnView(GetItemViewFromTemplatesGrid(/*grid_item_index=*/0));
   // Launching a template fetches it from the desk model asynchronously. Make
   // sure the async call is done before waiting.
   WaitForDesksTemplatesUI();
@@ -1330,7 +1342,7 @@ TEST_F(DesksTemplatesTest, LaunchTemplateAfterClosingActiveDesk) {
   // Click on the grid item to launch the template. We should exit overview and
   // there should be no crash.
   DeskSwitchAnimationWaiter waiter;
-  ClickOnView(GetItemViewFromOverviewGrid(/*grid_item_index=*/0));
+  ClickOnView(GetItemViewFromTemplatesGrid(/*grid_item_index=*/0));
   // Launching a template fetches it from the desk model asynchronously. Make
   // sure the async call is done before waiting.
   WaitForDesksTemplatesUI();
@@ -1482,6 +1494,274 @@ TEST_F(DesksTemplatesTest, WindowActivatableAfterSaveAndDeleteTemplate) {
 
   // Check that the window is active.
   EXPECT_EQ(test_window.get(), window_util::GetActiveWindow());
+}
+
+// Tests that we are able to edit the template name.
+TEST_F(DesksTemplatesTest, EditTemplateName) {
+  auto test_window = CreateAppWindow();
+
+  const std::string template_name = "desk name";
+  AddEntry(base::GUID::GenerateRandomV4(), template_name, base::Time::Now());
+
+  OpenOverviewAndShowTemplatesGrid();
+  OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
+  DesksTemplatesNameView* name_view =
+      GetItemViewFromTemplatesGrid(0)->name_view();
+
+  // Test that we can add characters to the name and press enter to save it.
+  ClickOnView(name_view);
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_A);
+  SendKey(ui::VKEY_B);
+  SendKey(ui::VKEY_RETURN);
+  WaitForDesksTemplatesUI();
+  name_view = GetItemViewFromTemplatesGrid(0)->name_view();
+  EXPECT_EQ(base::UTF8ToUTF16(template_name) + u"ab", name_view->GetText());
+
+  // Deleting characters and pressing enter saves the name.
+  ClickOnView(name_view);
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_BACK);
+  SendKey(ui::VKEY_BACK);
+  SendKey(ui::VKEY_RETURN);
+  WaitForDesksTemplatesUI();
+  name_view = GetItemViewFromTemplatesGrid(0)->name_view();
+  EXPECT_EQ(base::UTF8ToUTF16(template_name), name_view->GetText());
+
+  // The `name_view` defaults to select all, so typing a letter while all
+  // selected replaces the text. Also, clicking anywhere outside of the text
+  // field will try to save it.
+  ClickOnView(name_view);
+  SendKey(ui::VKEY_A);
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(gfx::Point(0, 0));
+  event_generator->ClickLeftButton();
+  EXPECT_TRUE(overview_grid->IsShowingDesksTemplatesGrid());
+  WaitForDesksTemplatesUI();
+  name_view = GetItemViewFromTemplatesGrid(0)->name_view();
+  EXPECT_EQ(u"a", name_view->GetText());
+
+  // Test that clicking on the grid item (outside of the textfield) will save
+  // it.
+  ClickOnView(name_view);
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_B);
+  ClickOnView(GetItemViewFromTemplatesGrid(0));
+  WaitForDesksTemplatesUI();
+  name_view = GetItemViewFromTemplatesGrid(0)->name_view();
+  EXPECT_EQ(u"ab", name_view->GetText());
+
+  // Pressing TAB also saves the name.
+  ClickOnView(name_view);
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_C);
+  SendKey(ui::VKEY_TAB);
+  WaitForDesksTemplatesUI();
+  name_view = GetItemViewFromTemplatesGrid(0)->name_view();
+  EXPECT_EQ(u"abc", name_view->GetText());
+}
+
+// Tests for checking that certain conditions will revert the template name to
+// its original name, even if the text in the textfield has been updated.
+TEST_F(DesksTemplatesTest, TemplateNameChangeAborted) {
+  auto test_window = CreateAppWindow();
+
+  const std::string template_name = "desk name";
+  AddEntry(base::GUID::GenerateRandomV4(), template_name, base::Time::Now());
+
+  OpenOverviewAndShowTemplatesGrid();
+  OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
+  DesksTemplatesNameView* name_view =
+      GetItemViewFromTemplatesGrid(0)->name_view();
+
+  // Pressing enter with no changes to the text.
+  ClickOnView(name_view);
+  EXPECT_TRUE(overview_grid->IsTemplateNameBeingModified());
+  EXPECT_TRUE(name_view->HasFocus());
+  EXPECT_TRUE(name_view->HasSelection());
+  SendKey(ui::VKEY_RETURN);
+  EXPECT_FALSE(name_view->HasFocus());
+  EXPECT_EQ(base::UTF8ToUTF16(template_name), name_view->GetText());
+
+  // Pressing the escape key will revert the changes made to the name in the
+  // textfield.
+  ClickOnView(name_view);
+  SendKey(ui::VKEY_A);
+  SendKey(ui::VKEY_B);
+  SendKey(ui::VKEY_C);
+  SendKey(ui::VKEY_ESCAPE);
+  EXPECT_EQ(base::UTF8ToUTF16(template_name), name_view->GetText());
+
+  // Empty text fields will also revert back to the original name.
+  SendKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  SendKey(ui::VKEY_BACK);
+  SendKey(ui::VKEY_RETURN);
+  EXPECT_EQ(base::UTF8ToUTF16(template_name), name_view->GetText());
+}
+
+// When template names exceed the width of the textfield, we elide the text
+// (truncate the string add "..." to the end) for display purposese. The full
+// template name is still stored as the `full_text()`. This test checks to
+// ensure that the elided text is displayed when the textfield is not focused,
+// but the full text is populated into the textfield when it is focused.
+TEST_F(DesksTemplatesTest, TemplateNameEllipsis) {
+  auto test_window = CreateAppWindow();
+
+  const std::string template_name = "desk template name that is very long";
+  AddEntry(base::GUID::GenerateRandomV4(), template_name, base::Time::Now());
+
+  OpenOverviewAndShowTemplatesGrid();
+  DesksTemplatesNameView* name_view =
+      GetItemViewFromTemplatesGrid(0)->name_view();
+
+  // Verify that the template name field has an ellipsis.
+  EXPECT_NE(base::UTF8ToUTF16(template_name), name_view->GetText());
+  EXPECT_NE(std::string::npos, name_view->GetText().find(u"\x2026"));
+
+  // Verify that the full text stored by the textfield is the `template_name`.
+  EXPECT_EQ(base::UTF8ToUTF16(template_name),
+            DesksTemplatesNameViewTestApi(name_view).full_text());
+
+  // Test that when we click on and focus the template name, that the ellipsized
+  // text is replaced with the full template name. Also tests that it's hidden
+  // again when we lose focus.
+  ClickOnView(name_view);
+  EXPECT_TRUE(name_view->HasFocus());
+  EXPECT_EQ(base::UTF8ToUTF16(template_name), name_view->GetText());
+  SendKey(ui::VKEY_RETURN);
+  EXPECT_FALSE(name_view->HasFocus());
+  EXPECT_NE(base::UTF8ToUTF16(template_name), name_view->GetText());
+  EXPECT_NE(std::string::npos, name_view->GetText().find(u"\x2026"));
+
+  // Test that adding onto a long `template_name` will still update and
+  // ellipsize correctly.
+  ClickOnView(name_view);
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_A);
+  SendKey(ui::VKEY_B);
+  SendKey(ui::VKEY_RETURN);
+  WaitForDesksTemplatesUI();
+  name_view = GetItemViewFromTemplatesGrid(0)->name_view();
+  EXPECT_EQ(base::UTF8ToUTF16(template_name) + u"ab",
+            DesksTemplatesNameViewTestApi(name_view).full_text());
+}
+
+// Tesets that Showing the overview records to the TemplateGrid histogram.
+TEST_F(DesksTemplatesTest, RecordDesksTemplateGridShows) {
+  // Make sure that LoadTemplateHistogram is recorded.
+  base::HistogramTester histogram_tester;
+
+  // Entry needed so that overview is accessible
+  AddEntry(base::GUID::GenerateRandomV4(), "template", base::Time::Now());
+
+  OpenOverviewAndShowTemplatesGrid();
+
+  // Assert load grid histogram recorded.
+  constexpr int kExpectedGridShows = 1;
+  histogram_tester.ExpectTotalCount(kLoadTemplateGridHistogramName,
+                                    kExpectedGridShows);
+}
+
+// Tests that deleting templates in the templates grid Records to the delete
+// template histogram.
+TEST_F(DesksTemplatesTest, DeleteTemplateRecordsMetric) {
+  UpdateDisplay("800x600,800x600");
+
+  // Populate with several entries.
+  const base::GUID uuid_1 = base::GUID::GenerateRandomV4();
+  AddEntry(uuid_1, "template_1", base::Time::Now());
+
+  // This window should be hidden whenever the desk templates grid is open.
+  auto test_window = CreateTestWindow();
+
+  // This action should record deletions and grid shows in a UMA histogram.
+  base::HistogramTester histogram_tester;
+
+  OpenOverviewAndShowTemplatesGrid();
+
+  // The window is hidden because the desk templates grid is open.
+  EXPECT_EQ(0.0f, test_window->layer()->opacity());
+  EXPECT_EQ(1ul, desk_model()->GetEntryCount());
+
+  // Delete the template with `uuid_1`.
+  DeleteTemplate(uuid_1, /*expected_current_item_count=*/1);
+  EXPECT_EQ(0ul, desk_model()->GetEntryCount());
+
+  // There is only one desk to delete in this test so we should have
+  // exited the overview.
+  EXPECT_EQ(1.0f, test_window->layer()->opacity());
+
+  // Verifies that the template with `uuid_1`, doesn't exist anymore.
+  DeleteTemplate(uuid_1, /*expected_current_item_count=*/0,
+                 /*expect_template_exists=*/false);
+  EXPECT_EQ(0ul, desk_model()->GetEntryCount());
+
+  // Assert that histogram metrics were recorded.
+  const int expected_deletes = 1;
+  histogram_tester.ExpectTotalCount(kDeleteTemplateHistogramName,
+                                    expected_deletes);
+}
+
+// Tests that Launches are recorded to the appropriate histogram.
+TEST_F(DesksTemplatesTest, LaunchTemplateRecordsMetric) {
+  DesksController* desks_controller = DesksController::Get();
+  ASSERT_EQ(0, desks_controller->GetActiveDeskIndex());
+
+  auto test_window = CreateAppWindow();
+
+  // Log histogram recording
+  base::HistogramTester histogram_tester;
+
+  // Capture the current desk and open the templates grid.
+  OpenOverviewAndSaveTemplate(Shell::Get()->GetPrimaryRootWindow());
+  ASSERT_EQ(1ul, GetAllEntries().size());
+
+  // Click on the grid item to launch the template.
+  DeskSwitchAnimationWaiter waiter;
+  ClickOnView(GetItemViewFromTemplatesGrid(/*grid_item_index=*/0));
+  WaitForDesksTemplatesUI();
+  waiter.Wait();
+
+  // Verify that we have created and activated a new desk.
+  EXPECT_EQ(2ul, desks_controller->desks().size());
+  EXPECT_EQ(1, desks_controller->GetActiveDeskIndex());
+
+  // Assert load grid histogram and launch histogram recorded.
+  constexpr int kExpectedLaunches = 1;
+  histogram_tester.ExpectTotalCount(kLaunchTemplateHistogramName,
+                                    kExpectedLaunches);
+}
+
+// Tests that clicking the save desk as template button records to the
+// new template histogram.
+TEST_F(DesksTemplatesTest, SaveDeskAsTemplateRecordsMetric) {
+  // There are no saved template entries and one test window initially.
+  auto test_window = CreateAppWindow();
+  ToggleOverview();
+  WaitForDesksTemplatesUI();
+
+  // Record histogram
+  base::HistogramTester histogram_tester;
+
+  // The `save_desk_as_template_widget` is visible when at least one window is
+  // open.
+  views::Widget* save_desk_as_template_widget =
+      GetSaveDeskAsTemplateButtonForRoot(Shell::GetPrimaryRootWindow());
+  ASSERT_TRUE(save_desk_as_template_widget);
+  EXPECT_TRUE(save_desk_as_template_widget->GetContentsView()->GetVisible());
+
+  // Click on `save_desk_as_template_widget` button.
+  ClickOnView(save_desk_as_template_widget->GetContentsView());
+  ASSERT_EQ(1ul, GetAllEntries().size());
+
+  // Expect that the Desk Templates grid is visible.
+  EXPECT_TRUE(GetOverviewGridList()[0]->IsShowingDesksTemplatesGrid());
+
+  // Assert that there was a new template event recorded to the proper
+  // histogram.
+  constexpr int kExpectedNewTemplates = 1;
+  histogram_tester.ExpectTotalCount(kNewTemplateHistogramName,
+                                    kExpectedNewTemplates);
 }
 
 }  // namespace ash

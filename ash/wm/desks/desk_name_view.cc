@@ -44,9 +44,6 @@ DeskNameView::DeskNameView(DeskMiniView* mini_view) : mini_view_(mini_view) {}
 DeskNameView::~DeskNameView() = default;
 
 // static
-constexpr size_t DeskNameView::kMaxLength;
-
-// static
 void DeskNameView::CommitChanges(views::Widget* widget) {
   DCHECK(IsDesksBarWidget(widget));
 
@@ -58,11 +55,11 @@ void DeskNameView::CommitChanges(views::Widget* widget) {
 }
 
 void DeskNameView::OnViewHighlighted() {
-  LabelTextfield::OnViewHighlighted();
+  DesksTextfield::OnViewHighlighted();
   mini_view_->owner_bar()->ScrollToShowMiniViewIfNecessary(mini_view_);
 }
 
-BEGIN_METADATA(DeskNameView, LabelTextfield)
+BEGIN_METADATA(DeskNameView, DesksTextfield)
 END_METADATA
 
 }  // namespace ash

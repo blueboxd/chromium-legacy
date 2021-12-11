@@ -329,20 +329,12 @@ const base::Value* Manifest::FindPath(base::StringPiece path) const {
   return available_values_->FindPath(path);
 }
 
-bool Manifest::GetBoolean(
-    const std::string& path, bool* out_value) const {
-  absl::optional<bool> value = available_values_->FindBoolPath(path);
-  if (value)
-    *out_value = *value;
-  return value.has_value();
+absl::optional<bool> Manifest::FindBoolPath(base::StringPiece path) const {
+  return available_values_->FindBoolPath(path);
 }
 
-bool Manifest::GetInteger(
-    const std::string& path, int* out_value) const {
-  absl::optional<int> value = available_values_->FindIntPath(path);
-  if (value)
-    *out_value = *value;
-  return value.has_value();
+absl::optional<int> Manifest::FindIntPath(base::StringPiece path) const {
+  return available_values_->FindIntPath(path);
 }
 
 bool Manifest::GetString(

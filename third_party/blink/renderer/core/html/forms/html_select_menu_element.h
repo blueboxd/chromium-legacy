@@ -57,6 +57,7 @@ class CORE_EXPORT HTMLSelectMenuElement final
   class SelectMutationCallback;
 
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
+  void DidMoveToNewDocument(Document& old_document) override;
   void OpenListbox();
   void CloseListbox();
 
@@ -85,6 +86,7 @@ class CORE_EXPORT HTMLSelectMenuElement final
   void OptionPartInserted(HTMLOptionElement*);
   void OptionPartRemoved(HTMLOptionElement*);
   void ResetOptionParts();
+  void DispatchInputChangeEventsIfNeeded();
 
   bool IsValidButtonPart(const Node* node, bool show_warning) const;
   bool IsValidListboxPart(const Node* node, bool show_warning) const;
@@ -151,6 +153,7 @@ class CORE_EXPORT HTMLSelectMenuElement final
   Member<HTMLSlotElement> button_slot_;
   Member<HTMLSlotElement> listbox_slot_;
   Member<HTMLOptionElement> selected_option_;
+  Member<HTMLOptionElement> selected_option_when_listbox_opened_;
 };
 
 }  // namespace blink

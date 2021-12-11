@@ -600,10 +600,8 @@ bool Extension::InitFromValue(int flags, std::u16string* error) {
   // Check for |converted_from_user_script| first, since it affects the type
   // returned by GetType(). This is needed to determine if the manifest version
   // is valid.
-  if (manifest_->FindKey(keys::kConvertedFromUserScript)) {
-    manifest_->GetBoolean(keys::kConvertedFromUserScript,
-                          &converted_from_user_script_);
-  }
+  converted_from_user_script_ =
+      manifest_->FindBoolPath(keys::kConvertedFromUserScript).value_or(false);
 
   // Important to load manifest version first because many other features
   // depend on its value.
@@ -691,17 +689,20 @@ bool Extension::LoadAppFeatures(std::u16string* error) {
                   errors::kInvalidWebURLs, errors::kInvalidWebURL, error)) {
     return false;
   }
-  if (manifest_->FindKey(keys::kDisplayInLauncher) &&
-      !manifest_->GetBoolean(keys::kDisplayInLauncher, &display_in_launcher_)) {
-    *error = errors::kInvalidDisplayInLauncher;
-    return false;
+  if (const base::Value* temp = manifest_->FindKey(keys::kDisplayInLauncher)) {
+    if (!temp->is_bool()) {
+      *error = errors::kInvalidDisplayInLauncher;
+      return false;
+    }
+    display_in_launcher_ = temp->GetBool();
   }
-  if (manifest_->FindKey(keys::kDisplayInNewTabPage)) {
-    if (!manifest_->GetBoolean(keys::kDisplayInNewTabPage,
-                               &display_in_new_tab_page_)) {
+  if (const base::Value* temp =
+          manifest_->FindKey(keys::kDisplayInNewTabPage)) {
+    if (!temp->is_bool()) {
       *error = errors::kInvalidDisplayInNewTabPage;
       return false;
     }
+    display_in_new_tab_page_ = temp->GetBool();
   } else {
     // Inherit default from display_in_launcher property.
     display_in_new_tab_page_ = display_in_launcher_;
@@ -799,15 +800,15 @@ bool Extension::LoadDescription(std::u16string* error) {
 bool Extension::LoadManifestVersion(std::u16string* error) {
   // Get the original value out of the dictionary so that we can validate it
   // more strictly.
-  bool key_exists =
-      manifest_->available_values().HasKey(keys::kManifestVersion);
-  if (key_exists) {
-    int manifest_version = 1;
-    if (!manifest_->GetInteger(keys::kManifestVersion, &manifest_version)) {
+  bool key_exists = false;
+  if (const base::Value* version_value =
+          manifest_->available_values().FindKey(keys::kManifestVersion)) {
+    if (!version_value->is_int()) {
       *error = InvalidManifestVersionError(
           errors::kInvalidManifestVersionUnsupported, is_platform_app());
       return false;
     }
+    key_exists = true;
   }
 
   manifest_version_ = manifest_->manifest_version();

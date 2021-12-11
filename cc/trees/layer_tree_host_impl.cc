@@ -466,6 +466,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   SetDebugState(settings.initial_debug_state);
   compositor_frame_reporting_controller_->SetDroppedFrameCounter(
       &dropped_frame_counter_);
+  compositor_frame_reporting_controller_->SetFrameSequenceTrackerCollection(
+      &frame_trackers_);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   const bool is_ui = settings.is_layer_tree_for_ui;
@@ -4928,6 +4930,12 @@ void LayerTreeHostImpl::OnCustomPropertyMutated(
     PaintWorkletInput::PropertyValue property_value) {
   paint_worklet_tracker_.OnCustomPropertyMutated(std::move(property_key),
                                                  std::move(property_value));
+}
+
+bool LayerTreeHostImpl::RunsOnCurrentThread() const {
+  // If there is no impl thread, then we assume the current thread is ok.
+  return !task_runner_provider_->HasImplThread() ||
+         task_runner_provider_->IsImplThread();
 }
 
 void LayerTreeHostImpl::SetElementBackdropFilterMutated(

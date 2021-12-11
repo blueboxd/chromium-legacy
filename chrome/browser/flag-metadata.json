@@ -44,6 +44,11 @@
     "expiry_milestone": 92
   },
   {
+    "name": "activate-metrics-reporting-enabled-policy",
+    "owners": [ "oastorga", "ftirelo" ],
+    "expiry_milestone": 109
+  },
+  {
     "name": "adaptive-button-in-top-toolbar",
     "owners": [ "bttk", "chrome-segmentation-platform@google.com" ],
     "expiry_milestone": 99
@@ -1960,7 +1965,7 @@
   },
   {
     "name": "enable-experimental-accessibility-switch-access-setup-guide",
-    "owners": [ "josiahk@google.com", "//ui/accessibility/OWNERS" ],
+    "owners": ["anastasi@google.com", "josiahk@google.com", "//ui/accessibility/OWNERS"],
     "expiry_milestone": 97
   },
   {

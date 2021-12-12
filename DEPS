@@ -255,7 +255,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'deb48dadd9087b689e23e4af4ad91afeea0d33b0',
+  'pdfium_revision': '70a0346e94a8fbb0dff60e7dced773d1b0021223',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -354,7 +354,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '8da36a73497826d07afb96f7b2d8dd8375a4bbc4',
+  'dawn_revision': '16e3221a0eb5dec8e38eb5f23885e50c1db44db5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -716,7 +716,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'QwtIxgsaDtUaH19Z24MykllxXMcosQ7q0bcwzDuOq-MC',
+          'version': 'tpjCSBg7Dxnl8n790aXUvK1sqGcik7Tydz-fSreiYGgC',
         },
       ],
       'dep_type': 'cipd',
@@ -727,7 +727,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'qSZpjfeFzLv322gDH3UAyLRVl_xT8rS964C_prz-s_4C',
+          'version': 'YH4kHe8bi7XThbE4-ZYYJC3OM_W3MZ8FaH_CNGTzensC',
         },
       ],
       'dep_type': 'cipd',
@@ -738,7 +738,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'siivileUzrgWQO9CHd1ENTCm99Nr0F20tmvaw2PAZkcC',
+          'version': 'JPC1ZKBH19i2CBRWboYAJd_66dDSKfQBLtYcVwrRwu8C',
         },
       ],
       'dep_type': 'cipd',
@@ -1700,7 +1700,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0858ede35b24698fcb8328ee5c80ac09378c3f95',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@efa90ef194d40b3006eafc5fa23b5a4bd98bc343',
     'condition': 'checkout_src_internal',
   },
 
@@ -1719,7 +1719,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'xHnyO2HwzFs7BJFtjTDTol40IOkAs3MuHgQ3DEn7kXAC',
+        'version': 'puzARvRJ4saOV5igw9UM7ni0t8gMiWYofOhKgd3pg5UC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1730,7 +1730,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '0ZUVE0ePMPiNQUD0ZpkWJvH4o7sRlEz43AB2XMg8CQoC',
+        'version': 'QGW1T4AySiib5UeUWsDzOv2XgrJvZ1rrIzUkImbeJNMC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

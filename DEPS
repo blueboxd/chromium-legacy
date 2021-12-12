@@ -239,7 +239,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '454c04e8f3b45ba0c518cbdd49f67bfb95d83c35',
+  'skia_revision': '87025fe5b3081b36f1b4ffe3eeab8ca9f77db16b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -314,7 +314,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '927597d79ee4a18a2adca709fe5078de357592b9',
+  'devtools_frontend_revision': '0484a8a4b5526a7b970fa82ecd9a2792d30ad5ce',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1700,7 +1700,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@efa90ef194d40b3006eafc5fa23b5a4bd98bc343',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c5f13ce5f90b037264b7aea625fa71467b6985fd',
     'condition': 'checkout_src_internal',
   },
 
@@ -1741,7 +1741,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'BwLzySyMsbH3gYtWyCdcYNhc1MA7cdK3-QjiptuIKk0C',
+        'version': '-VlU-QzkmjYN-ZqB3uPlue9VLGFZmFc927FUghexc0MC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

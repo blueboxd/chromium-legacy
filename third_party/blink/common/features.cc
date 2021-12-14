@@ -1042,9 +1042,6 @@ const base::Feature kDesktopPWAsSubApps{"DesktopPWAsSubApps",
 const base::Feature kCORSErrorsIssueOnly{"CORSErrorsIssueOnly",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSyncLoadDataUrlFonts{"SyncLoadDataUrlFonts",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kPersistentQuotaIsTemporaryQuota{
     "PersistentQuotaIsTemporaryQuota", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1111,7 +1108,7 @@ const base::Feature kClientHintsViewportWidth_DEPRECATED{
 
 // https://drafts.csswg.org/css-cascade-5/#layering
 const base::Feature kCSSCascadeLayers{"CSSCascadeLayers",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, the setTimeout(..., 0) will not clamp to 1ms.
 // Tracking bug: https://crbug.com/402694.

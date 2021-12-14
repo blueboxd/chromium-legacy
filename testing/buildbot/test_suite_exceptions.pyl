@@ -476,6 +476,10 @@
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
         ],
       },
+      # TODO (crbug.com/1254971) Re-enable once fixed
+      'mac-osxbeta-rel': {
+        'experiment_percentage': 0,
+      },
       'mac10.12-blink-rel-dummy': {
         'swarming': {
           'shards': 20,
@@ -1443,6 +1447,10 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.crashpad_tests.filter',
         ],
       },
+      # TODO (crbug.com/1254975) Re-enable once fixed
+      'mac-osxbeta-rel': {
+        'experiment_percentage': 100,
+      },
     },
   },
   'cronet_sizes': {
@@ -1692,6 +1700,13 @@
       # which isn't instrumented.
       'Linux MSan Tests',
     ],
+    'modifications': {
+      'android-12-x64-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.gl_unittests.filter',
+        ],
+      },
+    },
   },
   'gl_unittests_ozone': {
     'remove_from': [
@@ -1880,6 +1895,10 @@
         'args': [
           '--coverage-continuous-mode=1',
         ],
+      },
+      # TODO (crbug.com/1278617) Re-enable once fixed
+      'mac-osxbeta-rel': {
+        'experiment_percentage': 100,
       },
     },
   },
@@ -2278,6 +2297,10 @@
         'swarming': {
           'shards': 2,
         },
+      },
+      # TODO (crbug.com/1278618) Re-enable once fixed
+      'mac-osxbeta-rel': {
+        'experiment_percentage': 0,
       },
       'win-asan': {
         # TODO(crbug.com/794372): net_unittests is slow under ASan.
@@ -3182,11 +3205,21 @@
   },
   'webgl2_conformance_metal_passthrough_tests': {
     'remove_from': [
-      # crbug.com/1270755: failing entire shards on Intel ASAN bot.
-      'Mac FYI ASAN (Intel)',
       # Not enough capacity.
       'Mac FYI Retina Release (NVIDIA)',
     ],
+    'modifications': {
+      'Mac FYI ASAN (Intel)': {
+        'args': [
+          '--extra-browser-args=--disable-metal-shader-cache',
+        ],
+      },
+      'Mac FYI Retina ASAN (AMD)': {
+        'args': [
+          '--extra-browser-args=--disable-metal-shader-cache',
+        ],
+      },
+    },
   },
   'webgl2_conformance_validating_tests': {
     'remove_from': [
@@ -3223,11 +3256,21 @@
   },
   'webgl_conformance_metal_passthrough_tests': {
     'remove_from': [
-      # crbug.com/1270755: failing entire shards on Intel ASAN bot.
-      'Mac FYI ASAN (Intel)',
-      # crbug.com/1158857: re-enable if Metal shader cache workaround is added.
+      # crbug.com/1158857: re-enable when switching to Metal by default.
       'Mac FYI Retina Release (NVIDIA)',
     ],
+    'modifications': {
+      'Mac FYI ASAN (Intel)': {
+        'args': [
+          '--extra-browser-args=--disable-metal-shader-cache',
+        ],
+      },
+      'Mac FYI Retina ASAN (AMD)': {
+        'args': [
+          '--extra-browser-args=--disable-metal-shader-cache',
+        ],
+      },
+    },
   },
   'webgl_conformance_tests': {
     'remove_from': [

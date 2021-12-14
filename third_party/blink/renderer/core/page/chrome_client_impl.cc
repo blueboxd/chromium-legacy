@@ -846,16 +846,6 @@ void ChromeClientImpl::AnimateDoubleTapZoom(const gfx::Point& point,
   web_view_->AnimateDoubleTapZoom(point, rect);
 }
 
-void ChromeClientImpl::ClearLayerSelection(LocalFrame* frame) {
-  frame->GetWidgetForLocalRoot()->RegisterSelection(cc::LayerSelection());
-}
-
-void ChromeClientImpl::UpdateLayerSelection(
-    LocalFrame* frame,
-    const cc::LayerSelection& selection) {
-  frame->GetWidgetForLocalRoot()->RegisterSelection(selection);
-}
-
 bool ChromeClientImpl::HasOpenedPopup() const {
   return web_view_->HasOpenedPopup();
 }
@@ -1186,7 +1176,7 @@ void ChromeClientImpl::NotifyPopupOpeningObservers() const {
     observer->WillOpenPopup();
 }
 
-FloatSize ChromeClientImpl::ElasticOverscroll() const {
+gfx::Vector2dF ChromeClientImpl::ElasticOverscroll() const {
   return web_view_->ElasticOverscroll();
 }
 

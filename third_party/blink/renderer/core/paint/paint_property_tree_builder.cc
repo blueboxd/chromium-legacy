@@ -635,11 +635,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
 
   ResetPaintOffset(new_paint_offset + subpixel_accumulation);
 
-  bool can_be_directly_composited =
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
-          ? full_context_.direct_compositing_reasons != CompositingReason::kNone
-          : object_.CanBeCompositedForDirectReasons();
-  if (!can_be_directly_composited)
+  if (full_context_.direct_compositing_reasons == CompositingReason::kNone)
     return;
 
   if (paint_offset_translation && properties_ &&
@@ -713,7 +709,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
     if (NeedsStickyTranslation(object_)) {
       const auto& box_model = To<LayoutBoxModelObject>(object_);
       TransformPaintPropertyNode::State state{
-          ToGfxVector2dF(FloatSize(box_model.StickyPositionOffset()))};
+          gfx::Vector2dF(box_model.StickyPositionOffset())};
       // TODO(wangxianzhu): Not using GetCompositorElementId() here because
       // sticky elements don't work properly under multicol for now, to keep
       // consistency with CompositorElementIdFromUniqueObjectId() below.
@@ -772,14 +768,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
         constraint->top_offset = layout_constraint->top_offset.ToFloat();
         constraint->bottom_offset = layout_constraint->bottom_offset.ToFloat();
         constraint->constraint_box_rect =
-            ToGfxRectF(FloatRect(box_model.ComputeStickyConstrainingRect()));
-        constraint->scroll_container_relative_sticky_box_rect =
-            ToGfxRectF(FloatRect(
-                layout_constraint->scroll_container_relative_sticky_box_rect));
+            gfx::RectF(box_model.ComputeStickyConstrainingRect());
+        constraint->scroll_container_relative_sticky_box_rect = gfx::RectF(
+            layout_constraint->scroll_container_relative_sticky_box_rect);
         constraint->scroll_container_relative_containing_block_rect =
-            ToGfxRectF(FloatRect(
-                layout_constraint
-                    ->scroll_container_relative_containing_block_rect));
+            gfx::RectF(layout_constraint
+                           ->scroll_container_relative_containing_block_rect);
         if (PaintLayer* sticky_box_shifting_ancestor =
                 layout_constraint->nearest_sticky_layer_shifting_sticky_box) {
           constraint->nearest_element_shifting_sticky_box =
@@ -959,7 +953,7 @@ static FloatPoint3D TransformOrigin(const ComputedStyle& style,
   // Transform origin has no effect without a transform or motion path.
   if (!style.HasTransform())
     return FloatPoint3D();
-  FloatSize border_box_size(size);
+  gfx::SizeF border_box_size(size);
   return FloatPoint3D(
       FloatValueForLength(style.TransformOriginX(), border_box_size.width()),
       FloatValueForLength(style.TransformOriginY(), border_box_size.height()),
@@ -998,7 +992,7 @@ static bool UpdateBoxSizeAndCheckActiveAnimationAxisAlignment(
   auto* animations = element->GetElementAnimations();
   DCHECK(animations);
   return animations->UpdateBoxSizeAndCheckTransformAxisAlignment(
-      FloatSize(object.Size()));
+      gfx::SizeF(object.Size()));
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
@@ -1044,8 +1038,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
             CompositingReason::kActiveTransformAnimation;
         if (!disable_2d_translation_optimization &&
             matrix.IsIdentityOr2DTranslation()) {
-          state.transform_and_origin = {
-              ToGfxVector2dF(matrix.To2DTranslation())};
+          state.transform_and_origin = {matrix.To2DTranslation()};
         } else {
           state.transform_and_origin = {matrix,
                                         TransformOrigin(box.StyleRef(), size)};
@@ -1871,8 +1864,8 @@ static PhysicalOffset VisualOffsetFromPaintOffsetRoot(
   if (const auto* properties =
           paint_offset_root->FirstFragment().PaintProperties()) {
     if (const auto* scroll_translation = properties->ScrollTranslation()) {
-      result -= PhysicalOffset::FromFloatSizeRound(
-          FloatSize(scroll_translation->Translation2D()));
+      result -= PhysicalOffset::FromVector2dFRound(
+          scroll_translation->Translation2D());
     }
   }
   return result;
@@ -1980,10 +1973,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
         }
         state.SetClipRect(gfx::RectF(clip_rect), ToSnappedClipRect(clip_rect));
 
-        state.layout_clip_rect_excluding_overlay_scrollbars = FloatClipRect(
-            ToGfxRectF(FloatRect(To<LayoutBox>(object_).OverflowClipRect(
+        state.layout_clip_rect_excluding_overlay_scrollbars =
+            FloatClipRect(gfx::RectF(To<LayoutBox>(object_).OverflowClipRect(
                 context_.current.paint_offset,
-                kExcludeOverlayScrollbarSizeForHitTesting))));
+                kExcludeOverlayScrollbarSizeForHitTesting)));
       } else {
         DCHECK(object_.IsSVGViewportContainer());
         const auto& viewport_container =
@@ -3007,8 +3000,7 @@ void PaintPropertyTreeBuilder::InitFragmentPaintProperties(
       // of additional_offset_to_layout_shift_root_delta is the difference
       // between the old and new paint offset translation.
       context.pending_additional_offset_to_layout_shift_root_delta =
-          -PhysicalOffset::FromFloatSizeRound(
-              FloatSize(translation->Translation2D()));
+          -PhysicalOffset::FromVector2dFRound(translation->Translation2D());
     }
     if (const auto* transform = properties->Transform()) {
       if (transform->IsIdentityOr2DTranslation()) {
@@ -3131,22 +3123,14 @@ void PaintPropertyTreeBuilder::UpdateCompositedLayerPaginationOffset() {
   FragmentData& first_fragment =
       object_.GetMutableForPainting().FirstFragment();
   bool may_use_self_pagination_offset = false;
-  const PaintLayer* parent_pagination_offset_layer = nullptr;
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+  const PaintLayer* parent_pagination_offset_layer =
+      context_.painting_layer->EnclosingCompositedScrollingLayerUnderPagination(
+          kIncludeSelf);
+  if (parent_pagination_offset_layer->GetLayoutObject() == object_) {
+    may_use_self_pagination_offset = true;
     parent_pagination_offset_layer =
-        context_.painting_layer
-            ->EnclosingCompositedScrollingLayerUnderPagination(kIncludeSelf);
-    if (parent_pagination_offset_layer->GetLayoutObject() == object_) {
-      may_use_self_pagination_offset = true;
-      parent_pagination_offset_layer =
-          parent_pagination_offset_layer
-              ->EnclosingCompositedScrollingLayerUnderPagination(kExcludeSelf);
-    }
-  } else {
-    may_use_self_pagination_offset = object_.CanBeCompositedForDirectReasons();
-    parent_pagination_offset_layer =
-        context_.painting_layer->EnclosingDirectlyCompositableLayer(
-            may_use_self_pagination_offset ? kExcludeSelf : kIncludeSelf);
+        parent_pagination_offset_layer
+            ->EnclosingCompositedScrollingLayerUnderPagination(kExcludeSelf);
   }
 
   if (may_use_self_pagination_offset &&

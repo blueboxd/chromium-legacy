@@ -132,31 +132,6 @@ struct CORE_EXPORT PaintLayerRareData final
   // to use flow-thread coordinates whenever possible.
   Member<PaintLayer> enclosing_pagination_layer;
 
-  // These compositing reasons are updated whenever style changes, not while
-  // updating compositing layers.  They should not be used to infer the
-  // compositing state of this layer.
-  CompositingReasons potential_compositing_reasons_from_style;
-
-  CompositingReasons potential_compositing_reasons_from_non_style;
-
-  // Once computed, indicates all that a layer needs to become composited using
-  // the CompositingReasons enum bitfield.
-  CompositingReasons compositing_reasons;
-
-  // This captures reasons why a paint layer might be forced to be separately
-  // composited rather than sharing a backing with another layer.
-  SquashingDisallowedReasons squashing_disallowed_reasons;
-
-  // If the layer paints into its own backings, this keeps track of the
-  // backings.  It's nullptr if the layer is not composited or paints into
-  // grouped backing.
-  Member<CompositedLayerMapping> composited_layer_mapping;
-
-  // If the layer paints into grouped backing (i.e. squashed), this points to
-  // the grouped CompositedLayerMapping. It's null if the layer is not
-  // composited or paints into its own backing.
-  Member<CompositedLayerMapping> grouped_mapping;
-
   Member<PaintLayerResourceInfo> resource_info;
 
   // The accumulated subpixel offset of a composited layer's composited bounds
@@ -382,15 +357,16 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // Do *not* call this method unless you know what you are dooing. You probably
   // want to call enclosingCompositingLayerForPaintInvalidation() instead.
   // If includeSelf is true, may return this.
-  PaintLayer* EnclosingLayerWithCompositedLayerMapping(IncludeSelfOrNot) const;
+  PaintLayer* EnclosingLayerWithCompositedLayerMapping(IncludeSelfOrNot) const {
+    // TODO(pdr): Remove this.
+    return nullptr;
+  }
 
   // Returns the enclosing layer root into which this layer paints, inclusive of
   // this one. Note that the enclosing layer may or may not have its own
   // GraphicsLayer backing, but is nevertheless the root for a call to the
   // Layer::paint*() methods.
   PaintLayer* EnclosingLayerForPaintInvalidation() const;
-
-  PaintLayer* EnclosingDirectlyCompositableLayer(IncludeSelfOrNot) const;
 
   // For CompositeAfterPaint, but not for LayoutNGBlockFragmentation.
   const PaintLayer* EnclosingCompositedScrollingLayerUnderPagination(
@@ -399,8 +375,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // https://crbug.com/751768, this function can return nullptr sometimes.
   // Always check the result before using it, don't just DCHECK.
   PaintLayer* EnclosingLayerForPaintInvalidationCrossingFrameBoundaries() const;
-
-  PaintLayer* EnclosingDirectlyCompositableLayerCrossingFrameBoundaries() const;
 
   bool HasAncestorWithFilterThatMovesPixels() const;
 
@@ -545,7 +519,10 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
     return GetLayoutObject().HasFilterInducingProperty();
   }
 
-  CompositingState GetCompositingState() const;
+  CompositingState GetCompositingState() const {
+    // TODO(pdr): Remove this.
+    return kNotComposited;
+  }
 
   // This returns true if our document is in a phase of its lifestyle during
   // which compositing state may legally be read.
@@ -553,9 +530,10 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
 
   bool IsAllowedToQueryCompositingInputs() const;
 
-  // Don't null check this.
-  // FIXME: Rename.
-  CompositedLayerMapping* GetCompositedLayerMapping() const;
+  CompositedLayerMapping* GetCompositedLayerMapping() const {
+    // TODO(pdr): Remove this.
+    return nullptr;
+  }
 
   // Returns the GraphicsLayer owned by this PaintLayer's
   // CompositedLayerMapping (or groupedMapping()'s, if squashed),
@@ -566,41 +544,17 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // Returns nullptr if this PaintLayer is not composited.
   GraphicsLayer* GraphicsLayerBacking(const LayoutObject* = nullptr) const;
 
-  // NOTE: If you are using hasCompositedLayerMapping to determine the state of
-  // compositing for this layer, (and not just to do bookkeeping related to the
-  // mapping like, say, allocating or deallocating a mapping), then you may have
-  // incorrect logic. Use compositingState() instead.
-  // FIXME: This is identical to null checking compositedLayerMapping(), why not
-  // just call that?
   bool HasCompositedLayerMapping() const {
-    return rare_data_ && rare_data_->composited_layer_mapping;
+    // TODO(pdr): Remove this.
+    return false;
   }
-  void EnsureCompositedLayerMapping();
-  void ClearCompositedLayerMapping(bool layer_being_destroyed = false);
+
   CompositedLayerMapping* GroupedMapping() const {
-    return rare_data_ ? rare_data_->grouped_mapping : nullptr;
+    // TODO(pdr): Remove this.
+    return nullptr;
   }
-  enum SetGroupMappingOptions {
-    kInvalidateLayerAndRemoveFromMapping,
-    kDoNotInvalidateLayerAndRemoveFromMapping
-  };
-  void SetGroupedMapping(CompositedLayerMapping*, SetGroupMappingOptions);
 
   bool NeedsCompositedScrolling() const;
-
-  // Paint invalidation containers can be self-composited or squashed.
-  // In the former case, these methods do nothing.
-  // In the latter case, they adjust from the space of the squashed PaintLayer
-  // to the space of the PaintLayer into which it squashes.
-  //
-  // Note that this method does *not* adjust rects into the space of any
-  // particular GraphicsLayer. To do that requires adjusting for the
-  // offsetFromLayoutObject of the desired GraphicsLayer (which can differ
-  // for different GraphicsLayers belonging to the same
-  // CompositedLayerMapping).
-  static void MapPointInPaintInvalidationContainerToBacking(
-      const LayoutBoxModelObject& paint_invalidation_container,
-      PhysicalOffset&);
 
   // Returns the ScrollingCoordinator associated with this layer, if
   // any. Otherwise nullptr.
@@ -707,45 +661,8 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
 
   bool ScrollsOverflow() const;
 
-  CompositingReasons DirectCompositingReasons() const {
-    return rare_data_
-               ? ((rare_data_->potential_compositing_reasons_from_style |
-                   rare_data_->potential_compositing_reasons_from_non_style) &
-                  CompositingReason::kComboAllDirectReasons)
-               : CompositingReason::kNone;
-  }
-
-  bool CanBeCompositedForDirectReasons() const;
-
   // Whether the layer could ever be composited.
   bool CanBeComposited() const;
-
-  CompositingReasons PotentialCompositingReasonsFromStyle() const {
-    return rare_data_ ? rare_data_->potential_compositing_reasons_from_style
-                      : CompositingReason::kNone;
-  }
-  void SetPotentialCompositingReasonsFromStyle(CompositingReasons reasons) {
-    DCHECK(reasons ==
-           (reasons & CompositingReason::kComboAllStyleDeterminedReasons));
-    if (rare_data_ || reasons != CompositingReason::kNone)
-      EnsureRareData().potential_compositing_reasons_from_style = reasons;
-  }
-  CompositingReasons PotentialCompositingReasonsFromNonStyle() const {
-    return rare_data_ ? rare_data_->potential_compositing_reasons_from_non_style
-                      : CompositingReason::kNone;
-  }
-  void SetPotentialCompositingReasonsFromNonStyle(CompositingReasons reasons) {
-    DCHECK(reasons ==
-           (reasons &
-            CompositingReason::kComboAllDirectNonStyleDeterminedReasons));
-    if (rare_data_ || reasons != CompositingReason::kNone)
-      EnsureRareData().potential_compositing_reasons_from_non_style = reasons;
-  }
-
-  bool HasStyleDeterminedDirectCompositingReasons() const {
-    return PotentialCompositingReasonsFromStyle() &
-           CompositingReason::kComboAllDirectStyleDeterminedReasons;
-  }
 
   bool NeedsVisualOverflowRecalc() const {
     return needs_visual_overflow_recalc_;
@@ -823,36 +740,15 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // stacking contexts.
   bool HasNonIsolatedDescendantWithBlendMode() const;
 
-  bool LostGroupedMapping() const {
-    DCHECK(IsAllowedToQueryCompositingState());
-    return lost_grouped_mapping_;
-  }
-  void SetLostGroupedMapping(bool b) {
-    lost_grouped_mapping_ = b;
-    needs_compositing_layer_assignment_ =
-        needs_compositing_layer_assignment_ || b;
-  }
-
   CompositingReasons GetCompositingReasons() const {
-    DCHECK(IsAllowedToQueryCompositingState());
-    return rare_data_ ? rare_data_->compositing_reasons
-                      : CompositingReason::kNone;
+    // TODO(pdr): Remove this.
+    return CompositingReason::kNone;
   }
-  void SetCompositingReasons(CompositingReasons,
-                             CompositingReasons mask = CompositingReason::kAll);
 
   SquashingDisallowedReasons GetSquashingDisallowedReasons() const {
-    DCHECK(IsAllowedToQueryCompositingState());
-    return rare_data_ ? rare_data_->squashing_disallowed_reasons
-                      : SquashingDisallowedReason::kNone;
+    // TODO(pdr): Remove this.
+    return SquashingDisallowedReason::kNone;
   }
-  void SetSquashingDisallowedReasons(SquashingDisallowedReasons);
-
-  bool HasCompositingDescendant() const {
-    DCHECK(IsAllowedToQueryCompositingState());
-    return has_compositing_descendant_;
-  }
-  void SetHasCompositingDescendant(bool);
 
   bool ShouldIsolateCompositedDescendants() const {
     DCHECK(IsAllowedToQueryCompositingState());
@@ -960,14 +856,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
     descendant_has_direct_or_scrolling_compositing_reason_ = value;
   }
 
-  void SetNeedsCompositingRequirementsUpdate();
-  void ClearNeedsCompositingRequirementsUpdate() {
-    descendant_may_need_compositing_requirements_update_ = false;
-  }
-  bool DescendantMayNeedCompositingRequirementsUpdate() const {
-    return descendant_may_need_compositing_requirements_update_;
-  }
-
   bool Has3DTransformedDescendant() const {
     DCHECK(!needs_descendant_dependent_flags_update_);
     return has3d_transformed_descendant_;
@@ -985,10 +873,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // https://chromium.googlesource.com/chromium/src.git/+/master/third_party/blink/renderer/core/paint/README.md
   // for the definition of a replaced normal-flow stacking element.
   bool IsReplacedNormalFlowStacking() const;
-
-  void SetNeedsCompositingReasonsUpdate() {
-    needs_compositing_reasons_update_ = true;
-  }
 
 #if DCHECK_IS_ON()
   bool IsInStackingParentZOrderLists() const;
@@ -1019,8 +903,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
 
  private:
   PhysicalRect LocalBoundingBoxForCompositingOverlapTest() const;
-  bool PaintsWithDirectReasonIntoOwnBacking(GlobalPaintFlags) const;
-
   void Update3DTransformedDescendantStatus();
 
   // Bounding box in the coordinates of this layer.
@@ -1133,8 +1015,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   void MarkAncestorChainForFlagsUpdate(
       DescendantDependentFlagsUpdateFlag = kNeedsDescendantDependentUpdate);
 
-  bool AttemptDirectCompositingUpdate(const StyleDifference&,
-                                      const ComputedStyle* old_style);
   void UpdateTransform(const ComputedStyle* old_style,
                        const ComputedStyle& new_style);
 
@@ -1207,17 +1087,8 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // in a preserves3D hierarchy. Hint to do 3D-aware hit testing.
   unsigned has3d_transformed_descendant_ : 1;
 
-  // Used only while determining what layers should be composited. Applies to
-  // the tree of z-order lists.
-  unsigned has_compositing_descendant_ : 1;
-
   // Should be for stacking contexts having unisolated blending descendants.
   unsigned should_isolate_composited_descendants_ : 1;
-
-  // True if this layout layer just lost its grouped mapping due to the
-  // CompositedLayerMapping being destroyed, and we don't yet know to what
-  // graphics layer this Layer will be assigned.
-  unsigned lost_grouped_mapping_ : 1;
 
   unsigned self_needs_repaint_ : 1;
   unsigned descendant_needs_repaint_ : 1;
@@ -1257,9 +1128,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   unsigned is_under_svg_hidden_container_ : 1;
 
   unsigned descendant_has_direct_or_scrolling_compositing_reason_ : 1;
-  unsigned needs_compositing_reasons_update_ : 1;
 
-  unsigned descendant_may_need_compositing_requirements_update_ : 1;
   unsigned needs_compositing_layer_assignment_ : 1;
   unsigned descendant_needs_compositing_layer_assignment_ : 1;
 

@@ -181,6 +181,21 @@
             ]
         }
     ],
+    "AndroidFixedUmaSessionResumeOrder": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FixedUmaSessionResumeOrder"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidHatsNext": [
         {
             "platforms": [
@@ -536,21 +551,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MessagesForAndroidPermissionUpdate"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AndroidMessagesPopupBlocked": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MessagesForAndroidPopupBlocked"
                     ]
                 }
             ]
@@ -3708,37 +3708,6 @@
             ]
         }
     ],
-    "FeedPullToRefresh": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledWithIph",
-                    "params": {
-                        "availability": "any",
-                        "event_trigger": "name:pulltorefresh_dummy;comparator:any;window:1;storage:1",
-                        "event_used": "name:pulltorefresh_dummy;comparator:any;window:1;storage:1",
-                        "session_rate": "==0"
-                    },
-                    "enable_features": [
-                        "FeedInteractiveRefresh",
-                        "IPH_FeedSwipeRefresh"
-                    ]
-                },
-                {
-                    "name": "EnabledWithoutIph",
-                    "enable_features": [
-                        "FeedInteractiveRefresh"
-                    ],
-                    "disable_features": [
-                        "IPH_FeedSwipeRefresh"
-                    ]
-                }
-            ]
-        }
-    ],
     "FillingAcrossAffiliatedWebsites": [
         {
             "platforms": [
@@ -5542,11 +5511,15 @@
                 {
                     "name": "AndroidExperiments",
                     "params": {
-                        "OmniboxDynamicMaxAutocompleteIncreasedLimit": "15"
+                        "OmniboxDynamicMaxAutocompleteIncreasedLimit": "15",
+                        "OmniboxMaxURLMatches": "8",
+                        "UIMaxAutocompleteMatches": "15"
                     },
                     "enable_features": [
                         "OmniboxDynamicMaxAutocomplete",
+                        "OmniboxMaxURLMatches",
                         "OmniboxOnFocusSuggestionsContextualWebAllowSRP",
+                        "OmniboxUIExperimentMaxAutocompleteMatches",
                         "QuickActionSearchWidgetAndroid",
                         "QuickActionSearchWidgetAndroidDinoVariant"
                     ]
@@ -7370,6 +7343,36 @@
             ]
         }
     ],
+    "SnoozeIPH": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_Snooze_1_week_20211208",
+                    "params": {
+                        "IPH_DownloadHome_availability": ">=0",
+                        "IPH_DownloadHome_event_1": "name:download_completed;comparator:>=1;window:90;storage:360",
+                        "IPH_DownloadHome_event_trigger": "name:download_home_iph_trigger;comparator:==0;window:90;storage:360",
+                        "IPH_DownloadHome_event_used": "name:download_home_opened;comparator:==0;window:90;storage:360",
+                        "IPH_DownloadHome_session_rate": "==0",
+                        "IPH_TabSwitcherButton_availability": ">=0",
+                        "IPH_TabSwitcherButton_event_trigger": "name:tab_switcher_iph_triggered;comparator:==0;window:90;storage:90",
+                        "IPH_TabSwitcherButton_event_used": "name:tab_switcher_button_clicked;comparator:==0;window:14;storage:90",
+                        "IPH_TabSwitcherButton_session_rate": "<1",
+                        "snooze_params": "max_limit:3,snooze_interval:7"
+                    },
+                    "enable_features": [
+                        "IPH_Snooze"
+                    ],
+                    "disable_features": [
+                        "EnableAutomaticSnooze"
+                    ]
+                }
+            ]
+        }
+    ],
     "SpecPageFaultStudy": [
         {
             "platforms": [
@@ -7520,27 +7523,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SurfaceSyncThrottling"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SyncLoadDataUrlFonts": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SyncLoadDataUrlFonts"
                     ]
                 }
             ]

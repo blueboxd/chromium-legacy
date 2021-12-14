@@ -306,7 +306,7 @@
   {
     "name": "ash-limit-shelf-items-to-active-desk",
     "owners": [ "afakhry", "tclaiborne" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 110
   },
   {
     "name": "ash-overview-button",
@@ -3117,7 +3117,7 @@
   {
     "name": "feed-v2-autoplay",
     "owners": [ "//chrome/android/feed/OWNERS", "jianli@chromium.org" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 102
   },
   {
     "name": "feed-v2-hearts",
@@ -3971,7 +3971,7 @@
   {
     "name": "ntp-cache-one-google-bar",
     "owners": [ "aee", "mahmadi", "tiborg" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 100
   },
   {
     "name": "ntp-chrome-cart-module",
@@ -4036,7 +4036,7 @@
   {
     "name": "ntp-shopping-tasks-module",
     "owners": [ "mahmadi", "tiborg" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 100
   },
   {
     "name": "ntp-view-hierarchy-repair",

@@ -106,6 +106,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace blink {
 
@@ -311,12 +312,6 @@ SmoothScrollSequencer* PaintLayerScrollableArea::GetSmoothScrollSequencer()
   return &GetLayoutBox()->GetFrame()->GetSmoothScrollSequencer();
 }
 
-cc::Layer* PaintLayerScrollableArea::LayerForScrolling() const {
-  if (auto* graphics_layer = GraphicsLayerForScrolling())
-    return &graphics_layer->CcLayer();
-  return nullptr;
-}
-
 cc::Layer* PaintLayerScrollableArea::LayerForHorizontalScrollbar() const {
   if (auto* graphics_layer = GraphicsLayerForHorizontalScrollbar())
     return graphics_layer->ContentsLayer();
@@ -333,12 +328,6 @@ cc::Layer* PaintLayerScrollableArea::LayerForScrollCorner() const {
   if (auto* graphics_layer = GraphicsLayerForScrollCorner())
     return &graphics_layer->CcLayer();
   return nullptr;
-}
-
-GraphicsLayer* PaintLayerScrollableArea::GraphicsLayerForScrolling() const {
-  return Layer()->HasCompositedLayerMapping()
-             ? Layer()->GetCompositedLayerMapping()->ScrollingContentsLayer()
-             : nullptr;
 }
 
 GraphicsLayer* PaintLayerScrollableArea::GraphicsLayerForHorizontalScrollbar()
@@ -2530,10 +2519,7 @@ bool PaintLayerScrollableArea::ShouldScrollOnMainThread() const {
     return true;
 
   DCHECK(properties->ScrollTranslation());
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return !properties->ScrollTranslation()->HasDirectCompositingReasons();
-
-  return !GraphicsLayerForScrolling();
+  return !properties->ScrollTranslation()->HasDirectCompositingReasons();
 }
 
 static bool LayerNodeMayNeedCompositedScrolling(const PaintLayer* layer) {

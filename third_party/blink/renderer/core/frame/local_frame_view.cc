@@ -56,7 +56,6 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
-#include "third_party/blink/renderer/core/editing/compute_layer_selection.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
@@ -154,7 +153,6 @@
 #include "third_party/blink/renderer/platform/fonts/font_performance.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings_builder.h"
@@ -179,6 +177,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-blink.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 // Used to check for dirty layouts violating document lifecycle rules.
 // If arg evaluates to true, the program will continue. If arg evaluates to
@@ -221,7 +220,7 @@ FloatQuad GetQuadForTimelinePaintEvent(const scoped_refptr<cc::Layer>& layer) {
   gfx::RectF rect(layer->update_rect());
   if (layer->transform_tree_index() != -1)
     layer->ScreenSpaceTransform().TransformRect(&rect);
-  return FloatQuad(FloatRect(rect));
+  return FloatQuad(rect);
 }
 
 // Default value for how long we want to delay the
@@ -946,16 +945,16 @@ void LocalFrameView::SetNeedsPaintPropertyUpdate() {
     layout_view->SetNeedsPaintPropertyUpdate();
 }
 
-FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
+gfx::SizeF LocalFrameView::ViewportSizeForViewportUnits() const {
   float zoom = 1;
   if (!frame_->GetDocument() || !frame_->GetDocument()->Printing())
     zoom = GetFrame().PageZoomFactor();
 
   auto* layout_view = GetLayoutView();
   if (!layout_view)
-    return FloatSize();
+    return gfx::SizeF();
 
-  FloatSize layout_size;
+  gfx::SizeF layout_size;
   layout_size.set_width(layout_view->ViewWidth(kIncludeScrollbars) / zoom);
   layout_size.set_height(layout_view->ViewHeight(kIncludeScrollbars) / zoom);
 
@@ -983,8 +982,8 @@ FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
   return layout_size;
 }
 
-FloatSize LocalFrameView::ViewportSizeForMediaQueries() const {
-  FloatSize viewport_size(layout_size_);
+gfx::SizeF LocalFrameView::ViewportSizeForMediaQueries() const {
+  gfx::SizeF viewport_size(layout_size_);
   if (!frame_->GetDocument() || !frame_->GetDocument()->Printing())
     viewport_size.Scale(1 / GetFrame().PageZoomFactor());
   return viewport_size;
@@ -1326,21 +1325,6 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
     // if we're not compositing-inputs-clean, then we can't query
     // layer->SubtreeIsInvisible() here.
     layout_object->SetSubtreeShouldCheckForPaintInvalidation();
-    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-        !layer->SelfOrDescendantNeedsRepaint()) {
-      // Paint properties of the layer relative to its containing graphics
-      // layer may change if the paint properties escape the graphics layer's
-      // property state. Need to check raster invalidation for relative paint
-      // property changes.
-      if (auto* paint_invalidation_layer =
-              layer->EnclosingLayerForPaintInvalidation()) {
-        auto* mapping = paint_invalidation_layer->GetCompositedLayerMapping();
-        if (!mapping)
-          mapping = paint_invalidation_layer->GroupedMapping();
-        if (mapping)
-          mapping->SetNeedsCheckRasterInvalidation();
-      }
-    }
 
     // If the fixed layer has a blur/drop-shadow filter applied on at least one
     // of its parents, we cannot scroll using the fast path, otherwise the
@@ -1394,53 +1378,6 @@ void LocalFrameView::SetLayoutSizeFixedToFrameSize(bool is_fixed) {
   layout_size_fixed_to_frame_size_ = is_fixed;
   if (is_fixed)
     SetLayoutSizeInternal(Size());
-}
-
-static cc::LayerSelection ComputeLayerSelection(LocalFrame& frame) {
-  if (!frame.View() || frame.View()->ShouldThrottleRendering())
-    return {};
-
-  return ComputeLayerSelection(frame.Selection());
-}
-
-void LocalFrameView::UpdateCompositedSelectionIfNeeded() {
-  if (!RuntimeEnabledFeatures::CompositedSelectionUpdateEnabled())
-    return;
-
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
-  TRACE_EVENT0("blink", "LocalFrameView::updateCompositedSelectionIfNeeded");
-
-  Page* page = GetFrame().GetPage();
-  DCHECK(page);
-
-  LocalFrame* focused_frame = page->GetFocusController().FocusedFrame();
-  LocalFrame* local_frame =
-      (focused_frame &&
-       (focused_frame->LocalFrameRoot() == frame_->LocalFrameRoot()))
-          ? focused_frame
-          : nullptr;
-
-  if (local_frame) {
-    const cc::LayerSelection& selection = ComputeLayerSelection(*local_frame);
-    if (selection != cc::LayerSelection()) {
-      page->GetChromeClient().UpdateLayerSelection(local_frame, selection);
-      return;
-    }
-  }
-
-  if (!local_frame) {
-    // Clearing the mainframe when there is no focused frame (and hence
-    // no localFrame) is legacy behaviour, and implemented here to
-    // satisfy WebFrameTest.CompositedSelectionBoundsCleared's
-    // first check that the composited selection has been cleared even
-    // though no frame has focus yet. If this is not desired, then the
-    // expectation needs to be removed from the test.
-    local_frame = &frame_->LocalFrameRoot();
-  }
-  DCHECK(local_frame);
-  page->GetChromeClient().ClearLayerSelection(local_frame);
 }
 
 void LocalFrameView::SetNeedsCompositingUpdate(
@@ -2687,8 +2624,6 @@ bool LocalFrameView::RunCompositingAssignmentsLifecyclePhase(
     });
   }
 
-  UpdateCompositedSelectionIfNeeded();
-
   frame_->GetPage()->GetValidationMessageClient().UpdatePrePaint();
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& view) {
     view.frame_->UpdateFrameColorOverlayPrePaint();
@@ -2939,16 +2874,7 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode,
             PaintLayer* frame_root_layer = frame_layout_view->Layer();
             DCHECK(frame_root_layer);
             DCHECK(owner->Layer());
-            // In pre-CompositeAfterPaint the root layer's SelfNeedsRepaint()
-            // means it's compositing state has changed, so propagate the flag
-            // to owner. Or propagate DescendantNeedsRepaint only if it is not
-            // composited. In CompositeAfterPaint, the whole condition can be
-            // changed to |if
-            // (frame_root_layer->SelfOrDescendantNeedsRepaint())|.
-            if (frame_root_layer->SelfNeedsRepaint() ||
-                (frame_root_layer->DescendantNeedsRepaint() &&
-                 frame_root_layer->GetCompositingState() !=
-                     kPaintsIntoOwnBacking))
+            if (frame_root_layer->SelfOrDescendantNeedsRepaint())
               owner->Layer()->SetDescendantNeedsRepaint();
           }
           // If debug info was just enabled, then the paint cache won't have any

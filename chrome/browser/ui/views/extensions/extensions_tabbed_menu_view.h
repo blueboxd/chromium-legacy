@@ -7,6 +7,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -22,7 +23,9 @@ class ExtensionsContainer;
 // ExtensionsTabbedMenuView is the extensions menu dialog with a tabbed pane.
 // TODO(crbug.com/1263311): Brief explanation of each tabs goal after
 // implementing them.
-class ExtensionsTabbedMenuView : public views::BubbleDialogDelegateView {
+class ExtensionsTabbedMenuView : public views::BubbleDialogDelegateView,
+                                 public TabStripModelObserver,
+                                 public ToolbarActionsModel::Observer {
  public:
   METADATA_HEADER(ExtensionsTabbedMenuView);
   ExtensionsTabbedMenuView(views::View* anchor_view,
@@ -65,19 +68,46 @@ class ExtensionsTabbedMenuView : public views::BubbleDialogDelegateView {
   // views::BubbleDialogDelegateView:
   std::u16string GetAccessibleWindowTitle() const override;
 
+  // TabStripModelObserver:
+  void TabChangedAt(content::WebContents* contents,
+                    int index,
+                    TabChangeType change_type) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
+
+  // ToolbarActionsModel::Observer:
+  void OnToolbarActionAdded(
+      const ToolbarActionsModel::ActionId& action_id) override;
+  void OnToolbarActionRemoved(
+      const ToolbarActionsModel::ActionId& action_id) override;
+  void OnToolbarActionUpdated(
+      const ToolbarActionsModel::ActionId& action_id) override;
+  void OnToolbarModelInitialized() override;
+  void OnToolbarPinnedActionsChanged() override;
+
  private:
-  // Initially creates the tabs and opens the corresponding one based on the
-  // `button_type`.
-  void Populate(ExtensionsToolbarButton::ButtonType button_type_);
+  // Initially creates the tabs.
+  void Populate();
+
+  // Updates the menu.
+  void Update();
 
   // Adds a menu item in the installed extensions for a newly-added extension.
   void CreateAndInsertInstalledExtension(
       const ToolbarActionsModel::ActionId& id,
       int index);
 
-  Browser* const browser_;
-  ExtensionsContainer* const extensions_container_;
-  ToolbarActionsModel* const toolbar_model_;
+  // Runs a set of consistency checks on the appearance of the menu. This is a
+  // no-op if DCHECKs are disabled.
+  void ConsistencyCheck();
+
+  const raw_ptr<Browser> browser_;
+  const raw_ptr<ExtensionsContainer> extensions_container_;
+  const raw_ptr<ToolbarActionsModel> toolbar_model_;
+  base::ScopedObservation<ToolbarActionsModel, ToolbarActionsModel::Observer>
+      toolbar_model_observation_{this};
   bool const allow_pinning_;
 
   // The view containing the menu's two tabs.

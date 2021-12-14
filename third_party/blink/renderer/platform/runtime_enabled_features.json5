@@ -554,7 +554,7 @@
     {
       // https://drafts.csswg.org/css-cascade-5/#layering
       name: "CSSCascadeLayers",
-      status: "experimental",
+      status: "stable",
     },
     {
       // Support case-sensitive attribute selector modifier
@@ -2219,11 +2219,6 @@
       name: "SVGTextNG",
       depends_on: ["LayoutNG"],
       status: "stable"
-    },
-    {
-      // Synchronously load web fonts inlined as data urls (crbug.com/1236283)
-      name: "SyncLoadDataUrlFonts",
-      status: "test",
     },
     {
       name: "SystemWakeLock",

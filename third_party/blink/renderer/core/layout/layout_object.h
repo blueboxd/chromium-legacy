@@ -2366,7 +2366,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
                                    MapCoordinatesFlags mode = 0) const {
     NOT_DESTROYED();
     return PhysicalRect::EnclosingRect(
-        AncestorToLocalQuad(ancestor, FloatRect(rect), mode).BoundingBox());
+        AncestorToLocalQuad(ancestor, FloatQuad(gfx::RectF(rect)), mode)
+            .BoundingBox());
   }
   FloatQuad AncestorToLocalQuad(const LayoutBoxModelObject*,
                                 const FloatQuad&,
@@ -2401,7 +2402,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
                                     const LayoutBoxModelObject* ancestor,
                                     MapCoordinatesFlags mode = 0) const {
     NOT_DESTROYED();
-    return LocalToAncestorQuad(FloatRect(rect), ancestor, mode);
+    return LocalToAncestorQuad(FloatQuad(gfx::RectF(rect)), ancestor, mode);
   }
   FloatQuad LocalToAncestorQuad(const FloatQuad&,
                                 const LayoutBoxModelObject* ancestor,
@@ -2494,7 +2495,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // ancestor - use |LocalToAncestorPoint| if there might be transforms.
   PhysicalOffset OffsetFromAncestor(const LayoutObject*) const;
 
-  FloatRect AbsoluteBoundingBoxFloatRect(MapCoordinatesFlags = 0) const;
+  gfx::RectF AbsoluteBoundingBoxRectF(MapCoordinatesFlags = 0) const;
   // This returns an gfx::Rect enclosing this object. If this object has an
   // integral size and the position has fractional values, the resultant
   // gfx::Rect can be larger than the integral size.
@@ -2525,7 +2526,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // For accessibility, we want the bounding box rect of this element
   // in local coordinates, which can then be converted to coordinates relative
   // to any ancestor using, e.g., localToAncestorTransform.
-  virtual FloatRect LocalBoundingBoxRectForAccessibility() const = 0;
+  virtual gfx::RectF LocalBoundingBoxRectForAccessibility() const = 0;
 
   // This function returns the:
   //  - Minimal logical width this object can have without overflowing. This
@@ -2585,11 +2586,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   virtual CursorDirective GetCursor(const PhysicalOffset&, ui::Cursor&) const;
 
-  const LayoutBoxModelObject& DirectlyCompositableContainer() const;
-
   bool IsPaintInvalidationContainer() const;
-
-  bool CanBeCompositedForDirectReasons() const;
 
   // Returns the rect that should have raster invalidated whenever this object
   // changes. The rect is in the coordinate space of the document's scrolling
@@ -3757,8 +3754,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
       bool mark_container_chain_layout_overflow_recalc);
 
   inline void InvalidateContainerIntrinsicLogicalWidths();
-
-  const LayoutBoxModelObject* EnclosingDirectlyCompositableContainer() const;
 
   LayoutFlowThread* LocateFlowThreadContainingBlock() const;
   void RemoveFromLayoutFlowThreadRecursive(LayoutFlowThread*);

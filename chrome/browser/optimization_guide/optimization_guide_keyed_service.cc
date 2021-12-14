@@ -20,7 +20,6 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/optimization_guide/core/command_line_top_host_provider.h"
 #include "components/optimization_guide/core/hints_processing_util.h"
@@ -113,21 +112,6 @@ void OptimizationGuideKeyedService::Initialize() {
                                 ->GetProtoDatabaseProvider();
   base::FilePath profile_path = profile->GetOriginalProfile()->GetPath();
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  // Do not use the primary profile on ChromeOS since it basically is an
-  // ephemeral profile anyway and we cannot provide hints or models to it
-  // anyway. Additionally, sign in profiles do not go through the standard
-  // profile initialization flow, so a lot of things that are required are not
-  // available when the browser context for the signin profile is created.
-  if (profile->IsGuestSession()) {
-    Profile* primary_profile = ProfileManager::GetPrimaryUserProfile();
-    if (primary_profile) {
-      proto_db_provider = primary_profile->GetDefaultStoragePartition()
-                              ->GetProtoDatabaseProvider();
-      profile_path = primary_profile->GetPath();
-    }
-  }
-#endif
   // We have different behavior if |this| is created for an incognito profile.
   // For incognito profiles, we act in "read-only" mode of the original
   // profile's store and do not fetch any new hints or models.
@@ -136,25 +120,9 @@ void OptimizationGuideKeyedService::Initialize() {
   optimization_guide::OptimizationGuideStore*
       prediction_model_and_features_store;
   if (profile->IsOffTheRecord()) {
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-    // Do not use the primary profile on ChromeOS since it basically is an
-    // ephemeral profile anyway and we cannot provide hints or models to it
-    // anyway. Additionally, sign in profiles do not go through the standard
-    // profile initialization flow, so a lot of things that are required are not
-    // available when the browser context for the signin profile is created.
-
-    // For guest profiles, we want to use the primary profile as it is an
-    // original profile itself, unlike incognito. However, we still want
-    // read-only mode.
-    OptimizationGuideKeyedService* original_ogks =
-        OptimizationGuideKeyedServiceFactory::GetForProfile(
-            profile->IsGuestSession() ? ProfileManager::GetPrimaryUserProfile()
-                                      : profile->GetOriginalProfile());
-#else
     OptimizationGuideKeyedService* original_ogks =
         OptimizationGuideKeyedServiceFactory::GetForProfile(
             profile->GetOriginalProfile());
-#endif
     DCHECK(original_ogks);
     hint_store = original_ogks->GetHintsManager()->hint_store();
     prediction_model_and_features_store =

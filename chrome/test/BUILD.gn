@@ -2386,10 +2386,8 @@ if (!is_android && !is_fuchsia) {
     }
 
     if (!is_chromeos) {
-      sources += [
-        "../browser/policy/test/native_messaging_policy_browsertest.cc",
-        "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
-      ]
+      sources +=
+          [ "../browser/ui/views/intent_picker_bubble_view_browsertest.cc" ]
     }
 
     if (include_js_tests) {
@@ -2662,8 +2660,6 @@ if (!is_android && !is_fuchsia) {
         "../browser/extensions/extension_install_prompt_test_helper.h",
         "../browser/extensions/extension_install_ui_browsertest.cc",
         "../browser/extensions/extension_loading_browsertest.cc",
-        "../browser/extensions/extension_management_test_util.cc",
-        "../browser/extensions/extension_management_test_util.h",
         "../browser/extensions/extension_messages_apitest.cc",
         "../browser/extensions/extension_modules_apitest.cc",
         "../browser/extensions/extension_override_apitest.cc",
@@ -2737,7 +2733,6 @@ if (!is_android && !is_fuchsia) {
         "../browser/notifications/notification_permission_context_apitest.cc",
         "../browser/policy/extension_force_install_mixin.cc",
         "../browser/policy/extension_force_install_mixin.h",
-        "../browser/policy/extension_policy_browsertest.cc",
         "../browser/safe_browsing/settings_reset_prompt/default_settings_fetcher_browsertest.cc",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.cc",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
@@ -2824,6 +2819,7 @@ if (!is_android && !is_fuchsia) {
       deps += [
         "//build:chromeos_buildflags",
         "//chrome/browser/devtools:test_support",
+        "//chrome/browser/extensions:test_support",
         "//chrome/common/extensions/api",
         "//chrome/services/media_gallery_util/public/cpp:browser_tests",
         "//chrome/test/media_router:browser_tests",
@@ -3448,8 +3444,6 @@ if (!is_android && !is_fuchsia) {
         "../browser/notifications/notifier_settings_test_observer.cc",
         "../browser/notifications/notifier_settings_test_observer.h",
         "../browser/policy/login_policy_test_base_browsertest.cc",
-        "../browser/policy/test/note_taking_on_lock_screen_policy_browsertest.cc",
-        "../browser/policy/test/system_features_policy_browsertest.cc",
         "../browser/process_singleton_browsertest.cc",
         "../browser/renderer_context_menu/quick_answers_menu_observer_browsertest.cc",
         "../browser/sessions/session_restore_browsertest_chromeos.cc",
@@ -5068,6 +5062,7 @@ test("unit_tests") {
       "../browser/upgrade_detector/mock_build_state_observer.h",
       "../browser/upgrade_detector/upgrade_detector_unittest.cc",
       "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
+      "../browser/webauthn/cablev2_devices_unittest.cc",
       "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
       "../renderer/cart/commerce_hint_agent_unittest.cc",
     ]
@@ -6588,7 +6583,6 @@ test("unit_tests") {
       "../browser/ui/app_list/md_icon_normalizer_unittest.cc",
       "../browser/ui/app_list/reorder/app_list_reorder_util_unittest.cc",
       "../browser/ui/app_list/search/app_search_provider_unittest.cc",
-      "../browser/ui/app_list/search/arc/arc_app_reinstall_search_provider_unittest.cc",
       "../browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider_unittest.cc",
       "../browser/ui/app_list/search/arc/arc_playstore_search_provider_unittest.cc",
       "../browser/ui/app_list/search/arc/recommend_apps_fetcher_impl_unittest.cc",
@@ -6818,7 +6812,6 @@ test("unit_tests") {
       "../browser/extensions/api/bookmarks/bookmarks_api_unittest.cc",
       "../browser/extensions/api/browsing_data/browsing_data_unittest.cc",
       "../browser/extensions/api/chrome_extensions_api_client_unittest.cc",
-      "../browser/extensions/api/content_settings/content_settings_store_unittest.cc",
       "../browser/extensions/api/cookies/cookies_helpers_unittest.cc",
       "../browser/extensions/api/cookies/cookies_unittest.cc",
       "../browser/extensions/api/cryptotoken_private/cryptotoken_private_api_unittest.cc",
@@ -6928,8 +6921,6 @@ test("unit_tests") {
       "../browser/extensions/extension_gcm_app_handler_unittest.cc",
       "../browser/extensions/extension_icon_manager_unittest.cc",
       "../browser/extensions/extension_install_prompt_unittest.cc",
-      "../browser/extensions/extension_management_test_util.cc",
-      "../browser/extensions/extension_management_test_util.h",
       "../browser/extensions/extension_management_unittest.cc",
       "../browser/extensions/extension_message_bubble_controller_unittest.cc",
       "../browser/extensions/extension_migrator_unittest.cc",

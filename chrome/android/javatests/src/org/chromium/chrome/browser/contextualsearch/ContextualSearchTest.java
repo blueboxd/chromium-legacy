@@ -241,7 +241,7 @@ public class ContextualSearchTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // It only makes sense to send dummy data here because we can't easily control
             // what's in the native context.
-            mContextualSearchClient.selectWordAroundCaretAck(true, 0, 0);
+            mContextualSearchClient.selectAroundCaretAck(null);
         });
     }
 
@@ -304,6 +304,7 @@ public class ContextualSearchTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @Features.DisableFeatures(ChromeFeatureList.SNOOZABLE_IPH)
     public void testTextTapFollowedByNonTextTap() {
         Assert.assertEquals(mPanelManager.getRequestPanelShowCount(), 0);
 

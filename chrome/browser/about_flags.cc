@@ -5621,13 +5621,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list_features::kEnableAssistantSearch)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    {"strict-extension-isolation",
-     flag_descriptions::kStrictExtensionIsolationName,
-     flag_descriptions::kStrictExtensionIsolationDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(extensions_features::kStrictExtensionIsolation)},
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
     {"strict-origin-isolation", flag_descriptions::kStrictOriginIsolationName,
      flag_descriptions::kStrictOriginIsolationDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kStrictOriginIsolation)},
@@ -7494,6 +7487,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceMajorVersion100InUserAgentName,
      flag_descriptions::kForceMajorVersion100InUserAgentDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kForceMajorVersion100InUserAgent)},
+    {"force-minor-version-to-100",
+     flag_descriptions::kForceMinorVersion100InUserAgentName,
+     flag_descriptions::kForceMinorVersion100InUserAgentDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kForceMinorVersion100InUserAgent)},
     {"autofill-enable-offer-notification-for-promo-codes",
      flag_descriptions::kAutofillEnableOfferNotificationForPromoCodesName,
      flag_descriptions::

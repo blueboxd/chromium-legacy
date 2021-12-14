@@ -4189,45 +4189,6 @@
             ]
         }
     ],
-    "HeapProfiling": [
-        {
-            "platforms": [
-                "android",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "sampling-rate": "1000000"
-                    },
-                    "enable_features": [
-                        "HeapProfilerReporting"
-                    ]
-                }
-            ]
-        },
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "sampling-rate": "10000000"
-                    },
-                    "enable_features": [
-                        "HeapProfilerReporting"
-                    ]
-                }
-            ]
-        }
-    ],
     "HelpAppLauncherSearch": [
         {
             "platforms": [
@@ -6959,27 +6920,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafeBrowsingDelayedWarnings"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SafeBrowsingPageLoadToken": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SafeBrowsingPageLoadToken"
                     ]
                 }
             ]

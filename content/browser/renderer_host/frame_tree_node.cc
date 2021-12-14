@@ -288,6 +288,27 @@ RenderFrameHostImpl* FrameTreeNode::GetParentOrOuterDocumentHelper(
   return nullptr;
 }
 
+FrameType FrameTreeNode::GetFrameType() const {
+  if (!IsMainFrame())
+    return FrameType::kSubframe;
+
+  switch (frame_tree()->type()) {
+    case FrameTree::Type::kPrimary:
+      return FrameType::kPrimaryMainFrame;
+    case FrameTree::Type::kPrerender:
+      return FrameType::kPrerenderMainFrame;
+    case FrameTree::Type::kFencedFrame:
+      // We also have FencedFramesImplementationType::kShadowDOM for a
+      // fenced frame implementation based on <iframe> + shadowDOM,
+      // which will return kSubframe as it's a modified <iframe> rather
+      // than a dedicated FrameTree. This returns kSubframe for the
+      // shadow dom implementation in order to keep consistency (i.e.
+      // NavigationHandle::GetParentFrame returning non-null value for
+      // shadow-dom based FFs).
+      return FrameType::kFencedFrameRoot;
+  }
+}
+
 size_t FrameTreeNode::GetFrameTreeSize() const {
   if (is_collapsed())
     return 0;
@@ -350,23 +371,6 @@ void FrameTreeNode::DidCommitNonInitialEmptyDocument() {
   is_on_initial_empty_document_ = false;
 }
 
-void FrameTreeNode::SetCurrentOrigin(
-    const url::Origin& origin,
-    bool is_potentially_trustworthy_unique_origin) {
-  if (!origin.IsSameOriginWith(
-          render_manager_.current_replication_state().origin) ||
-      render_manager_.current_replication_state()
-              .has_potentially_trustworthy_unique_origin !=
-          is_potentially_trustworthy_unique_origin) {
-    render_manager_.OnDidUpdateOrigin(origin,
-                                      is_potentially_trustworthy_unique_origin);
-  }
-  render_manager_.browsing_context_state()->set_origin(origin);
-  render_manager_.browsing_context_state()
-      ->set_has_potentially_trustworthy_unique_origin(
-          is_potentially_trustworthy_unique_origin);
-}
-
 void FrameTreeNode::SetCollapsed(bool collapsed) {
   DCHECK(!IsMainFrame());
   if (is_collapsed_ == collapsed)
@@ -408,27 +412,6 @@ void FrameTreeNode::SetFrameName(const std::string& name,
   // load is committed, but that's not strongly enforced here.
   render_manager_.OnDidUpdateName(name, unique_name);
   render_manager_.browsing_context_state()->set_frame_name(unique_name, name);
-}
-
-void FrameTreeNode::SetInsecureRequestPolicy(
-    blink::mojom::InsecureRequestPolicy policy) {
-  if (policy ==
-      render_manager_.current_replication_state().insecure_request_policy)
-    return;
-  render_manager_.OnEnforceInsecureRequestPolicy(policy);
-  render_manager_.browsing_context_state()->set_insecure_request_policy(policy);
-}
-
-void FrameTreeNode::SetInsecureNavigationsSet(
-    const std::vector<uint32_t>& insecure_navigations_set) {
-  DCHECK(std::is_sorted(insecure_navigations_set.begin(),
-                        insecure_navigations_set.end()));
-  if (insecure_navigations_set ==
-      render_manager_.current_replication_state().insecure_navigations_set)
-    return;
-  render_manager_.OnEnforceInsecureNavigationsSet(insecure_navigations_set);
-  render_manager_.browsing_context_state()->set_insecure_navigations_set(
-      insecure_navigations_set);
 }
 
 void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {
@@ -756,12 +739,6 @@ bool FrameTreeNode::UpdateUserActivationState(
   return update_result;
 }
 
-void FrameTreeNode::OnSetHadStickyUserActivationBeforeNavigation(bool value) {
-  render_manager_.OnSetHadStickyUserActivationBeforeNavigation(value);
-  render_manager_.browsing_context_state()
-      ->set_has_received_active_user_gesture_before_nav(value);
-}
-
 bool FrameTreeNode::UpdateFramePolicyHeaders(
     network::mojom::WebSandboxFlags sandbox_flags,
     const blink::ParsedPermissionsPolicy& parsed_header) {
@@ -799,16 +776,6 @@ void FrameTreeNode::PruneChildFrameNavigationEntries(
       child->PruneChildFrameNavigationEntries(entry);
     }
   }
-}
-
-void FrameTreeNode::SetIsAdSubframe(bool is_ad_subframe) {
-  if (is_ad_subframe ==
-      render_manager_.current_replication_state().is_ad_subframe)
-    return;
-
-  render_manager()->browsing_context_state()->set_is_ad_subframe(
-      is_ad_subframe);
-  render_manager()->OnDidSetIsAdSubframe(is_ad_subframe);
 }
 
 void FrameTreeNode::SetInitialPopupURL(const GURL& initial_popup_url) {

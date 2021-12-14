@@ -1344,9 +1344,6 @@ extern const char kStoragePressureEventDescription[];
 extern const char kStoreHoursAndroidName[];
 extern const char kStoreHoursAndroidDescription[];
 
-extern const char kStrictExtensionIsolationName[];
-extern const char kStrictExtensionIsolationDescription[];
-
 extern const char kStrictOriginIsolationName[];
 extern const char kStrictOriginIsolationDescription[];
 
@@ -1631,6 +1628,9 @@ extern const char kShareContextMenuDescription[];
 
 extern const char kForceMajorVersion100InUserAgentName[];
 extern const char kForceMajorVersion100InUserAgentDescription[];
+
+extern const char kForceMinorVersion100InUserAgentName[];
+extern const char kForceMinorVersion100InUserAgentDescription[];
 
 // Android --------------------------------------------------------------------
 

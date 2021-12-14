@@ -2794,7 +2794,7 @@
   {
     "name": "enable-unsafe-webgpu",
     "owners": [ "//third_party/blink/renderer/modules/webgpu/OWNERS" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 101
   },
   {
     "name": "enable-use-zoom-for-dsf",
@@ -3233,6 +3233,11 @@
   },
   {
     "name": "force-major-version-to-100",
+    "owners": [ "abeyad", "potassium-katabolism@google.com" ],
+    "expiry_milestone": 100
+  },
+  {
+    "name": "force-minor-version-to-100",
     "owners": [ "abeyad", "potassium-katabolism@google.com" ],
     "expiry_milestone": 100
   },
@@ -5166,14 +5171,6 @@
     "name": "storage-access-api",
     "owners": [ "brandm@microsoft.com" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "strict-extension-isolation",
-    "owners": [ "creis" ],
-    // This prevents extensions from sharing a process with each other. It is
-    // useful for improving security but launching it will depend on trials that
-    // will monitor the effect on process count, etc.
-    "expiry_milestone": 100
   },
   {
     "name": "strict-origin-isolation",

@@ -2319,11 +2319,6 @@ const char kSplitCacheByNetworkIsolationKeyDescription[] =
     "Partitions the HTTP Cache by (top-level site, current-frame site) to "
     "disallow cross-site tracking.";
 
-const char kStrictExtensionIsolationName[] = "Strict Extension Isolation";
-const char kStrictExtensionIsolationDescription[] =
-    "Experimental security mode that prevents extensions from sharing a "
-    "process with each other.";
-
 const char kStrictOriginIsolationName[] = "Strict-Origin-Isolation";
 const char kStrictOriginIsolationDescription[] =
     "Experimental security mode that strengthens the site isolation policy. "
@@ -2827,6 +2822,17 @@ const char kForceMajorVersion100InUserAgentDescription[] =
     "Force the Chrome major version in the User-Agent string to 100, which "
     "allows testing the 3-digit major version number before the actual M100 "
     "release. This flag is only available from M96-M99.";
+
+const char kForceMinorVersion100InUserAgentName[] =
+    "Force the minor version to 100 in the User-Agent string";
+const char kForceMinorVersion100InUserAgentDescription[] =
+    "Force the Chrome minor version in the User-Agent string to 100, which "
+    "allows testing a 3-digit minor version number. Currently, the minor "
+    "version is always reported as 0, but due to potential breakage with the "
+    "upcoming major version 100, this flag allows us to test whether setting "
+    "the major version in the minor version part of the User-Agent string "
+    "would be an acceptable alternative. If force-major-version-to-100 is set, "
+    "then this flag has no effect. See crbug.com/1278459 for details.";
 
 // Android ---------------------------------------------------------------------
 

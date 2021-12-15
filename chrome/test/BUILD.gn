@@ -1600,6 +1600,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/media/webrtc/conditional_focus_browsertest.cc",
       "../browser/media/webrtc/media_stream_devices_controller_browsertest.cc",
       "../browser/media/webrtc/region_capture_browsertest.cc",
+      "../browser/media/webrtc/same_origin_observer_browsertest.cc",
       "../browser/media/webrtc/test_stats_dictionary_unittest.cc",
       "../browser/media/webrtc/webrtc_apprtc_browsertest.cc",
       "../browser/media/webrtc/webrtc_browsertest_perf.cc",
@@ -2051,7 +2052,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/ui/webui/settings/settings_clear_browsing_data_handler_browsertest.cc",
       "../browser/ui/webui/settings/settings_secure_dns_handler_browsertest.cc",
       "../browser/ui/webui/settings/settings_ui_browsertest.cc",
-      "../browser/ui/webui/support_tool_ui_browsertest.cc",
+      "../browser/ui/webui/support_tool/support_tool_ui_browsertest.cc",
       "../browser/ui/webui/tab_search/tab_search_ui_browsertest.cc",
       "../browser/ui/webui/webui_load_timer_browsertest.cc",
       "../browser/ui/zoom/zoom_controller_browsertest.cc",
@@ -2121,9 +2122,7 @@ if (!is_android && !is_fuchsia) {
 
     # crbug.com/1279884 Flaky on CrOS
     if (!is_chromeos) {
-      sources += [
-          "../browser/optimization_guide/page_content_annotations_service_browsertest.cc"
-      ]
+      sources += [ "../browser/optimization_guide/page_content_annotations_service_browsertest.cc" ]
     }
 
     if (enable_reporting) {
@@ -3226,6 +3225,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/ash/login/screens/family_link_notice_browsertest.cc",
         "../browser/ash/login/screens/fingerprint_setup_browsertest.cc",
         "../browser/ash/login/screens/gesture_navigation_screen_browsertest.cc",
+        "../browser/ash/login/screens/guest_tos_screen_browsertest.cc",
         "../browser/ash/login/screens/hid_detection_screen_browsertest.cc",
         "../browser/ash/login/screens/lacros_data_migration_screen_browsertest.cc",
         "../browser/ash/login/screens/management_transition_screen_browsertest.cc",
@@ -9023,8 +9023,6 @@ source_set("sync_integration_test_support") {
       "../browser/sync/test/integration/sync_app_list_helper.h",
       "../browser/sync/test/integration/sync_arc_package_helper.cc",
       "../browser/sync/test/integration/sync_arc_package_helper.h",
-      "../browser/sync/test/integration/sync_consent_optional_sync_test.cc",
-      "../browser/sync/test/integration/sync_consent_optional_sync_test.h",
       "../browser/sync/test/integration/sync_settings_categorization_sync_test.cc",
       "../browser/sync/test/integration/sync_settings_categorization_sync_test.h",
       "../browser/sync/test/integration/workspace_desk_helper.cc",

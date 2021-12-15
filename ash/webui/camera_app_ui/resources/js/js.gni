@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 compile_js_files = [
-  "animation.js",
+  "animation.ts",
   "app_window.ts",
   "assert.ts",
   "async_job_queue.ts",
@@ -56,7 +56,7 @@ compile_js_files = [
   "nav.js",
   "new_feature_toast.js",
   "perf.js",
-  "snackbar.js",
+  "snackbar.ts",
   "sound.js",
   "state.js",
   "test_bridge.ts",
@@ -96,7 +96,7 @@ compile_js_files = [
   "views/settings.js",
   "views/view.js",
   "views/warning.js",
-  "waitable_event.js",
+  "waitable_event.ts",
   "window_controller.js",
 ]
 

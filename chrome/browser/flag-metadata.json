@@ -3127,12 +3127,12 @@
   {
     "name": "file-handling-api",
     "owners": [ "estade", "mgiuca", "cmp" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 104
   },
   {
     "name": "file-handling-icons",
     "owners": [ "estade", "mgiuca", "cmp" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 104
   },
   {
     "name": "files-archivemount",
@@ -4014,6 +4014,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "ntp-realbox-match-omnibox-theme",
+    "owners": [ "mahmadi", "mfacey" ],
+    "expiry_milestone": 105
+  },
+  {
     "name": "ntp-realbox-pedals",
     "owners": [ "mahmadi", "mfacey" ],
     "expiry_milestone": 100
@@ -4027,6 +4032,11 @@
     "name": "ntp-realbox-tail-suggest",
     "owners": [ "mahmadi", "mfacey" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "ntp-realbox-use-google-g-icon",
+    "owners": [ "mahmadi", "mfacey" ],
+    "expiry_milestone": 105
   },
   {
     "name": "ntp-recipe-tasks-module",
@@ -4350,6 +4360,15 @@
     "name": "page-info-history",
     "owners": [ "eokoyomon", "dullweber" ],
     "expiry_milestone": 97
+  },
+  {
+    "name": "page-info-history-desktop",
+    "owners": [
+      "eokoyomon",
+      "dullweber",
+      "olesiamarukhno@google.com"
+    ],
+    "expiry_milestone": 102
   },
   {
     "name": "page-info-store-info",
@@ -5133,7 +5152,7 @@
   {
     "name": "smart-lock-ui-revamp",
     "owners": [ "cclem", "better-together-dev@google.com" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 101
   },
   {
     "name": "smart-suggestion-for-large-downloads",
@@ -5294,11 +5313,6 @@
     "name": "tab-search-media-tabs",
     "owners": ["elainechien", "romanarora"],
     "expiry_milestone": 110
-  },
-  {
-    "name": "tabs-bulkactions-ios",
-    "owners": [ "mrefaat", "michaeldo", "bling-flags@google.com" ],
-    "expiry_milestone": 98
   },
   {
     "name": "tabs-search-ios",
@@ -5512,6 +5526,11 @@
     "owners": [ "azeemarshad", "khorimoto", "jonmann" ],
     // This flag is required for QA and dogfood testing.
     "expiry_milestone": -1
+  },
+  {
+    "name": "use-multiple-overlays",
+    "owners": [ "khaslett", "//components/viz/OWNERS" ],
+    "expiry_milestone": 104
   },
   {
     "name": "use-passthrough-command-decoder",

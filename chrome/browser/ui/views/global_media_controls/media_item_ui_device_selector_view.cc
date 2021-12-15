@@ -168,7 +168,6 @@ void ExpandDeviceSelectorButton::OnColorsChanged(SkColor foreground_color) {
       vector_icons::kCaretUpIcon, kDropdownButtonIconSize, foreground_color);
   SetToggledImage(views::Button::STATE_NORMAL, &caret_down_image);
   views::InkDrop::Get(this)->SetBaseColor(foreground_color);
-  SetHighlighted(true);
 }
 
 MediaItemUIDeviceSelectorView::MediaItemUIDeviceSelectorView(

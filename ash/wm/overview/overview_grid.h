@@ -19,11 +19,9 @@
 #include "ash/wm/splitview/split_view_observer.h"
 #include "ash/wm/window_state.h"
 #include "base/containers/flat_set.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace views {
 class Widget;
@@ -140,6 +138,12 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   void RemoveItem(OverviewItem* overview_item,
                   bool item_destroying,
                   bool reposition);
+
+  // Removes all overview items and restores the respective windows. This is
+  // used when launching a desks template. While this will empty the grid, it
+  // will *not* invoke `OverviewSession::OnGridEmpty()` since the grid is about
+  // to get filled with new windows.
+  void RemoveAllItemsForDesksTemplatesLaunch();
 
   // Adds a drop target for |dragged_item|, at the index immediately following
   // |dragged_item|. Repositions all items except |dragged_item|, so that the
@@ -285,6 +289,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   bool IntersectsWithDesksBar(const gfx::Point& screen_location,
                               bool update_desks_bar_drag_details,
                               bool for_drop);
+
+  // Returns the desk index of the provided screen location if it belongs to
+  // any, otherwise `-1` will be returned.
+  int GetDeskIndexFromScreenLocation(const gfx::Point& screen_location);
 
   // Updates the drag details for DesksBarView to end the drag and move the
   // window of |drag_item| to another desk if it was dropped on a mini_view of
@@ -577,7 +585,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   aura::Window* dragged_window_ = nullptr;
 
   // The widget that contains the view for all the existing templates.
-  views::UniqueWidgetPtr desks_templates_grid_widget_;
+  std::unique_ptr<views::Widget> desks_templates_grid_widget_;
 
   // The contents view of the above `desks_templates_grid_widget_` if created.
   DesksTemplatesGridView* desks_templates_grid_view_ = nullptr;

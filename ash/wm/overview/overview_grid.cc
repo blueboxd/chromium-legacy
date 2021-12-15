@@ -766,6 +766,12 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item,
   }
 }
 
+void OverviewGrid::RemoveAllItemsForDesksTemplatesLaunch() {
+  for (auto& item : window_list_)
+    item->RestoreWindow(/*reset_tranform=*/true);
+  window_list_.clear();
+}
+
 void OverviewGrid::AddDropTargetForDraggingFromThisGrid(
     OverviewItem* dragged_item) {
   DCHECK(!drop_target_widget_);
@@ -1416,6 +1422,16 @@ bool OverviewGrid::IntersectsWithDesksBar(const gfx::Point& screen_location,
   return dragged_item_over_bar;
 }
 
+int OverviewGrid::GetDeskIndexFromScreenLocation(
+    const gfx::Point& screen_location) {
+  auto* desks_controller = DesksController::Get();
+  for (auto* mini_view : desks_bar_view_->mini_views()) {
+    if (mini_view->IsPointOnMiniView(screen_location))
+      return desks_controller->GetDeskIndex(mini_view->desk());
+  }
+  return -1;
+}
+
 bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
     const gfx::Point& screen_location,
     OverviewItem* drag_item) {
@@ -1734,7 +1750,7 @@ void OverviewGrid::ShowDesksTemplatesGrid(bool was_zero_state) {
   // Fade in the widget from its current opacity.
   // TODO(crbug.com/1277160): Consider adding animate flag to determine whether
   // to disable animations.
-  PerformFadeInDesksTemplatesGridView(desks_templates_grid_widget_->GetLayer());
+  PerformFadeInLayer(desks_templates_grid_widget_->GetLayer());
 
   UpdateSaveDeskAsTemplateButton();
 
@@ -1750,8 +1766,11 @@ void OverviewGrid::HideDesksTemplatesGrid(bool exit_overview) {
   for (auto& overview_mode_item : window_list_)
     overview_mode_item->RevertHideForDesksTemplatesGrid();
 
-  if (exit_overview) {
-    desks_templates_grid_widget_->CloseNow();
+  if (exit_overview && overview_session_->enter_exit_overview_type() !=
+                           OverviewEnterExitType::kImmediateExit) {
+    FadeOutWidgetFromOverview(
+        std::move(desks_templates_grid_widget_),
+        OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_DESKS_TEMPLATES_GRID_FADE_OUT);
     return;
   }
 

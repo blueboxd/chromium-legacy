@@ -1647,7 +1647,7 @@ try_.chromium_mac_orchestrator_pair(
     main_list_view = "try",
     orchestrator_cores = 2,
     orchestrator_tryjob = try_.job(
-        experiment_percentage = 100,
+        experiment_percentage = 50,
     ),
     compilator_goma_jobs = goma.jobs.J150,
     compilator_os = os.MAC_11,
@@ -1737,6 +1737,7 @@ try_.chromium_mac_ios_builder(
 try_.chromium_mac_ios_builder(
     name = "ios-simulator",
     branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_exclude_sources = "ios_test_files_and_test_utils",

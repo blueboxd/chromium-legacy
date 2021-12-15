@@ -2397,6 +2397,14 @@
     ],
   },
   'perfetto_unittests': {
+    'modifications': {
+      'android-12-x64-fyi-rel': {
+        'args': [
+          # TODO(crbug.com/1260440): Fix the failed test
+          '--gtest_filter=-ScopedDirTest.CloseOutOfScope',
+        ],
+      },
+    },
     'remove_from': [
       # TODO(crbug.com/931138): Fix permission issue when creating tmp files
       'android-arm64-proguard-rel',
@@ -3205,6 +3213,7 @@
   },
   'webgl2_conformance_metal_passthrough_tests': {
     'remove_from': [
+      'Mac FYI ASAN (Intel)', # crbug.com/1270755
       # Not enough capacity.
       'Mac FYI Retina Release (NVIDIA)',
     ],
@@ -3256,6 +3265,7 @@
   },
   'webgl_conformance_metal_passthrough_tests': {
     'remove_from': [
+      'Mac FYI ASAN (Intel)', # crbug.com/1270755
       # crbug.com/1158857: re-enable when switching to Metal by default.
       'Mac FYI Retina Release (NVIDIA)',
     ],

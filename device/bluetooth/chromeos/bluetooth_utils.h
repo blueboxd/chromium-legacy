@@ -6,6 +6,7 @@
 #define DEVICE_BLUETOOTH_CHROMEOS_BLUETOOTH_UTILS_H_
 
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -87,11 +88,26 @@ enum class DisconnectResult {
   kMaxValue = kSuccess
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class SetNicknameResult {
+  kInvalidNicknameFormat = 0,
+  kDeviceNotFound = 1,
+  kPrefsUnavailable = 2,
+  kSuccess = 3,
+  kMaxValue = kSuccess,
+};
+
 // Return filtered devices based on the filter type and max number of devices.
 DEVICE_BLUETOOTH_EXPORT device::BluetoothAdapter::DeviceList
 FilterBluetoothDeviceList(const BluetoothAdapter::DeviceList& devices,
                           BluetoothFilterType filter_type,
                           int max_devices);
+
+// Returns |true| if the device is unsupported and should not be known by the
+// UI.
+DEVICE_BLUETOOTH_EXPORT bool IsUnsupportedDevice(
+    const device::BluetoothDevice* device);
 
 // Record outcome of user attempting to pair to a device.
 DEVICE_BLUETOOTH_EXPORT void RecordPairingResult(
@@ -138,6 +154,9 @@ DEVICE_BLUETOOTH_EXPORT void RecordUserInitiatedReconnectionAttemptDuration(
     absl::optional<ConnectionFailureReason> failure_reason,
     BluetoothTransport transport,
     base::TimeDelta duration);
+
+// Record each time a Bluetooth device nickname change is attempted.
+DEVICE_BLUETOOTH_EXPORT void RecordSetDeviceNickName(SetNicknameResult success);
 
 }  // namespace device
 

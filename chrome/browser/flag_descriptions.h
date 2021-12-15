@@ -1103,6 +1103,9 @@ extern const char kPageContentAnnotationsDescription[];
 extern const char kPageInfoAboutThisSiteName[];
 extern const char kPageInfoAboutThisSiteDescription[];
 
+extern const char kPageInfoHistoryDesktopName[];
+extern const char kPageInfoHistoryDesktopDescription[];
+
 extern const char kParallelDownloadingName[];
 extern const char kParallelDownloadingDescription[];
 
@@ -1281,12 +1284,6 @@ extern const char kSharingDesktopScreenshotsDescription[];
 
 extern const char kSharingDesktopScreenshotsEditName[];
 extern const char kSharingDesktopScreenshotsEditDescription[];
-
-extern const char kSharingHubDesktopAppMenuName[];
-extern const char kSharingHubDesktopAppMenuDescription[];
-
-extern const char kSharingHubDesktopOmniboxName[];
-extern const char kSharingHubDesktopOmniboxDescription[];
 
 extern const char kSharingPreferVapidName[];
 extern const char kSharingPreferVapidDescription[];
@@ -2144,6 +2141,9 @@ extern const char kNtpModulesRedesignedDescription[];
 extern const char kNtpModulesRedesignedLayoutName[];
 extern const char kNtpModulesRedesignedLayoutDescription[];
 
+extern const char kNtpRealboxMatchOmniboxThemeName[];
+extern const char kNtpRealboxMatchOmniboxThemeDescription[];
+
 extern const char kNtpRealboxPedalsName[];
 extern const char kNtpRealboxPedalsDescription[];
 
@@ -2152,6 +2152,9 @@ extern const char kNtpRealboxSuggestionAnswersDescription[];
 
 extern const char kNtpRealboxTailSuggestName[];
 extern const char kNtpRealboxTailSuggestDescription[];
+
+extern const char kNtpRealboxUseGoogleGIconName[];
+extern const char kNtpRealboxUseGoogleGIconDescription[];
 
 extern const char kEnableReaderModeName[];
 extern const char kEnableReaderModeDescription[];
@@ -2977,6 +2980,9 @@ extern const char kUiSlowAnimationsDescription[];
 
 extern const char kUseFakeDeviceForMediaStreamName[];
 extern const char kUseFakeDeviceForMediaStreamDescription[];
+
+extern const char kUseMultipleOverlaysName[];
+extern const char kUseMultipleOverlaysDescription[];
 
 extern const char kVaapiJpegImageDecodeAccelerationName[];
 extern const char kVaapiJpegImageDecodeAccelerationDescription[];

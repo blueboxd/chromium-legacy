@@ -2637,6 +2637,26 @@ const FeatureEntry::FeatureVariation kQuickDimVariations[] = {
      nullptr}};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const FeatureEntry::FeatureParam kMaxOverlays1 = {features::kMaxOverlaysParam,
+                                                  "1"};
+const FeatureEntry::FeatureParam kMaxOverlays2 = {features::kMaxOverlaysParam,
+                                                  "2"};
+const FeatureEntry::FeatureParam kMaxOverlays3 = {features::kMaxOverlaysParam,
+                                                  "3"};
+const FeatureEntry::FeatureParam kMaxOverlays4 = {features::kMaxOverlaysParam,
+                                                  "4"};
+const FeatureEntry::FeatureParam kMaxOverlays5 = {features::kMaxOverlaysParam,
+                                                  "5"};
+const FeatureEntry::FeatureParam kMaxOverlays6 = {features::kMaxOverlaysParam,
+                                                  "6"};
+
+const FeatureEntry::FeatureVariation kUseMultipleOverlaysVariations[] = {
+    {"1", &kMaxOverlays1, 1, nullptr}, {"2", &kMaxOverlays2, 1, nullptr},
+    {"3", &kMaxOverlays3, 1, nullptr}, {"4", &kMaxOverlays4, 1, nullptr},
+    {"5", &kMaxOverlays5, 1, nullptr}, {"6", &kMaxOverlays6, 1, nullptr}};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -4948,6 +4968,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpModulesRedesignedLayoutDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kNtpModulesRedesignedLayout)},
 
+    {"ntp-realbox-match-omnibox-theme",
+     flag_descriptions::kNtpRealboxMatchOmniboxThemeName,
+     flag_descriptions::kNtpRealboxMatchOmniboxThemeDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kRealboxMatchOmniboxTheme)},
+
     {"ntp-realbox-pedals", flag_descriptions::kNtpRealboxPedalsName,
      flag_descriptions::kNtpRealboxPedalsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kNtpRealboxPedals)},
@@ -4960,6 +4985,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-realbox-tail-suggest", flag_descriptions::kNtpRealboxTailSuggestName,
      flag_descriptions::kNtpRealboxTailSuggestDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kNtpRealboxTailSuggest)},
+
+    {"ntp-realbox-use-google-g-icon",
+     flag_descriptions::kNtpRealboxUseGoogleGIconName,
+     flag_descriptions::kNtpRealboxUseGoogleGIconDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kRealboxUseGoogleGIcon)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(DCHECK_IS_CONFIGURABLE)
@@ -5498,19 +5528,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"sharing-send-via-sync", flag_descriptions::kSharingSendViaSyncName,
      flag_descriptions::kSharingSendViaSyncDescription, kOsAll,
      FEATURE_VALUE_TYPE(kSharingSendViaSync)},
-
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_FUCHSIA)
-    {"sharing-hub-desktop-app-menu",
-     flag_descriptions::kSharingHubDesktopAppMenuName,
-     flag_descriptions::kSharingHubDesktopAppMenuDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(sharing_hub::kSharingHubDesktopAppMenu)},
-    {"sharing-hub-desktop-omnibox",
-     flag_descriptions::kSharingHubDesktopOmniboxName,
-     flag_descriptions::kSharingHubDesktopOmniboxDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(sharing_hub::kSharingHubDesktopOmnibox)},
-#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
-        // defined(OS_FUCHSIA)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"ash-enable-pip-rounded-corners",
@@ -6373,6 +6390,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"page-info-store-info", flag_descriptions::kPageInfoStoreInfoName,
      flag_descriptions::kPageInfoStoreInfoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(page_info::kPageInfoStoreInfo)},
+#endif  // !defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
+    {"page-info-history-desktop",
+     flag_descriptions::kPageInfoHistoryDesktopName,
+     flag_descriptions::kPageInfoHistoryDesktopDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(page_info::kPageInfoHistoryDesktop)},
 #endif  // !defined(OS_ANDROID)
 
     {"page-info-about-this-site", flag_descriptions::kPageInfoAboutThisSiteName,
@@ -7681,6 +7705,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImproveAccessibilityTreeUsingLocalMLDescription,
      kOsLinux | kOsCrOS,
      FEATURE_VALUE_TYPE(features::kImproveAccessibilityTreeUsingLocalML)},
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"use-multiple-overlays", flag_descriptions::kUseMultipleOverlaysName,
+     flag_descriptions::kUseMultipleOverlaysDescription, kOsCrOS,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kUseMultipleOverlays,
+                                    kUseMultipleOverlaysVariations,
+                                    "UseMultipleOverlays")},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

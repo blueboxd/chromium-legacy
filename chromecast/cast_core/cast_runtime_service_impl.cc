@@ -17,14 +17,6 @@ const char kRuntimeServicePathSwitch[] = "runtime-service-path";
 
 }  // namespace
 
-// static
-CastRuntimeService* CastRuntimeService::GetInstance() {
-  DCHECK(shell::CastBrowserProcess::GetInstance());
-  auto* cast_service = shell::CastBrowserProcess::GetInstance()->cast_service();
-  DCHECK(cast_service);
-  return static_cast<CastRuntimeService*>(cast_service);
-}
-
 CastRuntimeServiceImpl::CastRuntimeServiceImpl(
     CastWebService* web_service,
     NetworkContextGetter network_context_getter)
@@ -33,9 +25,11 @@ CastRuntimeServiceImpl::CastRuntimeServiceImpl(
 
 CastRuntimeServiceImpl::~CastRuntimeServiceImpl() = default;
 
-void CastRuntimeServiceImpl::StartInternal() {
-  CastRuntimeService::StartInternal();
+void CastRuntimeServiceImpl::InitializeInternal() {}
 
+void CastRuntimeServiceImpl::FinalizeInternal() {}
+
+void CastRuntimeServiceImpl::StartInternal() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
   std::string runtime_id =
       command_line->GetSwitchValueASCII(kCastCoreRuntimeIdSwitch);
@@ -47,8 +41,6 @@ void CastRuntimeServiceImpl::StartInternal() {
 }
 
 void CastRuntimeServiceImpl::StopInternal() {
-  CastRuntimeService::StopInternal();
-
   app_dispatcher_.Stop();
 }
 
@@ -58,6 +50,14 @@ std::unique_ptr<CastEventBuilder> CastRuntimeServiceImpl::CreateEventBuilder() {
 
 const std::string& CastRuntimeServiceImpl::GetAudioChannelEndpoint() {
   return app_dispatcher_.GetCastMediaServiceGrpcEndpoint();
+}
+
+WebCryptoServer* CastRuntimeServiceImpl::GetWebCryptoServer() {
+  return nullptr;
+}
+
+receiver::MediaManager* CastRuntimeServiceImpl::GetMediaManager() {
+  return nullptr;
 }
 
 CastWebService* CastRuntimeServiceImpl::GetCastWebService() {

@@ -2399,15 +2399,13 @@ ci.cipd_builder(
                 "sdk_package_name": "system-images;android-31;google_apis_playstore;x86_64",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-31/google_apis_playstore/x86_64.yaml",
             },
-            # Preview system images for Android 12L.
-            # Should be updated once it is fully released.
             {
-                "sdk_package_name": "system-images;android-Sv2;google_apis;x86_64",
-                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-Sv2/google_apis/x86_64.yaml",
+                "sdk_package_name": "system-images;android-32;google_apis;x86_64",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-32/google_apis/x86_64.yaml",
             },
             {
-                "sdk_package_name": "system-images;android-Sv2;google_apis_playstore;x86_64",
-                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-Sv2/google_apis_playstore/x86_64.yaml",
+                "sdk_package_name": "system-images;android-32;google_apis_playstore;x86_64",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-32/google_apis_playstore/x86_64.yaml",
             },
         ],
     },
@@ -4694,17 +4692,6 @@ ci.fyi_mac_builder(
 )
 
 ci.fyi_mac_builder(
-    name = "mac-arm64-on-arm64-rel",
-    console_view_entry = consoles.console_view_entry(
-        category = "mac",
-        short_name = "a64",
-    ),
-    cores = None,
-    cpu = cpu.ARM64,
-    os = os.MAC_11,
-)
-
-ci.fyi_mac_builder(
     name = "mac-hermetic-upgrade-rel",
     console_view_entry = consoles.console_view_entry(
         category = "mac",
@@ -5948,6 +5935,22 @@ ci.mac_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
     os = os.MAC_ANY,
+)
+
+ci.mac_builder(
+    name = "mac-arm64-on-arm64-rel",
+
+    # TODO(crbug.com/1186823): Expand to more branches when all M1 bots are
+    # rosettaless.
+    branch_selector = branches.MAIN,
+    console_view_entry = consoles.console_view_entry(
+        category = "release|arm64",
+        short_name = "a64",
+    ),
+    main_console_view = "main",
+    cores = None,
+    cpu = cpu.ARM64,
+    os = os.MAC_11,
 )
 
 ci.mac_builder(

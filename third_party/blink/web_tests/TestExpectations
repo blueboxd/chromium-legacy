@@ -127,7 +127,7 @@ crbug.com/1254944 svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-table
 # Fails flakily or times out
 crbug.com/1255285 virtual/threaded/transitions/transition-currentcolor.html [ Failure Pass ]
 crbug.com/1255285 virtual/threaded/transitions/transition-ends-before-animation-frame.html [ Timeout ]
-crbug.com/1269536 svg/animations/dynamic-modify-transform-without-baseval.html [ Failure Pass ]
+crbug.com/1269536 svg/animations/dynamic-modify-transform-without-baseval.html [ Failure Pass Timeout ]
 
 # Unknown media state flakiness (likely due to layout occuring earlier than expected):
 crbug.com/1254945 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-insert-before.html [ Failure Pass ]
@@ -1293,6 +1293,8 @@ virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentat
 virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-032.html [ Pass ]
 virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-033.html [ Pass ]
 virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-034.html [ Pass ]
+virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-037.html [ Pass ]
+virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-038.html [ Pass ]
 
 ### With LayoutNGPrinting enabled:
 
@@ -1560,8 +1562,6 @@ crbug.com/891944 [ Mac ] external/wpt/css/css-scrollbars/scrollbar-width-paint-0
 
 # css-variables
 
-crbug.com/1220145 external/wpt/css/css-variables/variable-declaration-29.html [ Failure ]
-crbug.com/1220145 external/wpt/css/css-variables/variable-supports-58.html [ Failure ]
 crbug.com/1220148 external/wpt/css/css-variables/variable-declaration-07.html [ Failure ]
 crbug.com/1220148 external/wpt/css/css-variables/variable-declaration-09.html [ Failure ]
 crbug.com/1220148 external/wpt/css/css-variables/variable-reference-06.html [ Failure ]
@@ -4290,6 +4290,8 @@ crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-031.htm
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-032.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-033.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-034.html [ Failure ]
+crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-037.html [ Failure ]
+crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-038.html [ Failure ]
 crbug.com/1066629 external/wpt/css/css-break/hit-test-transformed.html [ Failure ]
 crbug.com/1058792 external/wpt/css/css-break/transform-007.html [ Failure ]
 crbug.com/1224888 external/wpt/css/css-break/transform-009.html [ Failure ]
@@ -7319,10 +7321,6 @@ crbug.com/1256763 [ Linux ] images/color-profile-background-image-cross-fade.htm
 crbug.com/1256763 [ Linux ] images/color-profile-background-clip-text.html [ Failure Pass ]
 crbug.com/1256763 [ Linux ] virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ Failure Pass ]
 crbug.com/1259277 fast/events/message-port-multi.html [ Skip ]
-
-# Sheriff 2021-10-20
-crbug.com/1261770 crbug.com/1245166 [ Linux ] external/wpt/web-bundle/subresource-loading/script-relative-url-in-web-bundle-cors.https.tentative.sub.html [ Failure Pass ]
-crbug.com/1261770 crbug.com/1245166 [ Linux ] virtual/wbn-from-network/external/wpt/web-bundle/subresource-loading/script-relative-url-in-web-bundle-cors.https.tentative.sub.html [ Failure Pass ]
 
 # Sheriff 2021-10-26
 crbug.com/1263349 [ Linux ] external/wpt/resource-timing/object-not-found-after-cross-origin-redirect.html [ Failure Pass ]

@@ -1928,6 +1928,10 @@ const char kPageInfoAboutThisSiteName[] =
 const char kPageInfoAboutThisSiteDescription[] =
     "Enable the 'About this site' section in the page info.";
 
+const char kPageInfoHistoryDesktopName[] = "Page info history";
+const char kPageInfoHistoryDesktopDescription[] =
+    "Enable a history section in the page info.";
+
 const char kParallelDownloadingName[] = "Parallel downloading";
 const char kParallelDownloadingDescription[] =
     "Enable parallel downloading to accelerate download speed.";
@@ -2224,14 +2228,6 @@ const char kSharingDesktopScreenshotsName[] = "Desktop Screenshots";
 const char kSharingDesktopScreenshotsDescription[] =
     "Enables taking"
     " screenshots from the desktop sharing hub.";
-
-const char kSharingHubDesktopAppMenuName[] = "Desktop Sharing Hub in App Menu";
-const char kSharingHubDesktopAppMenuDescription[] =
-    "Enables the Chrome Sharing Hub in the 3-dot menu for desktop.";
-
-const char kSharingHubDesktopOmniboxName[] = "Desktop Sharing Hub in Omnibox";
-const char kSharingHubDesktopOmniboxDescription[] =
-    "Enables the Chrome Sharing Hub in the omnibox for desktop.";
 
 const char kSharingPreferVapidName[] =
     "Prefer sending Sharing message via VAPID";
@@ -3715,6 +3711,11 @@ const char kNtpModulesRedesignedLayoutName[] = "Ntp Modules Redesigned Layout";
 const char kNtpModulesRedesignedLayoutDescription[] =
     "Changes the layout of modules on New Tab Page";
 
+const char kNtpRealboxMatchOmniboxThemeName[] =
+    "NTP Realbox Matches Omnibox Theme";
+const char kNtpRealboxMatchOmniboxThemeDescription[] =
+    "NTP Realbox matches the Omnibox theme when enabled.";
+
 const char kNtpRealboxPedalsName[] = "NTP Realbox Pedals";
 const char kNtpRealboxPedalsDescription[] =
     "Shows pedals in the NTP Realbox when enabled.";
@@ -3727,6 +3728,11 @@ const char kNtpRealboxSuggestionAnswersDescription[] =
 const char kNtpRealboxTailSuggestName[] = "NTP Realbox Tail Suggest";
 const char kNtpRealboxTailSuggestDescription[] =
     "Properly formats the tail suggestions to match the Omnibox";
+
+const char kNtpRealboxUseGoogleGIconName[] = "NTP Realbox Google G Icon";
+const char kNtpRealboxUseGoogleGIconDescription[] =
+    "Shows Google G icon "
+    "instead of Search Loupe in realbox when enabled";
 
 const char kEnableReaderModeName[] = "Enable Reader Mode";
 const char kEnableReaderModeDescription[] =
@@ -5143,6 +5149,11 @@ const char kUseFakeDeviceForMediaStreamDescription[] =
     "Forces Chrome to use a fake video capture device (a rolling pacman with a "
     "timestamp) instead of the system audio/video devices, for debugging "
     "purposes.";
+
+const char kUseMultipleOverlaysName[] = "Use Multiple Overlays";
+const char kUseMultipleOverlaysDescription[] =
+    "Specifies the maximum number of quads that Chrome will attempt to promote"
+    " to overlays.";
 
 const char kUiDevToolsName[] = "Enable native UI inspection";
 const char kUiDevToolsDescription[] =

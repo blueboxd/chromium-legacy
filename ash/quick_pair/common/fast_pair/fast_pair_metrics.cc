@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+
 namespace {
 
 const char kEngagementFlowInitialMetric[] =
@@ -19,6 +20,11 @@ const char kTotalUxPairTimeInitialMetric[] =
     "Bluetooth.ChromeOS.FastPair.TotalUxPairTime.InitialPairingProtocol";
 const char kTotalUxPairTimeSubsequentMetric[] =
     "Bluetooth.ChromeOS.FastPair.TotalUxPairTime.SubsequentPairingProtocol";
+const char kRetroactiveEngagementFlowMetric[] =
+    "Bluetooth.ChromeOS.FastPair.RetroactiveEngagementFunnel.Steps";
+const char kPairingMethodMetric[] = "Bluetooth.ChromeOS.FastPair.PairingMethod";
+const char kRetroactivePairingResultMetric[] =
+    "Bluetooth.ChromeOS.FastPair.RetroactivePairing.Result";
 
 }  // namespace
 
@@ -54,6 +60,28 @@ void AttemptRecordingTotalUxPairTime(const Device& device,
                               total_pair_time);
       break;
   }
+}
+
+void AttemptRecordingFastPairRetroactiveEngagementFlow(
+    const Device& device,
+    FastPairRetroactiveEngagementFlowEvent event) {
+  switch (device.protocol) {
+    case Protocol::kFastPairInitial:
+    case Protocol::kFastPairSubsequent:
+      break;
+    case Protocol::kFastPairRetroactive:
+      base::UmaHistogramSparse(kRetroactiveEngagementFlowMetric,
+                               static_cast<int>(event));
+      break;
+  }
+}
+
+void RecordPairingMethod(PairingMethod method) {
+  base::UmaHistogramEnumeration(kPairingMethodMetric, method);
+}
+
+void RecordRetroactivePairingResult(bool success) {
+  base::UmaHistogramBoolean(kRetroactivePairingResultMetric, success);
 }
 
 }  // namespace quick_pair

@@ -2418,7 +2418,6 @@ static_library("browser") {
     "//ui/webui/resources/js/browser_command:mojo_bindings",
   ]
   if (is_chromeos_ash) {
-    testonly = enable_weston_test
     sources += [
       "apps/digital_goods/digital_goods_factory_impl.cc",
       "apps/digital_goods/digital_goods_factory_impl.h",
@@ -3994,6 +3993,8 @@ static_library("browser") {
       "metrics/desktop_session_duration/touch_mode_stats_tracker.h",
       "metrics/first_web_contents_profiler.cc",
       "metrics/first_web_contents_profiler.h",
+      "metrics/first_web_contents_profiler_base.cc",
+      "metrics/first_web_contents_profiler_base.h",
       "metrics/incognito_observer_desktop.cc",
       "metrics/power/power_metrics_reporter.cc",
       "metrics/power/power_metrics_reporter.h",

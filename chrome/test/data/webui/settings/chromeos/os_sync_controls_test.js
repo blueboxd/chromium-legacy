@@ -19,6 +19,7 @@ class TestOsSyncBrowserProxy extends TestBrowserProxy {
     super([
       'didNavigateToOsSyncPage',
       'didNavigateAwayFromOsSyncPage',
+      'setOsSyncFeatureEnabled',
       'setOsSyncDatatypes',
     ]);
   }
@@ -31,6 +32,11 @@ class TestOsSyncBrowserProxy extends TestBrowserProxy {
   /** @override */
   didNavigateAwayFromOsSyncPage() {
     this.methodCalled('didNavigateAwayFromSyncPage');
+  }
+
+  /** @override */
+  setOsSyncFeatureEnabled(enabled) {
+    this.methodCalled('setOsSyncFeatureEnabled', enabled);
   }
 
   /** @override */
@@ -76,8 +82,16 @@ function getDefaultSyncStatus() {
   };
 }
 
-function setupSync() {
-  cr.webUIListenerCallback('os-sync-prefs-changed', getSyncAllPrefs());
+function setupWithFeatureEnabled() {
+  cr.webUIListenerCallback(
+      'os-sync-prefs-changed', /*featureEnabled=*/ true, getSyncAllPrefs());
+  Polymer.dom.flush();
+}
+
+function setupWithFeatureDisabled() {
+  cr.webUIListenerCallback(
+      'os-sync-prefs-changed', /*featureEnabled=*/ false,
+      getSyncNothingPrefs());
   Polymer.dom.flush();
 }
 
@@ -109,7 +123,7 @@ suite('OsSyncControlsTest', function() {
 
   test('ControlsHiddenUntilInitialUpdateSent', function() {
     assertTrue(syncControls.hidden);
-    setupSync();
+    setupWithFeatureEnabled();
     assertFalse(syncControls.hidden);
   });
 
@@ -118,12 +132,17 @@ suite('OsSyncControlsTest', function() {
   });
 
   test('Status icon is visible with feature enabled', function() {
-    setupSync();
+    setupWithFeatureEnabled();
     assertFalse(syncControls.$.syncIconContainer.hidden);
   });
 
+  test('Status icon is hidden with feature disabled', function() {
+    setupWithFeatureDisabled();
+    assertTrue(syncControls.$.syncIconContainer.hidden);
+  });
+
   test('Status icon with error', function() {
-    setupSync();
+    setupWithFeatureEnabled();
     const status = getDefaultSyncStatus();
     status.hasError = true;
     syncControls.syncStatus = status;
@@ -133,7 +152,7 @@ suite('OsSyncControlsTest', function() {
   });
 
   test('Status icon with sync paused for reauthentication', function() {
-    setupSync();
+    setupWithFeatureEnabled();
     const status = getDefaultSyncStatus();
     status.hasError = true;
     status.statusAction = settings.StatusAction.REAUTHENTICATE;
@@ -144,7 +163,7 @@ suite('OsSyncControlsTest', function() {
   });
 
   test('Status icon with sync disabled', function() {
-    setupSync();
+    setupWithFeatureEnabled();
     const status = getDefaultSyncStatus();
     status.disabled = true;
     syncControls.syncStatus = status;
@@ -154,15 +173,23 @@ suite('OsSyncControlsTest', function() {
   });
 
   test('Account name and email with feature enabled', function() {
-    setupSync();
+    setupWithFeatureEnabled();
     assertEquals('John Cena', syncControls.$.accountTitle.textContent.trim());
     assertEquals(
         'Syncing to john.cena@gmail.com',
         syncControls.$.accountSubtitle.textContent.trim());
   });
 
+  test('Account name and email with feature disabled', function() {
+    setupWithFeatureDisabled();
+    assertEquals('John Cena', syncControls.$.accountTitle.textContent.trim());
+    assertEquals(
+        'john.cena@gmail.com',
+        syncControls.$.accountSubtitle.textContent.trim());
+  });
+
   test('Account name and email with sync error', function() {
-    setupSync();
+    setupWithFeatureEnabled();
     syncControls.syncStatus = {hasError: true};
     Polymer.dom.flush();
     assertEquals(
@@ -175,13 +202,41 @@ suite('OsSyncControlsTest', function() {
   // Regression test for https://crbug.com/1076239
   test('Handles undefined syncStatus', function() {
     syncControls.syncStatus = undefined;
-    setupSync();
+    setupWithFeatureEnabled();
     assertEquals('', syncControls.$.accountTitle.textContent.trim());
     assertEquals('', syncControls.$.accountSubtitle.textContent.trim());
   });
 
-  test('SyncEnabled', function() {
-    setupSync();
+  test('FeatureDisabled', function() {
+    setupWithFeatureDisabled();
+
+    assertTrue(!!syncControls.$$('#syncOnOffButton'));
+
+    assertTrue(syncControls.$.syncEverythingCheckboxLabel.hasAttribute(
+        'label-disabled'));
+
+    const syncAllControl = syncControls.$.syncAllOsTypesControl;
+    assertTrue(syncAllControl.disabled);
+    assertFalse(syncAllControl.checked);
+
+    const labels = syncControls.shadowRoot.querySelectorAll(
+        '.list-item:not([hidden]) > div');
+    for (const label of labels) {
+      assertTrue(label.hasAttribute('label-disabled'));
+    }
+
+    const datatypeControls = syncControls.shadowRoot.querySelectorAll(
+        '.list-item:not([hidden]) > cr-toggle');
+    for (const control of datatypeControls) {
+      assertTrue(control.disabled);
+      assertFalse(control.checked);
+    }
+  });
+
+  test('FeatureEnabled', function() {
+    setupWithFeatureEnabled();
+
+    assertTrue(!!syncControls.$$('#syncOnOffButton'));
 
     assertFalse(syncControls.$.syncEverythingCheckboxLabel.hasAttribute(
         'label-disabled'));
@@ -204,8 +259,36 @@ suite('OsSyncControlsTest', function() {
     }
   });
 
+  test('ClickingTurnOffDisablesFeature', async function() {
+    setupWithFeatureEnabled();
+    syncControls.$$('#syncOnOffButton').click();
+    const enabled = await browserProxy.whenCalled('setOsSyncFeatureEnabled');
+    assertFalse(enabled);
+  });
+
+  test('Deep link to sync on/off', async function() {
+    setupWithFeatureEnabled();
+
+    const params = new URLSearchParams;
+    params.append('settingId', '302');
+    settings.Router.getInstance().navigateTo(settings.routes.OS_SYNC, params);
+
+    const deepLinkElement = syncControls.$$('#syncOnOffButton');
+    await test_util.waitAfterNextRender(deepLinkElement);
+    assertEquals(
+        deepLinkElement, getDeepActiveElement(),
+        'Sync on/off should be focused for settingId=302.');
+  });
+
+  test('ClickingTurnOnEnablesFeature', async function() {
+    setupWithFeatureDisabled();
+    syncControls.$$('#syncOnOffButton').click();
+    const enabled = await browserProxy.whenCalled('setOsSyncFeatureEnabled');
+    assertTrue(enabled);
+  });
+
   test('UncheckingSyncAllEnablesAllIndividualControls', async function() {
-    setupSync();
+    setupWithFeatureEnabled();
     syncControls.$.syncAllOsTypesControl.click();
     const prefs = await browserProxy.whenCalled('setOsSyncDatatypes');
 
@@ -217,7 +300,8 @@ suite('OsSyncControlsTest', function() {
   test('PrefChangeUpdatesControls', function() {
     const prefs = getSyncAllPrefs();
     prefs.syncAllOsTypes = false;
-    cr.webUIListenerCallback('os-sync-prefs-changed', prefs);
+    cr.webUIListenerCallback(
+        'os-sync-prefs-changed', /*featureEnabled=*/ true, prefs);
 
     const datatypeControls = syncControls.shadowRoot.querySelectorAll(
         '.list-item:not([hidden]) > cr-toggle');
@@ -228,7 +312,7 @@ suite('OsSyncControlsTest', function() {
   });
 
   test('DisablingOneControlUpdatesPrefs', async function() {
-    setupSync();
+    setupWithFeatureEnabled();
 
     // Disable "Sync All".
     syncControls.$.syncAllOsTypesControl.click();

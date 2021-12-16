@@ -138,6 +138,12 @@ vars = {
   # Fetch clang-tidy into the same bin/ directory as our clang binary.
   'checkout_clang_tidy': False,
 
+  # Fetch clang libraries and headers in order to build clang tooling. This is
+  # required to build C++-Rust interop codegen tools. This may break things that
+  # use it when clang rolls, and is meant for prototyping. You should talk to
+  # tools/clang/OWNERS before depending on it.
+  'checkout_clang_libs': False,
+
   # By default checkout the OpenXR loader library only on Windows. The OpenXR
   # backend for VR in Chromium is currently only supported for Windows, but
   # support for other platforms may be added in the future.
@@ -239,7 +245,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'fec9a3027c9e54b6671769c8d04d07382214c557',
+  'skia_revision': '3f95fd2ed8c4d12315a2f73484e297f69aa37d2e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -247,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '89e11878b275b15735eaf273ababfa6fd43a2e3d',
+  'angle_revision': 'e7413adff5a3f91d34bbf3f2bb0b3be848091cd7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -306,7 +312,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '58f3a92099a02ccc517ce7bce93b75da0766b451',
+  'catapult_revision': '1a164a8ef025f3f2c0735e936f802a352956b627',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -314,7 +320,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'd692cac31ffea822377407e775750d9f6a042eba',
+  'devtools_frontend_revision': '12bcadba35805a2209e10bed6dbd8ee19b2558a8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -354,7 +360,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '736dd07303323021e92fddc5be02a63af66c20ce',
+  'dawn_revision': 'a2241d402e05dac272c0b3b7d26fd8a2cbd90ae7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -799,7 +805,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'JA8W6XUESiIusRecU6mz7G-zjV6Tk4hlDO5hwQf6i8YC',
+          'version': 'I4RRLMv8zGb2YSObwLllOCmDGxCPRT9KyzAV-BFZo_0C',
       },
     ],
     'condition': 'checkout_android',
@@ -1642,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'c843f8d63c8c17acfbb7d48e09059a581ba779b9',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'f8e160e1c9f8e805e94be71e2f2da3259dd88b8f',
+    Var('webrtc_git') + '/src.git' + '@' + '8d87c463d9de459c1fa74289e9ad0496bc296e96',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1700,7 +1706,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f7b514b75b96bd18231b35b438d44d1e8756fedb',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3f843f82c4b67159e309b74ba45690d27f3eac5c',
     'condition': 'checkout_src_internal',
   },
 
@@ -1741,7 +1747,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'jZ1wDChducDMF-MWFvXLkLZpk_AWan76x5hDRvEhqLoC',
+        'version': 'prCBoYBzw1S9vrDc-AmohZetDOiMnNtNZMg50k6IM8sC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -3938,6 +3944,16 @@ hooks = [
     'condition': 'checkout_clang_tidy',
     'action': ['python3', 'src/tools/clang/scripts/update.py',
                '--package=clang-tidy'],
+  },
+  {
+    # Grab the libraries and header files of the clang compiler that will be
+    # used to build Chromium. These can be used to build clang tooling for
+    # static analysis or codegen.
+    'name': 'clang_libs',
+    'pattern': '.',
+    'condition': 'checkout_clang_libs',
+    'action': ['python3', 'src/tools/clang/scripts/update.py',
+               '--package=clang-libs'],
   },
   {
     # Should run after the clang hook. Used on mac, as well as for orderfile

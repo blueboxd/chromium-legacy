@@ -4,9 +4,12 @@
 
 import './settings_ui/settings_ui.js';
 
+export {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 export {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 export {CrDrawerElement} from 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
 export {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
+export {CrRadioButtonElement} from 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
+export {CrRadioGroupElement} from 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
 export {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
 export {CrToolbarElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
 export {CrToolbarSearchFieldElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
@@ -27,6 +30,7 @@ export {SettingsBasicPageElement} from './basic_page/basic_page.js';
 export {ControlledRadioButtonElement} from './controls/controlled_radio_button.js';
 export {ExtensionControlledIndicatorElement} from './controls/extension_controlled_indicator.js';
 export {SettingsDropdownMenuElement} from './controls/settings_dropdown_menu.js';
+export {SettingsIdleLoadElement} from './controls/settings_idle_load.js';
 export {SettingsToggleButtonElement} from './controls/settings_toggle_button.js';
 // <if expr="not chromeos and not lacros">
 export {DefaultBrowserBrowserProxy, DefaultBrowserBrowserProxyImpl, DefaultBrowserInfo} from './default_browser_page/default_browser_browser_proxy.js';
@@ -50,7 +54,7 @@ export {AccountManagerBrowserProxy, AccountManagerBrowserProxyImpl} from './peop
 // </if>
 export {SettingsPeoplePageElement} from './people_page/people_page.js';
 export {ProfileInfoBrowserProxyImpl} from './people_page/profile_info_browser_proxy.js';
-export {MAX_SIGNIN_PROMO_IMPRESSION} from './people_page/sync_account_control.js';
+export {MAX_SIGNIN_PROMO_IMPRESSION, SettingsSyncAccountControlElement} from './people_page/sync_account_control.js';
 export {PageStatus, StatusAction, StoredAccount, SyncBrowserProxy, SyncBrowserProxyImpl, SyncPrefs, syncPrefsIndividualDataTypes, SyncStatus} from './people_page/sync_browser_proxy.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.js';
 export {SettingsPrefsElement} from './prefs/prefs.js';
@@ -74,7 +78,7 @@ export {SettingsSafetyCheckSafeBrowsingChildElement} from './safety_check_page/s
 export {SettingsSafetyCheckUpdatesChildElement} from './safety_check_page/safety_check_updates_child.js';
 export {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo, SearchEnginesInteractions} from './search_engines_page/search_engines_browser_proxy.js';
 export {SettingsSearchPageElement} from './search_page/search_page.js';
-export {getSearchManager, SearchRequest, setSearchManagerForTesting} from './search_settings.js';
+export {getSearchManager, SearchManager, SearchRequest, setSearchManagerForTesting} from './search_settings.js';
 export {SettingsMainElement} from './settings_main/settings_main.js';
 export {SettingsMenuElement} from './settings_menu/settings_menu.js';
 export {SettingsUiElement} from './settings_ui/settings_ui.js';

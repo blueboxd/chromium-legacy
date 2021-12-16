@@ -4749,7 +4749,6 @@ test("unit_tests") {
     "../browser/subresource_redirect/litepages_service_bypass_decider_unittest.cc",
     "../browser/subresource_redirect/origin_robots_rules_unittest.cc",
     "../browser/subresource_redirect/subresource_redirect_util_unit_test.cc",
-    "../browser/support_tool/support_tool_handler_unittest.cc",
     "../browser/ui/autofill/payments/offer_notification_helper_unittest.cc",
 
     # TODO(hashimoto): those tests should be componentized and moved to
@@ -5047,6 +5046,7 @@ test("unit_tests") {
       "../browser/safe_browsing/generated_safe_browsing_pref_unittest.cc",
       "../browser/share/share_submenu_model_unittest.cc",
       "../browser/speech/speech_recognition_service_factory_unittest.cc",
+      "../browser/support_tool/support_tool_handler_unittest.cc",
       "../browser/tab_contents/form_interaction_tab_helper_unittest.cc",
       "../browser/ui/autofill/payments/autofill_dialog_models_unittest.cc",
       "../browser/ui/bookmarks/bookmark_editor_unittest.cc",
@@ -6589,6 +6589,7 @@ test("unit_tests") {
       "../browser/ui/app_list/arc/arc_app_utils_unittest.cc",
       "../browser/ui/app_list/arc/arc_default_app_list_unittest.cc",
       "../browser/ui/app_list/arc/arc_vpn_provider_unittest.cc",
+      "../browser/ui/app_list/arc/intent_unittest.cc",
       "../browser/ui/app_list/arc/mock_arc_app_list_prefs_observer.cc",
       "../browser/ui/app_list/arc/mock_arc_app_list_prefs_observer.h",
       "../browser/ui/app_list/chrome_app_list_item_manager_unittest.cc",
@@ -7217,6 +7218,7 @@ test("unit_tests") {
 
       deps += [
         "//chrome/browser/chromeos/extensions/telemetry/api",
+        "//chrome/browser/chromeos/extensions/telemetry/api:fake_hardware_info_delegate",
         "//chrome/browser/chromeos/extensions/telemetry/api:unit_tests",
         "//chrome/common/chromeos/extensions",
         "//chromeos/dbus/image_burner",
@@ -9030,6 +9032,8 @@ source_set("sync_integration_test_support") {
       "../browser/sync/test/integration/sync_app_list_helper.h",
       "../browser/sync/test/integration/sync_arc_package_helper.cc",
       "../browser/sync/test/integration/sync_arc_package_helper.h",
+      "../browser/sync/test/integration/sync_consent_optional_sync_test.cc",
+      "../browser/sync/test/integration/sync_consent_optional_sync_test.h",
       "../browser/sync/test/integration/sync_settings_categorization_sync_test.cc",
       "../browser/sync/test/integration/sync_settings_categorization_sync_test.h",
       "../browser/sync/test/integration/workspace_desk_helper.cc",

@@ -394,6 +394,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // the thumb strip is visible.
   std::unique_ptr<ScopedFullscreenDisabler> _fullscreenDisabler;
 
+  // For thumb strip, when YES, fullscreen disabler is reset only when web view
+  // dragging stops, to avoid closing thumb strip and going fullscreen in
+  // one single drag gesture.  When NO, full screen disabler is reset when
+  // the thumb strip animation ends.
+  BOOL _deferEndFullscreenDisabler;
+
   // A controller that can provide an entrypoint into Lens features.
   id<ChromeLensController> _lensController;
 }
@@ -2885,13 +2891,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       !_fullscreenDisabler) {
     _fullscreenDisabler =
         std::make_unique<ScopedFullscreenDisabler>(self.fullscreenController);
+    _deferEndFullscreenDisabler = NO;
   }
 
   // Hide the tab strip and take a snapshot of it for better animation. However,
   // this is not necessary to do if the thumb strip will never actually be
   // revealed.
-  if (currentViewRevealState != ViewRevealState::Hidden ||
-      nextViewRevealState != ViewRevealState::Hidden) {
+  if (currentViewRevealState != nextViewRevealState) {
     // If a snapshot of a hidden view is taken, the snapshot will be a blank
     // view. However, if the view's parent is hidden but the view itself is not,
     // the snapshot will not be a blank view.
@@ -3023,7 +3029,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   if (viewRevealState == ViewRevealState::Hidden) {
     // Stop disabling fullscreen.
-    _fullscreenDisabler.reset();
+    if (!_deferEndFullscreenDisabler) {
+      _fullscreenDisabler.reset();
+    }
 
     // Add the status bar back to cover the web content.
     [self installFakeStatusBar];
@@ -3058,6 +3066,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   } else if (viewRevealState == ViewRevealState::Peeked) {
     // Close the omnibox after opening the thumb strip
     [self.omniboxHandler cancelOmniboxEdit];
+  }
+}
+
+- (void)webViewIsDragging:(BOOL)dragging
+          viewRevealState:(ViewRevealState)viewRevealState {
+  if (dragging && viewRevealState != ViewRevealState::Hidden) {
+    _deferEndFullscreenDisabler = YES;
+  } else if (_deferEndFullscreenDisabler) {
+    _fullscreenDisabler.reset();
+    _deferEndFullscreenDisabler = NO;
   }
 }
 

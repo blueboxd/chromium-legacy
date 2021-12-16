@@ -4,25 +4,19 @@
 
 #include "cup_impl.h"
 
+#include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
 
-class CUPImplTest : public testing::Test {
- public:
-  CUPImplTest()
-      : cup_{autofill_assistant::cup::CUPImpl::CreateQuerySigner(),
-             autofill_assistant::RpcType::GET_ACTIONS} {}
-  ~CUPImplTest() override = default;
-
- protected:
-  autofill_assistant::cup::CUPImpl cup_;
-};
-
-TEST_F(CUPImplTest, PacksAndSignsGetActionsRequest) {
+TEST(CUPImplTest, PacksAndSignsGetActionsRequest) {
+  autofill_assistant::cup::CUPImpl cup_{
+      autofill_assistant::cup::CUPImpl::CreateQuerySigner(),
+      autofill_assistant::RpcType::GET_ACTIONS};
   autofill_assistant::ScriptActionRequestProto user_request;
   user_request.mutable_client_context()->set_experiment_ids("test");
   std::string user_request_str;
@@ -44,11 +38,22 @@ TEST_F(CUPImplTest, PacksAndSignsGetActionsRequest) {
   EXPECT_FALSE(actual_user_request.has_cup_data());
 }
 
-TEST_F(CUPImplTest, UnpacksTrustedGetActionsResponse) {
+TEST(CUPImplTest, IgnoresNonGetActionsRequest) {
+  autofill_assistant::cup::CUPImpl cup_{
+      autofill_assistant::cup::CUPImpl::CreateQuerySigner(),
+      autofill_assistant::RpcType::GET_TRIGGER_SCRIPTS};
+
+  EXPECT_EQ(cup_.PackAndSignRequest("a request"), "a request");
+}
+
+TEST(CUPImplTest, UnpacksTrustedGetActionsResponse) {
   // TODO(b/203031699): Write test for the successful case.
 }
 
-TEST_F(CUPImplTest, FailsToUnpackNonTrustedGetActionsResponse) {
+TEST(CUPImplTest, FailsToUnpackNonTrustedGetActionsResponse) {
+  autofill_assistant::cup::CUPImpl cup_{
+      autofill_assistant::cup::CUPImpl::CreateQuerySigner(),
+      autofill_assistant::RpcType::GET_ACTIONS};
   autofill_assistant::ScriptActionRequestProto user_request;
   user_request.mutable_client_context()->set_experiment_ids("123");
   std::string user_request_str;
@@ -66,6 +71,43 @@ TEST_F(CUPImplTest, FailsToUnpackNonTrustedGetActionsResponse) {
   packed_response.mutable_cup_data()->set_ecdsa_signature("not a signature");
 
   EXPECT_EQ(cup_.UnpackResponse(user_response_str), absl::nullopt);
+}
+
+TEST(CUPImplTest, IgnoresNonGetActionsResponse) {
+  autofill_assistant::cup::CUPImpl cup_{
+      autofill_assistant::cup::CUPImpl::CreateQuerySigner(),
+      autofill_assistant::RpcType::GET_TRIGGER_SCRIPTS};
+
+  absl::optional<std::string> unpacked_response =
+      cup_.UnpackResponse("a response");
+  EXPECT_EQ(*unpacked_response, "a response");
+}
+
+TEST(CUPImplTest, OverridesEcdsaPublicKeyWithCLIValue) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      autofill_assistant::switches::kAutofillAssistantCupPublicKeyBase64,
+      "SGVsbG8=");
+  EXPECT_EQ(autofill_assistant::cup::CUPImpl::GetPublicKey(), "Hello");
+}
+
+TEST(CUPImplTest, HasValidEcdsaPublicKeyWithNotValidCLIValue) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      autofill_assistant::switches::kAutofillAssistantCupPublicKeyBase64,
+      "Not valid base64");
+  EXPECT_FALSE(autofill_assistant::cup::CUPImpl::GetPublicKey().empty());
+}
+
+TEST(CUPImplTest, OverridesEcdsaKeyVersionithCLIValue) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      autofill_assistant::switches::kAutofillAssistantCupKeyVersion, "15");
+  EXPECT_EQ(autofill_assistant::cup::CUPImpl::GetKeyVersion(), 15);
+}
+
+TEST(CUPImplTest, HasValidEcdsaKeyVersionWithNotValidCLIValue) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      autofill_assistant::switches::kAutofillAssistantCupKeyVersion,
+      "Not a number");
+  EXPECT_GT(autofill_assistant::cup::CUPImpl::GetKeyVersion(), -1);
 }
 
 }  // namespace

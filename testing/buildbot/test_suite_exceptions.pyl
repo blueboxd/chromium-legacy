@@ -260,7 +260,7 @@
           'shards': 25,
         },
       },
-      'Mac10.15 Tests (dbg)': {
+      'Mac11 Tests (dbg)': {
         'args': [
           '--debug',
         ],
@@ -534,7 +534,7 @@
       # off CQ.
       'Mac10.13 Tests', # https://crbug.com/1042757
       'Mac10.15 Tests', # https://crbug.com/1042757
-      'Mac10.15 Tests (dbg)', # https://crbug.com/1201386
+      'Mac11 Tests (dbg)', # https://crbug.com/1201386
       'mac-code-coverage', # https://crbug.com/1201386
       'Linux TSan Tests',  # https://crbug.com/368525
       'Win10 Tests x64 (dbg)',
@@ -2399,7 +2399,7 @@
   },
   'performance_test_suite': {
     'modifications': {
-      'Mac10.15 Tests (dbg)': {
+      'Mac11 Tests (dbg)': {
         'args': [
           '--browser=debug',
         ],
@@ -2738,6 +2738,12 @@
             '--gtest_filter=-*',
           ],
       },
+      # TODO(crbug.com/1131588) Tests are flaky only on CQ.
+      'Mac11 Tests': {
+        'precommit_args': [
+            '--gtest_filter=-*',
+          ],
+      },
       'ToTLinuxTSan': {
         'swarming': {
           'shards': 6,
@@ -2912,7 +2918,8 @@
       'Mac10.11 Tests',
       'Mac10.13 Tests',
       'Mac10.15 Tests',
-      'Mac10.15 Tests (dbg)',
+      'Mac11 Tests',
+      'Mac11 Tests (dbg)',
       'Linux - Future (dbg)',  # client.v8.chromium
       'Win10 Tests x64',
       'Win10 Tests x64 (dbg)',

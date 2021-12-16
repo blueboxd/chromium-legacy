@@ -53,7 +53,7 @@ luci.bucket(
         ),
         acl.entry(
             roles = acl.BUILDBUCKET_OWNER,
-            groups = "google/luci-task-force@google.com",
+            groups = "project-chromium-admins",
         ),
         acl.entry(
             roles = acl.SCHEDULER_TRIGGERER,
@@ -6240,9 +6240,7 @@ ci.mac_thin_tester(
 
 ci.mac_thin_tester(
     name = "Mac11 Tests",
-    # TODO(crbug.com/1206401): Reenable on the branches when we have
-    # sufficient capacity.
-    # branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "mac",
         short_name = "11",
@@ -6252,11 +6250,11 @@ ci.mac_thin_tester(
 )
 
 ci.mac_thin_tester(
-    name = "Mac10.15 Tests (dbg)",
+    name = "Mac11 Tests (dbg)",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "debug",
-        short_name = "15",
+        short_name = "11",
     ),
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",

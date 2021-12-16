@@ -16,13 +16,7 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-namespace extensions {
-class Extension;
-}  // namespace extensions
-
 namespace policy {
-
-extern const base::FilePath::CharType kTestExtensionsDir[];
 
 class PolicyMap;
 
@@ -49,9 +43,6 @@ class PolicyTest : public PlatformBrowserTest {
 
   void SetScreenshotPolicy(bool enabled);
 
-  scoped_refptr<const extensions::Extension> LoadUnpackedExtension(
-      const base::FilePath::StringType& name);
-
   void UpdateProviderPolicy(const PolicyMap& policy);
 
   static void SetPolicy(PolicyMap* policies,
@@ -64,12 +55,6 @@ class PolicyTest : public PlatformBrowserTest {
 
   static bool FetchSubresource(content::WebContents* web_contents,
                                const GURL& url);
-
-  bool IsShowingInterstitial(content::WebContents* tab);
-
-  void WaitForInterstitial(content::WebContents* tab);
-
-  int IsEnhancedProtectionMessageVisibleOnInterstitial();
 
   void FlushBlocklistPolicy();
 

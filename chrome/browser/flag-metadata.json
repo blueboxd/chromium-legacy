@@ -3603,6 +3603,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "ios-shared-highlighting-v2",
+    "owners": ["tmartino", "cheickcisse@google.com"],
+    "expiry_milestone": 100
+  },
+  {
     "name": "ios-synthetic-crash-reports",
     "owners": [ "olivierrobin", "justincohen", "bling-flags@google.com" ],
     "expiry_milestone": 100
@@ -5323,6 +5328,11 @@
     "name": "terminal-ssh",
     "owners": [ "lxj@google.com", "joelhockey", "//chrome/browser/ash/guest_os/OWNERS" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "terminal-tmux-integration",
+    "owners": [ "lxj", "easy", "//chrome/browser/ash/guest_os/OWNERS" ],
+    "expiry_milestone": 102
   },
   {
     "name": "theme-refactor-android",

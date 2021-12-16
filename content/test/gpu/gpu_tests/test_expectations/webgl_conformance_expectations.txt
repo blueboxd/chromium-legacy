@@ -5,8 +5,8 @@
 #         chromeos
 #         fuchsia
 #         linux ubuntu
-#         mac bigsur catalina lion highsierra mac-10.12 mojave mountainlion
-#             sierra
+#         mac bigsur catalina lion highsierra mac-10.12 mojave monterey
+#             mountainlion sierra
 #         win win7 win8 win10 ]
 # Devices
 # tags: [ android-nexus-5 android-nexus-5x android-nexus-9 android-pixel-2
@@ -77,24 +77,40 @@
 # execution. The browser is restarted even after expected test
 # failures.
 [ win ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
-[ mac ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
+# ASTC textures are expected to be supported on M1 Macs.
+[ mac no-passthrough ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
+[ mac passthrough angle-opengl ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
+[ mac passthrough angle-metal amd ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
+[ mac passthrough angle-metal intel ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
+[ mac passthrough angle-metal nvidia ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
 [ win ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
-[ mac ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
+# ETC textures are expected to be supported on M1 Macs.
+[ mac no-passthrough ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
+[ mac passthrough angle-opengl ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
+[ mac passthrough angle-metal amd ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
+[ mac passthrough angle-metal intel ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
+[ mac passthrough angle-metal nvidia ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
 [ win ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
-[ mac ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
+# ETC textures are expected to be supported on M1 Macs.
+[ mac no-passthrough ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
+[ mac passthrough angle-opengl ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
+[ mac passthrough angle-metal amd ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
+[ mac passthrough angle-metal intel ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
+[ mac passthrough angle-metal nvidia ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
 [ win ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Skip ]
 [ mac ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Skip ]
 [ fuchsia ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Skip ]
 [ win ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
-[ mac ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 [ android ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 [ fuchsia ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
-[ mac ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+# BPTC textures are supported on macOS only on the Metal backend.
+[ mac no-passthrough ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ mac passthrough angle-opengl ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 crbug.com/808744 [ android ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/808744 [ fuchsia ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
@@ -422,6 +438,11 @@ crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] confor
 crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
 crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
+crbug.com/1261867 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/misc/tex-input-validation.html [ Failure ]
+crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
+crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
+crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
 
 ####################
 # Win failures     #

@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
+#include "chromeos/constants/chromeos_features.h"
 
 namespace ash {
 namespace features {
@@ -368,10 +369,6 @@ const base::Feature kCryptAuthV2Enrollment{"CryptAuthV2Enrollment",
 // to their profile and Cryptohome after performing an online authentication.
 const base::Feature kCryptohomeRecoveryFlow{"CryptohomeRecoveryFlow",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables dark/light mode feature.
-const base::Feature kDarkLightMode{"DarkLightMode",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDemoModeSWA{"DemoModeSWA",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1195,6 +1192,10 @@ const base::Feature kTelemetryExtension{"TelemetryExtension",
 const base::Feature kTerminalSSH{"TerminalSSH",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables tmux integration in the Terminal System App.
+const base::Feature kTerminalTmuxIntegration{"TerminalTmuxIntegration",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the Settings UI to show data usage for cellular networks.
 const base::Feature kTrafficCountersSettingsUi{
     "TrafficCountersSettingsUi", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1446,7 +1447,7 @@ bool IsCryptohomeRecoveryFlowEnabled() {
 }
 
 bool IsDarkLightModeEnabled() {
-  return base::FeatureList::IsEnabled(kDarkLightMode);
+  return chromeos::features::IsDarkLightModeEnabled();
 }
 
 bool IsDemoModeSWAEnabled() {

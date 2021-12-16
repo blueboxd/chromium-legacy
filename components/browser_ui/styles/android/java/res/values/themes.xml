@@ -6,6 +6,8 @@
 <resources>
     <!-- Colors should be mirrored by Base.Theme.BrowserUI.DialogWhenLarge. -->
     <style name="Base.V21.Theme.BrowserUI" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="dynamicColorThemeOverlay">@style/ThemeOverlay.BrowserUI.DynamicColors</item>
+
         <!-- Color palettes -->
         <item name="colorPrimary">@color/baseline_primary_600</item>
         <item name="colorPrimaryDark">@android:color/black</item>
@@ -26,14 +28,14 @@
         <!-- Text colors-->
         <item name="android:textColorPrimary">@color/default_text_color_list</item>
         <item name="android:textColorSecondary">@color/default_text_color_secondary_list</item>
-        <item name="android:textColorLink">@color/default_text_color_link</item>
+        <item name="android:textColorLink">@macro/default_text_color_link</item>
         <item name="android:textColorHighlight">@color/text_highlight_color</item>
         <item name="android:textColorHint">@color/default_text_color_hint_list</item>
 
         <!-- Widget colors: checkboxes, switches, buttons, etc. -->
         <item name="colorControlNormal">@macro/default_control_color_normal</item>
         <item name="colorControlActivated">@macro/default_control_color_active</item>
-        <item name="colorControlHighlight">@color/control_highlight_color</item>
+        <item name="colorControlHighlight">@macro/default_control_color_highlight</item>
 
         <!-- Elevation overlays -->
         <item name="elevationOverlayEnabled">true</item>
@@ -67,6 +69,8 @@
 
     <!-- Colors should be mirrored by Base.V21.Theme.BrowserUI. -->
     <style name="Base.Theme.BrowserUI.DialogWhenLarge" parent="Theme.MaterialComponents.DayNight.DialogWhenLarge">
+        <item name="dynamicColorThemeOverlay">@style/ThemeOverlay.BrowserUI.DynamicColors</item>
+
          <!-- Color palettes -->
         <item name="colorPrimary">@color/baseline_primary_600</item>
         <item name="colorPrimaryDark">@android:color/black</item>
@@ -87,14 +91,14 @@
         <!-- Text colors-->
         <item name="android:textColorPrimary">@color/default_text_color_list</item>
         <item name="android:textColorSecondary">@color/default_text_color_secondary_list</item>
-        <item name="android:textColorLink">@color/default_text_color_link</item>
+        <item name="android:textColorLink">@macro/default_text_color_link</item>
         <item name="android:textColorHighlight">@color/text_highlight_color</item>
         <item name="android:textColorHint">@color/default_text_color_hint_list</item>
 
         <!-- Widget colors: checkboxes, switches, buttons, etc. -->
         <item name="colorControlNormal">@macro/default_control_color_normal</item>
         <item name="colorControlActivated">@macro/default_control_color_active</item>
-        <item name="colorControlHighlight">@color/control_highlight_color</item>
+        <item name="colorControlHighlight">@macro/default_control_color_highlight</item>
 
         <!-- Elevation overlays -->
         <item name="elevationOverlayEnabled">true</item>
@@ -139,7 +143,7 @@
         <item name="colorAccent">@macro/default_control_color_active</item>
         <item name="colorControlNormal">@macro/default_control_color_normal</item>
         <item name="colorControlActivated">@macro/default_control_color_active</item>
-        <item name="colorControlHighlight">@color/control_highlight_color</item>
+        <item name="colorControlHighlight">@macro/default_control_color_highlight</item>
         <item name="spinnerStyle">@style/SpinnerStyle</item>
 
         <!-- Depending on if the support library or framework is inflating the
@@ -221,6 +225,11 @@
     <style name="ThemeRefactorOverlay.Enabled.SettingsPromo" parent="">
         <item name="elevationOverlayEnabled">true</item>
     </style>
+    <style name="ThemeOverlay.BrowserUI.DynamicColors" parent="ThemeOverlay.Material3.DynamicColors.DayNight">
+        <item name="elevationOverlayColor">?attr/colorPrimary</item>
+        <item name="elevationOverlayAccentColor">@android:color/transparent</item>
+    </style>
+    <!-- TODO(skym): Move this into ThemeOverlay.BrowserUI.DynamicColors instead. -->
     <!-- Applied after the dynamic colors to override the undesired overrides done by the dynamic
          color overlay, e.g. android:textColorHighlight. -->
     <style name="ThemeOverlay.DynamicColorOverrides" parent="">

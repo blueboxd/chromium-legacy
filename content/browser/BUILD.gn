@@ -33,6 +33,7 @@ source_set("browser") {
     "//content/public/browser:browser_sources",
     "//content/test/fuzzer:browser_accessibility_fuzzer",
     "//content/test/fuzzer:indexed_db_fuzzer_support",
+    "//content/test/fuzzer:media_stream_dispatcher_host_mojolpm_fuzzer",
   ]
 
   configs += [
@@ -413,8 +414,7 @@ source_set("browser") {
     "attribution_reporting/attribution_utils.h",
     "attribution_reporting/rate_limit_table.cc",
     "attribution_reporting/rate_limit_table.h",
-    "attribution_reporting/sent_report.cc",
-    "attribution_reporting/sent_report.h",
+    "attribution_reporting/send_result.h",
     "attribution_reporting/sql_utils.cc",
     "attribution_reporting/sql_utils.h",
     "attribution_reporting/storable_source.cc",

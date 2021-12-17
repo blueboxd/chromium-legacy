@@ -177,13 +177,8 @@ chromium-metrics-reviews@google.com.
   <owner>kylechar@chromium.org</owner>
   <summary>
     Time spent processing quads to see which can be replaced with overlays. This
-    is logged once per frame, when a frame should be drawn.
-
-    Warning: This metric may include reports from clients with low-resolution
-    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
-    will cause this metric to have an abnormal distribution. When considering
-    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
-    solution.
+    is logged once per frame, when a frame should be drawn. Only reported for
+    platforms supporting high resolution clocks.
   </summary>
 </histogram>
 
@@ -344,6 +339,27 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Compositing.Display.DrmOverlayManager.TestPageFlipCount"
+    units="units" expires_after="2022-06-30">
+  <owner>khaslett@chromium.org</owner>
+  <owner>kylechar@chromium.org</owner>
+  <summary>
+    Logged zero or more times per frame, the number of times TestPageFlip is
+    called on the HardwareDisplayController.
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Display.DrmOverlayManager.TestPageFlipUs"
+    units="microseconds" expires_after="2022-06-30">
+  <owner>khaslett@chromium.org</owner>
+  <owner>kylechar@chromium.org</owner>
+  <summary>
+    Logged zero or more times per frame, the duration of calling TestPageFlip on
+    the HardwareDisplayController. Only reported for platforms supporting high
+    resolution clocks.
+  </summary>
+</histogram>
+
 <histogram
     name="Compositing.Display.DrmOverlayManager.TotalTestBufferMemorySize"
     units="KB" expires_after="2020-09-01">
@@ -353,6 +369,18 @@ chromium-metrics-reviews@google.com.
     The amount of memory allocated for the purpose of performing a pageflip
     test. Recorded every time DRM thread is asked to validate an overlay
     configuration.
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Display.DrmThread.CheckOverlayCapabilitiesSyncUs"
+    units="microseconds" expires_after="2022-06-30">
+  <owner>khaslett@chromium.org</owner>
+  <owner>kylechar@chromium.org</owner>
+  <summary>
+    Logged zero or more times per frame, the duration of
+    DrmThread::CheckOverlayCapabilitiesSync(). This is the total time spent on
+    the DRM thread to check a set of overlay candidates. Only reported for
+    platforms supporting high resolution clocks.
   </summary>
 </histogram>
 
@@ -388,6 +416,29 @@ chromium-metrics-reviews@google.com.
   <summary>
     Indicates whether the SharedImage corresponding to the OverlayCandidate was
     found. Reported for every OverlayCandidate that is backed by a SharedImage.
+  </summary>
+</histogram>
+
+<histogram
+    name="Compositing.Display.OverlayProcessorUsingStrategy.CheckOverlaySupportCallCount"
+    units="units" expires_after="2022-06-30">
+  <owner>khaslett@chromium.org</owner>
+  <owner>kylechar@chromium.org</owner>
+  <summary>
+    This is logged once per frame, the number of times CheckOverlaySupport is
+    called this frame.
+  </summary>
+</histogram>
+
+<histogram
+    name="Compositing.Display.OverlayProcessorUsingStrategy.CheckOverlaySupportUs"
+    units="microseconds" expires_after="2022-06-30">
+  <owner>khaslett@chromium.org</owner>
+  <owner>kylechar@chromium.org</owner>
+  <summary>
+    Logged zero or more times per frame, the time spent checking if a set of
+    candidates can be promoted to overlay. Only reported for platforms
+    supporting high resolution clocks.
   </summary>
 </histogram>
 
@@ -774,6 +825,102 @@ chromium-metrics-reviews@google.com.
   <owner>kylechar@chromium.org</owner>
   <summary>
     Tracks the number of alive surfaces after each garbage collection operation.
+  </summary>
+</histogram>
+
+<histogram base="true" name="CompositorLatency" units="microseconds"
+    expires_after="2022-05-22">
+  <owner>sadrul@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Tracks the duration of various stages in the pipeline as a single frame goes
+    through the various stages in the compositor. This is reported for frames
+    that went through all the compositor stages in chromium, and was presented
+    to the user.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
+  </summary>
+</histogram>
+
+<histogram base="true" name="CompositorLatency.CompositorOnlyFrame"
+    units="microseconds" expires_after="2022-04-17">
+  <owner>sadrul@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Tracks the duration of various stages in the pipeline as a single frame goes
+    through the various stages in the compositor in the cases that there is no
+    damage from main thread.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
+  </summary>
+</histogram>
+
+<histogram
+    name="CompositorLatency.Diagnostic.PresentationTimeDeltaFromDeadline"
+    units="ms" expires_after="M87">
+  <obsolete>
+    Removed in M88.
+  </obsolete>
+  <owner>behdadb@chromium.org</owner>
+  <owner>sadrul@chromium.org</owner>
+  <summary>
+    For the compositor pipeline, measures how far the presentation time of a
+    compositor frame is from the frame deadline (i.e. vsync time).
+  </summary>
+</histogram>
+
+<histogram base="true" name="CompositorLatency.DroppedFrame"
+    units="microseconds" expires_after="2022-04-24">
+  <owner>sadrul@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Tracks the duration of various stages in the pipeline as a single frame goes
+    through the various stages in the compositor. This is reported for frames
+    that the user did not see: this includes frames that are dropped in various
+    stages inside chromium, or even frames that went through all stages in
+    chromium, but ultimately was not presented to the user.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
+  </summary>
+</histogram>
+
+<histogram base="true" name="CompositorLatency.MissedDeadlineFrame"
+    units="microseconds" expires_after="2022-06-12">
+  <owner>sadrul@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Tracks the duration of various stages in the pipeline as a single frame goes
+    through the various stages in the compositor. This is reported for frames
+    that went through all the compositor stages in chromium, and was presented
+    to the user, but were delayed and missed their deadline.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
+  </summary>
+</histogram>
+
+<histogram name="CompositorLatency.Type" enum="FrameReportType"
+    expires_after="2022-06-12">
+  <owner>sadrul@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Whether frame is dropped or presented meeting or missing the deadline or is
+    a compositor only frame.
   </summary>
 </histogram>
 

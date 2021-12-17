@@ -1524,8 +1524,6 @@ static_library("ui") {
       "webui/new_tab_page_third_party/new_tab_page_third_party_ui.h",
       "webui/ntp/app_icon_webui_handler.cc",
       "webui/ntp/app_icon_webui_handler.h",
-      "webui/ntp/app_launcher_handler.cc",
-      "webui/ntp/app_launcher_handler.h",
       "webui/ntp/app_resource_cache_factory.cc",
       "webui/ntp/app_resource_cache_factory.h",
       "webui/ntp/cookie_controls_handler.cc",
@@ -1705,7 +1703,6 @@ static_library("ui") {
       "//chrome/browser/ui/color:color_headers",
       "//chrome/browser/ui/commander:fuzzy_finder",
       "//chrome/browser/ui/webui/access_code_cast:mojo_bindings",
-      "//chrome/browser/ui/webui/app_management:mojo_bindings",
       "//chrome/browser/ui/webui/app_service_internals:mojo_bindings",
       "//chrome/browser/ui/webui/image_editor:mojo_bindings",
       "//chrome/browser/ui/webui/internals/user_education:mojo_bindings",
@@ -1752,6 +1749,7 @@ static_library("ui") {
       "//ui/base/dragdrop:types",
       "//ui/base/dragdrop/mojom",
       "//ui/events",
+      "//ui/webui/resources/cr_components/app_management:mojo_bindings",
       "//ui/webui/resources/js/browser_command:mojo_bindings",
     ]
     public_deps += [
@@ -2967,7 +2965,6 @@ static_library("ui") {
       "//chrome/browser/ui/app_list/search/search_result_ranker:app_launch_predictor_proto",
       "//chrome/browser/ui/app_list/search/search_result_ranker:recurrence_ranker_proto",
       "//chrome/browser/ui/app_list/search/util:proto",
-      "//chrome/browser/ui/webui/app_management:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/audio:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings",
@@ -3083,6 +3080,7 @@ static_library("ui") {
       "//ui/events/ozone/layout:layout",
       "//ui/file_manager:file_manager",
       "//ui/ozone",
+      "//ui/webui/resources/cr_components/app_management:mojo_bindings",
     ]
     public_deps += [
       "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings",
@@ -3150,6 +3148,7 @@ static_library("ui") {
       "//chrome/app:generated_resources",
       "//chromeos/strings",
       "//components/account_manager_core:account_manager_core",
+      "//ui/chromeos/styles:cros_styles_views",
     ]
   }
 
@@ -3261,6 +3260,8 @@ static_library("ui") {
       "webui/app_launcher_page_ui.h",
       "webui/browser_switch/browser_switch_ui.cc",
       "webui/browser_switch/browser_switch_ui.h",
+      "webui/ntp/app_launcher_handler.cc",
+      "webui/ntp/app_launcher_handler.h",
     ]
   }
 
@@ -3812,6 +3813,8 @@ static_library("ui") {
 
   if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
     sources += [
+      "startup/web_app_info_recorder_utils.cc",
+      "startup/web_app_info_recorder_utils.h",
       "startup/web_app_url_handling_startup_utils.cc",
       "startup/web_app_url_handling_startup_utils.h",
       "webui/settings/url_handlers_handler.cc",

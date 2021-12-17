@@ -2216,10 +2216,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestClientAuthContinueWithoutCert) {
   EXPECT_EQ("", tab->GetLastCommittedURL().ref());
 }
 
-// TODO(https://crbug.com/1279930): disabled because of race in when certs
-// are incorporated.
-IN_PROC_BROWSER_TEST_F(SSLUITest,
-                       DISABLED_TestCertDBChangedFlushesClientAuthCache) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestCertDBChangedFlushesClientAuthCache) {
   // Make the browser use the ClientCertStoreStub instead of the regular one.
   ProfileNetworkContextServiceFactory::GetForContext(browser()->profile())
       ->set_client_cert_store_factory_for_testing(
@@ -2275,6 +2272,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
 
   // Send a CertDBChanged notification.
   net::CertDatabase::GetInstance()->NotifyObserversCertDBChanged();
+  content::FlushNetworkServiceInstanceForTesting();
 
   // Visiting the page which requires client certs should fail, as the socket
   // pool has been flushed and SSL client auth cache has been cleared due to
@@ -4099,15 +4097,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrors, TestWSS) {
 // --ignore-certificate-errors-spki-list. The connection should be established
 // without interstitial page showing.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)  // Chrome OS does not support the flag.
-// TODO(crbug.com/1176880): Disabled on macOS because the WSS SpawnedTestServer
-// does not support modern TLS on the macOS bots.
-#if defined(OS_MAC)
-#define MAYBE_TestWSSExpired DISABLED_TestWSSExpired
-#else
-#define MAYBE_TestWSSExpired TestWSSExpired
-#endif
-IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrorsBySPKIWSS,
-                       MAYBE_TestWSSExpired) {
+IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrorsBySPKIWSS, TestWSSExpired) {
   ASSERT_TRUE(wss_server_expired_.Start());
 
   // Setup page title observer.

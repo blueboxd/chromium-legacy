@@ -35,8 +35,20 @@ struct MemoryEncryptionTestCase {
 namespace reporting {
 namespace test {
 
+// Memory constants.
 constexpr uint32_t kTmeMaxKeys = 2;
 constexpr uint32_t kTmeKeysLength = 4;
+
+// Wifi constants.
+constexpr char kInterfaceName[] = "interface_name";
+constexpr char kAccessPointAddress[] = "access_point";
+constexpr bool kPowerManagementEnabled = true;
+constexpr bool kEncryptionOn = true;
+constexpr uint32_t kTxBitRateMbps = 8;
+constexpr uint32_t kRxBitRateMbps = 4;
+constexpr uint32_t kTxPowerDbm = 2;
+constexpr uint32_t kLinkQuality = 1;
+constexpr int kSignalLevelDbm = 10;
 
 cros_healthd::KeylockerInfoPtr CreateKeylockerInfo(bool configured) {
   return cros_healthd::KeylockerInfo::New(configured);
@@ -72,6 +84,36 @@ cros_healthd::TelemetryInfoPtr CreateBusResult(
 
   telemetry_info->bus_result =
       cros_healthd::BusResult::NewBusDevices(std::move(bus_devices));
+  return telemetry_info;
+}
+
+cros_healthd::TelemetryInfoPtr CreateWifiResult(
+    const std::string& interface_name,
+    bool power_management_enabled,
+    const std::string& access_point_address,
+    uint32_t tx_bit_rate_mbps,
+    uint32_t rx_bit_rate_mbps,
+    uint32_t tx_power_dbm,
+    bool encryption_on,
+    uint32_t link_quality,
+    int signal_level_dbm) {
+  auto telemetry_info = cros_healthd::TelemetryInfo::New();
+  std::vector<cros_healthd::NetworkInterfaceInfoPtr> network_interfaces;
+
+  auto wireless_link_info = cros_healthd::WirelessLinkInfo::New(
+      access_point_address, tx_bit_rate_mbps, rx_bit_rate_mbps, tx_power_dbm,
+      encryption_on, link_quality, signal_level_dbm);
+  auto wireless_interface_info = cros_healthd::WirelessInterfaceInfo::New(
+      interface_name, power_management_enabled, std::move(wireless_link_info));
+  network_interfaces.push_back(
+      cros_healthd::NetworkInterfaceInfo::NewWirelessInterfaceInfo(
+          std::move(wireless_interface_info)));
+  auto network_interface_result =
+      cros_healthd::NetworkInterfaceResult::NewNetworkInterfaceInfo(
+          std::move(network_interfaces));
+
+  telemetry_info->network_interface_result =
+      std::move(network_interface_result);
   return telemetry_info;
 }
 
@@ -119,11 +161,12 @@ cros_healthd::TelemetryInfoPtr CreateMemoryResult(
 
 MetricData CollectData(cros_healthd::TelemetryInfoPtr telemetry_info,
                        cros_healthd::ProbeCategoryEnum probe_category,
-                       CrosHealthdMetricSampler::MetricType metric_type) {
-  MetricData data;
+                       CrosHealthdMetricSampler::MetricType metric_type,
+                       MetricData metric_data) {
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetProbeTelemetryInfoResponseForTesting(telemetry_info);
   CrosHealthdMetricSampler sampler(probe_category, metric_type);
+  sampler.SetMetricData(metric_data);
   test::TestEvent<MetricData> metric_collect_event;
 
   sampler.Collect(metric_collect_event.cb());
@@ -177,7 +220,7 @@ TEST_P(CrosHealthdMetricSamplerMemoryEncryptionTest,
           test_case.healthd_encryption_state, test_case.max_keys,
           test_case.key_length, test_case.healthd_encryption_algorithm)),
       cros_healthd::ProbeCategoryEnum::kMemory,
-      CrosHealthdMetricSampler::MetricType::kInfo);
+      CrosHealthdMetricSampler::MetricType::kInfo, MetricData{});
 
   ASSERT_TRUE(result.has_info_data());
   ASSERT_TRUE(result.info_data().has_memory_info());
@@ -196,7 +239,7 @@ TEST_P(CrosHealthdMetricSamplerTbtTest, TestTbtSecurityLevels) {
   MetricData result =
       CollectData(CreateBusResult(test_case.healthd_security_level),
                   cros_healthd::ProbeCategoryEnum::kBus,
-                  CrosHealthdMetricSampler::MetricType::kInfo);
+                  CrosHealthdMetricSampler::MetricType::kInfo, MetricData{});
   ASSERT_TRUE(result.has_info_data());
   ASSERT_TRUE(result.info_data().has_bus_device_info());
   ASSERT_TRUE(result.info_data().bus_device_info().has_thunderbolt_info());
@@ -205,10 +248,79 @@ TEST_P(CrosHealthdMetricSamplerTbtTest, TestTbtSecurityLevels) {
       test_case.reporting_security_level);
 }
 
+TEST_F(CrosHealthdMetricSamplerTest, SetMetricData) {
+  MetricData metric_data;
+  auto* const memory_encryption_info_out = metric_data.mutable_info_data()
+                                               ->mutable_memory_info()
+                                               ->mutable_tme_info();
+  memory_encryption_info_out->set_key_length(1);
+  // Pass a null memory result so that only encryption state is set.
+  MetricData result = CollectData(
+      CreateMemoryResult(nullptr), cros_healthd::ProbeCategoryEnum::kMemory,
+      CrosHealthdMetricSampler::MetricType::kInfo, metric_data);
+
+  ASSERT_TRUE(result.has_info_data());
+  ASSERT_TRUE(result.info_data().has_memory_info());
+  ASSERT_TRUE(result.info_data().memory_info().has_tme_info());
+
+  // Since only encryption state should be set by the sampler, we can verify
+  // that the keylength field set above propagated to the metric data.
+  const auto& tme_info = result.info_data().memory_info().tme_info();
+  EXPECT_EQ(tme_info.key_length(), 1);
+  EXPECT_EQ(tme_info.encryption_state(),
+            ::reporting::MEMORY_ENCRYPTION_STATE_DISABLED);
+}
+
+TEST_F(CrosHealthdMetricSamplerTest, TestWirelessTelemetry) {
+  // Provide some partially set network telemetry to verify the sampler
+  // properly builds upon it.
+  MetricData metric_data;
+  auto* const network_telemetry_out = metric_data.mutable_telemetry_data()
+                                          ->mutable_networks_telemetry()
+                                          ->add_network_telemetry();
+  network_telemetry_out->set_type(::reporting::NetworkType::WIFI);
+  network_telemetry_out->set_signal_strength(1);
+  MetricData result = CollectData(
+      CreateWifiResult(kInterfaceName, kPowerManagementEnabled,
+                       kAccessPointAddress, kTxBitRateMbps, kRxBitRateMbps,
+                       kTxPowerDbm, kEncryptionOn, kLinkQuality,
+                       kSignalLevelDbm),
+      cros_healthd::ProbeCategoryEnum::kNetworkInterface,
+      CrosHealthdMetricSampler::MetricType::kTelemetry, std::move(metric_data));
+
+  ASSERT_TRUE(result.has_telemetry_data());
+  ASSERT_TRUE(result.telemetry_data().has_networks_telemetry());
+  ASSERT_EQ(
+      result.telemetry_data().networks_telemetry().network_telemetry_size(), 1);
+
+  const auto& network_telemetry =
+      result.telemetry_data().networks_telemetry().network_telemetry(0);
+  EXPECT_EQ(network_telemetry.type(), ::reporting::NetworkType::WIFI);
+  EXPECT_EQ(network_telemetry.signal_strength(), 1);
+  ASSERT_EQ(network_telemetry.network_interface_telemetry_size(), 1);
+
+  const auto& network_interface =
+      network_telemetry.network_interface_telemetry(0);
+  EXPECT_EQ(network_interface.interface_name(), kInterfaceName);
+  ASSERT_TRUE(network_interface.has_wireless_interface());
+
+  const auto& wireless_interface = network_interface.wireless_interface();
+  EXPECT_EQ(wireless_interface.power_management_enabled(),
+            kPowerManagementEnabled);
+  EXPECT_EQ(wireless_interface.access_point_address(), kAccessPointAddress);
+  EXPECT_EQ(wireless_interface.tx_bit_rate_mbps(), kTxBitRateMbps);
+  EXPECT_EQ(wireless_interface.rx_bit_rate_mbps(), kRxBitRateMbps);
+  EXPECT_EQ(wireless_interface.tx_power_dbm(), kTxPowerDbm);
+  EXPECT_EQ(wireless_interface.encryption_on(), kEncryptionOn);
+  EXPECT_EQ(wireless_interface.link_quality(), kLinkQuality);
+  EXPECT_EQ(wireless_interface.signal_level_dbm(), kSignalLevelDbm);
+}
+
 TEST_F(CrosHealthdMetricSamplerTest, TestKeylockerConfigured) {
-  MetricData result = CollectData(CreateCpuResult(CreateKeylockerInfo(true)),
-                                  cros_healthd::ProbeCategoryEnum::kCpu,
-                                  CrosHealthdMetricSampler::MetricType::kInfo);
+  MetricData result =
+      CollectData(CreateCpuResult(CreateKeylockerInfo(true)),
+                  cros_healthd::ProbeCategoryEnum::kCpu,
+                  CrosHealthdMetricSampler::MetricType::kInfo, MetricData{});
 
   ASSERT_TRUE(result.has_info_data());
   ASSERT_TRUE(result.info_data().has_cpu_info());
@@ -218,9 +330,10 @@ TEST_F(CrosHealthdMetricSamplerTest, TestKeylockerConfigured) {
 }
 
 TEST_F(CrosHealthdMetricSamplerTest, TestKeylockerUnconfigured) {
-  MetricData result = CollectData(CreateCpuResult(CreateKeylockerInfo(false)),
-                                  cros_healthd::ProbeCategoryEnum::kCpu,
-                                  CrosHealthdMetricSampler::MetricType::kInfo);
+  MetricData result =
+      CollectData(CreateCpuResult(CreateKeylockerInfo(false)),
+                  cros_healthd::ProbeCategoryEnum::kCpu,
+                  CrosHealthdMetricSampler::MetricType::kInfo, MetricData{});
 
   ASSERT_TRUE(result.has_info_data());
   ASSERT_TRUE(result.info_data().has_cpu_info());
@@ -230,9 +343,9 @@ TEST_F(CrosHealthdMetricSamplerTest, TestKeylockerUnconfigured) {
 }
 
 TEST_F(CrosHealthdMetricSamplerTest, TestKeylockerUnsupported) {
-  MetricData result = CollectData(CreateCpuResult(nullptr),
-                                  cros_healthd::ProbeCategoryEnum::kCpu,
-                                  CrosHealthdMetricSampler::MetricType::kInfo);
+  MetricData result = CollectData(
+      CreateCpuResult(nullptr), cros_healthd::ProbeCategoryEnum::kCpu,
+      CrosHealthdMetricSampler::MetricType::kInfo, MetricData{});
 
   ASSERT_TRUE(result.has_info_data());
   ASSERT_TRUE(result.info_data().has_cpu_info());
@@ -269,6 +382,17 @@ TEST_F(CrosHealthdMetricSamplerTest, TestMojomError) {
       std::move(telemetry_info), cros_healthd::ProbeCategoryEnum::kAudio,
       CrosHealthdMetricSampler::MetricType::kTelemetry);
   ASSERT_FALSE(audio_data.has_telemetry_data());
+
+  telemetry_info = cros_healthd::TelemetryInfo::New();
+  telemetry_info->network_interface_result =
+      cros_healthd::NetworkInterfaceResult::NewError(
+          cros_healthd::ProbeError::New(cros_healthd::ErrorType::kFileReadError,
+                                        ""));
+  const auto& network_data =
+      CollectError(std::move(telemetry_info),
+                   cros_healthd::ProbeCategoryEnum::kNetworkInterface,
+                   CrosHealthdMetricSampler::MetricType::kTelemetry);
+  ASSERT_FALSE(network_data.has_telemetry_data());
 }
 
 TEST_F(CrosHealthdMetricSamplerTest, TestAudioNormalTest) {
@@ -280,7 +404,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestAudioNormalTest) {
           /*input_gain=*/50, /*input_device_name=*/"airpods", /*underruns=*/2,
           /*severe_underruns=*/2)),
       cros_healthd::ProbeCategoryEnum::kAudio,
-      CrosHealthdMetricSampler::MetricType::kTelemetry);
+      CrosHealthdMetricSampler::MetricType::kTelemetry, MetricData{});
 
   ASSERT_TRUE(result.has_telemetry_data());
   ASSERT_TRUE(result.telemetry_data().has_audio_telemetry());
@@ -298,7 +422,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestAudioEmptyTest) {
           /*input_gain=*/0, /*input_device_name=*/"", /*underruns=*/0,
           /*severe_underruns=*/0)),
       cros_healthd::ProbeCategoryEnum::kAudio,
-      CrosHealthdMetricSampler::MetricType::kTelemetry);
+      CrosHealthdMetricSampler::MetricType::kTelemetry, MetricData{});
 
   ASSERT_TRUE(result.has_telemetry_data());
   ASSERT_TRUE(result.telemetry_data().has_audio_telemetry());

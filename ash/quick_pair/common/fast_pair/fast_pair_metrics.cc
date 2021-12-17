@@ -27,6 +27,36 @@ const char kRetroactivePairingResultMetric[] =
     "Bluetooth.ChromeOS.FastPair.RetroactivePairing.Result";
 const char kTotalGattConnectionTimeMetric[] =
     "Bluetooth.ChromeOS.FastPair.TotalGattConnectionTime";
+const char kGattConnectionResult[] =
+    "Bluetooth.ChromeOS.FastPair.GattConnection.Result";
+const char kFastPairPairFailureInitialMetric[] =
+    "Bluetooth.ChromeOS.FastPair.PairFailure.InitialPairingProtocol";
+const char kFastPairPairFailureSubsequentMetric[] =
+    "Bluetooth.ChromeOS.FastPair.PairFailure.SubsequentPairingProtocol";
+const char kFastPairPairFailureRetroactiveMetric[] =
+    "Bluetooth.ChromeOS.FastPair.PairFailure.RetroactivePairingProtocol";
+const char kFastPairPairResultInitialMetric[] =
+    "Bluetooth.ChromeOS.FastPair.Pairing.Result.InitialPairingProtocol";
+const char kFastPairPairResultSubsequentMetric[] =
+    "Bluetooth.ChromeOS.FastPair.Pairing.Result.SubsequentPairingProtocol";
+const char kFastPairPairResultRetroactiveMetric[] =
+    "Bluetooth.ChromeOS.FastPair.Pairing.Result.RetroactivePairingProtocol";
+const char kFastPairAccountKeyWriteResultInitialMetric[] =
+    "Bluetooth.ChromeOS.FastPair.AccountKeyWrite.Result.InitialPairingProtocol";
+const char kFastPairAccountKeyWriteResultSubsequentMetric[] =
+    "Bluetooth.ChromeOS.FastPair.AccountKeyWrite.Result."
+    "SubsequentPairingProtocol";
+const char kFastPairAccountKeyWriteResultRetroactiveMetric[] =
+    "Bluetooth.ChromeOS.FastPair.AccountKeyWrite.Result."
+    "RetroactivePairingProtocol";
+const char kFastPairAccountKeyWriteFailureInitialMetric[] =
+    "Bluetooth.ChromeOS.FastPair.AccountKeyFailure.InitialPairingProtocol";
+const char kFastPairAccountKeyWriteFailureSubsequentMetric[] =
+    "Bluetooth.ChromeOS.FastPair.AccountKeyFailure.SubsequentPairingProtocol";
+const char kFastPairAccountKeyWriteFailureRetroactiveMetric[] =
+    "Bluetooth.ChromeOS.FastPair.AccountKeyFailure.RetroactivePairingProtocol";
+const char kKeyGenerationResultMetric[] =
+    "Bluetooth.ChromeOS.FastPair.KeyGenerationResult";
 
 }  // namespace
 
@@ -89,6 +119,80 @@ void RecordRetroactivePairingResult(bool success) {
 void RecordTotalGattConnectionTime(base::TimeDelta total_gatt_connection_time) {
   base::UmaHistogramTimes(kTotalGattConnectionTimeMetric,
                           total_gatt_connection_time);
+}
+
+void RecordGattConnectionResult(bool success) {
+  base::UmaHistogramBoolean(kGattConnectionResult, success);
+}
+
+void RecordPairingResult(const Device& device, bool success) {
+  switch (device.protocol) {
+    case Protocol::kFastPairInitial:
+      base::UmaHistogramBoolean(kFastPairPairResultInitialMetric, success);
+      break;
+    case Protocol::kFastPairRetroactive:
+      base::UmaHistogramBoolean(kFastPairPairResultRetroactiveMetric, success);
+      break;
+    case Protocol::kFastPairSubsequent:
+      base::UmaHistogramBoolean(kFastPairPairResultSubsequentMetric, success);
+      break;
+  }
+}
+
+void RecordPairingFailureReason(const Device& device, PairFailure failure) {
+  switch (device.protocol) {
+    case Protocol::kFastPairInitial:
+      base::UmaHistogramSparse(kFastPairPairFailureInitialMetric,
+                               static_cast<int>(failure));
+      break;
+    case Protocol::kFastPairRetroactive:
+      base::UmaHistogramSparse(kFastPairPairFailureRetroactiveMetric,
+                               static_cast<int>(failure));
+      break;
+    case Protocol::kFastPairSubsequent:
+      base::UmaHistogramSparse(kFastPairPairFailureSubsequentMetric,
+                               static_cast<int>(failure));
+      break;
+  }
+}
+
+void RecordAccountKeyFailureReason(const Device& device,
+                                   AccountKeyFailure failure) {
+  switch (device.protocol) {
+    case Protocol::kFastPairInitial:
+      base::UmaHistogramSparse(kFastPairAccountKeyWriteFailureInitialMetric,
+                               static_cast<int>(failure));
+      break;
+    case Protocol::kFastPairRetroactive:
+      base::UmaHistogramSparse(kFastPairAccountKeyWriteFailureRetroactiveMetric,
+                               static_cast<int>(failure));
+      break;
+    case Protocol::kFastPairSubsequent:
+      base::UmaHistogramSparse(kFastPairAccountKeyWriteFailureSubsequentMetric,
+                               static_cast<int>(failure));
+      break;
+  }
+}
+
+void RecordAccountKeyResult(const Device& device, bool success) {
+  switch (device.protocol) {
+    case Protocol::kFastPairInitial:
+      base::UmaHistogramBoolean(kFastPairAccountKeyWriteResultInitialMetric,
+                                success);
+      break;
+    case Protocol::kFastPairRetroactive:
+      base::UmaHistogramBoolean(kFastPairAccountKeyWriteResultRetroactiveMetric,
+                                success);
+      break;
+    case Protocol::kFastPairSubsequent:
+      base::UmaHistogramBoolean(kFastPairAccountKeyWriteResultSubsequentMetric,
+                                success);
+      break;
+  }
+}
+
+void RecordKeyPairGenerationResult(bool success) {
+  base::UmaHistogramBoolean(kKeyGenerationResultMetric, success);
 }
 
 }  // namespace quick_pair

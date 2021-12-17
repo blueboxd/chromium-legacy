@@ -545,7 +545,7 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SCANNING_APP_PNG_OPTION_TEXT" desc="The text displayed for the PNG file type option.">
         PNG
       </message>
-      <!-- TODO (kmoed): Remove "translateable="false"" once string is confirmed. -->
+      <!-- TODO (gavinwill): Remove "translateable="false"" once string is confirmed. -->
       <message translateable="false" name="IDS_SCANNING_APP_SEARCHABLE_PDF_OPTION_TEXT" desc="The text displayed for the Searchable PDF file type option. This option utilizes the Object Character Recognition (OCR) service to generate a PDF file whose text has been added as a searchable layer.">
         Searchable PDF
       </message>
@@ -2263,6 +2263,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_SHIMLESS_RMA_PROVISIONING_FAILED_NON_BLOCKING" translateable="false" desc="Message to display when provisioning failed, but RMA can continue.">
         Failed, non blocking.
+      </message>
+      <message name="IDS_SHIMLESS_RMA_PROVISIONING_FAILED_RETRY_BUTTON_LABEL" translateable="false" desc="The label for the button to retry provisioning.">
+        Retry provisioning
       </message>
       <!-- Repair complete page -->
       <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED" desc="Title for the page shown when the RMA process repair process is completed.">

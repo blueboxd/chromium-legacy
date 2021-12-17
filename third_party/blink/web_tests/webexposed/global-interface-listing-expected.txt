@@ -4258,6 +4258,7 @@ interface HTMLSelectElement : HTMLElement
 interface HTMLSelectMenuElement : HTMLElement
     attribute @@toStringTag
     getter form
+    getter labels
     getter name
     getter open
     getter required
@@ -10581,7 +10582,6 @@ interface WebGLVertexArrayObject
 interface WebId
     attribute @@toStringTag
     method constructor
-    method logout
     method provide
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag

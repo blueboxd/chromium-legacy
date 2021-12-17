@@ -193,8 +193,9 @@ class PasswordStoreAndroidBackend
   // Implements PasswordStoreAndroidBackendBridge::Consumer interface.
   void OnCompleteWithLogins(PasswordStoreAndroidBackendBridge::JobId job_id,
                             std::vector<PasswordForm> passwords) override;
-  void OnLoginsChanged(PasswordStoreAndroidBackendBridge::JobId task_id,
-                       const PasswordStoreChangeList& changes) override;
+  void OnLoginsChanged(
+      PasswordStoreAndroidBackendBridge::JobId task_id,
+      absl::optional<PasswordStoreChangeList> changes) override;
   void OnError(PasswordStoreAndroidBackendBridge::JobId job_id,
                AndroidBackendError error) override;
 
@@ -207,7 +208,7 @@ class PasswordStoreAndroidBackend
   // Gets logins matching |form|.
   void GetLoginsAsync(const PasswordFormDigest& form,
                       bool include_psl,
-                      LoginsReply callback);
+                      LoginsOrErrorReply callback);
 
   // Filters |logins| created between |delete_begin| and |delete_end| time
   // that match |url_filer| and asynchronously removes them.
@@ -224,6 +225,14 @@ class PasswordStoreAndroidBackend
   LoginsOrErrorReply ReportMetricsAndInvokeCallbackForLoginsRetrieval(
       const MetricInfix& metric_infix,
       LoginsReply callback);
+
+  // Creates a metrics recorder that records latency and success metrics for
+  // store modification operation with |metric_infix| name prior to
+  // calling |callback|.
+  PasswordStoreChangeListReply
+  ReportMetricsAndInvokeCallbackForStoreModifications(
+      const MetricInfix& metric_infix,
+      PasswordStoreChangeListReply callback);
 
   // Observer to propagate remote form changes to.
   RemoteChangesReceived remote_form_changes_received_;

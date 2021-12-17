@@ -109,6 +109,7 @@
 <translation id="4271805377592243930">Отримати довідку щодо Chromium</translation>
 <translation id="4285930937574705105">Не вдалося встановити через невизначену помилку. Якщо Chromium зараз запущено, закрийте його та повторіть спробу.</translation>
 <translation id="4407044323746248786">Усе одно вийти з Chromium?</translation>
+<translation id="4414390922528416758">Персоналізуйте параметри конфіденційності, які Chromium вважає найважливішими. Цей посібник містить не всі налаштування й параметри.</translation>
 <translation id="4415566066719264597">Дозволити Chromium працювати у фоновому режимі</translation>
 <translation id="4423735387467980091">Налаштування та керування Chromium</translation>
 <translation id="4427306783828095590">Покращений захист ще ефективніше блокує фішинг і зловмисне програмне забезпечення</translation>
@@ -227,7 +228,6 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="7339898014177206373">Нове вікно</translation>
 <translation id="734373864078049451">Тут містяться ваші веб-сторінки, закладки та інші дані Chromium.</translation>
 <translation id="7349591376906416160">Ваш системний адміністратор налаштував Chromium відкривати сторінку <ph name="TARGET_URL_HOSTNAME" /> в <ph name="ALTERNATIVE_BROWSER_NAME" />.</translation>
-<translation id="7366100504948874379">Також увімкнути в Chromium?</translation>
 <translation id="7398989605938454041">Створюйте профілі Chromium для різних цілей (наприклад, робочий і особистий), щоб розмежовувати роботу й дозвілля.</translation>
 <translation id="7448255348454382571">Перезапустіть ОС Chromium</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Версія Chromium для розробників</translation>
@@ -297,5 +297,6 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="9214764063801632699">ОС Chromium</translation>
 <translation id="93478295209880648">Chromium може працювати неналежним чином, оскільки більше не підтримується у Windows XP та Windows Vista</translation>
 <translation id="965162752251293939">Хто користується веб-переглядачем Chromium?</translation>
+<translation id="967427899662692980">Отримайте найвищий рівень безпеки в Chromium</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 </translationbundle>

@@ -1478,7 +1478,7 @@
 <translation id="2471506181342525583">לאתר יש גישה למיקום שלך</translation>
 <translation id="2473195200299095979">תרגום הדף</translation>
 <translation id="2475982808118771221">אירעה שגיאה</translation>
-<translation id="2476578072172137802">הגדרות אתר</translation>
+<translation id="2476578072172137802">ההגדרות לאתרים</translation>
 <translation id="2476974672882258506">‏יש לכבות את Windows כדי להסיר את <ph name="PARALLELS_DESKTOP" />.</translation>
 <translation id="2477065602824695373">הסריקה האוטומטית מושבתת כי הגדרת כמה מתגים.</translation>
 <translation id="2478176599153288112">הרשאות של קובץ מדיה עבור "<ph name="EXTENSION" />"</translation>
@@ -2518,6 +2518,7 @@
 <translation id="3557101512409028104">‏הגדרה של הגבלות גישה לאתרים וזמן מסך בעזרת Family Link</translation>
 <translation id="3559262020195162408">התקנת המדיניות במכשיר נכשלה.</translation>
 <translation id="3559533181353831840">הזמן הנותר: בערך <ph name="TIME_LEFT" /></translation>
+<translation id="3559697822483154494">קבלת אישור ברטט על ביצוע פעולות כמו פיצול המסך והחלפת שולחן העבודה הווירטואלי.</translation>
 <translation id="3560034655160545939">&amp;בדיקת איות</translation>
 <translation id="3562423906127931518">‏התהליך הזה עשוי להימשך כמה דקות. מתבצעת הגדרה של מאגר Linux.</translation>
 <translation id="3562655211539199254">‏הצגת כרטיסיות Chrome אחרונות בטלפון</translation>
@@ -2742,6 +2743,7 @@
 <translation id="3788331399335602504">הקבצים האלה</translation>
 <translation id="3788401245189148511">מעוניינים:</translation>
 <translation id="3789841737615482174">התקנה</translation>
+<translation id="3790417903123637354">משהו השתבש. יש לנסות שוב בהמשך</translation>
 <translation id="379082410132524484">תוקף הכרטיס שלך פג</translation>
 <translation id="3792890930871100565">ניתוק מדפסות</translation>
 <translation id="3793588272211751505">{NUM_DAYS,plural, =1{‏Chrome לא מצא תוכנות מזיקות במחשב שלך • הבדיקה בוצעה לפני יום אחד}two{‏Chrome לא מצא תוכנות מזיקות במחשב שלך • הבדיקה בוצעה לפני יומיים ({NUM_DAYS})}many{‏Chrome לא מצא תוכנות מזיקות במחשב שלך • הבדיקה בוצעה לפני {NUM_DAYS} ימים}other{‏Chrome לא מצא תוכנות מזיקות במחשב שלך • הבדיקה בוצעה לפני {NUM_DAYS} ימים}}</translation>
@@ -3828,6 +3830,7 @@
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" רוצה להתחבר אל יציאה טורית</translation>
 <translation id="4944310289250773232">שירות האימות הזה מתארח בדומיין <ph name="SAML_DOMAIN" /></translation>
 <translation id="4945439665401275950">כדי להגדיר טביעת אצבע, על הילד או הילדה לגעת בלחצן ההפעלה. נתוני טביעות האצבע של הילד או הילדה מאוחסנים באופן מאובטח ואף פעם לא נשלחים מה-<ph name="DEVICE_TYPE" /> הזה.</translation>
+<translation id="4946459324029651239">יש לך רמת הגנה רגילה</translation>
 <translation id="495164417696120157">{COUNT,plural, =1{קובץ}two{# קבצים}many{# קבצים}other{# קבצים}}</translation>
 <translation id="495170559598752135">פעולות</translation>
 <translation id="4953808748584563296">דמות ברירת מחדל כתומה</translation>
@@ -3844,7 +3847,7 @@
 <translation id="4966972803217407697">עברת למצב אנונימי</translation>
 <translation id="496888482094675990">‏היישום Files מספק גישה מהירה לקבצים ששמרת ב-Google Drive, באחסון חיצוני או במכשיר שלך עם מערכת הפעלה של Chrome.</translation>
 <translation id="4971412780836297815">פתיחה בסיום ההורדה</translation>
-<translation id="4971735654804503942">‏הגנה פרואקטיבית ומהירה יותר מפני אתרים, הורדות ותוספים מסוכנים. המערכת מזהירה אותך בנוגע לחשיפה של סיסמאות. כשמצב ההגנה הזה בשימוש, נתוני גלישה נשלחים אל Google.</translation>
+<translation id="4971735654804503942">‏הגנה מהירה יותר ואקטיבית מפני אתרים, הורדות ותוספים מסוכנים. המערכת מזהירה אותך בנוגע לחשיפה של סיסמאות. כשמצב ההגנה הזה בשימוש, נתוני גלישה נשלחים אל Google.</translation>
 <translation id="4972129977812092092">עריכת מדפסת</translation>
 <translation id="4972164225939028131">סיסמה שגויה</translation>
 <translation id="4972737347717125191">אתרים יכולים לבקש הרשאה להשתמש בנתונים ובמכשירים של מציאות מדומה</translation>
@@ -4411,6 +4414,7 @@
 <translation id="5575528586625653441">התרחשה בעיה הקשורה לבקשת הרשמה של הדגמה.</translation>
 <translation id="557722062034137776">‏איפוס של המכשיר לא ישפיע על חשבונות Google שלך או על נתונים המסונכרנים לחשבונות אלה. אך כל הקבצים המאוחסנים במכשיר באופן מקומי יימחקו.</translation>
 <translation id="5578059481725149024">כניסה אוטומטית</translation>
+<translation id="5581134892342029705">התרגום ל<ph name="LANGUAGE" /> הושלם</translation>
 <translation id="558170650521898289">‏אימות מנהל התקן חומרה של Microsoft Windows </translation>
 <translation id="5581972110672966454">לא ניתן לצרף את המכשיר אל הדומיין. יש לנסות שוב, או לפנות לבעלים או למנהל של המכשיר. קוד שגיאה: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">תפריט ראשי</translation>
@@ -4915,6 +4919,7 @@
 <translation id="6112931163620622315">בדיקת הטלפון</translation>
 <translation id="6113434369102685411">‏עליך להגדיר את מנוע החיפוש שיוגדר כברירת המחדל לדפדפן Chrome ולמרכז האפליקציות של <ph name="DEVICE_TYPE" /></translation>
 <translation id="6113942107547980621">‏כדי להשתמש ב-Smart Lock יש לעבור אל פרופיל המשתמש הראשי בטלפון</translation>
+<translation id="611684075852771314">היומנים האלה נשמרו ב'קבצים שלי' בתור</translation>
 <translation id="6116921718742659598">שינוי הגדרות הקלט והשפה</translation>
 <translation id="6119927814891883061">שמירת שם המכשיר <ph name="DEVICE_NAME" /></translation>
 <translation id="6120205520491252677">הצמדת דף זה למסך הפתיחה...</translation>
@@ -5691,6 +5696,7 @@
 <translation id="6930036377490597025">מפתח אבטחה חיצוני או חיישן מובנה</translation>
 <translation id="6930161297841867798">{NUM_EXTENSIONS,plural, =1{בקשת הארכה נדחתה}two{# בקשות הארכה נדחו}many{# בקשות הארכה נדחו}other{# בקשות הארכה נדחו}}</translation>
 <translation id="6930321203306643451">השדרוג הסתיים</translation>
+<translation id="6931690462168617033">עוצמת הלחיצה</translation>
 <translation id="6935286146439255109">חסר מגש נייר</translation>
 <translation id="693807610556624488">פעולת הכתיבה חורגת מהאורך המרבי של התכונה במכשיר: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6938386202199793006">שמרת מדפסת אחת.</translation>
@@ -6805,6 +6811,7 @@
 <translation id="8054563304616131773">יש להזין כתובת אימייל חוקית</translation>
 <translation id="8054883179223321715">זמין עבור אתרי וידאו מסוימים</translation>
 <translation id="8054921503121346576">‏מקלדת USB מחוברת</translation>
+<translation id="8057414620575339583">חיפוש בצד הדף</translation>
 <translation id="8058655154417507695">שנת תפוגה</translation>
 <translation id="8058986560951482265">קופצני</translation>
 <translation id="8059417245945632445">&amp;בדיקת מכשירים</translation>
@@ -6819,6 +6826,7 @@
 <translation id="8064279191081105977">קבוצה <ph name="GROUP_NAME" /> ‏– <ph name="GROUP_CONTENTS" /> ‏– <ph name="COLLAPSED_STATE" /></translation>
 <translation id="8066444921260601116">תיבת דו-שיח לחיבור</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
+<translation id="8070662218171013510">משוב פיזי</translation>
 <translation id="8071432093239591881">הדפסה כתמונה</translation>
 <translation id="8073499153683482226">‏<ph name="BEGIN_PARAGRAPH1" />נתוני אפליקציות הם כל הנתונים הנשמרים באפליקציות (בהתאם להגדרות המפתחים), כולל נתונים כמו אנשי קשר, הודעות ותמונות.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />נתוני הגיבוי אינם תופסים חלק מהמכסה של חשבון הילד/ה שלך ב-Drive.<ph name="END_PARAGRAPH2" />
@@ -6858,6 +6866,7 @@
 <translation id="81020759409809034">מיקום מקומי</translation>
 <translation id="8102139037507939978">‏הסרה של פרטים אישיים מזהים מהקובץ system_logs.txt.</translation>
 <translation id="8104088837833760645">‏הורדת פרופיל eSIM</translation>
+<translation id="8105368624971345109">כיבוי</translation>
 <translation id="8107015733319732394">‏ההתקנה של חנות Google Play במכשיר <ph name="DEVICE_TYPE" /> מתבצעת. ייתכן שההתקנה תימשך כמה דקות.</translation>
 <translation id="810728361871746125">רזולוציית מסך</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{‏אין קובצי cookie של צד שלישי}=1{‏קובץ cookie אחד של צד שלישי נחסם}two{‏# קובצי cookie של צד שלישי נחסמו}many{‏# קובצי cookie של צד שלישי נחסמו}other{‏# קובצי cookie של צד שלישי נחסמו}}</translation>
@@ -7232,6 +7241,7 @@
 <translation id="8528074251912154910">הוספת שפות</translation>
 <translation id="8528962588711550376">תהליך הכניסה מתבצע.</translation>
 <translation id="8529925957403338845">יצירת החיבור לשיתוף אינטרנט מיידי בין ניידים נכשלה</translation>
+<translation id="8531701051932785007">הגרסה המשופרת של הגלישה הבטוחה מושבתת</translation>
 <translation id="8534656636775144800">אופס! משהו השתבש כשניסינו לצרף את הדומיין. יש לנסות שוב.</translation>
 <translation id="8535005006684281994">‏כתובת אתר לחידוש אישור Netscape</translation>
 <translation id="8536956381488731905">צלילים בהקשה</translation>

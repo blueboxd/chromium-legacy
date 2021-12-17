@@ -99,10 +99,12 @@ bool MatchesIncludedPSLAndFederation(const PasswordForm& retrieved_login,
 
 void ValidateSignonRealm(const PasswordFormDigest& form_digest_to_match,
                          bool include_psl,
-                         LoginsReply callback,
+                         LoginsOrErrorReply callback,
                          LoginsResultOrError logins_or_error) {
-  if (absl::holds_alternative<PasswordStoreBackendError>(logins_or_error))
-    std::move(callback).Run({});
+  if (absl::holds_alternative<PasswordStoreBackendError>(logins_or_error)) {
+    std::move(callback).Run(std::move(logins_or_error));
+    return;
+  }
   LoginsResult retrieved_logins =
       std::move(absl::get<LoginsResult>(logins_or_error));
   LoginsResult matching_logins;
@@ -119,9 +121,14 @@ void ValidateSignonRealm(const PasswordFormDigest& form_digest_to_match,
   std::move(callback).Run(std::move(matching_logins));
 }
 
-LoginsResult JoinRetrievedLogins(std::vector<LoginsResult> results) {
+LoginsResultOrError JoinRetrievedLoginsOrError(
+    std::vector<LoginsResultOrError> results) {
   LoginsResult joined_logins;
-  for (auto& logins : results) {
+  for (auto& result : results) {
+    // If one of retrievals ended with an error, pass on the error.
+    if (absl::holds_alternative<PasswordStoreBackendError>(result))
+      return std::move(result);
+    LoginsResult logins = std::move(absl::get<LoginsResult>(result));
     std::move(logins.begin(), logins.end(), std::back_inserter(joined_logins));
   }
   return joined_logins;
@@ -340,8 +347,8 @@ void PasswordStoreAndroidBackend::FillMatchingLoginsAsync(
 
   // Create a barrier callback that aggregates results of a multiple
   // calls to GetLoginsAsync.
-  auto barrier_callback = base::BarrierCallback<LoginsResult>(
-      forms.size(), base::BindOnce(&JoinRetrievedLogins)
+  auto barrier_callback = base::BarrierCallback<LoginsResultOrError>(
+      forms.size(), base::BindOnce(&JoinRetrievedLoginsOrError)
                         .Then(std::move(record_metrics_and_reply)));
 
   // Create and run a callbacks chain that retrieves logins and invokes
@@ -405,9 +412,10 @@ void PasswordStoreAndroidBackend::FilterAndRemoveLogins(
 
   // Create a barrier callback that aggregates results of a multiple
   // calls to RemoveLoginAsync.
-  auto barrier_callback = base::BarrierCallback<PasswordStoreChangeList>(
-      logins_to_remove.size(),
-      base::BindOnce(&JoinPasswordStoreChanges).Then(std::move(reply)));
+  auto barrier_callback =
+      base::BarrierCallback<absl::optional<PasswordStoreChangeList>>(
+          logins_to_remove.size(),
+          base::BindOnce(&JoinPasswordStoreChanges).Then(std::move(reply)));
 
   // Create and run the callback chain that removes the logins.
   base::RepeatingClosure callbacks_chain = base::DoNothing();
@@ -426,13 +434,19 @@ void PasswordStoreAndroidBackend::RemoveLoginsByURLAndTimeAsync(
     base::Time delete_end,
     base::OnceCallback<void(bool)> sync_completion,
     PasswordStoreChangeListReply callback) {
+  // Record metrics prior to invoking |callback|.
+  PasswordStoreChangeListReply record_metrics_and_reply =
+      ReportMetricsAndInvokeCallbackForStoreModifications(
+          MetricInfix("RemoveLoginsByURLAndTimeAsync"), std::move(callback));
+
   JobId get_logins_job_id = bridge_->GetAllLogins();
   QueueNewJob(
       get_logins_job_id,
       JobReturnHandler(
           base::BindOnce(&PasswordStoreAndroidBackend::FilterAndRemoveLogins,
                          weak_ptr_factory_.GetWeakPtr(), std::move(url_filter),
-                         delete_begin, delete_end, std::move(callback)),
+                         delete_begin, delete_end,
+                         std::move(record_metrics_and_reply)),
           MetricsRecorder(MetricInfix("GetAllLoginsAsync"))));
 }
 
@@ -440,6 +454,11 @@ void PasswordStoreAndroidBackend::RemoveLoginsCreatedBetweenAsync(
     base::Time delete_begin,
     base::Time delete_end,
     PasswordStoreChangeListReply callback) {
+  // Record metrics prior to invoking |callback|.
+  PasswordStoreChangeListReply record_metrics_and_reply =
+      ReportMetricsAndInvokeCallbackForStoreModifications(
+          MetricInfix("RemoveLoginsCreatedBetweenAsync"), std::move(callback));
+
   JobId get_logins_job_id = bridge_->GetAllLogins();
   QueueNewJob(
       get_logins_job_id,
@@ -448,7 +467,8 @@ void PasswordStoreAndroidBackend::RemoveLoginsCreatedBetweenAsync(
                          weak_ptr_factory_.GetWeakPtr(),
                          // Include all urls.
                          base::BindRepeating([](const GURL&) { return true; }),
-                         delete_begin, delete_end, std::move(callback)),
+                         delete_begin, delete_end,
+                         std::move(record_metrics_and_reply)),
           MetricsRecorder(MetricInfix("GetAllLoginsAsync"))));
 }
 
@@ -490,7 +510,7 @@ void PasswordStoreAndroidBackend::OnCompleteWithLogins(
 
 void PasswordStoreAndroidBackend::OnLoginsChanged(
     JobId job_id,
-    const PasswordStoreChangeList& changes) {
+    absl::optional<PasswordStoreChangeList> changes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   JobReturnHandler reply = GetAndEraseJob(job_id);
   reply.RecordMetrics(/*error=*/absl::nullopt);
@@ -543,7 +563,7 @@ PasswordStoreAndroidBackend::GetAndEraseJob(JobId job_id) {
 
 void PasswordStoreAndroidBackend::GetLoginsAsync(const PasswordFormDigest& form,
                                                  bool include_psl,
-                                                 LoginsReply callback) {
+                                                 LoginsOrErrorReply callback) {
   JobId job_id = bridge_->GetLoginsForSignonRealm(
       FormToSignonRealmQuery(form, include_psl));
   QueueNewJob(job_id, JobReturnHandler(
@@ -556,6 +576,8 @@ LoginsOrErrorReply
 PasswordStoreAndroidBackend::ReportMetricsAndInvokeCallbackForLoginsRetrieval(
     const MetricInfix& metric_infix,
     LoginsReply callback) {
+  // TODO(https://crbug.com/1229655) Switch to using base::PassThrough to handle
+  // this callback more gracefully when it's implemented.
   return base::BindOnce(
       [](MetricsRecorder metrics_recorder, LoginsReply callback,
          LoginsResultOrError results) {
@@ -565,6 +587,26 @@ PasswordStoreAndroidBackend::ReportMetricsAndInvokeCallbackForLoginsRetrieval(
             /*error=*/absl::nullopt);
         std::move(callback).Run(
             GetLoginsOrEmptyListOnFailure(std::move(results)));
+      },
+      MetricsRecorder(metric_infix), std::move(callback));
+}
+
+PasswordStoreChangeListReply PasswordStoreAndroidBackend::
+    ReportMetricsAndInvokeCallbackForStoreModifications(
+        const MetricInfix& metric_infix,
+        PasswordStoreChangeListReply callback) {
+  // TODO(https://crbug.com/1229655) Switch to using base::PassThrough to handle
+  // this callback more gracefully when it's implemented.
+  return base::BindOnce(
+      [](MetricsRecorder metrics_recorder,
+         PasswordStoreChangeListReply callback,
+         absl::optional<PasswordStoreChangeList> results) {
+        // Errors are not recorded at the moment. This should be implemented
+        // in the future, when actual store changes will be received from the
+        // store modifying operations.
+        metrics_recorder.RecordMetrics(/*success=*/true,
+                                       /*error=*/absl::nullopt);
+        std::move(callback).Run(std::move(results));
       },
       MetricsRecorder(metric_infix), std::move(callback));
 }

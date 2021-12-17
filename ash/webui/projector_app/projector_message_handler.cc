@@ -72,8 +72,7 @@ std::string ProjectorErrorToString(ProjectorError mode) {
   }
 }
 
-base::Value ScreencastListToValue(
-    const std::set<PendingScreencast>& screencasts) {
+base::Value ScreencastListToValue(const PendingScreencastSet& screencasts) {
   std::vector<base::Value> value;
   value.reserve(screencasts.size());
   for (const auto& item : screencasts)
@@ -208,10 +207,14 @@ void ProjectorMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setUserPref", base::BindRepeating(&ProjectorMessageHandler::SetUserPref,
                                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "openFeedbackDialog",
+      base::BindRepeating(&ProjectorMessageHandler::OpenFeedbackDialog,
+                          base::Unretained(this)));
 }
 
 void ProjectorMessageHandler::OnScreencastsPendingStatusChanged(
-    const std::set<PendingScreencast>& pending_screencast) {
+    const PendingScreencastSet& pending_screencast) {
   AllowJavascript();
   FireWebUIListener("onScreencastsStateChange",
                     ScreencastListToValue(pending_screencast));
@@ -405,6 +408,13 @@ void ProjectorMessageHandler::SetUserPref(
   ResolveJavascriptCallback(args[0], base::Value());
 }
 
+void ProjectorMessageHandler::OpenFeedbackDialog(
+    const base::Value::ConstListView args) {
+  AllowJavascript();
+  ProjectorAppClient::Get()->OpenFeedbackDialog();
+  ResolveJavascriptCallback(args[0], base::Value());
+}
+
 void ProjectorMessageHandler::OnAccessTokenRequestCompleted(
     const std::string& js_callback_id,
     const std::string& email,
@@ -448,7 +458,7 @@ void ProjectorMessageHandler::GetPendingScreencasts(
   // Check that there is only one argument which is the callback id.
   DCHECK_EQ(args.size(), 1u);
 
-  const std::set<PendingScreencast>& pending_screencasts =
+  const PendingScreencastSet& pending_screencasts =
       ProjectorAppClient::Get()->GetPendingScreencasts();
   ResolveJavascriptCallback(args[0],
                             ScreencastListToValue(pending_screencasts));

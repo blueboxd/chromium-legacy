@@ -1422,16 +1422,6 @@ bool OverviewGrid::IntersectsWithDesksBar(const gfx::Point& screen_location,
   return dragged_item_over_bar;
 }
 
-int OverviewGrid::GetDeskIndexFromScreenLocation(
-    const gfx::Point& screen_location) {
-  auto* desks_controller = DesksController::Get();
-  for (auto* mini_view : desks_bar_view_->mini_views()) {
-    if (mini_view->IsPointOnMiniView(screen_location))
-      return desks_controller->GetDeskIndex(mini_view->desk());
-  }
-  return -1;
-}
-
 bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
     const gfx::Point& screen_location,
     OverviewItem* drag_item) {
@@ -1768,6 +1758,10 @@ void OverviewGrid::HideDesksTemplatesGrid(bool exit_overview) {
 
   if (exit_overview && overview_session_->enter_exit_overview_type() !=
                            OverviewEnterExitType::kImmediateExit) {
+    // Disable the `desks_templates_grid_widget_`'s event targeting so it can't
+    // get any events during the animation.
+    desks_templates_grid_widget_->GetNativeWindow()->SetEventTargetingPolicy(
+        aura::EventTargetingPolicy::kNone);
     FadeOutWidgetFromOverview(
         std::move(desks_templates_grid_widget_),
         OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_DESKS_TEMPLATES_GRID_FADE_OUT);

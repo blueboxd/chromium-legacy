@@ -155,6 +155,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "device/base/features.h"
+#include "device/bluetooth/floss/floss_features.h"
 #include "device/fido/features.h"
 #include "device/gamepad/public/cpp/gamepad_features.h"
 #include "device/vr/buildflags/buildflags.h"
@@ -1209,19 +1210,43 @@ const FeatureEntry::FeatureVariation kMaxZeroSuggestMatchesVariations[] = {
 
 constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration15Secs[] =
     {{"ZeroSuggestCacheDurationSec", "15"}};
+constexpr FeatureEntry::FeatureParam
+    kOmniboxZeroSuggestCacheDuration15SecsCounterfactual[] = {
+        {"ZeroSuggestCacheDurationSec", "15"},
+        {"ZeroSuggestCacheCounterfactual", "true"}};
 constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration30Secs[] =
     {{"ZeroSuggestCacheDurationSec", "30"}};
+constexpr FeatureEntry::FeatureParam
+    kOmniboxZeroSuggestCacheDuration30SecsCounterfactual[] = {
+        {"ZeroSuggestCacheDurationSec", "30"},
+        {"ZeroSuggestCacheCounterfactual", "true"}};
 constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration60Secs[] =
     {{"ZeroSuggestCacheDurationSec", "60"}};
+constexpr FeatureEntry::FeatureParam
+    kOmniboxZeroSuggestCacheDuration60SecsCounterfactual[] = {
+        {"ZeroSuggestCacheDurationSec", "60"},
+        {"ZeroSuggestCacheCounterfactual", "true"}};
 
 constexpr FeatureEntry::FeatureVariation
     kOmniboxZeroSuggestPrefetchingVariations[] = {
         {"15 seconds", kOmniboxZeroSuggestCacheDuration15Secs,
          base::size(kOmniboxZeroSuggestCacheDuration15Secs), nullptr},
+        {"15 seconds (counterfactual)",
+         kOmniboxZeroSuggestCacheDuration15SecsCounterfactual,
+         base::size(kOmniboxZeroSuggestCacheDuration15SecsCounterfactual),
+         nullptr},
         {"30 seconds", kOmniboxZeroSuggestCacheDuration30Secs,
          base::size(kOmniboxZeroSuggestCacheDuration30Secs), nullptr},
+        {"30 seconds (counterfactual)",
+         kOmniboxZeroSuggestCacheDuration30SecsCounterfactual,
+         base::size(kOmniboxZeroSuggestCacheDuration30SecsCounterfactual),
+         nullptr},
         {"60 seconds", kOmniboxZeroSuggestCacheDuration60Secs,
-         base::size(kOmniboxZeroSuggestCacheDuration60Secs), nullptr}};
+         base::size(kOmniboxZeroSuggestCacheDuration60Secs), nullptr},
+        {"60 seconds (counterfactual)",
+         kOmniboxZeroSuggestCacheDuration60SecsCounterfactual,
+         base::size(kOmniboxZeroSuggestCacheDuration60SecsCounterfactual),
+         nullptr}};
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
@@ -3047,6 +3072,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"bluetooth-wbs-dogfood", flag_descriptions::kBluetoothWbsDogfoodName,
      flag_descriptions::kBluetoothWbsDogfoodDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kBluetoothWbsDogfood)},
+    {"bluetooth-use-floss", flag_descriptions::kBluetoothUseFlossName,
+     flag_descriptions::kBluetoothUseFlossDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(floss::features::kFlossEnabled)},
     {"button-arc-network-diagnostics",
      flag_descriptions::kButtonARCNetworkDiagnosticsName,
      flag_descriptions::kButtonARCNetworkDiagnosticsDescription, kOsCrOS,
@@ -7827,6 +7855,13 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // In order to be considered for Lacros, flags additionally need to be usable
+  // on Chrome OS.
+  if (!(entry.supported_platforms & (kOsCrOS | kOsCrOSOwnerOnly)))
+    return true;
+#endif  //  BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // data-reduction-proxy-lo-fi and enable-data-reduction-proxy-lite-page
   // are only available for Chromium builds and the Canary/Dev/Beta channels.

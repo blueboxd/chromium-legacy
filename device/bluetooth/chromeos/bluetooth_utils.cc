@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "device/bluetooth/floss/floss_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #include "device/base/features.h"
@@ -38,18 +39,6 @@ const char kHIDServiceUUID[] = "1812";
 const char kSecurityKeyServiceUUID[] = "FFFD";
 
 constexpr base::TimeDelta kMaxDeviceSelectionDuration = base::Seconds(30);
-
-// This enum is tied directly to a UMA enum defined in
-// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
-// change one without changing the other).
-enum class BluetoothTransportType {
-  kUnknown = 0,
-  kClassic = 1,
-  kLE = 2,
-  kDual = 3,
-  kInvalid = 4,
-  kMaxValue = kInvalid
-};
 
 // Get limited number of devices from |devices| and
 // prioritize paired/connecting devices over other devices.
@@ -172,6 +161,12 @@ device::BluetoothAdapter::DeviceList FilterBluetoothDeviceList(
 }
 
 bool IsUnsupportedDevice(const device::BluetoothDevice* device) {
+  // With Floss, device list filtering is still unstable. We disable filtering
+  // first so that Floss testing of other features can be unblocked.
+  // TODO(b/202335393): Enable device filtering once it's stable with Floss.
+  if (base::FeatureList::IsEnabled(floss::features::kFlossEnabled))
+    return false;
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (chromeos::switches::IsUnfilteredBluetoothDevicesEnabled())
     return false;

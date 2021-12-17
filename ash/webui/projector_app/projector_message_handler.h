@@ -55,7 +55,7 @@ class ProjectorMessageHandler : public content::WebUIMessageHandler,
   // Notifies the Projector SWA the pending screencasts' state change and
   // updates the pending list in Projector SWA.
   void OnScreencastsPendingStatusChanged(
-      const std::set<PendingScreencast>& pending_screencast) override;
+      const PendingScreencastSet& pending_screencast) override;
   void OnSodaProgress(int percentage) override;
   void OnSodaError() override;
   void OnSodaInstalled() override;
@@ -96,6 +96,9 @@ class ProjectorMessageHandler : public content::WebUIMessageHandler,
 
   // Requested by the Projector SWA to set the value of a user pref.
   void SetUserPref(const base::Value::ConstListView args);
+
+  // Requested by the Projector SWA to open the Chrome feedback dialog.
+  void OpenFeedbackDialog(const base::Value::ConstListView args);
 
   // Called when OAuth token fetch request is completed by
   // ProjectorOAuthTokenFetcher. Resolves the javascript promise created by

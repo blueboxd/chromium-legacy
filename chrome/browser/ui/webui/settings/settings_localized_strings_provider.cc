@@ -23,8 +23,8 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
-#include "chrome/browser/privacy_sandbox/privacy_sandbox_settings.h"
-#include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
@@ -1096,9 +1096,11 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PASSWORDS_MANAGE_PASSWORDS_PLAINTEXT},
       {"savedToThisDeviceOnly",
        IDS_SETTINGS_PAYMENTS_SAVED_TO_THIS_DEVICE_ONLY},
-      {"trustedVaultOptInLabel", IDS_SETTINGS_TRUSTED_VAULT_OPT_IN_LABEL},
-      {"trustedVaultOptInSubLabel",
-       IDS_SETTINGS_TRUSTED_VAULT_OPT_IN_SUB_LABEL},
+      {"trustedVaultBannerLabel", IDS_SETTINGS_TRUSTED_VAULT_BANNER_LABEL},
+      {"trustedVaultBannerSubLabelOfferOptIn",
+       IDS_SETTINGS_TRUSTED_VAULT_BANNER_SUB_LABEL_OFFER_OPT_IN},
+      {"trustedVaultBannerSubLabelOptedIn",
+       IDS_SETTINGS_TRUSTED_VAULT_BANNER_SUB_LABEL_OPTED_IN},
       {"noSearchResults", IDS_SEARCH_NO_RESULTS},
       {"searchResultsPlural", IDS_SEARCH_RESULTS_PLURAL},
       {"searchResultsSingular", IDS_SEARCH_RESULTS_SINGULAR},
@@ -1591,7 +1593,7 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
   // one provided by the Privacy Sandbox service, and one with a URL
   // replacement based on a feature parameter.
   std::u16string floc_explanation =
-      PrivacySandboxSettingsFactory::GetForProfile(profile)
+      PrivacySandboxServiceFactory::GetForProfile(profile)
           ->GetFlocDescriptionForDisplay() +
       u" " +  // Whitespace is a valid separator w.r.t l10n.
       l10n_util::GetStringFUTF16(IDS_SETTINGS_PRIVACY_SANDBOX_FLOC_TRIAL_ACTIVE,
@@ -1602,7 +1604,7 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
   // profile, and so the relevant string can be injected here, rather than
   // fetched dynamically from JS.
   html_source->AddString("privacySandboxPageFlocResetExplanation",
-                         PrivacySandboxSettingsFactory::GetForProfile(profile)
+                         PrivacySandboxServiceFactory::GetForProfile(profile)
                              ->GetFlocResetExplanationForDisplay());
 }
 

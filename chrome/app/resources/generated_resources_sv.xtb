@@ -264,7 +264,6 @@
 <translation id="1261380933454402672">Måttlig</translation>
 <translation id="126156426083987769">Ett problem med enhetslicenser för demoläge uppstod.</translation>
 <translation id="1263231323834454256">Läslista</translation>
-<translation id="1263490604593716556">Kontot hanteras av <ph name="FIRST_PARENT_EMAIL" /> och <ph name="SECOND_PARENT_EMAIL" />. Klicka på klockan på skärmen om du vill logga ut från det primära kontot på den här enheten. Klicka på Logga ut i menyn som visas.</translation>
 <translation id="1263733306853729545">Använd tangenterna <ph name="MINUS" /> och <ph name="EQUAL" /> om du vill söka i en kandidatlista</translation>
 <translation id="126387934568812801">Ta med den här skärmbilden och namnet på öppna flikar</translation>
 <translation id="1264337193001759725">Du hittar loggar för nätverksgränssnittet här: <ph name="DEVICE_LOG_LINK" /></translation>
@@ -1174,7 +1173,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2170054054876170358">Kontrollera att telefonen finns i närheten, att den är olåst och att Bluetooth och wifi är aktiverat på den.</translation>
 <translation id="2173302385160625112">Kontrollera internetanslutningen</translation>
 <translation id="2173801458090845390">Lägg till rekvirerings-id på enheten</translation>
-<translation id="2174948148799307353">Kontot hanteras av <ph name="PARENT_EMAIL" />. Klicka på klockan på skärmen om du vill logga ut från det primära kontot på den här enheten. Klicka på Logga ut i menyn som visas.</translation>
 <translation id="2175384018164129879">&amp;Hantera sökmotorer och webbplatssökning</translation>
 <translation id="2175607476662778685">Fältet Snabbstart</translation>
 <translation id="217576141146192373">Det gick inte att lägga till en skrivare. Kontrollera skrivarens konfiguration och försök igen.</translation>
@@ -1380,6 +1378,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2359345697448000899">Hantera tillägg genom att klicka på Tillägg på menyn Verktyg.</translation>
 <translation id="2359556993567737338">Anslut Bluetooth-enhet</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
+<translation id="2360625459710946148">Ändra ordning efter</translation>
 <translation id="2361100938102002520">Du lägger till en hanterad profil i den här webbläsaren. Administratören har kontroll över profilen och kan få åtkomst till dess data.</translation>
 <translation id="236117173274098341">Optimera</translation>
 <translation id="2361340419970998028">Feedback skickas …</translation>
@@ -2521,6 +2520,7 @@ och Ctrl + Alt + Minska ljusstyrka för att zooma ut.</translation>
 <translation id="3557101512409028104">Begränsa vilka webbplatser som är tillgängliga och ange skärmtid med Family Link</translation>
 <translation id="3559262020195162408">Det gick inte att installera policyn på enheten.</translation>
 <translation id="3559533181353831840">Cirka <ph name="TIME_LEFT" /> kvar</translation>
+<translation id="3559697822483154494">Få återkoppling i form av vibration vid åtgärder som att dela upp skärmen eller byta skrivbord.</translation>
 <translation id="3560034655160545939">&amp;Stavningskontroll</translation>
 <translation id="3562423906127931518">Detta kan ta några minuter. Linux-containern konfigureras.</translation>
 <translation id="3562655211539199254">Se de senaste flikarna som du har öppna i Chrome på telefonen</translation>
@@ -3571,7 +3571,6 @@ och Ctrl + Alt + Minska ljusstyrka för att zooma ut.</translation>
 <translation id="4654236001025007561">Dela filer med Chromebook- och Android-enheter i närheten</translation>
 <translation id="4657914796247705218">Hastighet för TrackPoint</translation>
 <translation id="465878909996028221">Endast protokollen http, https och file stöds för omdirigeringar till en annan webbläsare.</translation>
-<translation id="4659077111144409915">Primärt konto</translation>
 <translation id="4659126640776004816">Den här funktionen är aktiverad när du loggar in på Google-kontot.</translation>
 <translation id="4660465405448977105">{COUNT,plural, =1{Bild}other{# bilder}}</translation>
 <translation id="4660476621274971848">Version <ph name="EXPECTED_VERSION" /> förväntades men versionen är <ph name="NEW_ID" /></translation>
@@ -4925,6 +4924,7 @@ Du kan tilldela flera brytare denna åtgärd.</translation>
 <translation id="6112931163620622315">Kontrollera telefonen</translation>
 <translation id="6113434369102685411">Ställ in standardsökmotor för webbläsaren Chrome och översikten på <ph name="DEVICE_TYPE" /></translation>
 <translation id="6113942107547980621">Du måste byta till den primära användarprofilen på telefonen om du vill använda Smart Lock</translation>
+<translation id="611684075852771314">Loggarna har sparats i Mina filer som</translation>
 <translation id="6116921718742659598">Ändra språk- och inmatningsinställningar</translation>
 <translation id="6119927814891883061">Namnge enheten <ph name="DEVICE_NAME" /></translation>
 <translation id="6120205520491252677">Fäst den här sidan på startskärmen ...</translation>
@@ -5384,7 +5384,6 @@ Du kan tilldela flera brytare denna åtgärd.</translation>
 <translation id="6596325263575161958">Krypteringsalternativ</translation>
 <translation id="6596816719288285829">IP-adress</translation>
 <translation id="6597017209724497268">Stickprov</translation>
-<translation id="6597148444736186483">Klicka på klockan på skärmen om du vill logga ut från det primära kontot. Klicka på Logga ut i menyn som visas.</translation>
 <translation id="6597331566371766302">Följande tillägg har blockerats av administratören:</translation>
 <translation id="6601395831301182804">Vill du aktivera ChromeVox, den inbyggda skärmläsaren för Chrome OS? I så fall trycker du på blanksteg.</translation>
 <translation id="6601612474695404578">På vissa webbplatser används cookies från tredje part när sidorna läses in. Om en webbplats inte fungerar kan du testa att tillåta cookies.</translation>
@@ -5701,6 +5700,7 @@ Du kan tilldela flera brytare denna åtgärd.</translation>
 <translation id="6930036377490597025">Extern säkerhetsnyckel eller inbyggd sensor</translation>
 <translation id="6930161297841867798">{NUM_EXTENSIONS,plural, =1{Ett tillägg har avvisats}other{# tillägg har avvisats}}</translation>
 <translation id="6930321203306643451">Uppgraderingen är färdig</translation>
+<translation id="6931690462168617033">Klickkänslighet</translation>
 <translation id="6935286146439255109">Pappersfacket hittades inte</translation>
 <translation id="693807610556624488">Skrivåtgärden överstiger maxlängden för attributet till: <ph name="DEVICE_NAME" />.</translation>
 <translation id="6938386202199793006">Du har 1 sparad skrivare.</translation>
@@ -6832,6 +6832,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8064279191081105977">Grupp <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /> – <ph name="COLLAPSED_STATE" /></translation>
 <translation id="8066444921260601116">Dialogruta för anslutning</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
+<translation id="8070662218171013510">Haptisk återkoppling</translation>
 <translation id="8071432093239591881">Skriv ut som bild</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />Appdata är all data som har sparats i en app (utifrån utvecklarens inställningar), till exempel kontakter, meddelanden och foton.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Säkerhetskopierad data tar inte upp något av ditt barns lagringsutrymme på Drive.<ph name="END_PARAGRAPH2" />
@@ -7702,7 +7703,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8991520179165052608">Webbplatsen har åtkomst till din mikrofon</translation>
 <translation id="899384117894244799">Ta bort begränsad användare</translation>
 <translation id="899403249577094719">Basadress för Netscape-certifikat</translation>
-<translation id="8995603266996330174">Hanteras av <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Lägg till konto …</translation>
 <translation id="899657321862108550">Chrome på ditt sätt, var du än är</translation>
 <translation id="899676909165543803">Fingeravtryckssensorn är tangenten längst ned till höger på tangentbordet. Tryck lätt på den med valfritt finger.</translation>

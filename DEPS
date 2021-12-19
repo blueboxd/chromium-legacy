@@ -320,7 +320,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'e10089228a07dc282b1b0dedbf865e5fce88dc64',
+  'devtools_frontend_revision': '1f20034cb0090ca8061624c7d1c1e8c2aa009963',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -360,7 +360,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '8c845bb6157c769216745a0935ef3e340557d218',
+  'dawn_revision': 'f3b65c71bc28f6fad1e8406169333ce6c9a8fd93',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -722,7 +722,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'YAZqn6Eg9--L3ET22SORKRtSlGrN0Wt9dmP4fIySwrYC',
+          'version': 'g8oMh_ecYNxO1OYYqk5_V0FsgppGv9q5cFqhDjUBxOgC',
         },
       ],
       'dep_type': 'cipd',
@@ -744,7 +744,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'zN1RsTbXogERiLSez4IX6cFrApmeufSJ9ykCTtY0OQkC',
+          'version': 'Rx9yHxacQL11O-4uZE6_fUVVlMmrjBpcChyrv55LeN4C',
         },
       ],
       'dep_type': 'cipd',
@@ -1648,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'c843f8d63c8c17acfbb7d48e09059a581ba779b9',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '977234879de72cb9df9b191adc9c7520c5c51c35',
+    Var('webrtc_git') + '/src.git' + '@' + 'aa3381002480bac3f47036bf5c09bf87d2ebce99',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1730,7 +1730,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2eebf353b33c635f85dd4d4ae775e78f83fdd506',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@abbc5cf3da5cffe3eae830c0fc50ace2ad3b4027',
     'condition': 'checkout_src_internal',
   },
 

@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'dca434bdcdb97f89cbfd75e7f7699b44561ab9ab',
+  'angle_revision': '001221f0efe2d89828d014d158240eacabbd8228',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -320,7 +320,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'cd90705e54fb479bd1144dc2d911253ab0e246b1',
+  'devtools_frontend_revision': 'e10089228a07dc282b1b0dedbf865e5fce88dc64',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -360,7 +360,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '36e86ee778ee8bd85a23cfbf10a4552cebf258a3',
+  'dawn_revision': '8c845bb6157c769216745a0935ef3e340557d218',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -722,7 +722,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'VIopTUbBMZKsOBpN8Pq1YH1iKJa8bgbQI9gh9OqhJRcC',
+          'version': 'YAZqn6Eg9--L3ET22SORKRtSlGrN0Wt9dmP4fIySwrYC',
         },
       ],
       'dep_type': 'cipd',
@@ -733,7 +733,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'e9DLUp4VJZFhTZ4zDsJ_ZnJK9tfLZtQwHWQbxt8y160C',
+          'version': 'eyFB7hTSfOS2oXB1LsL6X8nA1aMojX_yYcqjtMUHZeUC',
         },
       ],
       'dep_type': 'cipd',
@@ -744,7 +744,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'rnznfneUyVfE8Wa2qmh433kAYViXt2xwrO069_lCZGgC',
+          'version': 'zN1RsTbXogERiLSez4IX6cFrApmeufSJ9ykCTtY0OQkC',
         },
       ],
       'dep_type': 'cipd',
@@ -805,7 +805,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'xkgx7AMF4DNVvZHw7WxcsMH6nWaWr-bT2ygkaaCUsp8C',
+          'version': 'Loj-39yxboIJMNylNA3x-K4G2agoenzNFDkRBrW7dvAC',
       },
     ],
     'condition': 'checkout_android',
@@ -1730,7 +1730,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2151e544b52ee350395e053051b8b31e6ca2c676',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2eebf353b33c635f85dd4d4ae775e78f83fdd506',
     'condition': 'checkout_src_internal',
   },
 
@@ -1749,7 +1749,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': '4sRnYvRbVWePmLRR-Az6arAFrfyMkNlo5I91XAKsp0sC',
+        'version': 'A4UssEilvdLEHNl3LVmvxOHwZAU6Jc2LlDS-7KAQdlEC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1760,7 +1760,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'nk9g7zIFRz3dNcMrthrb5U48VG7EVXbVtKv4hn3qOdkC',
+        'version': 'k9pdxF9uOtsA4EkwKV84-Ki0WxQ6KktYQP-gOl6JknEC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1771,7 +1771,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'x1kS0cEcNLFfZasaj0TFIsh7_DH8-9vJV_eGaTIlX-wC',
+        'version': 'kP0Bqn6QsOprMTpkPZVxdELt_K-e6eV57GMk_tHho7AC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

@@ -473,6 +473,9 @@ extern const char kDesktopPWAsPrefixAppNameInWindowTitleDescription[];
 extern const char kDesktopPWAsRemoveStatusBarName[];
 extern const char kDesktopPWAsRemoveStatusBarDescription[];
 
+extern const char kDesktopPWAsDefaultOfflinePageName[];
+extern const char kDesktopPWAsDefaultOfflinePageDescription[];
+
 extern const char kDesktopPWAsElidedExtensionsMenuName[];
 extern const char kDesktopPWAsElidedExtensionsMenuDescription[];
 
@@ -3063,6 +3066,9 @@ extern const char kVaapiAV1DecoderDescription[];
 
 extern const char kEnableTtsLacrosSupportName[];
 extern const char kEnableTtsLacrosSupportDescription[];
+
+extern const char kLinkCapturingUiUpdateName[];
+extern const char kLinkCapturingUiUpdateDescription[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)

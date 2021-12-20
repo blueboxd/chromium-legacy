@@ -733,7 +733,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'eyFB7hTSfOS2oXB1LsL6X8nA1aMojX_yYcqjtMUHZeUC',
+          'version': 'pVTmGAduNOljeQ6HMqXKBOcH5G1me0d2gtUEs_6bRCIC',
         },
       ],
       'dep_type': 'cipd',
@@ -1427,7 +1427,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'cefb3e0ec3a0580c996f801e854fe02963c03d5c',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f95cc468d9acb45c9a847150c2b286a16c399b65',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1730,7 +1730,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@abbc5cf3da5cffe3eae830c0fc50ace2ad3b4027',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f4e0cf1cc0a7b23279320f5b8701afff7fcb02b2',
     'condition': 'checkout_src_internal',
   },
 
@@ -1749,7 +1749,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'A4UssEilvdLEHNl3LVmvxOHwZAU6Jc2LlDS-7KAQdlEC',
+        'version': 'PCWCAcwvAzg6d0rl9b8cTSG5pH9Z-xWzkCLQjCOldcgC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1760,7 +1760,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'k9pdxF9uOtsA4EkwKV84-Ki0WxQ6KktYQP-gOl6JknEC',
+        'version': 'iAriR73jOvtp2n8E6eTQ_iZ8ymTAQ4-laqUVYpcS1goC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

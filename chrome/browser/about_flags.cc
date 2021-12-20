@@ -3738,6 +3738,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsRemoveStatusBarName,
      flag_descriptions::kDesktopPWAsRemoveStatusBarDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kRemoveStatusBarInWebApps)},
+    {"enable-desktop-pwas-default-offline-page",
+     flag_descriptions::kDesktopPWAsDefaultOfflinePageName,
+     flag_descriptions::kDesktopPWAsDefaultOfflinePageDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kDesktopPWAsDefaultOfflinePage)},
     {"enable-desktop-pwas-elided-extensions-menu",
      flag_descriptions::kDesktopPWAsElidedExtensionsMenuName,
      flag_descriptions::kDesktopPWAsElidedExtensionsMenuDescription, kOsDesktop,
@@ -7745,6 +7749,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kUseMultipleOverlays,
                                     kUseMultipleOverlaysVariations,
                                     "UseMultipleOverlays")},
+#endif
+
+#if defined(OS_CHROMEOS)
+    {"link-capturing-ui-update", flag_descriptions::kLinkCapturingUiUpdateName,
+     flag_descriptions::kLinkCapturingUiUpdateDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kLinkCapturingUiUpdate)}
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

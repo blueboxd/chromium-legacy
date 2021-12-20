@@ -1067,7 +1067,7 @@
   },
   {
     "name": "default-browser-fullscreen-promo-cta-experiment",
-    "owners": [ "javierrobles", "bling-flags@google.com" ],
+    "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 93
   },
   {
@@ -1077,12 +1077,12 @@
   },
   {
     "name": "default-browser-promo-non-modal",
-    "owners": [ "javierrobles", "rkgibson@google.com", "bling-flags@google.com" ],
+    "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 97
   },
   {
     "name": "default-browser-promo-tailored",
-    "owners": [ "javierrobles", "bling-flags@google.com" ],
+    "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 97
   },
   {
@@ -3656,6 +3656,14 @@
   {
     "name": "lacros-primary",
     "owners": [ "hidehiko", "erikchen", "lacros-team@google.com" ],
+    // Once Lacros is launched, this flag can be removed. Until then, this
+    // absolutely must not expire. We do not yet have a launch milestone.
+    // TODO(https://crbug.com/1148474).
+    "expiry_milestone": 130
+  },
+  {
+    "name": "lacros-profile-migration-for-any-user",
+    "owners": ["ythjkt", "hidehiko", "lacros-team@google.com"],
     // Once Lacros is launched, this flag can be removed. Until then, this
     // absolutely must not expire. We do not yet have a launch milestone.
     // TODO(https://crbug.com/1148474).

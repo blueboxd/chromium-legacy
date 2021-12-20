@@ -3151,6 +3151,10 @@ const FeatureEntry kFeatureEntries[] = {
     {kLacrosStabilityInternalName, flag_descriptions::kLacrosStabilityName,
      flag_descriptions::kLacrosStabilityDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kLacrosStabilityChoices)},
+    {"lacros-profile-migration-for-any-user",
+     flag_descriptions::kLacrosProfileMigrationForAnyUserName,
+     flag_descriptions::kLacrosProfileMigrationForAnyUserDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kLacrosProfileMigrationForAnyUser)},
     {kLacrosSelectionInternalName, flag_descriptions::kLacrosSelectionName,
      flag_descriptions::kLacrosSelectionDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kLacrosSelectionChoices)},
@@ -4796,13 +4800,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBlockInsecurePrivateNetworkRequestsName,
      flag_descriptions::kBlockInsecurePrivateNetworkRequestsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBlockInsecurePrivateNetworkRequests)},
-
-    {"cross-origin-embedder-policy-credentialless",
-     flag_descriptions::kCrossOriginEmbedderPolicyCredentiallessName,
-     flag_descriptions::kCrossOriginEmbedderPolicyCredentiallessDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         network::features::kCrossOriginEmbedderPolicyCredentialless)},
 
     {"disable-keepalive-fetch", flag_descriptions::kDisableKeepaliveFetchName,
      flag_descriptions::kDisableKeepaliveFetchDescription, kOsAll,

@@ -1048,14 +1048,6 @@ const char kBlockInsecurePrivateNetworkRequestsDescription[] =
     "public. This is a first step towards full enforcement of CORS-RFC1918: "
     "https://wicg.github.io/cors-rfc1918";
 
-const char kCrossOriginEmbedderPolicyCredentiallessName[] =
-    "Enable Cross-Origin-Embedder-Policy: credentialless";
-const char kCrossOriginEmbedderPolicyCredentiallessDescription[] =
-    "Credentialless is a Cross-Origin-Embedder-Policy (COEP) variant. "
-    "COEP:credentialless causes no-cors cross-origin requests not to include "
-    "credentials (cookies, client certificates, etc...). Similarly to "
-    "require-corp, it can be used to enable cross-origin-isolation.";
-
 const char kDeprecateAltClickName[] =
     "Enable Alt+Click deprecation notifications";
 const char kDeprecateAltClickDescription[] =
@@ -4894,6 +4886,15 @@ const char kLacrosSupportDescription[] =
     "Support for the experimental lacros-chrome browser. Please note that the "
     "first restart can take some time to setup lacros-chrome. Please DO NOT "
     "attempt to turn off the device during the restart.";
+
+const char kLacrosProfileMigrationForAnyUserName[] =
+    "Lacros profile migration for any user";
+const char kLacrosProfileMigrationForAnyUserDescription[] =
+    "Enables lacros profile migration that are currently only enabled for "
+    "certain users. Please enable with CAUTION. Enabling profile migration "
+    "means that any pre-existing lacros data will be wiped and replaced with "
+    "data migrated from ash. It also has a side effect that lacros will be "
+    "disbled until profile migration is completed.";
 
 const char kLimitShelfItemsToActiveDeskName[] =
     "Limit Shelf items to active desk";

@@ -65,10 +65,6 @@ SkBitmap TestBitmap() {
   return bitmap;
 }
 
-size_t SizeInBits(const SkBitmap& bitmap) {
-  return bitmap.computeByteSize() * 8;
-}
-
 ACTION_P(SaveUniquePtrArg, dest) {
   *dest = std::move(*arg1);
 }
@@ -182,8 +178,7 @@ TEST_F(AuraDesktopCapturerTest, ShouldSendScreenshotRequestForPrimaryDisplay) {
   EXPECT_THAT(request.display, Eq(111));
 }
 
-// Disabled: This is causing ASan failures (https://crbug.com/1281670)
-TEST_F(AuraDesktopCapturerTest, DISABLED_ShouldSendScreenshotToCapturer) {
+TEST_F(AuraDesktopCapturerTest, ShouldSendScreenshotToCapturer) {
   capturer_.Start(&desktop_capturer_callback());
   capturer_.CaptureFrame();
 
@@ -194,7 +189,7 @@ TEST_F(AuraDesktopCapturerTest, DISABLED_ShouldSendScreenshotToCapturer) {
   EXPECT_THAT(result.result, Eq(webrtc::DesktopCapturer::Result::SUCCESS));
   ASSERT_THAT(result.frame, NotNull());
   EXPECT_EQ(0, memcmp(expected_bitmap.getPixels(), result.frame->data(),
-                      SizeInBits(expected_bitmap)));
+                      expected_bitmap.computeByteSize()));
 }
 
 TEST_F(AuraDesktopCapturerTest, ShouldSetUpdatedRegion) {
@@ -206,6 +201,41 @@ TEST_F(AuraDesktopCapturerTest, ShouldSetUpdatedRegion) {
   CaptureResult result = desktop_capturer_callback().WaitForResult();
   ASSERT_THAT(result.frame, NotNull());
   EXPECT_FALSE(result.frame->updated_region().is_empty());
+}
+
+TEST_F(AuraDesktopCapturerTest, ShouldSetDpi) {
+  const float scale_factor = 2.5;
+  // scale_factor = dpi / default_dpi (and default_dpi is 96).
+  const int dpi = static_cast<int>(scale_factor * 96);
+
+  display_util().GetPrimaryDisplay().set_device_scale_factor(scale_factor);
+
+  capturer_.Start(&desktop_capturer_callback());
+  capturer_.CaptureFrame();
+
+  display_util().ReplyWithScreenshot(TestBitmap());
+
+  CaptureResult result = desktop_capturer_callback().WaitForResult();
+  ASSERT_THAT(result.frame, NotNull());
+  EXPECT_THAT(result.frame->dpi().x(), Eq(dpi));
+  EXPECT_THAT(result.frame->dpi().y(), Eq(dpi));
+}
+
+TEST_F(AuraDesktopCapturerTest, ShouldNotCrashIfDisplayIsUnavailable) {
+  capturer_.Start(&desktop_capturer_callback());
+
+  capturer_.SelectSource(display_util().GetPrimaryDisplayId());
+
+  // By changing the primary display id, the selected source now no longer
+  // exists.
+  display_util().SetPrimaryDisplayId(666);
+
+  capturer_.CaptureFrame();
+
+  CaptureResult result = desktop_capturer_callback().WaitForResult();
+  ASSERT_THAT(result.result,
+              Eq(webrtc::DesktopCapturer::Result::ERROR_TEMPORARY));
+  ASSERT_THAT(result.frame, IsNull());
 }
 
 TEST_F(AuraDesktopCapturerTest, ShouldReturnTemporaryErrorIfScreenshotFails) {

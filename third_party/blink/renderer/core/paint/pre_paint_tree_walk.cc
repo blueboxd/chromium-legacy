@@ -756,59 +756,62 @@ void PrePaintTreeWalk::WalkFragmentationContextRootChildren(
       inner_fragmentainer_idx = PreviousInnerFragmentainerIndex(fragment);
     context.current_fragmentainer.fragmentainer_idx = *inner_fragmentainer_idx;
 
-    if (UNLIKELY(!context.tree_builder_context)) {
-      WalkChildren(actual_parent, box_fragment, context);
-      continue;
-    }
+    PaintPropertyTreeBuilderFragmentContext::ContainingBlockContext*
+        containing_block_context = nullptr;
+    if (LIKELY(context.tree_builder_context)) {
+      containing_block_context =
+          &context.tree_builder_context->fragments[0].current;
+      containing_block_context->paint_offset += child.offset;
 
-    auto* containing_block_context =
-        &context.tree_builder_context->fragments[0].current;
-    containing_block_context->paint_offset += child.offset;
+      const PhysicalOffset paint_offset =
+          containing_block_context->paint_offset;
+      // Keep track of the paint offset at the fragmentainer. This is needed
+      // when entering OOF descendants. OOFs have the nearest fragmentainer as
+      // their containing block, so when entering them during LayoutObject tree
+      // traversal, we have to compensate for this.
+      containing_block_context->paint_offset_for_oof_in_fragmentainer =
+          paint_offset;
 
-    const PhysicalOffset paint_offset = containing_block_context->paint_offset;
-    // Keep track of the paint offset at the fragmentainer. This is needed
-    // when entering OOF descendants. OOFs have the nearest fragmentainer as
-    // their containing block, so when entering them during LayoutObject tree
-    // traversal, we have to compensate for this.
-    containing_block_context->paint_offset_for_oof_in_fragmentainer =
-        paint_offset;
-
-    if (flow_thread) {
-      // Create corresponding |FragmentData|. Hit-testing needs
-      // |FragmentData.PaintOffset|.
-      if (fragmentainer_fragment_data) {
-        DCHECK(!box_fragment->IsFirstForNode());
+      if (flow_thread) {
+        // Create corresponding |FragmentData|. Hit-testing needs
+        // |FragmentData.PaintOffset|.
+        if (fragmentainer_fragment_data) {
+          DCHECK(!box_fragment->IsFirstForNode());
 #if DCHECK_IS_ON()
-        DCHECK_EQ(fragmentainer_owner_box, box_fragment->OwnerLayoutBox());
+          DCHECK_EQ(fragmentainer_owner_box, box_fragment->OwnerLayoutBox());
 #endif
-        fragmentainer_fragment_data =
-            &fragmentainer_fragment_data->EnsureNextFragment();
-      } else {
-        const LayoutBox* owner_box = box_fragment->OwnerLayoutBox();
-#if DCHECK_IS_ON()
-        DCHECK(!fragmentainer_owner_box);
-        fragmentainer_owner_box = owner_box;
-#endif
-        fragmentainer_fragment_data =
-            &owner_box->GetMutableForPainting().FirstFragment();
-        if (box_fragment->IsFirstForNode()) {
-          fragmentainer_fragment_data->ClearNextFragment();
-        } else {
-          // |box_fragment| is nested in another fragmentainer, and that it is
-          // the first one in this loop, but not the first one for the
-          // |LayoutObject|. Append a new |FragmentData| to the last one.
           fragmentainer_fragment_data =
-              &fragmentainer_fragment_data->LastFragment().EnsureNextFragment();
+              &fragmentainer_fragment_data->EnsureNextFragment();
+        } else {
+          const LayoutBox* owner_box = box_fragment->OwnerLayoutBox();
+#if DCHECK_IS_ON()
+          DCHECK(!fragmentainer_owner_box);
+          fragmentainer_owner_box = owner_box;
+#endif
+          fragmentainer_fragment_data =
+              &owner_box->GetMutableForPainting().FirstFragment();
+          if (box_fragment->IsFirstForNode()) {
+            fragmentainer_fragment_data->ClearNextFragment();
+          } else {
+            // |box_fragment| is nested in another fragmentainer, and that it is
+            // the first one in this loop, but not the first one for the
+            // |LayoutObject|. Append a new |FragmentData| to the last one.
+            fragmentainer_fragment_data =
+                &fragmentainer_fragment_data->LastFragment()
+                     .EnsureNextFragment();
+          }
         }
+        fragmentainer_fragment_data->SetPaintOffset(paint_offset);
+        fragmentainer_fragment_data->SetFragmentID(
+            context.current_fragmentainer.fragmentainer_idx);
       }
-      fragmentainer_fragment_data->SetPaintOffset(paint_offset);
-      fragmentainer_fragment_data->SetFragmentID(
-          context.current_fragmentainer.fragmentainer_idx);
     }
 
     WalkChildren(actual_parent, box_fragment, context);
 
-    containing_block_context->paint_offset -= child.offset;
+    if (containing_block_context)
+      containing_block_context->paint_offset -= child.offset;
+
     (*inner_fragmentainer_idx)++;
   }
 
@@ -829,8 +832,14 @@ void PrePaintTreeWalk::WalkFragmentationContextRootChildren(
   // means that their containing block lives outside the fragmentation context
   // root. Walk these missed fixepos elements now.
   if (!pending_fixedpos_missables_.IsEmpty()) {
-    for (const auto& fixedpos : pending_fixedpos_missables_) {
+    // First make a copy, clear the original set, and then walk the copy. There
+    // may be descendants attempting to walk the set as well, which will cause
+    // an infinite recursion.
+    HeapHashSet<Member<const LayoutObject>> copy;
+    copy.swap(pending_fixedpos_missables_);
+    for (const auto& fixedpos : copy) {
       DCHECK(!walked_fixedpos_.Contains(fixedpos));
+      walked_fixedpos_.insert(fixedpos);
       Walk(*fixedpos, context, /* pre_paint_info */ nullptr);
     }
   }

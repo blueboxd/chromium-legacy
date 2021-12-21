@@ -464,7 +464,7 @@ typedef BOOL(WINAPI* DuplicateHandleFunctionPtr)(HANDLE source_process_handle,
 
 DuplicateHandleFunctionPtr g_iat_orig_duplicate_handle;
 
-NtQueryObject g_QueryObject = NULL;
+NtQueryObjectFunction g_QueryObject = NULL;
 
 static const char* kDuplicateHandleWarning =
     "You are attempting to duplicate a privileged handle into a sandboxed"
@@ -1266,6 +1266,8 @@ std::string SandboxWin::GetSandboxTypeInEnglish(Sandbox sandbox_type) {
       return "Media Foundation CDM";
     case Sandbox::kService:
       return "Service";
+    case Sandbox::kServiceWithJit:
+      return "Service With Jit";
     case Sandbox::kIconReader:
       return "Icon Reader";
     case Sandbox::kWindowsSystemProxyResolver:

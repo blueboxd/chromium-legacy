@@ -1651,7 +1651,13 @@ class PDFExtensionKeyEventTest : public PDFExtensionTest {
 // static
 constexpr int PDFExtensionKeyEventTest::kScrollIncrement;
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionKeyEventTest, ScrollWithSpace) {
+// crbug.com/1281749
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
+#define MAYBE_ScrollWithSpace DISABLED_ScrollWithSpace
+#else
+#define MAYBE_ScrollWithSpace ScrollWithSpace
+#endif
+IN_PROC_BROWSER_TEST_P(PDFExtensionKeyEventTest, MAYBE_ScrollWithSpace) {
   WebContents* guest_contents = LoadPdfGetGuestContents(
       embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
   SetInputFocusOnPlugin(guest_contents);
@@ -1689,7 +1695,13 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionKeyEventTest, ScrollWithSpace) {
   EXPECT_EQ(viewport_height, GetViewportScrollPositionY(guest_contents));
 }
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionKeyEventTest, ScrollWithPageDownUp) {
+// crbug.com/1281749
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
+#define MAYBE_ScrollWithPageDownUp DISABLED_ScrollWithPageDownUp
+#else
+#define MAYBE_ScrollWithPageDownUp ScrollWithPageDownUp
+#endif
+IN_PROC_BROWSER_TEST_P(PDFExtensionKeyEventTest, MAYBE_ScrollWithPageDownUp) {
   WebContents* guest_contents = LoadPdfGetGuestContents(
       embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
   SetInputFocusOnPlugin(guest_contents);
@@ -1729,7 +1741,14 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionKeyEventTest, ScrollWithPageDownUp) {
   EXPECT_EQ(viewport_height, GetViewportScrollPositionY(guest_contents));
 }
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionKeyEventTest, ScrollWithArrowLeftRight) {
+// crbug.com/1281749
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
+#define MAYBE_ScrollWithArrowLeftRight DISABLED_ScrollWithArrowLeftRight
+#else
+#define MAYBE_ScrollWithArrowLeftRight ScrollWithArrowLeftRight
+#endif
+IN_PROC_BROWSER_TEST_P(PDFExtensionKeyEventTest,
+                       MAYBE_ScrollWithArrowLeftRight) {
   WebContents* guest_contents = LoadPdfGetGuestContents(
       embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf#zoom=200"));
   SetInputFocusOnPlugin(guest_contents);

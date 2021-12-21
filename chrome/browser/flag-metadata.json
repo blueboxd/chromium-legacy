@@ -580,17 +580,17 @@
   {
     "name": "bookmark-bottom-sheet",
     "owners": [ "wylieb" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 102
   },
   {
     "name": "bookmarks-improved-save-flow",
     "owners": ["wylieb", "fgorski", "mdjones"],
-    "expiry_milestone": 100
+    "expiry_milestone": 102
   },
   {
     "name": "bookmarks-refresh",
     "owners": ["wylieb", "fgorski", "mdjones"],
-    "expiry_milestone": 100
+    "expiry_milestone": 102
   },
   {
     "name": "borealis-big-gl",
@@ -3608,6 +3608,11 @@
     "expiry_milestone": 99
   },
   {
+    "name": "ios-media-permissions-control",
+    "owners": ["ginnyhuang","bling-flags@google.com"],
+    "expiry_milestone": 110
+  },
+  {
     "name": "ios-persist-crash-restore-infobar",
     "owners": [ "thegreenfrog", "bling-flags@google.com" ],
     "expiry_milestone": 98
@@ -4701,7 +4706,7 @@
   {
     "name": "read-later",
     "owners": [ "chrome-desktop-ui-sea@google.com", "corising", "wylieb", "chrome-collections@google.com" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 102
   },
   {
     "name": "read-later-new-badge-promo",
@@ -4711,7 +4716,7 @@
   {
     "name": "read-later-reminder-notification",
     "owners": [ "wylieb" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 102
   },
   {
     "name": "reader-mode-heuristics",
@@ -5052,11 +5057,6 @@
   {
     "name": "sharing-hub-desktop-omnibox",
     "owners": [ "kristipark", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 98
-  },
-  {
-    "name": "sharing-hub-link-toggle",
-    "owners": [ "sophey", "chrome-sharing-eng@google.com" ],
     "expiry_milestone": 98
   },
   {

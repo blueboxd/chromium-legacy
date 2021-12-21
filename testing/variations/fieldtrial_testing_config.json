@@ -2180,21 +2180,6 @@
             ]
         }
     ],
-    "ChromeOSWallpaperMigration": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WallpaperWebUI"
-                    ]
-                }
-            ]
-        }
-    ],
     "ChromeStart": [
         {
             "platforms": [
@@ -4833,6 +4818,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "LauncherSettingsSearch"
+                    ]
+                }
+            ]
+        }
+    ],
+    "LightweightReactions": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LightweightReactions"
                     ]
                 }
             ]

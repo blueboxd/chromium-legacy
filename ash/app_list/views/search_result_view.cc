@@ -363,8 +363,7 @@ void SearchResultView::StyleLabel(views::Label* label,
   // Apply font color styles.
   label->SetEnabledColor(
       is_url
-          ? AshColorProvider::Get()->GetContentLayerColor(
-                AshColorProvider::ContentLayerType::kTextColorURL)
+          ? AppListColorProvider::Get()->GetTextColorURL()
           : is_title_label
                 ? AppListColorProvider::Get()->GetSearchBoxTextColor(
                       kDeprecatedSearchBoxTextDefaultColor)
@@ -565,7 +564,6 @@ void SearchResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // button are child button of SearchResultView), which is not supported by
   // ChromeVox. see details in crbug.com/924776.
   node_data->role = ax::mojom::Role::kListBoxOption;
-  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, selected());
   node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kClick);
   node_data->SetName(GetAccessibleName());
 }

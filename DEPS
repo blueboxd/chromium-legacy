@@ -245,15 +245,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'fe995770fe7c1fccfe88d28dcf5ceca0b37940f0',
+  'skia_revision': '112f9f1273ef9505673c4a5154a2f9d8cc929d23',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '3ef4f319c16d3e9ca39fbee04c0e541a631e5de6',
+  'v8_revision': '0eca9b90ee3689f6cbf93e01b5e0fc480175ce42',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'a7e0d520f4ca8947444467424869f6a467f3acbc',
+  'angle_revision': '993f388967f8725d1ef8ce138ce8be4c0ae852ed',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -276,7 +276,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling googletest
   # and whatever else without interference from each other.
-  'googletest_revision': '9a32aee22d771387c494be2d8519fbdf46a713b2',
+  'googletest_revision': '71d4e2f7423274d178b446e94b88082559f2fa7a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lighttpd
   # and whatever else without interference from each other.
@@ -320,7 +320,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'dc48499246acb27c90ce034619b335726ea2834c',
+  'devtools_frontend_revision': '85c29e982d6574fcf9bd48875a70e720d195fea4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -360,7 +360,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '3324caee9c7c34ac1bffef87a6ca378eb23b5150',
+  'dawn_revision': '007f0d57a8fa7f2c79ded05036e98ba3bfbfe42d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -805,7 +805,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'K8aeAs5MkvnmLZFsOrHD-cM2_a12D7iuNy1l7xDKWZEC',
+          'version': 'ZFybfM9WA_ZDTzPoqqNyWkYnKhc-eKP-qu_wHennQ34C',
       },
     ],
     'condition': 'checkout_android',
@@ -1648,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'c843f8d63c8c17acfbb7d48e09059a581ba779b9',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '2be1808023189ba27973a1f0fc437125fbf5da77',
+    Var('webrtc_git') + '/src.git' + '@' + 'dbef2bd276ad196cc45047dcc4957e33d6fcb734',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1730,7 +1730,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fefdbd5a46d6888b1eb36c65a12990d9498ef523',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0b962ed90d3d4a7a9b8561dd52e0910ed8a7ed2b',
     'condition': 'checkout_src_internal',
   },
 
@@ -1782,7 +1782,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'vhsSk8Bb4-9wo4PaV0WUu6vpB-dYlDklx5wajGObTEMC',
+        'version': 'ouEsQyUuqIb66n6x2iR0-Wx33CxqYHAWVD-EZf8po88C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

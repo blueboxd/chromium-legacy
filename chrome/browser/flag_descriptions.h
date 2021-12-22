@@ -1988,9 +1988,6 @@ extern const char kRequestDesktopSiteForTabletsDescription[];
 extern const char kSafeBrowsingClientSideDetectionAndroidName[];
 extern const char kSafeBrowsingClientSideDetectionAndroidDescription[];
 
-extern const char kEnhancedProtectionPromoAndroidName[];
-extern const char kEnhancedProtectionPromoAndroidDescription[];
-
 extern const char kScrollCaptureName[];
 extern const char kScrollCaptureDescription[];
 
@@ -2900,6 +2897,9 @@ extern const char kReleaseNotesNotificationAllChannelsDescription[];
 
 extern const char kArcGhostWindowName[];
 extern const char kArcGhostWindowDescription[];
+
+extern const char kArcWindowPredictorName[];
+extern const char kArcWindowPredictorDescription[];
 
 extern const char kArcInputOverlayName[];
 extern const char kArcInputOverlayDescription[];

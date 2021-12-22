@@ -2037,6 +2037,9 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_BLUETOOTH_DEVICE_DETAIL_FORGET" desc="Bluetooth device details page: button label for button that forgets the Bluetooth device when clicked.">
     Forget
   </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_DEVICE_DETAIL_FORGET_A11Y_LABEL" desc="Bluetooth device details page: Accessibility label for button that forgets the Bluetooth device when clicked.">
+   Forget <ph name="DEVICE_NAME">$1<ex>Beats</ex></ph>
+  </message>
   <message name="IDS_SETTINGS_BLUETOOTH_DEVICE_DETAIL_NAME" desc="Bluetooth device details page: label informing user the text below is the device name.">
     Device name
   </message>
@@ -2837,6 +2840,9 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_REFRESHING_PROFILE_LIST" desc="Settings > Internet > Mobile data: Message indicating that the list of eSIM profiles is being refreshed and notifying the user why mobile settings are temporarily disabled.">
     Refreshing profile list. This may take a few minutes.
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_RESETTING_ESIM" desc="Settings > Internet > Mobile data: Message indicating that the eSIM is being reset and notifying the user why mobile settings are temporarily disabled.">
+    Your administrator is resetting your eSIM. This may take a few minutes.
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_REMOVE_PROFILE_DIALOG_ERROR_MESSAGE" desc="Settings > Internet > Network details > Remove eSIM cellular profile dialog: Error message shown when remove fails">
     Profile could not be removed. Please try again or contact your carrier for technical support.

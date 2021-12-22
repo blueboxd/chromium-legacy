@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import './shared_vars.js';
-import '//resources/cr_elements/chromeos/cros_color_overrides.m.js';
 import '//resources/cr_elements/shared_style_css.m.js';
 import '//resources/cr_elements/shared_vars_css.m.js';
 

@@ -40,7 +40,7 @@ TEST_F('CrElementsA11yAnnouncerTest', 'All', function() {
 var CrElementsButtonTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_button_tests.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_button_tests.js&host=webui-test';
   }
 };
 
@@ -74,7 +74,7 @@ TEST_F('CrElementsContainerShadowMixinTest', 'All', function() {
 var CrElementsDialogTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_dialog_test.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_dialog_test.js&host=webui-test';
   }
 };
 
@@ -85,7 +85,7 @@ TEST_F('CrElementsDialogTest', 'All', function() {
 var CrElementsDrawerTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_drawer_tests.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_drawer_tests.js&host=webui-test';
   }
 };
 
@@ -103,7 +103,7 @@ TEST_F('CrElementsDrawerTest', 'MAYBE_Drawer', function() {
 var CrElementsExpandButtonTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_expand_button_tests.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_expand_button_tests.js&host=webui-test';
   }
 };
 
@@ -172,7 +172,7 @@ TEST_F('CrElementsIconButtonTest', 'All', function() {
 var CrElementsLazyRenderTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_lazy_render_tests.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_lazy_render_tests.js&host=webui-test';
   }
 };
 
@@ -183,7 +183,7 @@ TEST_F('CrElementsLazyRenderTest', 'All', function() {
 var CrElementsLinkRowTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_link_row_tests.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_link_row_tests.js&host=webui-test';
   }
 };
 
@@ -194,7 +194,7 @@ TEST_F('CrElementsLinkRowTest', 'All', function() {
 var CrElementsRadioButtonTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_radio_button_test.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_radio_button_test.js&host=webui-test';
   }
 };
 
@@ -217,7 +217,7 @@ TEST_F('CrElementsCardRadioButtonTest', 'All', function() {
 var CrElementsRadioGroupTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_radio_group_test.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_radio_group_test.js&host=webui-test';
   }
 };
 
@@ -239,7 +239,7 @@ TEST_F('CrElementsScrollableBehaviorTest', 'All', function() {
 var CrElementsSearchFieldTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_search_field_tests.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_search_field_tests.js&host=webui-test';
   }
 };
 
@@ -263,7 +263,7 @@ GEN('#endif');
 var CrElementsSliderTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_slider_test.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_slider_test.js&host=webui-test';
   }
 };
 
@@ -307,7 +307,7 @@ TEST_F('CrElementsToastManagerTest', 'All', function() {
 var CrElementsViewManagerTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_view_manager_test.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_view_manager_test.js&host=webui-test';
   }
 };
 
@@ -369,7 +369,7 @@ TEST_F('CrElementsLottieTest', 'All', function() {
 var CrElementsAutoImgTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_auto_img_test.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_auto_img_test.js&host=webui-test';
   }
 };
 
@@ -380,7 +380,7 @@ TEST_F('CrElementsAutoImgTest', 'All', function() {
 var CrElementsToolbarTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_toolbar_test.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_toolbar_test.js&host=webui-test';
   }
 };
 

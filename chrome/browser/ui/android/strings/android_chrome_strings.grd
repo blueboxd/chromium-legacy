@@ -770,14 +770,6 @@ CHAR_LIMIT guidelines:
         Chrome’s homepage
       </message>
 
-      <!-- Enhanced Protection Promo card -->
-      <message name="IDS_ENHANCED_PROTECTION_PROMO_TITLE" desc="The title displayed on homepage promo card, which guides the user to the chrome settings page to select the enhanced protection option.">
-        Get Chrome’s strongest security
-      </message>
-      <message name="IDS_ENHANCED_PROTECTION_PROMO_DESCRIPTION" desc="The description displayed on enhanced protection promo card, which guides the user to the chrome settings page to select the enhanced protection option.">
-        Enhanced protection does more to block phishing and malware
-      </message>
-
       <!-- Notifications preferences -->
       <message name="IDS_PREFS_NOTIFICATIONS" desc="Title for Notification preferences.">
         Notifications
@@ -4869,6 +4861,62 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
 
       <message name="IDS_CABLEV2_BLE_ENABLE_TITLE" desc="The title of a screen that'll appear on a phone when we need to enable Bluetooth on the device. This screen will appear for a couple of seconds to give context, then a prompt will appear to allow the user to confirm that they wish to enable Bluetooth. Bluetooth is a radio technology commonly found in phones.">
         Turning on Bluetooth…
+      </message>
+
+      <message name="IDS_CABLEV2_PAASK_TITLE" desc="The title of an entry in settings for controlling how a phone can be used as a security key. A security key is typically a physical USB peripheral used to secure accounts. In this case, the user's phone can act as a security key.">
+        Phone as a security key
+      </message>
+
+      <message name="IDS_CABLEV2_PAASK_BODY" desc="The subheading of an entry in settings for controlling how a phone can be used as a security key. A security key is typically a physical USB peripheral used to secure accounts. In this case, the user's phone can act as a security key. 'Devices' here means phones, laptops, and desktops that the user uses Chrome on.">
+        Control which devices can sign in by using this device as a security key.
+      </message>
+
+      <message name="IDS_CABLEV2_YOUR_DEVICES" desc="A section title on a screen discussing the different devices that can use a phone as a security key. 'Devices' here means phones, laptops, and desktops that the user uses Chrome on.">
+        Your devices
+      </message>
+
+      <message name="IDS_CABLEV2_YOUR_DEVICES_BODY" desc="Text that appears under the title 'Your devices'. 'Devices' here means phones, laptops, and desktops that the user uses Chrome on. Users can sign into a Google account in Chrome on these devices and this message explains that such devices can use this phone as a security key. A security key is typically a physical USB peripheral used to secure accounts. In this case, the user's phone can act as a security key.">
+        When you’re signed into the same Google Account, other devices can use this phone as a security key.
+      </message>
+
+      <message name="IDS_CABLEV2_LINKED_DEVICES" desc="A section title on a screen discussing the different devices that can use a phone as a security key. The section above this discusses how devices (e.g. phones, laptops, and desktops) on which Chrome is signed into the same Google account can automatically use this phone as a security key. This section is about devices that the user has scanned QR codes from in order to allow them to use this phone as a security key. The word 'linked' here was chosen to be distinct from 'paired' as in 'Bluetooth pairing'. This technology does use Bluetooth, but we did not want to overload the term 'pairing'. However, the word 'pairing' does have the correct meaning.">
+        Linked devices
+      </message>
+
+      <message name="IDS_CABLEV2_LINKED_DEVICES_BODY" desc="Text that appears under the title 'Linked devices'. This section is about devices that the user has scanned QR codes from in order to allow them to use this phone as a security key. The word 'link' here was chosen to be distinct from 'pair' as in 'Bluetooth pairing'. This technology does use Bluetooth, but we did not want to overload the term 'pairing'. However, the word 'pair' does have the correct meaning. A security key is typically a physical USB peripheral used to secure accounts. In this case, the user's phone can act as a security key.">
+        When you link another device with a QR code, it can use this phone as a security key. If you remove it, you’ll have to scan a QR code to link it again.
+      </message>
+
+      <message name="IDS_CABLEV2_UNLINK_BUTTON" desc="The text on a button that, when pressed, revokes the access of all devices that could previously use this phone as a security key. The work 'linked' should match up with the translation of message IDS_CABLEV2_LINKED_DEVICES.">
+        Remove all linked devices
+      </message>
+
+      <message name="IDS_CABLEV2_UNLINK_CONFIRMATION" desc="The text in a toast that appears after clicking a button labeled 'Remove all linked devices' (IDS_CABLEV2_UNLINK_BUTTON). A 'toast' is a bubble that appears, briefly, near the bottom of the screen. (Unfortunately I was unable to capture it in the screenshot.)">
+        Removed
+      </message>
+
+      <message name="IDS_CABLEV2_QR_TITLE" desc="The title on a screen that confirms that the user wants to connect to a computer that displayed a QR code.">
+        Connect with QR Code?
+      </message>
+
+      <message name="IDS_CABLEV2_QR_BODY_PHONE" desc="The body text on a screen that confirms that the user wants to connect to a computer that displayed a QR code. This message is specific to phones and won't appear on tablets.">
+        You can use this phone to sign in on the computer that’s displaying this QR code.
+      </message>
+
+      <message name="IDS_CABLEV2_QR_BODY_TABLET" desc="The body text on a screen that confirms that the user wants to connect to a computer that displayed a QR code. This message is specific to tablets and won't appear on phones.">
+        You can use this tablet to sign in on the computer that’s displaying this QR code.
+      </message>
+
+      <message name="IDS_CABLEV2_QR_REMEMBER" desc="The label of a checkbox that appears on a screen confirming that the user wants to connect to a computer from which they just scanned a QR code. If the computer is 'remembered' then it'll be able to connect to the phone automatically in the future. The 'computer' is a laptop, desktop, or (eventually) another phone or tablet.">
+        Remember this computer
+      </message>
+
+      <message name="IDS_CABLEV2_QR_ALLOW" desc="The label of a button that the user presses to confirm that they want to connect to a computer from which they just scanned a QR code.">
+        Allow
+      </message>
+
+      <message name="IDS_CABLEV2_QR_DONT_ALLOW" desc="The label of a button that the user can press to decline to connect to a computer from which they just scanned a QR code.">
+        Don’t allow
       </message>
 
       <!-- QR Code -->

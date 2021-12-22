@@ -3456,12 +3456,6 @@ const char kSafeBrowsingClientSideDetectionAndroidName[] =
 const char kSafeBrowsingClientSideDetectionAndroidDescription[] =
     "Enable DOM feature collection on Safe Browsing pings on Android";
 
-const char kEnhancedProtectionPromoAndroidName[] =
-    "Enable enhanced protection promo card on Android on the New Tab Page";
-const char kEnhancedProtectionPromoAndroidDescription[] =
-    "Enable enhanced protection promo card for users that have not signed up "
-    "for enhanced protection.";
-
 const char kScrollCaptureName[] = "Scroll Capture";
 const char kScrollCaptureDescription[] =
     "Enables scrolling screenshot capture for web contents.";
@@ -5021,6 +5015,10 @@ const char kArcGhostWindowName[] = "Enable ARC ghost window";
 const char kArcGhostWindowDescription[] =
     "Enables the pre-load app window for "
     "ARC++ app during ARCVM booting stage on full restore process";
+
+extern const char kArcWindowPredictorName[] = "Enable ARC window predictor";
+extern const char kArcWindowPredictorDescription[] =
+    "Enables the window state and bounds predictor for ARC task windows";
 
 const char kArcInputOverlayName[] = "Enable ARC Input Overlay";
 const char kArcInputOverlayDescription[] =

@@ -355,11 +355,6 @@ void RecordAppLaunchMetrics(Profile* profile,
   }
 }
 
-AppPlatformMetrics::BrowserToTab::BrowserToTab(
-    const aura::Window* browser_window,
-    const base::UnguessableToken& tab_id)
-    : browser_window(browser_window), tab_id(tab_id) {}
-
 AppPlatformMetrics::AppPlatformMetrics(
     Profile* profile,
     apps::AppRegistryCache& app_registry_cache,
@@ -512,6 +507,11 @@ ukm::SourceId AppPlatformMetrics::GetSourceIdForCrostini(
 }
 
 // static
+void AppPlatformMetrics::RemoveSourceId(ukm::SourceId source_id) {
+  ukm::AppSourceUrlRecorder::MarkSourceForDeletion(source_id);
+}
+
+// static
 std::string AppPlatformMetrics::GetAppsCountHistogramNameForTest(
     AppTypeName app_type_name) {
   return kAppsCountHistogramPrefix + GetAppTypeHistogramName(app_type_name);
@@ -617,7 +617,7 @@ void AppPlatformMetrics::RecordAppLaunchUkm(
       .SetLaunchSource((int)launch_source)
       .SetUserDeviceMatrix(GetUserTypeByDeviceTypeMetrics())
       .Record(ukm::UkmRecorder::Get());
-  ukm::AppSourceUrlRecorder::MarkSourceForDeletion(source_id);
+  RemoveSourceId(source_id);
 }
 
 void AppPlatformMetrics::RecordAppUninstallUkm(
@@ -638,7 +638,7 @@ void AppPlatformMetrics::RecordAppUninstallUkm(
       .SetUninstallSource((int)uninstall_source)
       .SetUserDeviceMatrix(user_type_by_device_type_)
       .Record(ukm::UkmRecorder::Get());
-  ukm::AppSourceUrlRecorder::MarkSourceForDeletion(source_id);
+  RemoveSourceId(source_id);
 }
 
 void AppPlatformMetrics::OnAppTypeInitialized(apps::mojom::AppType app_type) {
@@ -695,7 +695,7 @@ void AppPlatformMetrics::OnInstanceUpdate(const apps::InstanceUpdate& update) {
     // For the browser window, if a tab of the browser is activated, we don't
     // need to calculate the browser window running time.
     if (app_id == extension_misc::kChromeAppId &&
-        HasActivatedTab(update.Window())) {
+        browser_to_tab_list_.HasActivatedTab(update.Window())) {
       SetWindowInActivated(app_id, update.InstanceId(), kInActivated);
       return;
     }
@@ -703,9 +703,9 @@ void AppPlatformMetrics::OnInstanceUpdate(const apps::InstanceUpdate& update) {
     // For web apps open in tabs, set the top browser window as inactive to stop
     // calculating the browser window running time.
     if (IsAppOpenedInTab(app_type_name, app_id)) {
-      RemoveActivatedTab(update.InstanceId());
-      AddActivatedTab(update.Window()->GetToplevelWindow(),
-                      update.InstanceId());
+      browser_to_tab_list_.RemoveActivatedTab(update.InstanceId());
+      browser_to_tab_list_.AddActivatedTab(update.Window()->GetToplevelWindow(),
+                                           update.InstanceId());
       InstanceState state;
       base::UnguessableToken browser_id;
       GetBrowserIdAndState(update, browser_id, state);
@@ -763,17 +763,17 @@ void AppPlatformMetrics::GetBrowserIdAndState(
 void AppPlatformMetrics::UpdateBrowserWindowStatus(
     const InstanceUpdate& update) {
   const base::UnguessableToken& tab_id = update.InstanceId();
-  const auto* browser_window = GetBrowserWindow(tab_id);
+  const auto* browser_window = browser_to_tab_list_.GetBrowserWindow(tab_id);
   if (!browser_window) {
     return;
   }
 
   // Remove the tab id from `active_browser_to_tabs_`.
-  RemoveActivatedTab(tab_id);
+  browser_to_tab_list_.RemoveActivatedTab(tab_id);
 
   // If there are other activated web app tab, we don't need to set the browser
   // window as activated.
-  if (HasActivatedTab(browser_window)) {
+  if (browser_to_tab_list_.HasActivatedTab(browser_window)) {
     return;
   }
 
@@ -791,46 +791,6 @@ void AppPlatformMetrics::UpdateBrowserWindowStatus(
                        AppTypeNameV2::kChromeBrowser,
                        extension_misc::kChromeAppId, browser_id);
   }
-}
-
-bool AppPlatformMetrics::HasActivatedTab(const aura::Window* browser_window) {
-  for (const auto& it : active_browsers_to_tabs_) {
-    if (it.browser_window == browser_window) {
-      return true;
-    }
-  }
-  return false;
-}
-
-const aura::Window* AppPlatformMetrics::GetBrowserWindow(
-    const base::UnguessableToken& tab_id) const {
-  for (const auto& it : active_browsers_to_tabs_) {
-    if (it.tab_id == tab_id) {
-      return it.browser_window;
-    }
-  }
-  return nullptr;
-}
-
-void AppPlatformMetrics::AddActivatedTab(const aura::Window* browser_window,
-                                         const base::UnguessableToken& tab_id) {
-  bool found = false;
-  for (const auto& it : active_browsers_to_tabs_) {
-    if (it.browser_window == browser_window && it.tab_id == tab_id) {
-      found = true;
-      break;
-    }
-  }
-
-  if (!found) {
-    active_browsers_to_tabs_.push_back(BrowserToTab(browser_window, tab_id));
-  }
-}
-
-void AppPlatformMetrics::RemoveActivatedTab(
-    const base::UnguessableToken& tab_id) {
-  active_browsers_to_tabs_.remove_if(
-      [&](const BrowserToTab& item) { return item.tab_id == tab_id; });
 }
 
 void AppPlatformMetrics::SetWindowActivated(
@@ -1078,7 +1038,7 @@ void AppPlatformMetrics::RecordAppsUsageTimeUkm() {
     }
     if (it.second.window_is_closed) {
       closed_instance_ids.push_back(it.first);
-      ukm::AppSourceUrlRecorder::MarkSourceForDeletion(source_id);
+      RemoveSourceId(source_id);
     } else {
       it.second.running_time = base::TimeDelta();
     }
@@ -1107,7 +1067,7 @@ void AppPlatformMetrics::RecordAppsInstallUkm(const apps::AppUpdate& update,
       .SetInstallTime((int)install_time)
       .SetUserDeviceMatrix(user_type_by_device_type_)
       .Record(ukm::UkmRecorder::Get());
-  ukm::AppSourceUrlRecorder::MarkSourceForDeletion(source_id);
+  RemoveSourceId(source_id);
 }
 
 }  // namespace apps

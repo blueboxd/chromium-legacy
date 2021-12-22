@@ -102,6 +102,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &download::features::kSmartSuggestionForLargeDownloads,
     &download::features::kUseDownloadOfflineContentProvider,
     &embedder_support::kShowTrustedPublisherURL,
+    &features::kAnonymousUpdateChecks,
     &features::kContinuousSearch,
     &features::kEarlyLibraryLoad,
     &features::kGenericSensorExtraClasses,
@@ -222,7 +223,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kDynamicColorAndroid,
     &kEnableDangerousDownloadDialog,
     &kEnableDuplicateDownloadDialog,
-    &kEnhancedProtectionPromoCard,
     &kExperimentsForAgsa,
     &kExploreSites,
     &kFixedUmaSessionResumeOrder,
@@ -611,9 +611,6 @@ const base::Feature kEnableDuplicateDownloadDialog{
 
 const base::Feature kEnableMixedContentDownloadDialog{
     "EnableMixedContentDownloadDialog", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kEnhancedProtectionPromoCard{
-    "EnhancedProtectionPromoCard", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kExperimentsForAgsa{"ExperimentsForAgsa",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

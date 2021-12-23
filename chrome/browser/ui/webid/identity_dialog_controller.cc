@@ -19,6 +19,14 @@ IdentityDialogController::IdentityDialogController() = default;
 
 IdentityDialogController::~IdentityDialogController() = default;
 
+int IdentityDialogController::GetBrandIconMinimumSize() {
+  return AccountSelectionView::GetBrandIconMinimumSize();
+}
+
+int IdentityDialogController::GetBrandIconIdealSize() {
+  return AccountSelectionView::GetBrandIconIdealSize();
+}
+
 void IdentityDialogController::ShowInitialPermissionDialog(
     content::WebContents* rp_web_contents,
     const GURL& idp_url,
@@ -125,7 +133,10 @@ void IdentityDialogController::OnAccountSelected(const Account& account) {
 }
 
 void IdentityDialogController::OnDismiss() {
-  std::move(on_account_selection_).Run(std::string());
+  // |OnDismiss| can be called after |OnAccountSelected| which sets the callback
+  // to null.
+  if (on_account_selection_)
+    std::move(on_account_selection_).Run(std::string());
 }
 
 gfx::NativeView IdentityDialogController::GetNativeView() {

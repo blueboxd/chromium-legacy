@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ash/ambient/resources/resources.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
@@ -163,6 +164,7 @@ component("ash") {
     "ambient/model/ambient_photo_config.h",
     "ambient/model/ambient_slideshow_photo_config.cc",
     "ambient/model/ambient_slideshow_photo_config.h",
+    "ambient/resources/ambient_animation_static_resources.h",
     "ambient/ui/ambient_background_image_view.cc",
     "ambient/ui/ambient_background_image_view.h",
     "ambient/ui/ambient_container_view.cc",
@@ -711,14 +713,10 @@ component("ash") {
     "power/hid_battery_util.h",
     "projector/model/projector_session_impl.cc",
     "projector/model/projector_session_impl.h",
-    "projector/model/projector_ui_model.cc",
-    "projector/model/projector_ui_model.h",
     "projector/projector_annotation_tray.cc",
     "projector/projector_annotation_tray.h",
     "projector/projector_controller_impl.cc",
     "projector/projector_controller_impl.h",
-    "projector/projector_feature_pod_controller.cc",
-    "projector/projector_feature_pod_controller.h",
     "projector/projector_metadata_controller.cc",
     "projector/projector_metadata_controller.h",
     "projector/projector_metadata_model.cc",
@@ -727,14 +725,10 @@ component("ash") {
     "projector/projector_metrics.h",
     "projector/projector_ui_controller.cc",
     "projector/projector_ui_controller.h",
-    "projector/ui/projector_bar_view.cc",
-    "projector/ui/projector_bar_view.h",
     "projector/ui/projector_button.cc",
     "projector/ui/projector_button.h",
     "projector/ui/projector_color_button.cc",
     "projector/ui/projector_color_button.h",
-    "projector/ui/projector_image_button.cc",
-    "projector/ui/projector_image_button.h",
 
     # These headers declare functions that are implemented inside of //ash, so
     # they cannot live in //ash/public/cpp/BUILD.gn. The "test api" files are
@@ -1415,6 +1409,8 @@ component("ash") {
     "system/privacy_screen/privacy_screen_toast_view.h",
     "system/rotation/rotation_lock_feature_pod_controller.cc",
     "system/rotation/rotation_lock_feature_pod_controller.h",
+    "system/scheduled_feature/scheduled_feature.cc",
+    "system/scheduled_feature/scheduled_feature.h",
     "system/screen_layout_observer.cc",
     "system/screen_layout_observer.h",
     "system/screen_security/screen_capture_observer.h",
@@ -2204,6 +2200,15 @@ component("ash") {
 
     deps += [ "//chromeos/assistant/internal/ambient" ]
   }
+
+  if (include_ash_ambient_animation_resources) {
+    sources +=
+        [ "ambient/resources/ambient_animation_static_resources_impl.cc" ]
+    deps += [ "//ash/ambient/resources:lottie_resources" ]
+  } else {
+    sources +=
+        [ "ambient/resources/ambient_animation_static_resources_stub.cc" ]
+  }
 }
 
 action("dbus_service_files") {
@@ -2529,6 +2534,7 @@ test("ash_unittests") {
     "system/network/sms_observer_unittest.cc",
     "system/network/vpn_list_unittest.cc",
     "system/network/wifi_toggle_notification_controller_unittest.cc",
+    "system/night_light/night_light_controller_unittest.cc",
     "system/overview/overview_button_tray_unittest.cc",
     "system/palette/mock_palette_tool_delegate.cc",
     "system/palette/mock_palette_tool_delegate.h",
@@ -2560,6 +2566,7 @@ test("ash_unittests") {
     "system/power/power_status_unittest.cc",
     "system/power/video_activity_notifier_unittest.cc",
     "system/rotation/rotation_lock_feature_pod_controller_unittest.cc",
+    "system/scheduled_feature/scheduled_feature_unittest.cc",
     "system/screen_layout_observer_unittest.cc",
     "system/screen_security/screen_security_notification_controller_unittest.cc",
     "system/session/logout_button_tray_unittest.cc",
@@ -2873,6 +2880,12 @@ test("ash_unittests") {
     "//content/public/browser",
     "//content/public/common",
   ]
+
+  if (include_ash_ambient_animation_resources) {
+    sources += [
+      "ambient/resources/ambient_animation_static_resources_impl_unittest.cc",
+    ]
+  }
 }
 
 # TODO(oshima): Remove or migrate to new ash_ui_perftests

@@ -5107,8 +5107,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-web-authentication-cable-v2-support",
      flag_descriptions::kEnableWebAuthenticationCableV2SupportName,
      flag_descriptions::kEnableWebAuthenticationCableV2SupportDescription,
-     kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(device::kWebAuthCableSecondFactor)},
+     kOsDesktop, FEATURE_VALUE_TYPE(device::kWebAuthPhoneSupport)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-web-authentication-chromeos-authenticator",
@@ -7502,7 +7501,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kU2FSecurityKeyAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(extensions_features::kU2FSecurityKeyAPI)},
 #endif  // ENABLE_EXTENSIONS
-
+    {"force-major-version-to-minor",
+     flag_descriptions::kForceMajorVersionInMinorPositionInUserAgentName,
+     flag_descriptions::kForceMajorVersionInMinorPositionInUserAgentDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         blink::features::kForceMajorVersionInMinorPositionInUserAgent)},
     {"force-major-version-to-100",
      flag_descriptions::kForceMajorVersion100InUserAgentName,
      flag_descriptions::kForceMajorVersion100InUserAgentDescription, kOsAll,

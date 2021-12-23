@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/constants/ash_features.h"
 #include "ash/projector/model/projector_session_impl.h"
 #include "ash/projector/test/mock_projector_client.h"
@@ -24,6 +25,8 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "chromeos/dbus/audio/audio_node.h"
+#include "chromeos/dbus/audio/fake_cras_audio_client.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -32,6 +35,14 @@ namespace ash {
 namespace {
 using testing::_;
 using testing::ElementsAre;
+
+struct AudioNodeInfo {
+  bool is_input;
+  uint64_t id;
+  const char* const device_name;
+  const char* const type;
+  const char* const name;
+};
 
 void NotifyControllerForFinalSpeechResult(ProjectorControllerImpl* controller) {
   media::SpeechRecognitionResult result;
@@ -66,7 +77,8 @@ class ProjectorControllerTest : public AshTestBase {
  public:
   ProjectorControllerTest()
       : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
-    scoped_feature_list_.InitAndEnableFeature(features::kProjector);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kProjector, features::kProjectorAnnotator}, {});
   }
 
   ProjectorControllerTest(const ProjectorControllerTest&) = delete;
@@ -109,9 +121,7 @@ TEST_F(ProjectorControllerTest, OnTranscription) {
   // Verify that |RecordTranscription| in |ProjectorMetadataController| is
   // called to record the transcript.
   EXPECT_CALL(*mock_metadata_controller_, RecordTranscription(_)).Times(1);
-  // Verify that |OnTranscription| in |ProjectorUiController| is not called
-  // since capton is off.
-  EXPECT_CALL(*mock_ui_controller_, OnTranscription(_, _)).Times(0);
+
   NotifyControllerForFinalSpeechResult(controller_);
 }
 
@@ -119,35 +129,35 @@ TEST_F(ProjectorControllerTest, OnTranscriptionPartialResult) {
   // Verify that |RecordTranscription| in |ProjectorMetadataController| is not
   // called since it is not a final result.
   EXPECT_CALL(*mock_metadata_controller_, RecordTranscription(_)).Times(0);
-  // Verify that |OnTranscription| in |ProjectorUiController| is not called
-  // since caption is off.
-  EXPECT_CALL(*mock_ui_controller_, OnTranscription(_, _)).Times(0);
   NotifyControllerForPartialSpeechResult(controller_);
 }
 
-TEST_F(ProjectorControllerTest, OnTranscriptionCaptionOn) {
-  // Verify that |SaveMetadata| in |ProjectorMetadataController| is called to
-  // record the transcript.
-  EXPECT_CALL(*mock_metadata_controller_, RecordTranscription(_)).Times(1);
-  // Verify that |OnTranscription| in |ProjectorUiController| is called since
-  // capton is on.
-  EXPECT_CALL(*mock_ui_controller_, OnTranscription("transcript text 1", true))
-      .Times(1);
-  controller_->OnCaptionBubbleModelStateChanged(true);
-  NotifyControllerForFinalSpeechResult(controller_);
-}
+TEST_F(ProjectorControllerTest, OnAudioNodesChanged) {
+  ON_CALL(mock_client_, IsDriveFsMounted())
+      .WillByDefault(testing::Return(true));
 
-TEST_F(ProjectorControllerTest, OnTranscriptionCaptionOnPartialResult) {
-  // Verify that |RecordTranscription| in |ProjectorMetadataController| is not
-  // called since it is not a final result.
-  EXPECT_CALL(*mock_metadata_controller_, RecordTranscription(_)).Times(0);
-  // Verify that |OnTranscription| in |ProjectorUiController| is called since
-  // capton is on.
-  EXPECT_CALL(*mock_ui_controller_,
-              OnTranscription("transcript partial text 1", false))
-      .Times(1);
-  controller_->OnCaptionBubbleModelStateChanged(true);
-  NotifyControllerForPartialSpeechResult(controller_);
+  const AudioNodeInfo kInternalMic[] = {
+      {true, 55555, "Fake Mic", "INTERNAL_MIC", "Internal Mic"}};
+  const chromeos::AudioNode audio_node = chromeos::AudioNode(
+      kInternalMic->is_input, kInternalMic->id,
+      /*has_v2_stable_device_id=*/false, kInternalMic->id,
+      /*stable_device_id_v2=*/0, kInternalMic->device_name, kInternalMic->type,
+      kInternalMic->name, /*active=*/false,
+      /*plugged_time=*/0, /*max_supported_channels=*/1, /*audio_effect=*/1);
+  chromeos::FakeCrasAudioClient::Get()->SetAudioNodesForTesting({audio_node});
+
+  CrasAudioHandler::Get()->SetActiveInputNodes({kInternalMic->id});
+  EXPECT_CALL(mock_client_,
+              OnNewScreencastPreconditionChanged(NewScreencastPrecondition(
+                  NewScreencastPreconditionState::kEnabled, {})));
+  controller_->OnAudioNodesChanged();
+
+  CrasAudioHandler::Get()->SetActiveInputNodes({});
+  EXPECT_CALL(mock_client_,
+              OnNewScreencastPreconditionChanged(NewScreencastPrecondition(
+                  NewScreencastPreconditionState::kDisabled,
+                  {NewScreencastPreconditionReason::kNoMic})));
+  controller_->OnAudioNodesChanged();
 }
 
 TEST_F(ProjectorControllerTest, OnSpeechRecognitionAvailabilityChanged) {
@@ -172,49 +182,8 @@ TEST_F(ProjectorControllerTest, OnMarkerPressed) {
   controller_->OnMarkerPressed();
 }
 
-TEST_F(ProjectorControllerTest, OnClearAllMarkersPressed) {
-  // Verify that |OnClearAllMarkersPressed| in |ProjectorUiController| is
-  // called.
-  EXPECT_CALL(*mock_ui_controller_, OnClearAllMarkersPressed());
-  controller_->OnClearAllMarkersPressed();
-}
-
-TEST_F(ProjectorControllerTest, OnSelfieCamPressed) {
-  // Verify that |OnSelfieCamPressed| in |ProjectorUiController| is called.
-  EXPECT_CALL(*mock_ui_controller_, OnSelfieCamPressed(/*enabled=*/true));
-  EXPECT_CALL(mock_client_, ShowSelfieCam());
-  controller_->OnSelfieCamPressed(/*enabled=*/true);
-  mock_client_.SetSelfieCamVisible(/*visible=*/true);
-
-  EXPECT_CALL(*mock_ui_controller_, OnSelfieCamPressed(/*enabled=*/false));
-  EXPECT_CALL(mock_client_, CloseSelfieCam());
-  controller_->OnSelfieCamPressed(/*enabled=*/false);
-  mock_client_.SetSelfieCamVisible(/*visible=*/false);
-}
-
-TEST_F(ProjectorControllerTest, SetCaptionBubbleState) {
-  EXPECT_CALL(*mock_ui_controller_, SetCaptionBubbleState(true));
-  controller_->SetCaptionBubbleState(true);
-}
-
-TEST_F(ProjectorControllerTest, MagnifierButtonPressed) {
-  EXPECT_CALL(*mock_ui_controller_, OnMagnifierButtonPressed(true));
-  controller_->OnMagnifierButtonPressed(true);
-}
-
-TEST_F(ProjectorControllerTest, OnChangeMarkerColorPressed) {
-  EXPECT_CALL(*mock_ui_controller_, OnChangeMarkerColorPressed(SK_ColorBLACK));
-  controller_->OnChangeMarkerColorPressed(SK_ColorBLACK);
-}
-
-TEST_F(ProjectorControllerTest, OnUndoPressed) {
-  EXPECT_CALL(*mock_ui_controller_, OnUndoPressed());
-  controller_->OnUndoPressed();
-}
-
 TEST_F(ProjectorControllerTest, RecordingStarted) {
   EXPECT_CALL(mock_client_, StartSpeechRecognition());
-  EXPECT_CALL(*mock_ui_controller_, OnRecordingStateChanged(/*started=*/true));
   EXPECT_CALL(*mock_metadata_controller_, OnRecordingStarted());
   mock_client_.SetSelfieCamVisible(/*visible=*/true);
   // Verify that |CloseToolbar| in |ProjectorUiController| is called.
@@ -257,8 +226,6 @@ TEST_F(ProjectorControllerTest, RecordingEnded) {
                 NewScreencastPreconditionState::kEnabled, {})));
 
         EXPECT_CALL(mock_client_, StopSpeechRecognition());
-        EXPECT_CALL(*mock_ui_controller_,
-                    OnRecordingStateChanged(/*started=*/false));
 
         // Verify that |SaveMetadata| in |ProjectorMetadataController| is called
         // with the expected path.

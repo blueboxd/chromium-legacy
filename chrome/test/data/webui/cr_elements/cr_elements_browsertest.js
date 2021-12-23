@@ -138,7 +138,7 @@ TEST_F('CrElementsFindShortcutMixinTest', 'All', function() {
 var CrElementsFingerprintProgressArcTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_fingerprint_progress_arc_tests.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_fingerprint_progress_arc_tests.js&host=webui-test';
   }
 
   /** @override */
@@ -161,7 +161,7 @@ TEST_F('CrElementsFingerprintProgressArcTest', 'MAYBE_Fingerprint', function() {
 var CrElementsIconButtonTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_icon_button_tests.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_icon_button_tests.js&host=webui-test';
   }
 };
 
@@ -205,7 +205,7 @@ TEST_F('CrElementsRadioButtonTest', 'All', function() {
 var CrElementsCardRadioButtonTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_card_radio_button_test.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_card_radio_button_test.js&host=webui-test';
   }
 };
 
@@ -274,7 +274,7 @@ TEST_F('CrElementsSliderTest', 'All', function() {
 var CrElementsSplitterTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_splitter_test.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_splitter_test.js&host=webui-test';
   }
 };
 
@@ -285,7 +285,7 @@ TEST_F('CrElementsSplitterTest', 'All', function() {
 var CrElementsToastTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_toast_test.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_toast_test.js&host=webui-test';
   }
 };
 
@@ -296,7 +296,7 @@ TEST_F('CrElementsToastTest', 'All', function() {
 var CrElementsToastManagerTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_toast_manager_test.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_toast_manager_test.js&host=webui-test';
   }
 };
 
@@ -318,7 +318,7 @@ TEST_F('CrElementsViewManagerTest', 'All', function() {
 var CrElementsPolicyIndicatorTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_policy_indicator_tests.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_policy_indicator_tests.js&host=webui-test';
   }
 };
 
@@ -330,7 +330,7 @@ var CrElementsPolicyPrefIndicatorTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
     // Preload a settings URL, so that the test can access settingsPrivate.
-    return 'chrome://settings/test_loader.html?module=cr_elements/cr_policy_pref_indicator_tests.js';
+    return 'chrome://settings/test_loader.html?module=cr_elements/cr_policy_pref_indicator_tests.js&host=webui-test';
   }
 };
 
@@ -342,7 +342,7 @@ var CrElementsPolicyIndicatorBehaviorTest =
     class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_policy_indicator_behavior_tests.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_policy_indicator_behavior_tests.js&host=webui-test';
   }
 };
 
@@ -353,7 +353,7 @@ TEST_F('CrElementsPolicyIndicatorBehaviorTest', 'All', function() {
 var CrElementsLottieTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_elements/cr_lottie_tests.js';
+    return 'chrome://test/test_loader.html?module=cr_elements/cr_lottie_tests.js&host=webui-test';
   }
 
   /** @override */

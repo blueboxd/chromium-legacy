@@ -1231,9 +1231,6 @@ extern const char kMBIModeDescription[];
 extern const char kIntensiveWakeUpThrottlingName[];
 extern const char kIntensiveWakeUpThrottlingDescription[];
 
-extern const char kSafetyTipName[];
-extern const char kSafetyTipDescription[];
-
 extern const char kSamePartyCookiesConsideredFirstPartyName[];
 extern const char kSamePartyCookiesConsideredFirstPartyDescription[];
 
@@ -2421,6 +2418,9 @@ extern const char kCameraAppDocumentManualCropDescription[];
 
 extern const char kCategoricalSearchName[];
 extern const char kCategoricalSearchDescription[];
+
+extern const char kQuerySearchBurnInPeriodName[];
+extern const char kQuerySearchBurnInPeriodDescription[];
 
 extern const char kCellularBypassESimInstallationConnectivityCheckName[];
 extern const char kCellularBypassESimInstallationConnectivityCheckDescription[];

@@ -2141,12 +2141,6 @@ const char kIntensiveWakeUpThrottlingDescription[] =
     "page that has been hidden for 5 minutes. For additional details, see "
     "https://www.chromestatus.com/feature/4718288976216064.";
 
-const char kSafetyTipName[] =
-    "Show Safety Tip UI when visiting low-reputation websites";
-const char kSafetyTipDescription[] =
-    "If enabled, a Safety Tip UI may be displayed when visiting or interacting "
-    "with a site Chrome believes may be suspicious.";
-
 const char kSamePartyCookiesConsideredFirstPartyName[] =
     "Consider SameParty cookies to be first-party.";
 const char kSamePartyCookiesConsideredFirstPartyDescription[] =
@@ -4205,6 +4199,13 @@ const char kCameraAppDocumentManualCropDescription[] =
 const char kCategoricalSearchName[] = "Launcher Categorical Search";
 const char kCategoricalSearchDescription[] =
     "Launcher search results grouped by categories";
+
+const char kQuerySearchBurnInPeriodName[] = "Launcher query search burn-in";
+const char kQuerySearchBurnInPeriodDescription[] =
+    "Enables the use of a burn-in period for the display of launcher query "
+    "search results. Display of results in query search are delayed until the "
+    "burn-in period has elapsed. Only valid when categorical search is "
+    "enabled. Burn-in period duration configurable (unit: milliseconds).";
 
 const char kCellularBypassESimInstallationConnectivityCheckName[] =
     "Bypass eSIM installation connectivity check";

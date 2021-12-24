@@ -29,8 +29,8 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantPlaceholdersConfiguration_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantUiController_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers_public/AssistantDependencies_jni.h"
-#include "chrome/android/features/autofill_assistant/jni_headers_public/AssistantStaticDependencies_jni.h"
 #include "chrome/browser/android/autofill_assistant/client_android.h"
+#include "chrome/browser/android/autofill_assistant/dependencies.h"
 #include "chrome/browser/android/autofill_assistant/generic_ui_root_controller_android.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
@@ -62,6 +62,7 @@ using ::base::android::AttachCurrentThread;
 using ::base::android::ConvertUTF8ToJavaString;
 using ::base::android::JavaParamRef;
 using ::base::android::JavaRef;
+using ::base::android::ScopedJavaGlobalRef;
 using ::base::android::ScopedJavaLocalRef;
 using ::base::android::ToJavaArrayOfStrings;
 
@@ -273,18 +274,17 @@ std::unique_ptr<UiControllerAndroid> UiControllerAndroid::CreateFromWebContents(
     const base::android::JavaRef<jobject>& jdependencies,
     const base::android::JavaRef<jobject>& joverlay_coordinator) {
   JNIEnv* env = AttachCurrentThread();
-  auto jactivity = Java_AutofillAssistantUiController_findAppropriateActivity(
-      env, web_contents->GetJavaWebContents());
-  if (!jactivity) {
+  if (!Java_AutofillAssistantUiController_shouldCreateNewInstance(
+          env, web_contents->GetJavaWebContents(), jdependencies)) {
     return nullptr;
   }
-  return std::make_unique<UiControllerAndroid>(env, jactivity, jdependencies,
+
+  return std::make_unique<UiControllerAndroid>(env, jdependencies,
                                                joverlay_coordinator);
 }
 
 UiControllerAndroid::UiControllerAndroid(
     JNIEnv* env,
-    const base::android::JavaRef<jobject>& jactivity,
     const base::android::JavaRef<jobject>& jdependencies,
     const base::android::JavaRef<jobject>& joverlay_coordinator)
     : overlay_delegate_(this),
@@ -296,11 +296,11 @@ UiControllerAndroid::UiControllerAndroid(
       jstatic_dependencies_(
           Java_AssistantDependencies_getStaticDependencies(env,
                                                            jdependencies)) {
-  java_object_ = Java_AutofillAssistantUiController_create(
-      env, jactivity,
+  java_object_ = Java_AutofillAssistantUiController_Constructor(
+      env, reinterpret_cast<intptr_t>(this), jdependencies,
       /* allowTabSwitching= */
       base::FeatureList::IsEnabled(features::kAutofillAssistantChromeEntry),
-      reinterpret_cast<intptr_t>(this), jdependencies, joverlay_coordinator);
+      joverlay_coordinator);
   header_model_ = std::make_unique<AssistantHeaderModel>(
       Java_AssistantModel_getHeaderModel(env, GetModel()));
 
@@ -1208,11 +1208,8 @@ void UiControllerAndroid::HideKeyboardIfFocusNotOnText() {
       AttachCurrentThread(), java_object_);
 }
 
-base::android::ScopedJavaGlobalRef<jobject>
-UiControllerAndroid::GetInfoPageUtil() const {
-  return base::android::ScopedJavaGlobalRef<jobject>(
-      Java_AssistantStaticDependencies_getInfoPageUtil(AttachCurrentThread(),
-                                                       jstatic_dependencies_));
+ScopedJavaGlobalRef<jobject> UiControllerAndroid::GetInfoPageUtil() const {
+  return Dependencies::GetInfoPageUtil(jstatic_dependencies_);
 }
 
 void UiControllerAndroid::OnCollectUserDataOptionsChanged(

@@ -245,15 +245,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'c2b31fb04a80bfcc9125ce9184c4d7808f72a5d6',
+  'skia_revision': 'dc67736cd6ad65154eb2c5fce4ad7a8e540cb52c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '13a6d9f4a5d01b467b7a9847c5a73c6875cd8569',
+  'v8_revision': 'e62c7f3fd04f34fbf0db7222078ad9ae1be268fb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '4d893a93596e55c2a9d3b39494edd393f6d74086',
+  'angle_revision': '6c9b79eadc56088c8164023e86b823ea65234c13',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -312,7 +312,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '390aa6fa4b4756f2a2e6baeeb260b3a29216e3d0',
+  'catapult_revision': '1a34b98c2ce22f4eb491a1052d39e8cfb99a8698',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -320,7 +320,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '9c57bbe1eb338f967425d28609cee2841c79b7b5',
+  'devtools_frontend_revision': '2d9c28e15a64ca365b2aec9ac94e6922307e62da',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -360,7 +360,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '168b7eb10db53cade9fe6e0fc2b69941a8357eac',
+  'dawn_revision': '38d17030399714b8db4d46b0967011fbf3a9f566',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -805,7 +805,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'aaokkxPemSJZijMa3UcEE57MN52L-Z3Xldi7x5si6VwC',
+          'version': 'TTFW1u8mo2H-aGw06LYEwl3tLN0vQ72-YNyWbOLGleMC',
       },
     ],
     'condition': 'checkout_android',
@@ -1648,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'fca7b339442bd70c5dc49bb33ee7f9466b560a97',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'a8beb40873c2376e2109992d72f5325ec746da44',
+    Var('webrtc_git') + '/src.git' + '@' + 'd4c1b92f65568fe6878ed79094fd8ae90c788486',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1730,7 +1730,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e03a6882eb47c43cf466c096a33f653e4fc560a6',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@346647e02b7a866a34f56aee0ced42f1d60dd003',
     'condition': 'checkout_src_internal',
   },
 
@@ -1782,7 +1782,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': '-nP64jzj-qcmn0oU7A5zR4RO_o70v_rnMtAAYpjPJbAC',
+        'version': 'nWLAVGp-CNxas3koUm2I-6Zi0b18nlv4mKyANWOo1L4C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

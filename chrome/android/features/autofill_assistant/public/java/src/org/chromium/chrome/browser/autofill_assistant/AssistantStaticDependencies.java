@@ -19,6 +19,9 @@ import org.chromium.ui.util.AccessibilityUtil;
  */
 @JNINamespace("autofill_assistant")
 public interface AssistantStaticDependencies {
+    @CalledByNative
+    long getNativePointer();
+
     AccessibilityUtil getAccessibilityUtil();
 
     /**
@@ -32,6 +35,8 @@ public interface AssistantStaticDependencies {
     AssistantInfoPageUtil getInfoPageUtil();
 
     AssistantFeedbackUtil getFeedbackUtil();
+
+    AssistantTabUtil getTabUtil();
 
     @Nullable
     String getSignedInAccountEmailOrNull();

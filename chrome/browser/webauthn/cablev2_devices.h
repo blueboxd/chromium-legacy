@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/span.h"
+#include "base/strings/string_piece.h"
 #include "device/fido/fido_constants.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/icu/source/common/unicode/locid.h"
@@ -62,6 +64,9 @@ struct KnownDevices {
   // Sync data and preferencs of `browser_context`.
   static std::unique_ptr<KnownDevices> FromProfile(Profile* profile);
 
+  // Names returns a list of all names (which may contain duplicates).
+  std::vector<base::StringPiece> Names() const;
+
   std::vector<std::unique_ptr<device::cablev2::Pairing>> synced_devices;
   std::vector<std::unique_ptr<device::cablev2::Pairing>> linked_devices;
 };
@@ -77,14 +82,27 @@ std::vector<std::unique_ptr<device::cablev2::Pairing>> MergeDevices(
     const icu::Locale* locale);
 
 // AddPairing records `pairing` in `pref_service`, displacing any existing
-// pairing with the same public key.
+// pairing with the same public key. The name in `pairing` will be updated to
+// avoid colliding with any name in `existing_names`.
 void AddPairing(PrefService* pref_service,
-                std::unique_ptr<device::cablev2::Pairing> pairing);
+                std::unique_ptr<device::cablev2::Pairing> pairing,
+                base::span<const base::StringPiece> existing_names);
 
 // DeletePairingByPublicKey erases a pairing from `pref_service` by public key.
 void DeletePairingByPublicKey(
     PrefService* pref_service,
     std::array<uint8_t, device::kP256X962Length> public_key);
+
+// RenamePairing updates the linked phone from `pref_service` with the given
+// public key so that its name is `new_name`. If `new_name` collides with
+// `existing_names`, however, then it'll be updated so that it doesn't. Returns
+// true on success and false if no linked phone matching `public_key` was
+// found.
+bool RenamePairing(
+    PrefService* pref_service,
+    const std::array<uint8_t, device::kP256X962Length>& public_key,
+    const std::string& new_name,
+    base::span<const base::StringPiece> existing_names);
 
 }  // namespace cablev2
 

@@ -2842,6 +2842,15 @@ crbug.com/626703 [ Mac ] external/wpt/css/css-ruby/ruby-autohide-004.html [ Fail
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-breaking/segment-break-transformation-rules-009.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-breaking/segment-break-transformation-rules-015.html [ Failure ]
 crbug.com/626703 [ Fuchsia ] external/wpt/dom/historical.html [ Skip ]
+crbug.com/626703 external/wpt/html/syntax/speculative-parsing/generated/document-write/link-rel-alternate-stylesheet.tentative.sub.html [ Failure ]
+crbug.com/626703 external/wpt/html/syntax/speculative-parsing/generated/document-write/link-rel-stylesheet-nomatch-media.tentative.sub.html [ Failure ]
+crbug.com/626703 external/wpt/html/syntax/speculative-parsing/generated/page-load/link-rel-alternate-stylesheet.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/html/syntax/speculative-parsing/generated/page-load/link-rel-stylesheet-disabled.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/html/syntax/speculative-parsing/generated/page-load/link-rel-stylesheet-nomatch-media.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/html/syntax/speculative-parsing/generated/page-load/math-font-script-src.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/html/syntax/speculative-parsing/generated/page-load/math-script-src.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/html/syntax/speculative-parsing/generated/page-load/meta-viewport-link-stylesheet-media.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/html/syntax/speculative-parsing/generated/page-load/svg-script-src.tentative.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Mac10.15 ] external/wpt/css/selectors/invalidation/has-pseudo-class.html [ Failure Crash ]
@@ -6890,6 +6899,9 @@ crbug.com/1164459 [ Mac10.15 ] external/wpt/preload/download-resources.html [ Fa
 crbug.com/1167222 http/tests/websocket/multiple-connections-throttled.html [ Failure Pass ]
 crbug.com/1167309 fast/canvas/canvas-createImageBitmap-drawImage.html [ Failure Pass ]
 
+# Temporarily disabled to unblock crrev.com/c/3354896
+crbug.com/1282076 http/tests/devtools/components/geometry.js [ Skip ]
+
 # Sheriff 2021-01-20
 crbug.com/1168522 external/wpt/focus/iframe-activeelement-after-focusing-out-iframes.html [ Failure Pass ]
 
@@ -7007,9 +7019,6 @@ crbug.com/1072022 http/tests/security/frameNavigation/xss-ALLOWED-parent-navigat
 crbug.com/1189976 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.js [ Skip ]
 crbug.com/1189976 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints-editing-dom-from-inspector.js [ Skip ]
 crbug.com/1190176 [ Linux ] fast/peerconnection/RTCPeerConnection-addMultipleTransceivers.html [ Failure Pass ]
-
-crbug.com/1191068 [ Mac ] external/wpt/resource-timing/iframe-failed-commit.html [ Failure Pass ]
-crbug.com/1191068 [ Win ] external/wpt/resource-timing/iframe-failed-commit.html [ Failure Pass ]
 
 crbug.com/1176039 [ Mac ] virtual/stable/media/stable/video-object-fit-stable.html [ Failure Pass ]
 

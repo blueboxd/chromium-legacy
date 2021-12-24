@@ -292,7 +292,7 @@ public class AccountSelectionViewTest {
         // of the icon which is unaffected by the cropping.
         int centerX = actualBrandIconBitmap.getWidth() / 2;
         int centerY = actualBrandIconBitmap.getHeight() / 2;
-        assertEquals(expectedIconColor, actualBrandIconBitmap.getColor(centerX, centerY).toArgb());
+        assertEquals(expectedIconColor, actualBrandIconBitmap.getPixel(centerX, centerY));
 
         assertNull(compoundDrawables[1]);
         assertNull(compoundDrawables[2]);

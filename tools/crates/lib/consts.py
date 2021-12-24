@@ -24,6 +24,8 @@ ALLOWED_LICENSES = [
     ("Unlicense OR MIT", "MIT"),
     ("Unlicense/MIT", "MIT"),
     ("Apache-2.0 OR BSL-1.0", "Apache 2.0"),
+    ("BSD-3-Clause", "BSD 3-Clause"),
+    ("ISC", "ISC"),
 ]
 
 # The subdirectory where crates are found, relative to the current working
@@ -57,7 +59,7 @@ BLOCKED_CRATES = {
 _CARGO_DEPS = \
     r"(?:├──|└──) (?P<name>.*?) v(?P<version>[0-9]+.[0-9]+.[0-9]+)" \
     r"(?P<isprocmacro> \(proc-macro\))?" \
-    r"(?P<patchedpath> \([\/].*?\))?" \
+    r"(?: \((?P<path>[\/].*?)\))?" \
     r"(?: (?P<features>[^( ][^ ]*))?(?: \(\*\))?"
 CARGO_DEPS_REGEX = re.compile(_CARGO_DEPS)
 

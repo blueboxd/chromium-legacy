@@ -722,7 +722,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': '9ozH8HBM5EXnyMroTWbwKahxTWJhm8_Ei2_FaHsYzaAC',
+          'version': '0UGYfYowsorXk5GoU0SkujetPZUk8FL5YEqquFWQdAsC',
         },
       ],
       'dep_type': 'cipd',
@@ -733,7 +733,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'Udc72iws5U7fJ11zdF1gH8rjQGwh0qWDZFMLQHcG8mYC',
+          'version': 'sxMwFArd77SCPZvkRNf-Nq7AhaKU43TjQiq40G4si8sC',
         },
       ],
       'dep_type': 'cipd',
@@ -744,7 +744,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'iAEG3BvNpruA2RzolM1GZtDtFUJuRA5slyTK8R47PkkC',
+          'version': 'ghc5u6qmexS2QHMIOGY5YspDu5NkgKJ-8wdLnpHVjpwC',
         },
       ],
       'dep_type': 'cipd',
@@ -805,7 +805,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'uCdjLL9wK03L3vQeI9K5L_Ovx5AWKs8f8eNg9amENjIC',
+          'version': 'aNEaWiBOVBdNuhdjf8KDoZIFxxGWW8eg-kvRJk4jHDMC',
       },
     ],
     'condition': 'checkout_android',
@@ -1648,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'fca7b339442bd70c5dc49bb33ee7f9466b560a97',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'c6fba9af67482fbe387f4914f1afefe3decb95b3',
+    Var('webrtc_git') + '/src.git' + '@' + 'cc494f3c9d78574f83367feb89af9517f75ede0a',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1730,7 +1730,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8d4ebb884aa41990de4d4169e8849e43bb0cb5a1',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@eb079813d9db9d55dce0219c67f57434c250a610',
     'condition': 'checkout_src_internal',
   },
 
@@ -1760,7 +1760,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': '-T9XxdiRwA0u_-Ype3ftz-W4XfUfqbAysehwGh723vUC',
+        'version': 'AayfmOTXTSrayWnDez8gSv2dycSZ-ej36VfL_ivv474C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1771,7 +1771,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'sd65r0mDLT61Ps1_aoELbetm8pu4dWZwkxQoPOzn0i4C',
+        'version': 'lNsz3FM4Wdg2XoENsjs_sp5y0S63WxB5YbSVxEDWJ2oC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

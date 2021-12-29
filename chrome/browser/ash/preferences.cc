@@ -37,7 +37,6 @@
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/ash/sync/sync_consent_optional_field_trial.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/ash/system/timezone_resolver_manager.h"
 #include "chrome/browser/ash/system/timezone_util.h"
@@ -145,7 +144,6 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kLoginScreenWebUILazyLoading, false);
 
   RegisterLocalStatePrefs(registry);
-  sync_consent_optional_field_trial::RegisterLocalStatePrefs(registry);
 }
 
 // static
@@ -420,6 +418,10 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterInt64Pref(::prefs::kHatsArcGamesSurveyCycleEndTs, 0);
 
   registry->RegisterBooleanPref(::prefs::kHatsArcGamesDeviceIsSelected, false);
+
+  registry->RegisterInt64Pref(::prefs::kHatsAudioSurveyCycleEndTs, 0);
+
+  registry->RegisterBooleanPref(::prefs::kHatsAudioDeviceIsSelected, false);
 
   registry->RegisterBooleanPref(::prefs::kPinUnlockFeatureNotificationShown,
                                 false);

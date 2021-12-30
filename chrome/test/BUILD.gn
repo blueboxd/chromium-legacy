@@ -9357,10 +9357,6 @@ if (!is_android && !is_fuchsia) {
       "//skia",
       "//testing/gmock",
       "//testing/gtest",
-
-      # TODO(uwyiming@chromium.org) create a gn target for Web Page Replay Go (WPR Go) and only WPR Go.
-      # So that test targets requiring WPR Go does not pull down the whole telemetry tool chain.
-      "//third_party/catapult:telemetry_chrome_test_support",
       "//third_party/hunspell",
       "//third_party/icu",
       "//third_party/libpng",
@@ -9934,8 +9930,10 @@ if (is_linux || is_mac || is_win) {
 
     data = [
       "//testing/scripts/run_variations_smoke_tests.py",
+      "//testing/scripts/variations_http_test_server.py",
       "//testing/scripts/variations_seed_access_helper.py",
       "//testing/scripts/variations_smoke_test_data/",
+      "//testing/scripts/variations_smoke_test_data/http_server/",
       "//third_party/webdriver/pylib/",
     ]
   }

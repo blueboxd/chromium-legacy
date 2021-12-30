@@ -151,7 +151,7 @@ void MediaInternalsCdmHelper::OnCdmInfoFinalized(
 void MediaInternalsCdmHelper::SendCdmUpdate() {
   auto cdms = CdmRegistryImpl::GetInstance()->GetRegisteredCdms();
 
-  base::Value cdm_list;
+  base::Value cdm_list(base::Value::Type::LIST);
   for (const auto& cdm_info : cdms) {
     cdm_list.Append(CdmInfoToValue(cdm_info));
   }

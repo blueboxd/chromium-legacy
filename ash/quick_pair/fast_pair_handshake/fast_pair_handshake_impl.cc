@@ -4,6 +4,7 @@
 
 #include "ash/quick_pair/fast_pair_handshake/fast_pair_handshake_impl.h"
 
+#include "ash/quick_pair/common/fast_pair/fast_pair_metrics.h"
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/common/pair_failure.h"
 #include "ash/quick_pair/common/protocol.h"
@@ -58,6 +59,9 @@ void FastPairHandshakeImpl::OnGattClientInitializedCallback(
 
 void FastPairHandshakeImpl::OnDataEncryptorCreateAsync(
     std::unique_ptr<FastPairDataEncryptor> fast_pair_data_encryptor) {
+  bool success = fast_pair_data_encryptor != nullptr;
+  RecordDataEncryptorCreateResult(/*success=*/success);
+
   if (!fast_pair_data_encryptor) {
     QP_LOG(WARNING) << __func__
                     << ": Fast Pair Data Encryptor failed to be created.";
@@ -85,9 +89,12 @@ void FastPairHandshakeImpl::OnDataEncryptorCreateAsync(
 void FastPairHandshakeImpl::OnWriteResponse(
     std::vector<uint8_t> response_bytes,
     absl::optional<PairFailure> failure) {
+  RecordWriteKeyBasedCharacteristicResult(/*success=*/!failure.has_value());
+
   if (failure) {
     QP_LOG(WARNING) << __func__
                     << ": Failed to write request: " << failure.value();
+    RecordWriteKeyBasedCharacteristicPairFailure(failure.value());
     std::move(on_complete_callback_).Run(device_, failure.value());
     return;
   }
@@ -97,15 +104,17 @@ void FastPairHandshakeImpl::OnWriteResponse(
   fast_pair_data_encryptor_->ParseDecryptedResponse(
       response_bytes,
       base::BindOnce(&FastPairHandshakeImpl::OnParseDecryptedResponse,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
 
 void FastPairHandshakeImpl::OnParseDecryptedResponse(
+    base::TimeTicks decrypt_start_time,
     const absl::optional<DecryptedResponse>& response) {
   if (!response) {
     QP_LOG(WARNING) << __func__ << ": Missing decrypted response from parse.";
     std::move(on_complete_callback_)
         .Run(device_, PairFailure::kKeybasedPairingResponseDecryptFailure);
+    RecordKeyBasedCharacteristicDecryptResult(/*success=*/false);
     return;
   }
 
@@ -114,9 +123,13 @@ void FastPairHandshakeImpl::OnParseDecryptedResponse(
                     << ": Incorrect message type from decrypted response.";
     std::move(on_complete_callback_)
         .Run(device_, PairFailure::kIncorrectKeyBasedPairingResponseType);
+    RecordKeyBasedCharacteristicDecryptResult(/*success=*/false);
     return;
   }
 
+  RecordKeyBasedCharacteristicDecryptTime(base::TimeTicks::Now() -
+                                          decrypt_start_time);
+  RecordKeyBasedCharacteristicDecryptResult(/*success=*/true);
   std::string device_address =
       device::CanonicalizeBluetoothAddress(response->address_bytes);
   device_->set_classic_address(device_address);

@@ -249,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'b9804e6b3a466ec34512ed8dad37f87ed7f5f181',
+  'v8_revision': 'a28ad7e860a2469e2cd621902a5d43a0fb46973b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -360,7 +360,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'a8f5cfb81e8f2726746a5c5a1880e6bb5b1110f1',
+  'dawn_revision': 'f069d5f3d6d05ff578f0f7d044795c4d7860f113',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -744,7 +744,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'dn5zAphq8-ew_C_YImC5Be-BLjEMyOircuDEkNb1CuQC',
+          'version': '6cLdZQitZnxFS5xJwFlL3K8PMythcKNPzeSVIm3aknoC',
         },
       ],
       'dep_type': 'cipd',
@@ -1024,7 +1024,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'e0b59a037c97c84b80e536e6bdab0bcf4c1b9bc2',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '717f7105d0774bf769517f60da8dbbe40eaa7465',
       'condition': 'checkout_chromeos',
   },
 
@@ -1609,7 +1609,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '62d7d0c928c9a040dce96aa2f16c00e7e67d59cb',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@2f2497d5ea3871f0fd3c39a927ac5341cf3861f3',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@0ccb6a4009fa078fa66e9ee2cbcd17a8886f65fc',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + '5e49f57a6e71a026a54eb42e366de09a4142d24e',
@@ -1648,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'fca7b339442bd70c5dc49bb33ee7f9466b560a97',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '7257f0d3ec9855d2a641926438d946b37429404f',
+    Var('webrtc_git') + '/src.git' + '@' + 'f59438fd5d763888302793757f093f7c2b1b68d6',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1730,7 +1730,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@af96c8958cb00ba5c285eac11a1003bb91d5be83',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a632f163c5f5b3ac2de0add2db9913861d2e01f7',
     'condition': 'checkout_src_internal',
   },
 
@@ -1760,7 +1760,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'wtMQiurF6GoyK1Sdz5CbhoiA2RAbX5HZS9icDO8Z_84C',
+        'version': 'XzvlDJ6BZMZqgoDSFQpNYxlbgLYNuXKAgteEoXlGCeEC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1771,7 +1771,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'v6fjhwbxmKGTVlx6-qLxAuKU0hSDHPeaF6-IseOMjA0C',
+        'version': 'EhegCxO4C7F1h1-NMaf6isiHizaWUuHvX_4VtIda0aIC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

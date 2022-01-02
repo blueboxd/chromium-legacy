@@ -245,11 +245,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'd88df695a5bf615b38d6b888842d299fbf0826ad',
+  'skia_revision': '8453d6018948faf72d7625935dd163b7787cb91f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '39826aa60d5a16cff8798db290a52dbb0169f979',
+  'v8_revision': '88a6046cb12ba37cf9fa28414bafe28d3e01a57c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -320,7 +320,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '2e1b21cc0aee71719d903042c9252513a6050bd2',
+  'devtools_frontend_revision': '473c6b4a312c5c7c194f8b898b86b8ac68e6dfd9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -722,7 +722,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'wp4ZrF-Nyce8J3UDc5VWrAStdcQ51Idt6ZmcpdGKRxQC',
+          'version': 'SzxKemX7eFYBrg-IwDijm8wBpxKvLUnS40ixPuL8PGIC',
         },
       ],
       'dep_type': 'cipd',
@@ -744,7 +744,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': '9nWfGFtN6UnLAn6z6i-9iTT6_7MrPgTg1z627s2D7NYC',
+          'version': 'mZD1JDviCbqGfF8RYglLOMGmP5AEFXdaVfAbjOAPfs8C',
         },
       ],
       'dep_type': 'cipd',
@@ -1648,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'fca7b339442bd70c5dc49bb33ee7f9466b560a97',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'a32e4ca33dc81da6db255ba59aa8d18ccc6d2a81',
+    Var('webrtc_git') + '/src.git' + '@' + 'ecf92afbf080c2af7fe21d9e6003446f510cd1eb',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1730,7 +1730,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@475deda10cc763d48548bea13bc1938545ca0df3',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5b46e534c478c20d2b036a65977965c0490c36ac',
     'condition': 'checkout_src_internal',
   },
 
@@ -1782,7 +1782,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'tKAFdQIr4EK_llsszeHtY38qGNZA-2tR4V5CxlPECDkC',
+        'version': 'wFSJ-xmbOSFAFTktr3trsIk36Ur6QmLYhjWpae1kGtAC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

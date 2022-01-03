@@ -245,11 +245,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '8453d6018948faf72d7625935dd163b7787cb91f',
+  'skia_revision': '0e597a5a4ced48fbf93879cc25c1a53f2e955a41',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '88a6046cb12ba37cf9fa28414bafe28d3e01a57c',
+  'v8_revision': '223f48458cb2adc64f71f699b71a6a24b8b2587f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -292,7 +292,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '4eb6cb8818057a022f97176b53738ee3098c8eb6',
+  'freetype_revision': '2b672e7210a6e989aca4787fb81f4b2542bad9c1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -320,7 +320,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '473c6b4a312c5c7c194f8b898b86b8ac68e6dfd9',
+  'devtools_frontend_revision': 'c91f9d88817d21922a3f9c752d96992f91ef9c62',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -722,7 +722,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'SzxKemX7eFYBrg-IwDijm8wBpxKvLUnS40ixPuL8PGIC',
+          'version': 'gwW_nuIBbaSJs-T9SqZ8p-n9n8PeBeGCIpIT4sa1Yk4C',
         },
       ],
       'dep_type': 'cipd',
@@ -744,7 +744,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'mZD1JDviCbqGfF8RYglLOMGmP5AEFXdaVfAbjOAPfs8C',
+          'version': 'AlGjJ-CejY4CeQg-uhxG0Gput00l4TBgsuXn5IhegKQC',
         },
       ],
       'dep_type': 'cipd',
@@ -1730,7 +1730,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@540331f3cefd3492c54b99e912587ef2cceeb932',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@91602a9bc9aae5d6264be35f1e9d6a987f7416cb',
     'condition': 'checkout_src_internal',
   },
 

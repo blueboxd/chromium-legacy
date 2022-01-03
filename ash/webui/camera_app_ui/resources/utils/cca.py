@@ -194,11 +194,11 @@ def lint(args):
 TS_ENTRY_FILES = [
     "js/externs/types.d.ts",
     "js/init.ts",
-    "js/main.js",
+    "js/main.ts",
     "js/models/barcode_worker.ts",
     "js/models/ffmpeg/video_processor.ts",
     "js/test_bridge.ts",
-    "js/untrusted_ga_helper.js",
+    "js/untrusted_ga_helper.ts",
     "js/untrusted_script_loader.ts",
     "js/untrusted_video_processor_helper.ts",
 ]

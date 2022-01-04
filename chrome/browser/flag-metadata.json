@@ -763,6 +763,11 @@
     "expiry_milestone": 98
   },
   {
+    "name": "clean-undecryptable-passwords",
+    "owners": [ "derinel@google.com", "mamir" ],
+    "expiry_milestone": 99
+  },
+  {
     "name": "clear-cross-site-cross-browsing-context-group-window-name",
     "owners": [ "shuuran", "kaustubhag" ],
     "expiry_milestone": 94
@@ -2203,7 +2208,7 @@
   {
     "name": "enable-jxl",
     "owners": [ "deymo", "firsching", "lode" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 105
   },
   {
     "name": "enable-lacros-in-web-kiosk",

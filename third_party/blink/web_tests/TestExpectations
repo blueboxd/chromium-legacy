@@ -2958,13 +2958,13 @@ crbug.com/626703 [ Mac ] external/wpt/css/css-ruby/ruby-autohide-002.html [ Fail
 crbug.com/626703 [ Mac ] external/wpt/css/css-ruby/ruby-autohide-004.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-breaking/segment-break-transformation-rules-009.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-breaking/segment-break-transformation-rules-015.html [ Failure ]
-crbug.com/626703 [ Fuchsia ] external/wpt/dom/historical.html [ Skip ]
 crbug.com/626703 [ Linux ] external/wpt/url/a-element-xhtml.xhtml [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/url/failure.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/url/url-constructor.any.html [ Failure ]
 crbug.com/626703 [ Mac11 ] external/wpt/css/css-flexbox/abspos/flex-abspos-staticpos-align-self-006.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-022.html [ Failure Crash ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-dotted-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-dotted-002.html [ Failure ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/fetch/private-network-access/fetch.https.window.html?include=from-treat-as-public [ Timeout ]
@@ -5967,16 +5967,10 @@ crbug.com/1043675 [ Win ] external/wpt/css/filter-effects/backdrop-filter-basic-
 crbug.com/1043675 [ Win ] external/wpt/css/filter-effects/css-filters-animation-opacity.html [ Failure ]
 crbug.com/1043675 [ Win ] svg/custom/svg-root-with-opacity.html [ Failure ]
 
-# Required to land DevTools change
-crbug.com/106759 http/tests/devtools/command-line-api-inspect.js [ Failure Pass ]
-crbug.com/106759 http/tests/devtools/sources/debugger-console/debugger-command-line-api.js [ Failure Pass ]
-
 crbug.com/989665 [ Mac ] external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Crash Pass ]
 crbug.com/989665 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Crash Pass ]
 
 # Sheriff 2020-01-23
-crbug.com/1044505 http/tests/devtools/tracing-session-id.js [ Failure Pass Skip Timeout ]
-
 crbug.com/1046784 http/tests/devtools/oopif/oopif-storage.js [ Failure Pass ]
 crbug.com/1046784 http/tests/inspector-protocol/service-worker/target-reloaded-after-crash.js [ Failure Pass Timeout ]
 
@@ -7985,6 +7979,5 @@ crbug.com/1229095 [ Linux ] virtual/gpu/fast/canvas/canvas-getImageData.html [ F
 crbug.com/1280736 [ Win10.20h2 ] http/tests/inspector-protocol/network/blocked-setcookie-same-site-strict.js [ Pass Timeout ]
 crbug.com/1280736 [ Win10.20h2 ] http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax.js [ Pass Timeout ]
 
-# Sheriff 2022-01-03
-crbug.com/1283865 [ Mac11 ] external/wpt/webmessaging/without-ports/020.html [ Failure Pass ]
-
+# Sheriff 2022-01-04
+crbug.com/1283865 external/wpt/webmessaging/without-ports/020.html [ Failure Pass ]

@@ -133,10 +133,6 @@ bool ChromeCaptureModeDelegate::Uses24HourFormat() const {
   return base::GetHourClockType() == base::k24HourClock;
 }
 
-bool ChromeCaptureModeDelegate::IsCaptureModeInitRestrictedByDlp() const {
-  return policy::DlpContentManagerAsh::Get()->IsCaptureModeInitRestricted();
-}
-
 void ChromeCaptureModeDelegate::CheckCaptureModeInitRestrictionByDlp(
     ash::OnCaptureModeDlpRestrictionChecked callback) {
   policy::DlpContentManagerAsh::Get()->CheckCaptureModeInitRestriction(
@@ -150,13 +146,6 @@ void ChromeCaptureModeDelegate::CheckCaptureOperationRestrictionByDlp(
   const ScreenshotArea area = ConvertToScreenshotArea(window, bounds);
   policy::DlpContentManagerAsh::Get()->CheckScreenshotRestriction(
       area, std::move(callback));
-}
-
-bool ChromeCaptureModeDelegate::IsCaptureAllowedByDlp(
-    const aura::Window* window,
-    const gfx::Rect& bounds) const {
-  return !policy::DlpContentManagerAsh::Get()->IsScreenshotRestricted(
-      ConvertToScreenshotArea(window, bounds));
 }
 
 bool ChromeCaptureModeDelegate::IsCaptureAllowedByPolicy() const {

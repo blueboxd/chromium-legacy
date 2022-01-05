@@ -1789,7 +1789,7 @@
   {
     "name": "enable-debug-for-secure-payment-confirmation",
     "owners": [ "rouslan", "web-payments-team@google.com" ],
-    "expiry_milestone": 102
+    "expiry_milestone": 112
   },
   {
     "name": "enable-debug-for-store-billing",
@@ -4142,6 +4142,11 @@
     "expiry_milestone": 97
   },
   {
+    "name": "omnibox-aggregate-shortcuts",
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 105
+  },
+  {
     "name": "omnibox-assistant-voice-search",
     "owners": [
       "jds@google.com",
@@ -5533,6 +5538,11 @@
     "expiry_milestone": 101
   },
   {
+    "name": "usb-notification-controller",
+    "owners": [ "jthies", "bleung" ],
+    "expiry_milestone": 102
+  },
+  {
     "name": "use-angle",
     "owners": [ "angle-team@google.com" ],
     // This flag is used by certain customers to set ANGLE to use its OpenGL
@@ -5618,6 +5628,11 @@
     // This flag is required for testing with the related
     // wallet-service-use-sandbox on Android.
     "expiry_milestone": -1
+  },
+  {
+    "name": "use-ulp-languages-in-chrome",
+    "owners": [ "chrome-language@google.com" ],
+    "expiry_milestone": 105
   },
   {
     "name": "use-wallpaper-staging-url",

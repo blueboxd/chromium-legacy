@@ -282,7 +282,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/win/titlebar_config.h"
 #include "ui/color/color_switches.h"  // nogncheck
-#endif  // OS_WIN
+#endif                                // OS_WIN
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/views_features.h"
@@ -4221,16 +4221,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVirtualKeyboardBorderedKeyName,
      flag_descriptions::kVirtualKeyboardBorderedKeyDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardBorderedKey)},
-    {"enable-cros-virtual-keyboard-multipaste",
-     flag_descriptions::kVirtualKeyboardMultipasteName,
-     flag_descriptions::kVirtualKeyboardMultipasteDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardMultipaste)},
-    {"enable-cros-virtual-keyboard-multipaste-suggestion",
-     flag_descriptions::kVirtualKeyboardMultipasteSuggestionName,
-     flag_descriptions::kVirtualKeyboardMultipasteSuggestionDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         chromeos::features::kVirtualKeyboardMultipasteSuggestion)},
     {"enable-experimental-accessibility-dictation-extension",
      flag_descriptions::kExperimentalAccessibilityDictationExtensionName,
      flag_descriptions::kExperimentalAccessibilityDictationExtensionDescription,
@@ -4672,6 +4662,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxPreserveLongerShortcutsTextName,
      flag_descriptions::kOmniboxPreserveLongerShortcutsTextDescription,
      kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kPreserveLongerShortcutsText)},
+    {"omnibox-aggregate-shortcuts",
+     flag_descriptions::kOmniboxAggregateShortcutsName,
+     flag_descriptions::kOmniboxAggregateShortcutsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kAggregateShortcuts)},
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) ||
         // defined(OS_WIN) || defined(OS_FUCHSIA)
 
@@ -7755,6 +7749,13 @@ const FeatureEntry kFeatureEntries[] = {
                                     "UseMultipleOverlays")},
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"usb-notification-controller",
+     flag_descriptions::kUsbNotificationControllerName,
+     flag_descriptions::kUsbNotificationControllerDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kUsbNotificationController)},
+#endif
+
 #if defined(OS_CHROMEOS)
     {"link-capturing-ui-update", flag_descriptions::kLinkCapturingUiUpdateName,
      flag_descriptions::kLinkCapturingUiUpdateDescription, kOsCrOS,
@@ -7766,6 +7767,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDragAndDropAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kDragAndDropAndroid)},
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+    {"use-ulp-languages-in-chrome",
+     flag_descriptions::kUseULPLanguagesInChromeName,
+     flag_descriptions::kUseULPLanguagesInChromeDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(language::kUseULPLanguagesInChrome)}
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

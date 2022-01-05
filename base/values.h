@@ -632,6 +632,8 @@ class BASE_EXPORT Value {
 // DictionaryValue provides a key-value dictionary with (optional) "path"
 // parsing for recursive access; see the comment at the top of the file. Keys
 // are std::string's and should be UTF-8 encoded.
+// DEPRECATED: Use DictStorage or base::Value(base::Value::Type::DICTIONARY)
+// instead.
 class BASE_EXPORT DictionaryValue : public Value {
  public:
   // Returns `value` if it is a dictionary, nullptr otherwise.
@@ -668,9 +670,6 @@ class BASE_EXPORT DictionaryValue : public Value {
   Value* SetString(StringPiece path, StringPiece in_value);
   // DEPRECATED, use `Value::SetStringKey()` or `Value::SetStringPath()`.
   Value* SetString(StringPiece path, const std::u16string& in_value);
-  // DEPRECATED, use `Value::SetKey()` or `Value::SetPath()`.
-  DictionaryValue* SetDictionary(StringPiece path,
-                                 std::unique_ptr<DictionaryValue> in_value);
   // DEPRECATED, use `Value::SetKey()` or `Value::SetPath()`.
   ListValue* SetList(StringPiece path, std::unique_ptr<ListValue> in_value);
 

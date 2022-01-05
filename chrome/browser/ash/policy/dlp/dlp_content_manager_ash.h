@@ -68,10 +68,6 @@ class DlpContentManagerAsh : public DlpContentManager,
   // currently visible.
   DlpContentRestrictionSet GetOnScreenPresentRestrictions() const;
 
-  // Returns whether screenshots should be restricted.
-  // TODO(crbug.com/1257493): Remove when it won't be used anymore.
-  virtual bool IsScreenshotRestricted(const ScreenshotArea& area);
-
   // Returns whether screenshots should be restricted for extensions API.
   virtual bool IsScreenshotApiRestricted(const ScreenshotArea& area);
 
@@ -104,11 +100,6 @@ class DlpContentManagerAsh : public DlpContentManager,
   // confidential content captured.
   void CheckStoppedVideoCapture(
       ash::OnCaptureModeDlpRestrictionChecked callback);
-
-  // Returns whether initiation of capture mode should be restricted because
-  // any restricted content is currently visible.
-  // TODO(crbug.com/1257493): Remove when it won't be used anymore.
-  bool IsCaptureModeInitRestricted();
 
   // Checks whether initiation of capture mode is restricted or not advised
   // based on the currently visible content. Depending on the result, calls

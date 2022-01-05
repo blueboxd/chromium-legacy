@@ -1218,6 +1218,11 @@ const base::Feature kTrafficCountersSettingsUi{
 const base::Feature kTrilinearFiltering{"TrilinearFiltering",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Unblock the UsbPeripheralNotificationController class in ash to display
+// USB related notifications from the type-c daemon in Chrome OS.
+const base::Feature kUsbNotificationController{
+    "UsbNotificationController", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Uses new  AuthSession-based API in cryptohome to authenticate users during
 // sign-in.
 const base::Feature kUseAuthsessionAuthentication{
@@ -1256,15 +1261,6 @@ const base::Feature kUserActivityPrediction{"UserActivityPrediction",
 // Enable or disable bordered key for virtual keyboard on Chrome OS.
 const base::Feature kVirtualKeyboardBorderedKey{
     "VirtualKeyboardBorderedKey", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable or disable multipaste feature for virtual keyboard on Chrome OS.
-const base::Feature kVirtualKeyboardMultipaste{
-    "VirtualKeyboardMultipaste", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable or disable showing multipaste suggestions in virtual keyboard on
-// Chrome OS.
-const base::Feature kVirtualKeyboardMultipasteSuggestion{
-    "VirtualKeyboardMultipasteSuggestion", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to allow enabling wake on WiFi features in shill.
 const base::Feature kWakeOnWifiAllowed{"WakeOnWifiAllowed",

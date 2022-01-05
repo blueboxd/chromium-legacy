@@ -476,7 +476,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_EQ(url_c, controller.GetLastCommittedEntry()->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, LogIpcPostedToCachedFrame) {
+// Flaky on Android, see crbug.com/1135601 and on other platforms, see
+// crbug.com/1128772.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DISABLED_LogIpcPostedToCachedFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // 1) Navigate to a page.
@@ -2085,7 +2088,7 @@ IN_PROC_BROWSER_TEST_F(
   // to A2 is in flight. Ensure that we do not try to restart it as it should
   // be superseded by a navigation to A1.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-  EXPECT_EQ(url_a1, web_contents()->GetURL());
+  EXPECT_EQ(url_a1, web_contents()->GetLastCommittedURL());
 }
 
 namespace {

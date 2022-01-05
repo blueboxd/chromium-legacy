@@ -592,6 +592,7 @@ void ShimlessRmaService::SetDeviceInformation(
     const std::string& serial_number,
     uint8_t region_index,
     uint8_t sku_index,
+    uint8_t white_label_index,
     SetDeviceInformationCallback callback) {
   if (state_proto_.state_case() != rmad::RmadState::kUpdateDeviceInfo) {
     LOG(ERROR) << "SetDeviceInformation called from incorrect state "
@@ -604,6 +605,8 @@ void ShimlessRmaService::SetDeviceInformation(
   state_proto_.mutable_update_device_info()->set_serial_number(serial_number);
   state_proto_.mutable_update_device_info()->set_region_index(region_index);
   state_proto_.mutable_update_device_info()->set_sku_index(sku_index);
+  state_proto_.mutable_update_device_info()->set_whitelabel_index(
+      white_label_index);
   TransitionNextStateGeneric(std::move(callback));
 }
 
@@ -724,6 +727,20 @@ void ShimlessRmaService::ProvisioningComplete(
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
+  TransitionNextStateGeneric(std::move(callback));
+}
+
+void ShimlessRmaService::RetryFinalization(RetryFinalizationCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kFinalize) {
+    LOG(ERROR) << "RetryFinalization called from incorrect state "
+               << state_proto_.state_case();
+    std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
+                            rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
+    return;
+  }
+  state_proto_.mutable_finalize()->set_choice(
+      rmad::FinalizeState::RMAD_FINALIZE_CHOICE_RETRY);
   TransitionNextStateGeneric(std::move(callback));
 }
 

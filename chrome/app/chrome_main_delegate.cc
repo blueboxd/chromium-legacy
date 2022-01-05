@@ -27,6 +27,7 @@
 #include "base/threading/hang_watcher.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -726,8 +727,8 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
 
   base::HangWatcher::InitializeOnMainThread();
 
-  base::sequence_manager::internal::SequenceManagerImpl::
-      MaybeSetNoWakeUpsForCanceledTasks();
+  base::internal::TimerBase::InitializeFeatures();
+  base::sequence_manager::internal::SequenceManagerImpl::InitializeFeatures();
 }
 
 #if defined(OS_WIN)

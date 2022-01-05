@@ -1668,6 +1668,11 @@ const char kOmniboxAdaptiveSuggestionsCountDescription[] =
     "flag to adjust the limit of offered suggestions. The number of shown "
     "suggestions will be no less than the platform default limit.";
 
+const char kOmniboxAggregateShortcutsName[] = "Omnibox Aggregate Shortcuts";
+const char kOmniboxAggregateShortcutsDescription[] =
+    "When enabled, duplicate shortcuts matching the user input will be given "
+    "an aggregate score; when disabled, they'll be scored independently";
+
 const char kOmniboxAssistantVoiceSearchName[] =
     "Omnibox Assistant Voice Search";
 const char kOmniboxAssistantVoiceSearchDescription[] =
@@ -1711,7 +1716,7 @@ const char kOmniboxKeywordSpaceTriggeringSettingDescription[] =
 
 const char kOmniboxMostVisitedTilesName[] = "Omnibox Most Visited Tiles";
 const char kOmniboxMostVisitedTilesDescription[] =
-    "Display a list of frquently visited pages from history as a single row "
+    "Display a list of frequently visited pages from history as a single row "
     "with a carousel instead of one URL per line.";
 
 const char kOmniboxPreserveLongerShortcutsTextName[] =
@@ -3554,6 +3559,10 @@ const char kUserMediaScreenCapturingName[] = "Screen Capture API";
 const char kUserMediaScreenCapturingDescription[] =
     "Allows sites to request a video stream of your screen.";
 
+const char kUseULPLanguagesInChromeName[] = "Use ULP languages in Chrome";
+const char kUseULPLanguagesInChromeDescription[] =
+    "Enables use of ULP language data in Chrome";
+
 const char kVideoTutorialsName[] = "Enable video tutorials";
 const char kVideoTutorialsDescription[] = "Show video tutorials in Chrome";
 const char kVideoTutorialsInstantFetchName[] =
@@ -5185,6 +5194,11 @@ const char kUiDevToolsDescription[] =
 const char kUiSlowAnimationsName[] = "Slow UI animations";
 const char kUiSlowAnimationsDescription[] = "Makes all UI animations slow.";
 
+const char kUsbNotificationControllerName[] =
+    "Enable USB Notification Controller";
+const char kUsbNotificationControllerDescription[] =
+    "Enables USB related notifications from the Chrome OS type-c daemon.";
+
 const char kVaapiJpegImageDecodeAccelerationName[] =
     "VA-API JPEG decode acceleration for images";
 const char kVaapiJpegImageDecodeAccelerationDescription[] =
@@ -5209,16 +5223,6 @@ const char kVirtualKeyboardDisabledName[] = "Disable Virtual Keyboard";
 const char kVirtualKeyboardDisabledDescription[] =
     "Always disable virtual keyboard regardless of device mode. Workaround for "
     "virtual keyboard showing with some external keyboards.";
-
-const char kVirtualKeyboardMultipasteName[] = "Virtual Keyboard MultiPaste";
-const char kVirtualKeyboardMultipasteDescription[] =
-    "Show virtual keyboard with multipaste UI";
-
-const char kVirtualKeyboardMultipasteSuggestionName[] =
-    "Virtual Keyboard MultiPaste Suggestion";
-const char kVirtualKeyboardMultipasteSuggestionDescription[] =
-    "Show multipaste items in virtual keyboard suggestion bar if they are "
-    "copied recently";
 
 const char kWakeOnWifiAllowedName[] = "Allow enabling wake on WiFi features";
 const char kWakeOnWifiAllowedDescription[] =

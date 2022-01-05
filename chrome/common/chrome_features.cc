@@ -416,13 +416,6 @@ const base::Feature kEnterpriseReportingExtensionManifestVersion{
     "EnterpriseReportingExtensionManifestVersion",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if !defined(OS_ANDROID)
-// Lazy initialize IndividualSettings for extensions from enterprise policy
-// that are not installed.
-const base::Feature kExtensionDeferredIndividualSettings{
-    "ExtensionDeferredIndividualSettings", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 // Controls whether the user justification text field is visible on the
 // extension request dialog.
 const base::Feature kExtensionWorkflowJustification{
@@ -978,10 +971,6 @@ const base::Feature kSitePerProcess {
 // Enables or disables SmartDim on Chrome OS.
 const base::Feature kSmartDim{"SmartDim", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-// Enables prewarming a renderer when the primary profile is created.
-const base::Feature kSpareRendererOnPrimaryProfileCreation{
-    "SpareRendererOnPrimaryProfileCreation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the ability to use the sound content setting to mute a
 // website.

@@ -971,6 +971,9 @@ extern const char kOmniboxActiveSearchEnginesDescription[];
 extern const char kOmniboxAdaptiveSuggestionsCountName[];
 extern const char kOmniboxAdaptiveSuggestionsCountDescription[];
 
+extern const char kOmniboxAggregateShortcutsName[];
+extern const char kOmniboxAggregateShortcutsDescription[];
+
 extern const char kOmniboxAssistantVoiceSearchName[];
 extern const char kOmniboxAssistantVoiceSearchDescription[];
 
@@ -2042,6 +2045,9 @@ extern const char kUseRealColorSpaceForAndroidVideoDescription[];
 extern const char kUserMediaScreenCapturingName[];
 extern const char kUserMediaScreenCapturingDescription[];
 
+extern const char kUseULPLanguagesInChromeName[];
+extern const char kUseULPLanguagesInChromeDescription[];
+
 extern const char kVideoTutorialsName[];
 extern const char kVideoTutorialsDescription[];
 extern const char kVideoTutorialsInstantFetchName[];
@@ -2987,6 +2993,9 @@ extern const char kUiDevToolsDescription[];
 extern const char kUiSlowAnimationsName[];
 extern const char kUiSlowAnimationsDescription[];
 
+extern const char kUsbNotificationControllerName[];
+extern const char kUsbNotificationControllerDescription[];
+
 extern const char kUseFakeDeviceForMediaStreamName[];
 extern const char kUseFakeDeviceForMediaStreamDescription[];
 
@@ -3007,12 +3016,6 @@ extern const char kVirtualKeyboardBorderedKeyDescription[];
 
 extern const char kVirtualKeyboardDisabledName[];
 extern const char kVirtualKeyboardDisabledDescription[];
-
-extern const char kVirtualKeyboardMultipasteName[];
-extern const char kVirtualKeyboardMultipasteDescription[];
-
-extern const char kVirtualKeyboardMultipasteSuggestionName[];
-extern const char kVirtualKeyboardMultipasteSuggestionDescription[];
 
 extern const char kWakeOnWifiAllowedName[];
 extern const char kWakeOnWifiAllowedDescription[];

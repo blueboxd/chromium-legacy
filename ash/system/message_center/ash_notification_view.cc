@@ -26,11 +26,13 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -43,6 +45,7 @@
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/notification_view_base.h"
+#include "ui/message_center/views/proportional_image_view.h"
 #include "ui/message_center/views/relative_time_formatter.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -159,6 +162,30 @@ views::Builder<views::BoxLayoutView> CreateCollapsedSummaryBuilder(
                     .SetText(notification.message())
                     .SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT)
                     .SetTextStyle(views::style::STYLE_SECONDARY));
+}
+
+// Perform a scale and translate animation by scale from (scale_value_x,
+// scalue_value_y) and translate from (translate_value_x, translate_value_y) to
+// its correct scale and position.
+void ScaleAndTranslateView(views::View* view,
+                           SkScalar scale_value_x,
+                           SkScalar scale_value_y,
+                           SkScalar translate_value_x,
+                           SkScalar translate_value_y) {
+  gfx::Transform transform;
+  transform.Translate(translate_value_x, translate_value_y);
+  transform.Scale(scale_value_x, scale_value_y);
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .SetDuration(base::TimeDelta())
+      .SetTransform(view, transform)
+      .Then()
+      .SetDuration(
+          base::Milliseconds(ash::kLargeImageScaleAndTranslateDurationMs))
+      .SetTransform(view, gfx::Transform(), gfx::Tween::ACCEL_0_100_DECEL_80);
 }
 
 }  // namespace
@@ -314,6 +341,7 @@ AshNotificationView::AshNotificationView(
   // icon.
   auto main_right_view_builder =
       CreateMainRightViewBuilder()
+          .CopyAddressTo(&main_right_view_)
           .AddChild(content_row_builder)
           .AddChild(
               views::Builder<views::Label>()
@@ -838,16 +866,19 @@ void AshNotificationView::ToggleInlineSettings(const ui::Event& event) {
   if (!inline_settings_enabled())
     return;
 
-  NotificationViewBase::ToggleInlineSettings(event);
+  bool should_show_inline_settings = !inline_settings_row()->GetVisible();
+  PerformToggleInlineSettingsAnimation(should_show_inline_settings);
 
-  bool inline_settings_visible = inline_settings_row()->GetVisible();
+  NotificationViewBase::ToggleInlineSettings(event);
 
   // In settings UI, we only show the app icon and header row along with the
   // inline settings UI.
   header_row()->SetVisible(true);
-  left_content()->SetVisible(!inline_settings_visible);
-  right_content()->SetVisible(!inline_settings_visible);
-  expand_button_->SetVisible(!inline_settings_visible);
+  left_content()->SetVisible(!should_show_inline_settings);
+  right_content()->SetVisible(!should_show_inline_settings);
+  expand_button_->SetVisible(!should_show_inline_settings);
+
+  PreferredSizeChanged();
 }
 
 void AshNotificationView::ActionButtonPressed(size_t index,
@@ -1026,11 +1057,6 @@ void AshNotificationView::UpdateAppIconView() {
 }
 
 void AshNotificationView::PerformExpandCollapseAnimation() {
-  // Ensure layout is up-to-date before animating views.
-  if (needs_layout())
-    Layout();
-  DCHECK(!needs_layout());
-
   if (title_row_)
     title_row_->PerformExpandCollapseAnimation();
 
@@ -1041,28 +1067,219 @@ void AshNotificationView::PerformExpandCollapseAnimation() {
                                      kHeaderRowFadeInAnimationDurationMs);
   }
 
-  // Fade in `message_view()`.
-  if (message_view()) {
+  // Fade in `message_view()`. We only do fade in for both message view in
+  // expanded and collapsed mode if there's a difference between them (a.k.a
+  // when `message_view()` is truncated).
+  if (message_view()->GetVisible() &&
+      message_view()->IsDisplayTextTruncated()) {
     message_center_utils::FadeInView(message_view(),
                                      kMessageViewFadeInAnimationDelayMs,
                                      kMessageViewFadeInAnimationDurationMs);
   }
 
   // Fade in `message_view_in_expanded_state_`.
-  if (message_view_in_expanded_state_->GetVisible()) {
+  if (message_view_in_expanded_state_->GetVisible() &&
+      message_view()->IsDisplayTextTruncated()) {
     message_center_utils::FadeInView(
         message_view_in_expanded_state_,
         kMessageViewInExpandedStateFadeInAnimationDelayMs,
         kMessageViewInExpandedStateFadeInAnimationDurationMs);
   }
 
-  expand_button_->PerformExpandCollapseAnimation();
+  if (!image_container_view()->children().empty()) {
+    PerformLargeImageAnimation();
+  }
 
   if (actions_row()->GetVisible()) {
     message_center_utils::FadeInView(actions_row(),
                                      kActionsRowFadeInAnimationDelayMs,
                                      kActionsRowFadeInAnimationDurationMs);
   }
+
+  if (total_grouped_notifications_) {
+    // Ensure layout is up-to-date before animating expand button. This is used
+    // for its bounds animation.
+    if (needs_layout())
+      Layout();
+    DCHECK(!needs_layout());
+
+    expand_button_->PerformExpandCollapseAnimation();
+  }
+}
+
+void AshNotificationView::PerformLargeImageAnimation() {
+  message_center_utils::InitLayerForAnimations(image_container_view());
+  message_center_utils::InitLayerForAnimations(icon_view());
+  auto icon_view_bounds = icon_view()->GetBoundsInScreen();
+  auto large_image_bounds = image_container_view()->GetBoundsInScreen();
+
+  if (IsExpanded()) {
+    // In expanded state, do a scale and translate from `icon_view()` to
+    // `image_container_view()`.
+    message_center_utils::InitLayerForAnimations(image_container_view());
+    ScaleAndTranslateView(image_container_view(),
+                          static_cast<double>(icon_view()->width()) /
+                              image_container_view()->width(),
+                          static_cast<double>(icon_view()->height()) /
+                              image_container_view()->height(),
+                          icon_view_bounds.x() - large_image_bounds.x(),
+                          icon_view_bounds.y() - large_image_bounds.y());
+
+    // If we a different image for `icon_view()` and `image_container_view()`
+    // (a.k.a hide_icon_on_expanded() is false), fade in
+    // `image_container_view()`.
+    if (!hide_icon_on_expanded()) {
+      message_center_utils::FadeInView(image_container_view(),
+                                       kLargeImageFadeInAnimationDelayMs,
+                                       kLargeImageFadeInAnimationDurationMs);
+    }
+    return;
+  }
+
+  if (hide_icon_on_expanded()) {
+    // In collapsed state, if we use a same image for `icon_view()` and
+    // `image_container_view()`, perform a scale and translate from
+    // `image_container_view()` to `icon_view()`.
+    ScaleAndTranslateView(
+        icon_view(),
+        static_cast<double>(image_container_view()->width()) /
+            icon_view()->width(),
+        static_cast<double>(image_container_view()->height()) /
+            icon_view()->height(),
+        large_image_bounds.x() - icon_view_bounds.x(),
+        large_image_bounds.y() - icon_view_bounds.y());
+    return;
+  }
+
+  // In collapsed state, if we use a different image for `icon_view()` and
+  // `image_container_view()`, fade out and scale down `image_container_view()`.
+  message_center_utils::FadeOutView(
+      image_container_view(),
+      base::BindRepeating(
+          [](base::WeakPtr<ash::AshNotificationView> parent,
+             views::View* image_container_view) {
+            if (parent) {
+              image_container_view->layer()->SetOpacity(1.0f);
+              //
+              image_container_view->layer()->SetTransform(gfx::Transform());
+              image_container_view->SetVisible(false);
+            }
+          },
+          weak_factory_.GetWeakPtr(), image_container_view()),
+      kLargeImageFadeOutAnimationDelayMs, kLargeImageFadeOutAnimationDurationMs,
+      gfx::Tween::ACCEL_20_DECEL_100);
+
+  gfx::Transform transform;
+  // Translate y further down so that it would not interfere with the currently
+  // shown `icon_view()`.
+  transform.Translate((icon_view_bounds.x() - large_image_bounds.x()),
+                      (icon_view_bounds.y() - large_image_bounds.y() +
+                       large_image_bounds.height()));
+  transform.Scale(static_cast<double>(icon_view()->width()) /
+                      image_container_view()->width(),
+                  static_cast<double>(icon_view()->height()) /
+                      image_container_view()->height());
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .At(base::TimeDelta())
+      .SetTransform(image_container_view(), gfx::Transform())
+      .Then()
+      .SetDuration(base::Milliseconds(kLargeImageScaleDownDurationMs))
+      .SetTransform(image_container_view(), transform,
+                    gfx::Tween::ACCEL_20_DECEL_100);
+}
+
+void AshNotificationView::PerformToggleInlineSettingsAnimation(
+    bool should_show_inline_settings) {
+  if (ui::ScopedAnimationDurationScaleMode::duration_multiplier() ==
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION)
+    return;
+
+  message_center_utils::InitLayerForAnimations(main_right_view_);
+  message_center_utils::InitLayerForAnimations(inline_settings_row());
+  message_center_utils::InitLayerForAnimations(left_content());
+  message_center_utils::InitLayerForAnimations(icon_view());
+
+  // Fade out views.
+  if (should_show_inline_settings) {
+    message_center_utils::FadeOutView(
+        left_content(),
+        base::BindRepeating(
+            [](base::WeakPtr<ash::AshNotificationView> parent,
+               views::View* left_content) {
+              if (parent) {
+                left_content->layer()->SetOpacity(1.0f);
+                left_content->SetVisible(false);
+              }
+            },
+            weak_factory_.GetWeakPtr(), left_content()),
+        /*delay_in_ms=*/0, kToggleInlineSettingsFadeOutDurationMs);
+
+    message_center_utils::FadeOutView(
+        expand_button_,
+        base::BindRepeating(
+            [](base::WeakPtr<ash::AshNotificationView> parent,
+               views::View* expand_button) {
+              if (parent) {
+                expand_button->layer()->SetOpacity(1.0f);
+                expand_button->SetVisible(false);
+              }
+            },
+            weak_factory_.GetWeakPtr(), expand_button_),
+        /*delay_in_ms=*/0, kToggleInlineSettingsFadeOutDurationMs);
+
+    // Fade out icon_view() if it exists.
+    if (icon_view()) {
+      message_center_utils::FadeOutView(
+          icon_view(),
+          base::BindRepeating(
+              [](base::WeakPtr<ash::AshNotificationView> parent,
+                 views::View* icon_view) {
+                if (parent) {
+                  icon_view->layer()->SetOpacity(1.0f);
+                  icon_view->SetVisible(false);
+                }
+              },
+              weak_factory_.GetWeakPtr(), icon_view()),
+          /*delay_in_ms=*/0, kToggleInlineSettingsFadeOutDurationMs);
+    }
+  } else {
+    message_center_utils::FadeOutView(
+        inline_settings_row(),
+        base::BindRepeating(
+            [](base::WeakPtr<ash::AshNotificationView> parent,
+               views::View* inline_settings_row) {
+              if (parent) {
+                inline_settings_row->layer()->SetOpacity(1.0f);
+                inline_settings_row->SetVisible(false);
+              }
+            },
+            weak_factory_.GetWeakPtr(), inline_settings_row()),
+        /*delay_in_ms=*/0, kToggleInlineSettingsFadeOutDurationMs);
+
+    if (!header_row()->GetVisible()) {
+      message_center_utils::FadeOutView(
+          header_row(),
+          base::BindRepeating(
+              [](base::WeakPtr<ash::AshNotificationView> parent,
+                 views::View* header_row) {
+                if (parent) {
+                  header_row->layer()->SetOpacity(1.0f);
+                  header_row->SetVisible(false);
+                }
+              },
+              weak_factory_.GetWeakPtr(), header_row()),
+          /*delay_in_ms=*/0, kToggleInlineSettingsFadeOutDurationMs);
+    }
+  }
+
+  // Fade in views.
+  message_center_utils::FadeInView(main_right_view_,
+                                   kToggleInlineSettingsFadeInDelayMs,
+                                   kToggleInlineSettingsFadeInDurationMs);
 }
 
 }  // namespace ash

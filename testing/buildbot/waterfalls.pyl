@@ -2544,6 +2544,14 @@
           'all'
         ],
       },
+      'Comparison Windows': {
+        'mixins': [
+          'isolate_profile_data',
+        ],
+        'additional_compile_targets': [
+          'all'
+        ],
+      },
       'Linux Builder (j-500) (reclient)': {
         # Copied from
         # https://source.chromium.org/chromium/chromium/src/+/main:testing/buildbot/waterfalls.pyl;l=4844-4854;drc=75f767e92e86611728189739fb26f4e2cdf212d9
@@ -2854,6 +2862,22 @@
           'docker',
           'linux-focal',
         ],
+      },
+      'fuchsia-fyi-x64-asan': {
+        'mixins': [
+          'linux-bionic',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'fuchsia_gtests',
+          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
+        },
       },
       'fuchsia-fyi-x64-dbg': {
         'additional_compile_targets': [
@@ -5354,7 +5378,10 @@
           'rust_build_tests',
         ],
         'test_suites': {
-          'gtest_tests': 'rust_unittests',
+          'gtest_tests': 'rust_gtests',
+          # Currently `build_rust_unit_tests` is false on Android (because
+          # `rustc_can_link` is false).
+          # TODO(https://crbug.com/1260120): Cover `rust_native_tests` here.
         },
       },
       'linux-rust-x64-rel' : {
@@ -5362,7 +5389,8 @@
           'rust_build_tests',
         ],
         'test_suites': {
-          'gtest_tests': 'rust_unittests',
+          'gtest_tests': 'rust_gtests',
+          'isolated_scripts': 'rust_native_tests',
         },
       },
     },

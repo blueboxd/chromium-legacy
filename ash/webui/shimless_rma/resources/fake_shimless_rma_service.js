@@ -569,9 +569,10 @@ export class FakeShimlessRmaService {
    * @param {string} serialNumber
    * @param {number} regionIndex
    * @param {number} skuIndex
+   * @param {number} whiteLabelIndex
    * @return {!Promise<!StateResult>}
    */
-  setDeviceInformation(serialNumber, regionIndex, skuIndex) {
+  setDeviceInformation(serialNumber, regionIndex, skuIndex, whiteLabelIndex) {
     // TODO(gavindodd): Validate range of region and sku.
     return this.getNextStateForMethod_(
         'setDeviceInformation', State.kUpdateDeviceInformation);
@@ -663,6 +664,13 @@ export class FakeShimlessRmaService {
    */
   finalizationComplete() {
     return this.getNextStateForMethod_('finalizationComplete', State.kFinalize);
+  }
+
+  /**
+   * @return {!Promise<!StateResult>}
+   */
+  retryFinalization() {
+    return this.getNextStateForMethod_('retryFinalization', State.kFinalize);
   }
 
   /**
@@ -1228,6 +1236,7 @@ export class FakeShimlessRmaService {
     this.methods_.register('retryProvisioning');
     this.methods_.register('provisioningComplete');
 
+    this.methods_.register('retryFinalization');
     this.methods_.register('finalizationComplete');
 
     this.methods_.register('writeProtectManuallyEnabled');

@@ -1660,6 +1660,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.Intent.IntentUriWithSelector" enum="Boolean"
+    expires_after="M102">
+  <owner>mthiesse@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    When a site attempts to navigate an intent: or android-app: URI, records
+    whether or not the URI contained an intent selector.
+  </summary>
+</histogram>
+
 <histogram name="Android.Intent.LaunchExternalAppFormSubmitHasUserGesture"
     enum="Boolean" expires_after="M74">
   <owner>tedchoc@chromium.org</owner>
@@ -1704,7 +1714,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Android.IsolatedSplits.ClassLoaderReplaced"
-    enum="BooleanYesNo" expires_after="2022-01-10">
+    enum="BooleanYesNo" expires_after="2022-08-10">
 <!-- Name completed by histogram_suffixes name="AndroidFeatureModuleName" -->
 
   <owner>cduvall@chromium.org</owner>
@@ -1728,7 +1738,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Android.IsolatedSplits.PreloadWaitTime" units="ms"
-    expires_after="2022-02-06">
+    expires_after="2022-08-06">
 <!-- Name completed by histogram_suffixes name="AndroidFeatureModuleName" -->
 
   <owner>cduvall@chromium.org</owner>

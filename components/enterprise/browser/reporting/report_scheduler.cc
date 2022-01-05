@@ -61,7 +61,8 @@ void OnExtensionRequestEnqueued(bool success) {
   // So far, there is nothing handle the enqueue failure as the CBCM status
   // report will cover all failed requests. However, we may need a retry logic
   // here if Extension workflow is decoupled from the status report.
-  LOG(ERROR) << "Extension request failed to be added to the pipeline.";
+  if (!success)
+    LOG(ERROR) << "Extension request failed to be added to the pipeline.";
 }
 
 }  // namespace
@@ -233,7 +234,7 @@ void ReportScheduler::GenerateAndUploadReport(ReportTrigger trigger) {
     case kTriggerNone:
     case kTriggerExtensionRequestRealTime:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case kTriggerTimer:
       VLOG(1) << "Generating enterprise report.";
       break;
@@ -299,7 +300,7 @@ void ReportScheduler::OnReportUploaded(ReportUploader::ReportStatus status) {
 
       delegate_->GetLocalState()->SetTime(kLastUploadSucceededTimestamp,
                                           base::Time::Now());
-      FALLTHROUGH;
+      [[fallthrough]];
     case ReportUploader::kTransientError:
       // Stop retrying and schedule the next report to avoid stale report.
       // Failure count is not reset so retry delay remains.

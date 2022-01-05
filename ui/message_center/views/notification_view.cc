@@ -412,7 +412,7 @@ void NotificationView::CreateOrUpdateInlineSettingsViews(
           IDS_MESSAGE_CENTER_BLOCK_ALL_NOTIFICATIONS;
       break;
     case NotifierType::CROSTINI_APPLICATION:
-      FALLTHROUGH;
+      [[fallthrough]];
     // PhoneHub notifications do not have inline settings.
     case NotifierType::PHONE_HUB:
       NOTREACHED();
@@ -528,6 +528,7 @@ void NotificationView::ToggleInlineSettings(const ui::Event& event) {
   dont_block_button_->SetChecked(true);
 
   NotificationViewBase::ToggleInlineSettings(event);
+  PreferredSizeChanged();
 
   if (inline_settings_row()->GetVisible())
     AddBackgroundAnimation(event);

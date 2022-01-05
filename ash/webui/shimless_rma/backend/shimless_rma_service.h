@@ -101,6 +101,7 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   void SetDeviceInformation(const std::string& serial_number,
                             uint8_t region_index,
                             uint8_t sku_index,
+                            uint8_t white_label_index,
                             SetDeviceInformationCallback callback) override;
 
   void GetCalibrationComponentList(
@@ -117,6 +118,7 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   void RetryProvisioning(RetryProvisioningCallback callback) override;
   void ProvisioningComplete(ProvisioningCompleteCallback callback) override;
 
+  void RetryFinalization(RetryFinalizationCallback callback) override;
   void FinalizationComplete(FinalizationCompleteCallback callback) override;
 
   void WriteProtectManuallyEnabled(

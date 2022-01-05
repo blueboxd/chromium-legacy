@@ -1409,8 +1409,8 @@ if (!is_android && !is_fuchsia) {
 
     data = [
       "data/",
+      "//ash/components/arc/test/data/icons",
       "//chrome/browser/page_load_metrics/integration_tests/data/",
-      "//components/test/data/arc/",
       "//components/test/data/autofill/",
       "//components/test/data/optimization_guide/",
       "//components/test/data/payments/",
@@ -6439,6 +6439,8 @@ test("unit_tests") {
       "../renderer/media/webrtc_logging_agent_impl_unittest.cc",
     ]
 
+    data += [ "//ash/components/arc/test/data/icons/" ]
+
     deps += [
       "//chrome/browser/share/core:share_targets_unittest",
       "//components/media_router/common:test_support",
@@ -7127,7 +7129,6 @@ test("unit_tests") {
       "../renderer/extensions/custom_types_unittest.cc",
       "../renderer/extensions/extension_hooks_delegate_unittest.cc",
       "../renderer/extensions/extension_localization_peer_unittest.cc",
-      "../renderer/extensions/i18n_hooks_delegate_unittest.cc",
       "../renderer/extensions/renderer_permissions_policy_delegate_unittest.cc",
       "../renderer/extensions/tabs_hooks_delegate_unittest.cc",
     ]

@@ -328,6 +328,11 @@ static_library("arc_test_support") {
     "test/test_browser_context.h",
   ]
 
+  data = [
+    "//ash/components/arc/test/data/icons/",
+    "//ash/components/arc/test/data/mem_profile/",
+  ]
+
   public_deps = [
     ":notification_test_support",
     "//ash/components/arc:compat_mode_test_support",

@@ -69,8 +69,7 @@ constexpr CGFloat kContentMaxWidth = 500;
     _customSpacingAfterImage = kStackViewSpacingAfterIllustration;
     _showDismissBarButton = YES;
     _dismissBarButtonSystemItem = UIBarButtonSystemItemDone;
-    _specificContentView = [[UIView alloc] init];
-    _specificContentView.translatesAutoresizingMaskIntoConstraints = NO;
+    _specificContentLayoutGuide = [[UILayoutGuide alloc] init];
   }
   return self;
 }
@@ -93,15 +92,23 @@ constexpr CGFloat kContentMaxWidth = 500;
   UIStackView* stackView =
       [self createStackViewWithArrangedSubviews:stackSubviews];
 
-  // UILayoutGuide that wraps the scrollable content. Needed in order to pin UI
-  // elements in view specific content above actions buttons.
-  UILayoutGuide* scrollContentLayoutGuide = [[UILayoutGuide alloc] init];
+  // UIView used to set constraints to the scrollable content. Needed in order
+  // to pin UI elements in specific content view above actions buttons. UI
+  // elements can't be added to this view as it does not work with VoiceOver,
+  // see crbug.com/1281364. UILayoutGuide can't be use here as it does not work
+  // with dynamic type, see crbug.com/1283622.
+  UIView* scrollContentView = [[UIView alloc] init];
+  scrollContentView.translatesAutoresizingMaskIntoConstraints = NO;
 
   UIScrollView* scrollView = [self createScrollView];
-  [scrollView addLayoutGuide:scrollContentLayoutGuide];
+  [scrollView addSubview:scrollContentView];
   [scrollView addSubview:stackView];
-  [scrollView addSubview:self.specificContentView];
+  [scrollView addLayoutGuide:self.specificContentLayoutGuide];
   [self.view addSubview:scrollView];
+
+  // Needed to have VoiceOver working to elements added in derived view
+  // controller.
+  self.specificContentSuperview = scrollView;
 
   self.view.preservesSuperviewLayoutMargins = YES;
   UILayoutGuide* margins = self.view.layoutMarginsGuide;
@@ -126,26 +133,25 @@ constexpr CGFloat kContentMaxWidth = 500;
         constraintLessThanOrEqualToAnchor:margins.widthAnchor],
 
     [stackView.topAnchor
-        constraintGreaterThanOrEqualToAnchor:scrollContentLayoutGuide
-                                                 .topAnchor],
+        constraintGreaterThanOrEqualToAnchor:scrollContentView.topAnchor],
     [stackView.bottomAnchor
-        constraintLessThanOrEqualToAnchor:self.specificContentView.topAnchor
+        constraintLessThanOrEqualToAnchor:self.specificContentLayoutGuide
+                                              .topAnchor
                                  constant:-kScrollViewBottomInsets],
 
-    [self.specificContentView.bottomAnchor
-        constraintEqualToAnchor:scrollContentLayoutGuide.bottomAnchor],
-    [self.specificContentView.centerXAnchor
+    [self.specificContentLayoutGuide.bottomAnchor
+        constraintEqualToAnchor:scrollContentView.bottomAnchor],
+    [self.specificContentLayoutGuide.centerXAnchor
         constraintEqualToAnchor:self.view.centerXAnchor],
-    [self.specificContentView.widthAnchor
+    [self.specificContentLayoutGuide.widthAnchor
         constraintLessThanOrEqualToAnchor:scrollView.widthAnchor],
 
     // Constrain its height to at least the scroll view height, so that derived
     // VCs can pin UI elements just above the buttons.
-    [scrollContentLayoutGuide.topAnchor
-        constraintEqualToAnchor:scrollView.topAnchor],
-    [scrollContentLayoutGuide.bottomAnchor
+    [scrollContentView.topAnchor constraintEqualToAnchor:scrollView.topAnchor],
+    [scrollContentView.bottomAnchor
         constraintEqualToAnchor:scrollView.bottomAnchor],
-    [scrollContentLayoutGuide.heightAnchor
+    [scrollContentView.heightAnchor
         constraintGreaterThanOrEqualToAnchor:scrollView.heightAnchor],
   ]];
 
@@ -210,12 +216,11 @@ constexpr CGFloat kContentMaxWidth = 500;
       .active = YES;
 
   if (self.topAlignedLayout) {
-    [stackView.topAnchor
-        constraintEqualToAnchor:scrollContentLayoutGuide.topAnchor]
+    [stackView.topAnchor constraintEqualToAnchor:scrollContentView.topAnchor]
         .active = YES;
   } else {
     [stackView.centerYAnchor
-        constraintEqualToAnchor:scrollContentLayoutGuide.centerYAnchor]
+        constraintEqualToAnchor:scrollContentView.centerYAnchor]
         .active = YES;
   }
 

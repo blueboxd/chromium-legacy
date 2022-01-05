@@ -606,21 +606,6 @@
             ]
         }
     ],
-    "AndroidMessagesSyncError": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MessagesForAndroidSyncError"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidPictureInPictureAPI": [
         {
             "platforms": [
@@ -3513,6 +3498,7 @@
             "platforms": [
                 "android",
                 "android_weblayer",
+                "android_webview",
                 "chromeos",
                 "chromeos_lacros",
                 "linux",
@@ -3524,6 +3510,27 @@
                     "name": "Enabled_20211116",
                     "enable_features": [
                         "EarlyCodeCache"
+                    ]
+                }
+            ]
+        }
+    ],
+    "EarlyEstablishGpuChannel": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EarlyEstablishGpuChannel"
                     ]
                 }
             ]
@@ -4431,21 +4438,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "IOSUMABackgroundSessions"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IOSURLBlocklistPolicy": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "URLBlocklistIOS"
                     ]
                 }
             ]
@@ -5668,6 +5660,21 @@
             ]
         }
     ],
+    "OptimizeEarlyNavigation": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OptimizeEarlyNavigation"
+                    ]
+                }
+            ]
+        }
+    ],
     "OptimizeLookalikeUrlNavigationThrottle": [
         {
             "platforms": [
@@ -6270,6 +6277,23 @@
                     },
                     "enable_features": [
                         "PreconnectToSearch"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PrefetchAndroidFonts": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PrefetchAndroidFonts"
                     ]
                 }
             ]

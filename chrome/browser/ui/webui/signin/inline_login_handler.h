@@ -13,7 +13,6 @@
 #include "net/cookies/canonical_cookie.h"
 
 namespace base {
-class Value;
 class DictionaryValue;
 }
 
@@ -44,6 +43,21 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
     kDefaultAuthMode = 0,
     kOfflineAuthMode = 1,
     kDesktopAuthMode = 2
+  };
+
+  // Parameters passed to `CompleteLogin` method.
+  struct CompleteLoginParams {
+    CompleteLoginParams();
+    ~CompleteLoginParams();
+
+    std::string email;
+    std::string password;
+    std::string gaia_id;
+    std::string auth_code;
+    bool skip_for_now = false;
+    bool trusted_value = false;
+    bool trusted_found = false;
+    bool choose_what_to_sync = false;
   };
 
   // Closes the dialog by calling the |inline.login.closeDialog| Javascript
@@ -80,15 +94,7 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
   virtual void HandleDialogClose(const base::ListValue* args);
 
   virtual void SetExtraInitParams(base::DictionaryValue& params) {}
-  virtual void CompleteLogin(const std::string& email,
-                             const std::string& password,
-                             const std::string& gaia_id,
-                             const std::string& auth_code,
-                             bool skip_for_now,
-                             bool trusted,
-                             bool trusted_found,
-                             bool choose_what_to_sync,
-                             base::Value edu_login_params) = 0;
+  virtual void CompleteLogin(const CompleteLoginParams& params) = 0;
 
   base::WeakPtrFactory<InlineLoginHandler> weak_ptr_factory_{this};
 };

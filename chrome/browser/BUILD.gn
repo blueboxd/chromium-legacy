@@ -2734,8 +2734,6 @@ static_library("browser") {
       "android/contextualsearch/unhandled_tap_web_contents_observer.cc",
       "android/contextualsearch/unhandled_tap_web_contents_observer.h",
       "android/cookies/cookies_fetcher_util.cc",
-      "android/crash/pure_java_exception_handler.cc",
-      "android/crash/pure_java_exception_handler.h",
       "android/customtabs/client_data_header_web_contents_observer.cc",
       "android/customtabs/client_data_header_web_contents_observer.h",
       "android/customtabs/custom_tabs_connection.cc",
@@ -4869,6 +4867,8 @@ static_library("browser") {
       "speech/tts_chromeos.h",
       "speech/tts_controller_delegate_impl.cc",
       "speech/tts_controller_delegate_impl.h",
+      "support_tool/ash/ui_hierarchy_data_collector.cc",
+      "support_tool/ash/ui_hierarchy_data_collector.h",
       "sync/desk_sync_service_factory.cc",
       "sync/desk_sync_service_factory.h",
       "sync/sync_error_notifier_ash.cc",
@@ -5068,13 +5068,6 @@ static_library("browser") {
       "apps/app_service/browser_app_instance_registry.h",
       "apps/app_service/instance_registry_updater.cc",
       "apps/app_service/instance_registry_updater.h",
-    ]
-  }
-
-  if (is_chromeos_ash) {
-    sources += [
-      "support_tool/ash/ui_hierarchy_data_collector.cc",
-      "support_tool/ash/ui_hierarchy_data_collector.h",
     ]
   }
 
@@ -5791,6 +5784,8 @@ static_library("browser") {
       "enterprise/connectors/device_trust/browser/browser_device_trust_connector_service.h",
       "enterprise/connectors/device_trust/signals/decorators/browser/browser_signals_decorator.cc",
       "enterprise/connectors/device_trust/signals/decorators/browser/browser_signals_decorator.h",
+      "enterprise/remote_commands/rotate_attestation_credential_job.cc",
+      "enterprise/remote_commands/rotate_attestation_credential_job.h",
     ]
     public_deps += [
       "//chrome/browser/enterprise/connectors/device_trust/attestation/common/proto:attestation_ca_proto",

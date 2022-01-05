@@ -2524,12 +2524,6 @@ void LayoutBlockFlow::QuadsForSelfInternal(Vector<FloatQuad>& quads,
     quads.push_back(FloatQuad(gfx::RectF(local_rect)));
 }
 
-LayoutObject* LayoutBlockFlow::HoverAncestor() const {
-  NOT_DESTROYED();
-  return IsAnonymousBlockContinuation() ? Continuation()
-                                        : LayoutBlock::HoverAncestor();
-}
-
 RootInlineBox* LayoutBlockFlow::CreateAndAppendRootInlineBox() {
   NOT_DESTROYED();
   RootInlineBox* root_box = CreateRootInlineBox();
@@ -4496,6 +4490,21 @@ void LayoutBlockFlow::CreateOrDestroyMultiColumnFlowThreadIfNeeded(
   DCHECK_EQ(flow_thread->Parent(), this);
 
   flow_thread->Populate();
+
+  if (auto* child = DynamicTo<LayoutNGBlockFlow>(flow_thread->FirstChild())) {
+    // Attempt to identify the anonymous inline wrapper that may have been
+    // created, if all multicol children are inline. The child insertion
+    // machinery (invoked above, when adding |flow_thread|) may already have
+    // inserted an anonymous block for other reasons (when the flow thread
+    // temporarily becomes a sibling of the actual DOM children), in which case
+    // we haven't tagged this anonymous wrapper properly. Do it now. This is
+    // important for OOF descendants, as this anonymous wrapper may act as their
+    // containing block, but that will only happen if it is tagged correctly;
+    // see LayoutObject::FindNonAnonymousContainingBlock().
+    if (child->IsAnonymousBlock() && !child->NextSibling())
+      child->SetIsAnonymousNGMulticolInlineWrapper();
+  }
+
   LayoutBlockFlowRareData& rare_data = EnsureRareData();
   DCHECK(!rare_data.multi_column_flow_thread_);
   rare_data.multi_column_flow_thread_ = flow_thread;

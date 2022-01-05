@@ -1975,11 +1975,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // This value gets cached by bitfields_.can_contain_fixed_position_objects_.
   bool ComputeIsFixedContainer(const ComputedStyle* style) const;
 
-  virtual LayoutObject* HoverAncestor() const {
-    NOT_DESTROYED();
-    return Parent();
-  }
-
   Element* OffsetParent(const Element* = nullptr) const;
 
   // Mark this object needing to re-run |CollectInlines()|. Ancestors may be
@@ -4285,8 +4280,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     unsigned subtree_paint_property_update_reasons_
         : kSubtreePaintPropertyUpdateReasonsBitfieldWidth;
 
-    // For LayoutBox. Updated during CompositingUpdate in
-    // pre-CompositeAfterPaint, or PrePaint in CompositeAfterPaint.
+    // For LayoutBox. It's updated during PrePaint.
     unsigned background_paint_location_ : 2;  // BackgroundPaintLocation.
 
     unsigned overflow_clip_axes_ : 2;

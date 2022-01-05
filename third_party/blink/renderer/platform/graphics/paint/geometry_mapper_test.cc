@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/geometry/geometry_test_helpers.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/box_reflection.h"
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
@@ -228,7 +227,7 @@ TEST_P(GeometryMapperTest, RotationAndScaleTransformWithAlias) {
 TEST_P(GeometryMapperTest, RotationAndScaleTransformWithTransformOrigin) {
   expected_transform = TransformationMatrix().Rotate(45).Scale(2);
   auto transform =
-      CreateTransform(t0(), *expected_transform, FloatPoint3D(50, 50, 0));
+      CreateTransform(t0(), *expected_transform, gfx::Point3F(50, 50, 0));
   local_state.SetTransform(*transform);
 
   input_rect = gfx::RectF(0, 0, 100, 100);
@@ -768,9 +767,8 @@ TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
   LocalToAncestorVisualRectInternal(transform1_state, transform2_and_clip_state,
                                     result, success);
   // Fails, because the clip of the destination state is not an ancestor of the
-  // clip of the source state. Known bugs in pre-CompositeAfterPaint or
-  // CompositeAfterPaint without LayoutNGBlockFragmentation would make such
-  // query. In such cases, no clips are applied.
+  // clip of the source state. Known bugs pre-LayoutNGBlockFragmentation would
+  // make such a query. In such cases, no clips are applied.
   EXPECT_TRUE(success);
   FloatClipRect expected(gfx::RectF(-100, 0, 100, 100));
   expected.ClearIsTight();

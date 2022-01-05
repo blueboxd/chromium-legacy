@@ -58,7 +58,6 @@
     "args": ["--enable-threaded-compositing",
              "--enable-blink-features=OffMainThreadCSSPaint",
              "--enable-gpu-rasterization",
-             "--enable-oop-rasterization",
              "--enable-accelerated-2d-canvas",
              "--disable-features=CanvasOopRasterization"]
   },
@@ -832,7 +831,6 @@
     "bases": [ "fast/canvas" ],
     "args": [ "--enable-features=CanvasOopRasterization",
               "--enable-accelerated-2d-canvas",
-              "--enable-oop-rasterization",
               "--enable-gpu-rasterization" ]
   },
   {
@@ -1055,7 +1053,7 @@
       "wpt_internal/fenced_frame",
       "http/tests/inspector-protocol/fenced-frame"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/mparch,Prerender2"]
+    "args": ["--enable-features=FencedFrames:implementation_type/mparch,Prerender2,PartitionedCookies"]
   },
   {
     "prefix": "fenced-frame-shadow-dom",
@@ -1063,7 +1061,7 @@
       "fenced_frame",
       "wpt_internal/fenced_frame"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,Prerender2"]
+    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,Prerender2,PartitionedCookies"]
   },
   {
     "prefix": "disable-custom-element-default-style",

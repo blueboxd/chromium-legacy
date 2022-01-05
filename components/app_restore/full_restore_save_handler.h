@@ -5,12 +5,14 @@
 #ifndef COMPONENTS_APP_RESTORE_FULL_RESTORE_SAVE_HANDLER_H_
 #define COMPONENTS_APP_RESTORE_FULL_RESTORE_SAVE_HANDLER_H_
 
+#include <list>
 #include <map>
 #include <memory>
 #include <set>
 #include <utility>
 
 #include "base/component_export.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_multi_source_observation.h"
@@ -18,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "components/app_restore/app_restore_arc_info.h"
 #include "components/app_restore/arc_save_handler.h"
+#include "components/app_restore/lacros_save_handler.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
@@ -172,6 +175,18 @@ class COMPONENT_EXPORT(APP_RESTORE) FullRestoreSaveHandler
   // the window's associated AppRestoreData.
   std::string GetAppId(aura::Window* window);
 
+  // Fetches the app launch information from `app_id_to_app_launch_infos_` for
+  // the given `profile_path` and `app_id`. `app_id` should be a Chrome app id.
+  AppLaunchInfoPtr FetchAppLaunchInfo(const base::FilePath& profile_path,
+                                      const std::string& app_id);
+
+  // Returns the window information from the restore data of `profile_path` for
+  // `app_id` and `window_id`.
+  std::unique_ptr<app_restore::WindowInfo> GetWindowInfo(
+      const base::FilePath& profile_path,
+      const std::string& app_id,
+      int window_id);
+
   base::OneShotTimer* GetTimerForTesting() { return &save_timer_; }
 
   // Since this is a singleton, tests may need to clear it between tests.
@@ -183,7 +198,8 @@ class COMPONENT_EXPORT(APP_RESTORE) FullRestoreSaveHandler
   friend class ash::full_restore::FullRestoreAppLaunchHandlerArcAppBrowserTest;
 
   // Map from a profile path to AppLaunchInfos.
-  using AppLaunchInfos = std::map<base::FilePath, std::list<AppLaunchInfoPtr>>;
+  using AppLaunchInfos =
+      base::flat_map<base::FilePath, std::list<AppLaunchInfoPtr>>;
 
   // Starts the timer that invokes Save (if timer isn't already running).
   void MaybeStartSaveTimer(const base::FilePath& profile_path);
@@ -224,11 +240,11 @@ class COMPONENT_EXPORT(APP_RESTORE) FullRestoreSaveHandler
 
   // The file handler for each user's profile to write the restore data to the
   // full restore file for each user. The key is the profile path.
-  std::map<base::FilePath, scoped_refptr<FullRestoreFileHandler>>
+  base::flat_map<base::FilePath, scoped_refptr<FullRestoreFileHandler>>
       profile_path_to_file_handler_;
 
   // The AppRegistryCache for each user's profile. The key is the profile path.
-  std::map<base::FilePath, apps::AppRegistryCache*>
+  base::flat_map<base::FilePath, apps::AppRegistryCache*>
       profile_path_to_app_registry_cache_;
 
   // The map from the window id to the full restore file path and the app id.
@@ -261,6 +277,8 @@ class COMPONENT_EXPORT(APP_RESTORE) FullRestoreSaveHandler
   std::set<base::FilePath> save_running_;
 
   std::unique_ptr<ArcSaveHandler> arc_save_handler_;
+
+  std::unique_ptr<LacrosSaveHandler> lacros_save_handler_;
 
   bool is_shut_down_ = false;
 

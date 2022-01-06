@@ -71,7 +71,8 @@ class BrowserReportGenerator {
 
   // Generates browser_version, channel, executable_path info in the given
   // report instance.
-  void GenerateBasicInfo(enterprise_management::BrowserReport* report);
+  void GenerateBasicInfo(enterprise_management::BrowserReport* report,
+                         ReportType report_type);
 };
 
 }  // namespace enterprise_reporting

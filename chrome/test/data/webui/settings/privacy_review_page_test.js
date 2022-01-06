@@ -6,7 +6,11 @@
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {CookiePrimarySetting, PrivacyReviewHistorySyncFragmentElement, SafeBrowsingSetting, SettingsPrivacyReviewPageElement} from 'chrome://settings/lazy_load.js';
+<<<<<<< HEAD
 import {Route, Router, routes, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+=======
+import {Route, Router, routes, SyncBrowserProxyImpl, syncPrefsIndividualDataTypes} from 'chrome://settings/settings.js';
+>>>>>>> 038cd96142d384c0d2238973f1cb277725a62eba
 
 import {assertEquals, assertFalse} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, isChildVisible} from 'chrome://webui-test/test_util.js';
@@ -282,6 +286,7 @@ suite('PrivacyReviewPage', function() {
       isHistorySyncFragmentVisibleExpected: true,
     });
     assertStepIndicatorModel(1);
+<<<<<<< HEAD
   }
 
   function assertSafeBrowsingCardVisible() {
@@ -313,6 +318,39 @@ suite('PrivacyReviewPage', function() {
     assertStepIndicatorModel(activeIndex);
   }
 
+=======
+  }
+
+  function assertSafeBrowsingCardVisible() {
+    assertQueryParameter('safeBrowsing');
+    assertCardComponentsVisible({
+      headerTextExpected: page.i18n('privacyReviewSafeBrowsingCardHeader'),
+      isSettingFooterVisibleExpected: true,
+      isBackButtonVisibleExpected: true,
+      isSafeBrowsingFragmentVisibleExpected: true,
+    });
+    assertStepIndicatorModel(isSyncOn ? 2 : 1);
+  }
+
+  function assertCookiesCardVisible() {
+    assertQueryParameter('cookies');
+    assertCardComponentsVisible({
+      headerTextExpected: page.i18n('privacyReviewCookiesCardHeader'),
+      isSettingFooterVisibleExpected: true,
+      isBackButtonVisibleExpected: true,
+      isCookiesFragmentVisibleExpected: true,
+    });
+    let activeIndex = 3;
+    if (!isSyncOn) {
+      activeIndex -= 1;
+    }
+    if (!shouldShowSafeBrowsingCard) {
+      activeIndex -= 1;
+    }
+    assertStepIndicatorModel(activeIndex);
+  }
+
+>>>>>>> 038cd96142d384c0d2238973f1cb277725a62eba
   test('startPrivacyReview', function() {
     // Make sure the pref to show the welcome card is on.
     page.setPrefValue('privacy_review.show_welcome_card', true);
@@ -388,6 +426,7 @@ suite('PrivacyReviewPage', function() {
     page.shadowRoot.querySelector('#backButton').click();
     flush();
     assertMsbbCardVisible();
+<<<<<<< HEAD
   });
 
   test('historySyncNavigatesAwayOnSyncOff', function() {
@@ -401,6 +440,11 @@ suite('PrivacyReviewPage', function() {
   });
 
   test('historySyncNotReachableWhenSyncOff', function() {
+=======
+  });
+
+  test('historySyncNavigatesAwayOnSyncOff', function() {
+>>>>>>> 038cd96142d384c0d2238973f1cb277725a62eba
     navigateToStep('historySync');
     setSyncEnabled(false);
     assertSafeBrowsingCardVisible();
@@ -480,6 +524,7 @@ suite('PrivacyReviewPage', function() {
     setCookieSetting(CookiePrimarySetting.BLOCK_THIRD_PARTY);
     assertSafeBrowsingCardVisible();
 
+<<<<<<< HEAD
     page.shadowRoot.querySelector('#nextButton').click();
     flush();
     assertCookiesCardVisible();
@@ -511,6 +556,132 @@ suite('PrivacyReviewPage', function() {
     setSyncEnabled(true);
     setSafeBrowsingSetting(SafeBrowsingSetting.DISABLED);
     assertCookiesCardVisible();
+=======
+    // User disables sync while history sync card is shown.
+    setSyncEnabled(false);
+    assertSafeBrowsingCardVisible();
+  });
+
+  test('historySyncNotReachableWhenSyncOff', function() {
+    navigateToStep('historySync');
+    setSyncEnabled(false);
+    assertSafeBrowsingCardVisible();
+  });
+
+  test(
+      'historySyncCardForwardNavigationShouldShowSafeBrowsingCard', function() {
+        navigateToStep('historySync');
+        setSyncEnabled(true);
+        setSafeBrowsingSetting(SafeBrowsingSetting.ENHANCED);
+        setCookieSetting(CookiePrimarySetting.BLOCK_THIRD_PARTY);
+        assertHistorySyncCardVisible();
+
+        page.shadowRoot.querySelector('#nextButton').click();
+        flush();
+        assertSafeBrowsingCardVisible();
+      });
+
+  test(
+      'historySyncCardForwardNavigationShouldHideSafeBrowsingCard', function() {
+        navigateToStep('historySync');
+        setSyncEnabled(true);
+        setSafeBrowsingSetting(SafeBrowsingSetting.DISABLED);
+        setCookieSetting(CookiePrimarySetting.BLOCK_THIRD_PARTY);
+        assertHistorySyncCardVisible();
+
+        page.shadowRoot.querySelector('#nextButton').click();
+        flush();
+        assertCookiesCardVisible();
+      });
+
+  test('safeBrowsingCardBackNavigationSyncOn', function() {
+    navigateToStep('safeBrowsing');
+    setSyncEnabled(true);
+    assertSafeBrowsingCardVisible();
+>>>>>>> 038cd96142d384c0d2238973f1cb277725a62eba
+
+    page.shadowRoot.querySelector('#backButton').click();
+    flush();
+    assertHistorySyncCardVisible();
+  });
+
+<<<<<<< HEAD
+  test('cookiesCardForwardNavigation', function() {
+    navigateToStep('cookies');
+    assertCookiesCardVisible();
+=======
+  test('safeBrowsingCardBackNavigationSyncOff', function() {
+    navigateToStep('safeBrowsing');
+    setSyncEnabled(false);
+    assertSafeBrowsingCardVisible();
+
+    page.shadowRoot.querySelector('#backButton').click();
+    flush();
+    assertMsbbCardVisible();
+  });
+
+  test('safeBrowsingCardGetsUpdated', function() {
+    navigateToStep('safeBrowsing');
+    setSafeBrowsingSetting(SafeBrowsingSetting.ENHANCED);
+    setCookieSetting(CookiePrimarySetting.BLOCK_THIRD_PARTY);
+    assertSafeBrowsingCardVisible();
+    const radioButtonGroup =
+        page.shadowRoot.querySelector('#safeBrowsingFragment')
+            .shadowRoot.querySelector('#safeBrowsingRadioGroup');
+    assertEquals(
+        Number(radioButtonGroup.selected), SafeBrowsingSetting.ENHANCED);
+
+    // Changing the safe browsing setting should automatically change the
+    // selected radio button.
+    setSafeBrowsingSetting(SafeBrowsingSetting.STANDARD);
+    assertEquals(
+        Number(radioButtonGroup.selected), SafeBrowsingSetting.STANDARD);
+
+    // Changing the safe browsing setting to a disabled state while shown should
+    // navigate away from the safe browsing card.
+    setSafeBrowsingSetting(SafeBrowsingSetting.DISABLED);
+    assertCookiesCardVisible();
+  });
+
+  test('safeBrowsingCardForwardNavigationShouldShowCookiesCard', function() {
+    navigateToStep('safeBrowsing');
+    setCookieSetting(CookiePrimarySetting.BLOCK_THIRD_PARTY);
+    assertSafeBrowsingCardVisible();
+
+    page.shadowRoot.querySelector('#nextButton').click();
+    flush();
+    assertCookiesCardVisible();
+  });
+
+  test('safeBrowsingCardForwardNavigationShouldHideCookiesCard', function() {
+    navigateToStep('safeBrowsing');
+    setCookieSetting(CookiePrimarySetting.ALLOW_ALL);
+    assertSafeBrowsingCardVisible();
+>>>>>>> 038cd96142d384c0d2238973f1cb277725a62eba
+
+    page.shadowRoot.querySelector('#nextButton').click();
+    flush();
+    assertCompletionCardVisible();
+  });
+
+<<<<<<< HEAD
+=======
+  test('cookiesCardBackNavigationShouldShowSafeBrowsingCard', function() {
+    navigateToStep('cookies');
+    setSyncEnabled(true);
+    setSafeBrowsingSetting(SafeBrowsingSetting.STANDARD);
+    assertCookiesCardVisible();
+
+    page.shadowRoot.querySelector('#backButton').click();
+    flush();
+    assertSafeBrowsingCardVisible();
+  });
+
+  test('cookiesCardBackNavigationShouldHideSafeBrowsingCard', function() {
+    navigateToStep('cookies');
+    setSyncEnabled(true);
+    setSafeBrowsingSetting(SafeBrowsingSetting.DISABLED);
+    assertCookiesCardVisible();
 
     page.shadowRoot.querySelector('#backButton').click();
     flush();
@@ -526,6 +697,7 @@ suite('PrivacyReviewPage', function() {
     assertCompletionCardVisible();
   });
 
+>>>>>>> 038cd96142d384c0d2238973f1cb277725a62eba
   test('cookiesCardGetsUpdated', function() {
     navigateToStep('cookies');
     setCookieSetting(CookiePrimarySetting.BLOCK_THIRD_PARTY);
@@ -555,7 +727,10 @@ suite('PrivacyReviewPage', function() {
     assertCompletionCardVisible();
 
     return whenPopState(function() {
-             page.shadowRoot.querySelector('#completeButton').click();
+             const completionFragment =
+                 page.shadowRoot.querySelector('#completionFragment');
+             completionFragment.shadowRoot.querySelector('#leaveButton')
+                 .click();
            })
         .then(function() {
           assertEquals(routes.PRIVACY, Router.getInstance().getCurrentRoute());
@@ -585,43 +760,159 @@ suite('HistorySyncFragment', function() {
   });
 
   /**
-   * @param {boolean} syncAllOnBefore If sync-all is on before the click.
-   * @param {boolean} historySyncOnBefore If history sync is on before the
-   *     click.
-   * @param {boolean} historySyncOnAfter If history sync is expected to be on
-   *     after the click.
+   * @param {!{
+   *   syncAllDataTypes: boolean,
+   *   typedUrlsSynced: boolean,
+   *   passwordsSynced: boolean,
+   * }} destructured1
    */
-  async function assertBrowserProxyCallOnToggleClicked(
-      syncAllOnBefore, historySyncOnBefore, historySyncOnAfterwardsExpected) {
-    const event = {
-      syncAllDataTypes: syncAllOnBefore,
-      typedUrlsSynced: historySyncOnBefore,
-    };
+  function setSyncStatus({
+    syncAllDataTypes,
+    typedUrlsSynced,
+    passwordsSynced,
+  }) {
+    if (syncAllDataTypes) {
+      assertTrue(typedUrlsSynced);
+      assertTrue(passwordsSynced);
+    }
+    const event = {};
+    for (const datatype of syncPrefsIndividualDataTypes) {
+      event[datatype] = true;
+    }
+    // Overwrite datatypes needed in tests.
+    event.syncAllDataTypes = syncAllDataTypes;
+    event.typedUrlsSynced = typedUrlsSynced;
+    event.passwordsSynced = passwordsSynced;
     webUIListenerCallback('sync-prefs-changed', event);
     flush();
-
-    page.shadowRoot.querySelector('#historyToggle').click();
-
-    const syncPrefs = await syncBrowserProxy.whenCalled('setSyncDatatypes');
-    assertFalse(syncPrefs.syncAllDataTypes);
-    assertEquals(historySyncOnAfterwardsExpected, syncPrefs.typedUrlsSynced);
   }
 
-  test('syncAllOnDisableHistorySync', async function() {
-    assertBrowserProxyCallOnToggleClicked(
-        /*syncAllOnBefore=*/ true, /*historySyncOnBefore=*/ true,
-        /*historySyncOnAfterwardsExpected=*/ false);
+  /**
+   * @param {!{
+   *   syncAllDatatypesExpected: boolean,
+   *   typedUrlsSyncedExpected: boolean,
+   * }} destructured1
+   */
+  async function assertBrowserProxyCall({
+    syncAllDatatypesExpected,
+    typedUrlsSyncedExpected,
+  }) {
+    const syncPrefs = await syncBrowserProxy.whenCalled('setSyncDatatypes');
+    assertEquals(syncAllDatatypesExpected, syncPrefs.syncAllDataTypes);
+    assertEquals(typedUrlsSyncedExpected, syncPrefs.typedUrlsSynced);
+    syncBrowserProxy.resetResolver('setSyncDatatypes');
+  }
+
+  test('syncAllOnDisableReenableHistorySync', async function() {
+    setSyncStatus({
+      syncAllDataTypes: true,
+      typedUrlsSynced: true,
+      passwordsSynced: true,
+    });
+    page.shadowRoot.querySelector('#historyToggle').click();
+    await assertBrowserProxyCall({
+      syncAllDatatypesExpected: false,
+      typedUrlsSyncedExpected: false,
+    });
+
+    // Re-enabling history sync re-enables sync all if sync all was on before
+    // and if all sync datatypes are still enabled.
+    page.shadowRoot.querySelector('#historyToggle').click();
+    return assertBrowserProxyCall({
+      syncAllDatatypesExpected: true,
+      typedUrlsSyncedExpected: true,
+    });
   });
 
-  test('syncAllOffDisableHistorySync', async function() {
-    assertBrowserProxyCallOnToggleClicked(
-        /*syncAllOnBefore=*/ false, /*historySyncOnBefore=*/ true,
-        /*historySyncOnAfterwardsExpected=*/ false);
+  test('syncAllOnDisableReenableHistorySyncOtherDatatypeOff', async function() {
+    setSyncStatus({
+      syncAllDataTypes: true,
+      typedUrlsSynced: true,
+      passwordsSynced: true,
+    });
+    page.shadowRoot.querySelector('#historyToggle').click();
+    await assertBrowserProxyCall({
+      syncAllDatatypesExpected: false,
+      typedUrlsSyncedExpected: false,
+    });
+
+    // The user disables another datatype in a different tab.
+    setSyncStatus({
+      syncAllDataTypes: false,
+      typedUrlsSynced: false,
+      passwordsSynced: false,
+    });
+
+    // Re-enabling history sync in the privacy review doesn't re-enable sync
+    // all.
+    page.shadowRoot.querySelector('#historyToggle').click();
+    return assertBrowserProxyCall({
+      syncAllDatatypesExpected: false,
+      typedUrlsSyncedExpected: true,
+    });
+  });
+
+  test('syncAllOnDisableReenableHistorySyncWithNavigation', async function() {
+    setSyncStatus({
+      syncAllDataTypes: true,
+      typedUrlsSynced: true,
+      passwordsSynced: true,
+    });
+    page.shadowRoot.querySelector('#historyToggle').click();
+    await assertBrowserProxyCall({
+      syncAllDatatypesExpected: false,
+      typedUrlsSyncedExpected: false,
+    });
+
+    // The user navigates to another card, then back to the history sync card.
+    Router.getInstance().navigateTo(
+        routes.PRIVACY_REVIEW,
+        /* opt_dynamicParameters */ new URLSearchParams('step=msbb'));
+    Router.getInstance().navigateTo(
+        routes.PRIVACY_REVIEW,
+        /* opt_dynamicParameters */ new URLSearchParams('step=historySync'));
+
+    // Re-enabling history sync in the privacy review doesn't re-enable sync
+    // all.
+    page.shadowRoot.querySelector('#historyToggle').click();
+    return assertBrowserProxyCall({
+      syncAllDatatypesExpected: false,
+      typedUrlsSyncedExpected: true,
+    });
+  });
+
+  test('syncAllOffDisableReenableHistorySync', async function() {
+    setSyncStatus({
+      syncAllDataTypes: false,
+      typedUrlsSynced: true,
+      passwordsSynced: true,
+    });
+    page.shadowRoot.querySelector('#historyToggle').click();
+    await assertBrowserProxyCall({
+      syncAllDatatypesExpected: false,
+      typedUrlsSyncedExpected: false,
+    });
+
+    // Re-enabling history sync doesn't re-enable sync all if sync all wasn't on
+    // originally.
+    page.shadowRoot.querySelector('#historyToggle').click();
+    return assertBrowserProxyCall({
+      syncAllDataTypes: false,
+      syncAllDatatypesExpected: false,
+      typedUrlsSyncedExpected: true,
+    });
   });
 
   test('syncAllOffEnableHistorySync', async function() {
-    assertBrowserProxyCallOnToggleClicked(
-        /*syncAllOnBefore=*/ false, /*historySyncOnBefore=*/ false,
-        /*historySyncOnAfterwardsExpected=*/ true);
+    setSyncStatus({
+      syncAllDataTypes: false,
+      typedUrlsSynced: false,
+      passwordsSynced: true,
+    });
+    page.shadowRoot.querySelector('#historyToggle').click();
+    return assertBrowserProxyCall({
+      syncAllDatatypesExpected: false,
+      typedUrlsSyncedExpected: true,
+    });
   });
 });

@@ -79,6 +79,10 @@ int PowerMonitorDeviceSource::GetCurrentSpeedLimit() {
   return thermal_state_observer_->GetCurrentSpeedLimit();
 }
 
+int PowerMonitorDeviceSource::GetCurrentSpeedLimit() {
+  return thermal_state_observer_->GetCurrentSpeedLimit();
+}
+
 namespace {
 
 void BatteryEventCallback(void*) {

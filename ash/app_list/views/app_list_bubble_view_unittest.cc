@@ -119,7 +119,7 @@ class AppListBubbleViewTest : public AshTestBase {
     app_list_test_model_ = std::make_unique<test::AppListTestModel>();
     search_model_ = std::make_unique<SearchModel>();
     Shell::Get()->app_list_controller()->SetActiveModel(
-        app_list_test_model_.get(), search_model_.get());
+        /*profile_id=*/1, app_list_test_model_.get(), search_model_.get());
   }
 
   // Shows the app list on the primary display.
@@ -299,6 +299,30 @@ TEST_F(AppListBubbleViewTest, ShowAnimationCreatesAndDestroysLayers) {
 
   // The apps grid view always has a layer, it still exists.
   EXPECT_TRUE(apps_grid_view->layer());
+}
+
+TEST_F(AppListBubbleViewTest, ShowAnimationDestroysAndRestoresGradientMask) {
+  // Enable animations.
+  base::test::ScopedFeatureList feature(
+      features::kProductivityLauncherAnimation);
+  ui::ScopedAnimationDurationScaleMode duration(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Show an app list with enough apps to fill the page and trigger a gradient
+  // at the bottom.
+  AddAppItems(50);
+  ShowAppList();
+
+  // Gradient mask layer is suppressed during show animation for performance.
+  auto* scroll_view = GetAppsPage()->scroll_view();
+  EXPECT_FALSE(scroll_view->layer()->layer_mask_layer());
+
+  // Finish the animation.
+  auto* apps_grid_view = GetAppsGridView();
+  WaitForLayerAnimation(apps_grid_view->layer());
+
+  // Gradient mask layer is restored.
+  EXPECT_TRUE(scroll_view->layer()->layer_mask_layer());
 }
 
 TEST_F(AppListBubbleViewTest, ShowAnimationRecordsSmoothnessHistogram) {

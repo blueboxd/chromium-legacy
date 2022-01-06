@@ -639,9 +639,15 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSmartDim;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSpareRendererOnPrimaryProfileCreation;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+<<<<<<< HEAD
+=======
 extern const base::Feature kSoundContentSetting;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+>>>>>>> 038cd96142d384c0d2238973f1cb277725a62eba
 extern const base::Feature kSupportTool;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

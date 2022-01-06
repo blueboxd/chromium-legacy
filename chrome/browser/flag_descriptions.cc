@@ -398,10 +398,6 @@ const char kAutofillProfileServerValidationName[] =
 const char kAutofillProfileServerValidationDescription[] =
     "Allows autofill to use server side validation";
 
-const char kAutofillPruneSuggestionsName[] = "Autofill Prune Suggestions";
-const char kAutofillPruneSuggestionsDescription[] =
-    "Further limits the number of suggestions in the Autofill dropdown.";
-
 const char kAutofillUseConsistentPopupSettingsIconsName[] =
     "Consistent Autofill settings icon";
 const char kAutofillUseConsistentPopupSettingsIconsDescription[] =
@@ -3203,6 +3199,11 @@ const char kInterestFeedV2ClickAndViewActionsConditionalUploadDescription[] =
     "Only enable the upload of clicks/views in Feed V2 after reaching "
     "conditions.";
 
+const char kLightweightReactionsAndroidName[] =
+    "Lightweight Reactions (Android)";
+const char kLightweightReactionsAndroidDescription[] =
+    "Enables the Lightweight Reactions entry point in the tab share sheet.";
+
 const char kMessagesForAndroidAdsBlockedName[] = "Ads Blocked Messages UI";
 const char kMessagesForAndroidAdsBlockedDescription[] =
     "When enabled, ads blocked message will use the new Messages UI.";
@@ -4956,11 +4957,6 @@ const char kArcInputOverlayName[] = "Enable ARC Input Overlay";
 const char kArcInputOverlayDescription[] =
     "Enables the input overlay feature for some Android game apps, "
     "so it can play with a keyboard and a mouse instead of touch screen";
-
-const char kScanAppMediaLinkName[] = "Show Media app link in Scan app";
-const char kScanAppMediaLinkDescription[] =
-    "Enables showing a link in the Scan app to open scanned images in the Media"
-    " app.";
 
 const char kScanAppMultiPageScanName[] =
     "Enable multi-page scanning in Scan app";

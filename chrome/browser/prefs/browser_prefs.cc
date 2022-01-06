@@ -1028,7 +1028,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ash::KerberosCredentialsManager::RegisterLocalStatePrefs(registry);
   ash::KioskAppManager::RegisterPrefs(registry);
   ash::KioskCryptohomeRemover::RegisterPrefs(registry);
-  chromeos::language_prefs::RegisterPrefs(registry);
+  ash::language_prefs::RegisterPrefs(registry);
   chromeos::local_search_service::SearchMetricsReporter::
       RegisterLocalStatePrefs(registry);
   ash::login::SecurityTokenSessionController::RegisterLocalStatePrefs(registry);
@@ -1765,6 +1765,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 10/2021.
   profile_prefs->ClearPref(kAppCacheForceEnabled);
+
+  // Added 11/2021.
+  syncer::ClearObsoleteKeystoreBootstrapTokenPref(profile_prefs);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

@@ -6,8 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "chromecast/cast_core/message_port_service.h"
-#include "components/cast/message_port/cast_core/create_message_port_core.h"
-#include "components/cast/message_port/cast_core/message_port_core.h"
+#include "components/cast/message_port/platform_message_port.h"
 #include "components/cast_streaming/browser/public/receiver_session.h"
 #include "components/cast_streaming/public/cast_streaming_url.h"
 #include "content/public/browser/web_contents.h"
@@ -69,20 +68,23 @@ void StreamingRuntimeApplication::StartAvSettingsQuery(
 GURL StreamingRuntimeApplication::InitializeAndGetInitialURL(
     CoreApplicationServiceGrpc* grpc_stub,
     CastWebContents* cast_web_contents) {
-  message_port_service_ = std::make_unique<MessagePortService>(
-      base::BindRepeating(&cast_api_bindings::CreateMessagePortCorePair),
-      grpc_cq_, grpc_stub);
+  message_port_service_ =
+      std::make_unique<MessagePortService>(grpc_cq_, grpc_stub);
 
   // Bind Cast Transport.
   std::unique_ptr<cast_api_bindings::MessagePort> server_port;
   std::unique_ptr<cast_api_bindings::MessagePort> client_port;
-  cast_api_bindings::CreateMessagePortCorePair(&client_port, &server_port);
+  cast_api_bindings::CreatePlatformMessagePortPair(&client_port, &server_port);
   message_port_service_->ConnectToPort(kCastTransportBindingName,
-                                       std::move(server_port));
+                                       std::move(client_port));
 
   // Initialize the streaming receiver.
   receiver_session_client_ = std::make_unique<StreamingReceiverSessionClient>(
+<<<<<<< HEAD
       task_runner(), network_context_getter_, std::move(client_port), this,
+=======
+      task_runner(), network_context_getter_, std::move(server_port), this,
+>>>>>>> 038cd96142d384c0d2238973f1cb277725a62eba
       true,
       app_config().app_id() !=
           openscreen::cast::GetIosAppStreamingAudioVideoAppId());

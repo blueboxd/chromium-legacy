@@ -143,22 +143,12 @@ const char kDiscoverFeedInNtpDescription[] =
     "When enabled, replaces articles feed with new content Suggestion Feed in "
     "the NTP.";
 
-const char kDownloadMobileConfigFileName[] = "Download .mobileconfig file";
-const char kDownloadMobileConfigFileDescription[] =
-    "Allows user to download and install a .mobileconfig file";
-
 const char kDownloadVcardName[] = "Download Vcard";
 const char kDownloadVcardDescription[] = "Allows user to download & open Vcard";
 
 const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInSettingsDescription[] =
     "Enables password editing in settings.";
-
-const char kRestoreSessionFromCacheName[] =
-    "Use native WKWebView sesion restoration (iOS15 only).";
-const char kRestoreSessionFromCacheDescription[] =
-    "Enable instant session restoration for faster web session restoration "
-    "(iOS15 only).";
 
 const char kEnableAutofillAccountWalletStorageName[] =
     "Enable the account data storage for autofill";
@@ -252,10 +242,10 @@ const char kFillingAcrossAffiliatedWebsitesDescription[] =
     "Enables filling password on a website when there is saved "
     "password on affiliated website.";
 
-const char kFollowingFeedInNtpName[] = "Following feed in the new tab page.";
-const char kFollowingFeedInNtpDescription[] =
-    "Enabled Following feed to display personalized feed based on websites "
-    "that users follow.";
+const char kEnableWebChannelsName[] = "Enable Web Channels";
+const char kEnableWebChannelsDescription[] =
+    "Enable folowing content from web and display Following feed on NTP based "
+    "on websites that users followed.";
 
 const char kForceDisableExtendedSyncPromosName[] =
     "Disable all extended sync promos";
@@ -420,6 +410,12 @@ const char kReadingListMessagesDescription[] =
     "When enabled, a Messages prompt may be presented to allow the user to "
     "save the current page to Reading List";
 
+const char kRestoreSessionFromCacheName[] =
+    "Use native WKWebView sesion restoration (iOS15 only).";
+const char kRestoreSessionFromCacheDescription[] =
+    "Enable instant session restoration for faster web session restoration "
+    "(iOS15 only).";
+
 const char kSafeBrowsingAvailableName[] = "Make Safe Browsing available";
 const char kSafeBrowsingAvailableDescription[] =
     "When enabled, navigation URLs are compared to Safe Browsing blocklists, "
@@ -468,6 +464,12 @@ const char kShowAutofillTypePredictionsDescription[] =
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
+
+const char kSynthesizedRestoreSessionName[] =
+    "Use a synthesized native WKWebView sesion restoration (iOS15 only).";
+const char kSynthesizedRestoreSessionDescription[] =
+    "Enable instant session restoration by synthesizing WKWebView session "
+    "restoration data (iOS15 only).";
 
 const char kSyncTrustedVaultPassphraseiOSRPCName[] =
     "Enable RPC for sync trusted vault passphrase.";

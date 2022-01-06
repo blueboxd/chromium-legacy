@@ -125,6 +125,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Arc.AdaptiveIconLoad.FromArcAppIcon"
     enum="BooleanIsAdaptiveIcon" expires_after="2020-12-31">
+  <obsolete>
+    Obsoleted in November 2021.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>lgcheng@google.com</owner>
   <owner>nancylingwang@chromium.org</owner>
@@ -136,6 +139,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Arc.AdaptiveIconLoad.FromArcDefaultAppIcon"
     enum="BooleanIsAdaptiveIcon" expires_after="2020-12-31">
+  <obsolete>
+    Obsoleted in November 2021.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>lgcheng@google.com</owner>
   <owner>nancylingwang@chromium.org</owner>
@@ -147,6 +153,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Arc.AdaptiveIconLoad.FromNonArcAppIcon"
     enum="BooleanIsAdaptiveIcon" expires_after="2020-12-31">
+  <obsolete>
+    Obsoleted in November 2021.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>lgcheng@google.com</owner>
   <owner>nancylingwang@chromium.org</owner>
@@ -185,6 +194,9 @@ chromium-metrics-reviews@google.com.
     <variant name="Other" summary="Other apps."/>
     <variant name="Overall" summary="Total statistics."/>
     <variant name="PlayStore" summary="Play Store."/>
+    <variant name="PreNotified" summary="Pre-ANR situation is notified."/>
+    <variant name="RecoveryFailed"
+        summary="Recovery failed for pre-ANR situation."/>
     <variant name="SystemApp" summary="System components."/>
     <variant name="SystemServer" summary="System Server."/>
   </token>

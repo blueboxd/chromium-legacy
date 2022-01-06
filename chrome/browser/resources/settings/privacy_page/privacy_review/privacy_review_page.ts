@@ -12,6 +12,7 @@ import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import '../../prefs/prefs.js';
 import '../../settings_shared_css.js';
 import './privacy_review_clear_on_exit_fragment.js';
+import './privacy_review_completion_fragment.js';
 import './privacy_review_cookies_fragment.js';
 import './privacy_review_history_sync_fragment.js';
 import './privacy_review_msbb_fragment.js';
@@ -32,21 +33,8 @@ import {routes} from '../../route.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../../router.js';
 import {CookiePrimarySetting} from '../../site_settings/site_settings_prefs_browser_proxy.js';
 
+import {PrivacyReviewStep} from './constants.js';
 import {StepIndicatorModel} from './step_indicator.js';
-
-/**
- * Steps in the privacy review flow in their order of appearance. The page
- * updates from those steps to show the corresponding page content.
- */
-enum PrivacyReviewStep {
-  WELCOME = 'welcome',
-  MSBB = 'msbb',
-  CLEAR_ON_EXIT = 'clearOnExit',
-  HISTORY_SYNC = 'historySync',
-  SAFE_BROWSING = 'safeBrowsing',
-  COOKIES = 'cookies',
-  COMPLETION = 'completion',
-}
 
 interface PrivacyReviewStepComponents {
   headerString?: string;

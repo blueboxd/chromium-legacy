@@ -117,10 +117,6 @@ extern const char kDetectMainThreadFreezeDescription[];
 extern const char kDiscoverFeedInNtpName[];
 extern const char kDiscoverFeedInNtpDescription[];
 
-// Title and description for the flag to enable .mobileconfig file downloads.
-extern const char kDownloadMobileConfigFileName[];
-extern const char kDownloadMobileConfigFileDescription[];
-
 // Title and description for the flag to enable Vcard support.
 extern const char kDownloadVcardName[];
 extern const char kDownloadVcardDescription[];
@@ -129,10 +125,6 @@ extern const char kDownloadVcardDescription[];
 // iOS.
 extern const char kEditPasswordsInSettingsName[];
 extern const char kEditPasswordsInSettingsDescription[];
-
-// Title and description for the flag to native restore web states.
-extern const char kRestoreSessionFromCacheName[];
-extern const char kRestoreSessionFromCacheDescription[];
 
 extern const char kEnableAutofillAccountWalletStorageName[];
 extern const char kEnableAutofillAccountWalletStorageDescription[];
@@ -218,10 +210,10 @@ extern const char kExpandedTabStripDescription[];
 extern const char kFillingAcrossAffiliatedWebsitesName[];
 extern const char kFillingAcrossAffiliatedWebsitesDescription[];
 
-// Title and description for the flag to introduce a Following feed in the
-// Chrome iOS NTP.
-extern const char kFollowingFeedInNtpName[];
-extern const char kFollowingFeedInNtpDescription[];
+// Title and description for the flag to introduce following web channels on
+// Chrome iOS.
+extern const char kEnableWebChannelsName[];
+extern const char kEnableWebChannelsDescription[];
 
 // Title and description for the flag to disable all extended sync promos.
 extern const char kForceDisableExtendedSyncPromosName[];
@@ -369,6 +361,10 @@ extern const char kPasswordReuseDetectionDescription[];
 extern const char kReadingListMessagesName[];
 extern const char kReadingListMessagesDescription[];
 
+// Title and description for the flag to native restore web states.
+extern const char kRestoreSessionFromCacheName[];
+extern const char kRestoreSessionFromCacheDescription[];
+
 // Title and description for the flag that makes Safe Browsing available.
 extern const char kSafeBrowsingAvailableName[];
 extern const char kSafeBrowsingAvailableDescription[];
@@ -427,6 +423,10 @@ extern const char kStartSurfaceDescription[];
 // sandbox servers.
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
+
+// Title and description for the flag to synthesize native restore web states.
+extern const char kSynthesizedRestoreSessionName[];
+extern const char kSynthesizedRestoreSessionDescription[];
 
 // Title and description for the flag to control if Chrome Sync should support
 // trusted vault RPC.

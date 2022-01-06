@@ -16,6 +16,14 @@
 namespace permissions {
 enum class RequestType;
 enum class PermissionAction;
+}  // namespace permissions
+
+namespace view {
+class Widget;
+}
+
+namespace view {
+class Widget;
 }
 
 namespace view {

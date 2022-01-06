@@ -555,9 +555,8 @@ class PDFiumEngine : public PDFEngine,
   // within form text fields.
   void SetSelecting(bool selecting);
 
-  // Sets whether or not focus is in form text field or form combobox text
-  // field.
-  void SetInFormTextArea(bool in_form_text_area);
+  // Sets what type of field has focus.
+  void SetFieldFocus(PDFEngine::FocusFieldType type);
 
   // Sets whether or not left mouse button is currently being held down.
   void SetMouseLeftButtonDown(bool is_mouse_left_button_down);
@@ -639,9 +638,9 @@ class PDFiumEngine : public PDFEngine,
   bool HandleTabForward(int modifiers);
   bool HandleTabBackward(int modifiers);
 
-  // Updates the currently focused object stored in `focus_item_type_`. Notifies
-  // `client_` about document focus change, if any.
-  void UpdateFocusItemType(FocusElementType focus_item_type);
+  // Updates the currently focused object stored in `focus_element_type_`.
+  // Notifies `client_` about document focus change, if any.
+  void UpdateFocusElementType(FocusElementType focus_element_type);
 
   void UpdateLinkUnderCursor(const std::string& target_url);
   void SetLinkUnderCursorForAnnotation(FPDF_ANNOTATION annot, int page_index);
@@ -715,13 +714,6 @@ class PDFiumEngine : public PDFEngine,
   // Text selection within form text fields and form combobox text fields.
   std::string selected_form_text_;
 
-  // True if focus is in form text field or form combobox text field.
-  bool in_form_text_area_ = false;
-
-  // True if the form text area currently in focus is not read only, and is a
-  // form text field or user-editable form combobox text field.
-  bool editable_form_text_area_ = false;
-
   // True if left mouse button is currently being held down.
   bool mouse_left_button_down_ = false;
 
@@ -760,11 +752,18 @@ class PDFiumEngine : public PDFEngine,
   // Set to true when updating plugin focus.
   bool updating_focus_ = false;
 
-  // The focus item type for the currently focused object.
-  FocusElementType focus_item_type_ = FocusElementType::kNone;
+  // True if `focus_field_type_` is currently set to `FocusFieldType::kText` and
+  // the focused form text area is not read-only.
+  bool editable_form_text_area_ = false;
 
-  // Stores the last focused object's focus item type before PDF loses focus.
-  FocusElementType last_focused_item_type_ = FocusElementType::kNone;
+  // The type of the currently focused form field.
+  FocusFieldType focus_field_type_ = FocusFieldType::kNoFocus;
+
+  // The focus element type for the currently focused object.
+  FocusElementType focus_element_type_ = FocusElementType::kNone;
+
+  // Stores the last focused object's focus element type before PDF loses focus.
+  FocusElementType last_focused_element_type_ = FocusElementType::kNone;
 
   // Stores the last focused annotation's index before PDF loses focus.
   int last_focused_annot_index_ = -1;

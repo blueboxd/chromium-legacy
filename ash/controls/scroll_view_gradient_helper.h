@@ -23,6 +23,9 @@ class GradientLayerDelegate;
 //
 // Views using this helper should call UpdateGradientZone() whenever the scroll
 // view bounds or contents bounds change (e.g. from Layout()).
+//
+// The gradient can be disabled with ScopedScrollViewGradientDisabler below.
+// This may improve animation performance.
 class ASH_EXPORT ScrollViewGradientHelper {
  public:
   // `scroll_view` must have a layer.
@@ -37,8 +40,16 @@ class ASH_EXPORT ScrollViewGradientHelper {
   }
 
  private:
+  friend class ScopedScrollViewGradientDisabler;
+
+  // Removes the scroll view mask layer.
+  void RemoveMaskLayer();
+
   // The scroll view being decorated.
   views::ScrollView* const scroll_view_;
+
+  // When greater than 0, the gradient is disabled.
+  int disable_count_ = 0;
 
   // Draws the fade in/out gradients via a `scroll_view_` mask layer.
   std::unique_ptr<GradientLayerDelegate> gradient_layer_;
@@ -46,6 +57,23 @@ class ASH_EXPORT ScrollViewGradientHelper {
   // Callback subscriptions.
   base::CallbackListSubscription on_contents_scrolled_subscription_;
   base::CallbackListSubscription on_contents_scroll_ended_subscription_;
+};
+
+// Disables the gradient mask and destroys its layer. This may improve
+// animation performance if the layer's bounds are changing. The gradient is
+// restored when the returned object is destroyed.
+class ASH_EXPORT ScopedScrollViewGradientDisabler {
+ public:
+  // `helper` must outlive this object.
+  explicit ScopedScrollViewGradientDisabler(ScrollViewGradientHelper* helper);
+  ScopedScrollViewGradientDisabler(const ScopedScrollViewGradientDisabler&) =
+      delete;
+  ScopedScrollViewGradientDisabler& operator=(
+      const ScopedScrollViewGradientDisabler&) = delete;
+  ~ScopedScrollViewGradientDisabler();
+
+ private:
+  ScrollViewGradientHelper* const helper_;
 };
 
 }  // namespace ash

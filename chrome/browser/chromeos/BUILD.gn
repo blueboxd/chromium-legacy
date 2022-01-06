@@ -845,6 +845,8 @@ source_set("chromeos") {
     "../ash/arc/instance_throttle/arc_kiosk_mode_throttle_observer.h",
     "../ash/arc/instance_throttle/arc_pip_window_throttle_observer.cc",
     "../ash/arc/instance_throttle/arc_pip_window_throttle_observer.h",
+    "../ash/arc/instance_throttle/arc_power_throttle_observer.cc",
+    "../ash/arc/instance_throttle/arc_power_throttle_observer.h",
     "../ash/arc/instance_throttle/arc_provisioning_throttle_observer.cc",
     "../ash/arc/instance_throttle/arc_provisioning_throttle_observer.h",
     "../ash/arc/instance_throttle/arc_switch_throttle_observer.cc",
@@ -1212,6 +1214,8 @@ source_set("chromeos") {
     "../ash/child_accounts/usage_time_limit_processor.h",
     "../ash/child_accounts/usage_time_state_notifier.cc",
     "../ash/child_accounts/usage_time_state_notifier.h",
+    "../ash/child_accounts/website_approval_notifier.cc",
+    "../ash/child_accounts/website_approval_notifier.h",
     "../ash/chrome_browser_main_parts_ash.cc",
     "../ash/chrome_browser_main_parts_ash.h",
     "../ash/chrome_content_browser_client_ash_part.cc",
@@ -3858,6 +3862,7 @@ source_set("unit_tests") {
     "../ash/arc/instance_throttle/arc_instance_throttle_unittest.cc",
     "../ash/arc/instance_throttle/arc_kiosk_mode_throttle_observer_unittest.cc",
     "../ash/arc/instance_throttle/arc_pip_window_throttle_observer_unittest.cc",
+    "../ash/arc/instance_throttle/arc_power_throttle_observer_unittest.cc",
     "../ash/arc/instance_throttle/arc_provisioning_throttle_observer_unittest.cc",
     "../ash/arc/instance_throttle/arc_switch_throttle_observer_unittest.cc",
     "../ash/arc/intent_helper/arc_external_protocol_dialog_unittest.cc",
@@ -3967,6 +3972,7 @@ source_set("unit_tests") {
     "../ash/child_accounts/time_limits/persisted_app_info_unittest.cc",
     "../ash/child_accounts/usage_time_limit_processor_unittest.cc",
     "../ash/child_accounts/usage_time_state_notifier_unittest.cc",
+    "../ash/child_accounts/website_approval_notifier_unittest.cc",
     "../ash/chrome_content_browser_client_ash_part_unittest.cc",
     "../ash/concierge_helper_service_unittest.cc",
     "../ash/crostini/ansible/ansible_management_service_unittest.cc",
@@ -4917,5 +4923,15 @@ if (use_libfuzzer) {
     proto_deps = [ "//components/policy/proto/fuzzer" ]
 
     link_deps = [ "//components/policy/proto/fuzzer" ]
+  }
+
+  fuzzer_test("policy_single_install_event_log_fuzzer") {
+    sources = [ "../ash/policy/reporting/single_install_event_log_fuzzer.cc" ]
+
+    deps = [
+      "//base",
+      "//chrome/browser",
+      "//chrome/browser/chromeos",
+    ]
   }
 }

@@ -6,12 +6,23 @@ import {GooglePhotos} from 'chrome://personalization/trusted/google_photos_eleme
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {waitAfterNextRender} from '../../test_util.js';
+<<<<<<< HEAD
 import {initElement, teardownElement} from './personalization_app_test_utils.js';
+=======
+import {baseSetup, initElement, teardownElement} from './personalization_app_test_utils.js';
+import {TestPersonalizationStore} from './test_personalization_store.js';
+>>>>>>> 038cd96142d384c0d2238973f1cb277725a62eba
 
 export function GooglePhotosTest() {
   /** @type {?HTMLElement} */
   let googlePhotosElement = null;
 
+<<<<<<< HEAD
+=======
+  /** @type {?TestPersonalizationStore} */
+  let personalizationStore = null;
+
+>>>>>>> 038cd96142d384c0d2238973f1cb277725a62eba
   /**
    * Returns the match for |selector| in |googlePhotosElement|'s shadow DOM.
    * @return {?Element|undefined}
@@ -28,6 +39,12 @@ export function GooglePhotosTest() {
       'googlePhotosAlbumsTabLabel': 'Albums',
       'googlePhotosPhotosTabLabel': 'Photos',
     });
+<<<<<<< HEAD
+=======
+
+    const mocks = baseSetup();
+    personalizationStore = mocks.personalizationStore;
+>>>>>>> 038cd96142d384c0d2238973f1cb277725a62eba
   });
 
   teardown(async () => {
@@ -35,7 +52,35 @@ export function GooglePhotosTest() {
     googlePhotosElement = null;
   });
 
+<<<<<<< HEAD
   test('displays tabs for photos and albums', async () => {
+=======
+  test('displays only photos content', async () => {
+    // Tabs and albums content are not displayed if albums are absent.
+    personalizationStore.data.googlePhotos.albums = null;
+    personalizationStore.data.loading.googlePhotos.albums = false;
+
+    googlePhotosElement = initElement(GooglePhotos.is, {hidden: false});
+    await waitAfterNextRender(googlePhotosElement);
+
+    // Tabs should be absent.
+    assertEquals(querySelector('.tabStrip'), null);
+
+    // Photos content should be present and visible.
+    const photosContent = querySelector('#photosContent');
+    assertTrue(!!photosContent);
+    assertFalse(photosContent.hidden);
+
+    // Albums content should be absent.
+    assertEquals(querySelector('#albumsContent'), null);
+  });
+
+  test('displays tabs and content for photos and albums', async () => {
+    // Tabs and albums content are only displayed if albums are present.
+    personalizationStore.data.googlePhotos.albums = Array.from({length: 1});
+    personalizationStore.data.loading.googlePhotos.albums = false;
+
+>>>>>>> 038cd96142d384c0d2238973f1cb277725a62eba
     googlePhotosElement = initElement(GooglePhotos.is, {hidden: false});
     await waitAfterNextRender(googlePhotosElement);
 
